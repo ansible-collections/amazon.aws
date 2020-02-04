@@ -289,6 +289,7 @@ s3_keys:
 
 import mimetypes
 import os
+import io
 from ssl import SSLError
 
 try:
@@ -308,6 +309,7 @@ from ..module_utils.ec2 import boto3_conn
 from ..module_utils.ec2 import get_aws_connection_info
 from ..module_utils.s3 import HAS_MD5
 from ..module_utils.s3 import calculate_etag
+from ..module_utils.s3 import calculate_etag_content
 
 IGNORE_S3_DROP_IN_EXCEPTIONS = ['XNotImplemented', 'NotImplemented']
 
