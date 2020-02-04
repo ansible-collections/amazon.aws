@@ -126,7 +126,14 @@ options:
   src:
     description:
       - The source file path when performing a PUT operation.
+      - Either I(content) or I(src) must be specified for a PUT operation. Ignored otherwise.
     type: str
+  content:
+    description:
+      - The content to PUT into an object.
+      - Either I(content) or I(src) must be specified for a PUT operation. Ignored otherwise.
+    version_added: "2.10"
+    type: bytes
   ignore_nonexistent_bucket:
     description:
       - "Overrides initial bucket lookups in case bucket or iam policies are restrictive. Example: a user may have the
@@ -153,6 +160,13 @@ EXAMPLES = '''
     bucket: mybucket
     object: /my/desired/key.txt
     src: /usr/local/myfile.txt
+    mode: put
+
+- name: PUT operation from a rendered template
+  aws_s3:
+    bucket: mybucket
+    object: /object.yaml
+    content: "{{ lookup('template', 'templates/object.yaml.j2') }}"
     mode: put
 
 - name: Simple PUT operation in Ceph RGW S3
