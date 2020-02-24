@@ -21,7 +21,7 @@
       register: amis
 
     - name: Create test instance
-      ec2_instance:
+      community.amazon.ec2_instance:
           name: "{{ resource_prefix }}_ansible_ec2_vol_info_test"
           instance_type: t2.nano
           image_id: "{{ (amis.images | sort(attribute='creation_date') | last).image_id }}"
@@ -102,7 +102,7 @@
 
   always:
     - name: Remove the instance
-      ec2_instance:
+      community.amazon.ec2_instance:
           state: absent
           filters:
               "tag:Name": "{{ resource_prefix }}_ansible_ec2_vol_info_test"

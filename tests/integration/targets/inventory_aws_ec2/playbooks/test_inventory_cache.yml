@@ -3,6 +3,9 @@
   connection: local
   gather_facts: no
   tasks:
+    - name: WHAT THE SHIT
+      debug:
+        msg: '{{ groups }}'
     - name: assert cache was used to populate inventory
       assert:
         that:

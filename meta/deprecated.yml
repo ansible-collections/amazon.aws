@@ -1,0 +1,12 @@
+modules:
+- aws_az_facts
+- aws_caller_facts
+- cloudformation_facts
+- ec2_ami_facts
+- ec2_eni_facts
+- ec2_group_facts
+- ec2_snapshot_facts
+- ec2_vol_facts
+- ec2_vpc_dhcp_option_facts
+- ec2_vpc_net_facts
+- ec2_vpc_subnet_facts

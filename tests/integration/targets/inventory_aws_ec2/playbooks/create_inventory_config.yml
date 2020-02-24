@@ -9,3 +9,10 @@
       copy:
         dest: ../test.aws_ec2.yml
         content: "{{ lookup('template', template_name) }}"
+    - name: What config are we writing now?
+      debug:
+        msg: "{{ template | default('inventory.yml') }}"
+    - name: write inventory config file
+      copy:
+        dest: /tmp/test.aws_ec2.yml
+        content: "{{ lookup('template', template_name) }}"

@@ -5,7 +5,7 @@ set -eux
 # ensure test config is empty
 ansible-playbook playbooks/empty_inventory_config.yml "$@"
 
-export ANSIBLE_INVENTORY_ENABLED=aws_ec2
+export ANSIBLE_INVENTORY_ENABLED="ansible.amazon.aws_ec2"
 
 # test with default inventory file
 ansible-playbook playbooks/test_invalid_aws_ec2_inventory_config.yml "$@"
