@@ -9,7 +9,7 @@ import hashlib
 import hmac
 import operator
 
-from ansible_collections.community.general.plugins.module_utils.urls import open_url
+from ansible.module_utils.urls import open_url
 from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import boto3_conn, get_aws_connection_info, HAS_BOTO3
 from ansible.module_utils.six.moves.urllib.parse import urlencode
 
