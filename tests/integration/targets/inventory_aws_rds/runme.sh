@@ -17,6 +17,9 @@ ansible-playbook playbooks/test_invalid_aws_rds_inventory_config.yml "$@"
 
 # generate inventory config and test using it
 ansible-playbook playbooks/create_inventory_config.yml "$@"
+echo "############"
+ansible-inventory  --list
+echo "############"
 ansible-playbook playbooks/test_populating_inventory.yml "$@"
 
 # generate inventory config with caching and test using it
