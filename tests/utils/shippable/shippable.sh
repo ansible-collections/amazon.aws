@@ -74,7 +74,10 @@ set +ux
 set -ux
 
 pip install git+https://github.com/ansible-collection-migration/ansible-base
-ansible-galaxy collection install community.general
+#ansible-galaxy collection install community.general
+git clone https://github.com/ansible-collections/general
+mkdir "${HOME}/.ansible/ansible_collections/community"
+mv general "${HOME}/.ansible/ansible_collections/community"
 ansible-galaxy collection install ansible.netcommon
 
 TEST_DIR="${HOME}/.ansible/ansible_collections/ansible/amazon/"
