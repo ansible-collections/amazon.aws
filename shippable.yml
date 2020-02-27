@@ -8,7 +8,7 @@ matrix:
   exclude:
     - env: T=none
   include:
-    - env: T=sanity
+    - env: T=sanity/1
 
     - env: T=aws/2.7/1
     - env: T=aws/3.7/1
