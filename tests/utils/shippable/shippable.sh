@@ -34,20 +34,20 @@ export PATH="${PWD}/bin:${PATH}"
 export PYTHONIOENCODING='utf-8'
 
 if [ "${JOB_TRIGGERED_BY_NAME:-}" == "nightly-trigger" ]; then
-    COVERAGE=yes
+#    COVERAGE=yes
     COMPLETE=yes
 fi
 
-if [ -n "${COVERAGE:-}" ]; then
-    # on-demand coverage reporting triggered by setting the COVERAGE environment variable to a non-empty value
-    export COVERAGE="--coverage"
-elif [[ "${COMMIT_MESSAGE}" =~ ci_coverage ]]; then
-    # on-demand coverage reporting triggered by having 'ci_coverage' in the latest commit message
-    export COVERAGE="--coverage"
-else
-    # on-demand coverage reporting disabled (default behavior, always-on coverage reporting remains enabled)
-    export COVERAGE="--coverage-check"
-fi
+#if [ -n "${COVERAGE:-}" ]; then
+#    # on-demand coverage reporting triggered by setting the COVERAGE environment variable to a non-empty value
+#    export COVERAGE="--coverage"
+#elif [[ "${COMMIT_MESSAGE}" =~ ci_coverage ]]; then
+#    # on-demand coverage reporting triggered by having 'ci_coverage' in the latest commit message
+#    export COVERAGE="--coverage"
+#else
+#    # on-demand coverage reporting disabled (default behavior, always-on coverage reporting remains enabled)
+#    export COVERAGE="--coverage-check"
+#fi
 
 if [ -n "${COMPLETE:-}" ]; then
     # disable change detection triggered by setting the COMPLETE environment variable to a non-empty value
@@ -73,7 +73,7 @@ set +ux
 . ~/ansible-venv/bin/activate
 set -ux
 
-pip install ansible-base --disable-pip-version-check
+pip install git+https://github.com/ansible-collection-migration/ansible-base
 ansible-galaxy collection install community.general
 ansible-galaxy collection install ansible.netcommon
 
