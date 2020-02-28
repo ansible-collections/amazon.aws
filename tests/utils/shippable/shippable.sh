@@ -80,6 +80,7 @@ mkdir -p "${HOME}/.ansible/ansible_collections/community"
 mv general "${HOME}/.ansible/ansible_collections/community"
 ansible-galaxy collection install ansible.netcommon
 
+export ANSIBLE_COLLECTIONS_PATHS="${HOME}/.ansible/"
 TEST_DIR="${HOME}/.ansible/ansible_collections/ansible/amazon/"
 mkdir -p "${TEST_DIR}"
 cp -aT "${SHIPPABLE_BUILD_DIR}" "${TEST_DIR}"
