@@ -1,5 +1,5 @@
 plugin: ansible.amazon.aws_ec2
-cache: true
+cache: True
 cache_plugin: community.general.jsonfile
 cache_connection: aws_ec2_cache_dir
 aws_access_key_id: '{{ aws_access_key }}'

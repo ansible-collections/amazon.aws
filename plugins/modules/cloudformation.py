@@ -334,7 +334,13 @@ try:
 except ImportError:
     HAS_BOTO3 = False
 
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list, AWSRetry, boto3_conn, boto_exception, ec2_argument_spec, get_aws_connection_info
+from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (ansible_dict_to_boto3_tag_list,
+                                                                         AWSRetry,
+                                                                         boto3_conn,
+                                                                         boto_exception,
+                                                                         ec2_argument_spec,
+                                                                         get_aws_connection_info,
+                                                                         )
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_bytes, to_native
 

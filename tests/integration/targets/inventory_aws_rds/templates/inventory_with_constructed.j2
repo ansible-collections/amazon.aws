@@ -1,4 +1,4 @@
-plugin: aws_rds
+plugin: ansible.amazon.aws_rds
 aws_access_key_id: '{{ aws_access_key }}'
 aws_secret_access_key: '{{ aws_secret_key }}'
 {% if security_token | default(false) %}
@@ -7,7 +7,7 @@ aws_security_token: '{{ security_token }}'
 regions:
   - '{{ aws_region }}'
 keyed_groups:
-  - key: 'db_parameter_groups|json_query("[].db_parameter_group_name")'
+  - key: 'db_parameter_groups|community.general.json_query("[].db_parameter_group_name")'
     prefix: rds_parameter_group
   - key: tags
     prefix: tag

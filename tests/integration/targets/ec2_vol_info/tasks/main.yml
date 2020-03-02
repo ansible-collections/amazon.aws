@@ -1,18 +1,18 @@
 ---
 # tasks file for test_ec2_vol_info
-- name: Set up AWS connection info
-  set_fact:
-    aws_connection_info: &aws_connection_info
-      aws_access_key: "{{ aws_access_key }}"
-      aws_secret_key: "{{ aws_secret_key }}"
-      security_token: "{{ security_token }}"
-      region: "{{ aws_region }}"
-  no_log: true
+- module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key | default(omit) }}'
+      aws_secret_key: '{{ aws_secret_key | default(omit) }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region | default(omit) }}'
 
-- block:
+  collections:
+    - community.amazon
+
+  block:
     - ec2_ami_info:
         owners: amazon
-        <<: *aws_connection_info
         filters:
           architecture: x86_64
           virtualization-type: hvm
@@ -28,7 +28,6 @@
           wait: yes
           tags:
             Environment: test
-          <<: *aws_connection_info
       register: instance
 
     - name: Ensure there's only one matching instance
@@ -46,13 +45,11 @@
         iops: 100
         tags:
             Tag Name with Space-and-dash: Tag Value with Space-and-dash
-        <<: *aws_connection_info
         delete_on_termination: yes
       register: volume
 
     - name: Gather volume info without any filters
       ec2_vol_info:
-          <<: *aws_connection_info
       register: volume_facts_wo_filters
       check_mode: no
 
@@ -63,7 +60,6 @@
 
     - name: Gather volume info
       ec2_vol_info:
-          <<: *aws_connection_info
           filters:
             "tag:Name": "{{ resource_prefix }}_ansible_ec2_vol_info_test.db"
       register: volume_facts
@@ -106,7 +102,6 @@
           state: absent
           filters:
               "tag:Name": "{{ resource_prefix }}_ansible_ec2_vol_info_test"
-          <<: *aws_connection_info
       register: result
       until: result is not failed
       ignore_errors: yes
@@ -116,7 +111,6 @@
       ec2_vol:
         id: "{{ volume.volume_id }}"
         state: absent
-        <<: *aws_connection_info
       register: result
       until: result is not failed
       ignore_errors: yes

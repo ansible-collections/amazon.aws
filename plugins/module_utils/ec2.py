@@ -37,7 +37,7 @@ import traceback
 from ansible.module_utils.ansible_release import __version__
 from ansible.module_utils.basic import missing_required_lib, env_fallback
 from ansible.module_utils._text import to_native, to_text
-from ansible_collections.community.general.plugins.module_utils.cloud import CloudRetry
+from ansible_collections.ansible.amazon.plugins.module_utils.cloud import CloudRetry
 from ansible.module_utils.six import string_types, binary_type, text_type
 from ansible.module_utils.common.dict_transformations import (
     camel_dict_to_snake_dict, snake_dict_to_camel_dict,

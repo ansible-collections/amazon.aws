@@ -351,7 +351,11 @@ snapshots_deleted:
 '''
 
 import time
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list, boto3_tag_list_to_ansible_dict, camel_dict_to_snake_dict, compare_aws_tags
+from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (ansible_dict_to_boto3_tag_list,
+                                                                         boto3_tag_list_to_ansible_dict,
+                                                                         camel_dict_to_snake_dict,
+                                                                         compare_aws_tags,
+                                                                         )
 from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
 
 try:
