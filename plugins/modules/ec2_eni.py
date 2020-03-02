@@ -265,8 +265,8 @@ except ImportError:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (AnsibleAWSError, connect_to_aws,
-                                      ec2_argument_spec, get_aws_connection_info,
-                                      get_ec2_security_group_ids_from_names)
+                                                                         ec2_argument_spec, get_aws_connection_info,
+                                                                         get_ec2_security_group_ids_from_names)
 
 
 def get_eni_info(interface):

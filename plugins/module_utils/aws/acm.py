@@ -31,7 +31,11 @@ Common Amazon Certificate Manager facts shared between modules
 """
 import traceback
 from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import get_aws_connection_info, boto3_conn
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import camel_dict_to_snake_dict, AWSRetry, HAS_BOTO3, boto3_tag_list_to_ansible_dict, ansible_dict_to_boto3_tag_list
+from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (camel_dict_to_snake_dict,
+                                                                         AWSRetry,
+                                                                         HAS_BOTO3,
+                                                                         boto3_tag_list_to_ansible_dict,
+                                                                         ansible_dict_to_boto3_tag_list)
 from ansible.module_utils._text import to_bytes
 
 

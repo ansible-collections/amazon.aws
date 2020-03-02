@@ -9,6 +9,9 @@
       region: "{{ aws_region }}"
   no_log: true
 
+  collections:
+    - community.amazon
+
 - block:
     - ec2_ami_info:
         owners: amazon

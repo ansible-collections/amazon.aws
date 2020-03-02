@@ -208,7 +208,10 @@ except ImportError:
     pass  # caught by AnsibleAWSModule
 
 from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list, camel_dict_to_snake_dict, boto3_tag_list_to_ansible_dict
+from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (ansible_dict_to_boto3_tag_list,
+                                                                         camel_dict_to_snake_dict,
+                                                                         boto3_tag_list_to_ansible_dict,
+                                                                         )
 
 
 def list_ec2_images(ec2_client, module):

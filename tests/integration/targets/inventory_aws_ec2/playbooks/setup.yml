@@ -6,6 +6,8 @@
       security_token: '{{ security_token }}'
       region: '{{ aws_region }}'
   no_log: yes
+  collections:
+    - community.amazon
 
 - name: get image ID to create an instance
   ec2_ami_info:
