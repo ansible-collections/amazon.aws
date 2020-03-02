@@ -1,0 +1,6 @@
+integration_tests_dependencies:
+- ansible.windows
+- community.crypto
+- community.general
+unit_tests_dependencies:
+- ansible.amazon
