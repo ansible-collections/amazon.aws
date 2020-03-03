@@ -31,6 +31,8 @@
       region: '{{ aws_region }}'
     iam_role:
       assume_role_policy_document: '{{ lookup("file", "deny-assume.json") }}'
+  collections:
+    - ansible.amazon
   block:
   # ===================================================================
   # Parameter Checks
@@ -1000,8 +1002,8 @@
       - 'role_info.iam_roles[0].instance_profiles[0].arn.startswith("arn")'
       - 'role_info.iam_roles[0].instance_profiles[0].arn.endswith("instance-profile/" + test_role)'
       - role_info.iam_roles[0].managed_policies | length == 1
-      - safe_managed_policy in ( role_info | json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
-      - custom_policy_name not in ( role_info | json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
+      - safe_managed_policy in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
+      - custom_policy_name not in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
       - role_info.iam_roles[0].max_session_duration == 43200
       - role_info.iam_roles[0].path == '/'
       - '"permissions_boundary" not in role_info.iam_roles[0]'
@@ -1066,8 +1068,8 @@
       - 'role_info.iam_roles[0].instance_profiles[0].arn.startswith("arn")'
       - 'role_info.iam_roles[0].instance_profiles[0].arn.endswith("instance-profile/" + test_role)'
       - role_info.iam_roles[0].managed_policies | length == 2
-      - safe_managed_policy in ( role_info | json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
-      - custom_policy_name in ( role_info | json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
+      - safe_managed_policy in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
+      - custom_policy_name in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
       - role_info.iam_roles[0].max_session_duration == 43200
       - role_info.iam_roles[0].path == '/'
       - '"permissions_boundary" not in role_info.iam_roles[0]'
@@ -1130,8 +1132,8 @@
       - 'role_info.iam_roles[0].instance_profiles[0].arn.startswith("arn")'
       - 'role_info.iam_roles[0].instance_profiles[0].arn.endswith("instance-profile/" + test_role)'
       - role_info.iam_roles[0].managed_policies | length == 1
-      - safe_managed_policy not in ( role_info | json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
-      - custom_policy_name in ( role_info | json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
+      - safe_managed_policy not in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
+      - custom_policy_name in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
       - role_info.iam_roles[0].max_session_duration == 43200
       - role_info.iam_roles[0].path == '/'
       - '"permissions_boundary" not in role_info.iam_roles[0]'
@@ -1185,8 +1187,8 @@
       - 'role_info.iam_roles[0].instance_profiles[0].arn.startswith("arn")'
       - 'role_info.iam_roles[0].instance_profiles[0].arn.endswith("instance-profile/" + test_role)'
       - role_info.iam_roles[0].managed_policies | length == 1
-      - safe_managed_policy not in ( role_info | json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
-      - custom_policy_name in ( role_info | json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
+      - safe_managed_policy not in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
+      - custom_policy_name in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
       - role_info.iam_roles[0].max_session_duration == 43200
       - role_info.iam_roles[0].path == '/'
       - '"permissions_boundary" not in role_info.iam_roles[0]'
@@ -1461,8 +1463,8 @@
       - role_info.iam_roles[0].inline_policies | length == 0
       - role_info.iam_roles[0].instance_profiles | length == 0
       - role_info.iam_roles[0].managed_policies | length == 2
-      - safe_managed_policy in ( role_info | json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
-      - custom_policy_name in ( role_info | json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
+      - safe_managed_policy in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
+      - custom_policy_name in ( role_info | community.general.json_query("iam_roles[*].managed_policies[*].policy_name") | list | flatten )
       - role_info.iam_roles[0].max_session_duration == 43200
       - role_info.iam_roles[0].path == test_path
       - role_info.iam_roles[0].permissions_boundary.permissions_boundary_arn == boundary_policy

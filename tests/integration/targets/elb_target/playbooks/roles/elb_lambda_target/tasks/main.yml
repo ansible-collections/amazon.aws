@@ -5,9 +5,11 @@
       aws_secret_key: '{{ aws_secret_key }}'
       security_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region }}'
+  collections:
+    - community.general
   block:
   - name: create zip to deploy lambda code
-    community.general.archive:
+    archive:
       path: '{{ role_path }}/files/ansible_lambda_target.py'
       dest: /tmp/lambda.zip
       format: zip

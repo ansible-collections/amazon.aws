@@ -198,7 +198,11 @@ import json
 
 from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import camel_dict_to_snake_dict, compare_policies
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import AWSRetry, ansible_dict_to_boto3_tag_list, boto3_tag_list_to_ansible_dict, compare_aws_tags
+from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (AWSRetry,
+                                                                         ansible_dict_to_boto3_tag_list,
+                                                                         boto3_tag_list_to_ansible_dict,
+                                                                         compare_aws_tags,
+                                                                         )
 
 try:
     from botocore.exceptions import ClientError, BotoCoreError

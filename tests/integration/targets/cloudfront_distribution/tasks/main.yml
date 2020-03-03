@@ -6,6 +6,9 @@
     cloudfront_distribution:
       alias: "{{ cloudfront_alias | default(omit) }}"
       viewer_certificate: "{{ cloudfront_viewer_cert | default(omit) }}"
+  collections:
+    - ansible.amazon
+
   block:
 
   - name: create cloudfront distribution using defaults
@@ -265,7 +268,7 @@
         - update_with_new_tag.changed
         - "'Third' in update_with_new_tag.tags"
         - "'Another' in update_with_new_tag.tags"
-        - "'Atag' in update_with_new_tag.tags"
+        - "'ATag' in update_with_new_tag.tags"
         - update_with_new_tag.tags|length == 3
 
   - name: create some cache behaviors

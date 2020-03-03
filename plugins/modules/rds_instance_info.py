@@ -348,7 +348,11 @@ instances:
 '''
 
 from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule, is_boto3_error_code
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list, boto3_tag_list_to_ansible_dict, AWSRetry, camel_dict_to_snake_dict
+from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (ansible_dict_to_boto3_filter_list,
+                                                                         boto3_tag_list_to_ansible_dict,
+                                                                         AWSRetry,
+                                                                         camel_dict_to_snake_dict,
+                                                                         )
 
 
 try:

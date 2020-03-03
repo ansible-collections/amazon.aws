@@ -1,5 +1,8 @@
 ---
-- block:
+- name: route53_zone tests
+  collections:
+    - ansible.amazon
+  block:
 
     # ============================================================
     - name: set connection information for all tasks

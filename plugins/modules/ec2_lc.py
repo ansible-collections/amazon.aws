@@ -454,8 +454,15 @@ security_groups:
 
 
 import traceback
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (get_aws_connection_info, ec2_argument_spec, ec2_connect, camel_dict_to_snake_dict, get_ec2_security_group_ids_from_names,
-                                      boto3_conn, snake_dict_to_camel_dict, HAS_BOTO3)
+from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (get_aws_connection_info,
+                                                                         ec2_argument_spec,
+                                                                         ec2_connect,
+                                                                         camel_dict_to_snake_dict,
+                                                                         get_ec2_security_group_ids_from_names,
+                                                                         boto3_conn,
+                                                                         snake_dict_to_camel_dict,
+                                                                         HAS_BOTO3,
+                                                                         )
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
 

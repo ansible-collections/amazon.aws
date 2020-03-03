@@ -37,6 +37,8 @@
     # Add this as a default because we (almost) always need it
     cloudtrail:
       s3_bucket_name: '{{ s3_bucket_name }}'
+  collections:
+    - ansible.amazon
   block:
 
   # ============================================================

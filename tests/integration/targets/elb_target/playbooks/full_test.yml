@@ -1,6 +1,6 @@
 - hosts: localhost
   connection: local
-  environment: "{{ ansible_test.environment }}"
+#  environment: "{{ ansible_test.environment }}"
 
   roles:
     - elb_lambda_target

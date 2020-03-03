@@ -4,6 +4,8 @@
       aws_secret_key: '{{ aws_secret_key | default(omit) }}'
       security_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region | default(omit) }}'
+  collections:
+    - ansible.amazon
   block:
     - name: create ecs cluster
       ecs_cluster:

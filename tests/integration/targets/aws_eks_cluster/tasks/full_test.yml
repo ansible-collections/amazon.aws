@@ -1,7 +1,9 @@
 ---
 # tasks file for aws_eks modules
-
-- block:
+- name: aws_eks_cluster tests
+  collections:
+    - ansible.amazon
+  block:
     # If us-west-1 does become supported, change this test to use an unsupported region
     # or if all regions are supported, delete this test
     - name: attempt to use eks in unsupported region
@@ -92,8 +94,8 @@
     - name: create EKS cluster
       aws_eks_cluster:
         name: "{{ eks_cluster_name }}"
-        security_groups: "{{ eks_security_groups | json_query('[].name') }}"
-        subnets: "{{ setup_subnets.results | json_query('[].subnet.id') }}"
+        security_groups: "{{ eks_security_groups | community.general.json_query('[].name') }}"
+        subnets: "{{ setup_subnets.results | community.general.json_query('[].subnet.id') }}"
         role_arn: "{{ iam_role.arn }}"
         <<: *aws_connection_info
       register: eks_create
@@ -107,8 +109,8 @@
     - name: create EKS cluster with same details but wait for it to become active
       aws_eks_cluster:
         name: "{{ eks_cluster_name }}"
-        security_groups: "{{ eks_security_groups | json_query('[].name') }}"
-        subnets: "{{ setup_subnets.results | json_query('[].subnet.id') }}"
+        security_groups: "{{ eks_security_groups | community.general.json_query('[].name') }}"
+        subnets: "{{ setup_subnets.results | community.general.json_query('[].subnet.id') }}"
         role_arn: "{{ iam_role.arn }}"
         wait: yes
         <<: *aws_connection_info
@@ -128,8 +130,8 @@
     - name: create EKS cluster with same details but using SG ids
       aws_eks_cluster:
         name: "{{ eks_cluster_name }}"
-        security_groups: "{{ setup_security_groups.results | json_query('[].group_id') }}"
-        subnets: "{{ setup_subnets.results | json_query('[].subnet.id') }}"
+        security_groups: "{{ setup_security_groups.results | community.general.json_query('[].group_id') }}"
+        subnets: "{{ setup_subnets.results | community.general.json_query('[].subnet.id') }}"
         role_arn: "{{ iam_role.arn }}"
         <<: *aws_connection_info
       register: eks_create
@@ -156,8 +158,8 @@
     - name: create EKS cluster with same details but wait for it to become active
       aws_eks_cluster:
         name: "{{ eks_cluster_name }}"
-        security_groups: "{{ eks_security_groups | json_query('[].name') }}"
-        subnets: "{{ setup_subnets.results | json_query('[].subnet.id') }}"
+        security_groups: "{{ eks_security_groups | community.general.json_query('[].name') }}"
+        subnets: "{{ setup_subnets.results | community.general.json_query('[].subnet.id') }}"
         role_arn: "{{ iam_role.arn }}"
         wait: yes
         <<: *aws_connection_info

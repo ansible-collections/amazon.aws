@@ -5,6 +5,8 @@
       aws_secret_key: '{{ aws_secret_key }}'
       security_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region }}'
+  collections:
+    - community.general
   block:
   - name: test with no parameters
     lambda: null
@@ -79,7 +81,7 @@
       dest: '{{output_dir}}/mini_lambda.py'
   - name: bundle lambda into a zip
     register: zip_res
-    community.general.archive:
+    archive:
       format: zip
       path: '{{output_dir}}/mini_lambda.py'
       dest: '{{output_dir}}/mini_lambda.zip'

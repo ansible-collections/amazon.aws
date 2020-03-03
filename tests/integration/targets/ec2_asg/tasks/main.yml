@@ -2,6 +2,8 @@
 # tasks file for test_ec2_asg
 
 - name: Test incomplete credentials with ec2_asg
+  collections:
+    - ansible.amazon
 
   block:
 
@@ -76,6 +78,9 @@
       aws_secret_key: "{{ aws_secret_key }}"
       security_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
+
+  collections:
+    - ansible.amazon
 
   block:
 
@@ -555,7 +560,7 @@
     # We should see 6 servers total.
     - assert:
         that:
-          - output | json_query(inst_id_json_query) | unique | length == 6
+          - output | community.general.json_query(inst_id_json_query) | unique | length == 6
       vars:
         inst_id_json_query: results[].results[].instances[].instance_id
 
@@ -614,7 +619,7 @@
     # Should only see 3 (don't replace instances we just created)
     - assert:
         that:
-          - output | json_query(inst_id_json_query) | unique | length == 3
+          - output | community.general.json_query(inst_id_json_query) | unique | length == 3
       vars:
         inst_id_json_query: results[].results[].instances[].instance_id
 

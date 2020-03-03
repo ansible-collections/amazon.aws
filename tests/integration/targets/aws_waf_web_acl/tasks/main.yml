@@ -1,4 +1,7 @@
-- block:
+- name: aws_waf_condition tests
+  collections:
+    - ansible.amazon
+  block:
   - name: set yaml anchor
     set_fact:
       aws_connection_info: &aws_connection_info
@@ -6,7 +9,6 @@
         aws_secret_key: "{{ aws_secret_key }}"
         security_token: "{{ security_token }}"
     no_log: yes
-
 
   ##################################################
   # aws_waf_condition tests

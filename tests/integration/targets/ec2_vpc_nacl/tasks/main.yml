@@ -5,6 +5,8 @@
       aws_secret_key: "{{ aws_secret_key }}"
       security_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
+  collections:
+    - ansible.amazon
   block:
 
     # ============================================================
@@ -94,22 +96,22 @@
     - include_tasks: tasks/subnet_ids.yml
       vars:
         vpc_id: "{{ vpc.vpc.id }}"
-        subnet_ids: "{{ subnets | json_query('results[*].subnet.id') }}"
+        subnet_ids: "{{ subnets | community.general.json_query('results[*].subnet.id') }}"
 
     - include_tasks: tasks/subnet_names.yml
       vars:
         vpc_id: "{{ vpc.vpc.id }}"
-        subnet_names: "{{ subnets | json_query('results[*].subnet.tags.Name') }}"
+        subnet_names: "{{ subnets | community.general.json_query('results[*].subnet.tags.Name') }}"
 
     - include_tasks: tasks/tags.yml
       vars:
         vpc_id: "{{ vpc.vpc.id }}"
-        subnet_ids: "{{ subnets | json_query('results[*].subnet.id') }}"
+        subnet_ids: "{{ subnets | community.general.json_query('results[*].subnet.id') }}"
 
     - include_tasks: tasks/ingress_and_egress.yml
       vars:
         vpc_id: "{{ vpc.vpc.id }}"
-        subnet_ids: "{{ subnets | json_query('results[*].subnet.id') }}"
+        subnet_ids: "{{ subnets | community.general.json_query('results[*].subnet.id') }}"
 
     - include_tasks: tasks/ipv6.yml
 

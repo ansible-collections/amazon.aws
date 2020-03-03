@@ -1,0 +1,162 @@
+plugin_routing:
+  modules:
+    aws_acm_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    aws_kms_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    aws_region_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    aws_s3_bucket_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    aws_sgw_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    aws_waf_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    cloudfront_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    cloudwatchlogs_log_group_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    ec2_asg_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    ec2_customer_gateway_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    ec2_instance_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    ec2_eip_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    ec2_elb_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    ec2_lc_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    ec2_placement_group_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    ec2_vpc_endpoint_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    ec2_vpc_igw_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    ec2_vpc_nacl_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    ec2_vpc_nat_gateway_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    ec2_vpc_peering_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    ec2_vpc_route_table_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    ec2_vpc_vgw_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    ec2_vpc_vpn_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    ecs_service_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    ecs_taskdefinition_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    efs_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    elasticache_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    elb_application_lb_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    elb_classic_lb_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    elb_target_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    elb_target_group_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    iam_cert_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    iam_mfa_device_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    iam_role_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    iam_server_certificate_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    lambda_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    rds_instance_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    rds_snapshot_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    redshift_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details
+    route53_facts:
+      deprecation:
+        removal_date: TBD
+        warning_text: see plugin documentation for details

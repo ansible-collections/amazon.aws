@@ -9,7 +9,10 @@
     dms_identifier: "{{ resource_prefix }}-dms"
   no_log: yes
 
-- block:
+- name: dms_endpoint tests
+  collections:
+    - ansible.amazon
+  block:
     - name: create endpoints
       dms_endpoint:
           state: present

@@ -7,6 +7,9 @@
       region: '{{ aws_region }}'
   no_log: true
 - name: test add s3 bucket notification
+  collections:
+    - ansible.amazon
+    - community.general
   block:
   - name: move lambda into place for archive module
     copy:
@@ -14,7 +17,7 @@
       dest: '{{output_dir}}/mini_lambda.py'
   - name: bundle lambda into a zip
     register: function_res
-    community.general.archive:
+    archive:
       format: zip
       path: '{{output_dir}}/mini_lambda.py'
       dest: '{{output_dir}}/mini_lambda.zip'

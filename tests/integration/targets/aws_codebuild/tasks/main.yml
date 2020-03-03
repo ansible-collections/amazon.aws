@@ -3,6 +3,9 @@
 
 - name: Run aws_codebuild integration tests.
 
+  collections:
+    - ansible.amazon
+
   block:
 
     # ==================== preparations ========================================

@@ -1,4 +1,8 @@
-- block:
+- name: elb_network_lb tests
+  collections:
+    - ansible.amazon
+
+  block:
 
   - name: set connection information for all tasks
     set_fact:
@@ -68,8 +72,8 @@
 
   - name: create list of subnet ids
     set_fact:
-      nlb_subnets: "{{ vpc_subnets|json_query('subnets[?tags.Public == `True`].id') }}"
-      private_subnets: "{{ vpc_subnets|json_query('subnets[?tags.Public != `True`].id') }}"
+      nlb_subnets: "{{ vpc_subnets|community.general.json_query('subnets[?tags.Public == `True`].id') }}"
+      private_subnets: "{{ vpc_subnets|community.general.json_query('subnets[?tags.Public != `True`].id') }}"
 
   - name: create a route table
     ec2_vpc_route_table:

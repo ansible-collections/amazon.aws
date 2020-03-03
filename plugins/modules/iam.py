@@ -189,8 +189,12 @@ except ImportError:
     pass  # Taken care of by ec2.HAS_BOTO
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (HAS_BOTO, boto_exception, connect_to_aws, ec2_argument_spec,
-                                      get_aws_connection_info)
+from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (HAS_BOTO,
+                                                                         boto_exception,
+                                                                         connect_to_aws,
+                                                                         ec2_argument_spec,
+                                                                         get_aws_connection_info,
+                                                                         )
 
 
 def _paginate(func, attr):

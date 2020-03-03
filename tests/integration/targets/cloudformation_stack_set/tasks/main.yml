@@ -16,7 +16,11 @@
       region: "{{ aws_region }}"
   no_log: yes
 
-- block:
+- name: cloudformation_stack_set tests 
+  collections:
+    - ansible.amazon
+
+  block:
     - name: Get current account ID
       aws_caller_info:
         <<: *aws_connection_info

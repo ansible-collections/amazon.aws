@@ -1,7 +1,10 @@
 ---
 # tasks file for ecs_cluster
+- name: ecs_cluster tests
+  collections:
+    - ansible.amazon
 
-- block:
+  block:
     # ============================================================
     - name: set up aws connection info
       set_fact:
@@ -181,7 +184,7 @@
         state: present
         scheme: internal
         security_groups: '{{ setup_sg.group_id }}'
-        subnets: "{{ setup_subnet.results | json_query('[].subnet.id') }}"
+        subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
         listeners:
           - Protocol: HTTP
             Port: 80
@@ -313,7 +316,7 @@
             containerName: "{{ ecs_task_name }}"
             containerPort: "{{ ecs_task_container_port }}"
         network_configuration:
-          subnets: "{{ setup_subnet.results | json_query('[].subnet.id') }}"
+          subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
           security_groups:
             - '{{ setup_sg.group_id }}'
         <<: *aws_connection_info
@@ -428,7 +431,7 @@
             containerName: "{{ ecs_task_name }}"
             containerPort: "{{ ecs_task_container_port }}"
         network_configuration:
-          subnets: "{{ setup_subnet.results | json_query('[].subnet.id') }}"
+          subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
           security_groups:
             - '{{ setup_sg.group_id }}'
         <<: *aws_connection_info
@@ -464,7 +467,7 @@
             containerName: "{{ ecs_task_name }}"
             containerPort: "{{ ecs_task_container_port }}"
         network_configuration:
-          subnets: "{{ setup_subnet.results | json_query('[].subnet.id') }}"
+          subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
           security_groups:
             - "{{ resource_prefix }}-ecs-vpc-test-sg"
         <<: *aws_connection_info
@@ -731,7 +734,7 @@
         deployment_configuration: "{{ ecs_service_deployment_configuration }}"
         launch_type: FARGATE
         network_configuration:
-          subnets: "{{ setup_subnet.results | json_query('[].subnet.id') }}"
+          subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
           security_groups:
             - '{{ setup_sg.group_id }}'
           assign_public_ip: true
@@ -751,7 +754,7 @@
         launch_type: FARGATE
         count: 1
         network_configuration:
-          subnets: "{{ setup_subnet.results | json_query('[].subnet.id') }}"
+          subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
           security_groups:
             - '{{ setup_sg.group_id }}'
           assign_public_ip: true
@@ -784,7 +787,7 @@
           tag_key: tag_value
           tag_key2: tag_value2
         network_configuration:
-          subnets: "{{ setup_subnet.results | json_query('[].subnet.id') }}"
+          subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
           security_groups:
             - '{{ setup_sg.group_id }}'
           assign_public_ip: true
@@ -812,7 +815,7 @@
           tag_key: tag_value
           tag_key2: tag_value2
         network_configuration:
-          subnets: "{{ setup_subnet.results | json_query('[].subnet.id') }}"
+          subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
           security_groups:
             - '{{ setup_sg.group_id }}'
           assign_public_ip: true

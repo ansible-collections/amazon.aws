@@ -1,5 +1,9 @@
 ---
-- block:
+- name: efs tests
+  collections:
+    - ansible.amazon
+
+  block:
 
     # ============================================================
     - name: set connection information for all tasks

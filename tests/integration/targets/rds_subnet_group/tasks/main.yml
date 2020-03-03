@@ -12,6 +12,8 @@
       aws_secret_key: '{{ aws_secret_key }}'
       security_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region }}'
+  collections:
+    - ansible.amazon
   block:
 
   # ============================================================
@@ -62,7 +64,7 @@
     register: subnets
 
   - set_fact:
-      subnet_ids: '{{ subnets | json_query("results[].subnet.id") | list }}'
+      subnet_ids: '{{ subnets | community.general.json_query("results[].subnet.id") | list }}'
 
   # ============================================================
 

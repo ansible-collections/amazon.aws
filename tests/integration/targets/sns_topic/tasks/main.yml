@@ -4,6 +4,8 @@
       aws_access_key: '{{ aws_access_key }}'
       security_token: '{{ security_token|default(omit) }}'
       region: '{{ aws_region }}'
+  collections:
+    - community.general
   block:
   - name: create minimal lambda role
     iam_role:
@@ -166,7 +168,7 @@
       state: directory
     register: tempdir
   - name: ensure zip file exists
-    community.general.archive:
+    archive:
       path: '{{ lookup(''first_found'', sns_topic_lambda_function) }}'
       dest: '{{ tempdir.path }}/{{ sns_topic_lambda_function }}.zip'
       format: zip

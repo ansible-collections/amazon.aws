@@ -1,4 +1,9 @@
-- block:
+- name: Integration testing for ec2_snapshot
+  collections:
+    - community.general
+    - ansible.amazon
+
+  block:
   - name: set up AWS credentials
     set_fact:
       aws_connection_info:
@@ -56,7 +61,7 @@
       dest: '{{output_dir}}/mini_http_lambda.py'
   - name: bundle lambda into a zip
     register: zip_res
-    community.general.archive:
+    archive:
       format: zip
       path: '{{output_dir}}/mini_http_lambda.py'
       dest: '{{output_dir}}/mini_http_lambda.zip'
