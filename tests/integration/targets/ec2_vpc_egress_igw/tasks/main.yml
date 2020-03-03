@@ -1,5 +1,9 @@
 ---
-- block:
+- name: ec2_vpc_egress_igw tests
+  collections:
+    - ansible.amazon
+
+  block:
 
   # ============================================================
   - name: test failure with no parameters
