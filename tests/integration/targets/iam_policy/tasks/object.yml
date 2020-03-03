@@ -484,10 +484,10 @@
       - iam_policy_name_c in iam_policy_info.all_policy_names
       - iam_policy_name_d in iam_policy_info.all_policy_names
       # Quick test that the policies are the ones we expect
-      - iam_policy_info.policies | json_query('[*].policy_name') | length == 4
-      - iam_policy_info.policies | json_query('[?policy_document.Id == `MyId`].policy_name') | length == 2
-      - iam_policy_name_c in (iam_policy_info.policies | json_query('[?policy_document.Id == `MyId`].policy_name') | list)
-      - iam_policy_name_d in (iam_policy_info.policies | json_query('[?policy_document.Id == `MyId`].policy_name') | list)
+      - iam_policy_info.policies | community.general.json_query('[*].policy_name') | length == 4
+      - iam_policy_info.policies | community.general.json_query('[?policy_document.Id == `MyId`].policy_name') | length == 2
+      - iam_policy_name_c in (iam_policy_info.policies | community.general.json_query('[?policy_document.Id == `MyId`].policy_name') | list)
+      - iam_policy_name_d in (iam_policy_info.policies | community.general.json_query('[?policy_document.Id == `MyId`].policy_name') | list)
 
   # ============================================================
   - name: 'Update policy using document for {{ iam_type }} (check mode) (skip_duplicates)'
