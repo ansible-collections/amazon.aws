@@ -88,8 +88,14 @@ except ImportError:
     pass  # will be detected by imported HAS_BOTO3
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (ec2_argument_spec, get_aws_connection_info, boto3_conn,
-                                      camel_dict_to_snake_dict, ansible_dict_to_boto3_filter_list, boto3_tag_list_to_ansible_dict, HAS_BOTO3)
+from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (ec2_argument_spec,
+                                                                         get_aws_connection_info,
+                                                                         boto3_conn,
+                                                                         camel_dict_to_snake_dict,
+                                                                         ansible_dict_to_boto3_filter_list,
+                                                                         boto3_tag_list_to_ansible_dict,
+                                                                         HAS_BOTO3,
+                                                                         )
 
 
 def date_handler(obj):

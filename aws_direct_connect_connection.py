@@ -160,8 +160,11 @@ connection:
 import traceback
 from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (camel_dict_to_snake_dict, AWSRetry)
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.direct_connect import (DirectConnectError, delete_connection,
-                                                     associate_connection_and_lag, disassociate_connection_and_lag)
+from ansible_collections.ansible.amazon.plugins.module_utils.aws.direct_connect import (DirectConnectError,
+                                                                                        delete_connection,
+                                                                                        associate_connection_and_lag,
+                                                                                        disassociate_connection_and_lag,
+                                                                                        )
 
 try:
     from botocore.exceptions import BotoCoreError, ClientError

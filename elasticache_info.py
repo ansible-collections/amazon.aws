@@ -227,7 +227,11 @@ elasticache_clusters:
 '''
 
 from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import get_aws_connection_info, camel_dict_to_snake_dict, AWSRetry, boto3_tag_list_to_ansible_dict
+from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (get_aws_connection_info,
+                                                                         camel_dict_to_snake_dict,
+                                                                         AWSRetry,
+                                                                         boto3_tag_list_to_ansible_dict,
+                                                                         )
 
 
 try:

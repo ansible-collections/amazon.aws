@@ -114,9 +114,12 @@ import traceback
 from time import time, sleep
 from ansible.module_utils._text import to_native
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (boto3_conn, camel_dict_to_snake_dict,
-                                      ec2_argument_spec, get_aws_connection_info,
-                                      AWSRetry)
+from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (boto3_conn,
+                                                                         camel_dict_to_snake_dict,
+                                                                         ec2_argument_spec,
+                                                                         get_aws_connection_info,
+                                                                         AWSRetry,
+                                                                         )
 
 try:
     import boto3

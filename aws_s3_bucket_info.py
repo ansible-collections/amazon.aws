@@ -61,8 +61,12 @@ except ImportError:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_native
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (boto3_conn, ec2_argument_spec, HAS_BOTO3, camel_dict_to_snake_dict,
-                                      get_aws_connection_info)
+from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (boto3_conn,
+                                                                         ec2_argument_spec,
+                                                                         HAS_BOTO3,
+                                                                         camel_dict_to_snake_dict,
+                                                                         get_aws_connection_info,
+                                                                         )
 
 
 def get_bucket_list(module, connection):

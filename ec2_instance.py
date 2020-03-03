@@ -813,11 +813,12 @@ from ansible.module_utils.six.moves.urllib import parse as urlparse
 from ansible.module_utils._text import to_bytes, to_native
 import ansible_collections.ansible.amazon.plugins.module_utils.ec2 as ec2_utils
 from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (AWSRetry,
-                                      ansible_dict_to_boto3_filter_list,
-                                      compare_aws_tags,
-                                      boto3_tag_list_to_ansible_dict,
-                                      ansible_dict_to_boto3_tag_list,
-                                      camel_dict_to_snake_dict)
+                                                                         ansible_dict_to_boto3_filter_list,
+                                                                         compare_aws_tags,
+                                                                         boto3_tag_list_to_ansible_dict,
+                                                                         ansible_dict_to_boto3_tag_list,
+                                                                         camel_dict_to_snake_dict,
+                                                                         )
 
 from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
 

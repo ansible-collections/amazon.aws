@@ -460,7 +460,12 @@ vpc_id:
 from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import camel_dict_to_snake_dict, boto3_tag_list_to_ansible_dict, compare_aws_tags
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.elbv2 import ApplicationLoadBalancer, ELBListeners, ELBListener, ELBListenerRules, ELBListenerRule
+from ansible_collections.ansible.amazon.plugins.module_utils.aws.elbv2 import (ApplicationLoadBalancer,
+                                                                               ELBListeners,
+                                                                               ELBListener,
+                                                                               ELBListenerRules,
+                                                                               ELBListenerRule,
+                                                                               )
 from ansible_collections.ansible.amazon.plugins.module_utils.aws.elb_utils import get_elb_listener_rules
 
 

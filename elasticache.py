@@ -133,7 +133,12 @@ EXAMPLES = """
 from time import sleep
 from traceback import format_exc
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import ec2_argument_spec, get_aws_connection_info, boto3_conn, HAS_BOTO3, camel_dict_to_snake_dict
+from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (ec2_argument_spec,
+                                                                         get_aws_connection_info,
+                                                                         boto3_conn,
+                                                                         HAS_BOTO3,
+                                                                         camel_dict_to_snake_dict,
+                                                                         )
 
 try:
     import boto3

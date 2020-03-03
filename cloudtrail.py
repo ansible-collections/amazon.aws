@@ -260,7 +260,9 @@ except ImportError:
 
 from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (camel_dict_to_snake_dict,
-                                      ansible_dict_to_boto3_tag_list, boto3_tag_list_to_ansible_dict)
+                                                                         ansible_dict_to_boto3_tag_list,
+                                                                         boto3_tag_list_to_ansible_dict,
+                                                                         )
 
 
 def create_trail(module, client, ct_params):
