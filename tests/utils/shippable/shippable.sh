@@ -75,13 +75,22 @@ set +ux
 set -ux
 
 pip install git+https://github.com/ansible-collection-migration/ansible-base
+
 #ansible-galaxy collection install community.general
-git clone https://github.com/ansible-collections/general
-git clone https://github.com/ansible-collection-migration/community.amazon amazon
 mkdir -p "${HOME}/.ansible/ansible_collections/community"
-mv general "${HOME}/.ansible/ansible_collections/community"
-mv amazon "${HOME}/.ansible/ansible_collections/community"
-ansible-galaxy collection install ansible.netcommon
+mkdir -p "${HOME}/.ansible/ansible_collections/google"
+mkdir -p "${HOME}/.ansible/ansible_collections/openstack"
+cwd=$(pwd)
+cd "${HOME}/.ansible/ansible_collections/"
+git clone https://github.com/ansible-collections/general community/general
+git clone https://github.com/ansible-collection-migration/community.amazon community/amazon
+# community.general requires a lot of things we need to manual pull in
+# once community.general is published this will be handled by galaxy cli
+git clone https://github.com/ansible-collection-migration/google.cloud google/cloud
+git clone https://github.com/ansible-collection-migration/openstack.cloud openstack/cloud
+git clone https://github.com/ansible-collection-migration/ansible.netcommon ansible/netcommon
+#ansible-galaxy collection install ansible.netcommon
+cd ${cwd}
 
 export ANSIBLE_COLLECTIONS_PATHS="${HOME}/.ansible/"
 TEST_DIR="${HOME}/.ansible/ansible_collections/ansible/amazon/"
