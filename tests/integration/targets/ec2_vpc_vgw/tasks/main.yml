@@ -1,5 +1,8 @@
 ---
-- block:
+- name: ec2_vpc_net tests
+  collections:
+    - ansible.amazon
+  block:
 
     # ============================================================
     - name: set up aws connection info
