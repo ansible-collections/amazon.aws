@@ -79,8 +79,13 @@ except ImportError:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (boto3_tag_list_to_ansible_dict,
-                                      ec2_argument_spec, boto3_conn, get_aws_connection_info,
-                                      ansible_dict_to_boto3_filter_list, HAS_BOTO3, camel_dict_to_snake_dict)
+                                                                         ec2_argument_spec,
+                                                                         boto3_conn,
+                                                                         get_aws_connection_info,
+                                                                         ansible_dict_to_boto3_filter_list,
+                                                                         HAS_BOTO3,
+                                                                         camel_dict_to_snake_dict,
+                                                                         )
 
 
 def date_handler(obj):
