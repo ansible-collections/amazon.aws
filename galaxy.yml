@@ -9,7 +9,6 @@ license_file: COPYING
 tags: null
 dependencies:
   ansible.netcommon: '>=0.1.0'
-  community.general: '>=0.1.0'
 repository: git@github.com:ansible-collection-migration/ansible.amazon.git
 documentation: https://github.com/ansible-collection-migration/ansible.amazon/tree/master/docs
 homepage: https://github.com/ansible-collection-migration/ansible.amazon
