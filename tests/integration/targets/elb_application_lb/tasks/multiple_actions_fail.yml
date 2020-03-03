@@ -1,4 +1,7 @@
-- block:
+- name: elb_application_lb multiple_actions_fail tests
+  collections:
+    - ansible.amazon
+  block:
   - name: set connection information for all tasks
     set_fact:
       aws_connection_info:
@@ -70,8 +73,8 @@
     register: vpc_subnets
   - name: create list of subnet ids
     set_fact:
-      alb_subnets: '{{ vpc_subnets|json_query(''subnets[?tags.Public == `True`].id'') }}'
-      private_subnets: '{{ vpc_subnets|json_query(''subnets[?tags.Public != `True`].id'') }}'
+      alb_subnets: '{{ vpc_subnets|community.general.json_query(''subnets[?tags.Public == `True`].id'') }}'
+      private_subnets: '{{ vpc_subnets|community.general.json_query(''subnets[?tags.Public != `True`].id'') }}'
   - name: create a route table
     ec2_vpc_route_table:
       aws_access_key: '{{ aws_access_key }}'
