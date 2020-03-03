@@ -7,7 +7,7 @@ aws_security_token: '{{ security_token }}'
 regions:
   - '{{ aws_region }}'
 keyed_groups:
-  - key: 'db_parameter_groups|json_query("[].db_parameter_group_name")'
+  - key: 'db_parameter_groups|community.general.json_query("[].db_parameter_group_name")'
     prefix: rds_parameter_group
   - key: tags
     prefix: tag

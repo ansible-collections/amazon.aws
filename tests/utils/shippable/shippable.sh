@@ -90,7 +90,7 @@ git clone https://github.com/ansible-collection-migration/google.cloud google/cl
 git clone https://github.com/ansible-collection-migration/openstack.cloud openstack/cloud
 git clone https://github.com/ansible-collection-migration/ansible.netcommon ansible/netcommon
 #ansible-galaxy collection install ansible.netcommon
-cd ${cwd}
+cd "${cwd}"
 
 export ANSIBLE_COLLECTIONS_PATHS="${HOME}/.ansible/"
 TEST_DIR="${HOME}/.ansible/ansible_collections/ansible/amazon/"
