@@ -190,8 +190,12 @@ except ImportError:
     pass  # will be picked up by imported HAS_BOTO3
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (get_aws_connection_info, boto3_conn, ec2_argument_spec, HAS_BOTO3,
-                                      camel_dict_to_snake_dict)
+from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (get_aws_connection_info,
+                                                                         boto3_conn,
+                                                                         ec2_argument_spec,
+                                                                         HAS_BOTO3,
+                                                                         camel_dict_to_snake_dict,
+                                                                         )
 from ansible.module_utils.six import string_types
 
 
