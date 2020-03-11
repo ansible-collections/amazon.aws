@@ -1,5 +1,18 @@
 automerge: false
 files:
+  $actions/aws_s3.py:
+    labels: aws_s3
+  $callbacks/aws_resource_actions.py:
+  $doc_fragments/aws.py:
+  $doc_fragments/aws_credentials.py:
+  $doc_fragments/aws_region.py:
+  $doc_fragments/ec2.py:
+  $inventories/aws_ec2.py:
+    maintainers: $team_aws
+    labels: aws_ec2
+  $inventories/aws_rds.py:
+  $lookups/:
+    labels: aws cloud
   $module_utils/:
   $module_utils/ec2.py:
     labels: aws cloud ec2
@@ -76,16 +89,6 @@ files:
     labels: ec2_vpc_net_info
   $modules/ec2_vpc_subnet.py:
     authors: brandond erydo
-  $plugins/aws.py:
-  $plugins/aws_credentials.py:
-  $plugins/aws_ec2.py:
-    maintainers: $team_aws
-    labels: aws_ec2
-  $plugins/:
-    labels: aws cloud
-  $plugins/aws_s3.py:
-    labels: aws_s3
-  $plugins/ec2.py:
 macros:
   actions: plugins/action
   callbacks: plugins/callback
@@ -94,5 +97,4 @@ macros:
   lookups: plugins/lookup
   module_utils: plugins/module_utils
   modules: plugins/modules
-  plugins: plugins/plugins
   team_aws: jillr s-hertel tremble
