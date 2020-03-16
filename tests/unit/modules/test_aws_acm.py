@@ -31,7 +31,7 @@ def test_chain_compare():
     # And if they do, fail_json is not applicable
     module = None
 
-    fixture_suffix = 'test/units/modules/cloud/amazon/fixtures/certs'
+    fixture_suffix = 'tests/unit/modules/fixtures/certs'
 
     # Test chain split function on super simple (invalid) certs
     expected = ['aaa', 'bbb', 'ccc']

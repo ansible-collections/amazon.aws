@@ -87,9 +87,9 @@ def placeboify(request, monkeypatch):
             raise ValueError('Mocker only supports client, not %s' % conn_type)
         return session.client(resource, region_name=region)
 
-    import ansible.module_utils.ec2
+    import ansible_collections.ansible.amazon.plugins.module_utils.ec2
     monkeypatch.setattr(
-        ansible.module_utils.ec2,
+        ansible_collections.ansible.amazon.plugins.module_utils.ec2,
         'boto3_conn',
         boto3_middleman_connection,
     )

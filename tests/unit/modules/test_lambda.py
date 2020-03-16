@@ -20,7 +20,7 @@ boto3 = pytest.importorskip("boto3")
 
 # lambda is a keyword so we have to hack this.
 _temp = __import__('ansible_collections.community.amazon.plugins.modules.lambda')
-lda = getattr(_temp.modules.cloud.amazon, "lambda")
+lda = getattr(_temp.community.amazon.plugins.modules, "lambda")
 
 
 base_lambda_config = {
@@ -45,7 +45,7 @@ base_module_args = {
     "region": "us-west-1",
     "name": "lambda_name",
     "state": "present",
-    "zip_file": "test/units/modules/cloud/amazon/fixtures/thezip.zip",
+    "zip_file": "tests/unit/modules/fixtures/thezip.zip",
     "runtime": 'python2.7',
     "role": 'arn:aws:iam::987654321012:role/lambda_basic_execution',
     "memory_size": 128,
@@ -257,7 +257,7 @@ def test_warn_region_not_specified():
         "state": "present",
         # Module is called without a region causing error
         # "region": "us-east-1",
-        "zip_file": "test/units/modules/cloud/amazon/fixtures/thezip.zip",
+        "zip_file": "test/units/modules/fixturesthezip.zip",
         "runtime": 'python2.7',
         "role": 'arn:aws:iam::987654321012:role/lambda_basic_execution',
         "handler": 'lambda_python.my_handler'})
