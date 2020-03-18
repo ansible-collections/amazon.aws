@@ -1,0 +1,346 @@
+automerge: false
+files:
+  $connections/aws_ssm.py:
+  $modules/:
+    authors: wimnat
+    maintainers: $team_aws
+    ignore: erydo nadirollo seiffert tedder
+  $modules/_aws_region_facts.py:
+    authors: Sodki
+  $modules/_aws_s3_bucket_facts.py:
+    authors: hyperized
+  $modules/_aws_sgw_facts.py:
+    authors: nerzhul
+  $modules/_aws_waf_facts.py:
+    authors: mmochan willthames
+  $modules/_cloudfront_facts.py:
+    authors: wilvk
+  $modules/_cloudwatchlogs_log_group_facts.py:
+    authors: willricardo
+  $modules/_ec2_customer_gateway_facts.py:
+    authors: Madhura-CSI
+  $modules/_ec2_eip_facts.py:
+    authors: iiibrad
+  $modules/_ec2_elb_facts.py:
+    authors: mjschultz nand0p
+  $modules/_ec2_instance_facts.py:
+    authors: michaeljs1990 wimnat
+  $modules/_ec2_lc_facts.py:
+    authors: psykotox
+  $modules/_ec2_placement_group_facts.py:
+    authors: iiibrad
+  $modules/_ec2_vpc_endpoint_facts.py:
+    authors: Etherdaemon
+  $modules/_ec2_vpc_igw_facts.py:
+    authors: naslanidis
+  $modules/_ec2_vpc_nacl_facts.py:
+    authors: brandond
+  $modules/_ec2_vpc_vgw_facts.py:
+    authors: naslanidis
+  $modules/_ec2_vpc_vpn_facts.py:
+    authors: Madhura-CSI
+  $modules/_ecs_service_facts.py:
+    authors: Java1Guy kaczynskid
+  $modules/_ecs_taskdefinition_facts.py:
+    authors: Java1Guy gurumaia kaczynskid
+  $modules/_efs_facts.py:
+    authors: ryansydnor
+  $modules/_elasticache_facts.py:
+    authors: willthames
+  $modules/_elb_classic_lb_facts.py:
+    authors: mjschultz nand0p
+  $modules/_elb_target_facts.py:
+    authors: yaakov-github
+  $modules/_iam_cert_facts.py:
+    authors: linuxdynasty
+  $modules/_iam_mfa_device_facts.py:
+    authors: pwnall
+  $modules/_iam_role_facts.py:
+    authors: willthames
+  $modules/_iam_server_certificate_facts.py:
+    authors: linuxdynasty
+  $modules/_lambda_facts.py:
+    authors: pjodouin
+  $modules/_rds_instance_facts.py:
+    authors: mikedlr willthames
+  $modules/_rds_snapshot_facts.py:
+    authors: willthames
+  $modules/_redshift_facts.py:
+    authors: j-carl
+  $modules/_route53_facts.py:
+    authors: Etherdaemon
+  $modules/aws_acm.py:
+    authors: matt-telstra
+  $modules/aws_acm_info.py:
+    authors: willthames
+  $modules/aws_api_gateway.py:
+    authors: mikedlr
+  $modules/aws_application_scaling_policy.py:
+    authors: chenl87 gurumaia
+  $modules/aws_codebuild.py:
+    authors: stefanhorning
+  $modules/aws_codecommit.py:
+    authors: ptux
+  $modules/aws_codepipeline.py:
+    authors: stefanhorning
+  $modules/aws_direct_connect_connection.py:
+    authors: s-hertel
+    maintainers: jillr tremble
+  $modules/aws_direct_connect_gateway.py:
+    authors: gobins
+  $modules/aws_eks_cluster.py:
+    authors: willthames
+  $modules/aws_elasticbeanstalk_app.py:
+    authors: hsingh viper233
+  $modules/aws_inspector_target.py:
+    authors: dennisconrad
+  $modules/aws_kms.py:
+    authors: tedder tremble willthames
+    maintainers: jillr s-hertel
+    labels: aws_kms
+  $modules/aws_kms_info.py:
+    authors: willthames
+  $modules/aws_region_info.py:
+    authors: Sodki
+  $modules/aws_s3_bucket_info.py:
+    authors: hyperized
+  $modules/aws_s3_cors.py:
+    authors: fivethreeo
+  $modules/aws_secret.py:
+    authors: rrey
+  $modules/aws_ses_rule_set.py:
+    authors: orthanc tomislacker
+  $modules/aws_sgw_info.py:
+    authors: nerzhul
+  $modules/aws_ssm_parameter_store.py:
+    authors: mikedlr nathanwebsterdotme ozbillwang
+  $modules/aws_step_functions_state_machine.py:
+    authors: tdekeyser
+  $modules/aws_step_functions_state_machine_execution.py:
+    authors: prasadkatti
+  $modules/cloudformation_exports_info.py:
+    authors: mmoyle
+  $modules/cloudformation_stack_set.py:
+    authors: ryansb
+    ignore: erydo nadirollo ryansb simplesteph
+  $modules/cloudfront_distribution.py:
+    authors: willthames wilvk
+  $modules/cloudtrail.py:
+    authors: ansible shepdelacreme tedder
+    labels: cloudtrail
+  $modules/cloudwatchevent_rule.py:
+    authors: jsdalton
+  $modules/cloudwatchlogs_log_group_metric_filter.py:
+    authors: markuman
+  $modules/data_pipeline.py:
+    authors: raags s-hertel
+    maintainers: jillr tremble
+  $modules/dynamodb_table.py:
+    authors: loia
+  $modules/dynamodb_ttl.py:
+    authors: tedder
+  $modules/ec2_ami_copy.py:
+    authors: amir343 defunctio
+  $modules/ec2_asg.py:
+    authors: garethr
+    labels: ec2_asg
+  $modules/ec2_asg_lifecycle_hook.py:
+    authors: tsiganenok
+  $modules/ec2_customer_gateway.py:
+    authors: MichaelBaydoun
+  $modules/ec2_customer_gateway_info.py:
+    authors: Madhura-CSI
+  $modules/ec2_eip.py:
+    authors: rickmendes
+  $modules/ec2_eip_info.py:
+    authors: iiibrad
+  $modules/ec2_elb.py:
+    authors: jarv
+  $modules/ec2_elb_info.py:
+    authors: mjschultz nand0p
+  $modules/ec2_instance.py:
+    authors: ryansb
+    maintainers: $team_aws Shaps
+    labels: ec2_instance
+    ignore: erydo nadirollo ryansb simplesteph
+  $modules/ec2_instance_info.py:
+    authors: michaeljs1990 wimnat
+  $modules/ec2_launch_template.py:
+    authors: ryansb
+    ignore: erydo nadirollo ryansb simplesteph
+  $modules/ec2_lc.py:
+    authors: garethr wilvk
+    labels: ec2_lc
+  $modules/ec2_lc_find.py:
+    authors: fiunchinho
+  $modules/ec2_lc_info.py:
+    authors: psykotox
+  $modules/ec2_metric_alarm.py:
+    authors: Zeekin
+    labels: ec2_metric_alarm
+  $modules/ec2_scaling_policy.py:
+    authors: Zeekin
+  $modules/ec2_snapshot_copy.py:
+    authors: Deepakkothandan
+  $modules/ec2_vpc_egress_igw.py:
+    authors: shepdelacreme
+  $modules/ec2_vpc_igw.py:
+    authors: erydo
+  $modules/ec2_vpc_igw_info.py:
+    authors: naslanidis
+  $modules/ec2_vpc_nacl.py:
+    authors: mmochan
+  $modules/ec2_vpc_nacl_info.py:
+    authors: brandond
+  $modules/ec2_vpc_nat_gateway.py:
+    authors: Etherdaemon jonhadfield linuxdynasty
+  $modules/ec2_vpc_nat_gateway_info.py:
+    authors: Etherdaemon
+  $modules/ec2_vpc_peer.py:
+    authors: mmochan
+  $modules/ec2_vpc_peering_info.py:
+    authors: Etherdaemon
+  $modules/ec2_vpc_route_table.py:
+    authors: erydo willthames wimnat
+  $modules/ec2_vpc_vpn.py:
+    authors: s-hertel
+    maintainers: jillr tremble
+  $modules/ec2_vpc_vpn_info.py:
+    authors: Madhura-CSI
+  $modules/ec2_win_password.py:
+    authors: rickmendes
+  $modules/ecs_attribute.py:
+    authors: anryko
+  $modules/ecs_cluster.py:
+    authors: Java1Guy
+  $modules/ecs_ecr.py:
+    authors: leedm777
+  $modules/ecs_service.py:
+    authors: Java1Guy kaczynskid simplesteph zacblazic
+    ignore: erydo nadirollo seiffert simplesteph
+  $modules/ecs_service_info.py:
+    authors: Java1Guy kaczynskid
+  $modules/ecs_tag.py:
+    authors: mpechner
+  $modules/ecs_taskdefinition_info.py:
+    authors: Java1Guy gurumaia kaczynskid
+  $modules/efs.py:
+    authors: akazakov ryansydnor
+  $modules/efs_info.py:
+    authors: ryansydnor
+  $modules/elasticache.py:
+    authors: jsdalton
+    maintainers: $team_aws alachaum
+    labels: elasticache
+  $modules/elasticache_info.py:
+    authors: willthames
+  $modules/elasticache_subnet_group.py:
+    authors: timmahoney
+  $modules/elb_classic_lb.py:
+    authors: jsdalton
+  $modules/elb_classic_lb_info.py:
+    authors: mjschultz nand0p
+  $modules/elb_instance.py:
+    authors: jarv
+  $modules/elb_target_info.py:
+    authors: yaakov-github
+  $modules/execute_lambda.py:
+    authors: ryansb
+    ignore: erydo nadirollo ryansb simplesteph
+  $modules/iam.py:
+    authors: defionscode seiffert
+    labels: iam
+    ignore: defionscode joshsouza ryansb seiffert tedder
+  $modules/iam_cert.py:
+    authors: defionscode
+    labels: iam_cert
+    ignore: defionscode joshsouza ryansb simplesteph
+  $modules/iam_group.py:
+    authors: infectsoldier naslanidis
+  $modules/iam_managed_policy.py:
+    authors: dkhenry
+  $modules/iam_mfa_device_info.py:
+    authors: pwnall
+  $modules/iam_password_policy.py:
+    authors: slapula
+  $modules/iam_policy.py:
+    authors: defionscode sbj-ss
+    labels: iam_policy
+    ignore: defionscode joshsouza ryansb simplesteph
+  $modules/iam_policy_info.py:
+    authors: tremble
+    maintainers: jillr s-hertel
+  $modules/iam_role_info.py:
+    authors: willthames
+  $modules/iam_saml_federation.py:
+    authors: aidan- axc450
+  $modules/iam_server_certificate_info.py:
+    authors: linuxdynasty
+  $modules/iam_user.py:
+    authors: joshsouza
+    ignore: erydo joshsouza ryansb simplesteph
+  $modules/iam_user_info.py:
+    authors: Akasurde Constantin07
+  $modules/kinesis_stream.py:
+    authors: linuxdynasty
+  $modules/lambda.py:
+    authors: steynovich
+  $modules/lambda_info.py:
+    authors: pjodouin
+  $modules/lambda_policy.py:
+    authors: mikedlr pjodouin
+  $modules/lightsail.py:
+    authors: nickball prasadkatti
+  $modules/rds.py:
+    authors: bpennypacker willthames
+    labels: rds
+    ignore: bpennypacker erydo nadirollo seiffert tedder
+  $modules/rds_instance.py:
+    authors: s-hertel
+    maintainers: jillr tremble
+  $modules/rds_instance_info.py:
+    authors: mikedlr willthames
+  $modules/rds_param_group.py:
+    authors: tastychutney willthames
+    maintainers: $team_aws scottanderson42
+    labels: rds_param_group
+  $modules/rds_snapshot.py:
+    authors: mikedlr willthames
+  $modules/rds_snapshot_info.py:
+    authors: willthames
+  $modules/rds_subnet_group.py:
+    authors: tastychutney
+    maintainers: $team_aws scottanderson42
+    labels: rds_subnet_group
+  $modules/redshift.py:
+    authors: j-carl rafaeldriutti
+  $modules/redshift_cross_region_snapshots.py:
+    authors: captainkerk
+  $modules/route53.py:
+    authors: bpennypacker jimbydamonk
+    labels: route53
+    ignore: bpennypacker erydo nadirollo seiffert tedder
+  $modules/route53_health_check.py:
+    authors: zimbatm
+  $modules/route53_info.py:
+    authors: Etherdaemon
+  $modules/route53_zone.py:
+    authors: minichate
+  $modules/s3_bucket_notification.py:
+    authors: aljazkosir miha-plesko xlab-si
+  $modules/s3_sync.py:
+    authors: tedder
+  $modules/sns.py:
+    authors: flowerysong mjschultz
+  $modules/sns_topic.py:
+    authors: joelthompson nand0p willthames
+  $modules/sqs_queue.py:
+    authors: loia nadirollo nand0p sbj-ss
+  $modules/sts_assume_role.py:
+    authors: bekelchik piontas
+  $modules/sts_session_token.py:
+    authors: pwnall
+macros:
+  connections: plugins/connection
+  modules: plugins/modules
+  team_aws: jillr s-hertel tremble
