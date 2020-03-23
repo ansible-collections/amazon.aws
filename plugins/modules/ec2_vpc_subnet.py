@@ -78,8 +78,8 @@ options:
     type: bool
     default: true
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -215,15 +215,15 @@ except ImportError:
     pass  # caught by AnsibleAWSModule
 
 from ansible.module_utils._text import to_text
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.waiters import get_waiter
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (ansible_dict_to_boto3_filter_list,
-                                                                         ansible_dict_to_boto3_tag_list,
-                                                                         camel_dict_to_snake_dict,
-                                                                         boto3_tag_list_to_ansible_dict,
-                                                                         compare_aws_tags,
-                                                                         AWSRetry,
-                                                                         )
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.waiters import get_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (ansible_dict_to_boto3_filter_list,
+                                                                     ansible_dict_to_boto3_tag_list,
+                                                                     camel_dict_to_snake_dict,
+                                                                     boto3_tag_list_to_ansible_dict,
+                                                                     compare_aws_tags,
+                                                                     AWSRetry,
+                                                                     )
 
 
 def get_subnet_info(subnet):

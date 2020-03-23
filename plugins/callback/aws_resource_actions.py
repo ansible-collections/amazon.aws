@@ -42,7 +42,7 @@ from ansible.module_utils._text import to_native
 class CallbackModule(CallbackBase):
     CALLBACK_VERSION = 2.8
     CALLBACK_TYPE = 'aggregate'
-    CALLBACK_NAME = 'ansible.amazon.aws_resource_actions'
+    CALLBACK_NAME = 'amazon.aws.aws_resource_actions'
     CALLBACK_NEEDS_WHITELIST = True
 
     def __init__(self):

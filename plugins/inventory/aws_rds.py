@@ -39,7 +39,7 @@ DOCUMENTATION = '''
     extends_documentation_fragment:
     - inventory_cache
     - constructed
-    - ansible.amazon.aws_credentials
+    - amazon.aws.aws_credentials
 
     requirements:
         - boto3
@@ -63,9 +63,9 @@ keyed_groups:
 
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_native
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import is_boto3_error_code
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list, boto3_tag_list_to_ansible_dict
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list, boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable, Cacheable
 
 try:
@@ -77,7 +77,7 @@ except ImportError:
 
 class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
-    NAME = 'ansible.amazon.aws_rds'
+    NAME = 'amazon.aws.aws_rds'
 
     def __init__(self):
         super(InventoryModule, self).__init__()

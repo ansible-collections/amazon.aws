@@ -29,7 +29,7 @@ boto3 = pytest.importorskip('boto3')
 botocore = pytest.importorskip('botocore')
 
 from ansible.errors import AnsibleError
-from ansible_collections.ansible.amazon.plugins.inventory.aws_ec2 import InventoryModule, instance_data_filter_to_boto_attr
+from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import InventoryModule, instance_data_filter_to_boto_attr
 
 instances = {
     u'Instances': [

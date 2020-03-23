@@ -203,8 +203,8 @@ options:
     type: bool
 
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 
 notes:
@@ -398,14 +398,14 @@ import itertools
 from copy import deepcopy
 from time import sleep
 from collections import namedtuple
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule, is_boto3_error_code
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.iam import get_aws_account_id
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.waiters import get_waiter
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import AWSRetry, camel_dict_to_snake_dict, compare_aws_tags
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (ansible_dict_to_boto3_filter_list,
-                                                                         boto3_tag_list_to_ansible_dict,
-                                                                         ansible_dict_to_boto3_tag_list,
-                                                                         )
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule, is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.aws.iam import get_aws_account_id
+from ansible_collections.amazon.aws.plugins.module_utils.aws.waiters import get_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry, camel_dict_to_snake_dict, compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (ansible_dict_to_boto3_filter_list,
+                                                                     boto3_tag_list_to_ansible_dict,
+                                                                     ansible_dict_to_boto3_tag_list,
+                                                                     )
 from ansible.module_utils.common.network import to_ipv6_subnet, to_subnet
 from ansible_collections.ansible.netcommon.plugins.module_utils.compat.ipaddress import ip_network, IPv6Network
 from ansible.module_utils._text import to_text

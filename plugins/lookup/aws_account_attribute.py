@@ -11,8 +11,8 @@ requirements:
   - boto3
   - botocore
 extends_documentation_fragment:
-- ansible.amazon.aws_credentials
-- ansible.amazon.aws_region
+- amazon.aws.aws_credentials
+- amazon.aws.aws_region
 
 short_description: Look up AWS account attributes.
 description:
@@ -62,7 +62,7 @@ except ImportError:
 
 from ansible.plugins import AnsiblePlugin
 from ansible.plugins.lookup import LookupBase
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import boto3_conn, get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn, get_aws_connection_info
 from ansible.module_utils._text import to_native
 from ansible.module_utils.six import string_types
 import os

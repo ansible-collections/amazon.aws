@@ -8,7 +8,7 @@ __metaclass__ = type
 
 import unittest
 
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import map_complex_type, compare_policies
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import map_complex_type, compare_policies
 
 
 class Ec2Utils(unittest.TestCase):

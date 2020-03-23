@@ -92,7 +92,7 @@ git clone https://github.com/ansible-collection-migration/ansible.netcommon ansi
 cd "${cwd}"
 
 export ANSIBLE_COLLECTIONS_PATHS="${HOME}/.ansible/"
-TEST_DIR="${HOME}/.ansible/ansible_collections/ansible/amazon/"
+TEST_DIR="${HOME}/.ansible/ansible_collections/amazon/aws/"
 mkdir -p "${TEST_DIR}"
 cp -aT "${SHIPPABLE_BUILD_DIR}" "${TEST_DIR}"
 cd "${TEST_DIR}"

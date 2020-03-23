@@ -86,8 +86,8 @@ requirements:
     - boto3
     - botocore
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -200,13 +200,13 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from time import sleep, time
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (AWSRetry,
-                                                                         camel_dict_to_snake_dict,
-                                                                         compare_aws_tags,
-                                                                         ansible_dict_to_boto3_tag_list,
-                                                                         boto3_tag_list_to_ansible_dict,
-                                                                         )
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (AWSRetry,
+                                                                     camel_dict_to_snake_dict,
+                                                                     compare_aws_tags,
+                                                                     ansible_dict_to_boto3_tag_list,
+                                                                     boto3_tag_list_to_ansible_dict,
+                                                                     )
 from ansible.module_utils.six import string_types
 from ansible.module_utils._text import to_native
 from ansible.module_utils.common.network import to_subnet

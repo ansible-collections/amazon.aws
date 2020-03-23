@@ -5,10 +5,10 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 # Ansible imports
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import camel_dict_to_snake_dict, get_ec2_security_group_ids_from_names, \
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, get_ec2_security_group_ids_from_names, \
     ansible_dict_to_boto3_tag_list, boto3_tag_list_to_ansible_dict, compare_policies as compare_dicts, \
     AWSRetry
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.elb_utils import get_elb, get_elb_listener, convert_tg_name_to_arn
+from ansible_collections.amazon.aws.plugins.module_utils.aws.elb_utils import get_elb, get_elb_listener, convert_tg_name_to_arn
 
 # Non-ansible imports
 try:

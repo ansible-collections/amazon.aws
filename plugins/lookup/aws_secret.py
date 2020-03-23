@@ -12,8 +12,8 @@ requirements:
   - boto3
   - botocore>=1.10.0
 extends_documentation_fragment:
-- ansible.amazon.aws_credentials
-- ansible.amazon.aws_region
+- amazon.aws.aws_credentials
+- amazon.aws.aws_region
 
 short_description: Look up secrets stored in AWS Secrets Manager.
 description:

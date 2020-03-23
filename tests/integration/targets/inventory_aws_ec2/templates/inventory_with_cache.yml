@@ -1,4 +1,4 @@
-plugin: ansible.amazon.aws_ec2
+plugin: amazon.aws.aws_ec2
 cache: True
 cache_plugin: community.general.jsonfile
 cache_connection: aws_ec2_cache_dir
