@@ -73,7 +73,7 @@ set +ux
 . ~/ansible-venv/bin/activate
 set -ux
 
-pip install git+https://github.com/ansible-collection-migration/ansible-base
+pip install git+https://github.com/ansible/ansible@devel
 
 #ansible-galaxy collection install community.general
 mkdir -p "${HOME}/.ansible/ansible_collections/community"
