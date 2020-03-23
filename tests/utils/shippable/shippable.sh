@@ -73,7 +73,7 @@ set +ux
 . ~/ansible-venv/bin/activate
 set -ux
 
-pip install git+https://github.com/ansible/ansible@devel
+pip install https://github.com/ansible/ansible/archive/devel.tar.gz --disable-pip-version-check
 
 #ansible-galaxy collection install community.general
 mkdir -p "${HOME}/.ansible/ansible_collections/community"
