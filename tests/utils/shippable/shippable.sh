@@ -83,7 +83,13 @@ mkdir -p "${HOME}/.ansible/ansible_collections/openstack"
 cwd=$(pwd)
 cd "${HOME}/.ansible/ansible_collections/"
 git clone https://github.com/ansible-collections/community.general community/general
-git clone https://github.com/ansible-collection-migration/community.amazon community/amazon
+git clone https://github.com/ansible-collections/community.amazon community/amazon
+# We need ec2_instance and other dependencies to be able to import from the new collection 
+# name, so this PR can pass CI
+cd community/amazon
+git checkout -b jillr-rename_core_collection master
+git pull https://github.com/jillr/community.amazon.git rename_core_collection
+cd -
 # community.general requires a lot of things we need to manual pull in
 # once community.general is published this will be handled by galaxy cli
 git clone https://github.com/ansible-collection-migration/google.cloud google/cloud
