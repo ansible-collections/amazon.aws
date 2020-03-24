@@ -73,6 +73,7 @@ set +ux
 . ~/ansible-venv/bin/activate
 set -ux
 
+pip install setuptools==44.1.0
 pip install https://github.com/ansible/ansible/archive/devel.tar.gz --disable-pip-version-check
 
 #ansible-galaxy collection install community.general
