@@ -80,8 +80,8 @@ options:
     default: present
 author: Mike Mochan (@mmochan)
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 requirements: [ botocore, boto3, json ]
 '''
@@ -159,8 +159,8 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 # VPC-supported IANA protocol numbers
 # http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
