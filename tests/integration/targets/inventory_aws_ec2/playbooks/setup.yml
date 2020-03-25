@@ -7,7 +7,7 @@
       region: '{{ aws_region }}'
   no_log: yes
   collections:
-    - community.amazon
+    - community.aws
 
 - name: get image ID to create an instance
   ec2_ami_info:

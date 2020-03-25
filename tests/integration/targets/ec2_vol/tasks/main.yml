@@ -8,7 +8,7 @@
       region: '{{ aws_region | default(omit) }}'
 
   collections:
-    - community.amazon
+    - community.aws
 
   block:
 

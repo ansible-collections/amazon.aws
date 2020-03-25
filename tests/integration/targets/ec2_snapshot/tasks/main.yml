@@ -21,7 +21,7 @@
       region: "{{ aws_region }}"
 
   collections:
-    - community.amazon
+    - community.aws
 
 
   block:
