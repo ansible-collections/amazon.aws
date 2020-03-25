@@ -18,8 +18,8 @@ description:
   - This module creates, modifies, and deletes VPN connections. Idempotence is achieved by using the filters
     option or specifying the VPN connection identifier.
 extends_documentation_fragment:
-- ansible.amazon.ec2
-- ansible.amazon.aws
+- amazon.aws.ec2
+- amazon.aws.aws
 
 requirements: ['boto3', 'botocore']
 author: "Sloane Hertel (@s-hertel)"
@@ -300,9 +300,9 @@ vpn_connection_id:
     vpn_connection_id: vpn-781e0e19
 """
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible.module_utils._text import to_text
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
     camel_dict_to_snake_dict,
     boto3_tag_list_to_ansible_dict,
     compare_aws_tags,
