@@ -30,8 +30,8 @@ author:
   - Will Thames (@willthames)
 
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 
 options:
@@ -1376,11 +1376,11 @@ web_acl_id:
 '''
 
 from ansible.module_utils._text import to_text, to_native
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.cloudfront_facts import CloudFrontFactsServiceManager
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.cloudfront_facts import CloudFrontFactsServiceManager
 from ansible.module_utils.common.dict_transformations import recursive_diff
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import compare_aws_tags, ansible_dict_to_boto3_tag_list, boto3_tag_list_to_ansible_dict
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import camel_dict_to_snake_dict, snake_dict_to_camel_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags, ansible_dict_to_boto3_tag_list, boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, snake_dict_to_camel_dict
 import datetime
 
 try:

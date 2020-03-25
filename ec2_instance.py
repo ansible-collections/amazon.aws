@@ -278,8 +278,8 @@ options:
     type: str
 
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -811,16 +811,16 @@ except ImportError:
 from ansible.module_utils.six import text_type, string_types
 from ansible.module_utils.six.moves.urllib import parse as urlparse
 from ansible.module_utils._text import to_bytes, to_native
-import ansible_collections.ansible.amazon.plugins.module_utils.ec2 as ec2_utils
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (AWSRetry,
-                                                                         ansible_dict_to_boto3_filter_list,
-                                                                         compare_aws_tags,
-                                                                         boto3_tag_list_to_ansible_dict,
-                                                                         ansible_dict_to_boto3_tag_list,
-                                                                         camel_dict_to_snake_dict,
-                                                                         )
+import ansible_collections.amazon.aws.plugins.module_utils.ec2 as ec2_utils
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (AWSRetry,
+                                                                     ansible_dict_to_boto3_filter_list,
+                                                                     compare_aws_tags,
+                                                                     boto3_tag_list_to_ansible_dict,
+                                                                     ansible_dict_to_boto3_tag_list,
+                                                                     camel_dict_to_snake_dict,
+                                                                     )
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 
 module = None
 

@@ -79,8 +79,8 @@ options:
     - Required when I(state=present) or I(lookup=tag).
     type: str
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -229,12 +229,12 @@ route_table:
 
 import re
 from time import sleep
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.waiters import get_waiter
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import camel_dict_to_snake_dict, snake_dict_to_camel_dict
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list, boto3_tag_list_to_ansible_dict
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import compare_aws_tags, AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.waiters import get_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, snake_dict_to_camel_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list, boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags, AWSRetry
 
 
 try:

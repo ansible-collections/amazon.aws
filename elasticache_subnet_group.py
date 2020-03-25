@@ -40,8 +40,8 @@ options:
     elements: str
 author: "Tim Mahoney (@timmahoney)"
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -70,7 +70,7 @@ except ImportError:
     HAS_BOTO = False
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import HAS_BOTO, ec2_argument_spec, get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO, ec2_argument_spec, get_aws_connection_info
 
 
 def main():

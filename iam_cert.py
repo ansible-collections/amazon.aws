@@ -81,8 +81,8 @@ options:
 requirements: [ "boto" ]
 author: Jonathan I. Davila (@defionscode)
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -120,7 +120,7 @@ EXAMPLES = '''
 
 '''
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import ec2_argument_spec, get_aws_connection_info, connect_to_aws
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ec2_argument_spec, get_aws_connection_info, connect_to_aws
 import os
 
 try:

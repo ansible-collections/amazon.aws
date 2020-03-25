@@ -123,8 +123,8 @@ options:
       - The I(requester_pays) option does nothing and will be removed in Ansible 2.14.
     type: bool
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -208,7 +208,7 @@ try:
 except ImportError:
     pass  # handled by AnsibleAwsModule
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 
 
 def create_lifecycle_rule(client, module):

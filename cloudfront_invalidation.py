@@ -26,8 +26,8 @@ requirements:
 author: Willem van Ketwich (@wilvk)
 
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 
 options:
@@ -138,10 +138,10 @@ location:
   sample: https://cloudfront.amazonaws.com/2017-03-25/distribution/E1ZID6KZJECZY7/invalidation/I2G9MOWJZFV622
 '''
 
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import snake_dict_to_camel_dict
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.cloudfront_facts import CloudFrontFactsServiceManager
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.cloudfront_facts import CloudFrontFactsServiceManager
 import datetime
 
 try:

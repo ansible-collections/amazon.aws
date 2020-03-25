@@ -71,8 +71,8 @@ author:
 - Amir Moulavi (@amir343) <amir.moulavi@gmail.com>
 - Tim C (@defunctio) <defunct@defunct.io>
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 requirements:
     - boto3
@@ -136,8 +136,8 @@ image_id:
   sample: ami-e689729e
 '''
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import camel_dict_to_snake_dict, ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, ansible_dict_to_boto3_tag_list
 from ansible.module_utils._text import to_native
 
 try:

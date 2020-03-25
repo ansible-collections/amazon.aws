@@ -20,8 +20,8 @@ description:
   - Returns information about the specified cache cluster.
 author: "Sloane Hertel (@s-hertel)"
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 requirements: [ boto3, botocore ]
 options:
@@ -111,7 +111,7 @@ changed:
 
 # import module snippets
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import boto3_conn, get_aws_connection_info, ec2_argument_spec, camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn, get_aws_connection_info, ec2_argument_spec, camel_dict_to_snake_dict
 from ansible.module_utils._text import to_text
 from ansible.module_utils.six import string_types
 import traceback

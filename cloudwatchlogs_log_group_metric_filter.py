@@ -63,8 +63,8 @@ options:
             - The value to emit when a filter pattern does not match a log event.
           type: float
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -99,8 +99,8 @@ metric_filters:
         log_group_name:
         metric_filter_count:
 """
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule, is_boto3_error_code, get_boto3_client_method_parameters
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule, is_boto3_error_code, get_boto3_client_method_parameters
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 try:
     from botocore.exceptions import ClientError, BotoCoreError, WaiterError

@@ -41,8 +41,8 @@ options:
     choices: [ 'cluster', 'spread' ]
     type: str
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -90,8 +90,8 @@ placement_group:
 
 '''
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 try:
     from botocore.exceptions import (BotoCoreError, ClientError)
 except ImportError:

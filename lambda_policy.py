@@ -102,8 +102,8 @@ options:
 requirements:
     - boto3
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -143,7 +143,7 @@ lambda_policy_action:
 import json
 import re
 from ansible.module_utils._text import to_native
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 
 try:
     from botocore.exceptions import ClientError

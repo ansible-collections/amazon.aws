@@ -137,7 +137,7 @@ author:
 - Bruce Pennypacker (@bpennypacker)
 - Mike Buzzetti (@jimbydamonk)
 extends_documentation_fragment:
-- ansible.amazon.aws
+- amazon.aws.aws
 
 '''
 
@@ -378,7 +378,7 @@ except ImportError:
     HAS_BOTO = False
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import ec2_argument_spec, get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ec2_argument_spec, get_aws_connection_info
 
 
 MINIMUM_BOTO_VERSION = '2.28.0'

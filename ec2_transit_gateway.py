@@ -87,8 +87,8 @@ options:
 
 author: "Bob Boldin (@BobBoldin)"
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -230,10 +230,10 @@ except Exception:
     pass
     # handled by imported AnsibleAWSModule
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from time import sleep, time
 from ansible.module_utils._text import to_text
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
     ansible_dict_to_boto3_tag_list,
     ansible_dict_to_boto3_filter_list,
     AWSRetry,

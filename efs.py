@@ -105,8 +105,8 @@ options:
         type: int
 
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -238,12 +238,12 @@ try:
 except ImportError as e:
     pass  # Handled by AnsibleAWSModule
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (compare_aws_tags,
-                                                                         camel_dict_to_snake_dict,
-                                                                         ansible_dict_to_boto3_tag_list,
-                                                                         boto3_tag_list_to_ansible_dict,
-                                                                         )
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (compare_aws_tags,
+                                                                     camel_dict_to_snake_dict,
+                                                                     ansible_dict_to_boto3_tag_list,
+                                                                     boto3_tag_list_to_ansible_dict,
+                                                                     )
 
 
 def _index_by_key(key, items):

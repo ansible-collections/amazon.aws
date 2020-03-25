@@ -29,8 +29,8 @@ requirements:
 author: Willem van Ketwich (@wilvk)
 
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 
 options:
@@ -122,9 +122,9 @@ location:
 
 '''
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.cloudfront_facts import CloudFrontFactsServiceManager
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.cloudfront_facts import CloudFrontFactsServiceManager
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 import datetime
 from functools import partial
 import json

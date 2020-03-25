@@ -58,8 +58,8 @@ options:
     type: int
 requirements: [ "botocore", "boto3" ]
 extends_documentation_fragment:
-- ansible.amazon.ec2
-- ansible.amazon.aws
+- amazon.aws.ec2
+- amazon.aws.aws
 
 '''
 
@@ -91,7 +91,7 @@ EXAMPLES = '''
 
 RETURN = ''' # '''
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 
 
 class SnapshotController(object):

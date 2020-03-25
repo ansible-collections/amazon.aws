@@ -173,8 +173,8 @@ options:
 
 author: "Ryan Scott Brown (@ryansb)"
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 requirements: [ boto3>=1.6, botocore>=1.10.26 ]
 '''
@@ -312,12 +312,12 @@ except ImportError:
     # handled by AnsibleAWSModule
     pass
 
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (AWSRetry,
-                                                                         boto3_tag_list_to_ansible_dict,
-                                                                         ansible_dict_to_boto3_tag_list,
-                                                                         camel_dict_to_snake_dict,
-                                                                         )
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule, is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (AWSRetry,
+                                                                     boto3_tag_list_to_ansible_dict,
+                                                                     ansible_dict_to_boto3_tag_list,
+                                                                     camel_dict_to_snake_dict,
+                                                                     )
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule, is_boto3_error_code
 from ansible.module_utils._text import to_native
 
 

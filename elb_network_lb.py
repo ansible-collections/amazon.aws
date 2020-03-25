@@ -127,8 +127,8 @@ options:
       - The duration in seconds to wait, used in conjunction with I(wait).
     type: int
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 notes:
   - Listeners are matched based on port. If a listener's port is changed then a new listener will be created.
@@ -308,9 +308,9 @@ vpc_id:
     sample: vpc-0011223344
 '''
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import camel_dict_to_snake_dict, boto3_tag_list_to_ansible_dict, compare_aws_tags
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.elbv2 import NetworkLoadBalancer, ELBListeners, ELBListener
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, boto3_tag_list_to_ansible_dict, compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.aws.elbv2 import NetworkLoadBalancer, ELBListeners, ELBListener
 
 
 def create_or_update_elb(elb_obj):

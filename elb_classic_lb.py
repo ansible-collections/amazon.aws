@@ -132,8 +132,8 @@ options:
     type: dict
 
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -375,7 +375,7 @@ except ImportError:
     HAS_BOTO = False
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import ec2_argument_spec, connect_to_aws, AnsibleAWSError, get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ec2_argument_spec, connect_to_aws, AnsibleAWSError, get_aws_connection_info
 from ansible.module_utils.six import string_types
 from ansible.module_utils._text import to_native
 

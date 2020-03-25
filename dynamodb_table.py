@@ -120,8 +120,8 @@ options:
     default: 60
     type: int
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -200,13 +200,13 @@ except ImportError:
 
 try:
     import botocore
-    from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list, boto3_conn
+    from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list, boto3_conn
     HAS_BOTO3 = True
 except ImportError:
     HAS_BOTO3 = False
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import AnsibleAWSError, connect_to_aws, ec2_argument_spec, get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleAWSError, connect_to_aws, ec2_argument_spec, get_aws_connection_info
 
 
 DYNAMO_TYPE_DEFAULT = 'STRING'
