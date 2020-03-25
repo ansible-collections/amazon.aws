@@ -169,7 +169,7 @@ from boto import route53
 from boto import sts
 
 from ansible.module_utils import six
-from ansible_collections.ansible.amazon.plugins.module_utils import ec2 as ec2_utils
+from ansible_collections.amazon.aws.plugins.module_utils import ec2 as ec2_utils
 from ansible.module_utils.six.moves import configparser
 
 HAS_BOTO3 = False

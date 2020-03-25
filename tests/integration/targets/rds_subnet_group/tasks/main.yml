@@ -13,7 +13,7 @@
       security_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region }}'
   collections:
-    - ansible.amazon
+    - amazon.aws
   block:
 
   # ============================================================

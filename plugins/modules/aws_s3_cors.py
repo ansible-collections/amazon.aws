@@ -34,8 +34,8 @@ options:
     choices: [ 'present', 'absent' ]
     type: str
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -101,8 +101,8 @@ try:
 except Exception:
     pass  # Handled by AnsibleAWSModule
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import snake_dict_to_camel_dict, compare_policies
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict, compare_policies
 
 
 def create_or_update_bucket_cors(connection, module):

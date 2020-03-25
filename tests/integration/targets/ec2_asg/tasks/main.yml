@@ -3,7 +3,7 @@
 
 - name: Test incomplete credentials with ec2_asg
   collections:
-    - ansible.amazon
+    - amazon.aws
 
   block:
 
@@ -80,7 +80,7 @@
       region: "{{ aws_region }}"
 
   collections:
-    - ansible.amazon
+    - amazon.aws
 
   block:
 

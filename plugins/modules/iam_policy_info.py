@@ -38,8 +38,8 @@ author:
     - Mark Chappell (@tremble)
 
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -87,7 +87,7 @@ try:
 except ImportError:
     pass
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible.module_utils.six import string_types
 
 

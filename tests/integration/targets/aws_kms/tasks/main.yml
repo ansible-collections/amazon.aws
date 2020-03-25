@@ -5,7 +5,7 @@
         aws_secret_key: "{{ aws_secret_key }}"
         security_token: "{{ security_token | default(omit) }}"
   collections:
-    - ansible.amazon
+    - amazon.aws
 
   block:
     # ============================================================

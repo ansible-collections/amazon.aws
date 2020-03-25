@@ -31,8 +31,8 @@ options:
     default: False
     type: bool
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -219,9 +219,9 @@ keys:
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import boto3_conn, ec2_argument_spec, get_aws_connection_info
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import AWSRetry, camel_dict_to_snake_dict, HAS_BOTO3
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn, ec2_argument_spec, get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry, camel_dict_to_snake_dict, HAS_BOTO3
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 import traceback
 

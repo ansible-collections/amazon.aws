@@ -1,7 +1,7 @@
 - name: Integration testing for ec2_snapshot
   collections:
     - community.general
-    - ansible.amazon
+    - amazon.aws
 
   block:
   - name: set up AWS credentials

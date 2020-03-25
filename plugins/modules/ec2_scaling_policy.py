@@ -53,8 +53,8 @@ options:
       - The minimum period of time (in seconds) between which autoscaling actions can take place.
     type: int
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -79,12 +79,12 @@ except ImportError:
     pass  # Taken care of by ec2.HAS_BOTO
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (AnsibleAWSError,
-                                                                         HAS_BOTO,
-                                                                         connect_to_aws,
-                                                                         ec2_argument_spec,
-                                                                         get_aws_connection_info,
-                                                                         )
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (AnsibleAWSError,
+                                                                     HAS_BOTO,
+                                                                     connect_to_aws,
+                                                                     ec2_argument_spec,
+                                                                     get_aws_connection_info,
+                                                                     )
 
 
 def create_scaling_policy(connection, module):

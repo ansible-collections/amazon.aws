@@ -38,7 +38,7 @@
     cloudtrail:
       s3_bucket_name: '{{ s3_bucket_name }}'
   collections:
-    - ansible.amazon
+    - amazon.aws
   block:
 
   # ============================================================

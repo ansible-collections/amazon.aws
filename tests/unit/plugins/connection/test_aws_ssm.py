@@ -7,13 +7,13 @@ import pytest
 import sys
 from ansible import constants as C
 from ansible.compat.selectors import SelectorKey, EVENT_READ
-from ansible_collections.community.amazon.tests.unit.compat import unittest
-from ansible_collections.community.amazon.tests.unit.compat.mock import patch, MagicMock, PropertyMock
+from ansible_collections.community.aws.tests.unit.compat import unittest
+from ansible_collections.community.aws.tests.unit.compat.mock import patch, MagicMock, PropertyMock
 from ansible.errors import AnsibleError, AnsibleConnectionFailure, AnsibleFileNotFound
 from ansible.module_utils.six.moves import shlex_quote
 from ansible.module_utils._text import to_bytes
 from ansible.playbook.play_context import PlayContext
-from ansible_collections.community.amazon.plugins.connection import aws_ssm
+from ansible_collections.community.aws.plugins.connection import aws_ssm
 from ansible.plugins.loader import connection_loader
 
 
@@ -27,7 +27,7 @@ class TestConnectionBaseClass(unittest.TestCase):
     def test_plugins_connection_aws_ssm_start_session(self, boto_client, s_poll, s_popen, mock_ospe):
         pc = PlayContext()
         new_stdin = StringIO()
-        conn = connection_loader.get('community.amazon.aws_ssm', pc, new_stdin)
+        conn = connection_loader.get('community.aws.aws_ssm', pc, new_stdin)
         conn.get_option = MagicMock()
         conn.get_option.side_effect = ['i1234', 'executable', 'abcd', 'i1234']
         conn.host = 'abc'
@@ -51,7 +51,7 @@ class TestConnectionBaseClass(unittest.TestCase):
     def test_plugins_connection_aws_ssm_exec_command(self, r_choice):
         pc = PlayContext()
         new_stdin = StringIO()
-        conn = connection_loader.get('community.amazon.aws_ssm', pc, new_stdin)
+        conn = connection_loader.get('community.aws.aws_ssm', pc, new_stdin)
         r_choice.side_effect = ['a', 'a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'b']
         conn.MARK_LENGTH = 5
         conn._session = MagicMock()
@@ -87,14 +87,14 @@ class TestConnectionBaseClass(unittest.TestCase):
     def test_plugins_connection_aws_ssm_prepare_terminal(self):
         pc = PlayContext()
         new_stdin = StringIO()
-        conn = connection_loader.get('community.amazon.aws_ssm', pc, new_stdin)
+        conn = connection_loader.get('community.aws.aws_ssm', pc, new_stdin)
         conn.is_windows = MagicMock()
         conn.is_windows.return_value = True
 
     def test_plugins_connection_aws_ssm_wrap_command(self):
         pc = PlayContext()
         new_stdin = StringIO()
-        conn = connection_loader.get('community.amazon.aws_ssm', pc, new_stdin)
+        conn = connection_loader.get('community.aws.aws_ssm', pc, new_stdin)
         conn.is_windows = MagicMock()
         conn.is_windows.return_value = True
         return('windows1')
@@ -102,7 +102,7 @@ class TestConnectionBaseClass(unittest.TestCase):
     def test_plugins_connection_aws_ssm_post_process(self):
         pc = PlayContext()
         new_stdin = StringIO()
-        conn = connection_loader.get('community.amazon.aws_ssm', pc, new_stdin)
+        conn = connection_loader.get('community.aws.aws_ssm', pc, new_stdin)
         conn.is_windows = MagicMock()
         conn.is_windows.return_value = True
         success = 3
@@ -115,7 +115,7 @@ class TestConnectionBaseClass(unittest.TestCase):
     def test_plugins_connection_aws_ssm_flush_stderr(self, s_popen):
         pc = PlayContext()
         new_stdin = StringIO()
-        conn = connection_loader.get('community.amazon.aws_ssm', pc, new_stdin)
+        conn = connection_loader.get('community.aws.aws_ssm', pc, new_stdin)
         conn.poll_stderr = MagicMock()
         conn.poll_stderr.register = MagicMock()
         conn.stderr = None
@@ -126,7 +126,7 @@ class TestConnectionBaseClass(unittest.TestCase):
     def test_plugins_connection_aws_ssm_get_url(self, boto):
         pc = PlayContext()
         new_stdin = StringIO()
-        conn = connection_loader.get('community.amazon.aws_ssm', pc, new_stdin)
+        conn = connection_loader.get('community.aws.aws_ssm', pc, new_stdin)
         boto3 = MagicMock()
         boto3.client('s3').return_value = MagicMock()
         boto3.generate_presigned_url.return_value = MagicMock()
@@ -136,7 +136,7 @@ class TestConnectionBaseClass(unittest.TestCase):
     def test_plugins_connection_aws_ssm_put_file(self, mock_ospe):
         pc = PlayContext()
         new_stdin = StringIO()
-        conn = connection_loader.get('community.amazon.aws_ssm', pc, new_stdin)
+        conn = connection_loader.get('community.aws.aws_ssm', pc, new_stdin)
         conn._connect = MagicMock()
         conn._file_transport_command = MagicMock()
         conn._file_transport_command.return_value = (0, 'stdout', 'stderr')
@@ -145,7 +145,7 @@ class TestConnectionBaseClass(unittest.TestCase):
     def test_plugins_connection_aws_ssm_fetch_file(self):
         pc = PlayContext()
         new_stdin = StringIO()
-        conn = connection_loader.get('community.amazon.aws_ssm', pc, new_stdin)
+        conn = connection_loader.get('community.aws.aws_ssm', pc, new_stdin)
         conn._connect = MagicMock()
         conn._file_transport_command = MagicMock()
         conn._file_transport_command.return_value = (0, 'stdout', 'stderr')
@@ -156,7 +156,7 @@ class TestConnectionBaseClass(unittest.TestCase):
     def test_plugins_connection_file_transport_command(self, boto_client, s_check_output):
         pc = PlayContext()
         new_stdin = StringIO()
-        conn = connection_loader.get('community.amazon.aws_ssm', pc, new_stdin)
+        conn = connection_loader.get('community.aws.aws_ssm', pc, new_stdin)
         conn.get_option = MagicMock()
         conn.get_option.side_effect = ['1', '2', '3', '4', '5']
         conn._get_url = MagicMock()
@@ -178,7 +178,7 @@ class TestConnectionBaseClass(unittest.TestCase):
     def test_plugins_connection_aws_ssm_close(self, s_check_output):
         pc = PlayContext()
         new_stdin = StringIO()
-        conn = connection_loader.get('community.amazon.aws_ssm', pc, new_stdin)
+        conn = connection_loader.get('community.aws.aws_ssm', pc, new_stdin)
         conn.instance_id = "i-12345"
         conn._session_id = True
         conn.get_option = MagicMock()

@@ -1,6 +1,6 @@
 - name: aws_waf_condition tests
   collections:
-    - ansible.amazon
+    - amazon.aws
   block:
   - name: set yaml anchor
     set_fact:

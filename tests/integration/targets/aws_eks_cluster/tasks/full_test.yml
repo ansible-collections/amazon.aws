@@ -2,7 +2,7 @@
 # tasks file for aws_eks modules
 - name: aws_eks_cluster tests
   collections:
-    - ansible.amazon
+    - amazon.aws
   block:
     # If us-west-1 does become supported, change this test to use an unsupported region
     # or if all regions are supported, delete this test

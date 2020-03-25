@@ -2,7 +2,7 @@
 # tasks file for ecs_cluster
 - name: ecs_cluster tests
   collections:
-    - ansible.amazon
+    - amazon.aws
 
   block:
     # ============================================================

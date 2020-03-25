@@ -11,7 +11,7 @@
 
 - name: dms_replication_subnet_group tests
   collections:
-    - ansible.amazon
+    - amazon.aws
   block:
 
     - name: ensure IAM role exists

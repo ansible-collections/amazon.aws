@@ -8,7 +8,7 @@ import unittest
 boto3 = pytest.importorskip("boto3")
 botocore = pytest.importorskip("botocore")
 
-from ansible_collections.community.amazon.plugins.modules import kinesis_stream
+from ansible_collections.community.aws.plugins.modules import kinesis_stream
 
 aws_region = 'us-west-2'
 

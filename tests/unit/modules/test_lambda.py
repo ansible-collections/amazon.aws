@@ -11,16 +11,16 @@ __metaclass__ = type
 import copy
 import pytest
 
-from ansible_collections.community.amazon.tests.unit.compat.mock import MagicMock, Mock, patch
+from ansible_collections.community.aws.tests.unit.compat.mock import MagicMock, Mock, patch
 from ansible.module_utils import basic
-from ansible_collections.community.amazon.tests.unit.modules.utils import set_module_args
+from ansible_collections.community.aws.tests.unit.modules.utils import set_module_args
 
 
 boto3 = pytest.importorskip("boto3")
 
 # lambda is a keyword so we have to hack this.
-_temp = __import__('ansible_collections.community.amazon.plugins.modules.lambda')
-lda = getattr(_temp.community.amazon.plugins.modules, "lambda")
+_temp = __import__('ansible_collections.community.aws.plugins.modules.lambda')
+lda = getattr(_temp.community.aws.plugins.modules, "lambda")
 
 
 base_lambda_config = {

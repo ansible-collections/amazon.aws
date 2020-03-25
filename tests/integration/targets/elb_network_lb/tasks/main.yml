@@ -1,6 +1,6 @@
 - name: elb_network_lb tests
   collections:
-    - ansible.amazon
+    - amazon.aws
 
   block:
 

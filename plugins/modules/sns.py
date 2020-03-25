@@ -83,8 +83,8 @@ options:
     choices: ['json', 'string']
     type: str
 extends_documentation_fragment:
-- ansible.amazon.ec2
-- ansible.amazon.aws
+- amazon.aws.ec2
+- amazon.aws.aws
 
 requirements:
   - boto3
@@ -142,7 +142,7 @@ try:
 except ImportError:
     pass    # Handled by AnsibleAWSModule
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 
 
 def arn_topic_lookup(module, client, short_topic):

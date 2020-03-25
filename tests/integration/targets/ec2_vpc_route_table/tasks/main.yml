@@ -1,6 +1,6 @@
 - name: ec2_vpc_net tests
   collections:
-    - ansible.amazon
+    - amazon.aws
 
   block:
 

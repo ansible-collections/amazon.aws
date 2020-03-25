@@ -4,11 +4,11 @@ __metaclass__ = type
 
 import pytest
 
-from ansible_collections.community.amazon.tests.unit.compat.mock import MagicMock, patch
-from ansible_collections.community.amazon.tests.unit.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
+from ansible_collections.community.aws.tests.unit.compat.mock import MagicMock, patch
+from ansible_collections.community.aws.tests.unit.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
-from ansible_collections.community.amazon.plugins.modules.s3_bucket_notification import AmazonBucket, Config
-from ansible_collections.community.amazon.plugins.modules import s3_bucket_notification
+from ansible_collections.community.aws.plugins.modules.s3_bucket_notification import AmazonBucket, Config
+from ansible_collections.community.aws.plugins.modules import s3_bucket_notification
 try:
     from botocore.exceptions import ClientError
 except ImportError:
@@ -220,7 +220,7 @@ class TestModule(ModuleTestCase):
             set_module_args({})
             s3_bucket_notification.main()
 
-    @patch('ansible_collections.community.amazon.plugins.modules.s3_bucket_notification.AnsibleAWSModule.client')
+    @patch('ansible_collections.community.aws.plugins.modules.s3_bucket_notification.AnsibleAWSModule.client')
     def test_add_s3_bucket_notification(self, aws_client):
         aws_client.return_value.get_bucket_notification_configuration.return_value = {
             'LambdaFunctionConfigurations': []

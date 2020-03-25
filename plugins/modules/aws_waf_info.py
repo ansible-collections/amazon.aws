@@ -31,8 +31,8 @@ author:
   - Mike Mochan (@mmochan)
   - Will Thames (@willthames)
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -118,8 +118,8 @@ wafs:
             ]
 '''
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.waf import list_web_acls, get_web_acl
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.waf import list_web_acls, get_web_acl
 
 
 def main():

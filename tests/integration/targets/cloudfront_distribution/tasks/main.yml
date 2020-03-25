@@ -7,7 +7,7 @@
       alias: "{{ cloudfront_alias | default(omit) }}"
       viewer_certificate: "{{ cloudfront_viewer_cert | default(omit) }}"
   collections:
-    - ansible.amazon
+    - amazon.aws
 
   block:
 

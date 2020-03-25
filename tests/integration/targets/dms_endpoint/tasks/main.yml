@@ -11,7 +11,7 @@
 
 - name: dms_endpoint tests
   collections:
-    - ansible.amazon
+    - amazon.aws
   block:
     - name: create endpoints
       dms_endpoint:

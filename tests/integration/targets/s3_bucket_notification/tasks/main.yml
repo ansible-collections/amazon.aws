@@ -8,7 +8,7 @@
   no_log: true
 - name: test add s3 bucket notification
   collections:
-    - ansible.amazon
+    - amazon.aws
     - community.general
   block:
   - name: move lambda into place for archive module

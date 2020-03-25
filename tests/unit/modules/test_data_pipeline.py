@@ -12,9 +12,9 @@ import json
 import collections
 
 import pytest
-from ansible_collections.community.amazon.tests.unit.utils.amazon_placebo_fixtures import placeboify, maybe_sleep
+from ansible_collections.community.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify, maybe_sleep
 
-from ansible_collections.community.amazon.plugins.modules import data_pipeline
+from ansible_collections.community.aws.plugins.modules import data_pipeline
 from ansible.module_utils._text import to_text
 
 # test_api_gateway.py requires the `boto3` and `botocore` modules

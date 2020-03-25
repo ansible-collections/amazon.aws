@@ -18,8 +18,8 @@ description:
   - Create, delete, or modify a Direct Connect link aggregation group.
 author: "Sloane Hertel (@s-hertel)"
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 requirements:
   - boto3
@@ -164,19 +164,19 @@ region:
   returned: when I(state=present)
 """
 
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (camel_dict_to_snake_dict,
-                                                                         ec2_argument_spec,
-                                                                         HAS_BOTO3,
-                                                                         get_aws_connection_info,
-                                                                         boto3_conn,
-                                                                         AWSRetry,
-                                                                         )
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (camel_dict_to_snake_dict,
+                                                                     ec2_argument_spec,
+                                                                     HAS_BOTO3,
+                                                                     get_aws_connection_info,
+                                                                     boto3_conn,
+                                                                     AWSRetry,
+                                                                     )
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.direct_connect import (DirectConnectError,
-                                                                                        delete_connection,
-                                                                                        delete_virtual_interface,
-                                                                                        disassociate_connection_and_lag,
-                                                                                        )
+from ansible_collections.amazon.aws.plugins.module_utils.aws.direct_connect import (DirectConnectError,
+                                                                                    delete_connection,
+                                                                                    delete_virtual_interface,
+                                                                                    disassociate_connection_and_lag,
+                                                                                    )
 import traceback
 import time
 

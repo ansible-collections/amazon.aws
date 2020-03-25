@@ -54,8 +54,8 @@ options:
     type: int
 
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 
 requirements:
@@ -116,7 +116,7 @@ except ImportError:
     HAS_CRYPTOGRAPHY = False
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import HAS_BOTO, ec2_argument_spec, ec2_connect
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO, ec2_argument_spec, ec2_connect
 from ansible.module_utils._text import to_bytes
 
 

@@ -53,8 +53,8 @@ options:
             - Note that you can't associate a reusable delegation set with a private hosted zone.
         type: str
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 author: "Christopher Troup (@minichate)"
 '''
@@ -123,7 +123,7 @@ delegation_set_id:
 '''
 
 import time
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 
 try:
     from botocore.exceptions import BotoCoreError, ClientError

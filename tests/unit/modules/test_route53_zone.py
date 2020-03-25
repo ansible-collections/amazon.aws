@@ -4,10 +4,10 @@ __metaclass__ = type
 
 import functools
 
-from ansible_collections.community.amazon.plugins.modules import route53_zone
-from ansible_collections.community.amazon.tests.unit.compat import unittest
-from ansible_collections.community.amazon.tests.unit.compat.mock import patch, call
-from ansible_collections.community.amazon.tests.unit.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
+from ansible_collections.community.aws.plugins.modules import route53_zone
+from ansible_collections.community.aws.tests.unit.compat import unittest
+from ansible_collections.community.aws.tests.unit.compat.mock import patch, call
+from ansible_collections.community.aws.tests.unit.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
 
 def parameterized(params_list):
@@ -26,7 +26,7 @@ def is_subdict(subdict, superdict):
     return all(superdict[k] == v for k, v in subdict.items())
 
 
-@patch('ansible_collections.ansible.amazon.plugins.module_utils.aws.core.HAS_BOTO3', new=True)
+@patch('ansible_collections.amazon.aws.plugins.module_utils.aws.core.HAS_BOTO3', new=True)
 @patch.object(route53_zone.AnsibleAWSModule, 'client')
 @patch.object(route53_zone.time, 'time', return_value=1)
 class TestRoute53Module(ModuleTestCase):

@@ -7,8 +7,8 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-from ansible_collections.community.amazon.tests.unit.utils.amazon_placebo_fixtures import placeboify, maybe_sleep
-from ansible_collections.community.amazon.plugins.modules import aws_direct_connect_connection
+from ansible_collections.community.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify, maybe_sleep
+from ansible_collections.community.aws.plugins.modules import aws_direct_connect_connection
 
 
 class FakeModule(object):

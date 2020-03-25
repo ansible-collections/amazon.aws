@@ -8,7 +8,7 @@
     ec2_eip:
       in_vpc: true
   collections:
-    - ansible.amazon
+    - amazon.aws
   block:
   - name: Get the current caller identity facts
     aws_caller_info: null

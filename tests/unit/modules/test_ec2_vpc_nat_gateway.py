@@ -8,7 +8,7 @@ import unittest
 
 from mock import patch
 
-import ansible_collections.community.amazon.plugins.modules.ec2_vpc_nat_gateway as ng
+import ansible_collections.community.aws.plugins.modules.ec2_vpc_nat_gateway as ng
 
 
 boto3 = pytest.importorskip("boto3")

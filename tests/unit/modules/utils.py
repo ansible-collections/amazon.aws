@@ -1,7 +1,7 @@
 import json
 
-from ansible_collections.community.amazon.tests.unit.compat import unittest
-from ansible_collections.community.amazon.tests.unit.compat.mock import patch
+from ansible_collections.community.aws.tests.unit.compat import unittest
+from ansible_collections.community.aws.tests.unit.compat.mock import patch
 from ansible.module_utils import basic
 from ansible.module_utils._text import to_bytes
 

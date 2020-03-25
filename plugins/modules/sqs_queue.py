@@ -100,8 +100,8 @@ options:
     type: bool
     default: false
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -223,13 +223,13 @@ EXAMPLES = '''
 '''
 
 import json
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (AWSRetry,
-                                                                         camel_dict_to_snake_dict,
-                                                                         compare_aws_tags,
-                                                                         snake_dict_to_camel_dict,
-                                                                         compare_policies,
-                                                                         )
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (AWSRetry,
+                                                                     camel_dict_to_snake_dict,
+                                                                     compare_aws_tags,
+                                                                     snake_dict_to_camel_dict,
+                                                                     compare_policies,
+                                                                     )
 
 try:
     from botocore.exceptions import BotoCoreError, ClientError, ParamValidationError

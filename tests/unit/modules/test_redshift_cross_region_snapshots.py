@@ -2,7 +2,7 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-from ansible_collections.community.amazon.plugins.modules import redshift_cross_region_snapshots as rcrs
+from ansible_collections.community.aws.plugins.modules import redshift_cross_region_snapshots as rcrs
 
 mock_status_enabled = {
     'SnapshotCopyGrantName': 'snapshot-us-east-1-to-us-west-2',

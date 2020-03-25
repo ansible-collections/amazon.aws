@@ -25,8 +25,8 @@ options:
       - The name of the user whose MFA devices will be listed
     type: str
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 requirements:
     - boto3
@@ -70,12 +70,12 @@ except ImportError:
     HAS_BOTO3 = False
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (HAS_BOTO3,
-                                                                         boto3_conn,
-                                                                         camel_dict_to_snake_dict,
-                                                                         ec2_argument_spec,
-                                                                         get_aws_connection_info,
-                                                                         )
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (HAS_BOTO3,
+                                                                     boto3_conn,
+                                                                     camel_dict_to_snake_dict,
+                                                                     ec2_argument_spec,
+                                                                     get_aws_connection_info,
+                                                                     )
 
 
 def list_mfa_devices(connection, module):

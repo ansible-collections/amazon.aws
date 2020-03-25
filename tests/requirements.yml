@@ -3,4 +3,4 @@ integration_tests_dependencies:
 - community.crypto
 - community.general
 unit_tests_dependencies:
-- ansible.amazon
+- amazon.aws

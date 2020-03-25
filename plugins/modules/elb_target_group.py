@@ -162,8 +162,8 @@ options:
     default: 200
     type: int
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 notes:
   - Once a target group has been created, only its health check can then be modified using subsequent calls
@@ -381,12 +381,12 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (camel_dict_to_snake_dict,
-                                                                         boto3_tag_list_to_ansible_dict,
-                                                                         compare_aws_tags,
-                                                                         ansible_dict_to_boto3_tag_list,
-                                                                         )
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (camel_dict_to_snake_dict,
+                                                                     boto3_tag_list_to_ansible_dict,
+                                                                     compare_aws_tags,
+                                                                     ansible_dict_to_boto3_tag_list,
+                                                                     )
 from distutils.version import LooseVersion
 
 

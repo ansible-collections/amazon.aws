@@ -12,14 +12,14 @@ import sys
 
 import pytest
 
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import HAS_BOTO3
-from ansible_collections.community.amazon.tests.unit.modules.utils import set_module_args
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
+from ansible_collections.community.aws.tests.unit.modules.utils import set_module_args
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_api_gateway.py requires the `boto3` and `botocore` modules")
 
-import ansible_collections.community.amazon.plugins.modules.aws_api_gateway as agw
-from ansible_collections.ansible.amazon.plugins.module_utils.aws import core
+import ansible_collections.community.aws.plugins.modules.aws_api_gateway as agw
+from ansible_collections.amazon.aws.plugins.module_utils.aws import core
 
 
 exit_return_dict = {}

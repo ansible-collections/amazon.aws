@@ -1,7 +1,7 @@
 ---
   - name: rds_instance test_vpc_security_groups tests
     collections:
-      - ansible.amazon
+      - amazon.aws
     block:
       - name: set up aws connection info
         set_fact:

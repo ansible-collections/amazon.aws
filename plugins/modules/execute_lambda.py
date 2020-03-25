@@ -18,8 +18,8 @@ description:
   - This module executes AWS Lambda functions, allowing synchronous and asynchronous
     invocation.
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 author: "Ryan Scott Brown (@ryansb) <ryansb@redhat.com>"
 requirements:
@@ -141,7 +141,7 @@ except ImportError:
     HAS_BOTO3 = False
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import boto3_conn, ec2_argument_spec, get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn, ec2_argument_spec, get_aws_connection_info
 from ansible.module_utils._text import to_native
 
 

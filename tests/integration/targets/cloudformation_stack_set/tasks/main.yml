@@ -18,7 +18,7 @@
 
 - name: cloudformation_stack_set tests 
   collections:
-    - ansible.amazon
+    - amazon.aws
 
   block:
     - name: Get current account ID

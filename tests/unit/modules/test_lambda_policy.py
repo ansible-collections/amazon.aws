@@ -12,16 +12,16 @@ import copy
 
 import pytest
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import HAS_BOTO3
-from ansible_collections.community.amazon.tests.unit.compat.mock import MagicMock
-from ansible_collections.community.amazon.tests.unit.modules.utils import set_module_args
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import HAS_BOTO3
+from ansible_collections.community.aws.tests.unit.compat.mock import MagicMock
+from ansible_collections.community.aws.tests.unit.modules.utils import set_module_args
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_api_gateway.py requires the `boto3` and `botocore` modules")
 
 # these are here cause ... boto!
-from ansible_collections.community.amazon.plugins.modules import lambda_policy
-from ansible_collections.community.amazon.plugins.modules.lambda_policy import setup_module_object
+from ansible_collections.community.aws.plugins.modules import lambda_policy
+from ansible_collections.community.aws.plugins.modules.lambda_policy import setup_module_object
 try:
     from botocore.exceptions import ClientError
 except ImportError:

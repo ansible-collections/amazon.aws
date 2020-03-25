@@ -4,14 +4,14 @@ __metaclass__ = type
 
 import pytest
 
-from ansible_collections.community.amazon.tests.unit.modules.utils import set_module_args
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import HAS_BOTO3
+from ansible_collections.community.aws.tests.unit.modules.utils import set_module_args
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("iam_password_policy.py requires the `boto3` and `botocore` modules")
 else:
     import boto3
-    from ansible_collections.community.amazon.plugins.modules import iam_password_policy
+    from ansible_collections.community.aws.plugins.modules import iam_password_policy
 
 
 def test_warn_if_state_not_specified():

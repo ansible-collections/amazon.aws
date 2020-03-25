@@ -172,8 +172,8 @@ options:
     type: bool
 requirements: [ 'boto3' ]
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -261,8 +261,8 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import AWSRetry, snake_dict_to_camel_dict
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule, is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry, snake_dict_to_camel_dict
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule, is_boto3_error_code
 
 
 def _collect_facts(resource):

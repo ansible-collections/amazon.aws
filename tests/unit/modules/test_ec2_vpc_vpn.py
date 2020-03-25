@@ -6,9 +6,9 @@ __metaclass__ = type
 
 import pytest
 import os
-from ansible_collections.community.amazon.tests.unit.utils.amazon_placebo_fixtures import placeboify, maybe_sleep
-from ansible_collections.community.amazon.plugins.modules import ec2_vpc_vpn
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import get_aws_connection_info, boto3_conn, boto3_tag_list_to_ansible_dict
+from ansible_collections.community.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify, maybe_sleep
+from ansible_collections.community.aws.plugins.modules import ec2_vpc_vpn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info, boto3_conn, boto3_tag_list_to_ansible_dict
 
 
 class FakeModule(object):
