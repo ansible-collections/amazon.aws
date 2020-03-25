@@ -1,7 +1,7 @@
 ---
 - name: ec2_vpc_vpn_info tests
   collections:
-    - ansible.amazon
+    - amazon.aws
   block:
 
   # ============================================================
