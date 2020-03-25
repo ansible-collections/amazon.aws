@@ -28,8 +28,8 @@ options:
     required: false
     default: []
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -74,7 +74,7 @@ placement_groups:
 
 '''
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 try:
     from botocore.exceptions import (BotoCoreError, ClientError)
 except ImportError:
