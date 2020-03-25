@@ -233,7 +233,7 @@ def chunks(lst, n):
 class Connection(ConnectionBase):
     ''' AWS SSM based connections '''
 
-    transport = 'community.amazon.aws_ssm'
+    transport = 'community.aws.aws_ssm'
     allow_executable = False
     allow_extras = True
     has_pipelining = False
