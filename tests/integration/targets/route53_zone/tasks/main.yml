@@ -1,7 +1,7 @@
 ---
 - name: route53_zone tests
   collections:
-    - ansible.amazon
+    - amazon.aws
   block:
 
     # ============================================================
