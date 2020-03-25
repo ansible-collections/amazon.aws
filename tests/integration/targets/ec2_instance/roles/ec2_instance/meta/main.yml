@@ -2,4 +2,4 @@ dependencies:
   - prepare_tests
   - setup_ec2
 collections:
-  - ansible.amazon
+  - amazon.aws
