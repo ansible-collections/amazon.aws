@@ -62,8 +62,8 @@ options:
     type: dict
 author: Nick Aslanidis (@naslanidis)
 extends_documentation_fragment:
-- ansible.amazon.ec2
-- ansible.amazon.aws
+- amazon.aws.ec2
+- amazon.aws.aws
 
 '''
 
@@ -125,10 +125,10 @@ try:
 except ImportError:
     HAS_BOTO3 = False
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import is_boto3_error_code
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.waiters import get_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.aws.waiters import get_waiter
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import HAS_BOTO3, boto3_conn, ec2_argument_spec, get_aws_connection_info, AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3, boto3_conn, ec2_argument_spec, get_aws_connection_info, AWSRetry
 from ansible.module_utils._text import to_native
 
 
