@@ -66,8 +66,8 @@ author:
     - "Scott Anderson (@tastychutney)"
     - "Will Thames (@willthames)"
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -118,9 +118,9 @@ tags:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import ec2_argument_spec, get_aws_connection_info, boto3_conn
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import camel_dict_to_snake_dict, HAS_BOTO3, compare_aws_tags
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list, boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ec2_argument_spec, get_aws_connection_info, boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, HAS_BOTO3, compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list, boto3_tag_list_to_ansible_dict
 from ansible.module_utils.parsing.convert_bool import BOOLEANS_TRUE
 from ansible.module_utils.six import string_types
 from ansible.module_utils._text import to_native
