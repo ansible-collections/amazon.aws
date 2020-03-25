@@ -7,7 +7,7 @@ import pytest
 import unittest
 
 try:
-    import ansible_collections.ansible.amazon.plugins.modules.aws_s3 as s3
+    import ansible_collections.amazon.aws.plugins.modules.aws_s3 as s3
 except ImportError:
     pytestmark = pytest.mark.skip("This test requires the s3 Python libraries")
 

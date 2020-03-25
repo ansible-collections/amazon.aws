@@ -3,6 +3,8 @@
   connection: local
   gather_facts: no
   environment: "{{ ansible_test.environment }}"
+  collections:
+    - community.general
   tasks:
 
     - block:
@@ -10,6 +12,8 @@
         # Create VPC, subnet, security group, and find image_id to create instance
 
         - include_tasks: setup.yml
+#        - pause:
+#            seconds: 240
 
         - name: assert group was populated with inventory but is empty
           assert:

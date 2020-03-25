@@ -94,8 +94,8 @@ options:
                  not specified then it will default to the AWS provided KMS key.
     type: str
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 notes:
     - If C(requestPayment), C(policy), C(tagging) or C(versioning)
@@ -166,9 +166,9 @@ import time
 from ansible.module_utils.six.moves.urllib.parse import urlparse
 from ansible.module_utils.six import string_types
 from ansible.module_utils.basic import to_text
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule, is_boto3_error_code
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import compare_policies, boto3_tag_list_to_ansible_dict, ansible_dict_to_boto3_tag_list
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import get_aws_connection_info, boto3_conn, AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule, is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies, boto3_tag_list_to_ansible_dict, ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info, boto3_conn, AWSRetry
 
 try:
     from botocore.exceptions import BotoCoreError, ClientError, EndpointConnectionError, WaiterError

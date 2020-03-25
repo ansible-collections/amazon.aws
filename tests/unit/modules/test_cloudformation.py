@@ -9,8 +9,8 @@ __metaclass__ = type
 
 import pytest
 
-from ansible_collections.ansible.amazon.tests.unit.utils.amazon_placebo_fixtures import placeboify, maybe_sleep
-from ansible_collections.ansible.amazon.plugins.modules import cloudformation as cfn_module
+from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify, maybe_sleep
+from ansible_collections.amazon.aws.plugins.modules import cloudformation as cfn_module
 
 basic_yaml_tpl = """
 ---

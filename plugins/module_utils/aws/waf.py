@@ -32,8 +32,8 @@ This module adds shared support for Web Application Firewall modules
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import camel_dict_to_snake_dict, AWSRetry
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.waiters import get_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.aws.waiters import get_waiter
 
 try:
     import botocore

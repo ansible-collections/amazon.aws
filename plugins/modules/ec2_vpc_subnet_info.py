@@ -34,8 +34,8 @@ options:
         See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeSubnets.html) for possible filters.
     type: dict
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -153,7 +153,7 @@ subnets:
 
 import traceback
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
     boto3_conn,
     ec2_argument_spec,
     get_aws_connection_info,

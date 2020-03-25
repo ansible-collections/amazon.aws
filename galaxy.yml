@@ -1,5 +1,5 @@
-namespace: ansible
-name: amazon
+namespace: amazon
+name: aws
 version: 0.1.0
 readme: README.md
 authors: null
@@ -9,7 +9,7 @@ license_file: COPYING
 tags: null
 dependencies:
   ansible.netcommon: '>=0.1.0'
-repository: git@github.com:ansible-collection-migration/ansible.amazon.git
-documentation: https://github.com/ansible-collection-migration/ansible.amazon/tree/master/docs
-homepage: https://github.com/ansible-collection-migration/ansible.amazon
-issues: https://github.com/ansible-collection-migration/ansible.amazon/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc
+repository: git@github.com:ansible-collections/amazon.aws.git
+documentation: https://github.com/ansible-collections/amazon.aws/tree/master/docs
+homepage: https://github.com/ansible-collections/amazon.ws
+issues: https://github.com/ansible-collections/amazon.aws/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc

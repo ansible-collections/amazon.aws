@@ -147,8 +147,8 @@ author:
     - "Lester Wade (@lwade)"
     - "Sloane Hertel (@s-hertel)"
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -283,9 +283,9 @@ import os
 from ansible.module_utils.six.moves.urllib.parse import urlparse
 from ssl import SSLError
 from ansible.module_utils.basic import to_text, to_native
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.s3 import calculate_etag, HAS_MD5
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import get_aws_connection_info, boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.s3 import calculate_etag, HAS_MD5
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info, boto3_conn
 
 try:
     import botocore

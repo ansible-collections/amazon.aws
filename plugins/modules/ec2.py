@@ -255,8 +255,8 @@ author:
     - "Lester Wade (@lwade)"
     - "Seth Vidal (@skvidal)"
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -587,7 +587,7 @@ from ast import literal_eval
 from distutils.version import LooseVersion
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import get_aws_connection_info, ec2_argument_spec, ec2_connect
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info, ec2_argument_spec, ec2_connect
 from ansible.module_utils.six import get_function_code, string_types
 from ansible.module_utils._text import to_bytes, to_text
 

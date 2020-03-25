@@ -14,7 +14,7 @@ DOCUMENTATION = '''
     extends_documentation_fragment:
     - inventory_cache
     - constructed
-    - ansible.amazon.aws_credentials
+    - amazon.aws.aws_credentials
 
     description:
         - Get inventory hosts from Amazon Web Services EC2.
@@ -151,8 +151,8 @@ import re
 
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_native, to_text
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list, boto3_tag_list_to_ansible_dict
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list, boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable, Cacheable
 from ansible.utils.display import Display
 
@@ -259,7 +259,7 @@ instance_data_filter_to_boto_attr = {
 
 class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
-    NAME = 'ansible.amazon.aws_ec2'
+    NAME = 'amazon.aws.aws_ec2'
 
     def __init__(self):
         super(InventoryModule, self).__init__()

@@ -106,7 +106,7 @@ EXAMPLES = '''
 '''
 
 from ansible.module_utils._text import to_native
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import HAS_BOTO3, boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3, boto3_tag_list_to_ansible_dict
 from ansible.errors import AnsibleError
 from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display

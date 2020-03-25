@@ -25,7 +25,7 @@ import json
 
 from contextlib import contextmanager
 from io import BytesIO, StringIO
-from ansible_collections.ansible.amazon.tests.unit.compat import unittest
+from ansible_collections.amazon.aws.tests.unit.compat import unittest
 from ansible.module_utils.six import PY3
 from ansible.module_utils._text import to_bytes
 

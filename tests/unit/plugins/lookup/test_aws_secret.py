@@ -65,7 +65,7 @@ def test_lookup_variable(mocker, dummy_credentials):
             'RetryAttempts': 0
         }
     }
-    lookup = lookup_loader.get('ansible.amazon.aws_secret')
+    lookup = lookup_loader.get('amazon.aws.aws_secret')
     boto3_double = mocker.MagicMock()
     boto3_double.Session.return_value.client.return_value.get_secret_value.return_value = simple_variable_success_response
     boto3_client_double = boto3_double.Session.return_value.client
@@ -87,4 +87,4 @@ def test_warn_denied_variable(mocker, dummy_credentials):
 
     with pytest.raises(AnsibleError):
         mocker.patch.object(boto3, 'session', boto3_double)
-        lookup_loader.get('ansible.amazon.aws_secret').run(["denied_variable"], None, **dummy_credentials)
+        lookup_loader.get('amazon.aws.aws_secret').run(["denied_variable"], None, **dummy_credentials)

@@ -100,8 +100,8 @@ options:
     choices: [ 'absent', 'present' ]
     type: str
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 requirements:
     - boto
@@ -198,7 +198,7 @@ import collections
 import traceback
 from time import sleep, time
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import HAS_BOTO, connect_to_aws, ec2_argument_spec, get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO, connect_to_aws, ec2_argument_spec, get_aws_connection_info
 
 if HAS_BOTO:
     import boto.vpc

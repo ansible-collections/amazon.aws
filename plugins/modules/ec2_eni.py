@@ -108,8 +108,8 @@ options:
     default: false
     type: bool
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 notes:
     - This module identifies and ENI based on either the I(eni_id), a combination of I(private_ip_address) and I(subnet_id),
@@ -264,9 +264,9 @@ except ImportError:
     HAS_BOTO = False
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import (AnsibleAWSError, connect_to_aws,
-                                                                         ec2_argument_spec, get_aws_connection_info,
-                                                                         get_ec2_security_group_ids_from_names)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (AnsibleAWSError, connect_to_aws,
+                                                                     ec2_argument_spec, get_aws_connection_info,
+                                                                     get_ec2_security_group_ids_from_names)
 
 
 def get_eni_info(interface):
