@@ -1,6 +1,6 @@
 - name: elb_application_lb multiple_actions_fail tests
   collections:
-    - ansible.amazon
+    - amazon.aws
   block:
   - name: set connection information for all tasks
     set_fact:
