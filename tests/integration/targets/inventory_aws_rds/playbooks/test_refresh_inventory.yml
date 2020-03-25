@@ -6,7 +6,7 @@
       security_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region }}'
   collections:
-    - community.amazon
+    - community.aws
   block:
     - set_fact:
         instance_id: "{{ resource_prefix }}update"
