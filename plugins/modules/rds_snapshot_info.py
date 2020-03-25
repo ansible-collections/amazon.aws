@@ -60,8 +60,8 @@ requirements:
 author:
     - "Will Thames (@willthames)"
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 '''
 
@@ -296,8 +296,8 @@ cluster_snapshots:
       sample: vpc-abcd1234
 '''
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule, is_boto3_error_code
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import AWSRetry, boto3_tag_list_to_ansible_dict, camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule, is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry, boto3_tag_list_to_ansible_dict, camel_dict_to_snake_dict
 
 try:
     import botocore
