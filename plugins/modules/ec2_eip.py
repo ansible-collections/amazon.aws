@@ -86,8 +86,8 @@ options:
       - The I(wait_timeout) option does nothing and will be removed in Ansible 2.14.
     type: int
 extends_documentation_fragment:
-- ansible.amazon.aws
-- ansible.amazon.ec2
+- amazon.aws.aws
+- amazon.aws.ec2
 
 author: "Rick Mendes (@rickmendes) <rmendes@illumina.com>"
 notes:
@@ -226,8 +226,8 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
-from ansible_collections.ansible.amazon.plugins.module_utils.aws.core import AnsibleAWSModule, is_boto3_error_code
-from ansible_collections.ansible.amazon.plugins.module_utils.ec2 import AWSRetry, ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule, is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry, ansible_dict_to_boto3_filter_list
 
 
 def associate_ip_and_device(ec2, module, address, private_ip_address, device_id, allow_reassociation, check_mode, is_instance=True):
