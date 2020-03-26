@@ -10,6 +10,5 @@ tags: null
 dependencies:
   ansible.netcommon: '>=0.1.0'
 repository: git@github.com:ansible-collections/amazon.aws.git
-documentation: https://github.com/ansible-collections/amazon.aws/tree/master/docs
-homepage: https://github.com/ansible-collections/amazon.ws
+homepage: https://github.com/ansible-collections/amazon.aws
 issues: https://github.com/ansible-collections/amazon.aws/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc
