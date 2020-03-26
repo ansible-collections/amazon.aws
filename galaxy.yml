@@ -2,13 +2,14 @@ namespace: amazon
 name: aws
 version: 0.1.0
 readme: README.md
-authors: null
+authors:
+  - Ansible (https://github.com/ansible)
 description: null
 license: GPL-3.0-or-later
 license_file: COPYING
 tags: null
 dependencies:
-  ansible.netcommon: '>=0.1.0'
+  ansible.netcommon: '>=0.0.1'
 repository: git@github.com:ansible-collections/amazon.aws.git
 documentation: https://github.com/ansible-collections/amazon.aws/tree/master/docs
 homepage: https://github.com/ansible-collections/amazon.ws
