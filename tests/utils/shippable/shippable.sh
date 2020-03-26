@@ -57,8 +57,7 @@ elif [[ "${COMMIT_MESSAGE}" =~ ci_complete ]]; then
     export CHANGED=""
 else
     # enable change detection (default behavior)
-    #export CHANGED="--changed"
-    export CHANGED=""  # disable changed detection https://github.com/ansible/ansible/issues/67869
+    export CHANGED="--changed"
 fi
 
 if [ "${IS_PULL_REQUEST:-}" == "true" ]; then
