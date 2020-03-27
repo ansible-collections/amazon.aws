@@ -20,7 +20,7 @@
       name:
         - 'botocore<1.13.0,>=1.12.211'
         - boto3
-        - coverage
+        - coverage<5
         - jinja2
         - pyyaml
         - 'pyopenssl>=0.15'

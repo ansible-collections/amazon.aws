@@ -14,7 +14,7 @@
     name:
       - 'botocore<1.10.1'
       - boto3
-      - coverage
+      - coverage<5
     virtualenv: "{{ virtualenv }}"
     virtualenv_command: "{{ virtualenv_command }}"
     virtualenv_site_packages: no
@@ -33,7 +33,7 @@
     name:
       - 'botocore>1.10.1,<1.12.38'
       - boto3
-      - coverage
+      - coverage<5
     virtualenv: "{{ virtualenv }}"
     virtualenv_command: "{{ virtualenv_command }}"
     virtualenv_site_packages: no

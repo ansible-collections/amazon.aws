@@ -13,7 +13,7 @@
       - 'botocore<1.10.30'
       - boto3
       - boto
-      - coverage
+      - coverage<5
       - cryptography
     virtualenv: "{{ virtualenv }}"
     virtualenv_command: "{{ virtualenv_command }}"
@@ -29,7 +29,7 @@
       - 'botocore>=1.10.30'
       - boto3
       - boto
-      - coverage
+      - coverage<5
       - cryptography
     virtualenv: "{{ virtualenv }}"
     virtualenv_command: "{{ virtualenv_command }}"
