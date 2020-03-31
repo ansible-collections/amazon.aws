@@ -447,6 +447,8 @@ def create_image(module, connection):
         if device_mapping:
             block_device_mapping = []
             for device in device_mapping:
+                if not isinstance(device, dict):
+                    continue
                 device['Ebs'] = {}
                 if 'device_name' not in device:
                     module.fail_json(msg="Error - Device name must be set for volume.")
