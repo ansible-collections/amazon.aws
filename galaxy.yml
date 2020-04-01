@@ -13,3 +13,6 @@ repository: https://github.com/ansible-collections/community.aws.git
 documentation: https://github.com/ansible-collections/community.aws/tree/master/docs
 homepage: https://github.com/ansible-collections/community.aws
 issues: https://github.com/ansible-collections/community.aws/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc
+build_ignore:
+  - '*cloud-config-aws.ini'
+  - '*cloud-config-aws.yml'
