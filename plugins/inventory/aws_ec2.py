@@ -57,6 +57,7 @@ DOCUMENTATION = '''
               - Spot instances may be persistent and instances may have associated events.
           type: bool
           default: False
+          version_added: '1.2.2'
         strict_permissions:
           description:
               - By default if a 403 (Forbidden) error code is encountered this plugin will fail.
@@ -76,6 +77,7 @@ DOCUMENTATION = '''
               which group names end up being used as.
           type: bool
           default: False
+          version_added: '1.2.2'
 '''
 
 EXAMPLES = '''
@@ -105,10 +107,13 @@ strict_permissions: False
 # Note: I(hostnames) sets the inventory_hostname. To modify ansible_host without modifying
 # inventory_hostname use compose (see example below).
 hostnames:
-  - tag:Name=Tag1,Name=Tag2  # Return specific hosts only
+  - tag:Name=Tag1,Name=Tag2         # Return specific hosts only
   - tag:CustomDNSName
   - dns-name
-  - private-ip-address
+  - name: 'tag:Name=Tag1,Name=Tag2'
+  - name: 'private-ip-address'
+    separator: '_'
+    prefix: 'tag:Name'
 
 # Example using constructed features to create groups and set ansible_host
 plugin: aws_ec2
@@ -505,7 +510,14 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
         hostname = None
         for preference in hostnames:
-            if 'tag' in preference:
+            if isinstance(preference, dict):
+                if 'name' not in preference:
+                    raise AnsibleError("A 'name' key must be defined in a hostnames dictionary.")
+                hostname = self._get_hostname(instance, [preference["name"]])
+                separator = preference.get("separator", "_")
+                if 'prefix' in preference:
+                    hostname = self._get_hostname(instance, [preference["prefix"]]) + separator + hostname
+            elif 'tag' in preference:
                 if not preference.startswith('tag:'):
                     raise AnsibleError("To name a host by tags name_value, use 'tag:name=value'.")
                 hostname = self._get_tag_hostname(preference, instance)
