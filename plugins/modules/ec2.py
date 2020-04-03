@@ -981,7 +981,6 @@ def create_instances(module, ec2, vpc, override_count=None):
     else:
         count = module.params.get('count')
     wait_timeout = int(module.params.get('wait_timeout'))
-    vpc_subnet_id = module.params.get('vpc_subnet_id')
     assign_public_ip = module.boolean(module.params.get('assign_public_ip'))
     private_ip = module.params.get('private_ip')
     instance_profile_name = module.params.get('instance_profile_name')
@@ -996,11 +995,11 @@ def create_instances(module, ec2, vpc, override_count=None):
     instance_initiated_shutdown_behavior = module.params.get('instance_initiated_shutdown_behavior')
 
     vpc_id = None
-    if vpc_subnet_id:
+    if module.params.get('vpc_subnet_id'):
         if not vpc:
             module.fail_json(msg="region must be specified")
         else:
-            vpc_id = vpc.get_all_subnets(subnet_ids=[vpc_subnet_id])[0].vpc_id
+            vpc_id = vpc.get_all_subnets(subnet_ids=[module.params.get('vpc_subnet_id')])[0].vpc_id
     else:
         vpc_id = None
 
@@ -1075,20 +1074,20 @@ def create_instances(module, ec2, vpc, override_count=None):
                 if not boto_supports_associate_public_ip_address(ec2):
                     module.fail_json(
                         msg="assign_public_ip parameter requires Boto version 2.13.0 or higher.")
-                elif not vpc_subnet_id:
+                elif not module.params.get('vpc_subnet_id'):
                     module.fail_json(
                         msg="assign_public_ip only available with vpc_subnet_id")
 
                 else:
                     if private_ip:
                         interface = boto.ec2.networkinterface.NetworkInterfaceSpecification(
-                            subnet_id=vpc_subnet_id,
+                            subnet_id=module.params.get('vpc_subnet_id'),
                             private_ip_address=private_ip,
                             groups=group_id,
                             associate_public_ip_address=assign_public_ip)
                     else:
                         interface = boto.ec2.networkinterface.NetworkInterfaceSpecification(
-                            subnet_id=vpc_subnet_id,
+                            subnet_id=module.params.get('vpc_subnet_id'),
                             groups=group_id,
                             associate_public_ip_address=assign_public_ip)
                     interfaces = boto.ec2.networkinterface.NetworkInterfaceCollection(interface)
@@ -1106,8 +1105,8 @@ def create_instances(module, ec2, vpc, override_count=None):
                     params['network_interfaces'] = \
                         boto.ec2.networkinterface.NetworkInterfaceCollection(*interfaces)
                 else:
-                    params['subnet_id'] = vpc_subnet_id
-                    if vpc_subnet_id:
+                    params['subnet_id'] = module.params.get('vpc_subnet_id')
+                    if module.params.get('vpc_subnet_id'):
                         params['security_group_ids'] = group_id
                     else:
                         params['security_groups'] = group_name
