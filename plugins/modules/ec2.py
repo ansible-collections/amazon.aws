@@ -981,7 +981,6 @@ def create_instances(module, ec2, vpc, override_count=None):
     else:
         count = module.params.get('count')
     wait_timeout = int(module.params.get('wait_timeout'))
-    assign_public_ip = module.boolean(module.params.get('assign_public_ip'))
     private_ip = module.params.get('private_ip')
     instance_profile_name = module.params.get('instance_profile_name')
     volumes = module.params.get('volumes')
@@ -1070,7 +1069,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                     module.fail_json(
                         msg="instance_profile_name parameter requires Boto version 2.5.0 or higher")
 
-            if assign_public_ip is not None:
+            if module.boolean(module.params.get('assign_public_ip')) is not None:
                 if not boto_supports_associate_public_ip_address(ec2):
                     module.fail_json(
                         msg="assign_public_ip parameter requires Boto version 2.13.0 or higher.")
@@ -1084,12 +1083,12 @@ def create_instances(module, ec2, vpc, override_count=None):
                             subnet_id=module.params.get('vpc_subnet_id'),
                             private_ip_address=private_ip,
                             groups=group_id,
-                            associate_public_ip_address=assign_public_ip)
+                            associate_public_ip_address=module.boolean(module.params.get('assign_public_ip')))
                     else:
                         interface = boto.ec2.networkinterface.NetworkInterfaceSpecification(
                             subnet_id=module.params.get('vpc_subnet_id'),
                             groups=group_id,
-                            associate_public_ip_address=assign_public_ip)
+                            associate_public_ip_address=module.boolean(module.params.get('assign_public_ip')))
                     interfaces = boto.ec2.networkinterface.NetworkInterfaceCollection(interface)
                     params['network_interfaces'] = interfaces
             else:
@@ -1125,7 +1124,7 @@ def create_instances(module, ec2, vpc, override_count=None):
 
             # check to see if we're using spot pricing first before starting instances
             if not module.params.get('spot_price'):
-                if assign_public_ip is not None and private_ip:
+                if module.boolean(module.params.get('assign_public_ip')) is not None and private_ip:
                     params.update(
                         dict(
                             min_count=count_remaining,
