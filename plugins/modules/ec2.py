@@ -976,7 +976,6 @@ def create_instances(module, ec2, vpc, override_count=None):
 
     group_name = module.params.get('group')
     group_id = module.params.get('group_id')
-    instance_type = module.params.get('instance_type')
     tenancy = module.params.get('tenancy')
     spot_price = module.params.get('spot_price')
     spot_type = module.params.get('spot_type')
@@ -1064,7 +1063,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                       'key_name': module.params.get('key_name'),
                       'monitoring_enabled': monitoring,
                       'placement': module.params.get('zone'),
-                      'instance_type': instance_type,
+                      'instance_type': module.params.get('instance_type'),
                       'kernel_id': kernel,
                       'ramdisk_id': ramdisk}
             if user_data is not None:
