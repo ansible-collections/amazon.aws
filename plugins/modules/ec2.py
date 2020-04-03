@@ -981,7 +981,6 @@ def create_instances(module, ec2, vpc, override_count=None):
     else:
         count = module.params.get('count')
     wait_timeout = int(module.params.get('wait_timeout'))
-    placement_group = module.params.get('placement_group')
     user_data = module.params.get('user_data')
     instance_tags = module.params.get('instance_tags')
     vpc_subnet_id = module.params.get('vpc_subnet_id')
@@ -1135,7 +1134,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                             min_count=count_remaining,
                             max_count=count_remaining,
                             client_token=module.params.get('id'),
-                            placement_group=placement_group,
+                            placement_group=module.params.get('placement_group'),
                         )
                     )
                 else:
@@ -1144,7 +1143,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                             min_count=count_remaining,
                             max_count=count_remaining,
                             client_token=module.params.get('id'),
-                            placement_group=placement_group,
+                            placement_group=module.params.get('placement_group'),
                             private_ip_address=private_ip,
                         )
                     )
@@ -1191,8 +1190,8 @@ def create_instances(module, ec2, vpc, override_count=None):
                     module.fail_json(
                         msg='private_ip only available with on-demand (non-spot) instances')
                 if boto_supports_param_in_spot_request(ec2, 'placement_group'):
-                    params['placement_group'] = placement_group
-                elif placement_group:
+                    params['placement_group'] = module.params.get('placement_group')
+                elif module.params.get('placement_group'):
                     module.fail_json(
                         msg="placement_group parameter requires Boto version 2.3.0 or higher.")
 
