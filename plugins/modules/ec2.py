@@ -974,7 +974,6 @@ def create_instances(module, ec2, vpc, override_count=None):
         about the instances that were launched
     """
 
-    id = module.params.get('id')
     group_name = module.params.get('group')
     group_id = module.params.get('group_id')
     zone = module.params.get('zone')
@@ -1047,8 +1046,8 @@ def create_instances(module, ec2, vpc, override_count=None):
     running_instances = []
     count_remaining = int(count)
 
-    if id is not None:
-        filter_dict = {'client-token': id, 'instance-state-name': 'running'}
+    if module.params.get('id') is not None:
+        filter_dict = {'client-token': module.params.get('id'), 'instance-state-name': 'running'}
         previous_reservations = ec2.get_all_instances(None, filter_dict)
         for res in previous_reservations:
             for prev_instance in res.instances:
@@ -1146,7 +1145,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                         dict(
                             min_count=count_remaining,
                             max_count=count_remaining,
-                            client_token=id,
+                            client_token=module.params.get('id'),
                             placement_group=placement_group,
                         )
                     )
@@ -1155,7 +1154,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                         dict(
                             min_count=count_remaining,
                             max_count=count_remaining,
-                            client_token=id,
+                            client_token=module.params.get('id'),
                             placement_group=placement_group,
                             private_ip_address=private_ip,
                         )
