@@ -976,7 +976,6 @@ def create_instances(module, ec2, vpc, override_count=None):
 
     group_name = module.params.get('group')
     group_id = module.params.get('group_id')
-    spot_type = module.params.get('spot_type')
     image = module.params.get('image')
     if override_count:
         count = override_count
@@ -1214,7 +1213,7 @@ def create_instances(module, ec2, vpc, override_count=None):
 
                 params.update(dict(
                     count=count_remaining,
-                    type=spot_type,
+                    type=module.params.get('spot_type'),
                 ))
 
                 # Set spot ValidUntil
