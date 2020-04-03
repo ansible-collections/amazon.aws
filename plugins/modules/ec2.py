@@ -981,7 +981,6 @@ def create_instances(module, ec2, vpc, override_count=None):
     else:
         count = module.params.get('count')
     wait_timeout = int(module.params.get('wait_timeout'))
-    user_data = module.params.get('user_data')
     instance_tags = module.params.get('instance_tags')
     vpc_subnet_id = module.params.get('vpc_subnet_id')
     assign_public_ip = module.boolean(module.params.get('assign_public_ip'))
@@ -1056,8 +1055,8 @@ def create_instances(module, ec2, vpc, override_count=None):
                       'instance_type': module.params.get('instance_type'),
                       'kernel_id': module.params.get('kernel'),
                       'ramdisk_id': module.params.get('ramdisk')}
-            if user_data is not None:
-                params['user_data'] = to_bytes(user_data, errors='surrogate_or_strict')
+            if module.params.get('user_data') is not None:
+                params['user_data'] = to_bytes(module.params.get('user_data'), errors='surrogate_or_strict')
 
             if ebs_optimized:
                 params['ebs_optimized'] = ebs_optimized
