@@ -976,7 +976,6 @@ def create_instances(module, ec2, vpc, override_count=None):
 
     group_name = module.params.get('group')
     group_id = module.params.get('group_id')
-    spot_price = module.params.get('spot_price')
     spot_type = module.params.get('spot_type')
     image = module.params.get('image')
     if override_count:
@@ -1072,7 +1071,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                 params['ebs_optimized'] = ebs_optimized
 
             # 'tenancy' always has a default value, but it is not a valid parameter for spot instance request
-            if not spot_price:
+            if not module.params.get('spot_price'):
                 params['tenancy'] = module.params.get('tenancy')
 
             if boto_supports_profile_name_arg(ec2):
@@ -1136,7 +1135,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                 params['block_device_map'] = bdm
 
             # check to see if we're using spot pricing first before starting instances
-            if not spot_price:
+            if not module.params.get('spot_price'):
                 if assign_public_ip is not None and private_ip:
                     params.update(
                         dict(
@@ -1226,7 +1225,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                     + datetime.timedelta(seconds=spot_wait_timeout))
                 params['valid_until'] = utc_valid_until.strftime('%Y-%m-%dT%H:%M:%S.000Z')
 
-                res = ec2.request_spot_instances(spot_price, **params)
+                res = ec2.request_spot_instances(module.params.get('spot_price'), **params)
 
                 # Now we have to do the intermediate waiting
                 if wait:
