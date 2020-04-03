@@ -981,7 +981,6 @@ def create_instances(module, ec2, vpc, override_count=None):
     else:
         count = module.params.get('count')
     wait_timeout = int(module.params.get('wait_timeout'))
-    instance_tags = module.params.get('instance_tags')
     vpc_subnet_id = module.params.get('vpc_subnet_id')
     assign_public_ip = module.boolean(module.params.get('assign_public_ip'))
     private_ip = module.params.get('private_ip')
@@ -1272,9 +1271,9 @@ def create_instances(module, ec2, vpc, override_count=None):
                 inst.modify_attribute('disableApiTermination', True)
 
         # Leave this as late as possible to try and avoid InvalidInstanceID.NotFound
-        if instance_tags and instids:
+        if module.params.get('instance_tags') and instids:
             try:
-                ec2.create_tags(instids, instance_tags)
+                ec2.create_tags(instids, module.params.get('instance_tags'))
             except boto.exception.EC2ResponseError as e:
                 module.fail_json(msg="Instance tagging failed => %s: %s" % (e.error_code, e.error_message))
 
