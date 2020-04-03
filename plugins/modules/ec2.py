@@ -980,7 +980,6 @@ def create_instances(module, ec2, vpc, override_count=None):
         count = override_count
     else:
         count = module.params.get('count')
-    monitoring = module.params.get('monitoring')
     kernel = module.params.get('kernel')
     ramdisk = module.params.get('ramdisk')
     wait = module.params.get('wait')
@@ -1057,7 +1056,7 @@ def create_instances(module, ec2, vpc, override_count=None):
         try:
             params = {'image_id': module.params.get('image'),
                       'key_name': module.params.get('key_name'),
-                      'monitoring_enabled': monitoring,
+                      'monitoring_enabled': module.params.get('monitoring'),
                       'placement': module.params.get('zone'),
                       'instance_type': module.params.get('instance_type'),
                       'kernel_id': kernel,
