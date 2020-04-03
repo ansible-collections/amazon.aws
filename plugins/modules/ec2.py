@@ -981,7 +981,6 @@ def create_instances(module, ec2, vpc, override_count=None):
     else:
         count = module.params.get('count')
     wait_timeout = int(module.params.get('wait_timeout'))
-    ebs_optimized = module.params.get('ebs_optimized')
     exact_count = module.params.get('exact_count')
     count_tag = module.params.get('count_tag')
     source_dest_check = module.boolean(module.params.get('source_dest_check'))
@@ -1052,8 +1051,8 @@ def create_instances(module, ec2, vpc, override_count=None):
             if module.params.get('user_data') is not None:
                 params['user_data'] = to_bytes(module.params.get('user_data'), errors='surrogate_or_strict')
 
-            if ebs_optimized:
-                params['ebs_optimized'] = ebs_optimized
+            if module.params.get('ebs_optimized'):
+                params['ebs_optimized'] = module.params.get('ebs_optimized')
 
             # 'tenancy' always has a default value, but it is not a valid parameter for spot instance request
             if not module.params.get('spot_price'):
