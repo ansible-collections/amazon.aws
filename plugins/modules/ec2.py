@@ -974,7 +974,6 @@ def create_instances(module, ec2, vpc, override_count=None):
         about the instances that were launched
     """
 
-    key_name = module.params.get('key_name')
     id = module.params.get('id')
     group_name = module.params.get('group')
     group_id = module.params.get('group_id')
@@ -1064,7 +1063,7 @@ def create_instances(module, ec2, vpc, override_count=None):
         changed = True
         try:
             params = {'image_id': image,
-                      'key_name': key_name,
+                      'key_name': module.params.get('key_name'),
                       'monitoring_enabled': monitoring,
                       'placement': zone,
                       'instance_type': instance_type,
