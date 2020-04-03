@@ -976,7 +976,6 @@ def create_instances(module, ec2, vpc, override_count=None):
 
     group_name = module.params.get('group')
     group_id = module.params.get('group_id')
-    image = module.params.get('image')
     if override_count:
         count = override_count
     else:
@@ -1056,7 +1055,7 @@ def create_instances(module, ec2, vpc, override_count=None):
     else:
         changed = True
         try:
-            params = {'image_id': image,
+            params = {'image_id': module.params.get('image'),
                       'key_name': module.params.get('key_name'),
                       'monitoring_enabled': monitoring,
                       'placement': module.params.get('zone'),
