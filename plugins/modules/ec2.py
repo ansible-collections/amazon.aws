@@ -976,7 +976,6 @@ def create_instances(module, ec2, vpc, override_count=None):
 
     group_name = module.params.get('group')
     group_id = module.params.get('group_id')
-    tenancy = module.params.get('tenancy')
     spot_price = module.params.get('spot_price')
     spot_type = module.params.get('spot_type')
     image = module.params.get('image')
@@ -1074,7 +1073,7 @@ def create_instances(module, ec2, vpc, override_count=None):
 
             # 'tenancy' always has a default value, but it is not a valid parameter for spot instance request
             if not spot_price:
-                params['tenancy'] = tenancy
+                params['tenancy'] = module.params.get('tenancy')
 
             if boto_supports_profile_name_arg(ec2):
                 params['instance_profile_name'] = instance_profile_name
