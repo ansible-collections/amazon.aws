@@ -980,7 +980,6 @@ def create_instances(module, ec2, vpc, override_count=None):
         count = override_count
     else:
         count = module.params.get('count')
-    ramdisk = module.params.get('ramdisk')
     wait = module.params.get('wait')
     wait_timeout = int(module.params.get('wait_timeout'))
     spot_wait_timeout = int(module.params.get('spot_wait_timeout'))
@@ -1059,7 +1058,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                       'placement': module.params.get('zone'),
                       'instance_type': module.params.get('instance_type'),
                       'kernel_id': module.params.get('kernel'),
-                      'ramdisk_id': ramdisk}
+                      'ramdisk_id': module.params.get('ramdisk')}
             if user_data is not None:
                 params['user_data'] = to_bytes(user_data, errors='surrogate_or_strict')
 
