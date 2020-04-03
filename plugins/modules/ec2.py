@@ -981,7 +981,6 @@ def create_instances(module, ec2, vpc, override_count=None):
     else:
         count = module.params.get('count')
     wait_timeout = int(module.params.get('wait_timeout'))
-    spot_wait_timeout = int(module.params.get('spot_wait_timeout'))
     placement_group = module.params.get('placement_group')
     user_data = module.params.get('user_data')
     instance_tags = module.params.get('instance_tags')
@@ -1216,7 +1215,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                 # UTC format (for example, YYYY -MM -DD T*HH* :MM :SS Z).
                 utc_valid_until = (
                     datetime.datetime.utcnow()
-                    + datetime.timedelta(seconds=spot_wait_timeout))
+                    + datetime.timedelta(seconds=int(module.params.get('spot_wait_timeout'))))
                 params['valid_until'] = utc_valid_until.strftime('%Y-%m-%dT%H:%M:%S.000Z')
 
                 res = ec2.request_spot_instances(module.params.get('spot_price'), **params)
