@@ -980,7 +980,6 @@ def create_instances(module, ec2, vpc, override_count=None):
         count = override_count
     else:
         count = module.params.get('count')
-    wait = module.params.get('wait')
     wait_timeout = int(module.params.get('wait_timeout'))
     spot_wait_timeout = int(module.params.get('spot_wait_timeout'))
     placement_group = module.params.get('placement_group')
@@ -1223,7 +1222,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                 res = ec2.request_spot_instances(module.params.get('spot_price'), **params)
 
                 # Now we have to do the intermediate waiting
-                if wait:
+                if module.params.get('wait'):
                     instids = await_spot_requests(module, ec2, res, count)
                 else:
                     instids = []
@@ -1252,12 +1251,12 @@ def create_instances(module, ec2, vpc, override_count=None):
                 # stale/cached data. Wait a second and then try again
                 time.sleep(1)
                 continue
-            if wait and num_running < len(instids):
+            if module.params.get('wait') and num_running < len(instids):
                 time.sleep(5)
             else:
                 break
 
-        if wait and wait_timeout <= time.time():
+        if module.params.get('wait') and wait_timeout <= time.time():
             # waiting took too long
             module.fail_json(msg="wait for instances running timeout on %s" % time.asctime())
 
