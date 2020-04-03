@@ -981,7 +981,6 @@ def create_instances(module, ec2, vpc, override_count=None):
     else:
         count = module.params.get('count')
     wait_timeout = int(module.params.get('wait_timeout'))
-    private_ip = module.params.get('private_ip')
     instance_profile_name = module.params.get('instance_profile_name')
     volumes = module.params.get('volumes')
     ebs_optimized = module.params.get('ebs_optimized')
@@ -1078,10 +1077,10 @@ def create_instances(module, ec2, vpc, override_count=None):
                         msg="assign_public_ip only available with vpc_subnet_id")
 
                 else:
-                    if private_ip:
+                    if module.params.get('private_ip'):
                         interface = boto.ec2.networkinterface.NetworkInterfaceSpecification(
                             subnet_id=module.params.get('vpc_subnet_id'),
-                            private_ip_address=private_ip,
+                            private_ip_address=module.params.get('private_ip'),
                             groups=group_id,
                             associate_public_ip_address=module.boolean(module.params.get('assign_public_ip')))
                     else:
@@ -1124,7 +1123,7 @@ def create_instances(module, ec2, vpc, override_count=None):
 
             # check to see if we're using spot pricing first before starting instances
             if not module.params.get('spot_price'):
-                if module.boolean(module.params.get('assign_public_ip')) is not None and private_ip:
+                if module.boolean(module.params.get('assign_public_ip')) is not None and module.params.get('private_ip'):
                     params.update(
                         dict(
                             min_count=count_remaining,
@@ -1140,7 +1139,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                             max_count=count_remaining,
                             client_token=module.params.get('id'),
                             placement_group=module.params.get('placement_group'),
-                            private_ip_address=private_ip,
+                            private_ip_address=module.params.get('private_ip'),
                         )
                     )
 
@@ -1182,7 +1181,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                                      "use a (possibly different) 'instanceid' parameter")
 
             else:
-                if private_ip:
+                if module.params.get('private_ip'):
                     module.fail_json(
                         msg='private_ip only available with on-demand (non-spot) instances')
                 if boto_supports_param_in_spot_request(ec2, 'placement_group'):
