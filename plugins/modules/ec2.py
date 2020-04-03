@@ -981,7 +981,6 @@ def create_instances(module, ec2, vpc, override_count=None):
     else:
         count = module.params.get('count')
     wait_timeout = int(module.params.get('wait_timeout'))
-    volumes = module.params.get('volumes')
     ebs_optimized = module.params.get('ebs_optimized')
     exact_count = module.params.get('exact_count')
     count_tag = module.params.get('count_tag')
@@ -1108,9 +1107,9 @@ def create_instances(module, ec2, vpc, override_count=None):
                     else:
                         params['security_groups'] = group_name
 
-            if volumes:
+            if module.params.get('volumes'):
                 bdm = BlockDeviceMapping()
-                for volume in volumes:
+                for volume in module.params.get('volumes'):
                     if 'device_name' not in volume:
                         module.fail_json(msg='Device name must be set for volume')
                     # Minimum volume size is 1GiB. We'll use volume size explicitly set to 0
