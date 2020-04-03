@@ -981,7 +981,6 @@ def create_instances(module, ec2, vpc, override_count=None):
     else:
         count = module.params.get('count')
     wait_timeout = int(module.params.get('wait_timeout'))
-    instance_profile_name = module.params.get('instance_profile_name')
     volumes = module.params.get('volumes')
     ebs_optimized = module.params.get('ebs_optimized')
     exact_count = module.params.get('exact_count')
@@ -1062,9 +1061,9 @@ def create_instances(module, ec2, vpc, override_count=None):
                 params['tenancy'] = module.params.get('tenancy')
 
             if boto_supports_profile_name_arg(ec2):
-                params['instance_profile_name'] = instance_profile_name
+                params['instance_profile_name'] = module.params.get('instance_profile_name')
             else:
-                if instance_profile_name is not None:
+                if module.params.get('instance_profile_name') is not None:
                     module.fail_json(
                         msg="instance_profile_name parameter requires Boto version 2.5.0 or higher")
 
