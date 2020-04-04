@@ -982,7 +982,6 @@ def create_instances(module, ec2, vpc, override_count=None):
         count = module.params.get('count')
     wait_timeout = int(module.params.get('wait_timeout'))
     network_interfaces = module.params.get('network_interfaces')
-    spot_launch_group = module.params.get('spot_launch_group')
     instance_initiated_shutdown_behavior = module.params.get('instance_initiated_shutdown_behavior')
 
     vpc_id = None
@@ -1189,8 +1188,8 @@ def create_instances(module, ec2, vpc, override_count=None):
                     module.fail_json(
                         msg="instance_initiated_shutdown_behavior=stop is not supported for spot instances.")
 
-                if spot_launch_group and isinstance(spot_launch_group, string_types):
-                    params['launch_group'] = spot_launch_group
+                if module.params.get('spot_launch_group') and isinstance(module.params.get('spot_launch_group'), string_types):
+                    params['launch_group'] = module.params.get('spot_launch_group')
 
                 params.update(dict(
                     count=count_remaining,
