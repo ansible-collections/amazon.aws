@@ -981,7 +981,6 @@ def create_instances(module, ec2, vpc, override_count=None):
     else:
         count = module.params.get('count')
     wait_timeout = int(module.params.get('wait_timeout'))
-    source_dest_check = module.boolean(module.params.get('source_dest_check'))
     termination_protection = module.boolean(module.params.get('termination_protection'))
     network_interfaces = module.params.get('network_interfaces')
     spot_launch_group = module.params.get('spot_launch_group')
@@ -1253,7 +1252,7 @@ def create_instances(module, ec2, vpc, override_count=None):
             running_instances.extend(res.instances)
 
         # Enabled by default by AWS
-        if source_dest_check is False:
+        if module.boolean(module.params.get('source_dest_check')) is False:
             for inst in res.instances:
                 inst.modify_attribute('sourceDestCheck', False)
 
