@@ -981,7 +981,6 @@ def create_instances(module, ec2, vpc, override_count=None):
     else:
         count = module.params.get('count')
     wait_timeout = int(module.params.get('wait_timeout'))
-    termination_protection = module.boolean(module.params.get('termination_protection'))
     network_interfaces = module.params.get('network_interfaces')
     spot_launch_group = module.params.get('spot_launch_group')
     instance_initiated_shutdown_behavior = module.params.get('instance_initiated_shutdown_behavior')
@@ -1257,7 +1256,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                 inst.modify_attribute('sourceDestCheck', False)
 
         # Disabled by default by AWS
-        if termination_protection is True:
+        if module.boolean(module.params.get('termination_protection')) is True:
             for inst in res.instances:
                 inst.modify_attribute('disableApiTermination', True)
 
