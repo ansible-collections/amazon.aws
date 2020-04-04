@@ -982,7 +982,6 @@ def create_instances(module, ec2, vpc, override_count=None):
         count = module.params.get('count')
     wait_timeout = int(module.params.get('wait_timeout'))
     network_interfaces = module.params.get('network_interfaces')
-    instance_initiated_shutdown_behavior = module.params.get('instance_initiated_shutdown_behavior')
 
     vpc_id = None
     if module.params.get('vpc_subnet_id'):
@@ -1137,7 +1136,7 @@ def create_instances(module, ec2, vpc, override_count=None):
 
                 # For ordinary (not spot) instances, we can select 'stop'
                 # (the default) or 'terminate' here.
-                params['instance_initiated_shutdown_behavior'] = instance_initiated_shutdown_behavior or 'stop'
+                params['instance_initiated_shutdown_behavior'] = module.params.get('instance_initiated_shutdown_behavior') or 'stop'
 
                 try:
                     res = ec2.run_instances(**params)
@@ -1184,7 +1183,7 @@ def create_instances(module, ec2, vpc, override_count=None):
 
                 # You can't tell spot instances to 'stop'; they will always be
                 # 'terminate'd. For convenience, we'll ignore the latter value.
-                if instance_initiated_shutdown_behavior and instance_initiated_shutdown_behavior != 'terminate':
+                if module.params.get('instance_initiated_shutdown_behavior') and module.params.get('instance_initiated_shutdown_behavior') != 'terminate':
                     module.fail_json(
                         msg="instance_initiated_shutdown_behavior=stop is not supported for spot instances.")
 
