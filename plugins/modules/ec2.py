@@ -962,55 +962,6 @@ def enforce_count(module, ec2, vpc):
     return (all_instances, instance_dict_array, changed_instance_ids, changed)
 
 
-def set_group(module, ec2, vpc):
-    """
-    sets security group name and id
-
-    module : AnsibleModule object
-    ec2: authenticated ec2 connection object
-
-    Returns:
-        A tuple of the group name and id
-    """
-
-    group_name = module.params.get('group')
-    group_id = module.params.get('group_id')
-
-    vpc_id = None
-    if module.params.get('vpc_subnet_id'):
-        if not vpc:
-            module.fail_json(msg="region must be specified")
-        else:
-            vpc_id = vpc.get_all_subnets(subnet_ids=[module.params.get('vpc_subnet_id')])[0].vpc_id
-    else:
-        vpc_id = None
-
-    try:
-        # Here we try to lookup the group id from the security group name - if group is set.
-        if group_name:
-            if vpc_id:
-                grp_details = ec2.get_all_security_groups(filters={'vpc_id': vpc_id})
-            else:
-                grp_details = ec2.get_all_security_groups()
-            if isinstance(group_name, string_types):
-                group_name = [group_name]
-            unmatched = set(group_name).difference(str(grp.name) for grp in grp_details)
-            if len(unmatched) > 0:
-                module.fail_json(msg="The following group names are not valid: %s" % ', '.join(unmatched))
-            group_id = [str(grp.id) for grp in grp_details if str(grp.name) in group_name]
-        # Now we try to lookup the group id testing if group exists.
-        elif group_id:
-            # wrap the group_id in a list if it's not one already
-            if isinstance(group_id, string_types):
-                group_id = [group_id]
-            grp_details = ec2.get_all_security_groups(group_ids=group_id)
-            group_name = [grp_item.name for grp_item in grp_details]
-    except boto.exception.NoAuthHandlerFound as e:
-        module.fail_json(msg=str(e))
-
-    return group_name, group_id
-
-
 def create_instances(module, ec2, vpc, override_count=None):
     """
     Creates new instances
@@ -1025,25 +976,14 @@ def create_instances(module, ec2, vpc, override_count=None):
 
     wait_timeout = int(module.params.get('wait_timeout'))
     network_interfaces = module.params.get('network_interfaces')
-    (group_name, group_id) = set_group(module, ec2, vpc)
+    group_name, group_id = set_group(module, ec2, vpc)
 
     if override_count:
         count = override_count
     else:
         count = module.params.get('count')
 
-    # Lookup any instances that much our run id.
-
-    running_instances = []
-    count_remaining = int(count)
-
-    if module.params.get('id') is not None:
-        filter_dict = {'client-token': module.params.get('id'), 'instance-state-name': 'running'}
-        previous_reservations = ec2.get_all_instances(None, filter_dict)
-        for res in previous_reservations:
-            for prev_instance in res.instances:
-                running_instances.append(prev_instance)
-        count_remaining = count_remaining - len(running_instances)
+    count_remaining, res, running_instances = lookup_instances(count, ec2, module)
 
     # Both min_count and max_count equal count parameter. This means the launch request is explicit (we want count, or fail) in how many instances we want.
 
@@ -1291,6 +1231,78 @@ def create_instances(module, ec2, vpc, override_count=None):
         instance_dict_array.append(d)
 
     return (instance_dict_array, created_instance_ids, changed)
+
+
+def set_group(module, ec2, vpc):
+    """
+    sets security group name and id
+
+    module : Ansible odule object
+    ec2: authenticated ec2 connection object
+
+    Returns:
+        A dictionary of group name and id
+    """
+
+    group_name = module.params.get('group')
+    group_id = module.params.get('group_id')
+
+    vpc_id = None
+    if module.params.get('vpc_subnet_id'):
+        if not vpc:
+            module.fail_json(msg="region must be specified")
+        else:
+            vpc_id = vpc.get_all_subnets(subnet_ids=[module.params.get('vpc_subnet_id')])[0].vpc_id
+    else:
+        vpc_id = None
+
+    try:
+        # Here we try to lookup the group id from the security group name - if group is set.
+        if group_name:
+            if vpc_id:
+                grp_details = ec2.get_all_security_groups(filters={'vpc_id': vpc_id})
+            else:
+                grp_details = ec2.get_all_security_groups()
+            if isinstance(group_name, string_types):
+                group_name = [group_name]
+            unmatched = set(group_name).difference(str(grp.name) for grp in grp_details)
+            if len(unmatched) > 0:
+                module.fail_json(msg="The following group names are not valid: %s" % ', '.join(unmatched))
+            group_id = [str(grp.id) for grp in grp_details if str(grp.name) in group_name]
+        # Now we try to lookup the group id testing if group exists.
+        elif group_id:
+            # wrap the group_id in a list if it's not one already
+            if isinstance(group_id, string_types):
+                group_id = [group_id]
+            grp_details = ec2.get_all_security_groups(group_ids=group_id)
+            group_name = [grp_item.name for grp_item in grp_details]
+    except boto.exception.NoAuthHandlerFound as e:
+        module.fail_json(msg=str(e))
+
+    return group_name, group_id
+
+
+def lookup_instances(count, ec2, module):
+    """
+    Lookup any instances that much our run id.
+
+    module: Ansible module object
+    ec2: authenticated ec2 connection object
+
+    Returns a dictionary of instance information
+    about the instances terminated.
+    """
+
+    running_instances = []
+    count_remaining = int(count)
+    if module.params.get('id') is not None:
+        filter_dict = {'client-token': module.params.get('id'), 'instance-state-name': 'running'}
+        previous_reservations = ec2.get_all_instances(None, filter_dict)
+        for res in previous_reservations:
+            for prev_instance in res.instances:
+                running_instances.append(prev_instance)
+        count_remaining = count_remaining - len(running_instances)
+    return count_remaining, res, running_instances
 
 
 def terminate_instances(module, ec2, instance_ids):
