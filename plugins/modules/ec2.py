@@ -962,26 +962,19 @@ def enforce_count(module, ec2, vpc):
     return (all_instances, instance_dict_array, changed_instance_ids, changed)
 
 
-def create_instances(module, ec2, vpc, override_count=None):
+def set_group(module, ec2, vpc):
     """
-    Creates new instances
+    sets security group name and id
 
     module : AnsibleModule object
     ec2: authenticated ec2 connection object
 
     Returns:
-        A list of dictionaries with instance information
-        about the instances that were launched
+        A tuple of the group name and id
     """
 
     group_name = module.params.get('group')
     group_id = module.params.get('group_id')
-    if override_count:
-        count = override_count
-    else:
-        count = module.params.get('count')
-    wait_timeout = int(module.params.get('wait_timeout'))
-    network_interfaces = module.params.get('network_interfaces')
 
     vpc_id = None
     if module.params.get('vpc_subnet_id'):
@@ -1014,6 +1007,30 @@ def create_instances(module, ec2, vpc, override_count=None):
             group_name = [grp_item.name for grp_item in grp_details]
     except boto.exception.NoAuthHandlerFound as e:
         module.fail_json(msg=str(e))
+
+    return group_name, group_id
+
+
+def create_instances(module, ec2, vpc, override_count=None):
+    """
+    Creates new instances
+
+    module : AnsibleModule object
+    ec2: authenticated ec2 connection object
+
+    Returns:
+        A list of dictionaries with instance information
+        about the instances that were launched
+    """
+
+    wait_timeout = int(module.params.get('wait_timeout'))
+    network_interfaces = module.params.get('network_interfaces')
+    (group_name, group_id) = set_group(module, ec2, vpc)
+
+    if override_count:
+        count = override_count
+    else:
+        count = module.params.get('count')
 
     # Lookup any instances that much our run id.
 
