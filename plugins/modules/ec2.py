@@ -1060,12 +1060,9 @@ def create_instances(module, ec2, vpc, override_count=None):
         for res in res_list:
             running_instances.extend(res.instances)
 
-        set_source_dest_check(module, res)
+        disable_source_dest_check(module, res)
 
-        # Disabled by default by AWS
-        if module.boolean(module.params.get('termination_protection')) is True:
-            for inst in res.instances:
-                inst.modify_attribute('disableApiTermination', True)
+        enable_termination_protection(module, res)
 
         # Leave this as late as possible to try and avoid InvalidInstanceID.NotFound
         if module.params.get('instance_tags') and instids:
@@ -1085,7 +1082,19 @@ def create_instances(module, ec2, vpc, override_count=None):
     return (instance_dict_array, created_instance_ids, changed)
 
 
-def set_source_dest_check(module, res):
+def enable_termination_protection(module, res):
+    """
+    Disabled by default by AWS
+
+    module : Ansible Module object
+    res: ec2 reservation
+    """
+    if module.boolean(module.params.get('termination_protection')) is True:
+        for inst in res.instances:
+            inst.modify_attribute('disableApiTermination', True)
+
+
+def disable_source_dest_check(module, res):
     """
     Enabled by default by AWS
 
