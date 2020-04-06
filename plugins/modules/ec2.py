@@ -1003,19 +1003,7 @@ def create_instances(module, ec2, vpc, override_count=None):
             if not module.params.get('spot_price'):
                 assign_ip(module, count_remaining, params)
 
-                # For ordinary (not spot) instances, we can select 'stop'
-                # (the default) or 'terminate' here.
-                params['instance_initiated_shutdown_behavior'] = module.params.get('instance_initiated_shutdown_behavior') or 'stop'
-
-                try:
-                    res = ec2.run_instances(**params)
-                except boto.exception.EC2ResponseError as e:
-                    if (params['instance_initiated_shutdown_behavior'] != 'terminate' and
-                            "InvalidParameterCombination" == e.error_code):
-                        params['instance_initiated_shutdown_behavior'] = 'terminate'
-                        res = ec2.run_instances(**params)
-                    else:
-                        raise
+                res = set_instance_initiated_shutdown_behavior(module, ec2, params)
 
                 instids = [i.id for i in res.instances]
                 while True:
@@ -1114,6 +1102,29 @@ def create_instances(module, ec2, vpc, override_count=None):
         instance_dict_array.append(d)
 
     return (instance_dict_array, created_instance_ids, changed)
+
+
+def set_instance_initiated_shutdown_behavior(module, ec2, params):
+    """
+    For ordinary (not spot) instances, we can select 'stop'
+    (the default) or 'terminate' here.
+    
+    module : Ansible Module object
+    ec2: authenticated ec2 connection object
+    params: instance parameters
+    """
+
+    params['instance_initiated_shutdown_behavior'] = module.params.get('instance_initiated_shutdown_behavior') or 'stop'
+    try:
+        res = ec2.run_instances(**params)
+    except boto.exception.EC2ResponseError as e:
+        if (params['instance_initiated_shutdown_behavior'] != 'terminate' and
+                "InvalidParameterCombination" == e.error_code):
+            params['instance_initiated_shutdown_behavior'] = 'terminate'
+            res = ec2.run_instances(**params)
+        else:
+            raise
+    return res
 
 
 def assign_ip(module, count_remaining, params):
