@@ -999,12 +999,7 @@ def create_instances(module, ec2, vpc, override_count=None):
 
             set_spot_price(module, params)
 
-            if boto_supports_profile_name_arg(ec2):
-                params['instance_profile_name'] = module.params.get('instance_profile_name')
-            else:
-                if module.params.get('instance_profile_name') is not None:
-                    module.fail_json(
-                        msg="instance_profile_name parameter requires Boto version 2.5.0 or higher")
+            set_instance_profile_name(module, ec2, params)
 
             set_network_interfaces(module, ec2, vpc, params)
 
@@ -1153,6 +1148,20 @@ def create_instances(module, ec2, vpc, override_count=None):
         instance_dict_array.append(d)
 
     return (instance_dict_array, created_instance_ids, changed)
+
+
+def set_instance_profile_name(module, ec2, params):
+    """
+    module : Ansible Module object
+    ec2: authenticated ec2 connection object
+    params: instance parameters
+    """
+    if boto_supports_profile_name_arg(ec2):
+        params['instance_profile_name'] = module.params.get('instance_profile_name')
+    else:
+        if module.params.get('instance_profile_name') is not None:
+            module.fail_json(
+                msg="instance_profile_name parameter requires Boto version 2.5.0 or higher")
 
 
 def set_spot_price(module, params):
