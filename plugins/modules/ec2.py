@@ -1003,17 +1003,7 @@ def create_instances(module, ec2, vpc, override_count=None):
 
             set_network_interfaces(module, ec2, vpc, params)
 
-            if module.params.get('volumes'):
-                bdm = BlockDeviceMapping()
-                for volume in module.params.get('volumes'):
-                    if 'device_name' not in volume:
-                        module.fail_json(msg='Device name must be set for volume')
-                    # Minimum volume size is 1GiB. We'll use volume size explicitly set to 0
-                    # to be a signal not to create this volume
-                    if 'volume_size' not in volume or int(volume['volume_size']) > 0:
-                        bdm[volume['device_name']] = create_block_device(module, ec2, volume)
-
-                params['block_device_map'] = bdm
+            set_block_device_map(module, ec2, params)
 
             # check to see if we're using spot pricing first before starting instances
             if not module.params.get('spot_price'):
@@ -1148,6 +1138,25 @@ def create_instances(module, ec2, vpc, override_count=None):
         instance_dict_array.append(d)
 
     return (instance_dict_array, created_instance_ids, changed)
+
+
+def set_block_device_map(module, ec2, params):
+    """
+    module : Ansible Module object
+    ec2: authenticated ec2 connection object
+    params: instance parameters
+    """
+    if module.params.get('volumes'):
+        bdm = BlockDeviceMapping()
+        for volume in module.params.get('volumes'):
+            if 'device_name' not in volume:
+                module.fail_json(msg='Device name must be set for volume')
+            # Minimum volume size is 1GiB. We'll use volume size explicitly set to 0
+            # to be a signal not to create this volume
+            if 'volume_size' not in volume or int(volume['volume_size']) > 0:
+                bdm[volume['device_name']] = create_block_device(module, ec2, volume)
+
+        params['block_device_map'] = bdm
 
 
 def set_instance_profile_name(module, ec2, params):
