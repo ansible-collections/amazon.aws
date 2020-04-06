@@ -1255,7 +1255,7 @@ def get_count(module, override_count):
     """
     module : Ansible Module object
 
-    Returns: integer count
+    Returns: count integer
 
     """
 
@@ -1267,26 +1267,19 @@ def get_count(module, override_count):
 
 def set_group(module, ec2, vpc):
     """
-    sets security group name and id
+    returns security group name and id
 
     module : Ansible odule object
     ec2: authenticated ec2 connection object
 
     Returns:
-        A dictionary of group name and id
+        A list of group name and id
     """
 
     group_name = module.params.get('group')
     group_id = module.params.get('group_id')
 
-    vpc_id = None
-    if module.params.get('vpc_subnet_id'):
-        if not vpc:
-            module.fail_json(msg="region must be specified")
-        else:
-            vpc_id = vpc.get_all_subnets(subnet_ids=[module.params.get('vpc_subnet_id')])[0].vpc_id
-    else:
-        vpc_id = None
+    vpc_id = get_vpc_id(module, vpc)
 
     try:
         # Here we try to lookup the group id from the security group name - if group is set.
@@ -1314,6 +1307,23 @@ def set_group(module, ec2, vpc):
     return group_name, group_id
 
 
+def get_vpc_id(module, vpc):
+    """
+    Returns vpc id
+
+    module: Ansible module object
+    """
+    vpc_id = None
+    if module.params.get('vpc_subnet_id'):
+        if not vpc:
+            module.fail_json(msg="region must be specified")
+        else:
+            vpc_id = vpc.get_all_subnets(subnet_ids=[module.params.get('vpc_subnet_id')])[0].vpc_id
+    else:
+        vpc_id = None
+    return vpc_id
+
+
 def lookup_instances(module, ec2, override_count):
     """
     Lookup any instances that much our run id.
@@ -1321,8 +1331,7 @@ def lookup_instances(module, ec2, override_count):
     module: Ansible module object
     ec2: authenticated ec2 connection object
 
-    Returns a dictionary of instance information
-    about the instances terminated.
+    Returns a list of remaining count, reservation, and running instances
     """
     running_instances = []
     count_remaining = int(get_count(module, override_count))
