@@ -847,7 +847,7 @@ def boto_supports_param_in_spot_request(ec2, param):
     return param in get_function_code(method).co_varnames
 
 
-def await_spot_requests(module, ec2, spot_requests, count):
+def await_spot_requests(module, ec2, spot_requests, override_count):
     """
     Wait for a group of spot requests to be fulfilled, or fail.
 
@@ -897,7 +897,7 @@ def await_spot_requests(module, ec2, spot_requests, count):
                         spot_msg = "Spot instance request %s was closed by AWS with the status %s and fault %s:%s"
                         module.fail_json(msg=spot_msg % (sir.id, sir.status.code, sir.fault.code, sir.fault.message))
 
-        if len(spot_req_inst_ids) < count:
+        if len(spot_req_inst_ids) < get_count(module, override_count):
             time.sleep(5)
         else:
             return list(spot_req_inst_ids.values())
@@ -978,12 +978,7 @@ def create_instances(module, ec2, vpc, override_count=None):
     network_interfaces = module.params.get('network_interfaces')
     group_name, group_id = set_group(module, ec2, vpc)
 
-    if override_count:
-        count = override_count
-    else:
-        count = module.params.get('count')
-
-    count_remaining, res, running_instances = lookup_instances(count, ec2, module)
+    count_remaining, res, running_instances = lookup_instances(module, ec2, override_count)
 
     # Both min_count and max_count equal count parameter. This means the launch request is explicit (we want count, or fail) in how many instances we want.
 
@@ -1164,7 +1159,7 @@ def create_instances(module, ec2, vpc, override_count=None):
 
                 # Now we have to do the intermediate waiting
                 if module.params.get('wait'):
-                    instids = await_spot_requests(module, ec2, res, count)
+                    instids = await_spot_requests(module, ec2, res, override_count)
                 else:
                     instids = []
         except boto.exception.BotoServerError as e:
@@ -1233,6 +1228,20 @@ def create_instances(module, ec2, vpc, override_count=None):
     return (instance_dict_array, created_instance_ids, changed)
 
 
+def get_count(module, override_count):
+    """
+    module : Ansible odule object
+
+    Returns: integer count
+
+    """
+
+    if override_count:
+        return override_count
+    else:
+        return module.params.get('count')
+
+
 def set_group(module, ec2, vpc):
     """
     sets security group name and id
@@ -1282,7 +1291,7 @@ def set_group(module, ec2, vpc):
     return group_name, group_id
 
 
-def lookup_instances(count, ec2, module):
+def lookup_instances(module, ec2, override_count):
     """
     Lookup any instances that much our run id.
 
@@ -1292,9 +1301,8 @@ def lookup_instances(count, ec2, module):
     Returns a dictionary of instance information
     about the instances terminated.
     """
-
     running_instances = []
-    count_remaining = int(count)
+    count_remaining = int(get_count(module, override_count))
     if module.params.get('id') is not None:
         filter_dict = {'client-token': module.params.get('id'), 'instance-state-name': 'running'}
         previous_reservations = ec2.get_all_instances(None, filter_dict)
