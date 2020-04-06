@@ -992,8 +992,8 @@ def create_instances(module, ec2, vpc, override_count=None):
                       'instance_type': module.params.get('instance_type'),
                       'kernel_id': module.params.get('kernel'),
                       'ramdisk_id': module.params.get('ramdisk')}
-            if module.params.get('user_data') is not None:
-                params['user_data'] = to_bytes(module.params.get('user_data'), errors='surrogate_or_strict')
+
+            set_user_data(module, params)
 
             if module.params.get('ebs_optimized'):
                 params['ebs_optimized'] = module.params.get('ebs_optimized')
@@ -1158,12 +1158,20 @@ def create_instances(module, ec2, vpc, override_count=None):
     return (instance_dict_array, created_instance_ids, changed)
 
 
+def set_user_data(module, params):
+    """
+    module : Ansible Module object
+    params: instance parameters
+    """
+    if module.params.get('user_data') is not None:
+        params['user_data'] = to_bytes(module.params.get('user_data'), errors='surrogate_or_strict')
+
+
 def set_network_interfaces(module, ec2, vpc, params):
     """
-    sets network interfaces
-
     module : Ansible Module object
     ec2: authenticated ec2 connection object
+    params: instance parameters
     """
     group_name, group_id = get_group(module, ec2, vpc)
     if module.boolean(module.params.get('assign_public_ip')) is not None:
