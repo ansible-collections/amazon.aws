@@ -974,7 +974,7 @@ def create_instances(module, ec2, vpc, override_count=None):
         about the instances that were launched
     """
 
-    group_name, group_id = set_group(module, ec2, vpc)
+
     count_remaining, res, running_instances = lookup_instances(module, ec2, override_count)
 
     # Both min_count and max_count equal count parameter. This means the launch request is explicit
@@ -1009,7 +1009,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                     module.fail_json(
                         msg="instance_profile_name parameter requires Boto version 2.5.0 or higher")
 
-            set_network_interfaces(module, ec2, group_name, group_id, params)
+            set_network_interfaces(module, ec2, vpc, params)
 
             if module.params.get('volumes'):
                 bdm = BlockDeviceMapping()
@@ -1158,13 +1158,14 @@ def create_instances(module, ec2, vpc, override_count=None):
     return (instance_dict_array, created_instance_ids, changed)
 
 
-def set_network_interfaces(module, ec2, group_name, group_id, params):
+def set_network_interfaces(module, ec2, vpc, params):
     """
     sets network interfaces
 
     module : Ansible Module object
     ec2: authenticated ec2 connection object
     """
+    group_name, group_id = get_group(module, ec2, vpc)
     if module.boolean(module.params.get('assign_public_ip')) is not None:
         if not boto_supports_associate_public_ip_address(ec2):
             module.fail_json(
@@ -1265,7 +1266,7 @@ def get_count(module, override_count):
         return module.params.get('count')
 
 
-def set_group(module, ec2, vpc):
+def get_group(module, ec2, vpc):
     """
     returns security group name and id
 
