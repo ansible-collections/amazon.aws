@@ -1030,17 +1030,11 @@ def create_instances(module, ec2, vpc, override_count=None):
 
             else:
                 check_private_ip(module)
-                if boto_supports_param_in_spot_request(ec2, 'placement_group'):
-                    params['placement_group'] = module.params.get('placement_group')
-                elif module.params.get('placement_group'):
-                    module.fail_json(
-                        msg="placement_group parameter requires Boto version 2.3.0 or higher.")
+                set_placement_group(module, ec2, params)
 
                 # You can't tell spot instances to 'stop'; they will always be
                 # 'terminate'd. For convenience, we'll ignore the latter value.
-                if module.params.get('instance_initiated_shutdown_behavior') and module.params.get('instance_initiated_shutdown_behavior') != 'terminate':
-                    module.fail_json(
-                        msg="instance_initiated_shutdown_behavior=stop is not supported for spot instances.")
+                check_instance_initiated_shutdown_behavior(module)
 
                 if module.params.get('spot_launch_group') and isinstance(module.params.get('spot_launch_group'), string_types):
                     params['launch_group'] = module.params.get('spot_launch_group')
@@ -1100,6 +1094,29 @@ def create_instances(module, ec2, vpc, override_count=None):
         instance_dict_array.append(d)
 
     return (instance_dict_array, created_instance_ids, changed)
+
+
+def check_instance_initiated_shutdown_behavior(module):
+    """
+    module : Ansible Module object
+    """
+    if module.params.get('instance_initiated_shutdown_behavior') and module.params.get(
+            'instance_initiated_shutdown_behavior') != 'terminate':
+        module.fail_json(
+            msg="instance_initiated_shutdown_behavior=stop is not supported for spot instances.")
+
+
+def set_placement_group(module, ec2, params):
+    """
+    module : Ansible Module object
+    ec2: authenticated ec2 connection object
+    params: instance parameters
+    """
+    if boto_supports_param_in_spot_request(ec2, 'placement_group'):
+        params['placement_group'] = module.params.get('placement_group')
+    elif module.params.get('placement_group'):
+        module.fail_json(
+            msg="placement_group parameter requires Boto version 2.3.0 or higher.")
 
 
 def check_private_ip(module):
