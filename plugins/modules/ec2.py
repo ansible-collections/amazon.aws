@@ -966,7 +966,7 @@ def create_instances(module, ec2, vpc, override_count=None):
     """
     Creates new instances
 
-    module : AnsibleModule object
+    module : Ansible Module object
     ec2: authenticated ec2 connection object
 
     Returns:
@@ -974,13 +974,12 @@ def create_instances(module, ec2, vpc, override_count=None):
         about the instances that were launched
     """
 
-    wait_timeout = int(module.params.get('wait_timeout'))
     network_interfaces = module.params.get('network_interfaces')
-    group_name, group_id = set_group(module, ec2, vpc)
 
     count_remaining, res, running_instances = lookup_instances(module, ec2, override_count)
 
-    # Both min_count and max_count equal count parameter. This means the launch request is explicit (we want count, or fail) in how many instances we want.
+    # Both min_count and max_count equal count parameter. This means the launch request is explicit
+    # (we want count, or fail) in how many instances we want.
 
     if count_remaining == 0:
         changed = False
@@ -1046,6 +1045,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                     params['network_interfaces'] = \
                         boto.ec2.networkinterface.NetworkInterfaceCollection(*interfaces)
                 else:
+                    group_name, group_id = set_group(module, ec2, vpc)
                     params['subnet_id'] = module.params.get('vpc_subnet_id')
                     if module.params.get('vpc_subnet_id'):
                         params['security_group_ids'] = group_id
@@ -1165,36 +1165,7 @@ def create_instances(module, ec2, vpc, override_count=None):
         except boto.exception.BotoServerError as e:
             module.fail_json(msg="Instance creation failed => %s: %s" % (e.error_code, e.error_message))
 
-        # wait here until the instances are up
-        num_running = 0
-        wait_timeout = time.time() + wait_timeout
-        res_list = ()
-        while wait_timeout > time.time() and num_running < len(instids):
-            try:
-                res_list = ec2.get_all_instances(instids)
-            except boto.exception.BotoServerError as e:
-                if e.error_code == 'InvalidInstanceID.NotFound':
-                    time.sleep(1)
-                    continue
-                else:
-                    raise
-
-            num_running = 0
-            for res in res_list:
-                num_running += len([i for i in res.instances if i.state == 'running'])
-            if len(res_list) <= 0:
-                # got a bad response of some sort, possibly due to
-                # stale/cached data. Wait a second and then try again
-                time.sleep(1)
-                continue
-            if module.params.get('wait') and num_running < len(instids):
-                time.sleep(5)
-            else:
-                break
-
-        if module.params.get('wait') and wait_timeout <= time.time():
-            # waiting took too long
-            module.fail_json(msg="wait for instances running timeout on %s" % time.asctime())
+        res, res_list = wait_for_instances(module, ec2, res, instids)
 
         # We do this after the loop ends so that we end up with one list
         for res in res_list:
@@ -1228,9 +1199,52 @@ def create_instances(module, ec2, vpc, override_count=None):
     return (instance_dict_array, created_instance_ids, changed)
 
 
+def wait_for_instances(module, ec2, res, instids):
+    """
+    wait here until the instances are up
+
+    module : Ansible Module object
+    ec2: authenticated ec2 connection object
+    res: ec2 running instances
+    instids: list of instant ids
+
+    Returns:
+        instances and instances list
+    """
+    num_running = 0
+    wait_timeout = time.time() + int(module.params.get('wait_timeout'))
+    res_list = ()
+    while wait_timeout > time.time() and num_running < len(instids):
+        try:
+            res_list = ec2.get_all_instances(instids)
+        except boto.exception.BotoServerError as e:
+            if e.error_code == 'InvalidInstanceID.NotFound':
+                time.sleep(1)
+                continue
+            else:
+                raise
+
+        num_running = 0
+        for res in res_list:
+            num_running += len([i for i in res.instances if i.state == 'running'])
+        if len(res_list) <= 0:
+            # got a bad response of some sort, possibly due to
+            # stale/cached data. Wait a second and then try again
+            time.sleep(1)
+            continue
+        if module.params.get('wait') and num_running < len(instids):
+            time.sleep(5)
+        else:
+            break
+    if module.params.get('wait') and wait_timeout <= time.time():
+        # waiting took too long
+        module.fail_json(msg="wait for instances running timeout on %s" % time.asctime())
+    return res, res_list
+
+
 def get_count(module, override_count):
     """
-    module : Ansible odule object
+    module : Ansible Module object
 
     Returns: integer count
 
