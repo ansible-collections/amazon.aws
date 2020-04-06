@@ -1031,11 +1031,7 @@ def create_instances(module, ec2, vpc, override_count=None):
             else:
                 check_private_ip(module)
                 set_placement_group(module, ec2, params)
-
-                # You can't tell spot instances to 'stop'; they will always be
-                # 'terminate'd. For convenience, we'll ignore the latter value.
                 check_instance_initiated_shutdown_behavior(module)
-
                 set_launch_group(module, params)
 
                 params.update(dict(
@@ -1061,20 +1057,25 @@ def create_instances(module, ec2, vpc, override_count=None):
             running_instances.extend(res.instances)
 
         disable_source_dest_check(module, res)
-
         enable_termination_protection(module, res)
-
         create_instance_tags(module, ec2, instids)
 
     instance_dict_array = []
     created_instance_ids = []
-    for inst in running_instances:
-        inst.update()
-        d = get_instance_info(inst)
-        created_instance_ids.append(inst.id)
-        instance_dict_array.append(d)
+    set_instance_dict_and_id(running_instances, instance_dict_array, created_instance_ids)
 
     return (instance_dict_array, created_instance_ids, changed)
+
+
+def set_instance_dict_and_id(running_instances, instance_dict_array, created_instance_ids):
+    """
+    running_instances: list of running instances
+    instance_dict_array: empty list to write instances
+    created_instance_ids: empty list to write ids
+    """
+    for inst in running_instances:
+        created_instance_ids.append(inst.id)
+        instance_dict_array.append(get_instance_info(inst))
 
 
 def create_instance_tags(module, ec2, instids):
