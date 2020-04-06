@@ -1064,12 +1064,7 @@ def create_instances(module, ec2, vpc, override_count=None):
 
         enable_termination_protection(module, res)
 
-        # Leave this as late as possible to try and avoid InvalidInstanceID.NotFound
-        if module.params.get('instance_tags') and instids:
-            try:
-                ec2.create_tags(instids, module.params.get('instance_tags'))
-            except boto.exception.EC2ResponseError as e:
-                module.fail_json(msg="Instance tagging failed => %s: %s" % (e.error_code, e.error_message))
+        create_instance_tags(module, ec2, instids)
 
     instance_dict_array = []
     created_instance_ids = []
@@ -1080,6 +1075,22 @@ def create_instances(module, ec2, vpc, override_count=None):
         instance_dict_array.append(d)
 
     return (instance_dict_array, created_instance_ids, changed)
+
+
+def create_instance_tags(module, ec2, instids):
+    """
+    Leave this as late as possible to try and avoid InvalidInstanceID.NotFound
+
+    module : Ansible Module object
+    ec2: authenticated ec2 connection object
+    instids: instance IDs
+    """
+
+    if module.params.get('instance_tags') and instids:
+        try:
+            ec2.create_tags(instids, module.params.get('instance_tags'))
+        except boto.exception.EC2ResponseError as e:
+            module.fail_json(msg="Instance tagging failed => %s: %s" % (e.error_code, e.error_message))
 
 
 def enable_termination_protection(module, res):
