@@ -974,8 +974,7 @@ def create_instances(module, ec2, vpc, override_count=None):
         about the instances that were launched
     """
 
-
-    count_remaining, res, running_instances = lookup_instances(module, ec2, override_count)
+    count_remaining, running_instances = lookup_instances(module, ec2, override_count)
 
     # Both min_count and max_count equal count parameter. This means the launch request is explicit
     # (we want count, or fail) in how many instances we want.
@@ -994,38 +993,15 @@ def create_instances(module, ec2, vpc, override_count=None):
                       'ramdisk_id': module.params.get('ramdisk')}
 
             set_user_data(module, params)
-
             set_ebs_optimized(module, params)
-
             set_spot_price(module, params)
-
             set_instance_profile_name(module, ec2, params)
-
             set_network_interfaces(module, ec2, vpc, params)
-
             set_block_device_map(module, ec2, params)
 
             # check to see if we're using spot pricing first before starting instances
             if not module.params.get('spot_price'):
-                if module.boolean(module.params.get('assign_public_ip')) is not None and module.params.get('private_ip'):
-                    params.update(
-                        dict(
-                            min_count=count_remaining,
-                            max_count=count_remaining,
-                            client_token=module.params.get('id'),
-                            placement_group=module.params.get('placement_group'),
-                        )
-                    )
-                else:
-                    params.update(
-                        dict(
-                            min_count=count_remaining,
-                            max_count=count_remaining,
-                            client_token=module.params.get('id'),
-                            placement_group=module.params.get('placement_group'),
-                            private_ip_address=module.params.get('private_ip'),
-                        )
-                    )
+                assign_ip(module, count_remaining, params)
 
                 # For ordinary (not spot) instances, we can select 'stop'
                 # (the default) or 'terminate' here.
@@ -1138,6 +1114,32 @@ def create_instances(module, ec2, vpc, override_count=None):
         instance_dict_array.append(d)
 
     return (instance_dict_array, created_instance_ids, changed)
+
+
+def assign_ip(module, count_remaining, params):
+    """
+    module : Ansible Module object
+    params: instance parameters
+    """
+    if module.boolean(module.params.get('assign_public_ip')) is not None and module.params.get('private_ip'):
+        params.update(
+            dict(
+                min_count=count_remaining,
+                max_count=count_remaining,
+                client_token=module.params.get('id'),
+                placement_group=module.params.get('placement_group'),
+            )
+        )
+    else:
+        params.update(
+            dict(
+                min_count=count_remaining,
+                max_count=count_remaining,
+                client_token=module.params.get('id'),
+                placement_group=module.params.get('placement_group'),
+                private_ip_address=module.params.get('private_ip'),
+            )
+        )
 
 
 def set_block_device_map(module, ec2, params):
@@ -1386,7 +1388,7 @@ def lookup_instances(module, ec2, override_count):
             for prev_instance in res.instances:
                 running_instances.append(prev_instance)
         count_remaining = count_remaining - len(running_instances)
-    return count_remaining, res, running_instances
+    return count_remaining, running_instances
 
 
 def terminate_instances(module, ec2, instance_ids):
