@@ -1060,10 +1060,7 @@ def create_instances(module, ec2, vpc, override_count=None):
         for res in res_list:
             running_instances.extend(res.instances)
 
-        # Enabled by default by AWS
-        if module.boolean(module.params.get('source_dest_check')) is False:
-            for inst in res.instances:
-                inst.modify_attribute('sourceDestCheck', False)
+        set_source_dest_check(module, res)
 
         # Disabled by default by AWS
         if module.boolean(module.params.get('termination_protection')) is True:
@@ -1086,6 +1083,18 @@ def create_instances(module, ec2, vpc, override_count=None):
         instance_dict_array.append(d)
 
     return (instance_dict_array, created_instance_ids, changed)
+
+
+def set_source_dest_check(module, res):
+    """
+    Enabled by default by AWS
+
+    module : Ansible Module object
+    res: ec2 reservation
+    """
+    if module.boolean(module.params.get('source_dest_check')) is False:
+        for inst in res.instances:
+            inst.modify_attribute('sourceDestCheck', False)
 
 
 def set_spot_valid_until(module, ec2, params):
@@ -1310,7 +1319,7 @@ def wait_for_instances(module, ec2, res, instids):
 
     module : Ansible Module object
     ec2: authenticated ec2 connection object
-    res: ec2 running instances
+    res: ec2 reservation
     instids: list of instant ids
 
     Returns:
