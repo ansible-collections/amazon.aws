@@ -1043,14 +1043,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                     type=module.params.get('spot_type'),
                 ))
 
-                # Set spot ValidUntil
-                # ValidUntil -> (timestamp). The end date of the request, in
-                # UTC format (for example, YYYY -MM -DD T*HH* :MM :SS Z).
-                utc_valid_until = (
-                    datetime.datetime.utcnow()
-                    + datetime.timedelta(seconds=int(module.params.get('spot_wait_timeout'))))
-                params['valid_until'] = utc_valid_until.strftime('%Y-%m-%dT%H:%M:%S.000Z')
-
+                set_spot_valid_until(module, ec2, params)
                 res = ec2.request_spot_instances(module.params.get('spot_price'), **params)
 
                 # Now we have to do the intermediate waiting
@@ -1093,6 +1086,20 @@ def create_instances(module, ec2, vpc, override_count=None):
         instance_dict_array.append(d)
 
     return (instance_dict_array, created_instance_ids, changed)
+
+
+def set_spot_valid_until(module, ec2, params):
+    """
+    ValidUntil -> (timestamp). The end date of the request, in UTC format (for example, YYYY -MM -DD T*HH* :MM :SS Z).
+
+    module : Ansible Module object
+    ec2: authenticated ec2 connection object
+    params: instance parameters
+    """
+    utc_valid_until = (
+            datetime.datetime.utcnow()
+            + datetime.timedelta(seconds=int(module.params.get('spot_wait_timeout'))))
+    params['valid_until'] = utc_valid_until.strftime('%Y-%m-%dT%H:%M:%S.000Z')
 
 
 def set_launch_group(module, params):
