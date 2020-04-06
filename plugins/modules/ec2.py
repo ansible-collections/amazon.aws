@@ -1036,8 +1036,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                 # 'terminate'd. For convenience, we'll ignore the latter value.
                 check_instance_initiated_shutdown_behavior(module)
 
-                if module.params.get('spot_launch_group') and isinstance(module.params.get('spot_launch_group'), string_types):
-                    params['launch_group'] = module.params.get('spot_launch_group')
+                set_launch_group(module, params)
 
                 params.update(dict(
                     count=count_remaining,
@@ -1094,6 +1093,15 @@ def create_instances(module, ec2, vpc, override_count=None):
         instance_dict_array.append(d)
 
     return (instance_dict_array, created_instance_ids, changed)
+
+
+def set_launch_group(module, params):
+    """
+    module : Ansible Module object
+    params: instance parameters
+    """
+    if module.params.get('spot_launch_group') and isinstance(module.params.get('spot_launch_group'), string_types):
+        params['launch_group'] = module.params.get('spot_launch_group')
 
 
 def check_instance_initiated_shutdown_behavior(module):
