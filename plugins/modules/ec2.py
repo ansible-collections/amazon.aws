@@ -1029,9 +1029,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                                      "use a (possibly different) 'instanceid' parameter")
 
             else:
-                if module.params.get('private_ip'):
-                    module.fail_json(
-                        msg='private_ip only available with on-demand (non-spot) instances')
+                check_private_ip(module)
                 if boto_supports_param_in_spot_request(ec2, 'placement_group'):
                     params['placement_group'] = module.params.get('placement_group')
                 elif module.params.get('placement_group'):
@@ -1104,11 +1102,20 @@ def create_instances(module, ec2, vpc, override_count=None):
     return (instance_dict_array, created_instance_ids, changed)
 
 
+def check_private_ip(module):
+    """
+    module : Ansible Module object
+    """
+    if module.params.get('private_ip'):
+        module.fail_json(
+            msg='private_ip only available with on-demand (non-spot) instances')
+
+
 def set_instance_initiated_shutdown_behavior(module, ec2, params):
     """
     For ordinary (not spot) instances, we can select 'stop'
     (the default) or 'terminate' here.
-    
+
     module : Ansible Module object
     ec2: authenticated ec2 connection object
     params: instance parameters
