@@ -974,8 +974,7 @@ def create_instances(module, ec2, vpc, override_count=None):
         about the instances that were launched
     """
 
-    network_interfaces = module.params.get('network_interfaces')
-
+    group_name, group_id = set_group(module, ec2, vpc)
     count_remaining, res, running_instances = lookup_instances(module, ec2, override_count)
 
     # Both min_count and max_count equal count parameter. This means the launch request is explicit
@@ -1010,47 +1009,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                     module.fail_json(
                         msg="instance_profile_name parameter requires Boto version 2.5.0 or higher")
 
-            if module.boolean(module.params.get('assign_public_ip')) is not None:
-                if not boto_supports_associate_public_ip_address(ec2):
-                    module.fail_json(
-                        msg="assign_public_ip parameter requires Boto version 2.13.0 or higher.")
-                elif not module.params.get('vpc_subnet_id'):
-                    module.fail_json(
-                        msg="assign_public_ip only available with vpc_subnet_id")
-
-                else:
-                    if module.params.get('private_ip'):
-                        interface = boto.ec2.networkinterface.NetworkInterfaceSpecification(
-                            subnet_id=module.params.get('vpc_subnet_id'),
-                            private_ip_address=module.params.get('private_ip'),
-                            groups=group_id,
-                            associate_public_ip_address=module.boolean(module.params.get('assign_public_ip')))
-                    else:
-                        interface = boto.ec2.networkinterface.NetworkInterfaceSpecification(
-                            subnet_id=module.params.get('vpc_subnet_id'),
-                            groups=group_id,
-                            associate_public_ip_address=module.boolean(module.params.get('assign_public_ip')))
-                    interfaces = boto.ec2.networkinterface.NetworkInterfaceCollection(interface)
-                    params['network_interfaces'] = interfaces
-            else:
-                if network_interfaces:
-                    if isinstance(network_interfaces, string_types):
-                        network_interfaces = [network_interfaces]
-                    interfaces = []
-                    for i, network_interface_id in enumerate(network_interfaces):
-                        interface = boto.ec2.networkinterface.NetworkInterfaceSpecification(
-                            network_interface_id=network_interface_id,
-                            device_index=i)
-                        interfaces.append(interface)
-                    params['network_interfaces'] = \
-                        boto.ec2.networkinterface.NetworkInterfaceCollection(*interfaces)
-                else:
-                    group_name, group_id = set_group(module, ec2, vpc)
-                    params['subnet_id'] = module.params.get('vpc_subnet_id')
-                    if module.params.get('vpc_subnet_id'):
-                        params['security_group_ids'] = group_id
-                    else:
-                        params['security_groups'] = group_name
+            set_network_interfaces(module, ec2, group_name, group_id, params)
 
             if module.params.get('volumes'):
                 bdm = BlockDeviceMapping()
@@ -1197,6 +1156,56 @@ def create_instances(module, ec2, vpc, override_count=None):
         instance_dict_array.append(d)
 
     return (instance_dict_array, created_instance_ids, changed)
+
+
+def set_network_interfaces(module, ec2, group_name, group_id, params):
+    """
+    sets network interfaces
+
+    module : Ansible Module object
+    ec2: authenticated ec2 connection object
+    """
+    if module.boolean(module.params.get('assign_public_ip')) is not None:
+        if not boto_supports_associate_public_ip_address(ec2):
+            module.fail_json(
+                msg="assign_public_ip parameter requires Boto version 2.13.0 or higher.")
+        elif not module.params.get('vpc_subnet_id'):
+            module.fail_json(
+                msg="assign_public_ip only available with vpc_subnet_id")
+
+        else:
+            if module.params.get('private_ip'):
+                interface = boto.ec2.networkinterface.NetworkInterfaceSpecification(
+                    subnet_id=module.params.get('vpc_subnet_id'),
+                    private_ip_address=module.params.get('private_ip'),
+                    groups=group_id,
+                    associate_public_ip_address=module.boolean(module.params.get('assign_public_ip')))
+            else:
+                interface = boto.ec2.networkinterface.NetworkInterfaceSpecification(
+                    subnet_id=module.params.get('vpc_subnet_id'),
+                    groups=group_id,
+                    associate_public_ip_address=module.boolean(module.params.get('assign_public_ip')))
+            interfaces = boto.ec2.networkinterface.NetworkInterfaceCollection(interface)
+            params['network_interfaces'] = interfaces
+    else:
+        network_interfaces = module.params.get('network_interfaces')
+        if network_interfaces:
+            if isinstance(network_interfaces, string_types):
+                network_interfaces = [network_interfaces]
+            interfaces = []
+            for i, network_interface_id in enumerate(network_interfaces):
+                interface = boto.ec2.networkinterface.NetworkInterfaceSpecification(
+                    network_interface_id=network_interface_id,
+                    device_index=i)
+                interfaces.append(interface)
+            params['network_interfaces'] = \
+                boto.ec2.networkinterface.NetworkInterfaceCollection(*interfaces)
+        else:
+            params['subnet_id'] = module.params.get('vpc_subnet_id')
+            if module.params.get('vpc_subnet_id'):
+                params['security_group_ids'] = group_id
+            else:
+                params['security_groups'] = group_name
 
 
 def wait_for_instances(module, ec2, res, instids):
