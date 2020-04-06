@@ -995,8 +995,7 @@ def create_instances(module, ec2, vpc, override_count=None):
 
             set_user_data(module, params)
 
-            if module.params.get('ebs_optimized'):
-                params['ebs_optimized'] = module.params.get('ebs_optimized')
+            set_ebs_optimized(module, params)
 
             # 'tenancy' always has a default value, but it is not a valid parameter for spot instance request
             if not module.params.get('spot_price'):
@@ -1156,6 +1155,15 @@ def create_instances(module, ec2, vpc, override_count=None):
         instance_dict_array.append(d)
 
     return (instance_dict_array, created_instance_ids, changed)
+
+
+def set_ebs_optimized(module, params):
+    """
+    module : Ansible Module object
+    params: instance parameters
+    """
+    if module.params.get('ebs_optimized'):
+        params['ebs_optimized'] = module.params.get('ebs_optimized')
 
 
 def set_user_data(module, params):
