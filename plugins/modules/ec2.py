@@ -1127,8 +1127,9 @@ def set_spot_valid_until(module, ec2, params):
     params: instance parameters
     """
     utc_valid_until = (
-            datetime.datetime.utcnow()
-            + datetime.timedelta(seconds=int(module.params.get('spot_wait_timeout'))))
+        datetime.datetime.utcnow()
+        + datetime.timedelta(seconds=int(module.params.get('spot_wait_timeout')))
+    )
     params['valid_until'] = utc_valid_until.strftime('%Y-%m-%dT%H:%M:%S.000Z')
 
 
