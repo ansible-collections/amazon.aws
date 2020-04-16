@@ -177,7 +177,7 @@ def main():
             module.fail_json(msg="unable to parse key file")
     elif key_data is not None and key_file is None:
         try:
-            key = load_pem_private_key(key_data, b_key_passphrase, default_backend())
+            key = load_pem_private_key(key_data.encode('ascii'), b_key_passphrase, default_backend())
         except (ValueError, TypeError) as e:
             module.fail_json(msg="unable to parse key data")
 
