@@ -146,7 +146,7 @@ try:
 except ImportError:
     pass  # Taken care of by ec2.HAS_BOTO
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO, ec2_argument_spec, ec2_connect
 
 
@@ -287,7 +287,7 @@ def create_snapshot_ansible_module():
             state=dict(choices=['absent', 'present'], default='present'),
         )
     )
-    module = AnsibleModule(argument_spec=argument_spec)
+    module = AnsibleAWSModule(argument_spec=argument_spec, check_boto3=False)
     return module
 
 

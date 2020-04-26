@@ -197,7 +197,7 @@ EXAMPLES = """
 import collections
 import traceback
 from time import sleep, time
-from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO, connect_to_aws, ec2_argument_spec, get_aws_connection_info
 
 if HAS_BOTO:
@@ -294,7 +294,11 @@ def main():
     )
     )
 
-    module = AnsibleModule(argument_spec=argument_spec, supports_check_mode=True)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        check_boto3=False,
+        supports_check_mode=True
+    )
 
     params = module.params
     found = False

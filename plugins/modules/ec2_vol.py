@@ -237,7 +237,7 @@ try:
 except ImportError:
     pass  # Taken care of by ec2.HAS_BOTO
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (HAS_BOTO,
                                                                      AnsibleAWSError,
                                                                      connect_to_aws,
@@ -510,7 +510,7 @@ def main():
         tags=dict(type='dict', default={})
     )
     )
-    module = AnsibleModule(argument_spec=argument_spec)
+    module = AnsibleAWSModule(argument_spec=argument_spec, check_boto3=False)
 
     if not HAS_BOTO:
         module.fail_json(msg='boto required for this module')

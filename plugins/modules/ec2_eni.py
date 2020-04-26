@@ -263,7 +263,7 @@ try:
 except ImportError:
     HAS_BOTO = False
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (AnsibleAWSError, connect_to_aws,
                                                                      ec2_argument_spec, get_aws_connection_info,
                                                                      get_ec2_security_group_ids_from_names)
@@ -580,16 +580,18 @@ def main():
         )
     )
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           mutually_exclusive=[
-                               ['secondary_private_ip_addresses', 'secondary_private_ip_address_count']
-                           ],
-                           required_if=([
-                               ('state', 'absent', ['eni_id']),
-                               ('attached', True, ['instance_id']),
-                               ('purge_secondary_private_ip_addresses', True, ['secondary_private_ip_addresses'])
-                           ])
-                           )
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        check_boto3=False,
+        mutually_exclusive=[
+            ['secondary_private_ip_addresses', 'secondary_private_ip_address_count']
+        ],
+        required_if=([
+            ('state', 'absent', ['eni_id']),
+            ('attached', True, ['instance_id']),
+            ('purge_secondary_private_ip_addresses', True, ['secondary_private_ip_addresses'])
+        ])
+    )
 
     if not HAS_BOTO:
         module.fail_json(msg='boto required for this module')

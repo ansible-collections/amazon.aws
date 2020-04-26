@@ -586,7 +586,7 @@ import traceback
 from ast import literal_eval
 from distutils.version import LooseVersion
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info, ec2_argument_spec, ec2_connect
 from ansible.module_utils.six import get_function_code, string_types
 from ansible.module_utils._text import to_bytes, to_text
@@ -966,7 +966,7 @@ def create_instances(module, ec2, vpc, override_count=None):
     """
     Creates new instances
 
-    module : AnsibleModule object
+    module : AnsibleAWSModule object
     ec2: authenticated ec2 connection object
 
     Returns:
@@ -1649,8 +1649,9 @@ def main():
         )
     )
 
-    module = AnsibleModule(
+    module = AnsibleAWSModule(
         argument_spec=argument_spec,
+        check_boto3=False,
         mutually_exclusive=[
             # Can be uncommented when we finish the deprecation cycle.
             # ['group', 'group_id'],
