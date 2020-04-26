@@ -373,13 +373,13 @@ try:
 except ImportError:
     pass  # Taken care of by ec2.HAS_BOTO
 
+from ansible.module_utils.six import string_types
+from ansible.module_utils._text import to_native
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleAWSError
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
-from ansible.module_utils.six import string_types
-from ansible.module_utils._text import to_native
 
 
 def _throttleable_operation(max_retries):

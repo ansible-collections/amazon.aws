@@ -333,12 +333,12 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils._text import to_bytes
+from ansible.module_utils._text import to_native
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto_exception
-from ansible.module_utils._text import to_bytes
-from ansible.module_utils._text import to_native
 
 
 def get_stack_events(cfn, stack_name, events_limit, token_filter=None):
