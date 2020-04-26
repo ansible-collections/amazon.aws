@@ -586,21 +586,25 @@ import traceback
 from ast import literal_eval
 from distutils.version import LooseVersion
 
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info, ec2_connect
-from ansible.module_utils.six import get_function_code, string_types
-from ansible.module_utils._text import to_bytes, to_text
-
 try:
     import boto.ec2
-    from boto.ec2.blockdevicemapping import BlockDeviceType, BlockDeviceMapping
+    from boto.ec2.blockdevicemapping import BlockDeviceType
+    from boto.ec2.blockdevicemapping import BlockDeviceMapping
     from boto.exception import EC2ResponseError
     from boto import connect_ec2_endpoint
     from boto import connect_vpc
 except ImportError:
     pass  # Taken care of by ec2.HAS_BOTO
 
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ec2_connect
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible.module_utils.six import get_function_code
+from ansible.module_utils.six import string_types
+from ansible.module_utils._text import to_bytes
+from ansible.module_utils._text import to_text
+
 
 def find_running_instances_by_count_tag(module, ec2, vpc, count_tag, zone=None):
 

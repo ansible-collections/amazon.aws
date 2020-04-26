@@ -233,16 +233,16 @@ try:
     import boto.ec2
     import boto.exception
     from boto.exception import BotoServerError
-    from boto.ec2.blockdevicemapping import BlockDeviceType, BlockDeviceMapping
+    from boto.ec2.blockdevicemapping import BlockDeviceType
+    from boto.ec2.blockdevicemapping import BlockDeviceMapping
 except ImportError:
     pass  # Taken care of by ec2.HAS_BOTO
 
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (HAS_BOTO,
-                                                                     AnsibleAWSError,
-                                                                     connect_to_aws,
-                                                                     get_aws_connection_info,
-                                                                     )
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
 def get_volume(module, ec2):

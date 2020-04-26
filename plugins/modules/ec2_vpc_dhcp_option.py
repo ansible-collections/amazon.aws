@@ -197,16 +197,18 @@ EXAMPLES = """
 import collections
 import traceback
 from time import sleep, time
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO, connect_to_aws, get_aws_connection_info
 
 try:
-if HAS_BOTO:
     import boto.vpc
     import boto.ec2
     from boto.exception import EC2ResponseError
 except ImportError:
     pass  # Taken care of by ec2.HAS_BOTO
+
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
 def get_resource_tags(vpc_conn, resource_id):
