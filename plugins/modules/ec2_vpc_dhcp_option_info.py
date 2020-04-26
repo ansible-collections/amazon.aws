@@ -87,11 +87,10 @@ import traceback
 try:
     import botocore
 except ImportError:
-    pass  # caught by imported HAS_BOTO3
+    pass  # Handled by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (boto3_conn,
-                                                                     HAS_BOTO3,
                                                                      ansible_dict_to_boto3_filter_list,
                                                                      get_aws_connection_info,
                                                                      camel_dict_to_snake_dict,
@@ -138,10 +137,6 @@ def main():
     )
     if module._name == 'ec2_vpc_dhcp_option_facts':
         module.deprecate("The 'ec2_vpc_dhcp_option_facts' module has been renamed to 'ec2_vpc_dhcp_option_info'", version='2.13')
-
-    # Validate Requirements
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 and botocore are required.')
 
     try:
         region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)

@@ -157,7 +157,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
     boto3_conn,
     get_aws_connection_info,
     AWSRetry,
-    HAS_BOTO3,
     boto3_tag_list_to_ansible_dict,
     camel_dict_to_snake_dict,
     ansible_dict_to_boto3_filter_list
@@ -167,7 +166,7 @@ from ansible.module_utils._text import to_native
 try:
     import botocore
 except ImportError:
-    pass  # caught by imported HAS_BOTO3
+    pass  # Handled by AnsibleAWSModule
 
 
 @AWSRetry.exponential_backoff()
@@ -228,9 +227,6 @@ def main():
     )
     if module._name == 'ec2_vpc_subnet_facts':
         module.deprecate("The 'ec2_vpc_subnet_facts' module has been renamed to 'ec2_vpc_subnet_info'", version='2.13')
-
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 is required for this module')
 
     region, ec2_url, aws_connect_params = get_aws_connection_info(module, boto3=True)
 

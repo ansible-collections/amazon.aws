@@ -330,9 +330,8 @@ from hashlib import sha1
 try:
     import boto3
     import botocore
-    HAS_BOTO3 = True
 except ImportError:
-    HAS_BOTO3 = False
+    pass  # Handled by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (ansible_dict_to_boto3_tag_list,
@@ -661,8 +660,6 @@ def main():
                             ['disable_rollback', 'on_create_failure']],
         supports_check_mode=True
     )
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 and botocore are required for this module')
 
     invalid_capabilities = []
     user_capabilities = module.params.get('capabilities')
