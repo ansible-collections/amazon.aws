@@ -199,13 +199,12 @@ def list_ec2_snapshots(connection, module):
 
     try:
         snapshots = connection.describe_snapshots(SnapshotIds=snapshot_ids, OwnerIds=owner_ids, RestorableByUserIds=restorable_by_user_ids, Filters=filters)
+    except is_boto3_error_code('InvalidSnapshot.NotFound') as e:
+        if len(snapshot_ids) > 1:
+            module.warn("Some of your snapshots may exist, but %s" % str(e))
+        snapshots = {'Snapshots': []}
     except ClientError as e:
-        if e.response['Error']['Code'] == "InvalidSnapshot.NotFound":
-            if len(snapshot_ids) > 1:
-                module.warn("Some of your snapshots may exist, but %s" % str(e))
-            snapshots = {'Snapshots': []}
-        else:
-            module.fail_json(msg="Failed to describe snapshots: %s" % str(e))
+        module.fail_json_aws(e, msg='Failed to describe snapshots')
 
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_snapshots = []

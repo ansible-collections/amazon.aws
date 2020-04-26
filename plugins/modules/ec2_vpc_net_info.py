@@ -153,9 +153,9 @@ vpcs:
 
 import traceback
 
-from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
@@ -197,12 +197,8 @@ def describe_vpcs(connection, module):
     # Get the basic VPC info
     try:
         response = connection.describe_vpcs(VpcIds=vpc_ids, Filters=filters)
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="Unable to describe VPCs {0}: {1}".format(vpc_ids, to_native(e)),
-                         exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
-    except botocore.exceptions.BotoCoreError as e:
-        module.fail_json(msg="Unable to describe VPCs {0}: {1}".format(vpc_ids, to_native(e)),
-                         exception=traceback.format_exc())
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Unable to describe VPCs {0}".format(vpc_ids))
 
     # Loop through results and create a list of VPC IDs
     for vpc in response['Vpcs']:
@@ -211,48 +207,30 @@ def describe_vpcs(connection, module):
     # We can get these results in bulk but still needs two separate calls to the API
     try:
         cl_enabled = connection.describe_vpc_classic_link(VpcIds=vpc_list)
-    except botocore.exceptions.ClientError as e:
-        if e.response["Error"]["Message"] == "The functionality you requested is not available in this region.":
-            cl_enabled = {'Vpcs': [{'VpcId': vpc_id, 'ClassicLinkEnabled': False} for vpc_id in vpc_list]}
-        else:
-            module.fail_json(msg="Unable to describe if ClassicLink is enabled: {0}".format(to_native(e)),
-                             exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
-    except botocore.exceptions.BotoCoreError as e:
-        module.fail_json(msg="Unable to describe if ClassicLink is enabled: {0}".format(to_native(e)),
-                         exception=traceback.format_exc())
+    except is_boto3_error_code('UnsupportedOperation'):
+        cl_enabled = {'Vpcs': [{'VpcId': vpc_id, 'ClassicLinkEnabled': False} for vpc_id in vpc_list]}
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Unable to describe if ClassicLink is enabled')
 
     try:
         cl_dns_support = connection.describe_vpc_classic_link_dns_support(VpcIds=vpc_list)
-    except botocore.exceptions.ClientError as e:
-        if e.response["Error"]["Message"] == "The functionality you requested is not available in this region.":
-            cl_dns_support = {'Vpcs': [{'VpcId': vpc_id, 'ClassicLinkDnsSupported': False} for vpc_id in vpc_list]}
-        else:
-            module.fail_json(msg="Unable to describe if ClassicLinkDns is supported: {0}".format(to_native(e)),
-                             exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
-    except botocore.exceptions.BotoCoreError as e:
-        module.fail_json(msg="Unable to describe if ClassicLinkDns is supported: {0}".format(to_native(e)),
-                         exception=traceback.format_exc())
+    except is_boto3_error_code('UnsupportedOperation'):
+        cl_dns_support = {'Vpcs': [{'VpcId': vpc_id, 'ClassicLinkDnsSupported': False} for vpc_id in vpc_list]}
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Unable to describe if ClassicLinkDns is supported')
 
     # Loop through the results and add the other VPC attributes we gathered
     for vpc in response['Vpcs']:
-        error_message = "Unable to describe VPC attribute {0}: {1}"
+        error_message = "Unable to describe VPC attribute {0}"
         # We have to make two separate calls per VPC to get these attributes.
         try:
             dns_support = describe_vpc_attr_with_backoff(connection, vpc['VpcId'], 'enableDnsSupport')
-        except botocore.exceptions.ClientError as e:
-            module.fail_json(msg=error_message.format('enableDnsSupport', to_native(e)),
-                             exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
-        except botocore.exceptions.BotoCoreError as e:
-            module.fail_json(msg=error_message.format('enableDnsSupport', to_native(e)),
-                             exception=traceback.format_exc())
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg=error_message.format('enableDnsSupport'))
         try:
             dns_hostnames = describe_vpc_attr_with_backoff(connection, vpc['VpcId'], 'enableDnsHostnames')
-        except botocore.exceptions.ClientError as e:
-            module.fail_json(msg=error_message.format('enableDnsHostnames', to_native(e)),
-                             exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
-        except botocore.exceptions.BotoCoreError as e:
-            module.fail_json(msg=error_message.format('enableDnsHostnames', to_native(e)),
-                             exception=traceback.format_exc())
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg=error_message.format('enableDnsHostnames'))
 
         # loop through the ClassicLink Enabled results and add the value for the correct VPC
         for item in cl_enabled['Vpcs']:

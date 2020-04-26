@@ -198,7 +198,7 @@ def list_eni(connection, module):
     try:
         network_interfaces_result = connection.describe_network_interfaces(Filters=filters)['NetworkInterfaces']
     except (ClientError, NoCredentialsError) as e:
-        module.fail_json(msg=e.message)
+        module.fail_json_aws(e)
 
     # Modify boto3 tags list to be ansible friendly dict and then camel_case
     camel_network_interfaces = []

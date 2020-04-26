@@ -151,14 +151,11 @@ subnets:
                             type: str
 '''
 
-import traceback
-
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
@@ -199,8 +196,8 @@ def describe_subnets(connection, module):
     # Get the basic VPC info
     try:
         response = describe_subnets_with_backoff(connection, subnet_ids, filters)
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg=to_native(e), exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to describe subnets')
 
     for subnet in response['Subnets']:
         # for backwards compatibility

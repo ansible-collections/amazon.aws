@@ -265,7 +265,7 @@ def get_volume(module, ec2):
     try:
         vols = ec2.get_all_volumes(volume_ids=volume_ids, filters=filters)
     except boto.exception.BotoServerError as e:
-        module.fail_json(msg="%s: %s" % (e.error_code, e.error_message))
+        module.fail_json_aws(e)
 
     if not vols:
         if id:
@@ -291,7 +291,7 @@ def get_volumes(module, ec2):
         else:
             vols = ec2.get_all_volumes(filters={'attachment.instance-id': instance})
     except boto.exception.BotoServerError as e:
-        module.fail_json(msg="%s: %s" % (e.error_code, e.error_message))
+        module.fail_json_aws(e)
     return vols
 
 
@@ -303,7 +303,7 @@ def delete_volume(module, ec2):
     except boto.exception.EC2ResponseError as ec2_error:
         if ec2_error.code == 'InvalidVolume.NotFound':
             module.exit_json(changed=False)
-        module.fail_json(msg=ec2_error.message)
+        module.fail_json_aws(e)
 
 
 def boto_supports_volume_encryption():
@@ -362,7 +362,7 @@ def create_volume(module, ec2, zone):
             if tags:
                 ec2.create_tags([volume.id], tags)
         except boto.exception.BotoServerError as e:
-            module.fail_json(msg="%s: %s" % (e.error_code, e.error_message))
+            module.fail_json_aws(e)
 
     return volume, changed
 
@@ -387,7 +387,7 @@ def attach_volume(module, ec2, volume, instance):
             else:
                 device_name = '/dev/xvdf'
         except boto.exception.BotoServerError as e:
-            module.fail_json(msg="%s: %s" % (e.error_code, e.error_message))
+            module.fail_json_aws(e)
 
     if volume.attachment_state() is not None:
         adata = volume.attach_data
@@ -405,7 +405,7 @@ def attach_volume(module, ec2, volume, instance):
                 volume.update()
             changed = True
         except boto.exception.BotoServerError as e:
-            module.fail_json(msg="%s: %s" % (e.error_code, e.error_message))
+            module.fail_json_aws(e)
 
         modify_dot_attribute(module, ec2, instance, device_name)
 
@@ -422,7 +422,7 @@ def modify_dot_attribute(module, ec2, instance, device_name):
         instance.update()
         dot = instance.block_device_mapping[device_name].delete_on_termination
     except boto.exception.BotoServerError as e:
-        module.fail_json(msg="%s: %s" % (e.error_code, e.error_message))
+        module.fail_json_aws(e)
 
     if delete_on_termination != dot:
         try:
@@ -437,7 +437,7 @@ def modify_dot_attribute(module, ec2, instance, device_name):
                 instance.update()
             changed = True
         except boto.exception.BotoServerError as e:
-            module.fail_json(msg="%s: %s" % (e.error_code, e.error_message))
+            module.fail_json_aws(e)
 
     return changed
 
@@ -544,7 +544,7 @@ def main():
         try:
             ec2 = connect_to_aws(boto.ec2, region, **aws_connect_params)
         except (boto.exception.NoAuthHandlerFound, AnsibleAWSError) as e:
-            module.fail_json(msg=str(e))
+            module.fail_json_aws(e)
     else:
         module.fail_json(msg="region must be specified")
 
@@ -574,7 +574,7 @@ def main():
         try:
             reservation = ec2.get_all_instances(instance_ids=instance)
         except BotoServerError as e:
-            module.fail_json(msg=e.message)
+            module.fail_json_aws(e)
         inst = reservation[0].instances[0]
         zone = inst.placement
 

@@ -582,7 +582,6 @@ EXAMPLES = '''
 
 import time
 import datetime
-import traceback
 from ast import literal_eval
 from distutils.version import LooseVersion
 
@@ -1045,7 +1044,7 @@ def create_instances(module, ec2, vpc, override_count=None):
             grp_details = ec2.get_all_security_groups(group_ids=group_id)
             group_name = [grp_item.name for grp_item in grp_details]
     except boto.exception.NoAuthHandlerFound as e:
-        module.fail_json(msg=str(e))
+        module.fail_json_aws(e, msg='Unable to authenticate to AWS')
 
     # Lookup any instances that much our run id.
 
@@ -1186,11 +1185,11 @@ def create_instances(module, ec2, vpc, override_count=None):
                         ec2.get_all_instances(instids)
                         break
                     except boto.exception.EC2ResponseError as e:
-                        if "<Code>InvalidInstanceID.NotFound</Code>" in str(e):
+                        if e.error_code == 'InvalidInstanceID.NotFound':
                             # there's a race between start and get an instance
                             continue
                         else:
-                            module.fail_json(msg=str(e))
+                            module.fail_json_aws(e)
 
                 # The instances returned through ec2.run_instances above can be in
                 # terminated state due to idempotency. See commit 7f11c3d for a complete
@@ -1243,7 +1242,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                 else:
                     instids = []
         except boto.exception.BotoServerError as e:
-            module.fail_json(msg="Instance creation failed => %s: %s" % (e.error_code, e.error_message))
+            module.fail_json_aws(e, msg='Instance creation failed')
 
         # wait here until the instances are up
         num_running = 0
@@ -1295,7 +1294,7 @@ def create_instances(module, ec2, vpc, override_count=None):
             try:
                 ec2.create_tags(instids, instance_tags)
             except boto.exception.EC2ResponseError as e:
-                module.fail_json(msg="Instance tagging failed => %s: %s" % (e.error_code, e.error_message))
+                module.fail_json_aws(e, msg='Instance tagging failed')
 
     instance_dict_array = []
     created_instance_ids = []
@@ -1344,7 +1343,7 @@ def terminate_instances(module, ec2, instance_ids):
                 try:
                     ec2.terminate_instances([inst.id])
                 except EC2ResponseError as e:
-                    module.fail_json(msg='Unable to terminate instance {0}, error: {1}'.format(inst.id, e))
+                    module.fail_json_aws(e, msg='Unable to terminate instance {0}'.format(inst.id))
                 changed = True
 
     # wait here until the instances are 'terminated'
@@ -1460,7 +1459,7 @@ def startstop_instances(module, ec2, instance_ids, state, instance_tags):
                     else:
                         inst.stop()
                 except EC2ResponseError as e:
-                    module.fail_json(msg='Unable to change state for instance {0}, error: {1}'.format(inst.id, e))
+                    module.fail_json_aws(e, 'Unable to change state for instance {0}'.format(inst.id))
                 changed = True
             existing_instances_array.append(inst.id)
 
@@ -1546,7 +1545,7 @@ def restart_instances(module, ec2, instance_ids, state, instance_tags):
                 try:
                     inst.reboot()
                 except EC2ResponseError as e:
-                    module.fail_json(msg='Unable to change state for instance {0}, error: {1}'.format(inst.id, e))
+                    module.fail_json_aws(e, msg='Unable to change state for instance {0}'.format(inst.id))
                 changed = True
 
     return (changed, instance_dict_array, instance_ids)
@@ -1596,8 +1595,7 @@ def check_source_dest_attr(module, inst, ec2):
                         ec2.modify_network_interface_attribute(interface.id, "sourceDestCheck", source_dest_check)
                         return True
             else:
-                module.fail_json(msg='Failed to handle source_dest_check state for instance {0}, error: {1}'.format(inst.id, exc),
-                                 exception=traceback.format_exc())
+                module.fail_json_aws(exc, msg='Failed to handle source_dest_check state for instance {0}'.format(inst.id))
 
 
 def warn_if_public_ip_assignment_changed(module, instance):
@@ -1688,7 +1686,7 @@ def main():
 
         vpc = connect_vpc(**aws_connect_kwargs)
     except boto.exception.NoAuthHandlerFound as e:
-        module.fail_json(msg="Failed to get connection: %s" % e.message, exception=traceback.format_exc())
+        module.fail_json_aws(e, msg='Failed to get connection')
 
     tagged_instances = []
 

@@ -360,7 +360,7 @@ def create_eni(connection, vpc_id, module):
         changed = True
 
     except BotoServerError as e:
-        module.fail_json(msg=e.message)
+        module.fail_json_aws(e)
 
     module.exit_json(changed=changed, interface=get_eni_info(eni))
 
@@ -449,7 +449,7 @@ def modify_eni(connection, vpc_id, module, eni):
             detach_eni(eni, module)
 
     except BotoServerError as e:
-        module.fail_json(msg=e.message)
+        module.fail_json_aws(e)
 
     eni.update()
     module.exit_json(changed=changed, interface=get_eni_info(eni))
@@ -482,7 +482,7 @@ def delete_eni(connection, module):
         if regex.search(e.message) is not None:
             module.exit_json(changed=False)
         else:
-            module.fail_json(msg=e.message)
+            module.fail_json_aws(e)
 
 
 def detach_eni(eni, module):
@@ -535,7 +535,7 @@ def uniquely_find_eni(connection, module):
             return None
 
     except BotoServerError as e:
-        module.fail_json(msg=e.message)
+        module.fail_json_aws(e)
 
     return None
 
@@ -555,7 +555,7 @@ def _get_vpc_id(connection, module, subnet_id):
     try:
         return connection.get_all_subnets(subnet_ids=[subnet_id])[0].vpc_id
     except BotoServerError as e:
-        module.fail_json(msg=e.message)
+        module.fail_json_aws(e)
 
 
 def main():
@@ -601,7 +601,7 @@ def main():
             connection = connect_to_aws(boto.ec2, region, **aws_connect_params)
             vpc_connection = connect_to_aws(boto.vpc, region, **aws_connect_params)
         except (boto.exception.NoAuthHandlerFound, AnsibleAWSError) as e:
-            module.fail_json(msg=str(e))
+            module.fail_json_aws(e)
     else:
         module.fail_json(msg="region must be specified")
 

@@ -402,8 +402,7 @@ def create_stack(module, stack_params, cfn, events_limit):
         # Use stack ID to follow stack state in case of on_create_failure = DELETE
         result = stack_operation(cfn, response['StackId'], 'CREATE', events_limit, stack_params.get('ClientRequestToken', None))
     except Exception as err:
-        error_msg = boto_exception(err)
-        module.fail_json(msg="Failed to create stack {0}: {1}.".format(stack_params.get('StackName'), error_msg), exception=traceback.format_exc())
+        module.fail_json_aws(err, msg="Failed to create stack {0}".format(stack_params.get('StackName')))
     if not result:
         module.fail_json(msg="empty result")
     return result
@@ -440,8 +439,7 @@ def create_changeset(module, stack_params, cfn, events_limit):
                 try:
                     newcs = cfn.describe_change_set(ChangeSetName=cs['Id'])
                 except botocore.exceptions.BotoCoreError as err:
-                    error_msg = boto_exception(err)
-                    module.fail_json(msg=error_msg)
+                    module.fail_json_aws(err)
                 if newcs['Status'] == 'CREATE_PENDING' or newcs['Status'] == 'CREATE_IN_PROGRESS':
                     time.sleep(1)
                 elif newcs['Status'] == 'FAILED' and "The submitted information didn't contain changes" in newcs['StatusReason']:
@@ -465,7 +463,7 @@ def create_changeset(module, stack_params, cfn, events_limit):
         if 'No updates are to be performed.' in error_msg:
             result = dict(changed=False, output='Stack is already up-to-date.')
         else:
-            module.fail_json(msg="Failed to create change set: {0}".format(error_msg), exception=traceback.format_exc())
+            module.fail_json_aws(err, msg='Failed to create change set')
 
     if not result:
         module.fail_json(msg="empty result")
@@ -487,7 +485,7 @@ def update_stack(module, stack_params, cfn, events_limit):
         if 'No updates are to be performed.' in error_msg:
             result = dict(changed=False, output='Stack is already up-to-date.')
         else:
-            module.fail_json(msg="Failed to update stack {0}: {1}".format(stack_params.get('StackName'), error_msg), exception=traceback.format_exc())
+            module.fail_json_aws(err, msg="Failed to update stack {0}".format(stack_params.get('StackName')))
     if not result:
         module.fail_json(msg="empty result")
     return result
@@ -505,7 +503,7 @@ def update_termination_protection(module, cfn, stack_name, desired_termination_p
                     EnableTerminationProtection=desired_termination_protection_state,
                     StackName=stack_name)
             except botocore.exceptions.ClientError as e:
-                module.fail_json(msg=boto_exception(e), exception=traceback.format_exc())
+                module.fail_json_aws(e)
 
 
 def boto_supports_termination_protection(cfn):
@@ -601,8 +599,7 @@ def check_mode_changeset(module, stack_params, cfn):
         return {'changed': True, 'msg': reason, 'meta': description['Changes']}
 
     except (botocore.exceptions.ValidationError, botocore.exceptions.ClientError) as err:
-        error_msg = boto_exception(err)
-        module.fail_json(msg=error_msg, exception=traceback.format_exc())
+        module.fail_json_aws(err)
 
 
 def get_stack_facts(cfn, stack_name):
@@ -805,7 +802,7 @@ def main():
                 result = stack_operation(cfn, stack_params['StackName'], 'DELETE', module.params.get('events_limit'),
                                          stack_params.get('ClientRequestToken', None))
         except Exception as err:
-            module.fail_json(msg=boto_exception(err), exception=traceback.format_exc())
+            module.fail_json_aws(err)
 
     module.exit_json(**result)
 

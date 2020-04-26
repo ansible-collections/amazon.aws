@@ -195,7 +195,6 @@ EXAMPLES = """
 """
 
 import collections
-import traceback
 from time import sleep, time
 
 try:
@@ -244,7 +243,7 @@ def ensure_tags(module, vpc_conn, resource_id, tags, add_only, check_mode):
         latest_tags = get_resource_tags(vpc_conn, resource_id)
         return {'changed': True, 'tags': latest_tags}
     except EC2ResponseError as e:
-        module.fail_json(msg="Failed to modify tags: %s" % e.message, exception=traceback.format_exc())
+        module.fail_json_aws(e, msg='Failed to modify tags')
 
 
 def fetch_dhcp_options_for_vpc(vpc_conn, vpc_id):
@@ -395,7 +394,7 @@ def main():
             try:
                 found_dhcp_opt = retry_not_found(connection.get_all_dhcp_options, dhcp_options_ids=[dhcp_option.id])
             except EC2ResponseError as e:
-                module.fail_json(msg="Failed to describe DHCP options", exception=traceback.format_exc)
+                module.fail_json_aws(e, msg="Failed to describe DHCP options")
             if not found_dhcp_opt:
                 module.fail_json(msg="Failed to wait for {0} to be available.".format(dhcp_option.id))
 

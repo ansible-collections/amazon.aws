@@ -220,7 +220,7 @@ def create_snapshot(module, ec2, state=None, description=None, wait=None,
         try:
             volumes = ec2.get_all_volumes(filters={'attachment.instance-id': instance_id, 'attachment.device': device_name})
         except boto.exception.BotoServerError as e:
-            module.fail_json(msg="%s: %s" % (e.error_code, e.error_message))
+            module.fail_json_aws(e)
 
         if not volumes:
             module.fail_json(msg="Could not find volume with name %s attached to instance %s" % (device_name, instance_id))
@@ -237,7 +237,7 @@ def create_snapshot(module, ec2, state=None, description=None, wait=None,
             if e.error_code == 'InvalidSnapshot.NotFound':
                 module.exit_json(changed=False)
             else:
-                module.fail_json(msg="%s: %s" % (e.error_code, e.error_message))
+                module.fail_json_aws(e)
 
         # successful delete
         module.exit_json(changed=True)
@@ -246,7 +246,7 @@ def create_snapshot(module, ec2, state=None, description=None, wait=None,
         try:
             current_snapshots = ec2.get_all_snapshots(filters={'volume_id': volume_id})
         except boto.exception.BotoServerError as e:
-            module.fail_json(msg="%s: %s" % (e.error_code, e.error_message))
+            module.fail_json_aws(e)
 
         last_snapshot_min_age = last_snapshot_min_age * 60  # Convert to seconds
         snapshot = _get_most_recent_snapshot(current_snapshots,
@@ -263,7 +263,7 @@ def create_snapshot(module, ec2, state=None, description=None, wait=None,
             for k, v in snapshot_tags.items():
                 snapshot.add_tag(k, v)
     except boto.exception.BotoServerError as e:
-        module.fail_json(msg="%s: %s" % (e.error_code, e.error_message))
+        module.fail_json_aws(e)
 
     module.exit_json(changed=changed,
                      snapshot_id=snapshot.id,
