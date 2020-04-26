@@ -370,12 +370,12 @@ try:
     import boto.vpc
     from boto.ec2.elb.healthcheck import HealthCheck
     from boto.ec2.tag import Tag
-    HAS_BOTO = True
 except ImportError:
-    HAS_BOTO = False
+    pass  # Taken care of by ec2.HAS_BOTO
 
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws, AnsibleAWSError, get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
 from ansible.module_utils.six import string_types
 from ansible.module_utils._text import to_native
 

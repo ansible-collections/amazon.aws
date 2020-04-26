@@ -597,10 +597,10 @@ try:
     from boto.exception import EC2ResponseError
     from boto import connect_ec2_endpoint
     from boto import connect_vpc
-    HAS_BOTO = True
 except ImportError:
-    HAS_BOTO = False
+    pass  # Taken care of by ec2.HAS_BOTO
 
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
 
 def find_running_instances_by_count_tag(module, ec2, vpc, count_tag, zone=None):
 

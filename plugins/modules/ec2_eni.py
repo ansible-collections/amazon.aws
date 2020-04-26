@@ -259,11 +259,11 @@ try:
     import boto.ec2
     import boto.vpc
     from boto.exception import BotoServerError
-    HAS_BOTO = True
 except ImportError:
-    HAS_BOTO = False
+    pass  # Taken care of by ec2.HAS_BOTO
 
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (AnsibleAWSError, connect_to_aws,
                                                                      get_aws_connection_info,
                                                                      get_ec2_security_group_ids_from_names)
