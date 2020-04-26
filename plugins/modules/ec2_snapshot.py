@@ -147,7 +147,7 @@ except ImportError:
     pass  # Taken care of by ec2.HAS_BOTO
 
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO, ec2_argument_spec, ec2_connect
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO, ec2_connect
 
 
 # Find the most recent snapshot
@@ -272,20 +272,17 @@ def create_snapshot(module, ec2, state=None, description=None, wait=None,
 
 
 def create_snapshot_ansible_module():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            volume_id=dict(),
-            description=dict(),
-            instance_id=dict(),
-            snapshot_id=dict(),
-            device_name=dict(),
-            wait=dict(type='bool', default=True),
-            wait_timeout=dict(type='int', default=0),
-            last_snapshot_min_age=dict(type='int', default=0),
-            snapshot_tags=dict(type='dict', default=dict()),
-            state=dict(choices=['absent', 'present'], default='present'),
-        )
+    argument_spec = dict(
+        volume_id=dict(),
+        description=dict(),
+        instance_id=dict(),
+        snapshot_id=dict(),
+        device_name=dict(),
+        wait=dict(type='bool', default=True),
+        wait_timeout=dict(type='int', default=0),
+        last_snapshot_min_age=dict(type='int', default=0),
+        snapshot_tags=dict(type='dict', default=dict()),
+        state=dict(choices=['absent', 'present'], default='present'),
     )
     module = AnsibleAWSModule(argument_spec=argument_spec, check_boto3=False)
     return module

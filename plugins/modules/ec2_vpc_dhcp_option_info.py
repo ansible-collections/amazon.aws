@@ -90,8 +90,7 @@ except ImportError:
     pass  # caught by imported HAS_BOTO3
 
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (ec2_argument_spec,
-                                                                     boto3_conn,
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (boto3_conn,
                                                                      HAS_BOTO3,
                                                                      ansible_dict_to_boto3_filter_list,
                                                                      get_aws_connection_info,
@@ -127,13 +126,10 @@ def list_dhcp_options(client, module):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            filters=dict(type='dict', default={}),
-            dry_run=dict(type='bool', default=False, aliases=['DryRun']),
-            dhcp_options_ids=dict(type='list', aliases=['DhcpOptionIds'])
-        )
+    argument_spec = dict(
+        filters=dict(type='dict', default={}),
+        dry_run=dict(type='bool', default=False, aliases=['DryRun']),
+        dhcp_options_ids=dict(type='list', aliases=['DhcpOptionIds'])
     )
 
     module = AnsibleAWSModule(

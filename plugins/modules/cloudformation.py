@@ -339,7 +339,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (ansible_dic
                                                                      AWSRetry,
                                                                      boto3_conn,
                                                                      boto_exception,
-                                                                     ec2_argument_spec,
                                                                      get_aws_connection_info,
                                                                      )
 from ansible.module_utils._text import to_bytes, to_native
@@ -631,8 +630,7 @@ def get_stack_facts(cfn, stack_name):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         stack_name=dict(required=True),
         template_parameters=dict(required=False, type='dict', default={}),
         state=dict(default='present', choices=['present', 'absent']),
@@ -655,7 +653,6 @@ def main():
         backoff_delay=dict(type='int', default=3, required=False),
         backoff_max_delay=dict(type='int', default=30, required=False),
         capabilities=dict(type='list', default=['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'])
-    )
     )
 
     module = AnsibleAWSModule(

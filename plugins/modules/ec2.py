@@ -587,7 +587,7 @@ from ast import literal_eval
 from distutils.version import LooseVersion
 
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info, ec2_argument_spec, ec2_connect
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info, ec2_connect
 from ansible.module_utils.six import get_function_code, string_types
 from ansible.module_utils._text import to_bytes, to_text
 
@@ -1608,45 +1608,42 @@ def warn_if_public_ip_assignment_changed(module, instance):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            key_name=dict(aliases=['keypair']),
-            id=dict(),
-            group=dict(type='list', aliases=['groups']),
-            group_id=dict(type='list'),
-            zone=dict(aliases=['aws_zone', 'ec2_zone']),
-            instance_type=dict(aliases=['type']),
-            spot_price=dict(),
-            spot_type=dict(default='one-time', choices=["one-time", "persistent"]),
-            spot_launch_group=dict(),
-            image=dict(),
-            kernel=dict(),
-            count=dict(type='int', default='1'),
-            monitoring=dict(type='bool', default=False),
-            ramdisk=dict(),
-            wait=dict(type='bool', default=False),
-            wait_timeout=dict(type='int', default=300),
-            spot_wait_timeout=dict(type='int', default=600),
-            placement_group=dict(),
-            user_data=dict(),
-            instance_tags=dict(type='dict'),
-            vpc_subnet_id=dict(),
-            assign_public_ip=dict(type='bool'),
-            private_ip=dict(),
-            instance_profile_name=dict(),
-            instance_ids=dict(type='list', aliases=['instance_id']),
-            source_dest_check=dict(type='bool', default=None),
-            termination_protection=dict(type='bool', default=None),
-            state=dict(default='present', choices=['present', 'absent', 'running', 'restarted', 'stopped']),
-            instance_initiated_shutdown_behavior=dict(default='stop', choices=['stop', 'terminate']),
-            exact_count=dict(type='int', default=None),
-            count_tag=dict(type='raw'),
-            volumes=dict(type='list'),
-            ebs_optimized=dict(type='bool', default=False),
-            tenancy=dict(default='default', choices=['default', 'dedicated']),
-            network_interfaces=dict(type='list', aliases=['network_interface'])
-        )
+    argument_spec = dict(
+        key_name=dict(aliases=['keypair']),
+        id=dict(),
+        group=dict(type='list', aliases=['groups']),
+        group_id=dict(type='list'),
+        zone=dict(aliases=['aws_zone', 'ec2_zone']),
+        instance_type=dict(aliases=['type']),
+        spot_price=dict(),
+        spot_type=dict(default='one-time', choices=["one-time", "persistent"]),
+        spot_launch_group=dict(),
+        image=dict(),
+        kernel=dict(),
+        count=dict(type='int', default='1'),
+        monitoring=dict(type='bool', default=False),
+        ramdisk=dict(),
+        wait=dict(type='bool', default=False),
+        wait_timeout=dict(type='int', default=300),
+        spot_wait_timeout=dict(type='int', default=600),
+        placement_group=dict(),
+        user_data=dict(),
+        instance_tags=dict(type='dict'),
+        vpc_subnet_id=dict(),
+        assign_public_ip=dict(type='bool'),
+        private_ip=dict(),
+        instance_profile_name=dict(),
+        instance_ids=dict(type='list', aliases=['instance_id']),
+        source_dest_check=dict(type='bool', default=None),
+        termination_protection=dict(type='bool', default=None),
+        state=dict(default='present', choices=['present', 'absent', 'running', 'restarted', 'stopped']),
+        instance_initiated_shutdown_behavior=dict(default='stop', choices=['stop', 'terminate']),
+        exact_count=dict(type='int', default=None),
+        count_tag=dict(type='raw'),
+        volumes=dict(type='list'),
+        ebs_optimized=dict(type='bool', default=False),
+        tenancy=dict(default='default', choices=['default', 'dedicated']),
+        network_interfaces=dict(type='list', aliases=['network_interface'])
     )
 
     module = AnsibleAWSModule(

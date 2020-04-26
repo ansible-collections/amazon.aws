@@ -155,7 +155,6 @@ import traceback
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
     boto3_conn,
-    ec2_argument_spec,
     get_aws_connection_info,
     AWSRetry,
     HAS_BOTO3,
@@ -218,11 +217,10 @@ def describe_subnets(connection, module):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         subnet_ids=dict(type='list', default=[], aliases=['subnet_id']),
         filters=dict(type='dict', default={})
-    ))
+    )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,

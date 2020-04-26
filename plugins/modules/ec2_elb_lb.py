@@ -375,7 +375,7 @@ except ImportError:
     HAS_BOTO = False
 
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ec2_argument_spec, connect_to_aws, AnsibleAWSError, get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws, AnsibleAWSError, get_aws_connection_info
 from ansible.module_utils.six import string_types
 from ansible.module_utils._text import to_native
 
@@ -1221,8 +1221,7 @@ class ElbManager(object):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         state={'required': True, 'choices': ['present', 'absent']},
         name={'required': True},
         listeners={'default': None, 'required': False, 'type': 'list'},
@@ -1245,7 +1244,6 @@ def main():
         wait={'default': False, 'type': 'bool', 'required': False},
         wait_timeout={'default': 60, 'type': 'int', 'required': False},
         tags={'default': None, 'required': False, 'type': 'dict'}
-    )
     )
 
     module = AnsibleAWSModule(

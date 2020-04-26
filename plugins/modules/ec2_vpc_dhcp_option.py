@@ -198,7 +198,7 @@ import collections
 import traceback
 from time import sleep, time
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO, connect_to_aws, ec2_argument_spec, get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO, connect_to_aws, get_aws_connection_info
 
 if HAS_BOTO:
     import boto.vpc
@@ -278,8 +278,7 @@ def remove_dhcp_options_by_id(vpc_conn, dhcp_options_id):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         dhcp_options_id=dict(type='str', default=None),
         domain_name=dict(type='str', default=None),
         dns_servers=dict(type='list', default=None),
@@ -291,7 +290,6 @@ def main():
         inherit_existing=dict(type='bool', default=False),
         tags=dict(type='dict', default=None, aliases=['resource_tags']),
         state=dict(type='str', default='present', choices=['present', 'absent'])
-    )
     )
 
     module = AnsibleAWSModule(

@@ -265,7 +265,7 @@ except ImportError:
 
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (AnsibleAWSError, connect_to_aws,
-                                                                     ec2_argument_spec, get_aws_connection_info,
+                                                                     get_aws_connection_info,
                                                                      get_ec2_security_group_ids_from_names)
 
 
@@ -558,26 +558,23 @@ def _get_vpc_id(connection, module, subnet_id):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            eni_id=dict(default=None, type='str'),
-            instance_id=dict(default=None, type='str'),
-            private_ip_address=dict(type='str'),
-            subnet_id=dict(type='str'),
-            description=dict(type='str'),
-            security_groups=dict(default=[], type='list'),
-            device_index=dict(default=0, type='int'),
-            state=dict(default='present', choices=['present', 'absent']),
-            force_detach=dict(default='no', type='bool'),
-            source_dest_check=dict(default=None, type='bool'),
-            delete_on_termination=dict(default=None, type='bool'),
-            secondary_private_ip_addresses=dict(default=None, type='list'),
-            purge_secondary_private_ip_addresses=dict(default=False, type='bool'),
-            secondary_private_ip_address_count=dict(default=None, type='int'),
-            allow_reassignment=dict(default=False, type='bool'),
-            attached=dict(default=None, type='bool')
-        )
+    argument_spec = dict(
+        eni_id=dict(default=None, type='str'),
+        instance_id=dict(default=None, type='str'),
+        private_ip_address=dict(type='str'),
+        subnet_id=dict(type='str'),
+        description=dict(type='str'),
+        security_groups=dict(default=[], type='list'),
+        device_index=dict(default=0, type='int'),
+        state=dict(default='present', choices=['present', 'absent']),
+        force_detach=dict(default='no', type='bool'),
+        source_dest_check=dict(default=None, type='bool'),
+        delete_on_termination=dict(default=None, type='bool'),
+        secondary_private_ip_addresses=dict(default=None, type='list'),
+        purge_secondary_private_ip_addresses=dict(default=False, type='bool'),
+        secondary_private_ip_address_count=dict(default=None, type='int'),
+        allow_reassignment=dict(default=False, type='bool'),
+        attached=dict(default=None, type='bool')
     )
 
     module = AnsibleAWSModule(

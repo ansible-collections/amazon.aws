@@ -190,7 +190,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (ansible_dic
                                                                      boto3_conn,
                                                                      boto3_tag_list_to_ansible_dict,
                                                                      camel_dict_to_snake_dict,
-                                                                     ec2_argument_spec,
                                                                      get_aws_connection_info,
                                                                      )
 
@@ -227,14 +226,11 @@ def list_ec2_snapshots(connection, module):
 
 def main():
 
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            snapshot_ids=dict(default=[], type='list'),
-            owner_ids=dict(default=[], type='list'),
-            restorable_by_user_ids=dict(default=[], type='list'),
-            filters=dict(default={}, type='dict')
-        )
+    argument_spec = dict(
+        snapshot_ids=dict(default=[], type='list'),
+        owner_ids=dict(default=[], type='list'),
+        restorable_by_user_ids=dict(default=[], type='list'),
+        filters=dict(default={}, type='dict')
     )
 
     module = AnsibleAWSModule(

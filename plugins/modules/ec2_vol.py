@@ -241,7 +241,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.aws.core import Ansible
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (HAS_BOTO,
                                                                      AnsibleAWSError,
                                                                      connect_to_aws,
-                                                                     ec2_argument_spec,
                                                                      get_aws_connection_info,
                                                                      )
 
@@ -492,8 +491,7 @@ def get_volume_info(volume, state):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         instance=dict(),
         id=dict(),
         name=dict(),
@@ -508,7 +506,6 @@ def main():
         snapshot=dict(),
         state=dict(choices=['absent', 'present', 'list'], default='present'),
         tags=dict(type='dict', default={})
-    )
     )
     module = AnsibleAWSModule(argument_spec=argument_spec, check_boto3=False)
 

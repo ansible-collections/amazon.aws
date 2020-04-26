@@ -156,7 +156,6 @@ from ansible.module_utils._text import to_native
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
     boto3_conn,
-    ec2_argument_spec,
     get_aws_connection_info,
     AWSRetry,
     HAS_BOTO3,
@@ -282,11 +281,10 @@ def describe_vpcs(connection, module):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         vpc_ids=dict(type='list', default=[]),
         filters=dict(type='dict', default={})
-    ))
+    )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
     if module._name == 'ec2_vpc_net_facts':
