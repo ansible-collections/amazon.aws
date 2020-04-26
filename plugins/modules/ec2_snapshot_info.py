@@ -185,7 +185,7 @@ try:
 except ImportError:
     HAS_BOTO3 = False
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (ansible_dict_to_boto3_filter_list,
                                                                      boto3_conn,
                                                                      boto3_tag_list_to_ansible_dict,
@@ -237,11 +237,12 @@ def main():
         )
     )
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           mutually_exclusive=[
-                               ['snapshot_ids', 'owner_ids', 'restorable_by_user_ids', 'filters']
-                           ]
-                           )
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        mutually_exclusive=[
+            ['snapshot_ids', 'owner_ids', 'restorable_by_user_ids', 'filters']
+        ]
+    )
     if module._name == 'ec2_snapshot_facts':
         module.deprecate("The 'ec2_snapshot_facts' module has been renamed to 'ec2_snapshot_info'", version='2.13')
 

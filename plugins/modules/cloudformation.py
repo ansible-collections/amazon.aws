@@ -334,6 +334,7 @@ try:
 except ImportError:
     HAS_BOTO3 = False
 
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (ansible_dict_to_boto3_tag_list,
                                                                      AWSRetry,
                                                                      boto3_conn,
@@ -341,7 +342,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (ansible_dic
                                                                      ec2_argument_spec,
                                                                      get_aws_connection_info,
                                                                      )
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_bytes, to_native
 
 
@@ -658,7 +658,7 @@ def main():
     )
     )
 
-    module = AnsibleModule(
+    module = AnsibleAWSModule(
         argument_spec=argument_spec,
         mutually_exclusive=[['template_url', 'template', 'template_body'],
                             ['disable_rollback', 'on_create_failure']],

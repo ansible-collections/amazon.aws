@@ -153,7 +153,7 @@ vpcs:
 
 import traceback
 from ansible.module_utils._text import to_native
-from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
     boto3_conn,
     ec2_argument_spec,
@@ -189,7 +189,7 @@ def describe_vpcs(connection, module):
     Describe VPCs.
 
     connection  : boto3 client connection object
-    module  : AnsibleModule object
+    module  : AnsibleAWSModule object
     """
     # collect parameters
     filters = ansible_dict_to_boto3_filter_list(module.params.get('filters'))
@@ -288,7 +288,7 @@ def main():
         filters=dict(type='dict', default={})
     ))
 
-    module = AnsibleModule(argument_spec=argument_spec, supports_check_mode=True)
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
     if module._name == 'ec2_vpc_net_facts':
         module.deprecate("The 'ec2_vpc_net_facts' module has been renamed to 'ec2_vpc_net_info'", version='2.13')
 
