@@ -27,7 +27,7 @@ collections:
 ## Using this collection
 
 
-You can either call modules by their Fully Qualified Collection Namespace (FQCN), such as `amazon.aws.ec2_instance`, or you can call modules by their short name if you list the `ansible.aws` collection in the playbook's `collections` keyword:
+You can either call modules by their Fully Qualified Collection Namespace (FQCN), such as `amazon.aws.ec2_instance`, or you can call modules by their short name if you list the `amazon.aws` collection in the playbook's `collections` keyword:
 
 ```yaml
 ---
@@ -55,7 +55,7 @@ You can either call modules by their Fully Qualified Collection Namespace (FQCN)
 
 We welcome community contributions to this collection. If you find problems, please open an issue or create a PR against the [Amazon AWS collection repository](https://github.com/ansible-collections/amazon.aws).
 
-You cal also join us on:
+You can also join us on:
 
 - Freenode IRC - ``#ansible-aws`` Freenode channel
 
@@ -80,4 +80,4 @@ See the [Ansible Community Guide](https://docs.ansible.com/ansible/latest/commun
 
 GNU General Public License v3.0 or later.
 
-See [LICENCE](https://www.gnu.org/licenses/gpl-3.0.txt) to see the full text.
+See [LICENSE](https://www.gnu.org/licenses/gpl-3.0.txt) to see the full text.
