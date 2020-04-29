@@ -78,7 +78,7 @@ response_metadata:
     http_headers:
       content-length: 1490
       content-type: text/xml
-      date: Tue, 07 Feb 2017 16:43:04 GMT
+      date: 'Tue, 07 Feb 2017 16:43:04 GMT'
       x-amzn-requestid: 7f436dea-ed54-11e6-a04c-ab2372a1f14d
     http_status_code: 200
     request_id: 7f436dea-ed54-11e6-a04c-ab2372a1f14d
@@ -89,7 +89,7 @@ snapshot:
   type: dict
   sample:
     auto_minor_version_upgrade: true
-    cache_cluster_create_time: 2017-02-01T17:43:58.261000+00:00
+    cache_cluster_create_time: '2017-02-01T17:43:58.261000+00:00'
     cache_cluster_id: test-please-delete
     cache_node_type: cache.m1.small
     cache_parameter_group_name: default.redis3.2
@@ -97,7 +97,7 @@ snapshot:
     engine: redis
     engine_version: 3.2.4
     node_snapshots:
-      cache_node_create_time: 2017-02-01T17:43:58.261000+00:00
+      cache_node_create_time: '2017-02-01T17:43:58.261000+00:00'
       cache_node_id: 0001
       cache_size:
     num_cache_nodes: 1
