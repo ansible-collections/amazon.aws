@@ -119,7 +119,7 @@ removed_tags:
 '''
 
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict, ansible_dict_to_boto3_tag_list, compare_aws_tags
+from ..module_utils.ec2 import AWSRetry, ansible_dict_to_boto3_tag_list, boto3_tag_list_to_ansible_dict, compare_aws_tags
 
 try:
     from botocore.exceptions import BotoCoreError, ClientError
@@ -130,7 +130,8 @@ except Exception:
 def get_tags(ec2, module, resource):
     filters = [{'Name': 'resource-id', 'Values': [resource]}]
     try:
-        return boto3_tag_list_to_ansible_dict(ec2.describe_tags(Filters=filters)['Tags'])
+        result = AWSRetry.jittered_backoff()(ec2.describe_tags)(Filters=filters)
+        return boto3_tag_list_to_ansible_dict(result['Tags'])
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(e, msg='Failed to fetch tags for resource {0}'.format(resource))
 
@@ -178,7 +179,7 @@ def main():
         result['removed_tags'] = remove_tags
         if not module.check_mode:
             try:
-                ec2.delete_tags(Resources=[resource], Tags=ansible_dict_to_boto3_tag_list(remove_tags))
+                AWSRetry.jittered_backoff()(ec2.delete_tags)(Resources=[resource], Tags=ansible_dict_to_boto3_tag_list(remove_tags))
             except (BotoCoreError, ClientError) as e:
                 module.fail_json_aws(e, msg='Failed to remove tags {0} from resource {1}'.format(remove_tags, resource))
 
@@ -188,7 +189,7 @@ def main():
         current_tags.update(add_tags)
         if not module.check_mode:
             try:
-                ec2.create_tags(Resources=[resource], Tags=ansible_dict_to_boto3_tag_list(add_tags))
+                AWSRetry.jittered_backoff()(ec2.create_tags)(Resources=[resource], Tags=ansible_dict_to_boto3_tag_list(add_tags))
             except (BotoCoreError, ClientError) as e:
                 module.fail_json_aws(e, msg='Failed to set tags {0} on resource {1}'.format(add_tags, resource))
 
