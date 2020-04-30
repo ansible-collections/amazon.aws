@@ -1476,7 +1476,7 @@ def terminate_instances(module, ec2, instance_ids):
     """
     Terminates a list of instances
 
-    module: Ansible module object
+    module: AnsibleModule object
     ec2: authenticated ec2 connection object
     termination_list: a list of instances to terminate in the form of
       [ {id: <inst-id>}, ..]
@@ -1545,7 +1545,7 @@ def startstop_instances(module, ec2, instance_ids, state, instance_tags):
     """
     Starts or stops a list of existing instances
 
-    module: Ansible module object
+    module: AnsibleModule object
     ec2: authenticated ec2 connection object
     instance_ids: The list of instances to start in the form of
       [ {id: <inst-id>}, ..]
@@ -1655,7 +1655,7 @@ def restart_instances(module, ec2, instance_ids, state, instance_tags):
     """
     Restarts a list of existing instances
 
-    module: Ansible module object
+    module: AnsibleModule object
     ec2: authenticated ec2 connection object
     instance_ids: The list of instances to start in the form of
       [ {id: <inst-id>}, ..]
@@ -1720,7 +1720,7 @@ def check_termination_protection(module, inst):
     """
     Check the instance disableApiTermination attribute.
 
-    module: Ansible module object
+    module: AnsibleModule object
     inst: EC2 instance object
 
     returns: True if state changed None otherwise
@@ -1737,7 +1737,7 @@ def check_source_dest_attr(module, inst, ec2):
     """
     Check the instance sourceDestCheck attribute.
 
-    module: Ansible module object
+    module: AnsibleModule object
     inst: EC2 instance object
 
     returns: True if state changed None otherwise
