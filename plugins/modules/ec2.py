@@ -851,7 +851,7 @@ def await_spot_requests(module, ec2, spot_requests, override_count):
     """
     Wait for a group of spot requests to be fulfilled, or fail.
 
-    module: Ansible module object
+    module: AnsibleModule object
     ec2: authenticated ec2 connection object
     spot_requests: boto.ec2.spotinstancerequest.SpotInstanceRequest object returned by ec2.request_spot_instances
     count: Total number of instances to be created by the spot requests
@@ -966,7 +966,7 @@ def create_instances(module, ec2, vpc, override_count=None):
     """
     Creates new instances
 
-    module : Ansible Module object
+    module: AnsibleModule object
     ec2: authenticated ec2 connection object
 
     Returns:
@@ -1082,7 +1082,7 @@ def create_instance_tags(module, ec2, instids):
     """
     Leave this as late as possible to try and avoid InvalidInstanceID.NotFound
 
-    module : Ansible Module object
+    module: AnsibleModule object
     ec2: authenticated ec2 connection object
     instids: instance IDs
     """
@@ -1098,7 +1098,7 @@ def enable_termination_protection(module, res):
     """
     Disabled by default by AWS
 
-    module : Ansible Module object
+    module: AnsibleModule object
     res: ec2 reservation
     """
     if module.boolean(module.params.get('termination_protection')) is True:
@@ -1110,7 +1110,7 @@ def disable_source_dest_check(module, res):
     """
     Enabled by default by AWS
 
-    module : Ansible Module object
+    module: AnsibleModule object
     res: ec2 reservation
     """
     if module.boolean(module.params.get('source_dest_check')) is False:
@@ -1122,7 +1122,7 @@ def set_spot_valid_until(module, ec2, params):
     """
     ValidUntil -> (timestamp). The end date of the request, in UTC format (for example, YYYY -MM -DD T*HH* :MM :SS Z).
 
-    module : Ansible Module object
+    module: AnsibleModule object
     ec2: authenticated ec2 connection object
     params: instance parameters
     """
@@ -1135,7 +1135,7 @@ def set_spot_valid_until(module, ec2, params):
 
 def set_launch_group(module, params):
     """
-    module : Ansible Module object
+    module: AnsibleModule object
     params: instance parameters
     """
     if module.params.get('spot_launch_group') and isinstance(module.params.get('spot_launch_group'), string_types):
@@ -1144,7 +1144,7 @@ def set_launch_group(module, params):
 
 def check_instance_initiated_shutdown_behavior(module):
     """
-    module : Ansible Module object
+    module: AnsibleModule object
     """
     if module.params.get('instance_initiated_shutdown_behavior') and module.params.get(
             'instance_initiated_shutdown_behavior') != 'terminate':
@@ -1154,7 +1154,7 @@ def check_instance_initiated_shutdown_behavior(module):
 
 def set_placement_group(module, ec2, params):
     """
-    module : Ansible Module object
+    module: AnsibleModule object
     ec2: authenticated ec2 connection object
     params: instance parameters
     """
@@ -1167,7 +1167,7 @@ def set_placement_group(module, ec2, params):
 
 def check_private_ip(module):
     """
-    module : Ansible Module object
+    module: AnsibleModule object
     """
     if module.params.get('private_ip'):
         module.fail_json(
@@ -1179,7 +1179,7 @@ def set_instance_initiated_shutdown_behavior(module, ec2, params):
     For ordinary (not spot) instances, we can select 'stop'
     (the default) or 'terminate' here.
 
-    module : Ansible Module object
+    module: AnsibleModule object
     ec2: authenticated ec2 connection object
     params: instance parameters
     """
@@ -1199,7 +1199,7 @@ def set_instance_initiated_shutdown_behavior(module, ec2, params):
 
 def assign_ip(module, count_remaining, params):
     """
-    module : Ansible Module object
+    module: AnsibleModule object
     params: instance parameters
     """
     if module.boolean(module.params.get('assign_public_ip')) is not None and module.params.get('private_ip'):
@@ -1225,7 +1225,7 @@ def assign_ip(module, count_remaining, params):
 
 def set_block_device_map(module, ec2, params):
     """
-    module : Ansible Module object
+    module: AnsibleModule object
     ec2: authenticated ec2 connection object
     params: instance parameters
     """
@@ -1244,7 +1244,7 @@ def set_block_device_map(module, ec2, params):
 
 def set_instance_profile_name(module, ec2, params):
     """
-    module : Ansible Module object
+    module: AnsibleModule object
     ec2: authenticated ec2 connection object
     params: instance parameters
     """
@@ -1260,7 +1260,7 @@ def set_spot_price(module, params):
     """
     'tenancy' always has a default value, but it is not a valid parameter for spot instance request
 
-    module : Ansible Module object
+    module: AnsibleModule object
     params: instance parameters
     """
     if not module.params.get('spot_price'):
@@ -1269,7 +1269,7 @@ def set_spot_price(module, params):
 
 def set_ebs_optimized(module, params):
     """
-    module : Ansible Module object
+    module: AnsibleModule object
     params: instance parameters
     """
     if module.params.get('ebs_optimized'):
@@ -1278,7 +1278,7 @@ def set_ebs_optimized(module, params):
 
 def set_user_data(module, params):
     """
-    module : Ansible Module object
+    module: AnsibleModule object
     params: instance parameters
     """
     if module.params.get('user_data') is not None:
@@ -1287,7 +1287,7 @@ def set_user_data(module, params):
 
 def set_network_interfaces(module, ec2, vpc, params):
     """
-    module : Ansible Module object
+    module: AnsibleModule object
     ec2: authenticated ec2 connection object
     params: instance parameters
     """
@@ -1339,7 +1339,7 @@ def wait_for_instances(module, ec2, res, instids):
     """
     wait here until the instances are up
 
-    module : Ansible Module object
+    module: AnsibleModule object
     ec2: authenticated ec2 connection object
     res: ec2 reservation
     instids: list of instant ids
@@ -1380,7 +1380,7 @@ def wait_for_instances(module, ec2, res, instids):
 
 def get_count(module, override_count):
     """
-    module : Ansible Module object
+    module: AnsibleModule object
 
     Returns: count integer
 
@@ -1396,7 +1396,7 @@ def get_group(module, ec2, vpc):
     """
     returns security group name and id
 
-    module : Ansible odule object
+    module: AnsibleModule object
     ec2: authenticated ec2 connection object
 
     Returns:
@@ -1438,7 +1438,7 @@ def get_vpc_id(module, vpc):
     """
     Returns vpc id
 
-    module: Ansible module object
+    module: AnsibleModule object
     """
     vpc_id = None
     if module.params.get('vpc_subnet_id'):
@@ -1455,7 +1455,7 @@ def lookup_instances(module, ec2, override_count):
     """
     Lookup any instances that much our run id.
 
-    module: Ansible module object
+    module: AnsibleModule object
     ec2: authenticated ec2 connection object
 
     Returns a list of remaining count, reservation, and running instances
