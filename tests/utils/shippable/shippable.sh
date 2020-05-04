@@ -68,11 +68,6 @@ else
     export UNSTABLE=""
 fi
 
-virtualenv --python /usr/bin/python3.7 ~/ansible-venv
-set +ux
-. ~/ansible-venv/bin/activate
-set -ux
-
 pip install setuptools==44.1.0
 pip install https://github.com/ansible/ansible/archive/devel.tar.gz --disable-pip-version-check
 
@@ -107,6 +102,13 @@ function cleanup
             else
                 stub=""
             fi
+
+            # use python 3.7 for coverage to avoid running out of memory during coverage xml processing
+            # only use it for coverage to avoid the additional overhead of setting up a virtual environment for a potential no-op job
+            virtualenv --python /usr/bin/python3.7 ~/ansible-venv
+            set +ux
+            . ~/ansible-venv/bin/activate
+            set -ux
 
             # shellcheck disable=SC2086
             ansible-test coverage xml --color -v --requirements --group-by command --group-by version ${stub:+"$stub"}
