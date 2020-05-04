@@ -8,8 +8,7 @@ __metaclass__ = type
 
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['stableinterface'],
-                    'supported_by': 'community'}
+                    'status': ['stableinterface']}
 
 
 DOCUMENTATION = '''
