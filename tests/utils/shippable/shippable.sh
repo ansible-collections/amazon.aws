@@ -34,20 +34,20 @@ export PATH="${PWD}/bin:${PATH}"
 export PYTHONIOENCODING='utf-8'
 
 if [ "${JOB_TRIGGERED_BY_NAME:-}" == "nightly-trigger" ]; then
-#    COVERAGE=yes
+    COVERAGE=yes
     COMPLETE=yes
 fi
 
-#if [ -n "${COVERAGE:-}" ]; then
-#    # on-demand coverage reporting triggered by setting the COVERAGE environment variable to a non-empty value
-#    export COVERAGE="--coverage"
-#elif [[ "${COMMIT_MESSAGE}" =~ ci_coverage ]]; then
-#    # on-demand coverage reporting triggered by having 'ci_coverage' in the latest commit message
-#    export COVERAGE="--coverage"
-#else
-#    # on-demand coverage reporting disabled (default behavior, always-on coverage reporting remains enabled)
-#    export COVERAGE="--coverage-check"
-#fi
+if [ -n "${COVERAGE:-}" ]; then
+    # on-demand coverage reporting triggered by setting the COVERAGE environment variable to a non-empty value
+    export COVERAGE="--coverage"
+elif [[ "${COMMIT_MESSAGE}" =~ ci_coverage ]]; then
+    # on-demand coverage reporting triggered by having 'ci_coverage' in the latest commit message
+    export COVERAGE="--coverage"
+else
+    # on-demand coverage reporting disabled (default behavior, always-on coverage reporting remains enabled)
+    export COVERAGE="--coverage-check"
+fi
 
 if [ -n "${COMPLETE:-}" ]; then
     # disable change detection triggered by setting the COMPLETE environment variable to a non-empty value
@@ -111,6 +111,31 @@ function cleanup
             # shellcheck disable=SC2086
             ansible-test coverage xml --color -v --requirements --group-by command --group-by version ${stub:+"$stub"}
             cp -a tests/output/reports/coverage=*.xml shippable/codecoverage/
+
+            # upload coverage report to codecov.io only when using complete on-demand coverage
+            if [ "${COVERAGE}" == "--coverage" ] && [ "${CHANGED}" == "" ]; then
+                for file in test/results/reports/coverage=*.xml; do
+                    flags="${file##*/coverage=}"
+                    flags="${flags%-powershell.xml}"
+                    flags="${flags%.xml}"
+                    # remove numbered component from stub files when converting to tags
+                    flags="${flags//stub-[0-9]*/stub}"
+                    flags="${flags//=/,}"
+                    flags="${flags//[^a-zA-Z0-9_,]/_}"
+
+                    bash <(curl -s https://codecov.io/bash) \
+                        -f "${file}" \
+                        -F "${flags}" \
+                        -n "${test}" \
+                        -t bc371da7-e5d2-4743-93b5-309f81d457a4
+                        -X coveragepy \
+                        -X gcov \
+                        -X fix \
+                        -X search \
+                        -X xcode \
+                    || echo "Failed to upload code coverage report to codecov.io: ${file}"
+                done
+            fi
         fi
     fi
 
