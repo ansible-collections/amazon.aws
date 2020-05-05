@@ -6,7 +6,7 @@ authors: null
 description: null
 license: GPL-3.0-or-later
 license_file: COPYING
-tags: null
+tags: [community, aws, cloud, amazon]
 dependencies:
   amazon.aws: '>=0.1.0'
 repository: https://github.com/ansible-collections/community.aws.git
