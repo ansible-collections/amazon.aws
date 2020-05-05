@@ -30,20 +30,21 @@ __metaclass__ = type
 Common Amazon Certificate Manager facts shared between modules
 """
 import traceback
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info, boto3_conn
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (camel_dict_to_snake_dict,
-                                                                     AWSRetry,
-                                                                     HAS_BOTO3,
-                                                                     boto3_tag_list_to_ansible_dict,
-                                                                     ansible_dict_to_boto3_tag_list)
-from ansible.module_utils._text import to_bytes
-
 
 try:
     import botocore
     from botocore.exceptions import BotoCoreError, ClientError
 except ImportError:
-    pass  # caught by imported HAS_BOTO3
+    pass
+
+from ansible.module_utils._text import to_bytes
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from .ec2 import AWSRetry
+from .ec2 import ansible_dict_to_boto3_tag_list
+from .ec2 import boto3_conn
+from .ec2 import boto3_tag_list_to_ansible_dict
+from .ec2 import get_aws_connection_info
 
 
 class ACMServiceManager(object):

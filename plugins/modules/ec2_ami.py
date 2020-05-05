@@ -351,17 +351,18 @@ snapshots_deleted:
 '''
 
 import time
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (ansible_dict_to_boto3_tag_list,
-                                                                     boto3_tag_list_to_ansible_dict,
-                                                                     camel_dict_to_snake_dict,
-                                                                     compare_aws_tags,
-                                                                     )
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
 
 try:
     import botocore
 except ImportError:
-    pass  # caught by AnsibleAWSModule
+    pass  # Handled by AnsibleAWSModule
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ..module_utils.ec2 import compare_aws_tags
 
 
 def get_block_device_mapping(image):

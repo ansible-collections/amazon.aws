@@ -32,12 +32,15 @@ This module adds shared support for Batch modules.
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info, boto3_conn, snake_dict_to_camel_dict
-
 try:
     from botocore.exceptions import ClientError
 except ImportError:
-    pass  # Handled by HAS_BOTO3
+    pass
+
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+
+from .ec2 import boto3_conn
+from .ec2 import get_aws_connection_info
 
 
 class AWSConnection(object):

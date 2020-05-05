@@ -56,13 +56,13 @@ tags:
   type: dict
 '''
 
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict, AWSRetry
-
 try:
     from botocore.exceptions import BotoCoreError, ClientError
 except Exception:
     pass    # Handled by AnsibleAWSModule
+
+from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict, AWSRetry
 
 
 @AWSRetry.jittered_backoff()

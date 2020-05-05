@@ -4,13 +4,12 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-
-# Non-ansible imports
 try:
     from botocore.exceptions import BotoCoreError, ClientError
 except ImportError:
     pass
+
+from .ec2 import AWSRetry
 
 
 def get_elb(connection, module, elb_name):

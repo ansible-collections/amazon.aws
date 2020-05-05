@@ -74,9 +74,14 @@ except ImportError:
     from io import StringIO
 
 from ansible.module_utils.basic import AnsibleModule, missing_required_lib
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils._text import to_native
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3, camel_dict_to_snake_dict, ec2_argument_spec, boto3_conn
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info, get_aws_region
+
+from .ec2 import HAS_BOTO3
+from .ec2 import boto3_conn
+from .ec2 import ec2_argument_spec
+from .ec2 import get_aws_connection_info
+from .ec2 import get_aws_region
 
 # We will also export HAS_BOTO3 so end user modules can use it.
 __all__ = ('AnsibleAWSModule', 'HAS_BOTO3', 'is_boto3_error_code')

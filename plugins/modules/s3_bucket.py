@@ -163,17 +163,23 @@ import json
 import os
 import time
 
-from ansible.module_utils.six.moves.urllib.parse import urlparse
-from ansible.module_utils.six import string_types
-from ansible.module_utils.basic import to_text
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule, is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies, boto3_tag_list_to_ansible_dict, ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info, boto3_conn, AWSRetry
-
 try:
     from botocore.exceptions import BotoCoreError, ClientError, EndpointConnectionError, WaiterError
 except ImportError:
-    pass  # caught by AnsibleAWSModule
+    pass  # Handled by AnsibleAWSModule
+
+from ansible.module_utils.basic import to_text
+from ansible.module_utils.six import string_types
+from ansible.module_utils.six.moves.urllib.parse import urlparse
+
+from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.core import is_boto3_error_code
+from ..module_utils.ec2 import AWSRetry
+from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ..module_utils.ec2 import boto3_conn
+from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ..module_utils.ec2 import compare_policies
+from ..module_utils.ec2 import get_aws_connection_info
 
 
 def create_or_update_bucket(s3_client, module, location):

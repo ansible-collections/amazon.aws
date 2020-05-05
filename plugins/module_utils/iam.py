@@ -9,7 +9,7 @@ import traceback
 try:
     from botocore.exceptions import ClientError, NoCredentialsError
 except ImportError:
-    pass  # caught by HAS_BOTO3
+    pass
 
 from ansible.module_utils._text import to_native
 

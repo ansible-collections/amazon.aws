@@ -146,9 +146,9 @@ try:
 except ImportError:
     pass  # Taken care of by ec2.HAS_BOTO
 
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ec2_connect
+from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.ec2 import HAS_BOTO
+from ..module_utils.ec2 import ec2_connect
 
 
 # Find the most recent snapshot

@@ -280,17 +280,22 @@ s3_keys:
 
 import mimetypes
 import os
-from ansible.module_utils.six.moves.urllib.parse import urlparse
 from ssl import SSLError
-from ansible.module_utils.basic import to_text, to_native
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.aws.s3 import calculate_etag, HAS_MD5
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info, boto3_conn
 
 try:
     import botocore
 except ImportError:
-    pass  # will be detected by imported AnsibleAWSModule
+    pass  # Handled by AnsibleAWSModule
+
+from ansible.module_utils.basic import to_text
+from ansible.module_utils.basic import to_native
+from ansible.module_utils.six.moves.urllib.parse import urlparse
+
+from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.ec2 import boto3_conn
+from ..module_utils.ec2 import get_aws_connection_info
+from ..module_utils.s3 import HAS_MD5
+from ..module_utils.s3 import calculate_etag
 
 IGNORE_S3_DROP_IN_EXCEPTIONS = ['XNotImplemented', 'NotImplemented']
 

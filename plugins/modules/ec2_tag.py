@@ -118,13 +118,16 @@ removed_tags:
   type: dict
 '''
 
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
-from ..module_utils.ec2 import AWSRetry, ansible_dict_to_boto3_tag_list, boto3_tag_list_to_ansible_dict, compare_aws_tags
-
 try:
     from botocore.exceptions import BotoCoreError, ClientError
 except Exception:
     pass    # Handled by AnsibleAWSModule
+
+from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.ec2 import AWSRetry
+from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ..module_utils.ec2 import compare_aws_tags
 
 
 def get_tags(ec2, module, resource):

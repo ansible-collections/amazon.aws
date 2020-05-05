@@ -374,11 +374,12 @@ except ImportError:
 
 from ansible.module_utils.six import string_types
 from ansible.module_utils._text import to_native
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleAWSError
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+
+from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.ec2 import AnsibleAWSError
+from ..module_utils.ec2 import HAS_BOTO
+from ..module_utils.ec2 import connect_to_aws
+from ..module_utils.ec2 import get_aws_connection_info
 
 
 def _throttleable_operation(max_retries):

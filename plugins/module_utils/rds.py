@@ -4,22 +4,22 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-from ansible.module_utils._text import to_text
-from ansible_collections.amazon.aws.plugins.module_utils.aws.waiters import get_waiter
-from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (compare_aws_tags,
-                                                                     AWSRetry,
-                                                                     ansible_dict_to_boto3_tag_list,
-                                                                     boto3_tag_list_to_ansible_dict)
+from collections import namedtuple
+from time import sleep
 
 try:
     from botocore.exceptions import BotoCoreError, ClientError, WaiterError
 except ImportError:
     pass
 
-from collections import namedtuple
-from time import sleep
+from ansible.module_utils._text import to_text
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
+from .ec2 import AWSRetry
+from .ec2 import ansible_dict_to_boto3_tag_list
+from .ec2 import boto3_tag_list_to_ansible_dict
+from .ec2 import compare_aws_tags
+from .waiters import get_waiter
 
 Boto3ClientMethod = namedtuple('Boto3ClientMethod', ['name', 'waiter', 'operation_description', 'cluster', 'instance'])
 # Whitelist boto3 client methods for cluster and instance resources

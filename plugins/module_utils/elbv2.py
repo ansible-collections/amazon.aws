@@ -4,19 +4,23 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-# Ansible imports
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, get_ec2_security_group_ids_from_names, \
-    ansible_dict_to_boto3_tag_list, boto3_tag_list_to_ansible_dict, compare_policies as compare_dicts, \
-    AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.aws.elb_utils import get_elb, get_elb_listener, convert_tg_name_to_arn
+import traceback
+from copy import deepcopy
 
-# Non-ansible imports
 try:
     from botocore.exceptions import BotoCoreError, ClientError
 except ImportError:
     pass
-import traceback
-from copy import deepcopy
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from .ec2 import AWSRetry
+from .ec2 import ansible_dict_to_boto3_tag_list
+from .ec2 import boto3_tag_list_to_ansible_dict
+from .ec2 import get_ec2_security_group_ids_from_names
+from .elb_utils import convert_tg_name_to_arn
+from .elb_utils import get_elb
+from .elb_utils import get_elb_listener
 
 
 class ElasticLoadBalancerV2(object):

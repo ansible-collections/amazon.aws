@@ -9,14 +9,17 @@ import hashlib
 import hmac
 import operator
 
-from ansible.module_utils.urls import open_url
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn, get_aws_connection_info, HAS_BOTO3
-from ansible.module_utils.six.moves.urllib.parse import urlencode
-
 try:
     from boto3 import session
 except ImportError:
     pass
+
+from ansible.module_utils.six.moves.urllib.parse import urlencode
+from ansible.module_utils.urls import open_url
+
+from .ec2 import HAS_BOTO3
+from .ec2 import boto3_conn
+from .ec2 import get_aws_connection_info
 
 
 def hexdigest(s):
