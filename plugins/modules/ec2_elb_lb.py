@@ -361,7 +361,6 @@ EXAMPLES = """
 
 import random
 import time
-import traceback
 
 try:
     import boto
@@ -370,14 +369,16 @@ try:
     import boto.vpc
     from boto.ec2.elb.healthcheck import HealthCheck
     from boto.ec2.tag import Tag
-    HAS_BOTO = True
 except ImportError:
-    HAS_BOTO = False
+    pass  # Taken care of by ec2.HAS_BOTO
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ec2_argument_spec, connect_to_aws, AnsibleAWSError, get_aws_connection_info
 from ansible.module_utils.six import string_types
 from ansible.module_utils._text import to_native
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
 def _throttleable_operation(max_retries):
@@ -403,7 +404,7 @@ def _get_vpc_connection(module, region, aws_connect_params):
     try:
         return connect_to_aws(boto.vpc, region, **aws_connect_params)
     except (boto.exception.NoAuthHandlerFound, AnsibleAWSError) as e:
-        module.fail_json(msg=str(e))
+        module.fail_json_aws(e, 'Failed to connect to AWS')
 
 
 _THROTTLING_RETRIES = 5
@@ -454,7 +455,7 @@ class ElbManager(object):
         try:
             self.elb = self._get_elb()
         except boto.exception.BotoServerError as e:
-            module.fail_json(msg='unable to get all load balancers: %s' % e.message, exception=traceback.format_exc())
+            module.fail_json_aws(e, msg='Unable to get all load balancers')
 
         self.ec2_conn = self._get_ec2_connection()
 
@@ -654,7 +655,7 @@ class ElbManager(object):
                         status_achieved = True
                         break
                     else:
-                        self.module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+                        self.module.fail_json_aws(e, 'Failure while waiting for interface to be removed')
 
         return status_achieved
 
@@ -671,14 +672,14 @@ class ElbManager(object):
             return connect_to_aws(boto.ec2.elb, self.region,
                                   **self.aws_connect_params)
         except (boto.exception.NoAuthHandlerFound, AnsibleAWSError) as e:
-            self.module.fail_json(msg=str(e))
+            self.module.fail_json_aws(e, 'Failure while connecting to AWS')
 
     def _get_ec2_connection(self):
         try:
             return connect_to_aws(boto.ec2, self.region,
                                   **self.aws_connect_params)
         except (boto.exception.NoAuthHandlerFound, Exception) as e:
-            self.module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+            self.module.fail_json_aws(e, 'Failure while connecting to AWS')
 
     @_throttleable_operation(_THROTTLING_RETRIES)
     def _delete_elb(self):
@@ -815,7 +816,7 @@ class ElbManager(object):
         try:
             self.elb.enable_zones(zones)
         except boto.exception.BotoServerError as e:
-            self.module.fail_json(msg='unable to enable zones: %s' % e.message, exception=traceback.format_exc())
+            self.module.fail_json_aws(e, msg='unable to enable zones')
 
         self.changed = True
 
@@ -823,7 +824,7 @@ class ElbManager(object):
         try:
             self.elb.disable_zones(zones)
         except boto.exception.BotoServerError as e:
-            self.module.fail_json(msg='unable to disable zones: %s' % e.message, exception=traceback.format_exc())
+            self.module.fail_json_aws(e, msg='unable to disable zones')
         self.changed = True
 
     def _attach_subnets(self, subnets):
@@ -1221,8 +1222,7 @@ class ElbManager(object):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         state={'required': True, 'choices': ['present', 'absent']},
         name={'required': True},
         listeners={'default': None, 'required': False, 'type': 'list'},
@@ -1246,10 +1246,10 @@ def main():
         wait_timeout={'default': 60, 'type': 'int', 'required': False},
         tags={'default': None, 'required': False, 'type': 'dict'}
     )
-    )
 
-    module = AnsibleModule(
+    module = AnsibleAWSModule(
         argument_spec=argument_spec,
+        check_boto3=False,
         mutually_exclusive=[['security_group_ids', 'security_group_names']]
     )
 
@@ -1311,7 +1311,7 @@ def main():
                 group_id = [str(grp.id) for grp in grp_details if str(grp.name) in group_name]
                 security_group_ids.extend(group_id)
         except boto.exception.NoAuthHandlerFound as e:
-            module.fail_json(msg=str(e))
+            module.fail_json_aws(e)
 
     elb_man = ElbManager(module, name, listeners, purge_listeners, zones,
                          purge_zones, security_group_ids, health_check,

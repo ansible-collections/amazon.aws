@@ -259,14 +259,15 @@ try:
     import boto.ec2
     import boto.vpc
     from boto.exception import BotoServerError
-    HAS_BOTO = True
 except ImportError:
-    HAS_BOTO = False
+    pass  # Taken care of by ec2.HAS_BOTO
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (AnsibleAWSError, connect_to_aws,
-                                                                     ec2_argument_spec, get_aws_connection_info,
-                                                                     get_ec2_security_group_ids_from_names)
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_security_group_ids_from_names
 
 
 def get_eni_info(interface):
@@ -359,7 +360,7 @@ def create_eni(connection, vpc_id, module):
         changed = True
 
     except BotoServerError as e:
-        module.fail_json(msg=e.message)
+        module.fail_json_aws(e)
 
     module.exit_json(changed=changed, interface=get_eni_info(eni))
 
@@ -448,7 +449,7 @@ def modify_eni(connection, vpc_id, module, eni):
             detach_eni(eni, module)
 
     except BotoServerError as e:
-        module.fail_json(msg=e.message)
+        module.fail_json_aws(e)
 
     eni.update()
     module.exit_json(changed=changed, interface=get_eni_info(eni))
@@ -481,7 +482,7 @@ def delete_eni(connection, module):
         if regex.search(e.message) is not None:
             module.exit_json(changed=False)
         else:
-            module.fail_json(msg=e.message)
+            module.fail_json_aws(e)
 
 
 def detach_eni(eni, module):
@@ -534,7 +535,7 @@ def uniquely_find_eni(connection, module):
             return None
 
     except BotoServerError as e:
-        module.fail_json(msg=e.message)
+        module.fail_json_aws(e)
 
     return None
 
@@ -554,42 +555,41 @@ def _get_vpc_id(connection, module, subnet_id):
     try:
         return connection.get_all_subnets(subnet_ids=[subnet_id])[0].vpc_id
     except BotoServerError as e:
-        module.fail_json(msg=e.message)
+        module.fail_json_aws(e)
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            eni_id=dict(default=None, type='str'),
-            instance_id=dict(default=None, type='str'),
-            private_ip_address=dict(type='str'),
-            subnet_id=dict(type='str'),
-            description=dict(type='str'),
-            security_groups=dict(default=[], type='list'),
-            device_index=dict(default=0, type='int'),
-            state=dict(default='present', choices=['present', 'absent']),
-            force_detach=dict(default='no', type='bool'),
-            source_dest_check=dict(default=None, type='bool'),
-            delete_on_termination=dict(default=None, type='bool'),
-            secondary_private_ip_addresses=dict(default=None, type='list'),
-            purge_secondary_private_ip_addresses=dict(default=False, type='bool'),
-            secondary_private_ip_address_count=dict(default=None, type='int'),
-            allow_reassignment=dict(default=False, type='bool'),
-            attached=dict(default=None, type='bool')
-        )
+    argument_spec = dict(
+        eni_id=dict(default=None, type='str'),
+        instance_id=dict(default=None, type='str'),
+        private_ip_address=dict(type='str'),
+        subnet_id=dict(type='str'),
+        description=dict(type='str'),
+        security_groups=dict(default=[], type='list'),
+        device_index=dict(default=0, type='int'),
+        state=dict(default='present', choices=['present', 'absent']),
+        force_detach=dict(default='no', type='bool'),
+        source_dest_check=dict(default=None, type='bool'),
+        delete_on_termination=dict(default=None, type='bool'),
+        secondary_private_ip_addresses=dict(default=None, type='list'),
+        purge_secondary_private_ip_addresses=dict(default=False, type='bool'),
+        secondary_private_ip_address_count=dict(default=None, type='int'),
+        allow_reassignment=dict(default=False, type='bool'),
+        attached=dict(default=None, type='bool')
     )
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           mutually_exclusive=[
-                               ['secondary_private_ip_addresses', 'secondary_private_ip_address_count']
-                           ],
-                           required_if=([
-                               ('state', 'absent', ['eni_id']),
-                               ('attached', True, ['instance_id']),
-                               ('purge_secondary_private_ip_addresses', True, ['secondary_private_ip_addresses'])
-                           ])
-                           )
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        check_boto3=False,
+        mutually_exclusive=[
+            ['secondary_private_ip_addresses', 'secondary_private_ip_address_count']
+        ],
+        required_if=([
+            ('state', 'absent', ['eni_id']),
+            ('attached', True, ['instance_id']),
+            ('purge_secondary_private_ip_addresses', True, ['secondary_private_ip_addresses'])
+        ])
+    )
 
     if not HAS_BOTO:
         module.fail_json(msg='boto required for this module')
@@ -601,7 +601,7 @@ def main():
             connection = connect_to_aws(boto.ec2, region, **aws_connect_params)
             vpc_connection = connect_to_aws(boto.vpc, region, **aws_connect_params)
         except (boto.exception.NoAuthHandlerFound, AnsibleAWSError) as e:
-            module.fail_json(msg=str(e))
+            module.fail_json_aws(e)
     else:
         module.fail_json(msg="region must be specified")
 

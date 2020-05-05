@@ -181,18 +181,13 @@ data_encryption_key_id:
 try:
     import boto3
     from botocore.exceptions import ClientError
-    HAS_BOTO3 = True
 except ImportError:
-    HAS_BOTO3 = False
+    pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (ansible_dict_to_boto3_filter_list,
-                                                                     boto3_conn,
-                                                                     boto3_tag_list_to_ansible_dict,
-                                                                     camel_dict_to_snake_dict,
-                                                                     ec2_argument_spec,
-                                                                     get_aws_connection_info,
-                                                                     )
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
 def list_ec2_snapshots(connection, module):
@@ -204,13 +199,12 @@ def list_ec2_snapshots(connection, module):
 
     try:
         snapshots = connection.describe_snapshots(SnapshotIds=snapshot_ids, OwnerIds=owner_ids, RestorableByUserIds=restorable_by_user_ids, Filters=filters)
+    except is_boto3_error_code('InvalidSnapshot.NotFound') as e:
+        if len(snapshot_ids) > 1:
+            module.warn("Some of your snapshots may exist, but %s" % str(e))
+        snapshots = {'Snapshots': []}
     except ClientError as e:
-        if e.response['Error']['Code'] == "InvalidSnapshot.NotFound":
-            if len(snapshot_ids) > 1:
-                module.warn("Some of your snapshots may exist, but %s" % str(e))
-            snapshots = {'Snapshots': []}
-        else:
-            module.fail_json(msg="Failed to describe snapshots: %s" % str(e))
+        module.fail_json_aws(e, msg='Failed to describe snapshots')
 
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_snapshots = []
@@ -227,33 +221,23 @@ def list_ec2_snapshots(connection, module):
 
 def main():
 
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            snapshot_ids=dict(default=[], type='list'),
-            owner_ids=dict(default=[], type='list'),
-            restorable_by_user_ids=dict(default=[], type='list'),
-            filters=dict(default={}, type='dict')
-        )
+    argument_spec = dict(
+        snapshot_ids=dict(default=[], type='list'),
+        owner_ids=dict(default=[], type='list'),
+        restorable_by_user_ids=dict(default=[], type='list'),
+        filters=dict(default={}, type='dict')
     )
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           mutually_exclusive=[
-                               ['snapshot_ids', 'owner_ids', 'restorable_by_user_ids', 'filters']
-                           ]
-                           )
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        mutually_exclusive=[
+            ['snapshot_ids', 'owner_ids', 'restorable_by_user_ids', 'filters']
+        ]
+    )
     if module._name == 'ec2_snapshot_facts':
         module.deprecate("The 'ec2_snapshot_facts' module has been renamed to 'ec2_snapshot_info'", version='2.13')
 
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 required for this module')
-
-    region, ec2_url, aws_connect_params = get_aws_connection_info(module, boto3=True)
-
-    if region:
-        connection = boto3_conn(module, conn_type='client', resource='ec2', region=region, endpoint=ec2_url, **aws_connect_params)
-    else:
-        module.fail_json(msg="region must be specified")
+    connection = module.client('ec2')
 
     list_ec2_snapshots(connection, module)
 

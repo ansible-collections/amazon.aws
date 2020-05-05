@@ -330,19 +330,15 @@ from hashlib import sha1
 try:
     import boto3
     import botocore
-    HAS_BOTO3 = True
 except ImportError:
-    HAS_BOTO3 = False
+    pass  # Handled by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (ansible_dict_to_boto3_tag_list,
-                                                                     AWSRetry,
-                                                                     boto3_conn,
-                                                                     boto_exception,
-                                                                     ec2_argument_spec,
-                                                                     get_aws_connection_info,
-                                                                     )
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_bytes, to_native
+from ansible.module_utils._text import to_bytes
+from ansible.module_utils._text import to_native
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto_exception
 
 
 def get_stack_events(cfn, stack_name, events_limit, token_filter=None):
@@ -406,8 +402,7 @@ def create_stack(module, stack_params, cfn, events_limit):
         # Use stack ID to follow stack state in case of on_create_failure = DELETE
         result = stack_operation(cfn, response['StackId'], 'CREATE', events_limit, stack_params.get('ClientRequestToken', None))
     except Exception as err:
-        error_msg = boto_exception(err)
-        module.fail_json(msg="Failed to create stack {0}: {1}.".format(stack_params.get('StackName'), error_msg), exception=traceback.format_exc())
+        module.fail_json_aws(err, msg="Failed to create stack {0}".format(stack_params.get('StackName')))
     if not result:
         module.fail_json(msg="empty result")
     return result
@@ -444,8 +439,7 @@ def create_changeset(module, stack_params, cfn, events_limit):
                 try:
                     newcs = cfn.describe_change_set(ChangeSetName=cs['Id'])
                 except botocore.exceptions.BotoCoreError as err:
-                    error_msg = boto_exception(err)
-                    module.fail_json(msg=error_msg)
+                    module.fail_json_aws(err)
                 if newcs['Status'] == 'CREATE_PENDING' or newcs['Status'] == 'CREATE_IN_PROGRESS':
                     time.sleep(1)
                 elif newcs['Status'] == 'FAILED' and "The submitted information didn't contain changes" in newcs['StatusReason']:
@@ -469,7 +463,7 @@ def create_changeset(module, stack_params, cfn, events_limit):
         if 'No updates are to be performed.' in error_msg:
             result = dict(changed=False, output='Stack is already up-to-date.')
         else:
-            module.fail_json(msg="Failed to create change set: {0}".format(error_msg), exception=traceback.format_exc())
+            module.fail_json_aws(err, msg='Failed to create change set')
 
     if not result:
         module.fail_json(msg="empty result")
@@ -491,7 +485,7 @@ def update_stack(module, stack_params, cfn, events_limit):
         if 'No updates are to be performed.' in error_msg:
             result = dict(changed=False, output='Stack is already up-to-date.')
         else:
-            module.fail_json(msg="Failed to update stack {0}: {1}".format(stack_params.get('StackName'), error_msg), exception=traceback.format_exc())
+            module.fail_json_aws(err, msg="Failed to update stack {0}".format(stack_params.get('StackName')))
     if not result:
         module.fail_json(msg="empty result")
     return result
@@ -509,7 +503,7 @@ def update_termination_protection(module, cfn, stack_name, desired_termination_p
                     EnableTerminationProtection=desired_termination_protection_state,
                     StackName=stack_name)
             except botocore.exceptions.ClientError as e:
-                module.fail_json(msg=boto_exception(e), exception=traceback.format_exc())
+                module.fail_json_aws(e)
 
 
 def boto_supports_termination_protection(cfn):
@@ -605,8 +599,7 @@ def check_mode_changeset(module, stack_params, cfn):
         return {'changed': True, 'msg': reason, 'meta': description['Changes']}
 
     except (botocore.exceptions.ValidationError, botocore.exceptions.ClientError) as err:
-        error_msg = boto_exception(err)
-        module.fail_json(msg=error_msg, exception=traceback.format_exc())
+        module.fail_json_aws(err)
 
 
 def get_stack_facts(cfn, stack_name):
@@ -631,8 +624,7 @@ def get_stack_facts(cfn, stack_name):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         stack_name=dict(required=True),
         template_parameters=dict(required=False, type='dict', default={}),
         state=dict(default='present', choices=['present', 'absent']),
@@ -656,16 +648,13 @@ def main():
         backoff_max_delay=dict(type='int', default=30, required=False),
         capabilities=dict(type='list', default=['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'])
     )
-    )
 
-    module = AnsibleModule(
+    module = AnsibleAWSModule(
         argument_spec=argument_spec,
         mutually_exclusive=[['template_url', 'template', 'template_body'],
                             ['disable_rollback', 'on_create_failure']],
         supports_check_mode=True
     )
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 and botocore are required for this module')
 
     invalid_capabilities = []
     user_capabilities = module.params.get('capabilities')
@@ -731,11 +720,7 @@ def main():
 
     result = {}
 
-    try:
-        region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
-        cfn = boto3_conn(module, conn_type='client', resource='cloudformation', region=region, endpoint=ec2_url, **aws_connect_kwargs)
-    except botocore.exceptions.NoCredentialsError as e:
-        module.fail_json(msg=boto_exception(e))
+    cfn = module.client('cloudformation')
 
     # Wrap the cloudformation client methods that this module uses with
     # automatic backoff / retry for throttling error codes
@@ -817,7 +802,7 @@ def main():
                 result = stack_operation(cfn, stack_params['StackName'], 'DELETE', module.params.get('events_limit'),
                                          stack_params.get('ClientRequestToken', None))
         except Exception as err:
-            module.fail_json(msg=boto_exception(err), exception=traceback.format_exc())
+            module.fail_json_aws(err)
 
     module.exit_json(**result)
 

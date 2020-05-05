@@ -151,24 +151,16 @@ subnets:
                             type: str
 '''
 
-import traceback
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
-    boto3_conn,
-    ec2_argument_spec,
-    get_aws_connection_info,
-    AWSRetry,
-    HAS_BOTO3,
-    boto3_tag_list_to_ansible_dict,
-    camel_dict_to_snake_dict,
-    ansible_dict_to_boto3_filter_list
-)
-from ansible.module_utils._text import to_native
-
 try:
     import botocore
 except ImportError:
-    pass  # caught by imported HAS_BOTO3
+    pass  # Handled by AnsibleAWSModule
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
 @AWSRetry.exponential_backoff()
@@ -187,7 +179,7 @@ def describe_subnets(connection, module):
     """
     Describe Subnets.
 
-    module  : AnsibleModule object
+    module  : AnsibleAWSModule object
     connection  : boto3 client connection object
     """
     # collect parameters
@@ -204,8 +196,8 @@ def describe_subnets(connection, module):
     # Get the basic VPC info
     try:
         response = describe_subnets_with_backoff(connection, subnet_ids, filters)
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg=to_native(e), exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to describe subnets')
 
     for subnet in response['Subnets']:
         # for backwards compatibility
@@ -218,29 +210,19 @@ def describe_subnets(connection, module):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         subnet_ids=dict(type='list', default=[], aliases=['subnet_id']),
         filters=dict(type='dict', default={})
-    ))
+    )
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           supports_check_mode=True)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True
+    )
     if module._name == 'ec2_vpc_subnet_facts':
         module.deprecate("The 'ec2_vpc_subnet_facts' module has been renamed to 'ec2_vpc_subnet_info'", version='2.13')
 
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 is required for this module')
-
-    region, ec2_url, aws_connect_params = get_aws_connection_info(module, boto3=True)
-
-    if region:
-        try:
-            connection = boto3_conn(module, conn_type='client', resource='ec2', region=region, endpoint=ec2_url, **aws_connect_params)
-        except (botocore.exceptions.NoCredentialsError, botocore.exceptions.ProfileNotFound) as e:
-            module.fail_json(msg=to_native(e), exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
-    else:
-        module.fail_json(msg="Region must be specified")
+    connection = module.client('ec2')
 
     describe_subnets(connection, module)
 

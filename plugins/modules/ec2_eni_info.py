@@ -177,15 +177,15 @@ network_interfaces:
 '''
 
 try:
-    from botocore.exceptions import ClientError, NoCredentialsError
-    HAS_BOTO3 = True
+    from botocore.exceptions import ClientError
+    from botocore.exceptions import NoCredentialsError
 except ImportError:
-    HAS_BOTO3 = False
+    pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list, boto3_conn
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict, camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ec2_argument_spec, get_aws_connection_info
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
 def list_eni(connection, module):
@@ -198,7 +198,7 @@ def list_eni(connection, module):
     try:
         network_interfaces_result = connection.describe_network_interfaces(Filters=filters)['NetworkInterfaces']
     except (ClientError, NoCredentialsError) as e:
-        module.fail_json(msg=e.message)
+        module.fail_json_aws(e)
 
     # Modify boto3 tags list to be ansible friendly dict and then camel_case
     camel_network_interfaces = []
@@ -250,23 +250,15 @@ def get_eni_info(interface):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            filters=dict(default=None, type='dict')
-        )
+    argument_spec = dict(
+        filters=dict(default=None, type='dict')
     )
 
-    module = AnsibleModule(argument_spec=argument_spec)
+    module = AnsibleAWSModule(argument_spec=argument_spec)
     if module._name == 'ec2_eni_facts':
         module.deprecate("The 'ec2_eni_facts' module has been renamed to 'ec2_eni_info'", version='2.13')
 
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 required for this module')
-
-    region, ec2_url, aws_connect_params = get_aws_connection_info(module, boto3=True)
-
-    connection = boto3_conn(module, conn_type='client', resource='ec2', region=region, endpoint=ec2_url, **aws_connect_params)
+    connection = module.client('ec2')
 
     list_eni(connection, module)
 

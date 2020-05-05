@@ -582,24 +582,27 @@ EXAMPLES = '''
 
 import time
 import datetime
-import traceback
 from ast import literal_eval
 from distutils.version import LooseVersion
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info, ec2_argument_spec, ec2_connect
-from ansible.module_utils.six import get_function_code, string_types
-from ansible.module_utils._text import to_bytes, to_text
-
 try:
     import boto.ec2
-    from boto.ec2.blockdevicemapping import BlockDeviceType, BlockDeviceMapping
+    from boto.ec2.blockdevicemapping import BlockDeviceType
+    from boto.ec2.blockdevicemapping import BlockDeviceMapping
     from boto.exception import EC2ResponseError
     from boto import connect_ec2_endpoint
     from boto import connect_vpc
-    HAS_BOTO = True
 except ImportError:
-    HAS_BOTO = False
+    pass  # Taken care of by ec2.HAS_BOTO
+
+from ansible.module_utils.six import get_function_code
+from ansible.module_utils.six import string_types
+from ansible.module_utils._text import to_bytes
+from ansible.module_utils._text import to_text
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ec2_connect
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
 def find_running_instances_by_count_tag(module, ec2, vpc, count_tag, zone=None):
@@ -966,7 +969,7 @@ def create_instances(module, ec2, vpc, override_count=None):
     """
     Creates new instances
 
-    module : AnsibleModule object
+    module : AnsibleAWSModule object
     ec2: authenticated ec2 connection object
 
     Returns:
@@ -1041,7 +1044,7 @@ def create_instances(module, ec2, vpc, override_count=None):
             grp_details = ec2.get_all_security_groups(group_ids=group_id)
             group_name = [grp_item.name for grp_item in grp_details]
     except boto.exception.NoAuthHandlerFound as e:
-        module.fail_json(msg=str(e))
+        module.fail_json_aws(e, msg='Unable to authenticate to AWS')
 
     # Lookup any instances that much our run id.
 
@@ -1182,11 +1185,11 @@ def create_instances(module, ec2, vpc, override_count=None):
                         ec2.get_all_instances(instids)
                         break
                     except boto.exception.EC2ResponseError as e:
-                        if "<Code>InvalidInstanceID.NotFound</Code>" in str(e):
+                        if e.error_code == 'InvalidInstanceID.NotFound':
                             # there's a race between start and get an instance
                             continue
                         else:
-                            module.fail_json(msg=str(e))
+                            module.fail_json_aws(e)
 
                 # The instances returned through ec2.run_instances above can be in
                 # terminated state due to idempotency. See commit 7f11c3d for a complete
@@ -1239,7 +1242,7 @@ def create_instances(module, ec2, vpc, override_count=None):
                 else:
                     instids = []
         except boto.exception.BotoServerError as e:
-            module.fail_json(msg="Instance creation failed => %s: %s" % (e.error_code, e.error_message))
+            module.fail_json_aws(e, msg='Instance creation failed')
 
         # wait here until the instances are up
         num_running = 0
@@ -1291,7 +1294,7 @@ def create_instances(module, ec2, vpc, override_count=None):
             try:
                 ec2.create_tags(instids, instance_tags)
             except boto.exception.EC2ResponseError as e:
-                module.fail_json(msg="Instance tagging failed => %s: %s" % (e.error_code, e.error_message))
+                module.fail_json_aws(e, msg='Instance tagging failed')
 
     instance_dict_array = []
     created_instance_ids = []
@@ -1340,7 +1343,7 @@ def terminate_instances(module, ec2, instance_ids):
                 try:
                     ec2.terminate_instances([inst.id])
                 except EC2ResponseError as e:
-                    module.fail_json(msg='Unable to terminate instance {0}, error: {1}'.format(inst.id, e))
+                    module.fail_json_aws(e, msg='Unable to terminate instance {0}'.format(inst.id))
                 changed = True
 
     # wait here until the instances are 'terminated'
@@ -1456,7 +1459,7 @@ def startstop_instances(module, ec2, instance_ids, state, instance_tags):
                     else:
                         inst.stop()
                 except EC2ResponseError as e:
-                    module.fail_json(msg='Unable to change state for instance {0}, error: {1}'.format(inst.id, e))
+                    module.fail_json_aws(e, 'Unable to change state for instance {0}'.format(inst.id))
                 changed = True
             existing_instances_array.append(inst.id)
 
@@ -1542,7 +1545,7 @@ def restart_instances(module, ec2, instance_ids, state, instance_tags):
                 try:
                     inst.reboot()
                 except EC2ResponseError as e:
-                    module.fail_json(msg='Unable to change state for instance {0}, error: {1}'.format(inst.id, e))
+                    module.fail_json_aws(e, msg='Unable to change state for instance {0}'.format(inst.id))
                 changed = True
 
     return (changed, instance_dict_array, instance_ids)
@@ -1592,8 +1595,7 @@ def check_source_dest_attr(module, inst, ec2):
                         ec2.modify_network_interface_attribute(interface.id, "sourceDestCheck", source_dest_check)
                         return True
             else:
-                module.fail_json(msg='Failed to handle source_dest_check state for instance {0}, error: {1}'.format(inst.id, exc),
-                                 exception=traceback.format_exc())
+                module.fail_json_aws(exc, msg='Failed to handle source_dest_check state for instance {0}'.format(inst.id))
 
 
 def warn_if_public_ip_assignment_changed(module, instance):
@@ -1608,49 +1610,47 @@ def warn_if_public_ip_assignment_changed(module, instance):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            key_name=dict(aliases=['keypair']),
-            id=dict(),
-            group=dict(type='list', aliases=['groups']),
-            group_id=dict(type='list'),
-            zone=dict(aliases=['aws_zone', 'ec2_zone']),
-            instance_type=dict(aliases=['type']),
-            spot_price=dict(),
-            spot_type=dict(default='one-time', choices=["one-time", "persistent"]),
-            spot_launch_group=dict(),
-            image=dict(),
-            kernel=dict(),
-            count=dict(type='int', default='1'),
-            monitoring=dict(type='bool', default=False),
-            ramdisk=dict(),
-            wait=dict(type='bool', default=False),
-            wait_timeout=dict(type='int', default=300),
-            spot_wait_timeout=dict(type='int', default=600),
-            placement_group=dict(),
-            user_data=dict(),
-            instance_tags=dict(type='dict'),
-            vpc_subnet_id=dict(),
-            assign_public_ip=dict(type='bool'),
-            private_ip=dict(),
-            instance_profile_name=dict(),
-            instance_ids=dict(type='list', aliases=['instance_id']),
-            source_dest_check=dict(type='bool', default=None),
-            termination_protection=dict(type='bool', default=None),
-            state=dict(default='present', choices=['present', 'absent', 'running', 'restarted', 'stopped']),
-            instance_initiated_shutdown_behavior=dict(default='stop', choices=['stop', 'terminate']),
-            exact_count=dict(type='int', default=None),
-            count_tag=dict(type='raw'),
-            volumes=dict(type='list'),
-            ebs_optimized=dict(type='bool', default=False),
-            tenancy=dict(default='default', choices=['default', 'dedicated']),
-            network_interfaces=dict(type='list', aliases=['network_interface'])
-        )
+    argument_spec = dict(
+        key_name=dict(aliases=['keypair']),
+        id=dict(),
+        group=dict(type='list', aliases=['groups']),
+        group_id=dict(type='list'),
+        zone=dict(aliases=['aws_zone', 'ec2_zone']),
+        instance_type=dict(aliases=['type']),
+        spot_price=dict(),
+        spot_type=dict(default='one-time', choices=["one-time", "persistent"]),
+        spot_launch_group=dict(),
+        image=dict(),
+        kernel=dict(),
+        count=dict(type='int', default='1'),
+        monitoring=dict(type='bool', default=False),
+        ramdisk=dict(),
+        wait=dict(type='bool', default=False),
+        wait_timeout=dict(type='int', default=300),
+        spot_wait_timeout=dict(type='int', default=600),
+        placement_group=dict(),
+        user_data=dict(),
+        instance_tags=dict(type='dict'),
+        vpc_subnet_id=dict(),
+        assign_public_ip=dict(type='bool'),
+        private_ip=dict(),
+        instance_profile_name=dict(),
+        instance_ids=dict(type='list', aliases=['instance_id']),
+        source_dest_check=dict(type='bool', default=None),
+        termination_protection=dict(type='bool', default=None),
+        state=dict(default='present', choices=['present', 'absent', 'running', 'restarted', 'stopped']),
+        instance_initiated_shutdown_behavior=dict(default='stop', choices=['stop', 'terminate']),
+        exact_count=dict(type='int', default=None),
+        count_tag=dict(type='raw'),
+        volumes=dict(type='list'),
+        ebs_optimized=dict(type='bool', default=False),
+        tenancy=dict(default='default', choices=['default', 'dedicated']),
+        network_interfaces=dict(type='list', aliases=['network_interface'])
     )
 
-    module = AnsibleModule(
+    module = AnsibleAWSModule(
         argument_spec=argument_spec,
+        check_boto3=False,
         mutually_exclusive=[
             # Can be uncommented when we finish the deprecation cycle.
             # ['group', 'group_id'],
@@ -1686,7 +1686,7 @@ def main():
 
         vpc = connect_vpc(**aws_connect_kwargs)
     except boto.exception.NoAuthHandlerFound as e:
-        module.fail_json(msg="Failed to get connection: %s" % e.message, exception=traceback.format_exc())
+        module.fail_json_aws(e, msg='Failed to get connection')
 
     tagged_instances = []
 

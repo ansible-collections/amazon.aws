@@ -87,17 +87,12 @@ import traceback
 try:
     import botocore
 except ImportError:
-    pass  # caught by imported HAS_BOTO3
+    pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (ec2_argument_spec,
-                                                                     boto3_conn,
-                                                                     HAS_BOTO3,
-                                                                     ansible_dict_to_boto3_filter_list,
-                                                                     get_aws_connection_info,
-                                                                     camel_dict_to_snake_dict,
-                                                                     boto3_tag_list_to_ansible_dict,
-                                                                     )
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
 def get_dhcp_options_info(dhcp_option):
@@ -119,37 +114,27 @@ def list_dhcp_options(client, module):
     try:
         all_dhcp_options = client.describe_dhcp_options(**params)
     except botocore.exceptions.ClientError as e:
-        module.fail_json(msg=str(e), exception=traceback.format_exc(),
-                         **camel_dict_to_snake_dict(e.response))
+        module.fail_json_aws(e)
 
     return [camel_dict_to_snake_dict(get_dhcp_options_info(option))
             for option in all_dhcp_options['DhcpOptions']]
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            filters=dict(type='dict', default={}),
-            dry_run=dict(type='bool', default=False, aliases=['DryRun']),
-            dhcp_options_ids=dict(type='list', aliases=['DhcpOptionIds'])
-        )
+    argument_spec = dict(
+        filters=dict(type='dict', default={}),
+        dry_run=dict(type='bool', default=False, aliases=['DryRun']),
+        dhcp_options_ids=dict(type='list', aliases=['DhcpOptionIds'])
     )
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           supports_check_mode=True)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True
+    )
     if module._name == 'ec2_vpc_dhcp_option_facts':
         module.deprecate("The 'ec2_vpc_dhcp_option_facts' module has been renamed to 'ec2_vpc_dhcp_option_info'", version='2.13')
 
-    # Validate Requirements
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 and botocore are required.')
-
-    try:
-        region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
-        connection = boto3_conn(module, conn_type='client', resource='ec2', region=region, endpoint=ec2_url, **aws_connect_kwargs)
-    except botocore.exceptions.NoCredentialsError as e:
-        module.fail_json(msg="Can't authorize connection - " + str(e))
+    connection = module.client('ec2')
 
     # call your function here
     results = list_dhcp_options(connection, module)

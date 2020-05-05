@@ -195,15 +195,19 @@ EXAMPLES = """
 """
 
 import collections
-import traceback
 from time import sleep, time
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO, connect_to_aws, ec2_argument_spec, get_aws_connection_info
 
-if HAS_BOTO:
+try:
     import boto.vpc
     import boto.ec2
     from boto.exception import EC2ResponseError
+except ImportError:
+    pass  # Taken care of by ec2.HAS_BOTO
+
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
 def get_resource_tags(vpc_conn, resource_id):
@@ -239,7 +243,7 @@ def ensure_tags(module, vpc_conn, resource_id, tags, add_only, check_mode):
         latest_tags = get_resource_tags(vpc_conn, resource_id)
         return {'changed': True, 'tags': latest_tags}
     except EC2ResponseError as e:
-        module.fail_json(msg="Failed to modify tags: %s" % e.message, exception=traceback.format_exc())
+        module.fail_json_aws(e, msg='Failed to modify tags')
 
 
 def fetch_dhcp_options_for_vpc(vpc_conn, vpc_id):
@@ -278,8 +282,7 @@ def remove_dhcp_options_by_id(vpc_conn, dhcp_options_id):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         dhcp_options_id=dict(type='str', default=None),
         domain_name=dict(type='str', default=None),
         dns_servers=dict(type='list', default=None),
@@ -292,9 +295,12 @@ def main():
         tags=dict(type='dict', default=None, aliases=['resource_tags']),
         state=dict(type='str', default='present', choices=['present', 'absent'])
     )
-    )
 
-    module = AnsibleModule(argument_spec=argument_spec, supports_check_mode=True)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        check_boto3=False,
+        supports_check_mode=True
+    )
 
     params = module.params
     found = False
@@ -388,7 +394,7 @@ def main():
             try:
                 found_dhcp_opt = retry_not_found(connection.get_all_dhcp_options, dhcp_options_ids=[dhcp_option.id])
             except EC2ResponseError as e:
-                module.fail_json(msg="Failed to describe DHCP options", exception=traceback.format_exc)
+                module.fail_json_aws(e, msg="Failed to describe DHCP options")
             if not found_dhcp_opt:
                 module.fail_json(msg="Failed to wait for {0} to be available.".format(dhcp_option.id))
 

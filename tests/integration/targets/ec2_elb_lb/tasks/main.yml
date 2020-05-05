@@ -234,8 +234,7 @@
       assert:
         that:
            - 'result.failed'
-           - 'result.msg.startswith("missing required arguments: ")'
-
+           - '"missing required arguments" in result.msg'
 
 
     # ============================================================
@@ -273,7 +272,7 @@
       assert:
         that:
            - 'result.failed'
-           - 'result.msg.startswith("Region asdf querty 1234 does not seem to be available ")'
+           - '"Region asdf querty 1234 does not seem to be available" in result.msg'
 
 
     # ============================================================
@@ -298,7 +297,7 @@
       assert:
         that:
            - 'result.failed'
-           - 'result.msg.startswith("No handler was ready to authenticate.")'
+           - '"No handler was ready to authenticate" in result.msg'
 
 
     # ============================================================
@@ -325,7 +324,7 @@
       assert:
         that:
            - 'result.failed'
-           - 'result.msg.startswith("No handler was ready to authenticate.")'
+           - '"No handler was ready to authenticate" in result.msg'
 
 
     # ============================================================
@@ -351,7 +350,7 @@
       assert:
         that:
            - 'result.failed'
-           - 'result.msg.startswith("No handler was ready to authenticate.")'
+           - '"No handler was ready to authenticate" in result.msg'
 
 
     # ============================================================
