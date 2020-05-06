@@ -59,7 +59,7 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: Ensure tags are present on a resource
-  ec2_tag:
+  amazon.aws.ec2_tag:
     region: eu-west-1
     resource: vol-XXXXXX
     state: present
@@ -68,7 +68,7 @@ EXAMPLES = '''
       env: prod
 
 - name: Ensure all volumes are tagged
-  ec2_tag:
+  amazon.aws.ec2_tag:
     region:  eu-west-1
     resource: '{{ item.id }}'
     state: present
@@ -78,7 +78,7 @@ EXAMPLES = '''
   loop: '{{ ec2_vol.volumes }}'
 
 - name: Remove the Env tag
-  ec2_tag:
+  amazon.aws.ec2_tag:
     region: eu-west-1
     resource: i-xxxxxxxxxxxxxxxxx
     tags:
@@ -86,7 +86,7 @@ EXAMPLES = '''
     state: absent
 
 - name: Remove the Env tag if it's currently 'development'
-  ec2_tag:
+  amazon.aws.ec2_tag:
     region: eu-west-1
     resource: i-xxxxxxxxxxxxxxxxx
     tags:
@@ -94,7 +94,7 @@ EXAMPLES = '''
     state: absent
 
 - name: Remove all tags except for Name from an instance
-  ec2_tag:
+  amazon.aws.ec2_tag:
     region: eu-west-1
     resource: i-xxxxxxxxxxxxxxxxx
     tags:

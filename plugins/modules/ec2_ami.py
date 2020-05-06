@@ -160,8 +160,8 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Basic AMI Creation
-- ec2_ami:
+- name: Basic AMI Creation
+  amazon.aws.ec2_ami:
     instance_id: i-xxxxxx
     wait: yes
     name: newtest
@@ -169,14 +169,14 @@ EXAMPLES = '''
       Name: newtest
       Service: TestService
 
-# Basic AMI Creation, without waiting
-- ec2_ami:
+- name: Basic AMI Creation, without waiting
+  amazon.aws.ec2_ami:
     instance_id: i-xxxxxx
     wait: no
     name: newtest
 
-# AMI Registration from EBS Snapshot
-- ec2_ami:
+- name: AMI Registration from EBS Snapshot
+  amazon.aws.ec2_ami:
     name: newtest
     state: present
     architecture: x86_64
@@ -189,8 +189,8 @@ EXAMPLES = '''
         delete_on_termination: true
         volume_type: gp2
 
-# AMI Creation, with a custom root-device size and another EBS attached
-- ec2_ami:
+- name: AMI Creation, with a custom root-device size and another EBS attached
+  amazon.aws.ec2_ami:
     instance_id: i-xxxxxx
     name: newtest
     device_mapping:
@@ -203,8 +203,8 @@ EXAMPLES = '''
           delete_on_termination: false
           volume_type: gp2
 
-# AMI Creation, excluding a volume attached at /dev/sdb
-- ec2_ami:
+- name: AMI Creation, excluding a volume attached at /dev/sdb
+  amazon.aws.ec2_ami:
     instance_id: i-xxxxxx
     name: newtest
     device_mapping:
@@ -215,27 +215,27 @@ EXAMPLES = '''
         - device_name: /dev/sdb
           no_device: yes
 
-# Deregister/Delete AMI (keep associated snapshots)
-- ec2_ami:
+- name: Deregister/Delete AMI (keep associated snapshots)
+  amazon.aws.ec2_ami:
     image_id: "{{ instance.image_id }}"
     delete_snapshot: False
     state: absent
 
-# Deregister AMI (delete associated snapshots too)
-- ec2_ami:
+- name: Deregister AMI (delete associated snapshots too)
+  amazon.aws.ec2_ami:
     image_id: "{{ instance.image_id }}"
     delete_snapshot: True
     state: absent
 
-# Update AMI Launch Permissions, making it public
-- ec2_ami:
+- name: Update AMI Launch Permissions, making it public
+  amazon.aws.ec2_ami:
     image_id: "{{ instance.image_id }}"
     state: present
     launch_permissions:
       group_names: ['all']
 
-# Allow AMI to be launched by another account
-- ec2_ami:
+- name: Allow AMI to be launched by another account
+  amazon.aws.ec2_ami:
     image_id: "{{ instance.image_id }}"
     state: present
     launch_permissions:

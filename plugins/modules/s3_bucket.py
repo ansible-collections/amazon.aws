@@ -108,24 +108,24 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create a simple s3 bucket
-- s3_bucket:
+- amazon.aws.s3_bucket:
     name: mys3bucket
     state: present
 
 # Create a simple s3 bucket on Ceph Rados Gateway
-- s3_bucket:
+- amazon.aws.s3_bucket:
     name: mys3bucket
     s3_url: http://your-ceph-rados-gateway-server.xxx
     ceph: true
 
 # Remove an s3 bucket and any keys it contains
-- s3_bucket:
+- amazon.aws.s3_bucket:
     name: mys3bucket
     state: absent
     force: yes
 
 # Create a bucket, add a policy from a file, enable requester pays, enable versioning and tag
-- s3_bucket:
+- amazon.aws.s3_bucket:
     name: mys3bucket
     policy: "{{ lookup('file','policy.json') }}"
     requester_pays: yes
@@ -135,25 +135,25 @@ EXAMPLES = '''
       another: tag2
 
 # Create a simple DigitalOcean Spaces bucket using their provided regional endpoint
-- s3_bucket:
+- amazon.aws.s3_bucket:
     name: mydobucket
     s3_url: 'https://nyc3.digitaloceanspaces.com'
 
 # Create a bucket with AES256 encryption
-- s3_bucket:
+- amazon.aws.s3_bucket:
     name: mys3bucket
     state: present
     encryption: "AES256"
 
 # Create a bucket with aws:kms encryption, KMS key
-- s3_bucket:
+- amazon.aws.s3_bucket:
     name: mys3bucket
     state: present
     encryption: "aws:kms"
     encryption_key_id: "arn:aws:kms:us-east-1:1234/5678example"
 
 # Create a bucket with aws:kms encryption, default key
-- s3_bucket:
+- amazon.aws.s3_bucket:
     name: mys3bucket
     state: present
     encryption: "aws:kms"

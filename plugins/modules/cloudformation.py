@@ -172,7 +172,7 @@ requirements: [ boto3, botocore>=1.5.45 ]
 
 EXAMPLES = '''
 - name: create a cloudformation stack
-  cloudformation:
+  amazon.aws.cloudformation:
     stack_name: "ansible-cloudformation"
     state: "present"
     region: "us-east-1"
@@ -188,7 +188,7 @@ EXAMPLES = '''
 
 # Basic role example
 - name: create a stack, specify role that cloudformation assumes
-  cloudformation:
+  amazon.aws.cloudformation:
     stack_name: "ansible-cloudformation"
     state: "present"
     region: "us-east-1"
@@ -197,14 +197,14 @@ EXAMPLES = '''
     role_arn: 'arn:aws:iam::123456789012:role/cloudformation-iam-role'
 
 - name: delete a stack
-  cloudformation:
+  amazon.aws.cloudformation:
     stack_name: "ansible-cloudformation-old"
     state: "absent"
 
 # Create a stack, pass in template from a URL, disable rollback if stack creation fails,
 # pass in some parameters to the template, provide tags for resources created
 - name: create a stack, pass in the template via an URL
-  cloudformation:
+  amazon.aws.cloudformation:
     stack_name: "ansible-cloudformation"
     state: present
     region: us-east-1
@@ -221,7 +221,7 @@ EXAMPLES = '''
 # Create a stack, passing in template body using lookup of Jinja2 template, disable rollback if stack creation fails,
 # pass in some parameters to the template, provide tags for resources created
 - name: create a stack, pass in the template body via lookup template
-  cloudformation:
+  amazon.aws.cloudformation:
     stack_name: "ansible-cloudformation"
     state: present
     region: us-east-1
@@ -239,7 +239,7 @@ EXAMPLES = '''
 # When use_previous_value is set to True, the given value will be ignored and
 # CloudFormation will use the value from a previously submitted template.
 # If use_previous_value is set to False (default) the given value is used.
-- cloudformation:
+- amazon.aws.cloudformation:
     stack_name: "ansible-cloudformation"
     state: "present"
     region: "us-east-1"
@@ -256,7 +256,7 @@ EXAMPLES = '''
 # Enable termination protection on a stack.
 # If the stack already exists, this will update its termination protection
 - name: enable termination protection during stack creation
-  cloudformation:
+  amazon.aws.cloudformation:
     stack_name: my_stack
     state: present
     template_url: https://s3.amazonaws.com/my-bucket/cloudformation.template
@@ -265,7 +265,7 @@ EXAMPLES = '''
 # Configure TimeoutInMinutes before the stack status becomes CREATE_FAILED
 # In this case, if disable_rollback is not set or is set to false, the stack will be rolled back.
 - name: enable termination protection during stack creation
-  cloudformation:
+  amazon.aws.cloudformation:
     stack_name: my_stack
     state: present
     template_url: https://s3.amazonaws.com/my-bucket/cloudformation.template
@@ -277,7 +277,7 @@ EXAMPLES = '''
 # In this case, if on_create_failure is set to "DELETE", it will clean up the stack if
 # it fails to create
 - name: create stack which will delete on creation failure
-  cloudformation:
+  amazon.aws.cloudformation:
     stack_name: my_stack
     state: present
     template_url: https://s3.amazonaws.com/my-bucket/cloudformation.template

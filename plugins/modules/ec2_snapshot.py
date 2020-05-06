@@ -84,18 +84,18 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 # Simple snapshot of volume using volume_id
-- ec2_snapshot:
+- amazon.aws.ec2_snapshot:
     volume_id: vol-abcdef12
     description: snapshot of /data from DB123 taken 2013/11/28 12:18:32
 
 # Snapshot of volume mounted on device_name attached to instance_id
-- ec2_snapshot:
+- amazon.aws.ec2_snapshot:
     instance_id: i-12345678
     device_name: /dev/sdb1
     description: snapshot of /data from DB123 taken 2013/11/28 12:18:32
 
 # Snapshot of volume with tagging
-- ec2_snapshot:
+- amazon.aws.ec2_snapshot:
     instance_id: i-12345678
     device_name: /dev/sdb1
     snapshot_tags:
@@ -103,14 +103,12 @@ EXAMPLES = '''
         source: /data
 
 # Remove a snapshot
-- local_action:
-    module: ec2_snapshot
+- amazon.aws.ec2_snapshot:
     snapshot_id: snap-abcd1234
     state: absent
 
 # Create a snapshot only if the most recent one is older than 1 hour
-- local_action:
-    module: ec2_snapshot
+- amazon.aws.ec2_snapshot:
     volume_id: vol-abcdef12
     last_snapshot_min_age: 60
 '''

@@ -216,7 +216,7 @@ notes:
 
 EXAMPLES = '''
 - name: example using security group rule descriptions
-  ec2_group:
+  amazon.aws.ec2_group:
     name: "{{ name }}"
     description: sg with rule descriptions
     vpc_id: vpc-xxxxxxxx
@@ -230,7 +230,7 @@ EXAMPLES = '''
         rule_desc: allow all on port 80
 
 - name: example ec2 group
-  ec2_group:
+  amazon.aws.ec2_group:
     name: example
     description: an example EC2 group
     vpc_id: 12345
@@ -289,7 +289,7 @@ EXAMPLES = '''
         group_desc: other example EC2 group
 
 - name: example2 ec2 group
-  ec2_group:
+  amazon.aws.ec2_group:
     name: example2
     description: an example2 EC2 group
     vpc_id: 12345
@@ -327,7 +327,7 @@ EXAMPLES = '''
   diff: True
 
 - name: "Delete group by its id"
-  ec2_group:
+  amazon.aws.ec2_group:
     region: eu-west-1
     group_id: sg-33b4ee5b
     state: absent

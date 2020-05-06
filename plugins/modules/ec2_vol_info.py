@@ -36,20 +36,20 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all volumes
-- ec2_vol_info:
+- amazon.aws.ec2_vol_info:
 
 # Gather information about a particular volume using volume ID
-- ec2_vol_info:
+- amazon.aws.ec2_vol_info:
     filters:
       volume-id: vol-00112233
 
 # Gather information about any volume with a tag key Name and value Example
-- ec2_vol_info:
+- amazon.aws.ec2_vol_info:
     filters:
       "tag:Name": Example
 
 # Gather information about any volume that is attached
-- ec2_vol_info:
+- amazon.aws.ec2_vol_info:
     filters:
       attachment.status: attached
 

@@ -87,7 +87,7 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create subnet for database servers
-  ec2_vpc_subnet:
+  amazon.aws.ec2_vpc_subnet:
     state: present
     vpc_id: vpc-123456
     cidr: 10.0.1.16/28
@@ -96,20 +96,20 @@ EXAMPLES = '''
   register: database_subnet
 
 - name: Remove subnet for database servers
-  ec2_vpc_subnet:
+  amazon.aws.ec2_vpc_subnet:
     state: absent
     vpc_id: vpc-123456
     cidr: 10.0.1.16/28
 
 - name: Create subnet with IPv6 block assigned
-  ec2_vpc_subnet:
+  amazon.aws.ec2_vpc_subnet:
     state: present
     vpc_id: vpc-123456
     cidr: 10.1.100.0/24
     ipv6_cidr: 2001:db8:0:102::/64
 
 - name: Remove IPv6 block assigned to subnet
-  ec2_vpc_subnet:
+  amazon.aws.ec2_vpc_subnet:
     state: present
     vpc_id: vpc-123456
     cidr: 10.1.100.0/24

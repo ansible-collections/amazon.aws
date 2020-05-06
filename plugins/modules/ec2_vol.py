@@ -100,31 +100,31 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 # Simple attachment action
-- ec2_vol:
+- amazon.aws.ec2_vol:
     instance: XXXXXX
     volume_size: 5
     device_name: sdd
 
 # Example using custom iops params
-- ec2_vol:
+- amazon.aws.ec2_vol:
     instance: XXXXXX
     volume_size: 5
     iops: 100
     device_name: sdd
 
 # Example using snapshot id
-- ec2_vol:
+- amazon.aws.ec2_vol:
     instance: XXXXXX
     snapshot: "{{ snapshot }}"
 
 # Playbook example combined with instance launch
-- ec2:
+- amazon.aws.ec2:
     keypair: "{{ keypair }}"
     image: "{{ image }}"
     wait: yes
     count: 3
   register: ec2
-- ec2_vol:
+- amazon.aws.ec2_vol:
     instance: "{{ item.id }}"
     volume_size: 5
   loop: "{{ ec2.instances }}"
@@ -135,7 +135,7 @@ EXAMPLES = '''
 #   * Nothing will happen if the volume is already attached.
 #   * Requires Ansible 2.0
 
-- ec2:
+- amazon.aws.ec2:
     keypair: "{{ keypair }}"
     image: "{{ image }}"
     zone: YYYYYY
@@ -144,7 +144,7 @@ EXAMPLES = '''
     count: 1
   register: ec2
 
-- ec2_vol:
+- amazon.aws.ec2_vol:
     instance: "{{ item.id }}"
     name: my_existing_volume_Name_tag
     device_name: /dev/xvdf
@@ -152,29 +152,29 @@ EXAMPLES = '''
   register: ec2_vol
 
 # Remove a volume
-- ec2_vol:
+- amazon.aws.ec2_vol:
     id: vol-XXXXXXXX
     state: absent
 
 # Detach a volume (since 1.9)
-- ec2_vol:
+- amazon.aws.ec2_vol:
     id: vol-XXXXXXXX
     instance: None
 
 # List volumes for an instance
-- ec2_vol:
+- amazon.aws.ec2_vol:
     instance: i-XXXXXX
     state: list
 
 # Create new volume using SSD storage
-- ec2_vol:
+- amazon.aws.ec2_vol:
     instance: XXXXXX
     volume_size: 50
     volume_type: gp2
     device_name: /dev/xvdf
 
 # Attach an existing volume to instance. The volume will be deleted upon instance termination.
-- ec2_vol:
+- amazon.aws.ec2_vol:
     instance: XXXXXX
     id: XXXXXX
     device_name: /dev/sdf

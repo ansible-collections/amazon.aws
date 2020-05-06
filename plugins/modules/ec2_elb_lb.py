@@ -143,8 +143,7 @@ EXAMPLES = """
 
 # Basic provisioning example (non-VPC)
 
-- local_action:
-    module: ec2_elb_lb
+- amazon.aws.ec2_elb_lb:
     name: "test-please-delete"
     state: present
     zones:
@@ -164,8 +163,7 @@ EXAMPLES = """
 
 # Internal ELB example
 
-- local_action:
-    module: ec2_elb_lb
+- amazon.aws.ec2_elb_lb:
     name: "test-vpc"
     scheme: internal
     state: present
@@ -181,8 +179,7 @@ EXAMPLES = """
         instance_port: 80
 
 # Configure a health check and the access logs
-- local_action:
-    module: ec2_elb_lb
+- amazon.aws.ec2_elb_lb:
     name: "test-please-delete"
     state: present
     zones:
@@ -205,21 +202,18 @@ EXAMPLES = """
         s3_prefix: "logs"
 
 # Ensure ELB is gone
-- local_action:
-    module: ec2_elb_lb
+- amazon.aws.ec2_elb_lb:
     name: "test-please-delete"
     state: absent
 
 # Ensure ELB is gone and wait for check (for default timeout)
-- local_action:
-    module: ec2_elb_lb
+- amazon.aws.ec2_elb_lb:
     name: "test-please-delete"
     state: absent
     wait: yes
 
 # Ensure ELB is gone and wait for check with timeout value
-- local_action:
-    module: ec2_elb_lb
+- amazon.aws.ec2_elb_lb:
     name: "test-please-delete"
     state: absent
     wait: yes
@@ -228,8 +222,7 @@ EXAMPLES = """
 # Normally, this module will purge any listeners that exist on the ELB
 # but aren't specified in the listeners parameter. If purge_listeners is
 # false it leaves them alone
-- local_action:
-    module: ec2_elb_lb
+- amazon.aws.ec2_elb_lb:
     name: "test-please-delete"
     state: present
     zones:
@@ -244,8 +237,7 @@ EXAMPLES = """
 # Normally, this module will leave availability zones that are enabled
 # on the ELB alone. If purge_zones is true, then any extraneous zones
 # will be removed
-- local_action:
-    module: ec2_elb_lb
+- amazon.aws.ec2_elb_lb:
     name: "test-please-delete"
     state: present
     zones:
@@ -258,8 +250,7 @@ EXAMPLES = """
     purge_zones: yes
 
 # Creates a ELB and assigns a list of subnets to it.
-- local_action:
-    module: ec2_elb_lb
+- amazon.aws.ec2_elb_lb:
     state: present
     name: 'New ELB'
     security_group_ids: 'sg-123456, sg-67890'
@@ -273,8 +264,7 @@ EXAMPLES = """
 
 # Create an ELB with connection draining, increased idle timeout and cross availability
 # zone load balancing
-- local_action:
-    module: ec2_elb_lb
+- amazon.aws.ec2_elb_lb:
     name: "New ELB"
     state: present
     connection_draining_timeout: 60
@@ -290,8 +280,7 @@ EXAMPLES = """
         instance_port: 80
 
 # Create an ELB with load balancer stickiness enabled
-- local_action:
-    module: ec2_elb_lb
+- amazon.aws.ec2_elb_lb:
     name: "New ELB"
     state: present
     region: us-east-1
@@ -308,8 +297,7 @@ EXAMPLES = """
       expiration: 300
 
 # Create an ELB with application stickiness enabled
-- local_action:
-    module: ec2_elb_lb
+- amazon.aws.ec2_elb_lb:
     name: "New ELB"
     state: present
     region: us-east-1
@@ -326,8 +314,7 @@ EXAMPLES = """
       cookie: SESSIONID
 
 # Create an ELB and add tags
-- local_action:
-    module: ec2_elb_lb
+- amazon.aws.ec2_elb_lb:
     name: "New ELB"
     state: present
     region: us-east-1
@@ -344,8 +331,7 @@ EXAMPLES = """
       client: "Bob"
 
 # Delete all tags from an ELB
-- local_action:
-    module: ec2_elb_lb
+- amazon.aws.ec2_elb_lb:
     name: "New ELB"
     state: present
     region: us-east-1

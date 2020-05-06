@@ -120,13 +120,13 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create an ENI. As no security group is defined, ENI will be created in default security group
-- ec2_eni:
+- amazon.aws.ec2_eni:
     private_ip_address: 172.31.0.20
     subnet_id: subnet-xxxxxxxx
     state: present
 
 # Create an ENI and attach it to an instance
-- ec2_eni:
+- amazon.aws.ec2_eni:
     instance_id: i-xxxxxxx
     device_index: 1
     private_ip_address: 172.31.0.20
@@ -134,14 +134,14 @@ EXAMPLES = '''
     state: present
 
 # Create an ENI with two secondary addresses
-- ec2_eni:
+- amazon.aws.ec2_eni:
     subnet_id: subnet-xxxxxxxx
     state: present
     secondary_private_ip_address_count: 2
 
 # Assign a secondary IP address to an existing ENI
 # This will purge any existing IPs
-- ec2_eni:
+- amazon.aws.ec2_eni:
     subnet_id: subnet-xxxxxxxx
     eni_id: eni-yyyyyyyy
     state: present
@@ -149,39 +149,39 @@ EXAMPLES = '''
       - 172.16.1.1
 
 # Remove any secondary IP addresses from an existing ENI
-- ec2_eni:
+- amazon.aws.ec2_eni:
     subnet_id: subnet-xxxxxxxx
     eni_id: eni-yyyyyyyy
     state: present
     secondary_private_ip_address_count: 0
 
 # Destroy an ENI, detaching it from any instance if necessary
-- ec2_eni:
+- amazon.aws.ec2_eni:
     eni_id: eni-xxxxxxx
     force_detach: true
     state: absent
 
 # Update an ENI
-- ec2_eni:
+- amazon.aws.ec2_eni:
     eni_id: eni-xxxxxxx
     description: "My new description"
     state: present
 
 # Update an ENI identifying it by private_ip_address and subnet_id
-- ec2_eni:
+- amazon.aws.ec2_eni:
     subnet_id: subnet-xxxxxxx
     private_ip_address: 172.16.1.1
     description: "My new description"
 
 # Detach an ENI from an instance
-- ec2_eni:
+- amazon.aws.ec2_eni:
     eni_id: eni-xxxxxxx
     instance_id: None
     state: present
 
 ### Delete an interface on termination
 # First create the interface
-- ec2_eni:
+- amazon.aws.ec2_eni:
     instance_id: i-xxxxxxx
     device_index: 1
     private_ip_address: 172.31.0.20
@@ -190,7 +190,7 @@ EXAMPLES = '''
   register: eni
 
 # Modify the interface to enable the delete_on_terminaton flag
-- ec2_eni:
+- amazon.aws.ec2_eni:
     eni_id: "{{ eni.interface.id }}"
     delete_on_termination: true
 
