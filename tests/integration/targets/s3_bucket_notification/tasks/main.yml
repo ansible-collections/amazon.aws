@@ -376,7 +376,7 @@
     assert:
       that:
       - result.failed
-      - 'result.msg.startswith("missing required arguments: event_name, bucket_name")'
+      - '"missing required arguments" in result.msg'
   - name: test abesnt
     s3_bucket_notification: state=absent
     register: result
@@ -385,4 +385,4 @@
     assert:
       that:
       - result.failed
-      - 'result.msg.startswith("missing required arguments: event_name, bucket_name")'
+      - '"missing required arguments" in result.msg'
