@@ -793,7 +793,7 @@ def main():
             else:
                 module.fail_json(msg="Key %s does not exist." % obj)
 
-        if path_check(dest) and overwrite != 'always':
+        if dest and path_check(dest) and overwrite != 'always':
             if overwrite == 'never':
                 module.exit_json(msg="Local object already exists and overwrite is disabled.", changed=False)
             if etag_compare(module, s3, bucket, obj, version=version, local_file=dest):
