@@ -522,9 +522,9 @@ def rule_from_group_permission(perm):
     if 'UserIdGroupPairs' in perm and perm['UserIdGroupPairs']:
         for pair in perm['UserIdGroupPairs']:
             target = (
-                pair.get(None),
+                pair.get('UserId', current_account_id),
                 pair.get('GroupId', None),
-                pair.get(None),
+                None,
             )
             if pair.get('UserId', '').startswith('amazon-'):
                 # amazon-elb and amazon-prefix rules don't need
@@ -532,14 +532,18 @@ def rule_from_group_permission(perm):
                 # from permission
                 target = (
                     pair.get('UserId', None),
-                    pair.get(None),
+                    None,
                     pair.get('GroupName', None),
                 )
-            elif 'VpcPeeringConnectionId' in pair or pair['UserId'] != current_account_id:
+            elif 'VpcPeeringConnectionId' not in pair and pair['UserId'] != current_account_id:
+                # EC2-Classic cross-account
+                pass
+            elif 'VpcPeeringConnectionId' in pair:
+                # EC2-VPC cross-account VPC peering
                 target = (
-                    pair.get(None),
+                    pair.get('UserId', None),
                     pair.get('GroupId', None),
-                    pair.get(None),
+                    None,
                 )
 
             yield Rule(
@@ -613,7 +617,7 @@ def get_target_from_rule(module, client, rule, name, group, groups, vpc_id):
     current_egress) in wait_for_rule_propagation().
     """
     FOREIGN_SECURITY_GROUP_REGEX = r'^([^/]+)/?(sg-\S+)?/(\S+)'
-    owner_id = None
+    owner_id = current_account_id
     group_id = None
     group_name = None
     target_group_created = False
@@ -633,12 +637,10 @@ def get_target_from_rule(module, client, rule, name, group, groups, vpc_id):
                 group_id = None
             else:
                 # group_id/group_name are mutually exclusive - give group_id more precedence as it is more specific
-                # Strip owner_id, it's not required and will cause wait_for_rule_propagation() to not match.
-                owner_id = None
                 group_name = None
         return 'group', (owner_id, group_id, group_name), False
     elif 'group_id' in rule:
-        return 'group', (None, rule['group_id'], None), False
+        return 'group', (owner_id, rule['group_id'], None), False
     elif 'group_name' in rule:
         group_name = rule['group_name']
         if group_name == name:
@@ -697,7 +699,7 @@ def get_target_from_rule(module, client, rule, name, group, groups, vpc_id):
                 groups[group_id] = auto_group
                 groups[group_name] = auto_group
             target_group_created = True
-        return 'group', (None, group_id, None), target_group_created
+        return 'group', (owner_id, group_id, None), target_group_created
     elif 'cidr_ip' in rule:
         return 'ipv4', validate_ip(module, rule['cidr_ip']), False
     elif 'cidr_ipv6' in rule:
