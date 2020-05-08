@@ -693,6 +693,7 @@ def main():
                      ['mode', 'get', ['dest', 'object']],
                      ['mode', 'getstr', ['object']],
                      ['mode', 'geturl', ['object']]],
+        mutually_exclusive = [['content', 'src']],
     )
 
     bucket = module.params.get('bucket')
@@ -810,10 +811,10 @@ def main():
         # if putting an object in a bucket yet to be created, acls for the bucket and/or the object may be specified
         # these were separated into the variables bucket_acl and object_acl above
 
-        if content is not None and src is not None:
-            module.fail_json(msg="Either src or content must be specified, but not both")
-        if content is None and not path_check(src):
-            module.fail_json(msg="Local object for PUT does not exist and no content was specified")
+        if content is None and src is None:
+            module.fail_json('Either content or src must be specified for PUT operations')
+        if src and not path_check(src):
+            module.fail_json('Local object "%s" does not exist for PUT operation' % (src))
 
         if bucketrtn:
             keyrtn = key_check(module, s3, bucket, obj, version=version, validate=validate)
