@@ -532,9 +532,7 @@ def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, s
         if src is not None:
             s3.upload_file(Filename=src, Bucket=bucket, Key=obj, ExtraArgs=extra)
         else:
-            # that's the drawback of using a string parameter...
-            # we have to encode it first
-            f = io.BytesIO(content.encode('utf-8'))
+            f = io.BytesIO(content)
             s3.upload_fileobj(Fileobj=f, Bucket=bucket, Key=obj, ExtraArgs=extra)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to complete PUT operation.")
@@ -824,14 +822,17 @@ def main():
             module.params['permission'] = bucket_acl
             create_bucket(module, s3, bucket, location)
 
+        # the content will be uploaded as a byte string, so we must encode it first
+        utfcontent = content.encode('utf-8')
+
         if keyrtn and overwrite != 'always':
-            if overwrite == 'never' or etag_compare(module, s3, bucket, obj, version=version, local_file=src, content=content):
+            if overwrite == 'never' or etag_compare(module, s3, bucket, obj, version=version, local_file=src, content=utfcontent):
                 # Return the download URL for the existing object
                 get_download_url(module, s3, bucket, obj, expiry, changed=False)
 
         # only use valid object acls for the upload_s3file function
         module.params['permission'] = object_acl
-        upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, src=src, content=content)
+        upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, src=src, content=utfcontent)
 
     # Delete an object from a bucket, not the entire bucket
     if mode == 'delobj':
