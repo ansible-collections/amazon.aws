@@ -540,6 +540,20 @@
         that:
           - result is changed
 
+    - name: ensure idempotency on static content
+      aws_s3:
+        bucket: "{{ bucket_name }}"
+        object: put-content.txt
+        mode: put
+        content: >-
+          test content
+        <<: *aws_connection_info
+      register: result
+
+    - assert:
+        that:
+          - result is not changed
+
     - name: fetch test content
       aws_s3:
         bucket: "{{ bucket_name }}"
