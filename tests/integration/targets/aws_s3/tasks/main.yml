@@ -545,6 +545,7 @@
         bucket: "{{ bucket_name }}"
         object: put-content.txt
         mode: put
+        overwrite: different
         content: >-
           test content
         <<: *aws_connection_info
