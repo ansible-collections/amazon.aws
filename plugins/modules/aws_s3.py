@@ -681,7 +681,7 @@ def main():
         s3_url=dict(aliases=['S3_URL']),
         dualstack=dict(default='no', type='bool'),
         rgw=dict(default='no', type='bool'),
-        src=dict(),
+        src=dict(type='path'),
         content=dict(),
         ignore_nonexistent_bucket=dict(default=False, type='bool'),
         encryption_kms_key_id=dict()
