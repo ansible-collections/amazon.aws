@@ -823,7 +823,8 @@ def main():
             create_bucket(module, s3, bucket, location)
 
         # the content will be uploaded as a byte string, so we must encode it first
-        utfcontent = content.encode('utf-8')
+        if content is not None:
+            utfcontent = content.encode('utf-8')
 
         if keyrtn and overwrite != 'always':
             if overwrite == 'never' or etag_compare(module, s3, bucket, obj, version=version, local_file=src, content=utfcontent):
