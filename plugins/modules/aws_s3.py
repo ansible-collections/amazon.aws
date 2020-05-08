@@ -811,7 +811,7 @@ def main():
 
         if content is None and src is None:
             module.fail_json('Either content or src must be specified for PUT operations')
-        if src and not path_check(src):
+        if src is not None and not path_check(src):
             module.fail_json('Local object "%s" does not exist for PUT operation' % (src))
 
         if bucketrtn:
