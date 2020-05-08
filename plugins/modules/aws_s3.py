@@ -823,6 +823,7 @@ def main():
             create_bucket(module, s3, bucket, location)
 
         # the content will be uploaded as a byte string, so we must encode it first
+        utfcontent = None
         if content is not None:
             utfcontent = content.encode('utf-8')
 
