@@ -693,7 +693,7 @@ def main():
                      ['mode', 'get', ['dest', 'object']],
                      ['mode', 'getstr', ['object']],
                      ['mode', 'geturl', ['object']]],
-        mutually_exclusive = [['content', 'src']],
+        mutually_exclusive=[['content', 'src']],
     )
 
     bucket = module.params.get('bucket')
