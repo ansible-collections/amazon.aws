@@ -110,6 +110,7 @@ function cleanup
             set +ux
             . ~/ansible-venv/bin/activate
             set -ux
+            pip install codecov
 
             # shellcheck disable=SC2086
             ansible-test coverage xml --color -v --requirements --group-by command --group-by version ${stub:+"$stub"}
@@ -129,12 +130,12 @@ function cleanup
                     flags="${flags//=/,}"
                     flags="${flags//[^a-zA-Z0-9_,]/_}"
 
-                    bash <(curl -s https://codecov.io/bash) \
+                    codecov \
                         -f "${file}" \
                         -F "${flags}" \
                         -n "${test}" \
                         -t bc371da7-e5d2-4743-93b5-309f81d457a4
-                        -X coveragepy \
+                        -X pycov \
                         -X gcov \
                         -X fix \
                         -X search \
