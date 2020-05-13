@@ -209,14 +209,14 @@ def describe_vpcs(connection, module):
         cl_enabled = connection.describe_vpc_classic_link(VpcIds=vpc_list)
     except is_boto3_error_code('UnsupportedOperation'):
         cl_enabled = {'Vpcs': [{'VpcId': vpc_id, 'ClassicLinkEnabled': False} for vpc_id in vpc_list]}
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg='Unable to describe if ClassicLink is enabled')
 
     try:
         cl_dns_support = connection.describe_vpc_classic_link_dns_support(VpcIds=vpc_list)
     except is_boto3_error_code('UnsupportedOperation'):
         cl_dns_support = {'Vpcs': [{'VpcId': vpc_id, 'ClassicLinkDnsSupported': False} for vpc_id in vpc_list]}
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg='Unable to describe if ClassicLinkDns is supported')
 
     # Loop through the results and add the other VPC attributes we gathered

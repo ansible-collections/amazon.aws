@@ -204,7 +204,7 @@ def list_ec2_snapshots(connection, module):
         if len(snapshot_ids) > 1:
             module.warn("Some of your snapshots may exist, but %s" % str(e))
         snapshots = {'Snapshots': []}
-    except ClientError as e:
+    except ClientError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg='Failed to describe snapshots')
 
     # Turn the boto3 result in to ansible_friendly_snaked_names
