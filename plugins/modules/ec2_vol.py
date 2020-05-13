@@ -303,7 +303,7 @@ def delete_volume(module, ec2):
     except boto.exception.EC2ResponseError as ec2_error:
         if ec2_error.code == 'InvalidVolume.NotFound':
             module.exit_json(changed=False)
-        module.fail_json_aws(e)
+        module.fail_json_aws(ec2_error)
 
 
 def boto_supports_volume_encryption():
