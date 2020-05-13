@@ -186,6 +186,7 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.aws.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
@@ -203,7 +204,7 @@ def list_ec2_snapshots(connection, module):
         if len(snapshot_ids) > 1:
             module.warn("Some of your snapshots may exist, but %s" % str(e))
         snapshots = {'Snapshots': []}
-    except ClientError as e:
+    except ClientError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg='Failed to describe snapshots')
 
     # Turn the boto3 result in to ansible_friendly_snaked_names
