@@ -10,6 +10,7 @@ __metaclass__ = type
 import pytest
 
 from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify, maybe_sleep
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto_exception
 from ansible_collections.amazon.aws.plugins.modules import cloudformation as cfn_module
 
 basic_yaml_tpl = """
@@ -64,6 +65,11 @@ class FakeModule(object):
         self.exit_kwargs = kwargs
         raise Exception('FAIL')
 
+    def fail_json_aws(self, *args, **kwargs):
+        self.exit_args = args
+        self.exit_kwargs = kwargs
+        raise Exception('FAIL')
+
     def exit_json(self, *args, **kwargs):
         self.exit_args = args
         self.exit_kwargs = kwargs
@@ -82,7 +88,7 @@ def test_invalid_template_json(placeboify):
         pytest.fail('Expected malformed JSON to have caused the call to fail')
 
     assert exc_info.match('FAIL')
-    assert "ValidationError" in m.exit_kwargs['msg']
+    assert "ValidationError" in boto_exception(m.exit_args[0])
 
 
 def test_client_request_token_s3_stack(maybe_sleep, placeboify):
