@@ -111,6 +111,8 @@ function cleanup
 
             # shellcheck disable=SC2086
             ansible-test coverage xml --color --requirements --group-by command --group-by version ${stub:+"$stub"}
+            ls tests/output/
+            ls tests/output/reports/
             cp -a tests/output/reports/coverage=*.xml "$SHIPPABLE_RESULT_DIR/codecoverage/"
 
             # analyze and capture code coverage aggregated by integration test target
