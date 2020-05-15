@@ -113,7 +113,7 @@ function cleanup
             pip install codecov
 
             # shellcheck disable=SC2086
-            ansible-test coverage xml --color -v --requirements --group-by command --group-by version ${stub:+"$stub"}
+            ansible-test coverage xml --color --requirements --group-by command --group-by version ${stub:+"$stub"}
             cp -a tests/output/reports/coverage=*.xml "$SHIPPABLE_RESULT_DIR/codecoverage/"
 
             # analyze and capture code coverage aggregated by integration test target
@@ -121,7 +121,7 @@ function cleanup
 
             # upload coverage report to codecov.io only when using complete on-demand coverage
             if [ "${COVERAGE}" == "--coverage" ] && [ "${CHANGED}" == "" ]; then
-                for file in test/results/reports/coverage=*.xml; do
+                for file in tests/output/reports/coverage=*.xml; do
                     flags="${file##*/coverage=}"
                     flags="${flags%-powershell.xml}"
                     flags="${flags%.xml}"
@@ -151,11 +151,11 @@ function cleanup
     fi
 
     if [ -d tests/output/data/ ]; then
-      cp -a tests/output/data "$SHIPPABLE_RESULT_DIR/testresults/"
+      cp -a tests/output/data/ "$SHIPPABLE_RESULT_DIR/testresults/"
     fi
 
     if [ -d  tests/output/bot/ ]; then
-      cp -aT tests/output/bot "$SHIPPABLE_RESULT_DIR/testresults/"
+      cp -aT tests/output/bot/ "$SHIPPABLE_RESULT_DIR/testresults/"
     fi
 }
 
