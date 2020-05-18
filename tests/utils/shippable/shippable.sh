@@ -104,6 +104,7 @@ function cleanup
     if [ -d tests/output/coverage/ ]; then
         if find tests/output/coverage/ -mindepth 1 -name '.*' -prune -o -print -quit | grep -q .; then
             # for complete on-demand coverage generate a report for all files with no coverage on the "other" job so we only have one copy
+            echo ${test}
             if [ "${COVERAGE}" == "--coverage" ] && [ "${CHANGED}" == "" ] && [ "${test}" == "sanity/1" ]; then
                 stub="--stub"
             else
