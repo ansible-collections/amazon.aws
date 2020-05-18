@@ -100,11 +100,9 @@ cd "${TEST_DIR}"
 
 function cleanup
 {
-    set -x
     if [ -d tests/output/coverage/ ]; then
         if find tests/output/coverage/ -mindepth 1 -name '.*' -prune -o -print -quit | grep -q .; then
             # for complete on-demand coverage generate a report for all files with no coverage on the "other" job so we only have one copy
-            echo ${test}
             if [ "${COVERAGE}" == "--coverage" ] && [ "${CHANGED}" == "" ] && [ "${test}" == "sanity/1" ]; then
                 stub="--stub"
             else
@@ -113,7 +111,6 @@ function cleanup
 
             # shellcheck disable=SC2086
             ansible-test coverage xml --color --requirements --group-by command --group-by version ${stub:+"$stub"}
-            ls tests/output/
             cp -a tests/output/reports/coverage=*.xml "$SHIPPABLE_RESULT_DIR/codecoverage/"
 
             # analyze and capture code coverage aggregated by integration test target
