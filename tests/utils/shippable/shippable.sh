@@ -118,6 +118,7 @@ function cleanup
 
             # upload coverage report to codecov.io only when using complete on-demand coverage
             if [ "${COVERAGE}" == "--coverage" ] && [ "${CHANGED}" == "" ]; then
+                pip install codecov
                 for file in tests/output/reports/coverage=*.xml; do
                     flags="${file##*/coverage=}"
                     flags="${flags%-powershell.xml}"
@@ -142,7 +143,6 @@ function cleanup
             fi
         fi
     fi
-    set +x
     if [ -d  tests/output/junit/ ]; then
       cp -aT tests/output/junit/ "$SHIPPABLE_RESULT_DIR/testresults/"
     fi

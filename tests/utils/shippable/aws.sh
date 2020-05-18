@@ -13,8 +13,6 @@ target="shippable/${cloud}/group${group}/"
 
 stage="${S:-prod}"
 
-changed_all_target="shippable/${cloud}/smoketest/"
-
 # shellcheck disable=SC2086
 ansible-test integration --color -v --retry-on-error "${target}" ${COVERAGE:+"$COVERAGE"} ${CHANGED:+"$CHANGED"} ${UNSTABLE:+"$UNSTABLE"} \
     --remote-terminate always --remote-stage "${stage}" \
