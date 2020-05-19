@@ -260,7 +260,7 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Basic provisioning example
-- ec2:
+- amazon.aws.ec2:
     key_name: mykey
     instance_type: t2.micro
     image: ami-123456
@@ -271,7 +271,7 @@ EXAMPLES = '''
     assign_public_ip: yes
 
 # Advanced example with tagging and CloudWatch
-- ec2:
+- amazon.aws.ec2:
     key_name: mykey
     group: databases
     instance_type: t2.micro
@@ -286,7 +286,7 @@ EXAMPLES = '''
     assign_public_ip: yes
 
 # Single instance with additional IOPS volume from snapshot and volume delete on termination
-- ec2:
+- amazon.aws.ec2:
     key_name: mykey
     group: webserver
     instance_type: c3.medium
@@ -305,7 +305,7 @@ EXAMPLES = '''
     assign_public_ip: yes
 
 # Single instance with ssd gp2 root volume
-- ec2:
+- amazon.aws.ec2:
     key_name: mykey
     group: webserver
     instance_type: c3.medium
@@ -323,7 +323,7 @@ EXAMPLES = '''
     exact_count: 1
 
 # Multiple groups example
-- ec2:
+- amazon.aws.ec2:
     key_name: mykey
     group: ['databases', 'internal-services', 'sshable', 'and-so-forth']
     instance_type: m1.large
@@ -338,7 +338,7 @@ EXAMPLES = '''
     assign_public_ip: yes
 
 # Multiple instances with additional volume from snapshot
-- ec2:
+- amazon.aws.ec2:
     key_name: mykey
     group: webserver
     instance_type: m1.large
@@ -355,8 +355,7 @@ EXAMPLES = '''
     assign_public_ip: yes
 
 # Dedicated tenancy example
-- local_action:
-    module: ec2
+- amazon.aws.ec2:
     assign_public_ip: yes
     group_id: sg-1dc53f72
     key_name: mykey
@@ -367,7 +366,7 @@ EXAMPLES = '''
     wait: yes
 
 # Spot instance example
-- ec2:
+- amazon.aws.ec2:
     spot_price: 0.24
     spot_wait_timeout: 600
     keypair: mykey
@@ -381,13 +380,13 @@ EXAMPLES = '''
     instance_initiated_shutdown_behavior: terminate
 
 # Examples using pre-existing network interfaces
-- ec2:
+- amazon.aws.ec2:
     key_name: mykey
     instance_type: t2.small
     image: ami-f005ba11
     network_interface: eni-deadbeef
 
-- ec2:
+- amazon.aws.ec2:
     key_name: mykey
     instance_type: t2.small
     image: ami-f005ba11
@@ -407,7 +406,7 @@ EXAMPLES = '''
     region: us-east-1
   tasks:
     - name: Launch instance
-      ec2:
+      amazon.aws.ec2:
          key_name: "{{ keypair }}"
          group: "{{ security_group }}"
          instance_type: "{{ instance_type }}"
@@ -443,7 +442,7 @@ EXAMPLES = '''
   hosts: localhost
   tasks:
     - name: Terminate instances that were previously launched
-      ec2:
+      amazon.aws.ec2:
         state: 'absent'
         instance_ids: '{{ ec2.instance_ids }}'
 
@@ -461,7 +460,7 @@ EXAMPLES = '''
     region: us-east-1
   tasks:
     - name: Start the sandbox instances
-      ec2:
+      amazon.aws.ec2:
         instance_ids: '{{ instance_ids }}'
         region: '{{ region }}'
         state: running
@@ -483,7 +482,7 @@ EXAMPLES = '''
     region: us-east-1
   tasks:
     - name: Stop the sandbox instances
-      ec2:
+      amazon.aws.ec2:
         instance_ids: '{{ instance_ids }}'
         region: '{{ region }}'
         state: stopped
@@ -494,8 +493,7 @@ EXAMPLES = '''
 #
 # Start stopped instances specified by tag
 #
-- local_action:
-    module: ec2
+- amazon.aws.ec2:
     instance_tags:
         Name: ExtraPower
     state: running
@@ -503,8 +501,7 @@ EXAMPLES = '''
 #
 # Restart instances specified by tag
 #
-- local_action:
-    module: ec2
+- amazon.aws.ec2:
     instance_tags:
         Name: ExtraPower
     state: restarted
@@ -514,7 +511,7 @@ EXAMPLES = '''
 # (Highly recommended!)
 #
 
-- ec2:
+- amazon.aws.ec2:
     key_name: mykey
     instance_type: c1.medium
     image: ami-40603AD1
@@ -531,7 +528,7 @@ EXAMPLES = '''
 # Enforce that 5 running instances named "database" with a "dbtype" of "postgres"
 #
 
-- ec2:
+- amazon.aws.ec2:
     key_name: mykey
     instance_type: c1.medium
     image: ami-40603AD1
@@ -552,23 +549,23 @@ EXAMPLES = '''
 #
 
     # instances with tag foo
-- ec2:
+- amazon.aws.ec2:
     count_tag:
         foo:
 
     # instances with tag foo=bar
-- ec2:
+- amazon.aws.ec2:
     count_tag:
         foo: bar
 
     # instances with tags foo=bar & baz
-- ec2:
+- amazon.aws.ec2:
     count_tag:
         foo: bar
         baz:
 
     # instances with tags foo & bar & baz=bang
-- ec2:
+- amazon.aws.ec2:
     count_tag:
         - foo
         - bar

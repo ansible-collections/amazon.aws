@@ -90,7 +90,7 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: create a VPC with dedicated tenancy and a couple of tags
-  ec2_vpc_net:
+  amazon.aws.ec2_vpc_net:
     name: Module_dev2
     cidr_block: 10.10.0.0/16
     region: us-east-1
@@ -100,7 +100,7 @@ EXAMPLES = '''
     tenancy: dedicated
 
 - name: create a VPC with dedicated tenancy and request an IPv6 CIDR
-  ec2_vpc_net:
+  amazon.aws.ec2_vpc_net:
     name: Module_dev2
     cidr_block: 10.10.0.0/16
     ipv6_cidr: True

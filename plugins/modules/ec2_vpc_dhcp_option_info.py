@@ -43,13 +43,13 @@ EXAMPLES = '''
 # # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all DHCP Option sets for an account or profile
-  ec2_vpc_dhcp_option_info:
+  amazon.aws.ec2_vpc_dhcp_option_info:
     region: ap-southeast-2
     profile: production
   register: dhcp_info
 
 - name: Gather information about a filtered list of DHCP Option sets
-  ec2_vpc_dhcp_option_info:
+  amazon.aws.ec2_vpc_dhcp_option_info:
     region: ap-southeast-2
     profile: production
     filters:
@@ -57,7 +57,7 @@ EXAMPLES = '''
   register: dhcp_info
 
 - name: Gather information about a specific DHCP Option set by DhcpOptionId
-  ec2_vpc_dhcp_option_info:
+  amazon.aws.ec2_vpc_dhcp_option_info:
     region: ap-southeast-2
     profile: production
     DhcpOptionsIds: dopt-123fece2

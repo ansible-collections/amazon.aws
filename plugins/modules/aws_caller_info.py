@@ -13,7 +13,7 @@ short_description: Get information about the user and account being used to make
 description:
     - This module returns information about the account and user / role from which the AWS access tokens originate.
     - The primary use of this is to get the account id for templating into ARNs or similar to avoid needing to specify this information in inventory.
-    - This module was called C(aws_caller_facts) before Ansible 2.9. The usage did not change.
+    - This module was called M(amazon.aws.aws_caller_facts) before Ansible 2.9. The usage did not change.
 
 author:
     - Ed Costello (@orthanc)
@@ -30,7 +30,7 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Get the current caller identity information
-  aws_caller_info:
+  amazon.aws.aws_caller_info:
   register: caller_info
 '''
 

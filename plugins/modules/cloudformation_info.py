@@ -12,8 +12,8 @@ module: cloudformation_info
 short_description: Obtain information about an AWS CloudFormation stack
 description:
   - Gets information about an AWS CloudFormation stack.
-  - This module was called C(cloudformation_facts) before Ansible 2.9, returning C(ansible_facts).
-    Note that the M(cloudformation_info) module no longer returns C(ansible_facts)!
+  - This module was called C(amazon.aws.cloudformation_facts) before Ansible 2.9, returning C(ansible_facts).
+    Note that the M(amazon.aws.cloudformation_info) module no longer returns C(ansible_facts)!
 requirements:
   - boto3 >= 1.0.0
   - python >= 2.6
@@ -64,8 +64,8 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Get summary information about a stack
-- cloudformation_info:
+- name: Get summary information about a stack
+  amazon.aws.cloudformation_info:
     stack_name: my-cloudformation-stack
   register: output
 
@@ -76,7 +76,7 @@ EXAMPLES = '''
 # in ansible_facts['cloudformation'][<stack_name>] and can be used as follows.
 # Note that this is deprecated and will stop working in Ansible 2.13.
 
-- cloudformation_facts:
+- amazon.aws.cloudformation_facts:
     stack_name: my-cloudformation-stack
 
 - debug:
@@ -86,7 +86,7 @@ EXAMPLES = '''
 - set_fact:
     stack_name: my-awesome-stack
 
-- cloudformation_info:
+- amazon.aws.cloudformation_info:
     stack_name: "{{ stack_name }}"
   register: my_stack
 
@@ -94,19 +94,19 @@ EXAMPLES = '''
     msg: "{{ my_stack.cloudformation[stack_name].stack_outputs }}"
 
 # Get all stack information about a stack
-- cloudformation_info:
+- amazon.aws.cloudformation_info:
     stack_name: my-cloudformation-stack
     all_facts: true
 
 # Get stack resource and stack policy information about a stack
-- cloudformation_info:
+- amazon.aws.cloudformation_info:
     stack_name: my-cloudformation-stack
     stack_resources: true
     stack_policy: true
 
 # Fail if the stack doesn't exist
 - name: try to get facts about a stack but fail if it doesn't exist
-  cloudformation_info:
+  amazon.aws.cloudformation_info:
     stack_name: nonexistent-stack
     all_facts: yes
   failed_when: cloudformation['nonexistent-stack'] is undefined

@@ -38,14 +38,14 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all VPCs
-- ec2_vpc_net_info:
+- amazon.aws.ec2_vpc_net_info:
 
 # Gather information about a particular VPC using VPC ID
-- ec2_vpc_net_info:
+- amazon.aws.ec2_vpc_net_info:
     vpc_ids: vpc-00112233
 
 # Gather information about any VPC with a tag key Name and value Example
-- ec2_vpc_net_info:
+- amazon.aws.ec2_vpc_net_info:
     filters:
       "tag:Name": Example
 

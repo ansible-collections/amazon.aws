@@ -11,7 +11,7 @@ module: aws_az_info
 short_description: Gather information about availability zones in AWS.
 description:
     - Gather information about availability zones in AWS.
-    - This module was called C(aws_az_facts) before Ansible 2.9. The usage did not change.
+    - This module was called M(amazon.aws.aws_az_facts) before Ansible 2.9. The usage did not change.
 author: 'Henrique Rodrigues (@Sodki)'
 options:
   filters:
@@ -33,11 +33,11 @@ requirements: [botocore, boto3]
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Gather information about all availability zones
-- aws_az_info:
+- name: Gather information about all availability zones
+  amazon.aws.aws_az_info:
 
-# Gather information about a single availability zone
-- aws_az_info:
+- name: Gather information about a single availability zone
+  amazon.aws.aws_az_info:
     filters:
       zone-name: eu-west-1a
 '''

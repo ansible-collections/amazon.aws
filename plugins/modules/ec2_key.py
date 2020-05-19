@@ -61,29 +61,29 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: create a new ec2 key pair, returns generated private key
-  ec2_key:
+  amazon.aws.ec2_key:
     name: my_keypair
 
 - name: create key pair using provided key_material
-  ec2_key:
+  amazon.aws.ec2_key:
     name: my_keypair
     key_material: 'ssh-rsa AAAAxyz...== me@example.com'
 
 - name: create key pair using key_material obtained using 'file' lookup plugin
-  ec2_key:
+  amazon.aws.ec2_key:
     name: my_keypair
     key_material: "{{ lookup('file', '/path/to/public_key/id_rsa.pub') }}"
 
 # try creating a key pair with the name of an already existing keypair
 # but don't overwrite it even if the key is different (force=false)
 - name: try creating a key pair with name of an already existing keypair
-  ec2_key:
+  amazon.aws.ec2_key:
     name: my_existing_keypair
     key_material: 'ssh-rsa AAAAxyz...== me@example.com'
     force: false
 
 - name: remove key pair by name
-  ec2_key:
+  amazon.aws.ec2_key:
     name: my_keypair
     state: absent
 '''

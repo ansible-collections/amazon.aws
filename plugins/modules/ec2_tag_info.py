@@ -32,13 +32,13 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: Retrieve all tags on an instance
-  ec2_tag_info:
+  amazon.aws.ec2_tag_info:
     region: eu-west-1
     resource: i-xxxxxxxxxxxxxxxxx
   register: instance_tags
 
 - name: Retrieve all tags on a VPC
-  ec2_tag_info:
+  amazon.aws.ec2_tag_info:
     region: eu-west-1
     resource: vpc-xxxxxxxxxxxxxxxxx
   register: vpc_tags

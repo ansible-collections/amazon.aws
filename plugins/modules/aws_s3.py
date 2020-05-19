@@ -150,14 +150,14 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: Simple PUT operation
-  aws_s3:
+  amazon.aws.aws_s3:
     bucket: mybucket
     object: /my/desired/key.txt
     src: /usr/local/myfile.txt
     mode: put
 
 - name: Simple PUT operation in Ceph RGW S3
-  aws_s3:
+  amazon.aws.aws_s3:
     bucket: mybucket
     object: /my/desired/key.txt
     src: /usr/local/myfile.txt
@@ -166,14 +166,14 @@ EXAMPLES = '''
     s3_url: "http://localhost:8000"
 
 - name: Simple GET operation
-  aws_s3:
+  amazon.aws.aws_s3:
     bucket: mybucket
     object: /my/desired/key.txt
     dest: /usr/local/myfile.txt
     mode: get
 
 - name: Get a specific version of an object.
-  aws_s3:
+  amazon.aws.aws_s3:
     bucket: mybucket
     object: /my/desired/key.txt
     version: 48c9ee5131af7a716edc22df9772aa6f
@@ -181,7 +181,7 @@ EXAMPLES = '''
     mode: get
 
 - name: PUT/upload with metadata
-  aws_s3:
+  amazon.aws.aws_s3:
     bucket: mybucket
     object: /my/desired/key.txt
     src: /usr/local/myfile.txt
@@ -189,7 +189,7 @@ EXAMPLES = '''
     metadata: 'Content-Encoding=gzip,Cache-Control=no-cache'
 
 - name: PUT/upload with custom headers
-  aws_s3:
+  amazon.aws.aws_s3:
     bucket: mybucket
     object: /my/desired/key.txt
     src: /usr/local/myfile.txt
@@ -197,12 +197,12 @@ EXAMPLES = '''
     headers: 'x-amz-grant-full-control=emailAddress=owner@example.com'
 
 - name: List keys simple
-  aws_s3:
+  amazon.aws.aws_s3:
     bucket: mybucket
     mode: list
 
 - name: List keys all options
-  aws_s3:
+  amazon.aws.aws_s3:
     bucket: mybucket
     mode: list
     prefix: /my/desired/
@@ -210,25 +210,25 @@ EXAMPLES = '''
     max_keys: 472
 
 - name: Create an empty bucket
-  aws_s3:
+  amazon.aws.aws_s3:
     bucket: mybucket
     mode: create
     permission: public-read
 
 - name: Create a bucket with key as directory, in the EU region
-  aws_s3:
+  amazon.aws.aws_s3:
     bucket: mybucket
     object: /my/directory/path
     mode: create
     region: eu-west-1
 
 - name: Delete a bucket and all contents
-  aws_s3:
+  amazon.aws.aws_s3:
     bucket: mybucket
     mode: delete
 
 - name: GET an object but don't download if the file checksums match. New in 2.0
-  aws_s3:
+  amazon.aws.aws_s3:
     bucket: mybucket
     object: /my/desired/key.txt
     dest: /usr/local/myfile.txt
@@ -236,7 +236,7 @@ EXAMPLES = '''
     overwrite: different
 
 - name: Delete an object from a bucket
-  aws_s3:
+  amazon.aws.aws_s3:
     bucket: mybucket
     object: /my/desired/key.txt
     mode: delobj

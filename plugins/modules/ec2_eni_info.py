@@ -31,10 +31,10 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all ENIs
-- ec2_eni_info:
+- amazon.aws.ec2_eni_info:
 
 # Gather information about a particular ENI
-- ec2_eni_info:
+- amazon.aws.ec2_eni_info:
     filters:
       network-interface-id: eni-xxxxxxx
 

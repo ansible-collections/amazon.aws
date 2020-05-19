@@ -24,7 +24,7 @@ notes:
 
 EXAMPLES = '''
 # Gather EC2 metadata facts
-- ec2_metadata_facts:
+- amazon.aws.ec2_metadata_facts:
 
 - debug:
     msg: "This instance is a t1.micro"

@@ -61,35 +61,35 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all snapshots, including public ones
-- ec2_snapshot_info:
+- amazon.aws.ec2_snapshot_info:
 
 # Gather information about all snapshots owned by the account 0123456789
-- ec2_snapshot_info:
+- amazon.aws.ec2_snapshot_info:
     filters:
       owner-id: 0123456789
 
 # Or alternatively...
-- ec2_snapshot_info:
+- amazon.aws.ec2_snapshot_info:
     owner_ids:
       - 0123456789
 
 # Gather information about a particular snapshot using ID
-- ec2_snapshot_info:
+- amazon.aws.ec2_snapshot_info:
     filters:
       snapshot-id: snap-00112233
 
 # Or alternatively...
-- ec2_snapshot_info:
+- amazon.aws.ec2_snapshot_info:
     snapshot_ids:
       - snap-00112233
 
 # Gather information about any snapshot with a tag key Name and value Example
-- ec2_snapshot_info:
+- amazon.aws.ec2_snapshot_info:
     filters:
       "tag:Name": Example
 
 # Gather information about any snapshot with an error status
-- ec2_snapshot_info:
+- amazon.aws.ec2_snapshot_info:
     filters:
       status: error
 

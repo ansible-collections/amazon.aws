@@ -12,7 +12,7 @@ module: ec2_group_info
 short_description: Gather information about ec2 security groups in AWS.
 description:
     - Gather information about ec2 security groups in AWS.
-    - This module was called C(ec2_group_facts) before Ansible 2.9. The usage did not change.
+    - This module was called C(amazon.aws.ec2_group_facts) before Ansible 2.9. The usage did not change.
 requirements: [ boto3 ]
 author:
 - Henrique Rodrigues (@Sodki)
@@ -39,36 +39,36 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all security groups
-- ec2_group_info:
+- amazon.aws.ec2_group_info:
 
 # Gather information about all security groups in a specific VPC
-- ec2_group_info:
+- amazon.aws.ec2_group_info:
     filters:
       vpc-id: vpc-12345678
 
 # Gather information about all security groups in a specific VPC
-- ec2_group_info:
+- amazon.aws.ec2_group_info:
     filters:
       vpc-id: vpc-12345678
 
 # Gather information about a security group
-- ec2_group_info:
+- amazon.aws.ec2_group_info:
     filters:
       group-name: example-1
 
 # Gather information about a security group by id
-- ec2_group_info:
+- amazon.aws.ec2_group_info:
     filters:
       group-id: sg-12345678
 
 # Gather information about a security group with multiple filters, also mixing the use of underscores as filter keys
-- ec2_group_info:
+- amazon.aws.ec2_group_info:
     filters:
       group_id: sg-12345678
       vpc-id: vpc-12345678
 
 # Gather information about various security groups
-- ec2_group_info:
+- amazon.aws.ec2_group_info:
     filters:
       group-name:
         - example-1
@@ -77,7 +77,7 @@ EXAMPLES = '''
 
 # Gather information about any security group with a tag key Name and value Example.
 # The quotes around 'tag:name' are important because of the colon in the value
-- ec2_group_info:
+- amazon.aws.ec2_group_info:
     filters:
       "tag:Name": Example
 '''

@@ -39,19 +39,19 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all VPC subnets
-- ec2_vpc_subnet_info:
+- amazon.aws.ec2_vpc_subnet_info:
 
 # Gather information about a particular VPC subnet using ID
-- ec2_vpc_subnet_info:
+- amazon.aws.ec2_vpc_subnet_info:
     subnet_ids: subnet-00112233
 
 # Gather information about any VPC subnet with a tag key Name and value Example
-- ec2_vpc_subnet_info:
+- amazon.aws.ec2_vpc_subnet_info:
     filters:
       "tag:Name": Example
 
 # Gather information about any VPC subnet within VPC with ID vpc-abcdef00
-- ec2_vpc_subnet_info:
+- amazon.aws.ec2_vpc_subnet_info:
     filters:
       vpc-id: vpc-abcdef00
 
@@ -59,7 +59,7 @@ EXAMPLES = '''
 # VPC with ID vpc-abcdef00 and then use the jinja map function to return the
 # subnet_ids as a list.
 
-- ec2_vpc_subnet_info:
+- amazon.aws.ec2_vpc_subnet_info:
     filters:
       vpc-id: vpc-abcdef00
       "tag:Name": "{{ item }}"

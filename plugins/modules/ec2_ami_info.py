@@ -12,7 +12,7 @@ module: ec2_ami_info
 short_description: Gather information about ec2 AMIs
 description:
   - Gather information about ec2 AMIs
-  - This module was called C(ec2_ami_facts) before Ansible 2.9. The usage did not change.
+  - This module was called C(amazon.aws.ec2_ami_facts) before Ansible 2.9. The usage did not change.
 author:
   - Prasad Katti (@prasadkatti)
 requirements: [ boto3 ]
@@ -57,21 +57,21 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: gather information about an AMI using ami-id
-  ec2_ami_info:
+  amazon.aws.ec2_ami_info:
     image_ids: ami-5b488823
 
 - name: gather information about all AMIs with tag key Name and value webapp
-  ec2_ami_info:
+  amazon.aws.ec2_ami_info:
     filters:
       "tag:Name": webapp
 
 - name: gather information about an AMI with 'AMI Name' equal to foobar
-  ec2_ami_info:
+  amazon.aws.ec2_ami_info:
     filters:
       name: foobar
 
 - name: gather information about Ubuntu 17.04 AMIs published by Canonical (099720109477)
-  ec2_ami_info:
+  amazon.aws.ec2_ami_info:
     owners: 099720109477
     filters:
       name: "ubuntu/images/ubuntu-zesty-17.04-*"
