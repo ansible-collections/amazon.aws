@@ -118,7 +118,6 @@ function cleanup
 
             # upload coverage report to codecov.io only when using complete on-demand coverage
             if [ "${COVERAGE}" == "--coverage" ] && [ "${CHANGED}" == "" ]; then
-                pip install codecov
                 for file in tests/output/reports/coverage=*.xml; do
                     flags="${file##*/coverage=}"
                     flags="${flags%-powershell.xml}"
@@ -128,17 +127,16 @@ function cleanup
                     flags="${flags//=/,}"
                     flags="${flags//[^a-zA-Z0-9_,]/_}"
 
-                    codecov \
+                    bash <(curl -s https://codecov.io/bash) \
                         -f "${file}" \
                         -F "${flags}" \
                         -n "${test}" \
                         -t bc371da7-e5d2-4743-93b5-309f81d457a4
-                        -X pycov \
+                        -X coveragepy \
                         -X gcov \
                         -X fix \
                         -X search \
                         -X xcode \
-                        -r ansible-collections/amazon.aws \
                     || echo "Failed to upload code coverage report to codecov.io: ${file}"
                 done
             fi
