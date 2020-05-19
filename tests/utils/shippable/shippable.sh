@@ -138,6 +138,7 @@ function cleanup
                         -X fix \
                         -X search \
                         -X xcode \
+                        -r ansible-collections/amazon.aws \
                     || echo "Failed to upload code coverage report to codecov.io: ${file}"
                 done
             fi
