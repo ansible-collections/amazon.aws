@@ -4,7 +4,6 @@ version: 0.1.0
 readme: README.md
 authors: null
 description: null
-license: GPL-3.0-or-later
 license_file: COPYING
 tags: [community, aws, cloud, amazon]
 dependencies:
