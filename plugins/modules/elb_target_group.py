@@ -107,8 +107,8 @@ options:
     type: int
   stickiness_type:
     description:
-      - The type of sticky sessions. The possible value is lb_cookie.
-    default: lb_cookie
+      - The type of sticky sessions.
+      - If not set AWS will default to C(lb_cookie) for Application Load Balancers or C(source_ip) for Network Load Balancers.
     type: str
   successful_response_codes:
     description:
@@ -547,7 +547,7 @@ def create_or_update_target_group(connection, module):
             # Only need to check response code and path for http(s) health checks
             if tg['HealthCheckProtocol'] in ['HTTP', 'HTTPS']:
                 # Health check path
-                if 'HealthCheckPath'in params and tg['HealthCheckPath'] != params['HealthCheckPath']:
+                if 'HealthCheckPath' in params and tg['HealthCheckPath'] != params['HealthCheckPath']:
                     health_check_params['HealthCheckPath'] = params['HealthCheckPath']
 
                 # Matcher (successful response codes)
@@ -744,8 +744,8 @@ def create_or_update_target_group(connection, module):
     if stickiness_lb_cookie_duration is not None:
         if str(stickiness_lb_cookie_duration) != current_tg_attributes['stickiness_lb_cookie_duration_seconds']:
             update_attributes.append({'Key': 'stickiness.lb_cookie.duration_seconds', 'Value': str(stickiness_lb_cookie_duration)})
-    if stickiness_type is not None and "stickiness_type" in current_tg_attributes:
-        if stickiness_type != current_tg_attributes['stickiness_type']:
+    if stickiness_type is not None:
+        if stickiness_type != current_tg_attributes.get('stickiness_type'):
             update_attributes.append({'Key': 'stickiness.type', 'Value': stickiness_type})
 
     if update_attributes:
@@ -825,7 +825,7 @@ def main():
         protocol=dict(choices=protocols_list),
         purge_tags=dict(default=True, type='bool'),
         stickiness_enabled=dict(type='bool'),
-        stickiness_type=dict(default='lb_cookie'),
+        stickiness_type=dict(),
         stickiness_lb_cookie_duration=dict(type='int'),
         state=dict(required=True, choices=['present', 'absent']),
         successful_response_codes=dict(),
