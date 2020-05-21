@@ -89,12 +89,15 @@ metric_filters:
     description: Return the origin response value
     returned: success
     type: list
-    contains:
-        creation_time:
-        filter_name:
-        filter_pattern:
-        log_group_name:
-        metric_filter_count:
+    sample: [
+        {
+            "default_value": 3.1415,
+            "metric_name": "box_free_space",
+            "metric_namespace": "made_with_ansible",
+            "metric_value": "$.value"
+        }
+    ]
+
 """
 from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule, is_boto3_error_code, get_boto3_client_method_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
