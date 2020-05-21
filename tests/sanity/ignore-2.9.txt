@@ -84,8 +84,6 @@ plugins/modules/ec2_vpc_vpn_info.py validate-modules:doc-elements-mismatch
 plugins/modules/ec2_vpc_vpn_info.py validate-modules:parameter-list-no-elements
 plugins/modules/ecs_attribute.py validate-modules:doc-elements-mismatch
 plugins/modules/ecs_attribute.py validate-modules:parameter-list-no-elements
-plugins/modules/ecs_service.py validate-modules:doc-elements-mismatch
-plugins/modules/ecs_service.py validate-modules:parameter-list-no-elements
 plugins/modules/ecs_service_info.py validate-modules:doc-elements-mismatch
 plugins/modules/ecs_service_info.py validate-modules:parameter-list-no-elements
 plugins/modules/ecs_task.py validate-modules:doc-elements-mismatch

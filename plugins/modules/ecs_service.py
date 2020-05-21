@@ -103,10 +103,17 @@ options:
     placement_constraints:
         description:
           - The placement constraints for the tasks in the service.
+          - See U(https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_PlacementConstraint.html) for more details.
         required: false
         type: list
         elements: dict
         suboptions:
+          type:
+            description: The type of constraint.
+            type: str
+          expression:
+            description: A cluster query language expression to apply to the constraint.
+            type: str
     placement_strategy:
         description:
           - The placement strategy objects to use for tasks in your service. You can specify a maximum of 5 strategy rules per service.
@@ -648,8 +655,14 @@ def main():
         repeat=dict(required=False, type='int', default=10),
         force_new_deployment=dict(required=False, default=False, type='bool'),
         deployment_configuration=dict(required=False, default={}, type='dict'),
-        placement_constraints=dict(required=False, default=[], type='list'),
-        placement_strategy=dict(required=False, default=[], type='list'),
+        placement_constraints=dict(required=False, default=[], type='list', options=dict(
+            type=dict(type='str'),
+            expression=dict(type='str')
+        )),
+        placement_strategy=dict(required=False, default=[], type='list', options=dict(
+            type=dict(type='str'),
+            field=dict(type='str'),
+        )),
         health_check_grace_period_seconds=dict(required=False, type='int'),
         network_configuration=dict(required=False, type='dict', options=dict(
             subnets=dict(type='list'),
