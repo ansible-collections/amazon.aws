@@ -2,9 +2,9 @@
 .. _amazon.aws.ec2_vol_info_:
 
 
-*****
+***********************
 amazon.aws.ec2_vol_info
-*****
+***********************
 
 **Gather information about ec2 volumes in AWS**
 
@@ -281,10 +281,6 @@ Authors
 ~~~~~~~
 
 - Rob White (@wimnat)
-
-
-.. hint::
-    If you notice any issues in this documentation, you can `edit this document <https://github.com/ansible/ansible/edit/devel/lib/ansible/plugins//?description=%23%23%23%23%23%20SUMMARY%0A%3C!---%20Your%20description%20here%20--%3E%0A%0A%0A%23%23%23%23%23%20ISSUE%20TYPE%0A-%20Docs%20Pull%20Request%0A%0A%2Blabel:%20docsite_pr>`_ to improve it.
 
 
 .. hint::
