@@ -590,7 +590,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         t = Templar(loader=loader)
         credentials = {}
 
-        for credential_type in ['aws_profile', 'aws_access_key', 'aws_secret_key', 'aws_security_token', 'iam_role_arn']: 
+        for credential_type in ['aws_profile', 'aws_access_key', 'aws_secret_key', 'aws_security_token', 'iam_role_arn']:
             if t.is_template(self.get_option(credential_type)):
                 credentials[credential_type] = t.template(variable=self.get_option(credential_type), disable_lookups=False)
             else:
@@ -601,7 +601,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         self.aws_secret_access_key = credentials['aws_secret_key']
         self.aws_security_token = credentials['aws_security_token']
         self.iam_role_arn = credentials['iam_role_arn']
-
 
         if not self.boto_profile and not (self.aws_access_key_id and self.aws_secret_access_key):
             session = botocore.session.get_session()
