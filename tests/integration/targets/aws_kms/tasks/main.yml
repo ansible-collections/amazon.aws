@@ -32,6 +32,28 @@
         filters:
           alias: "{{ resource_prefix }}-kms"
 
+    - name: create a key in check mode
+      check_mode: yes
+      aws_kms:
+        alias: "{{ resource_prefix }}-kms-check"
+        tags:
+          Hello: World
+        state: present
+        enabled: yes
+      register: create_kms_check
+
+    - name: find facts about the check mode key
+      aws_kms_info:
+        filters:
+          alias: "{{ resource_prefix }}-kms-check"
+      register: check_key
+
+    - name: ensure that check mode worked as expected
+      assert:
+        that:
+          - check_key["keys"]|length == 0
+          - create_kms_check is changed
+
     - name: create a key
       aws_kms:
         alias: "{{ resource_prefix }}-kms"
@@ -65,6 +87,17 @@
           - create_kms.tags['Hello'] == 'World'
           - create_kms.enable_key_rotation == true
 
+    - name: delete the key in check mode
+      check_mode: yes
+      aws_kms:
+        alias: "{{ resource_prefix }}-kms"
+        state: absent
+      register: delete_kms_check
+
+    - assert:
+        that:
+          - delete_kms_check is changed
+
     - name: find facts about the key
       aws_kms_info:
         filters:
@@ -76,6 +109,7 @@
         that:
           - new_key["keys"]|length == 1
           - new_key["keys"][0]["enable_key_rotation"] == true
+          - new_key["keys"][0]["key_state"] != PendingDeletion
 
     - name: Update Policy on key to match AWS Console generate policy
       aws_kms:
