@@ -14,7 +14,8 @@ matrix:
     - env: T=units/3.6/1
     - env: T=units/3.7/1
     - env: T=units/3.8/1
-    - env: T=units/3.9/1
+#   Until boto/botocore#2002 is fixed
+#    - env: T=units/3.9/1
 
     - env: T=aws/2.7/1
     - env: T=aws/3.7/1
