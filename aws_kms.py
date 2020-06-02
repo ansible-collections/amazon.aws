@@ -824,6 +824,10 @@ def create_key(connection, module):
                   Tags=ansible_dict_to_boto3_tag_list(module.params['tags'], tag_name_key_name='TagKey', tag_value_key_name='TagValue'),
                   KeyUsage='ENCRYPT_DECRYPT',
                   Origin='AWS_KMS')
+
+    if module.check_mode:
+        return {'changed': True}
+
     if module.params.get('description'):
         params['Description'] = module.params['description']
     if module.params.get('policy'):
@@ -833,8 +837,8 @@ def create_key(connection, module):
         result = connection.create_key(**params)['KeyMetadata']
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to create initial key")
-    key = get_key_details(connection, module, result['KeyId'])
 
+    key = get_key_details(connection, module, result['KeyId'])
     update_alias(connection, module, key, module.params['alias'])
     update_key_rotation(connection, module, key, module.params.get('enable_key_rotation'))
 
