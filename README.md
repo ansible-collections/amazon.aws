@@ -12,34 +12,34 @@ The Ansible Amazon AWS collection includes a variety of Ansible content to help 
 ## Modules
 Name | Description
 --- | ---
-[amazon.aws.aws_az_info](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.aws_az_info.rst)|Gather information about availability zones in AWS.
-[amazon.aws.aws_caller_info](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.aws_caller_info.rst)|Get information about the user and account being used to make AWS calls.
-[amazon.aws.aws_s3](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.aws_s3.rst)|manage objects in S3.
-[amazon.aws.cloudformation](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.cloudformation.rst)|Create or delete an AWS CloudFormation stack
-[amazon.aws.cloudformation_info](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.cloudformation_info.rst)|Obtain information about an AWS CloudFormation stack
-[amazon.aws.ec2](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2.rst)|create, terminate, start or stop an instance in ec2
-[amazon.aws.ec2_ami](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_ami.rst)|Create or destroy an image (AMI) in ec2
-[amazon.aws.ec2_ami_info](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_ami_info.rst)|Gather information about ec2 AMIs
-[amazon.aws.ec2_elb_lb](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_elb_lb.rst)|Creates, updates or destroys an Amazon ELB.
-[amazon.aws.ec2_eni](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_eni.rst)|Create and optionally attach an Elastic Network Interface (ENI) to an instance
-[amazon.aws.ec2_eni_info](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_eni_info.rst)|Gather information about ec2 ENI interfaces in AWS
-[amazon.aws.ec2_group](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_group.rst)|maintain an ec2 VPC security group.
-[amazon.aws.ec2_group_info](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_group_info.rst)|Gather information about ec2 security groups in AWS.
-[amazon.aws.ec2_key](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_key.rst)|create or delete an ec2 key pair
-[amazon.aws.ec2_metadata_facts](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_metadata_facts.rst)|Gathers facts (instance metadata) about remote hosts within ec2
-[amazon.aws.ec2_snapshot](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_snapshot.rst)|Creates a snapshot from an existing volume
-[amazon.aws.ec2_snapshot_info](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_snapshot_info.rst)|Gather information about ec2 volume snapshots in AWS
-[amazon.aws.ec2_tag](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_tag.rst)|create and remove tags on ec2 resources
-[amazon.aws.ec2_tag_info](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_tag_info.rst)|list tags on ec2 resources
-[amazon.aws.ec2_vol](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_vol.rst)|Create and attach a volume, return volume id and device map
-[amazon.aws.ec2_vol_info](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_vol_info.rst)|Gather information about ec2 volumes in AWS
-[amazon.aws.ec2_vpc_dhcp_option](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_vpc_dhcp_option.rst)|Manages DHCP Options, and can ensure the DHCP options for the given VPC match what's requested
-[amazon.aws.ec2_vpc_dhcp_option_info](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_vpc_dhcp_option_info.rst)|Gather information about dhcp options sets in AWS
-[amazon.aws.ec2_vpc_net](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_vpc_net.rst)|Configure AWS virtual private clouds
-[amazon.aws.ec2_vpc_net_info](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_vpc_net_info.rst)|Gather information about ec2 VPCs in AWS
-[amazon.aws.ec2_vpc_subnet](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_vpc_subnet.rst)|Manage subnets in AWS virtual private clouds
-[amazon.aws.ec2_vpc_subnet_info](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.ec2_vpc_subnet_info.rst)|Gather information about ec2 VPC subnets in AWS
-[amazon.aws.s3_bucket](https://github.com/ansible-collections/amazon.aws.git/blob/master/docs/amazon.aws.s3_bucket.rst)|Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID
+[amazon.aws.aws_az_info](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.aws_az_info.rst)|Gather information about availability zones in AWS.
+[amazon.aws.aws_caller_info](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.aws_caller_info.rst)|Get information about the user and account being used to make AWS calls.
+[amazon.aws.aws_s3](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.aws_s3.rst)|manage objects in S3.
+[amazon.aws.cloudformation](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.cloudformation.rst)|Create or delete an AWS CloudFormation stack
+[amazon.aws.cloudformation_info](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.cloudformation_info.rst)|Obtain information about an AWS CloudFormation stack
+[amazon.aws.ec2](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2.rst)|create, terminate, start or stop an instance in ec2
+[amazon.aws.ec2_ami](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_ami.rst)|Create or destroy an image (AMI) in ec2
+[amazon.aws.ec2_ami_info](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_ami_info.rst)|Gather information about ec2 AMIs
+[amazon.aws.ec2_elb_lb](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_elb_lb.rst)|Creates, updates or destroys an Amazon ELB.
+[amazon.aws.ec2_eni](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_eni.rst)|Create and optionally attach an Elastic Network Interface (ENI) to an instance
+[amazon.aws.ec2_eni_info](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_eni_info.rst)|Gather information about ec2 ENI interfaces in AWS
+[amazon.aws.ec2_group](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_group.rst)|maintain an ec2 VPC security group.
+[amazon.aws.ec2_group_info](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_group_info.rst)|Gather information about ec2 security groups in AWS.
+[amazon.aws.ec2_key](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_key.rst)|create or delete an ec2 key pair
+[amazon.aws.ec2_metadata_facts](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_metadata_facts.rst)|Gathers facts (instance metadata) about remote hosts within ec2
+[amazon.aws.ec2_snapshot](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_snapshot.rst)|Creates a snapshot from an existing volume
+[amazon.aws.ec2_snapshot_info](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_snapshot_info.rst)|Gather information about ec2 volume snapshots in AWS
+[amazon.aws.ec2_tag](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_tag.rst)|create and remove tags on ec2 resources
+[amazon.aws.ec2_tag_info](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_tag_info.rst)|list tags on ec2 resources
+[amazon.aws.ec2_vol](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_vol.rst)|Create and attach a volume, return volume id and device map
+[amazon.aws.ec2_vol_info](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_vol_info.rst)|Gather information about ec2 volumes in AWS
+[amazon.aws.ec2_vpc_dhcp_option](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_vpc_dhcp_option.rst)|Manages DHCP Options, and can ensure the DHCP options for the given VPC match what's requested
+[amazon.aws.ec2_vpc_dhcp_option_info](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_vpc_dhcp_option_info.rst)|Gather information about dhcp options sets in AWS
+[amazon.aws.ec2_vpc_net](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_vpc_net.rst)|Configure AWS virtual private clouds
+[amazon.aws.ec2_vpc_net_info](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_vpc_net_info.rst)|Gather information about ec2 VPCs in AWS
+[amazon.aws.ec2_vpc_subnet](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_vpc_subnet.rst)|Manage subnets in AWS virtual private clouds
+[amazon.aws.ec2_vpc_subnet_info](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.ec2_vpc_subnet_info.rst)|Gather information about ec2 VPC subnets in AWS
+[amazon.aws.s3_bucket](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.s3_bucket.rst)|Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID
 <!--end collection content-->
 
 ## Installing this collection
