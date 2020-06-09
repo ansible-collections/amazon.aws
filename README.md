@@ -5,7 +5,6 @@
 The Ansible Community AWS collection includes a variety of Ansible content to help automate the management of AWS instances. This collection is maintained by the Ansible community.
 
 ## Included content
-
 <!--start collection content-->
 ## Connection plugins
 Name | Description
@@ -200,6 +199,7 @@ You can also include it in a `requirements.yml` file and install it with `ansibl
 ---
 collections:
   - name: community.aws
+
 ```
 
 A specific version of the collection can be installed by using the `version` keyword in the `requirements.yml` file:
