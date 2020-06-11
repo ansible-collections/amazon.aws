@@ -189,22 +189,24 @@ vpc:
           sample: pk_vpc4
 '''
 
+from time import sleep
+from time import time
+
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from time import sleep, time
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (AWSRetry,
-                                                                     camel_dict_to_snake_dict,
-                                                                     compare_aws_tags,
-                                                                     ansible_dict_to_boto3_tag_list,
-                                                                     boto3_tag_list_to_ansible_dict,
-                                                                     )
-from ansible.module_utils.six import string_types
 from ansible.module_utils._text import to_native
+from ansible.module_utils.six import string_types
 from ansible.module_utils.common.network import to_subnet
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.ec2 import AWSRetry
+from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ..module_utils.ec2 import compare_aws_tags
 
 
 def vpc_exists(module, vpc, name, cidr_block, multi):

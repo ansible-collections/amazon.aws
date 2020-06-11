@@ -125,13 +125,14 @@ key:
 
 import uuid
 
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible.module_utils._text import to_bytes
-
 try:
     from botocore.exceptions import ClientError
 except ImportError:
     pass  # caught by AnsibleAWSModule
+
+from ansible.module_utils._text import to_bytes
+
+from ..module_utils.core import AnsibleAWSModule
 
 
 def extract_key_data(key):

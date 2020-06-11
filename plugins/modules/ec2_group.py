@@ -395,23 +395,29 @@ import itertools
 from copy import deepcopy
 from time import sleep
 from collections import namedtuple
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule, is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.aws.iam import get_aws_account_id
-from ansible_collections.amazon.aws.plugins.module_utils.aws.waiters import get_waiter
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry, camel_dict_to_snake_dict, compare_aws_tags
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (ansible_dict_to_boto3_filter_list,
-                                                                     boto3_tag_list_to_ansible_dict,
-                                                                     ansible_dict_to_boto3_tag_list,
-                                                                     )
-from ansible.module_utils.common.network import to_ipv6_subnet, to_subnet
-from ansible_collections.ansible.netcommon.plugins.module_utils.compat.ipaddress import ip_network, IPv6Network
-from ansible.module_utils._text import to_text
-from ansible.module_utils.six import string_types
 
 try:
     from botocore.exceptions import BotoCoreError, ClientError
 except ImportError:
-    pass  # caught by AnsibleAWSModule
+    pass  # Handled by AnsibleAWSModule
+
+from ansible.module_utils._text import to_text
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.common.network import to_ipv6_subnet
+from ansible.module_utils.common.network import to_subnet
+from ansible.module_utils.six import string_types
+from ansible_collections.ansible.netcommon.plugins.module_utils.compat.ipaddress import IPv6Network
+from ansible_collections.ansible.netcommon.plugins.module_utils.compat.ipaddress import ip_network
+
+from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.core import is_boto3_error_code
+from ..module_utils.ec2 import AWSRetry
+from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ..module_utils.ec2 import compare_aws_tags
+from ..module_utils.iam import get_aws_account_id
+from ..module_utils.waiters import get_waiter
 
 
 Rule = namedtuple('Rule', ['port_range', 'protocol', 'target', 'target_type', 'description'])

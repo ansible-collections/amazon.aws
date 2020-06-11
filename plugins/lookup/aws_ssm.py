@@ -105,18 +105,20 @@ EXAMPLES = '''
 
 '''
 
-from ansible.module_utils._text import to_native
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3, boto3_tag_list_to_ansible_dict
-from ansible.errors import AnsibleError
-from ansible.plugins.lookup import LookupBase
-from ansible.utils.display import Display
-
 try:
     from botocore.exceptions import ClientError
     import botocore
     import boto3
 except ImportError:
     pass  # will be captured by imported HAS_BOTO3
+
+from ansible.errors import AnsibleError
+from ansible.module_utils._text import to_native
+from ansible.plugins.lookup import LookupBase
+from ansible.utils.display import Display
+
+from ..module_utils.ec2 import HAS_BOTO3
+from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 display = Display()
 
