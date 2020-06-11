@@ -1,0 +1,2 @@
+# netaddr is needed for ansible.netcommon.ipv6
+netaddr
