@@ -51,7 +51,7 @@ class AWSConnection(object):
     def __init__(self, ansible_obj, resources, boto3=True):
 
         ansible_obj.deprecate("The 'ansible.module_utils.aws.batch.AWSConnection' class is deprecated please use 'AnsibleAWSModule.client()'",
-                              version='2.14')
+                              date='2022-06-01', collection_name='amazon.aws')
 
         self.region, self.endpoint, aws_connect_kwargs = get_aws_connection_info(ansible_obj, boto3=boto3)
 

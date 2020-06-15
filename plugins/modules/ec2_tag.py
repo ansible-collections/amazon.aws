@@ -25,7 +25,7 @@ options:
     description:
       - Whether the tags should be present or absent on the resource.
       - The use of I(state=list) to interrogate the tags of an instance has been
-        deprecated and will be removed in Anisble 2.14.  The 'list'
+        deprecated and will be removed after 2022-06-01.  The 'list'
         functionality has been moved to a dedicated module M(ec2_tag_info).
     default: present
     choices: ['present', 'absent', 'list']
@@ -158,7 +158,7 @@ def main():
 
     if state == 'list':
         module.deprecate(
-            'Using the "list" state has been deprecated.  Please use the ec2_tag_info module instead', version='2.14')
+            'Using the "list" state has been deprecated.  Please use the ec2_tag_info module instead', date='2022-06-01', collection_name='amazon.aws')
         module.exit_json(changed=False, tags=current_tags)
 
     add_tags, remove = compare_aws_tags(current_tags, tags, purge_tags=purge_tags)

@@ -128,7 +128,7 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
     if module._name == 'ec2_vol_facts':
-        module.deprecate("The 'ec2_vol_facts' module has been renamed to 'ec2_vol_info'", version='2.13')
+        module.deprecate("The 'ec2_vol_facts' module has been renamed to 'ec2_vol_info'", date='2021-12-01', collection_name='amazon.aws')
 
     connection = module.client('ec2')
 

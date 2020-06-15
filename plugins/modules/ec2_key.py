@@ -39,11 +39,11 @@ options:
     type: str
   wait:
     description:
-      - This option has no effect since version 2.5 and will be removed in 2.14.
+      - This option has no effect since version 2.5 and will be removed after 2022-06-01.
     type: bool
   wait_timeout:
     description:
-      - This option has no effect since version 2.5 and will be removed in 2.14.
+      - This option has no effect since version 2.5 and will be removed after 2022-06-01.
     type: int
     required: false
 
@@ -241,8 +241,8 @@ def main():
         key_material=dict(),
         force=dict(type='bool', default=True),
         state=dict(default='present', choices=['present', 'absent']),
-        wait=dict(type='bool', removed_in_version='2.14'),
-        wait_timeout=dict(type='int', removed_in_version='2.14')
+        wait=dict(type='bool', removed_at_date='2022-06-01', removed_from_collection='amazon.aws'),
+        wait_timeout=dict(type='int', removed_at_date='2022-06-01', removed_from_collection='amazon.aws')
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)

@@ -1663,7 +1663,7 @@ def main():
         module.deprecate(
             msg='Support for passing both group and group_id has been deprecated. '
             'Currently group_id is ignored, in future passing both will result in an error',
-            version='2.14')
+            date='2022-06-01', collection_name='amazon.aws')
 
     if not HAS_BOTO:
         module.fail_json(msg='boto required for this module')
