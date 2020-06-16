@@ -1,20 +1,33 @@
 automerge: false
 files:
   maintainers: $team_aws
+  docs/:
+    labels: docs
+  $action/:
+    labels: action
   $action/aws_s3.py:
-  $callback/aws_resource_actions.py:
+  $callback/:
+    labels: callback
+  $doc_fragments/:
+    labels: doc_fragments
   $doc_fragments/aws.py:
   $doc_fragments/aws_credentials.py:
   $doc_fragments/aws_region.py:
   $doc_fragments/ec2.py:
+  $inventory/:
+    labels: inventory
   $inventory/aws_ec2.py:
     labels: inventory
   $inventory/aws_rds.py:
     labels: inventory
   $lookup/:
+    labels: lookup
   $module_utils/:
+    labels: module_utils
   $module_utils/ec2.py:
     labels: ec2
+  $modules/:
+    labels: modules
   $modules/_aws_az_facts.py:
     authors: Sodki
   $modules/_aws_caller_facts.py:
@@ -79,6 +92,14 @@ files:
     maintainers: whiter
   $modules/ec2_vpc_subnet.py:
     authors: brandond erydo
+  scripts/inventory/:
+    labels: inventory
+  tests/:
+    labels: tests
+  tests/integration/:
+    labels: integrations
+  tests/units/:
+    labels: units
 macros:
   action: plugins/action
   callback: plugins/callback
