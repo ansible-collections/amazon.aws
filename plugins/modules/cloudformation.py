@@ -106,7 +106,7 @@ options:
     type: str
   template_format:
     description:
-    - This parameter is ignored since Ansible 2.3 and will be removed in Ansible 2.14.
+    - This parameter is ignored since Ansible 2.3 and will be removed after 2022-06-01.
     - Templates are now passed raw to CloudFormation regardless of format.
     type: str
   role_arn:
@@ -633,7 +633,7 @@ def main():
         create_timeout=dict(default=None, type='int'),
         template_url=dict(default=None, required=False),
         template_body=dict(default=None, required=False),
-        template_format=dict(removed_in_version='2.14'),
+        template_format=dict(removed_at_date='2022-06-01', removed_from_collection='amazon.aws'),
         create_changeset=dict(default=False, type='bool'),
         changeset_name=dict(default=None, required=False),
         role_arn=dict(default=None, required=False),

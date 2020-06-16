@@ -217,7 +217,7 @@ def main():
         supports_check_mode=True
     )
     if module._name == 'ec2_vpc_subnet_facts':
-        module.deprecate("The 'ec2_vpc_subnet_facts' module has been renamed to 'ec2_vpc_subnet_info'", version='2.13')
+        module.deprecate("The 'ec2_vpc_subnet_facts' module has been renamed to 'ec2_vpc_subnet_info'", date='2021-12-01', collection_name='amazon.aws')
 
     connection = module.client('ec2')
 
