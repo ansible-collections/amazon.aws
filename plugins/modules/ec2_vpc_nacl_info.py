@@ -44,17 +44,17 @@ EXAMPLES = '''
 
 # Gather information about all Network ACLs:
 - name: Get All NACLs
-  register: all_nacls
-  ec2_vpc_nacl_info:
+  community.aws.ec2_vpc_nacl_info:
     region: us-west-2
+  register: all_nacls
 
 # Retrieve default Network ACLs:
 - name: Get Default NACLs
-  register: default_nacls
-  ec2_vpc_nacl_info:
+  community.aws.ec2_vpc_nacl_info:
     region: us-west-2
     filters:
       'default': 'true'
+  register: default_nacls
 '''
 
 RETURN = '''
