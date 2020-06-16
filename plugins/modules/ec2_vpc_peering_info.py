@@ -35,7 +35,7 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Simple example of listing all VPC Peers
 - name: List all vpc peers
-  ec2_vpc_peering_info:
+  community.aws.ec2_vpc_peering_info:
     region: ap-southeast-2
   register: all_vpc_peers
 
@@ -44,7 +44,7 @@ EXAMPLES = '''
     msg: "{{ all_vpc_peers.result }}"
 
 - name: Get details on specific VPC peer
-  ec2_vpc_peering_info:
+  community.aws.ec2_vpc_peering_info:
     peer_connection_ids:
       - pcx-12345678
       - pcx-87654321
@@ -52,7 +52,7 @@ EXAMPLES = '''
   register: all_vpc_peers
 
 - name: Get all vpc peers with specific filters
-  ec2_vpc_peering_info:
+  community.aws.ec2_vpc_peering_info:
     region: ap-southeast-2
     filters:
       status-code: ['pending-acceptance']
