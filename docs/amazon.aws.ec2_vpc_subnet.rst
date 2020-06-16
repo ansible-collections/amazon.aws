@@ -1,5 +1,6 @@
+:orphan:
 
-.. _amazon.aws.ec2_vpc_subnet_:
+.. _amazon.aws.ec2_vpc_subnet_module:
 
 
 *************************
@@ -23,7 +24,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - boto
 - boto3
@@ -39,7 +40,6 @@ Parameters
         <tr>
             <th colspan="1">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -57,9 +57,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Specify <code>yes</code> to indicate that instances launched into the subnet should be automatically assigned an IPv6 address.</div>
                                                         </td>
             </tr>
@@ -74,9 +72,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -92,9 +88,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -111,9 +105,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -129,9 +121,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The availability zone for the subnet.</div>
                                                         </td>
             </tr>
@@ -146,9 +136,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The CIDR block for the subnet. E.g. 192.0.2.0/24.</div>
                                                         </td>
             </tr>
@@ -167,9 +155,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -184,9 +170,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -201,9 +185,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The IPv6 CIDR block for the subnet. The VPC must have a /56 block assigned and this value must be a valid IPv6 /64 that falls in the VPC range.</div>
                                             <div>Required if <em>assign_instances_ipv6=true</em></div>
                                                         </td>
@@ -223,9 +205,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Specify <code>yes</code> to indicate that instances launched into the subnet should be assigned public IP address by default.</div>
                                                         </td>
             </tr>
@@ -240,9 +220,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -261,9 +239,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether or not to remove tags that do not appear in the <em>tags</em> list.</div>
                                                         </td>
             </tr>
@@ -278,9 +254,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -296,9 +270,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -318,9 +290,7 @@ Parameters
                                                                                                                                                                                                 <li>absent</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Create or remove the subnet.</div>
                                                         </td>
             </tr>
@@ -335,9 +305,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dict of tags to apply to the subnet. Any tags currently applied to the subnet and not present here will be removed.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: resource_tags</div>
                                     </td>
@@ -357,9 +325,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -374,9 +340,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>VPC ID of the VPC in which to create or delete the subnet.</div>
                                                         </td>
             </tr>
@@ -395,9 +359,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When <em>wait=true</em> and <em>state=present</em>, module will wait for subnet to be in available state before continuing.</div>
                                                         </td>
             </tr>
@@ -413,9 +375,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">300</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Number of seconds to wait for subnet to become available <em>wait=True</em>.</div>
                                                         </td>
             </tr>
@@ -475,7 +435,7 @@ Examples
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this :
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

@@ -1,5 +1,6 @@
+:orphan:
 
-.. _amazon.aws.ec2_metadata_facts_:
+.. _amazon.aws.ec2_metadata_facts_module:
 
 
 *****************************
