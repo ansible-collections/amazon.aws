@@ -160,19 +160,21 @@ region:
   returned: when I(state=present)
 """
 
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (camel_dict_to_snake_dict,
-                                                                     ec2_argument_spec,
-                                                                     HAS_BOTO3,
-                                                                     get_aws_connection_info,
-                                                                     boto3_conn,
-                                                                     AWSRetry,
-                                                                     )
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    AWSRetry,
+    HAS_BOTO3,
+    boto3_conn,
+    camel_dict_to_snake_dict,
+    ec2_argument_spec,
+    get_aws_connection_info,
+)
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.aws.direct_connect import (DirectConnectError,
-                                                                                    delete_connection,
-                                                                                    delete_virtual_interface,
-                                                                                    disassociate_connection_and_lag,
-                                                                                    )
+from ansible_collections.amazon.aws.plugins.module_utils.direct_connect import (
+    DirectConnectError,
+    delete_connection,
+    delete_virtual_interface,
+    disassociate_connection_and_lag,
+)
 import traceback
 import time
 

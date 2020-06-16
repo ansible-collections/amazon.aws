@@ -203,7 +203,7 @@ try:
 except ImportError:
     pass  # handled by AnsibleAwsModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 
 
 def create_lifecycle_rule(client, module):

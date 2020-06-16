@@ -118,7 +118,7 @@ try:
 except ImportError:
     pass
 
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
 from ansible.module_utils.six import string_types
 

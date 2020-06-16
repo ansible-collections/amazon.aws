@@ -225,7 +225,7 @@ import traceback
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn, ec2_argument_spec, get_aws_connection_info, HAS_BOTO3
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
 def tags_changed(pcx_id, client, module):
