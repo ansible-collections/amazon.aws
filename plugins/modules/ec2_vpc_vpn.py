@@ -145,13 +145,13 @@ EXAMPLES = """
 # It is assumed that their matching environment variables are set.
 
 - name: create a VPN connection
-  ec2_vpc_vpn:
+  community.aws.ec2_vpc_vpn:
     state: present
     vpn_gateway_id: vgw-XXXXXXXX
     customer_gateway_id: cgw-XXXXXXXX
 
 - name: modify VPN connection tags
-  ec2_vpc_vpn:
+  community.aws.ec2_vpc_vpn:
     state: present
     vpn_connection_id: vpn-XXXXXXXX
     tags:
@@ -159,12 +159,12 @@ EXAMPLES = """
       Other: ansible-tag-2
 
 - name: delete a connection
-  ec2_vpc_vpn:
+  community.aws.ec2_vpc_vpn:
     vpn_connection_id: vpn-XXXXXXXX
     state: absent
 
 - name: modify VPN tags (identifying VPN by filters)
-  ec2_vpc_vpn:
+  community.aws.ec2_vpc_vpn:
     state: present
     filters:
       cidr: 194.168.1.0/24
@@ -177,7 +177,7 @@ EXAMPLES = """
     static_only: true
 
 - name: set up VPN with tunnel options utilizing 'TunnelInsideCidr' only
-  ec2_vpc_vpn:
+  community.aws.ec2_vpc_vpn:
     state: present
     filters:
       vpn: vpn-XXXXXXXX
@@ -189,7 +189,7 @@ EXAMPLES = """
         TunnelInsideCidr: '169.254.100.5/30'
 
 - name: add routes and remove any preexisting ones
-  ec2_vpc_vpn:
+  community.aws.ec2_vpc_vpn:
     state: present
     filters:
       vpn: vpn-XXXXXXXX
@@ -199,14 +199,14 @@ EXAMPLES = """
     purge_routes: true
 
 - name: remove all routes
-  ec2_vpc_vpn:
+  community.aws.ec2_vpc_vpn:
     state: present
     vpn_connection_id: vpn-XXXXXXXX
     routes: []
     purge_routes: true
 
 - name: delete a VPN identified by filters
-  ec2_vpc_vpn:
+  community.aws.ec2_vpc_vpn:
     state: absent
     filters:
       tags:
