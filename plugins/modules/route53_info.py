@@ -463,7 +463,7 @@ def main():
         ],
     )
     if module._name == 'route53_facts':
-        module.deprecate("The 'route53_facts' module has been renamed to 'route53_info'", version='2.13')
+        module.deprecate("The 'route53_facts' module has been renamed to 'route53_info'", date='2021-12-01', collection_name='community.aws')
 
     # Validate Requirements
     if not (HAS_BOTO or HAS_BOTO3):
