@@ -12,8 +12,8 @@ module: iam_policy
 short_description: Manage inline IAM policies for users, groups, and roles
 description:
     - Allows uploading or removing inline IAM policies for IAM users, groups or roles.
-    - To administer managed policies please see M(iam_user), M(iam_role),
-      M(iam_group) and M(iam_managed_policy)
+    - To administer managed policies please see M(community.aws.iam_user), M(community.aws.iam_role),
+      M(community.aws.iam_group) and M(community.aws.iam_managed_policy)
 options:
   iam_type:
     description:
@@ -70,7 +70,7 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Create a policy with the name of 'Admin' to the group 'administrators'
 - name: Assign a policy called Admin to the administrators group
-  iam_policy:
+  community.aws.iam_policy:
     iam_type: group
     iam_name: administrators
     policy_name: Admin
@@ -80,7 +80,7 @@ EXAMPLES = '''
 # Advanced example, create two new groups and add a READ-ONLY policy to both
 # groups.
 - name: Create Two Groups, Mario and Luigi
-  iam:
+  community.aws.iam:
     iam_type: group
     name: "{{ item }}"
     state: present
@@ -90,7 +90,7 @@ EXAMPLES = '''
   register: new_groups
 
 - name: Apply READ-ONLY policy to new groups that have been recently created
-  iam_policy:
+  community.aws.iam_policy:
     iam_type: group
     iam_name: "{{ item.created_group.group_name }}"
     policy_name: "READ-ONLY"
@@ -100,7 +100,7 @@ EXAMPLES = '''
 
 # Create a new S3 policy with prefix per user
 - name: Create S3 policy from template
-  iam_policy:
+  community.aws.iam_policy:
     iam_type: user
     iam_name: "{{ item.user }}"
     policy_name: "s3_limited_access_{{ item.prefix }}"

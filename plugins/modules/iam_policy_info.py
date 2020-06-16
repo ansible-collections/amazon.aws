@@ -40,13 +40,13 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
-# Describe all inline IAM policies on an IAM User
-- iam_policy_info:
+- name: Describe all inline IAM policies on an IAM User
+  community.aws.iam_policy_info:
     iam_type: user
     iam_name: example_user
 
-# Describe a specific inline policy on an IAM Role
-- iam_policy_info:
+- name: Describe a specific inline policy on an IAM Role
+  community.aws.iam_policy_info:
     iam_type: role
     iam_name: example_role
     policy_name: example_policy
