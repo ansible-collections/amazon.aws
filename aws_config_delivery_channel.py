@@ -54,7 +54,7 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: Create Delivery Channel for AWS Config
-  aws_config_delivery_channel:
+  community.aws.aws_config_delivery_channel:
     name: test_delivery_channel
     state: present
     s3_bucket: 'test_aws_config_bucket'

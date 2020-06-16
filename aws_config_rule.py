@@ -91,7 +91,7 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: Create Config Rule for AWS Config
-  aws_config_rule:
+  community.aws.aws_config_rule:
     name: test_config_rule
     state: present
     description: 'This AWS Config rule checks for public write access on S3 buckets'

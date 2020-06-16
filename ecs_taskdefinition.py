@@ -105,7 +105,7 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: Create task definition
-  ecs_taskdefinition:
+  community.aws.ecs_taskdefinition:
     containers:
     - name: simple-app
       cpu: 10
@@ -146,7 +146,7 @@ EXAMPLES = '''
   register: task_output
 
 - name: Create task definition
-  ecs_taskdefinition:
+  community.aws.ecs_taskdefinition:
     family: nginx
     containers:
     - name: nginx
@@ -160,7 +160,7 @@ EXAMPLES = '''
     state: present
 
 - name: Create task definition
-  ecs_taskdefinition:
+  community.aws.ecs_taskdefinition:
     family: nginx
     containers:
     - name: nginx
@@ -177,7 +177,7 @@ EXAMPLES = '''
 
 # Create Task Definition with Environment Variables and Secrets
 - name: Create task definition
-  ecs_taskdefinition:
+  community.aws.ecs_taskdefinition:
     family: nginx
     containers:
     - name: nginx

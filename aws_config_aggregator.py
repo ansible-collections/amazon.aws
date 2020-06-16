@@ -76,7 +76,7 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: Create cross-account aggregator
-  aws_config_aggregator:
+  community.aws.aws_config_aggregator:
     name: test_config_rule
     state: present
     account_sources:

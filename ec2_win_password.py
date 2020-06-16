@@ -64,7 +64,7 @@ notes:
 EXAMPLES = '''
 # Example of getting a password
 - name: get the Administrator password
-  ec2_win_password:
+  community.aws.ec2_win_password:
     profile: my-boto-profile
     instance_id: i-XXXXXX
     region: us-east-1
@@ -72,7 +72,7 @@ EXAMPLES = '''
 
 # Example of getting a password using a variable
 - name: get the Administrator password
-  ec2_win_password:
+  community.aws.ec2_win_password:
     profile: my-boto-profile
     instance_id: i-XXXXXX
     region: us-east-1
@@ -80,7 +80,7 @@ EXAMPLES = '''
 
 # Example of getting a password with a password protected key
 - name: get the Administrator password
-  ec2_win_password:
+  community.aws.ec2_win_password:
     profile: my-boto-profile
     instance_id: i-XXXXXX
     region: us-east-1
@@ -89,7 +89,7 @@ EXAMPLES = '''
 
 # Example of waiting for a password
 - name: get the Administrator password
-  ec2_win_password:
+  community.aws.ec2_win_password:
     profile: my-boto-profile
     instance_id: i-XXXXXX
     region: us-east-1

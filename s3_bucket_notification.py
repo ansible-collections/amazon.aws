@@ -13,10 +13,10 @@ module: s3_bucket_notification
 short_description: Creates, updates or deletes S3 Bucket notification for lambda
 description:
     - This module allows the management of AWS Lambda function bucket event mappings via the
-      Ansible framework. Use module M(lambda) to manage the lambda function itself, M(lambda_alias)
-      to manage function aliases and M(lambda_policy) to modify lambda permissions.
+      Ansible framework. Use module M(community.aws.lambda) to manage the lambda function itself, M(community.aws.lambda_alias)
+      to manage function aliases and M(community.aws.lambda_policy) to modify lambda permissions.
 notes:
-    - This module heavily depends on M(lambda_policy) as you need to allow C(lambda:InvokeFunction)
+    - This module heavily depends on M(community.aws.lambda_policy) as you need to allow C(lambda:InvokeFunction)
        permission for your lambda function.
 
 author:
@@ -91,18 +91,15 @@ extends_documentation_fragment:
 EXAMPLES = '''
 ---
 # Example that creates a lambda event notification for a bucket
-- hosts: localhost
-  gather_facts: no
-  tasks:
-  - name: Process jpg image
-    s3_bucket_notification:
-      state: present
-      event_name: on_file_add_or_remove
-      bucket_name: test-bucket
-      function_name: arn:aws:lambda:us-east-2:526810320200:function:test-lambda
-      events: ["s3:ObjectCreated:*", "s3:ObjectRemoved:*"]
-      prefix: images/
-      suffix: .jpg
+- name: Process jpg image
+  community.aws.s3_bucket_notification:
+    state: present
+    event_name: on_file_add_or_remove
+    bucket_name: test-bucket
+    function_name: arn:aws:lambda:us-east-2:526810320200:function:test-lambda
+    events: ["s3:ObjectCreated:*", "s3:ObjectRemoved:*"]
+    prefix: images/
+    suffix: .jpg
 '''
 
 RETURN = '''

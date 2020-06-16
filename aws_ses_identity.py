@@ -95,31 +95,31 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Ensure example@example.com email identity exists
-  aws_ses_identity:
+  community.aws.aws_ses_identity:
     identity: example@example.com
     state: present
 
 - name: Delete example@example.com email identity
-  aws_ses_identity:
+  community.aws.aws_ses_identity:
     email: example@example.com
     state: absent
 
 - name: Ensure example.com domain identity exists
-  aws_ses_identity:
+  community.aws.aws_ses_identity:
     identity: example.com
     state: present
 
 # Create an SNS topic and send bounce and complaint notifications to it
 # instead of emailing the identity owner
 - name: Ensure complaints-topic exists
-  sns_topic:
+  community.aws.sns_topic:
     name: "complaints-topic"
     state: present
     purge_subscriptions: False
   register: topic_info
 
 - name: Deliver feedback to topic instead of owner email
-  aws_ses_identity:
+  community.aws.aws_ses_identity:
     identity: example@example.com
     state: present
     complaint_notifications:
@@ -133,14 +133,14 @@ EXAMPLES = '''
 # Create an SNS topic for delivery notifications and leave complaints
 # Being forwarded to the identity owner email
 - name: Ensure delivery-notifications-topic exists
-  sns_topic:
+  community.aws.sns_topic:
     name: "delivery-notifications-topic"
     state: present
     purge_subscriptions: False
   register: topic_info
 
 - name: Delivery notifications to topic
-  aws_ses_identity:
+  community.aws.aws_ses_identity:
     identity: example@example.com
     state: present
     delivery_notifications:

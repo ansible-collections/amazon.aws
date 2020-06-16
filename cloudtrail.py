@@ -105,7 +105,7 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: create single region cloudtrail
-  cloudtrail:
+  community.aws.cloudtrail:
     state: present
     name: default
     s3_bucket_name: mylogbucket
@@ -113,7 +113,7 @@ EXAMPLES = '''
     region: us-east-1
 
 - name: create multi-region trail with validation and tags
-  cloudtrail:
+  community.aws.cloudtrail:
     state: present
     name: default
     s3_bucket_name: mylogbucket
@@ -128,7 +128,7 @@ EXAMPLES = '''
       Name: default
 
 - name: show another valid kms_key_id
-  cloudtrail:
+  community.aws.cloudtrail:
     state: present
     name: default
     s3_bucket_name: mylogbucket
@@ -136,7 +136,7 @@ EXAMPLES = '''
     # simply "12345678-1234-1234-1234-123456789012" would be valid too.
 
 - name: pause logging the trail we just created
-  cloudtrail:
+  community.aws.cloudtrail:
     state: present
     name: default
     enable_logging: false
@@ -149,7 +149,7 @@ EXAMPLES = '''
       Name: default
 
 - name: delete a trail
-  cloudtrail:
+  community.aws.cloudtrail:
     state: absent
     name: default
 '''

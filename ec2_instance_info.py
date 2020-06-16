@@ -41,26 +41,26 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Gather information about all instances
-- ec2_instance_info:
+- name: Gather information about all instances
+  community.aws.ec2_instance_info:
 
-# Gather information about all instances in AZ ap-southeast-2a
-- ec2_instance_info:
+- name: Gather information about all instances in AZ ap-southeast-2a
+  community.aws.ec2_instance_info:
     filters:
       availability-zone: ap-southeast-2a
 
-# Gather information about a particular instance using ID
-- ec2_instance_info:
+- name: Gather information about a particular instance using ID
+  community.aws.ec2_instance_info:
     instance_ids:
       - i-12345678
 
-# Gather information about any instance with a tag key Name and value Example
-- ec2_instance_info:
+- name: Gather information about any instance with a tag key Name and value Example
+  community.aws.ec2_instance_info:
     filters:
       "tag:Name": Example
 
-# Gather information about any instance in states "shutting-down", "stopping", "stopped"
-- ec2_instance_info:
+- name: Gather information about any instance in states "shutting-down", "stopping", "stopped"
+  community.aws.ec2_instance_info:
     filters:
       instance-state-name: [ "shutting-down", "stopping", "stopped" ]
 

@@ -126,16 +126,16 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Configure a lifecycle rule on a bucket to expire (delete) items with a prefix of /logs/ after 30 days
-- s3_lifecycle:
+- name: Configure a lifecycle rule on a bucket to expire (delete) items with a prefix of /logs/ after 30 days
+  community.aws.s3_lifecycle:
     name: mybucket
     expiration_days: 30
     prefix: logs/
     status: enabled
     state: present
 
-# Configure a lifecycle rule to transition all items with a prefix of /logs/ to glacier after 7 days and then delete after 90 days
-- s3_lifecycle:
+- name: Configure a lifecycle rule to transition all items with a prefix of /logs/ to glacier after 7 days and then delete after 90 days
+  community.aws.s3_lifecycle:
     name: mybucket
     transition_days: 7
     expiration_days: 90
@@ -143,10 +143,10 @@ EXAMPLES = '''
     status: enabled
     state: present
 
-# Configure a lifecycle rule to transition all items with a prefix of /logs/ to glacier on 31 Dec 2020 and then delete on 31 Dec 2030.
 # Note that midnight GMT must be specified.
 # Be sure to quote your date strings
-- s3_lifecycle:
+- name: Configure a lifecycle rule to transition all items with a prefix of /logs/ to glacier on 31 Dec 2020 and then delete on 31 Dec 2030.
+  community.aws.s3_lifecycle:
     name: mybucket
     transition_date: "2020-12-30T00:00:00.000Z"
     expiration_date: "2030-12-30T00:00:00.000Z"
@@ -154,21 +154,21 @@ EXAMPLES = '''
     status: enabled
     state: present
 
-# Disable the rule created above
-- s3_lifecycle:
+- name: Disable the rule created above
+  community.aws.s3_lifecycle:
     name: mybucket
     prefix: logs/
     status: disabled
     state: present
 
-# Delete the lifecycle rule created above
-- s3_lifecycle:
+- name: Delete the lifecycle rule created above
+  community.aws.s3_lifecycle:
     name: mybucket
     prefix: logs/
     state: absent
 
-# Configure a lifecycle rule to transition all backup files older than 31 days in /backups/ to standard infrequent access class.
-- s3_lifecycle:
+- name: Configure a lifecycle rule to transition all backup files older than 31 days in /backups/ to standard infrequent access class.
+  community.aws.s3_lifecycle:
     name: mybucket
     prefix: backups/
     storage_class: standard_ia
@@ -176,8 +176,8 @@ EXAMPLES = '''
     state: present
     status: enabled
 
-# Configure a lifecycle rule to transition files to infrequent access after 30 days and glacier after 90
-- s3_lifecycle:
+- name: Configure a lifecycle rule to transition files to infrequent access after 30 days and glacier after 90
+  community.aws.s3_lifecycle:
     name: mybucket
     prefix: logs/
     state: present

@@ -29,38 +29,39 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details or the AWS region,
 # see the AWS Guide for details.
 
-# List all EIP addresses in the current region.
-- ec2_eip_info:
+- name: List all EIP addresses in the current region.
+  community.aws.ec2_eip_info:
   register: regional_eip_addresses
 
-# List all EIP addresses for a VM.
-- ec2_eip_info:
+- name: List all EIP addresses for a VM.
+  community.aws.ec2_eip_info:
     filters:
        instance-id: i-123456789
   register: my_vm_eips
 
-- debug: msg="{{ my_vm_eips.addresses | json_query(\"[?private_ip_address=='10.0.0.5']\") }}"
+- debug:
+    msg: "{{ my_vm_eips.addresses | json_query(\"[?private_ip_address=='10.0.0.5']\") }}"
 
-# List all EIP addresses for several VMs.
-- ec2_eip_info:
+- name: List all EIP addresses for several VMs.
+  community.aws.ec2_eip_info:
     filters:
        instance-id:
          - i-123456789
          - i-987654321
   register: my_vms_eips
 
-# List all EIP addresses using the 'Name' tag as a filter.
-- ec2_eip_info:
+- name: List all EIP addresses using the 'Name' tag as a filter.
+  community.aws.ec2_eip_info:
     filters:
       tag:Name: www.example.com
   register: my_vms_eips
 
-# List all EIP addresses using the Allocation-id as a filter
-- ec2_eip_info:
+- name: List all EIP addresses using the Allocation-id as a filter
+  community.aws.ec2_eip_info:
     filters:
       allocation-id: eipalloc-64de1b01
   register: my_vms_eips

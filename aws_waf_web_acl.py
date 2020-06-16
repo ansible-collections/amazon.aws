@@ -85,7 +85,7 @@ options:
 
 EXAMPLES = '''
   - name: create web ACL
-    aws_waf_web_acl:
+    community.aws.aws_waf_web_acl:
       name: my_web_acl
       rules:
         - name: my_rule
@@ -96,7 +96,7 @@ EXAMPLES = '''
       state: present
 
   - name: delete the web acl
-    aws_waf_web_acl:
+    community.aws.aws_waf_web_acl:
       name: my_web_acl
       state: absent
 '''

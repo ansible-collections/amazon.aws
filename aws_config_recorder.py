@@ -67,7 +67,7 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: Create Configuration Recorder for AWS Config
-  aws_config_recorder:
+  community.aws.aws_config_recorder:
     name: test_configuration_recorder
     state: present
     role_arn: 'arn:aws:iam::123456789012:role/AwsConfigRecorder'

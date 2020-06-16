@@ -62,13 +62,13 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
-# Get information about an snapshot
-- rds_snapshot_info:
+- name: Get information about an snapshot
+  community.aws.rds_snapshot_info:
     db_snapshot_identifier: snapshot_name
   register: new_database_info
 
-# Get all RDS snapshots for an RDS instance
-- rds_snapshot_info:
+- name: Get all RDS snapshots for an RDS instance
+  community.aws.rds_snapshot_info:
     db_instance_identifier: helloworld-rds-master
 '''
 

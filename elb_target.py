@@ -75,27 +75,27 @@ notes:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Register an IP address target to a target group
-- elb_target:
+- name: Register an IP address target to a target group
+  community.aws.elb_target:
     target_group_name: myiptargetgroup
     target_id: i-1234567
     state: present
 
-# Register an instance target to a target group
-- elb_target:
+- name: Register an instance target to a target group
+  community.aws.elb_target:
     target_group_name: mytargetgroup
     target_id: i-1234567
     state: present
 
-# Deregister a target from a target group
-- elb_target:
+- name: Deregister a target from a target group
+  community.aws.elb_target:
     target_group_name: mytargetgroup
     target_id: i-1234567
     state: absent
 
 # Modify a target to use a different port
-# Register a target to a target group
-- elb_target:
+- name: Register a target to a target group
+  community.aws.elb_target:
     target_group_name: mytargetgroup
     target_id: i-1234567
     target_port: 8080

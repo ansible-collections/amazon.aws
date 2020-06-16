@@ -44,14 +44,14 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Enable logging of s3 bucket mywebsite.com to s3 bucket mylogs
-  s3_logging:
+  community.aws.s3_logging:
     name: mywebsite.com
     target_bucket: mylogs
     target_prefix: logs/mywebsite.com
     state: present
 
 - name: Remove logging on an s3 bucket
-  s3_logging:
+  community.aws.s3_logging:
     name: mywebsite.com
     state: absent
 

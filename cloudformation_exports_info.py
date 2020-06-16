@@ -22,7 +22,7 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: Get Exports
-  cloudformation_exports_info:
+  community.aws.cloudformation_exports_info:
     profile: 'my_aws_profile'
     region: 'my_region'
   register: cf_exports

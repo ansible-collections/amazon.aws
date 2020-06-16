@@ -416,7 +416,7 @@ options:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 - name: create minimal aurora instance in default VPC and default subnet group
-  rds_instance:
+  community.aws.rds_instance:
     engine: aurora
     db_instance_identifier: ansible-test-aurora-db-instance
     instance_type: db.t2.small
@@ -425,7 +425,7 @@ EXAMPLES = '''
     cluster_id: ansible-test-cluster  # This cluster must exist - see rds_cluster to manage it
 
 - name: Create a DB instance using the default AWS KMS encryption key
-  rds_instance:
+  community.aws.rds_instance:
     id: test-encrypted-db
     state: present
     engine: mariadb
@@ -436,13 +436,13 @@ EXAMPLES = '''
     allocated_storage: "{{ allocated_storage }}"
 
 - name: remove the DB instance without a final snapshot
-  rds_instance:
+  community.aws.rds_instance:
     id: "{{ instance_id }}"
     state: absent
     skip_final_snapshot: True
 
 - name: remove the DB instance with a final snapshot
-  rds_instance:
+  community.aws.rds_instance:
     id: "{{ instance_id }}"
     state: absent
     final_snapshot_identifier: "{{ snapshot_id }}"

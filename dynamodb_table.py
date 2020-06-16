@@ -121,8 +121,8 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
-# Create dynamo table with hash and range primary key
-- dynamodb_table:
+- name: Create dynamo table with hash and range primary key
+  community.aws.dynamodb_table:
     name: my-table
     region: us-east-1
     hash_key_name: id
@@ -134,15 +134,15 @@ EXAMPLES = '''
     tags:
       tag_name: tag_value
 
-# Update capacity on existing dynamo table
-- dynamodb_table:
+- name: Update capacity on existing dynamo table
+  community.aws.dynamodb_table:
     name: my-table
     region: us-east-1
     read_capacity: 10
     write_capacity: 10
 
-# set index on existing dynamo table
-- dynamodb_table:
+- name: set index on existing dynamo table
+  community.aws.dynamodb_table:
     name: my-table
     region: us-east-1
     indexes:
@@ -156,8 +156,8 @@ EXAMPLES = '''
         read_capacity: 10
         write_capacity: 10
 
-# Delete dynamo table
-- dynamodb_table:
+- name: Delete dynamo table
+  community.aws.dynamodb_table:
     name: my-table
     region: us-east-1
     state: absent

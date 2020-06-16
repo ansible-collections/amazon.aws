@@ -14,7 +14,7 @@ description:
   - Create and manage AWS EC2 instances.
   - >
     Note: This module does not support creating
-    L(EC2 Spot instances,https://aws.amazon.com/ec2/spot/). The M(ec2) module
+    L(EC2 Spot instances,https://aws.amazon.com/ec2/spot/). The M(amazon.aws.ec2) module
     can create and manage spot instances.
 author:
   - Ryan Scott Brown (@ryansb)
@@ -82,7 +82,7 @@ options:
     type: bool
   image:
     description:
-      - An image to use for the instance. The M(ec2_ami_info) module may be used to retrieve images.
+      - An image to use for the instance. The M(amazon.aws.ec2_ami_info) module may be used to retrieve images.
         One of I(image) or I(image_id) are required when instance is not already present.
     type: dict
     suboptions:
@@ -117,14 +117,14 @@ options:
   vpc_subnet_id:
     description:
       - The subnet ID in which to launch the instance (VPC)
-        If none is provided, ec2_instance will chose the default zone of the default VPC.
+        If none is provided, M(community.aws.ec2_instance) will chose the default zone of the default VPC.
     aliases: ['subnet_id']
     type: str
   network:
     description:
       - Either a dictionary containing the key 'interfaces' corresponding to a list of network interface IDs or
         containing specifications for a single network interface.
-      - Use the ec2_eni module to create ENIs with special settings.
+      - Use the M(amazon.aws.ec2_eni) module to create ENIs with special settings.
     type: dict
     suboptions:
       interfaces:
@@ -282,20 +282,20 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Terminate every running instance in a region. Use with EXTREME caution.
-- ec2_instance:
+- name: Terminate every running instance in a region. Use with EXTREME caution.
+  community.aws.ec2_instance:
     state: absent
     filters:
       instance-state-name: running
 
-# restart a particular instance by its ID
-- ec2_instance:
+- name: restart a particular instance by its ID
+  community.aws.ec2_instance:
     state: restarted
     instance_ids:
       - i-12345678
 
-# start an instance with a public IP address
-- ec2_instance:
+- name: start an instance with a public IP address
+  community.aws.ec2_instance:
     name: "public-compute-instance"
     key_name: "prod-ssh-key"
     vpc_subnet_id: subnet-5ca1ab1e
@@ -307,8 +307,8 @@ EXAMPLES = '''
     tags:
       Environment: Testing
 
-# start an instance and Add EBS
-- ec2_instance:
+- name: start an instance and Add EBS
+  community.aws.ec2_instance:
     name: "public-withebs-instance"
     vpc_subnet_id: subnet-5ca1ab1e
     instance_type: t2.micro
@@ -320,8 +320,8 @@ EXAMPLES = '''
           volume_size: 16
           delete_on_termination: true
 
-# start an instance with a cpu_options
-- ec2_instance:
+- name: start an instance with a cpu_options
+  community.aws.ec2_instance:
     name: "public-cpuoption-instance"
     vpc_subnet_id: subnet-5ca1ab1e
     tags:
@@ -335,8 +335,8 @@ EXAMPLES = '''
         core_count: 1
         threads_per_core: 1
 
-# start an instance and have it begin a Tower callback on boot
-- ec2_instance:
+- name: start an instance and have it begin a Tower callback on boot
+  community.aws.ec2_instance:
     name: "tower-callback-test"
     key_name: "prod-ssh-key"
     vpc_subnet_id: subnet-5ca1ab1e
@@ -353,8 +353,8 @@ EXAMPLES = '''
     tags:
       SomeThing: "A value"
 
-# start an instance with ENI (An existing ENI ID is required)
-- ec2_instance:
+- name: start an instance with ENI (An existing ENI ID is required)
+  community.aws.ec2_instance:
     name: "public-eni-instance"
     key_name: "prod-ssh-key"
     vpc_subnet_id: subnet-5ca1ab1e
@@ -370,8 +370,8 @@ EXAMPLES = '''
     instance_type: t2.micro
     image_id: ami-123456
 
-# add second ENI interface
-- ec2_instance:
+- name: add second ENI interface
+  community.aws.ec2_instance:
     name: "public-eni-instance"
     network:
       interfaces:

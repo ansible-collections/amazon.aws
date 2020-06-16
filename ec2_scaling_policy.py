@@ -54,7 +54,7 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
-- ec2_scaling_policy:
+- community.aws.ec2_scaling_policy:
     state: present
     region: US-XXX
     name: "scaledown-policy"

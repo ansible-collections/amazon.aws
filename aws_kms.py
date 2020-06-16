@@ -17,7 +17,7 @@ options:
     description: An alias for a key. For safety, even though KMS does not require keys
       to have an alias, this module expects all new keys to be given an alias
       to make them easier to manage. Existing keys without an alias may be
-      referred to by I(key_id). Use M(aws_kms_info) to find key ids. Required
+      referred to by I(key_id). Use M(community.aws.aws_kms_info) to find key ids. Required
       if I(key_id) is not given. Note that passing a I(key_id) and I(alias)
       will only cause a new alias to be added, an alias will never be renamed.
       The 'alias/' prefix is optional.
@@ -177,28 +177,28 @@ EXAMPLES = '''
 # Managing the KMS IAM Policy via policy_mode and policy_grant_types is fragile
 # and has been deprecated in favour of the policy option.
 - name: grant user-style access to production secrets
-  aws_kms:
+  community.aws.aws_kms:
   args:
     alias: "alias/my_production_secrets"
     policy_mode: grant
     policy_role_name: "prod-appServerRole-1R5AQG2BSEL6L"
     policy_grant_types: "role,role grant"
 - name: remove access to production secrets from role
-  aws_kms:
+  community.aws.aws_kms:
   args:
     alias: "alias/my_production_secrets"
     policy_mode: deny
     policy_role_name: "prod-appServerRole-1R5AQG2BSEL6L"
 
 # Create a new KMS key
-- aws_kms:
+- community.aws.aws_kms:
     alias: mykey
     tags:
       Name: myKey
       Purpose: protect_stuff
 
 # Update previous key with more tags
-- aws_kms:
+- community.aws.aws_kms:
     alias: mykey
     tags:
       Name: myKey
@@ -208,7 +208,7 @@ EXAMPLES = '''
 # Update a known key with grants allowing an instance with the billing-prod IAM profile
 # to decrypt data encrypted with the environment: production, application: billing
 # encryption context
-- aws_kms:
+- community.aws.aws_kms:
     key_id: abcd1234-abcd-1234-5678-ef1234567890
     grants:
       - name: billing_prod
@@ -222,13 +222,13 @@ EXAMPLES = '''
           - RetireGrant
 
 - name: Update IAM policy on an existing KMS key
-  aws_kms:
+  community.aws.aws_kms:
     alias: my-kms-key
     policy: '{"Version": "2012-10-17", "Id": "my-kms-key-permissions", "Statement": [ { <SOME STATEMENT> } ]}'
     state: present
 
 - name: Example using lookup for policy json
-  aws_kms:
+  community.aws.aws_kms:
     alias: my-kms-key
     policy: "{{ lookup('template', 'kms_iam_policy_template.json.j2') }}"
     state: present

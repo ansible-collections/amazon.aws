@@ -89,14 +89,14 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: Create a new transit gateway using defaults
-  ec2_transit_gateway:
+  community.aws.ec2_transit_gateway:
     state: present
     region: us-east-1
     description: personal-testing
   register: created_tgw
 
 - name: Create a new transit gateway with options
-  ec2_transit_gateway:
+  community.aws.ec2_transit_gateway:
     asn: 64514
     auto_associate: no
     auto_propagate: no
@@ -110,13 +110,13 @@ EXAMPLES = '''
       status: testing
 
 - name: Remove a transit gateway by description
-  ec2_transit_gateway:
+  community.aws.ec2_transit_gateway:
     state: absent
     region: us-east-1
     description: personal-testing
 
 - name: Remove a transit gateway by id
-  ec2_transit_gateway:
+  community.aws.ec2_transit_gateway:
     state: absent
     region: ap-southeast-2
     transit_gateway_id: tgw-3a9aa123

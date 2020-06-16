@@ -135,8 +135,8 @@ notes:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Create an ELB and attach a listener
-- elb_network_lb:
+- name: Create an ELB and attach a listener
+  community.aws.elb_network_lb:
     name: myelb
     subnets:
       - subnet-012345678
@@ -149,8 +149,8 @@ EXAMPLES = '''
             TargetGroupName: mytargetgroup # Required. The name of the target group
     state: present
 
-# Create an ELB with an attached Elastic IP address
-- elb_network_lb:
+- name: Create an ELB with an attached Elastic IP address
+  community.aws.elb_network_lb:
     name: myelb
     subnet_mappings:
       - SubnetId: subnet-012345678
@@ -163,8 +163,8 @@ EXAMPLES = '''
             TargetGroupName: mytargetgroup # Required. The name of the target group
     state: present
 
-# Remove an ELB
-- elb_network_lb:
+- name: Remove an ELB
+  community.aws.elb_network_lb:
     name: myelb
     state: absent
 

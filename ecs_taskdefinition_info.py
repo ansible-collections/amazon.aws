@@ -36,7 +36,7 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-- ecs_taskdefinition_info:
+- community.aws.ecs_taskdefinition_info:
     task_definition: test-td
 '''
 

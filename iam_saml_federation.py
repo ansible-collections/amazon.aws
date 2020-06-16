@@ -57,7 +57,7 @@ EXAMPLES = '''
 # It is assumed that their matching environment variables are set.
 # Creates a new iam saml identity provider if not present
 - name: saml provider
-  iam_saml_federation:
+  community.aws.iam_saml_federation:
       name: example1
       # the > below opens an indented block, so no escaping/quoting is needed when in the indentation level under this key
       saml_metadata_document: >
@@ -65,13 +65,13 @@ EXAMPLES = '''
           <md:EntityDescriptor
 # Creates a new iam saml identity provider if not present
 - name: saml provider
-  iam_saml_federation:
+  community.aws.iam_saml_federation:
       name: example2
       saml_metadata_document: "{{ item }}"
   with_file: /path/to/idp/metdata.xml
 # Removes iam saml identity provider
 - name: remove saml provider
-  iam_saml_federation:
+  community.aws.iam_saml_federation:
       name: example3
       state: absent
 '''

@@ -194,7 +194,7 @@ EXAMPLES = '''
 # create a launch configuration using an AMI image and instance type as a basis
 
 - name: note that encrypted volumes are only supported in >= Ansible 2.4
-  ec2_lc:
+  community.aws.ec2_lc:
     name: special
     image_id: ami-XXX
     key_name: default
@@ -210,9 +210,8 @@ EXAMPLES = '''
     - device_name: /dev/sdb
       ephemeral: ephemeral0
 
-# create a launch configuration using a running instance id as a basis
-
-- ec2_lc:
+- name: create a launch configuration using a running instance id as a basis
+  community.aws.ec2_lc:
     name: special
     instance_id: i-00a48b207ec59e948
     key_name: default
@@ -224,9 +223,8 @@ EXAMPLES = '''
       iops: 3000
       delete_on_termination: true
 
-# create a launch configuration to omit the /dev/sdf EBS device that is included in the AMI image
-
-- ec2_lc:
+- name: create a launch configuration to omit the /dev/sdf EBS device that is included in the AMI image
+  community.aws.ec2_lc:
     name: special
     image_id: ami-XXX
     key_name: default
@@ -250,7 +248,7 @@ EXAMPLES = '''
           encrypted: no
 
   - name: Create launch configuration
-    ec2_lc:
+    community.aws.ec2_lc:
       name: lc1
       image_id: ami-xxxx
       assign_public_ip: yes

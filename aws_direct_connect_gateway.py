@@ -55,7 +55,7 @@ options:
 
 EXAMPLES = '''
 - name: Create a new direct connect gateway attached to virtual private gateway
-  dxgw:
+  community.aws.aws_direct_connect_gateway:
     state: present
     name: my-dx-gateway
     amazon_asn: 7224
@@ -63,7 +63,7 @@ EXAMPLES = '''
   register: created_dxgw
 
 - name: Create a new unattached dxgw
-  dxgw:
+  community.aws.aws_direct_connect_gateway:
     state: present
     name: my-dx-gateway
     amazon_asn: 7224

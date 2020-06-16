@@ -42,7 +42,7 @@ options:
         type: str
     conditions:
         description: >
-          List of conditions used in the rule.  M(aws_waf_condition) can be used to
+          List of conditions used in the rule. M(community.aws.aws_waf_condition) can be used to
           create new conditions.
         type: list
         elements: dict
@@ -75,7 +75,7 @@ options:
 EXAMPLES = '''
 
   - name: create WAF rule
-    aws_waf_rule:
+    community.aws.aws_waf_rule:
       name: my_waf_rule
       conditions:
         - name: my_regex_condition
@@ -89,7 +89,7 @@ EXAMPLES = '''
           negated: yes
 
   - name: remove WAF rule
-    aws_waf_rule:
+    community.aws.aws_waf_rule:
       name: "my_waf_rule"
       state: absent
 

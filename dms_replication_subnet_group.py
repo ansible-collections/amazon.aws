@@ -48,7 +48,7 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
-- dms_replication_subnet_group:
+- community.aws.dms_replication_subnet_group:
     state: present
     identifier: "dev-sngroup"
     description: "Development Subnet Group asdasdas"

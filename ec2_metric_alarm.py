@@ -167,7 +167,7 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
   - name: create alarm
-    ec2_metric_alarm:
+    community.aws.ec2_metric_alarm:
       state: present
       region: ap-southeast-2
       name: "cpu-low"
@@ -184,7 +184,7 @@ EXAMPLES = '''
       alarm_actions: ["action1","action2"]
 
   - name: Create an alarm to recover a failed instance
-    ec2_metric_alarm:
+    community.aws.ec2_metric_alarm:
       state: present
       region: us-west-1
       name: "recover-instance"

@@ -61,7 +61,7 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: configure cross-region snapshot on cluster `johniscool`
-  redshift_cross_region_snapshots:
+  community.aws.redshift_cross_region_snapshots:
     cluster_name: johniscool
     state: present
     region: us-east-1
@@ -69,7 +69,7 @@ EXAMPLES = '''
     retention_period: 1
 
 - name: configure cross-region snapshot on kms-encrypted cluster
-  redshift_cross_region_snapshots:
+  community.aws.redshift_cross_region_snapshots:
     cluster_name: whatever
     state: present
     region: us-east-1
@@ -78,7 +78,7 @@ EXAMPLES = '''
     retention_period: 10
 
 - name: disable cross-region snapshots, necessary before most cluster modifications (rename, resize)
-  redshift_cross_region_snapshots:
+  community.aws.redshift_cross_region_snapshots:
     cluster_name: whatever
     state: absent
     region: us-east-1

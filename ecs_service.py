@@ -195,7 +195,7 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Basic provisioning example
-- ecs_service:
+- community.aws.ecs_service:
     state: present
     name: console-test-service
     cluster: new_cluster
@@ -203,7 +203,7 @@ EXAMPLES = '''
     desired_count: 0
 
 - name: create ECS service on VPC network
-  ecs_service:
+  community.aws.ecs_service:
     state: present
     name: console-test-service
     cluster: new_cluster
@@ -217,13 +217,13 @@ EXAMPLES = '''
       - my_security_group
 
 # Simple example to delete
-- ecs_service:
+- community.aws.ecs_service:
     name: default
     state: absent
     cluster: new_cluster
 
 # With custom deployment configuration (added in version 2.3), placement constraints and strategy (added in version 2.4)
-- ecs_service:
+- community.aws.ecs_service:
     state: present
     name: test-service
     cluster: test-cluster

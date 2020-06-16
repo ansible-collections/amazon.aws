@@ -174,16 +174,16 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
-# Basic cluster provisioning example
-- redshift: >
-    command=create
-    node_type=ds1.xlarge
-    identifier=new_cluster
-    username=cluster_admin
-    password=1nsecure
+- name: Basic cluster provisioning example
+  community.aws.redshift:
+    command: create
+    node_type: ds1.xlarge
+    identifier: new_cluster
+    username: cluster_admin
+    password: 1nsecure
 
-# Cluster delete example
-- redshift:
+- name: Cluster delete example
+  community.aws.redshift:
     command: delete
     identifier: new_cluster
     skip_final_cluster_snapshot: true

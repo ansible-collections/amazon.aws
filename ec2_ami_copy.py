@@ -75,14 +75,14 @@ requirements:
 '''
 
 EXAMPLES = '''
-# Basic AMI Copy
-- ec2_ami_copy:
+- name: Basic AMI Copy
+  community.aws.ec2_ami_copy:
     source_region: us-east-1
     region: eu-west-1
     source_image_id: ami-xxxxxxx
 
-# AMI copy wait until available
-- ec2_ami_copy:
+- name: AMI copy wait until available
+  community.aws.ec2_ami_copy:
     source_region: us-east-1
     region: eu-west-1
     source_image_id: ami-xxxxxxx
@@ -90,16 +90,16 @@ EXAMPLES = '''
     wait_timeout: 1200  # Default timeout is 600
   register: image_id
 
-# Named AMI copy
-- ec2_ami_copy:
+- name: Named AMI copy
+  community.aws.ec2_ami_copy:
     source_region: us-east-1
     region: eu-west-1
     source_image_id: ami-xxxxxxx
     name: My-Awesome-AMI
     description: latest patch
 
-# Tagged AMI copy (will not copy the same AMI twice)
-- ec2_ami_copy:
+- name: Tagged AMI copy (will not copy the same AMI twice)
+  community.aws.ec2_ami_copy:
     source_region: us-east-1
     region: eu-west-1
     source_image_id: ami-xxxxxxx
@@ -108,15 +108,15 @@ EXAMPLES = '''
         Patch: 1.2.3
     tag_equality: yes
 
-# Encrypted AMI copy
-- ec2_ami_copy:
+- name: Encrypted AMI copy
+  community.aws.ec2_ami_copy:
     source_region: us-east-1
     region: eu-west-1
     source_image_id: ami-xxxxxxx
     encrypted: yes
 
-# Encrypted AMI copy with specified key
-- ec2_ami_copy:
+- name: Encrypted AMI copy with specified key
+  community.aws.ec2_ami_copy:
     source_region: us-east-1
     region: eu-west-1
     source_image_id: ami-xxxxxxx

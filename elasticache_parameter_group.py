@@ -55,24 +55,24 @@ EXAMPLES = """
   connection: local
   tasks:
     - name: 'Create a test parameter group'
-      elasticache_parameter_group:
+      community.aws.elasticache_parameter_group:
         name: 'test-param-group'
         group_family: 'redis3.2'
         description: 'This is a cache parameter group'
         state: 'present'
     - name: 'Modify a test parameter group'
-      elasticache_parameter_group:
+      community.aws.elasticache_parameter_group:
         name: 'test-param-group'
         values:
           activerehashing: yes
           client-output-buffer-limit-normal-hard-limit: 4
         state: 'present'
     - name: 'Reset all modifiable parameters for the test parameter group'
-      elasticache_parameter_group:
+      community.aws.elasticache_parameter_group:
         name: 'test-param-group'
         state: reset
     - name: 'Delete a test parameter group'
-      elasticache_parameter_group:
+      community.aws.elasticache_parameter_group:
         name: 'test-param-group'
         state: 'absent'
 """

@@ -14,8 +14,8 @@ description:
     - This module allows the management of AWS Lambda function event source mappings such as DynamoDB and Kinesis stream
       events via the Ansible framework. These event source mappings are relevant only in the AWS Lambda pull model, where
       AWS Lambda invokes the function.
-      It is idempotent and supports "Check" mode.  Use module M(lambda) to manage the lambda
-      function itself and M(lambda_alias) to manage function aliases.
+      It is idempotent and supports "Check" mode.  Use module M(community.aws.lambda) to manage the lambda
+      function itself and M(community.aws.lambda_alias) to manage function aliases.
 
 
 author: Pierre Jodouin (@pjodouin), Ryan Brown (@ryansb)
@@ -86,28 +86,23 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
----
 # Example that creates a lambda event notification for a DynamoDB stream
-- hosts: localhost
-  gather_facts: no
-  vars:
+- name: DynamoDB stream event mapping
+  community.aws.lambda_event:
     state: present
-  tasks:
-  - name: DynamoDB stream event mapping
-    lambda_event:
-      state: "{{ state | default('present') }}"
-      event_source: stream
-      function_name: "{{ function_name }}"
-      alias: Dev
-      source_params:
-        source_arn: arn:aws:dynamodb:us-east-1:123456789012:table/tableName/stream/2016-03-19T19:51:37.457
-        enabled: True
-        batch_size: 100
-        starting_position: TRIM_HORIZON
+    event_source: stream
+    function_name: "{{ function_name }}"
+    alias: Dev
+    source_params:
+    source_arn: arn:aws:dynamodb:us-east-1:123456789012:table/tableName/stream/2016-03-19T19:51:37.457
+    enabled: True
+    batch_size: 100
+    starting_position: TRIM_HORIZON
+  register: event
 
-  - name: Show source event
-    debug:
-      var: lambda_stream_events
+- name: Show source event
+  debug:
+    var: event.lambda_stream_events
 '''
 
 RETURN = '''

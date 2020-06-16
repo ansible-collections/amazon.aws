@@ -11,7 +11,7 @@ DOCUMENTATION = '''
 module: sns_topic
 short_description: Manages AWS SNS topics and subscriptions
 description:
-    - The M(sns_topic) module allows you to create, delete, and manage subscriptions for AWS SNS topics.
+    - The M(community.aws.sns_topic) module allows you to create, delete, and manage subscriptions for AWS SNS topics.
     - As of 2.6, this module can be use to subscribe and unsubscribe to topics outside of your AWS account.
 author:
   - "Joel Thompson (@joelthompson)"
@@ -75,7 +75,7 @@ requirements: [ "boto" ]
 EXAMPLES = """
 
 - name: Create alarm SNS topic
-  sns_topic:
+  community.aws.sns_topic:
     name: "alarms"
     state: present
     display_name: "alarm SNS topic"
@@ -104,7 +104,7 @@ sns_arn:
     type: str
     returned: always
     sample: "arn:aws:sns:us-east-2:111111111111:my_topic_name"
-sns_topic:
+community.aws.sns_topic:
   description: Dict of sns topic details
   type: complex
   returned: always
