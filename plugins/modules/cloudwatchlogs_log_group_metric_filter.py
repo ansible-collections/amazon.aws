@@ -13,7 +13,7 @@ author:
 short_description: Manage CloudWatch log group metric filter
 description:
   - Create, modify and delete CloudWatch log group metric filter.
-  - CloudWatch log group metric filter can be use with M(ec2_metric_alarm).
+  - CloudWatch log group metric filter can be use with M(community.aws.ec2_metric_alarm).
 requirements:
   - boto3
   - botocore
@@ -67,7 +67,7 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: set metric filter on log group /fluentd/testcase
-  cloudwatchlogs_log_group_metric_filter:
+  community.aws.cloudwatchlogs_log_group_metric_filter:
     log_group_name: /fluentd/testcase
     filter_name: BoxFreeStorage
     filter_pattern: '{($.value = *) && ($.hostname = "box")}'
@@ -78,7 +78,7 @@ EXAMPLES = '''
         metric_value: "$.value"
 
 - name: delete metric filter on log group /fluentd/testcase
-  cloudwatchlogs_log_group_metric_filter:
+  community.aws.cloudwatchlogs_log_group_metric_filter:
     log_group_name: /fluentd/testcase
     filter_name: BoxFreeStorage
     state: absent
