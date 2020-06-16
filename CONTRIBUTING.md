@@ -39,10 +39,10 @@ issue, or by reporting any additional information
 
 ## Pull Requests
 
-All modules marked stableinterface MUST have integration tests for new features. Upgrading to boto3 shall be considered a feature request.
-All new modules MUST have integration tests.
-Modules marked preview SHOULD have integration tests for new features.
-Bug fixes for modules that currently have integration tests SHOULD have tests added.
+All modules MUST have integration tests for new features. Upgrading to boto3 shall be considered a feature request.  
+Bug fixes for modules that currently have integration tests SHOULD have tests added.  
+New modules should be submitted to the [community.aws](https://github.com/ansible-collections/community.aws) collection
+and MUST have integration tests.
 
 Expected test criteria:
 * Resource creation
@@ -55,10 +55,8 @@ Expected test criteria:
 * Resource deletion under check mode
 
 
-## Communicating
-
 ### Code of Conduct
-The amazon.aws collection follows the Ansible project's 
+The `amazon.aws` collection follows the Ansible project's 
 [Code of Conduct](https://docs.ansible.com/ansible/devel/community/code_of_conduct.html). 
 Please read and familiarize yourself with this document.
 
