@@ -33,10 +33,10 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all regions
-- aws_region_info:
+- community.aws.aws_region_info:
 
 # Gather information about a single region
-- aws_region_info:
+- community.aws.aws_region_info:
     filters:
       region-name: eu-west-1
 '''
