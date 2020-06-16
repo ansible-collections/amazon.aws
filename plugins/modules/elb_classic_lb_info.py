@@ -197,7 +197,7 @@ def main():
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               supports_check_mode=True)
     if module._name == 'elb_classic_lb_facts':
-        module.deprecate("The 'elb_classic_lb_facts' module has been renamed to 'elb_classic_lb_info'", version='2.13')
+        module.deprecate("The 'elb_classic_lb_facts' module has been renamed to 'elb_classic_lb_info'", date='2021-12-01', collection_name='community.aws')
 
     connection = module.client('elb')
 

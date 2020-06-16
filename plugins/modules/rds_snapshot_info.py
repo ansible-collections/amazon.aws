@@ -376,7 +376,7 @@ def main():
         mutually_exclusive=[['db_snapshot_identifier', 'db_instance_identifier', 'db_cluster_identifier', 'db_cluster_snapshot_identifier']]
     )
     if module._name == 'rds_snapshot_facts':
-        module.deprecate("The 'rds_snapshot_facts' module has been renamed to 'rds_snapshot_info'", version='2.13')
+        module.deprecate("The 'rds_snapshot_facts' module has been renamed to 'rds_snapshot_info'", date='2021-12-01', collection_name='community.aws')
 
     conn = module.client('rds', retry_decorator=AWSRetry.jittered_backoff(retries=10))
     results = dict()

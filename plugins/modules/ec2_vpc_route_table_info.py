@@ -107,7 +107,8 @@ def main():
     module = AnsibleModule(argument_spec=argument_spec,
                            supports_check_mode=True)
     if module._name == 'ec2_vpc_route_table_facts':
-        module.deprecate("The 'ec2_vpc_route_table_facts' module has been renamed to 'ec2_vpc_route_table_info'", version='2.13')
+        module.deprecate("The 'ec2_vpc_route_table_facts' module has been renamed to 'ec2_vpc_route_table_info'",
+                         date='2021-12-01', collection_name='community.aws')
 
     if not HAS_BOTO:
         module.fail_json(msg='boto required for this module')

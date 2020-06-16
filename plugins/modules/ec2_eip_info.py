@@ -133,7 +133,7 @@ def main():
         supports_check_mode=True
     )
     if module._module._name == 'ec2_eip_facts':
-        module._module.deprecate("The 'ec2_eip_facts' module has been renamed to 'ec2_eip_info'", version='2.13')
+        module._module.deprecate("The 'ec2_eip_facts' module has been renamed to 'ec2_eip_info'", date='2021-12-01', collection_name='community.aws')
 
     module.exit_json(changed=False, addresses=get_eips_details(module))
 

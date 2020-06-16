@@ -396,7 +396,7 @@ def main():
         supports_check_mode=True,
     )
     if module._name == 'rds_instance_facts':
-        module.deprecate("The 'rds_instance_facts' module has been renamed to 'rds_instance_info'", version='2.13')
+        module.deprecate("The 'rds_instance_facts' module has been renamed to 'rds_instance_info'", date='2021-12-01', collection_name='community.aws')
 
     conn = module.client('rds', retry_decorator=AWSRetry.jittered_backoff(retries=10))
 

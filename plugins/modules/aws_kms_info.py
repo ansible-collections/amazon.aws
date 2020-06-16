@@ -409,7 +409,7 @@ def main():
     module = AnsibleModule(argument_spec=argument_spec,
                            supports_check_mode=True)
     if module._name == 'aws_kms_facts':
-        module.deprecate("The 'aws_kms_facts' module has been renamed to 'aws_kms_info'", version='2.13')
+        module.deprecate("The 'aws_kms_facts' module has been renamed to 'aws_kms_info'", date='2021-12-01', collection_name='community.aws')
 
     if not HAS_BOTO3:
         module.fail_json(msg='boto3 and botocore are required for this module')

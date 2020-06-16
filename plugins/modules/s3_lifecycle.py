@@ -115,7 +115,7 @@ options:
     type: list
   requester_pays:
     description:
-      - The I(requester_pays) option does nothing and will be removed in Ansible 2.14.
+      - The I(requester_pays) option does nothing and will be removed after 2022-06-01
     type: bool
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -443,7 +443,7 @@ def main():
         noncurrent_version_transition_days=dict(type='int'),
         noncurrent_version_transitions=dict(type='list'),
         prefix=dict(),
-        requester_pays=dict(type='bool', removed_in_version='2.14'),
+        requester_pays=dict(type='bool', removed_at_date='2022-06-01', removed_from_collection='community.aws'),
         rule_id=dict(),
         state=dict(default='present', choices=['present', 'absent']),
         status=dict(default='enabled', choices=['enabled', 'disabled']),

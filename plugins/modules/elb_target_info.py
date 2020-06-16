@@ -416,7 +416,7 @@ def main():
         supports_check_mode=True,
     )
     if module._name == 'elb_target_facts':
-        module.deprecate("The 'elb_target_facts' module has been renamed to 'elb_target_info'", version='2.13')
+        module.deprecate("The 'elb_target_facts' module has been renamed to 'elb_target_info'", date='2021-12-01', collection_name='community.aws')
 
     instance_id = module.params["instance_id"]
     get_unused_target_groups = module.params["get_unused_target_groups"]

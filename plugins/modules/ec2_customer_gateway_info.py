@@ -126,7 +126,8 @@ def main():
                               mutually_exclusive=[['customer_gateway_ids', 'filters']],
                               supports_check_mode=True)
     if module._module._name == 'ec2_customer_gateway_facts':
-        module._module.deprecate("The 'ec2_customer_gateway_facts' module has been renamed to 'ec2_customer_gateway_info'", version='2.13')
+        module._module.deprecate("The 'ec2_customer_gateway_facts' module has been renamed to 'ec2_customer_gateway_info'",
+                                 date='2021-12-01', collection_name='community.aws')
 
     connection = module.client('ec2')
 
