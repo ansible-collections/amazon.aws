@@ -75,7 +75,7 @@ def main():
         supports_check_mode=True,
     )
     if module._name == 'aws_caller_facts':
-        module.deprecate("The 'aws_caller_facts' module has been renamed to 'aws_caller_info'", date='2022-06-01', collection_name='amazon.aws')
+        module.deprecate("The 'aws_caller_facts' module has been renamed to 'aws_caller_info'", date='2021-12-01', collection_name='amazon.aws')
 
     client = module.client('sts')
 
