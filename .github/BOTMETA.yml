@@ -4,7 +4,7 @@ files:
     labels: docs
   $connection/:
     labels: connection 
-  $connections/aws_ssm.py:
+  $connection/aws_ssm.py:
   $modules/:
     authors: wimnat
     maintainers: $team_aws
@@ -355,6 +355,6 @@ files:
     labels: units
     
 macros:
-  connections: plugins/connection
+  connection: plugins/connection
   modules: plugins/modules
   team_aws: jillr s-hertel tremble
