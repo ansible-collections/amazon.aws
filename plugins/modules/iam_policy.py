@@ -304,13 +304,13 @@ def main():
     if (skip_duplicates is None):
         module.deprecate('The skip_duplicates behaviour has caused confusion and'
                          ' will be disabled by default in Ansible 2.14',
-                         version='2.14')
+                         date='2022-06-01', collection_name='community.aws')
         skip_duplicates = True
 
     if module.params.get('policy_document'):
         module.deprecate('The policy_document option has been deprecated and'
                          ' will be removed in Ansible 2.14',
-                         version='2.14')
+                         date='2022-06-01', collection_name='community.aws')
 
     args = dict(
         client=module.client('iam'),
