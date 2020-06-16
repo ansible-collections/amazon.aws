@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_eni
+version_added: 1.0.0
 short_description: Create and optionally attach an Elastic Network Interface (ENI) to an instance
 description:
     - Create and optionally attach an Elastic Network Interface (ENI) to an instance. If an ENI ID or private_ip is

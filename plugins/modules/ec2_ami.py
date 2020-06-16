@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_ami
+version_added: 1.0.0
 short_description: Create or destroy an image (AMI) in ec2
 description:
      - Registers or deregisters ec2 images.

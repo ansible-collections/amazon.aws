@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_snapshot
+version_added: 1.0.0
 short_description: Creates a snapshot from an existing volume
 description:
     - Creates an EC2 snapshot from an existing EBS volume.

@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_vpc_subnet
+version_added: 1.0.0
 short_description: Manage subnets in AWS virtual private clouds
 description:
     - Manage subnets in AWS virtual private clouds.

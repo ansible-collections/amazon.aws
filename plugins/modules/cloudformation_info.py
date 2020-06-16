@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: cloudformation_info
+version_added: 1.0.0
 short_description: Obtain information about an AWS CloudFormation stack
 description:
   - Gets information about an AWS CloudFormation stack.

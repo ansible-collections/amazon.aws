@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_vpc_dhcp_option_info
+version_added: 1.0.0
 short_description: Gather information about dhcp options sets in AWS
 description:
     - Gather information about dhcp options sets in AWS

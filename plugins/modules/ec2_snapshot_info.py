@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_snapshot_info
+version_added: 1.0.0
 short_description: Gather information about ec2 volume snapshots in AWS
 description:
     - Gather information about ec2 volume snapshots in AWS.

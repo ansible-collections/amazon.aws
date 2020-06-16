@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_elb_lb
+version_added: 1.0.0
 description:
   - Returns information about the load balancer.
   - Will be marked changed when called only if state is changed.

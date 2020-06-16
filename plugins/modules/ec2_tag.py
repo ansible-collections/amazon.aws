@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_tag
+version_added: 1.0.0
 short_description: create and remove tags on ec2 resources
 description:
     - Creates, modifies and removes tags for any EC2 resource.

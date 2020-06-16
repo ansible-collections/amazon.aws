@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_vpc_dhcp_option
+version_added: 1.0.0
 short_description: Manages DHCP Options, and can ensure the DHCP options for the given VPC match what's
   requested
 description:

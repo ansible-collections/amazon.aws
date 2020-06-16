@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: cloudformation
+version_added: 1.0.0
 short_description: Create or delete an AWS CloudFormation stack
 description:
      - Launches or updates an AWS CloudFormation stack and waits for it complete.
