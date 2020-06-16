@@ -106,8 +106,8 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
-# EFS provisioning
-- efs:
+- name: EFS provisioning
+  community.aws.efs:
     state: present
     name: myTestEFS
     tags:
@@ -117,8 +117,8 @@ EXAMPLES = '''
         - subnet_id: subnet-748c5d03
           security_groups: [ "sg-1a2b3c4d" ]
 
-# Modifying EFS data
-- efs:
+- name: Modifying EFS data
+  community.aws.efs:
     state: present
     name: myTestEFS
     tags:
@@ -127,8 +127,8 @@ EXAMPLES = '''
         - subnet_id: subnet-7654fdca
           security_groups: [ "sg-4c5d6f7a" ]
 
-# Deleting EFS
-- efs:
+- name: Deleting EFS
+  community.aws.efs:
     state: absent
     name: myTestEFS
 '''

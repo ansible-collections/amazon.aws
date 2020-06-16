@@ -60,7 +60,7 @@ notes:
 EXAMPLES = '''
 
 - name: create a batch of invalidations using a distribution_id for a reference
-  cloudfront_invalidation:
+  community.aws.cloudfront_invalidation:
     distribution_id: E15BU8SDCGSG57
     caller_reference: testing 123
     target_paths:
@@ -69,7 +69,7 @@ EXAMPLES = '''
       - /testpaththree/test3.ss
 
 - name: create a batch of invalidations using an alias as a reference and one path using a wildcard match
-  cloudfront_invalidation:
+  community.aws.cloudfront_invalidation:
     alias: alias.test.com
     caller_reference: testing 123
     target_paths:

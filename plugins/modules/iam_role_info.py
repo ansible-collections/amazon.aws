@@ -36,16 +36,16 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
-# find all existing IAM roles
-- iam_role_info:
+- name: find all existing IAM roles
+  community.aws.iam_role_info:
   register: result
 
-# describe a single role
-- iam_role_info:
+- name: describe a single role
+  community.aws.iam_role_info:
     name: MyIAMRole
 
-# describe all roles matching a path prefix
-- iam_role_info:
+- name: describe all roles matching a path prefix
+  community.aws.iam_role_info:
     path_prefix: /application/path
 '''
 

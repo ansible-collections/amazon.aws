@@ -70,7 +70,7 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create an AWS Glue connection
-- aws_glue_connection:
+- community.aws.aws_glue_connection:
     name: my-glue-connection
     connection_properties:
       JDBC_CONNECTION_URL: jdbc:mysql://mydb:3306/databasename
@@ -79,7 +79,7 @@ EXAMPLES = '''
     state: present
 
 # Delete an AWS Glue connection
-- aws_glue_connection:
+- community.aws.aws_glue_connection:
     name: my-glue-connection
     state: absent
 

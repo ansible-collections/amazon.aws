@@ -13,7 +13,7 @@ short_description: Manage groups of CloudFormation stacks
 description:
      - Launches/updates/deletes AWS CloudFormation Stack Sets.
 notes:
-     - To make an individual stack, you want the M(cloudformation) module.
+     - To make an individual stack, you want the M(amazon.aws.cloudformation) module.
 options:
   name:
     description:
@@ -177,7 +177,7 @@ requirements: [ boto3>=1.6, botocore>=1.10.26 ]
 
 EXAMPLES = '''
 - name: Create a stack set with instances in two accounts
-  cloudformation_stack_set:
+  community.aws.cloudformation_stack_set:
     name: my-stack
     description: Test stack in two accounts
     state: present
@@ -187,7 +187,7 @@ EXAMPLES = '''
     - us-east-1
 
 - name: on subsequent calls, templates are optional but parameters and tags can be altered
-  cloudformation_stack_set:
+  community.aws.cloudformation_stack_set:
     name: my-stack
     state: present
     parameters:
@@ -200,7 +200,7 @@ EXAMPLES = '''
     - us-east-1
 
 - name: The same type of update, but wait for the update to complete in all stacks
-  cloudformation_stack_set:
+  community.aws.cloudformation_stack_set:
     name: my-stack
     state: present
     wait: true

@@ -126,12 +126,12 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: basic upload
-  s3_sync:
+  community.aws.s3_sync:
     bucket: tedder
     file_root: roles/s3/files/
 
 - name: all the options
-  s3_sync:
+  community.aws.s3_sync:
     bucket: tedder
     file_root: roles/s3/files
     mime_map:

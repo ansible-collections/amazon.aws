@@ -40,38 +40,31 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
-# Output format tries to match ec2_elb_lb module input parameters
+# Output format tries to match amazon.aws.ec2_elb_lb module input parameters
 
-# Gather information about all ELBs
-- action:
-    module: ec2_elb_info
+- name: Gather information about all ELBs
+  ec2_elb_info:
   register: elb_info
-
-- action:
-    module: debug
+- debug:
     msg: "{{ item.dns_name }}"
   loop: "{{ elb_info.elbs }}"
 
-# Gather information about a particular ELB
-- action:
-    module: ec2_elb_info
+- name: Gather information about a particular ELB
+  community.aws.ec2_elb_info:
     names: frontend-prod-elb
   register: elb_info
 
-- action:
-    module: debug
+- debug:
     msg: "{{ elb_info.elbs.0.dns_name }}"
 
-# Gather information about a set of ELBs
-- action:
-    module: ec2_elb_info
+- name: Gather information about a set of ELBs
+  ec2_elb_info:
     names:
     - frontend-prod-elb
     - backend-prod-elb
   register: elb_info
 
-- action:
-    module: debug
+- debug:
     msg: "{{ item.dns_name }}"
   loop: "{{ elb_info.elbs }}"
 

@@ -36,10 +36,10 @@ EXAMPLES = '''
 # # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all customer gateways
-  ec2_customer_gateway_info:
+  community.aws.ec2_customer_gateway_info:
 
 - name: Gather information about a filtered list of customer gateways, based on tags
-  ec2_customer_gateway_info:
+  community.aws.ec2_customer_gateway_info:
     region: ap-southeast-2
     filters:
       "tag:Name": test-customer-gateway
@@ -47,7 +47,7 @@ EXAMPLES = '''
   register: cust_gw_info
 
 - name: Gather information about a specific customer gateway by specifying customer gateway ID
-  ec2_customer_gateway_info:
+  community.aws.ec2_customer_gateway_info:
     region: ap-southeast-2
     customer_gateway_ids:
       - 'cgw-48841a09'

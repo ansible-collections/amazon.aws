@@ -65,7 +65,7 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create an EKS cluster
-  aws_eks_cluster:
+  community.aws.aws_eks_cluster:
     name: my_cluster
     version: 1.14
     role_arn: my_eks_role
@@ -77,7 +77,7 @@ EXAMPLES = '''
   register: caller_facts
 
 - name: Remove an EKS cluster
-  aws_eks_cluster:
+  community.aws.aws_eks_cluster:
     name: my_cluster
     wait: yes
     state: absent

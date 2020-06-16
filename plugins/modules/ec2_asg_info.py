@@ -38,37 +38,37 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Find all groups
-- ec2_asg_info:
+- name: Find all groups
+  community.aws.ec2_asg_info:
   register: asgs
 
-# Find a group with matching name/prefix
-- ec2_asg_info:
+- name: Find a group with matching name/prefix
+  community.aws.ec2_asg_info:
     name: public-webserver-asg
   register: asgs
 
-# Find a group with matching tags
-- ec2_asg_info:
+- name: Find a group with matching tags
+  community.aws.ec2_asg_info:
     tags:
       project: webapp
       env: production
   register: asgs
 
-# Find a group with matching name/prefix and tags
-- ec2_asg_info:
+- name: Find a group with matching name/prefix and tags
+  community.aws.ec2_asg_info:
     name: myproject
     tags:
       env: production
   register: asgs
 
-# Fail if no groups are found
-- ec2_asg_info:
+- name: Fail if no groups are found
+  community.aws.ec2_asg_info:
     name: public-webserver-asg
   register: asgs
   failed_when: "{{ asgs.results | length == 0 }}"
 
-# Fail if more than 1 group is found
-- ec2_asg_info:
+- name: Fail if more than 1 group is found
+  community.aws.ec2_asg_info:
     name: public-webserver-asg
   register: asgs
   failed_when: "{{ asgs.results | length > 1 }}"

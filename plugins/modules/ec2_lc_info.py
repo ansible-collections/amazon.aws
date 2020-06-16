@@ -54,15 +54,15 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Gather information about all launch configurations
-- ec2_lc_info:
+- name: Gather information about all launch configurations
+  community.aws.ec2_lc_info:
 
-# Gather information about launch configuration with name "example"
-- ec2_lc_info:
+- name: Gather information about launch configuration with name "example"
+  community.aws.ec2_lc_info:
     name: example
 
-# Gather information sorted by created_time from most recent to least recent
-- ec2_lc_info:
+- name: Gather information sorted by created_time from most recent to least recent
+  community.aws.ec2_lc_info:
     sort: created_time
     sort_order: descending
 '''

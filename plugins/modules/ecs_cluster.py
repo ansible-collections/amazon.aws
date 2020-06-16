@@ -50,18 +50,18 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Cluster creation
-- ecs_cluster:
+- name: Cluster creation
+  community.aws.ecs_cluster:
     name: default
     state: present
 
-# Cluster deletion
-- ecs_cluster:
+- name: Cluster deletion
+  community.aws.ecs_cluster:
     name: default
     state: absent
 
 - name: Wait for register
-  ecs_cluster:
+  community.aws.ecs_cluster:
     name: "{{ new_cluster }}"
     state: has_instances
     delay: 10

@@ -12,8 +12,8 @@ module: aws_batch_compute_environment
 short_description: Manage AWS Batch Compute Environments
 description:
     - This module allows the management of AWS Batch Compute Environments.
-      It is idempotent and supports "Check" mode.  Use module M(aws_batch_compute_environment) to manage the compute
-      environment, M(aws_batch_job_queue) to manage job queues, M(aws_batch_job_definition) to manage job definitions.
+      It is idempotent and supports "Check" mode.  Use module M(community.aws.aws_batch_compute_environment) to manage the compute
+      environment, M(community.aws.aws_batch_job_queue) to manage job queues, M(community.aws.aws_batch_job_definition) to manage job definitions.
 
 
 author: Jon Meran (@jonmer85)
@@ -131,7 +131,7 @@ EXAMPLES = '''
     state: present
   tasks:
   - name: My Batch Compute Environment
-    aws_batch_compute_environment:
+    community.aws.aws_batch_compute_environment:
       compute_environment_name: computeEnvironmentName
       state: present
       region: us-east-1

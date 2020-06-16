@@ -43,10 +43,10 @@ requirements:
 
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
-# Output format tries to match ec2_elb_lb module input parameters
+# Output format tries to match amazon.aws.ec2_elb_lb module input parameters
 
 # Gather information about all ELBs
-- elb_classic_lb_info:
+- community.aws.elb_classic_lb_info:
   register: elb_info
 
 - debug:
@@ -54,7 +54,7 @@ EXAMPLES = '''
   loop: "{{ elb_info.elbs }}"
 
 # Gather information about a particular ELB
-- elb_classic_lb_info:
+- community.aws.elb_classic_lb_info:
     names: frontend-prod-elb
   register: elb_info
 
@@ -62,7 +62,7 @@ EXAMPLES = '''
     msg: "{{ elb_info.elbs.0.dns_name }}"
 
 # Gather information about a set of ELBs
-- elb_classic_lb_info:
+- community.aws.elb_classic_lb_info:
     names:
     - frontend-prod-elb
     - backend-prod-elb

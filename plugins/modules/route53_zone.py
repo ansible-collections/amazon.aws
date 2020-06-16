@@ -56,24 +56,24 @@ author: "Christopher Troup (@minichate)"
 
 EXAMPLES = '''
 - name: create a public zone
-  route53_zone:
+  community.aws.route53_zone:
     zone: example.com
     comment: this is an example
 
 - name: delete a public zone
-  route53_zone:
+  community.aws.route53_zone:
     zone: example.com
     state: absent
 
 - name: create a private zone
-  route53_zone:
+  community.aws.route53_zone:
     zone: devel.example.com
     vpc_id: '{{ myvpc_id }}'
     vpc_region: us-west-2
     comment: developer domain
 
 - name: create a public zone associated with a specific reusable delegation set
-  route53_zone:
+  community.aws.route53_zone:
     zone: example.com
     comment: reusable delegation set example
     delegation_set_id: A1BCDEF2GHIJKL

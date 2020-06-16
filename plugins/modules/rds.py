@@ -15,7 +15,7 @@ description:
     - When creating an instance it can be either a new instance or a read-only replica of an existing instance.
     - This module has a dependency on python-boto >= 2.5 and will soon be deprecated.
     - The 'promote' command requires boto >= 2.18.0. Certain features such as tags rely on boto.rds2 (boto >= 2.26.0).
-    - Please use boto3 based M(rds_instance) instead.
+    - Please use boto3 based M(community.aws.rds_instance) instead.
 options:
   command:
     description:
@@ -235,8 +235,8 @@ extends_documentation_fragment:
 # FIXME: the command stuff needs a 'state' like alias to make things consistent -- MPD
 
 EXAMPLES = '''
-# Basic mysql provisioning example
-- rds:
+- name: Basic mysql provisioning example
+  community.aws.rds:
     command: create
     instance_name: new-database
     db_engine: MySQL
@@ -248,35 +248,35 @@ EXAMPLES = '''
       Environment: testing
       Application: cms
 
-# Create a read-only replica and wait for it to become available
-- rds:
+- name: Create a read-only replica and wait for it to become available
+  community.aws.rds:
     command: replicate
     instance_name: new-database-replica
     source_instance: new_database
     wait: yes
     wait_timeout: 600
 
-# Delete an instance, but create a snapshot before doing so
-- rds:
+- name: Delete an instance, but create a snapshot before doing so
+  community.aws.rds:
     command: delete
     instance_name: new-database
     snapshot: new_database_snapshot
 
-# Get facts about an instance
-- rds:
+- name: Get facts about an instance
+  community.aws.rds:
     command: facts
     instance_name: new-database
   register: new_database_facts
 
-# Rename an instance and wait for the change to take effect
-- rds:
+- name: Rename an instance and wait for the change to take effect
+  community.aws.rds:
     command: modify
     instance_name: new-database
     new_instance_name: renamed-database
     wait: yes
 
-# Reboot an instance and wait for it to become available again
-- rds:
+- name: Reboot an instance and wait for it to become available again
+  community.aws.rds:
     command: reboot
     instance_name: database
     wait: yes
@@ -284,27 +284,25 @@ EXAMPLES = '''
 # Restore a Postgres db instance from a snapshot, wait for it to become available again, and
 #  then modify it to add your security group. Also, display the new endpoint.
 #  Note that the "publicly_accessible" option is allowed here just as it is in the AWS CLI
-- local_action:
-     module: rds
-     command: restore
-     snapshot: mypostgres-snapshot
-     instance_name: MyNewInstanceName
-     region: us-west-2
-     zone: us-west-2b
-     subnet: default-vpc-xx441xxx
-     publicly_accessible: yes
-     wait: yes
-     wait_timeout: 600
-     tags:
-         Name: pg1_test_name_tag
+- community.aws.rds:
+    command: restore
+    snapshot: mypostgres-snapshot
+    instance_name: MyNewInstanceName
+    region: us-west-2
+    zone: us-west-2b
+    subnet: default-vpc-xx441xxx
+    publicly_accessible: yes
+    wait: yes
+    wait_timeout: 600
+    tags:
+        Name: pg1_test_name_tag
   register: rds
 
-- local_action:
-     module: rds
-     command: modify
-     instance_name: MyNewInstanceName
-     region: us-west-2
-     vpc_security_groups: sg-xxx945xx
+- community.aws.rds:
+    command: modify
+    instance_name: MyNewInstanceName
+    region: us-west-2
+    vpc_security_groups: sg-xxx945xx
 
 - debug:
     msg: "The new db endpoint is {{ rds.instance.endpoint }}"

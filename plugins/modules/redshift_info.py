@@ -39,27 +39,27 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do net set authentication details, see the AWS guide for details.
 
-# Find all clusters
-- redshift_info:
+- name: Find all clusters
+  community.aws.redshift_info:
   register: redshift
 
-# Find cluster(s) with matching tags
-- redshift_info:
+- name: Find cluster(s) with matching tags
+  community.aws.redshift_info:
     tags:
       env: prd
       stack: monitoring
   register: redshift_tags
 
-# Find cluster(s) with matching name/prefix and tags
-- redshift_info:
+- name: Find cluster(s) with matching name/prefix and tags
+  community.aws.redshift_info:
     tags:
       env: dev
       stack: web
     name: user-
   register: redshift_web
 
-# Fail if no cluster(s) is/are found
-- redshift_info:
+- name: Fail if no cluster(s) is/are found
+  community.aws.redshift_info:
     tags:
       env: stg
       stack: db

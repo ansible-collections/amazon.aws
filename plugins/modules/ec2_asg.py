@@ -12,7 +12,7 @@ module: ec2_asg
 short_description: Create or delete AWS AutoScaling Groups (ASGs)
 description:
   - Can create or delete AWS AutoScaling Groups.
-  - Can be used with the M(ec2_lc) module to manage Launch Configurations.
+  - Can be used with the M(community.aws.ec2_lc) module to manage Launch Configurations.
 author: "Gareth Rushgrove (@garethr)"
 requirements: [ "boto3", "botocore" ]
 options:
@@ -45,7 +45,7 @@ options:
     elements: str
   launch_config_name:
     description:
-      - Name of the Launch configuration to use for the group. See the M(ec2_lc) module for managing these.
+      - Name of the Launch configuration to use for the group. See the community.aws.ec2_lc) module for managing these.
       - If unspecified then the current group value will be used.  One of I(launch_config_name) or I(launch_template) must be provided.
     type: str
   launch_template:
@@ -243,7 +243,7 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Basic configuration with Launch Configuration
 
-- ec2_asg:
+- community.aws.ec2_asg:
     name: special
     load_balancers: [ 'lb1', 'lb2' ]
     availability_zones: [ 'eu-west-1a', 'eu-west-1b' ]
@@ -269,7 +269,7 @@ EXAMPLES = '''
 # will have the current launch configuration.
 
 - name: create launch config
-  ec2_lc:
+  community.aws.ec2_lc:
     name: my_new_lc
     image_id: ami-lkajsf
     key_name: mykey
@@ -278,7 +278,7 @@ EXAMPLES = '''
     instance_type: m1.small
     assign_public_ip: yes
 
-- ec2_asg:
+- community.aws.ec2_asg:
     name: myasg
     launch_config_name: my_new_lc
     health_check_period: 60
@@ -292,7 +292,7 @@ EXAMPLES = '''
 # To only replace a couple of instances instead of all of them, supply a list
 # to "replace_instances":
 
-- ec2_asg:
+- community.aws.ec2_asg:
     name: myasg
     launch_config_name: my_new_lc
     health_check_period: 60
@@ -307,7 +307,7 @@ EXAMPLES = '''
 
 # Basic Configuration with Launch Template
 
-- ec2_asg:
+- community.aws.ec2_asg:
     name: special
     load_balancers: [ 'lb1', 'lb2' ]
     availability_zones: [ 'eu-west-1a', 'eu-west-1b' ]
@@ -325,7 +325,7 @@ EXAMPLES = '''
 
 # Basic Configuration with Launch Template using mixed instance policy
 
-- ec2_asg:
+- community.aws.ec2_asg:
     name: special
     load_balancers: [ 'lb1', 'lb2' ]
     availability_zones: [ 'eu-west-1a', 'eu-west-1b' ]

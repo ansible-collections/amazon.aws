@@ -35,14 +35,14 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: obtain all WAF information
-  aws_waf_info:
+  community.aws.aws_waf_info:
 
 - name: obtain all information for a single WAF
-  aws_waf_info:
+  community.aws.aws_waf_info:
     name: test_waf
 
 - name: obtain all information for a single WAF Regional
-  aws_waf_info:
+  community.aws.aws_waf_info:
     name: test_waf
     waf_regional: true
 '''

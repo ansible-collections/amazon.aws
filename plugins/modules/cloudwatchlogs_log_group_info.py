@@ -30,7 +30,7 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
-- cloudwatchlogs_log_group_info:
+- community.aws.cloudwatchlogs_log_group_info:
     log_group_name: test-log-group
 '''
 

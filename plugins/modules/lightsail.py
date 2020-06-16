@@ -77,8 +77,8 @@ extends_documentation_fragment:
 
 
 EXAMPLES = '''
-# Create a new Lightsail instance
-- lightsail:
+- name: Create a new Lightsail instance
+  community.aws.lightsail:
     state: present
     name: my_instance
     region: us-east-1
@@ -89,8 +89,8 @@ EXAMPLES = '''
     user_data: " echo 'hello world' > /home/ubuntu/test.txt"
   register: my_instance
 
-# Delete an instance
-- lightsail:
+- name: Delete an instance
+  community.aws.lightsail:
     state: absent
     region: us-east-1
     name: my_instance

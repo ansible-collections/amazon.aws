@@ -85,16 +85,21 @@ EXAMPLES = '''
 # If the repository does not exist, it is created. If it does exist, would not
 # affect any policies already on it.
 - name: ecr-repo
-  ecs_ecr: name=super/cool
+  community.aws.ecs_ecr:
+    name: super/cool
 
 - name: destroy-ecr-repo
-  ecs_ecr: name=old/busted state=absent
+  community.aws.ecs_ecr:
+    name: old/busted
+    state: absent
 
 - name: Cross account ecr-repo
-  ecs_ecr: registry_id=999999999999 name=cross/account
+  community.aws.ecs_ecr:
+    registry_id: 999999999999
+    name: cross/account
 
 - name: set-policy as object
-  ecs_ecr:
+  community.aws.ecs_ecr:
     name: needs-policy-object
     policy:
       Version: '2008-10-17'
@@ -109,22 +114,22 @@ EXAMPLES = '''
             - ecr:BatchCheckLayerAvailability
 
 - name: set-policy as string
-  ecs_ecr:
+  community.aws.ecs_ecr:
     name: needs-policy-string
     policy: "{{ lookup('template', 'policy.json.j2') }}"
 
 - name: delete-policy
-  ecs_ecr:
+  community.aws.ecs_ecr:
     name: needs-no-policy
     purge_policy: yes
 
 - name: create immutable ecr-repo
-  ecs_ecr:
+  community.aws.ecs_ecr:
     name: super/cool
     image_tag_mutability: immutable
 
 - name: set-lifecycle-policy
-  ecs_ecr:
+  community.aws.ecs_ecr:
     name: needs-lifecycle-policy
     lifecycle_policy:
       rules:
@@ -139,7 +144,7 @@ EXAMPLES = '''
             type: expire
 
 - name: purge-lifecycle-policy
-  ecs_ecr:
+  community.aws.ecs_ecr:
     name: needs-no-lifecycle-policy
     purge_lifecycle_policy: true
 '''

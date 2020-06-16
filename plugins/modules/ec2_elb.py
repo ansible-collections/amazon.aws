@@ -59,19 +59,15 @@ extends_documentation_fragment:
 EXAMPLES = """
 # basic pre_task and post_task example
 pre_tasks:
-  - name: Gathering ec2 facts
-    action: ec2_facts
   - name: Instance De-register
-    local_action:
-      module: ec2_elb
+    community.aws.ec2_elb:
       instance_id: "{{ ansible_ec2_instance_id }}"
       state: absent
 roles:
   - myrole
 post_tasks:
   - name: Instance Register
-    local_action:
-      module: ec2_elb
+    community.aws.ec2_elb:
       instance_id: "{{ ansible_ec2_instance_id }}"
       ec2_elbs: "{{ item }}"
       state: present

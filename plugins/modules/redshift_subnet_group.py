@@ -47,9 +47,8 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
-# Create a Redshift subnet group
-- local_action:
-    module: redshift_subnet_group
+- name: Create a Redshift subnet group
+  community.aws.redshift_subnet_group:
     state: present
     group_name: redshift-subnet
     group_description: Redshift subnet
@@ -57,8 +56,8 @@ EXAMPLES = '''
         - 'subnet-aaaaa'
         - 'subnet-bbbbb'
 
-# Remove subnet group
-- redshift_subnet_group:
+- name: Remove subnet group
+  community.aws.redshift_subnet_group:
     state: absent
     group_name: redshift-subnet
 '''

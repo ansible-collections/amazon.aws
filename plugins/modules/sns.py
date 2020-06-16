@@ -88,14 +88,14 @@ requirements:
 
 EXAMPLES = """
 - name: Send default notification message via SNS
-  sns:
+  community.aws.sns:
     msg: '{{ inventory_hostname }} has completed the play.'
     subject: Deploy complete!
     topic: deploy
   delegate_to: localhost
 
 - name: Send notification messages via SNS with short message for SMS
-  sns:
+  community.aws.sns:
     msg: '{{ inventory_hostname }} has completed the play.'
     sms: deployed!
     subject: Deploy complete!
@@ -103,7 +103,7 @@ EXAMPLES = """
   delegate_to: localhost
 
 - name: Send message with message_attributes
-  sns:
+  community.aws.sns:
     topic: "deploy"
     msg: "message with extra details!"
     message_attributes:

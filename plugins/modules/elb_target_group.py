@@ -168,16 +168,16 @@ notes:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Create a target group with a default health check
-- elb_target_group:
+- name: Create a target group with a default health check
+  community.aws.elb_target_group:
     name: mytargetgroup
     protocol: http
     port: 80
     vpc_id: vpc-01234567
     state: present
 
-# Modify the target group with a custom health check
-- elb_target_group:
+- name: Modify the target group with a custom health check
+  community.aws.elb_target_group:
     name: mytargetgroup
     protocol: http
     port: 80
@@ -192,13 +192,13 @@ EXAMPLES = '''
     unhealthy_threshold_count: 3
     state: present
 
-# Delete a target group
-- elb_target_group:
+- name: Delete a target group
+  community.aws.elb_target_group:
     name: mytargetgroup
     state: absent
 
-# Create a target group with instance targets
-- elb_target_group:
+- name: Create a target group with instance targets
+  community.aws.elb_target_group:
     name: mytargetgroup
     protocol: http
     port: 81
@@ -215,8 +215,8 @@ EXAMPLES = '''
     wait_timeout: 200
     wait: True
 
-# Create a target group with IP address targets
-- elb_target_group:
+- name: Create a target group with IP address targets
+  community.aws.elb_target_group:
     name: mytargetgroup
     protocol: http
     port: 81
@@ -239,10 +239,10 @@ EXAMPLES = '''
 # itself is allow to invoke the lambda function.
 # therefore you need first to create an empty target group
 # to receive its arn, second, allow the target group
-# to invoke the lamba function and third, add the target
+# to invoke the lambda function and third, add the target
 # to the target group
 - name: first, create empty target group
-  elb_target_group:
+  community.aws.elb_target_group:
     name: my-lambda-targetgroup
     target_type: lambda
     state: present
@@ -250,7 +250,7 @@ EXAMPLES = '''
   register: out
 
 - name: second, allow invoke of the lambda
-  lambda_policy:
+  community.aws.lambda_policy:
     state: "{{ state | default('present') }}"
     function_name: my-lambda-function
     statement_id: someID
@@ -259,7 +259,7 @@ EXAMPLES = '''
     source_arn: "{{ out.target_group_arn }}"
 
 - name: third, add target
-  elb_target_group:
+  community.aws.elb_target_group:
     name: my-lambda-targetgroup
     target_type: lambda
     state: present

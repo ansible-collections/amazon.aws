@@ -13,7 +13,7 @@ short_description: Obtain facts about an AWS CloudFront distribution
 description:
   - Gets information about an AWS CloudFront distribution.
   - This module was called C(cloudfront_facts) before Ansible 2.9, returning C(ansible_facts).
-    Note that the M(cloudfront_info) module no longer returns C(ansible_facts)!
+    Note that the M(community.aws.cloudfront_info) module no longer returns C(ansible_facts)!
 requirements:
   - boto3 >= 1.0.0
   - python >= 2.6
@@ -152,21 +152,21 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Get a summary of distributions
-- cloudfront_info:
+- name: Get a summary of distributions
+  community.aws.cloudfront_info:
     summary: true
   register: result
 
-# Get information about a distribution
-- cloudfront_info:
+- name: Get information about a distribution
+  community.aws.cloudfront_info:
     distribution: true
     distribution_id: my-cloudfront-distribution-id
   register: result_did
 - debug:
     msg: "{{ result_did['cloudfront']['my-cloudfront-distribution-id'] }}"
 
-# Get information about a distribution using the CNAME of the cloudfront distribution.
-- cloudfront_info:
+- name: Get information about a distribution using the CNAME of the cloudfront distribution.
+  community.aws.cloudfront_info:
     distribution: true
     domain_name_alias: www.my-website.com
   register: result_website
@@ -176,36 +176,37 @@ EXAMPLES = '''
 # When the module is called as cloudfront_facts, return values are published
 # in ansible_facts['cloudfront'][<id>] and can be used as follows.
 # Note that this is deprecated and will stop working in Ansible 2.13.
-- cloudfront_facts:
+- name: Gather facts
+  community.aws.cloudfront_facts:
     distribution: true
     distribution_id: my-cloudfront-distribution-id
 - debug:
     msg: "{{ ansible_facts['cloudfront']['my-cloudfront-distribution-id'] }}"
 
-- cloudfront_facts:
+- community.aws.cloudfront_facts:
     distribution: true
     domain_name_alias: www.my-website.com
 - debug:
     msg: "{{ ansible_facts['cloudfront']['www.my-website.com'] }}"
 
-# Get all information about an invalidation for a distribution.
-- cloudfront_facts:
+- name: Get all information about an invalidation for a distribution.
+  community.aws.cloudfront_info:
     invalidation: true
     distribution_id: my-cloudfront-distribution-id
     invalidation_id: my-cloudfront-invalidation-id
 
-# Get all information about a CloudFront origin access identity.
-- cloudfront_facts:
+- name: Get all information about a CloudFront origin access identity.
+  community.aws.cloudfront_info:
     origin_access_identity: true
     origin_access_identity_id: my-cloudfront-origin-access-identity-id
 
-# Get all information about lists not requiring parameters (ie. list_origin_access_identities, list_distributions, list_streaming_distributions)
-- cloudfront_facts:
+- name: Get all information about lists not requiring parameters (ie. list_origin_access_identities, list_distributions, list_streaming_distributions)
+  community.aws.cloudfront_info:
     origin_access_identity: true
     origin_access_identity_id: my-cloudfront-origin-access-identity-id
 
-# Get all information about lists not requiring parameters (ie. list_origin_access_identities, list_distributions, list_streaming_distributions)
-- cloudfront_facts:
+- name: Get all information about lists not requiring parameters (ie. list_origin_access_identities, list_distributions, list_streaming_distributions)
+  community.aws.cloudfront_info:
     all_lists: true
 '''
 

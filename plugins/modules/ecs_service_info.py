@@ -13,7 +13,7 @@ short_description: List or describe services in ECS
 description:
     - Lists or describes services in ECS.
     - This module was called C(ecs_service_facts) before Ansible 2.9, returning C(ansible_facts).
-      Note that the M(ecs_service_info) module no longer returns C(ansible_facts)!
+      Note that the M(community.aws.ecs_service_info) module no longer returns C(ansible_facts)!
 author:
     - "Mark Chance (@Java1Guy)"
     - "Darek Kaczynski (@kaczynskid)"
@@ -52,14 +52,14 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Basic listing example
-- ecs_service_info:
+- community.aws.ecs_service_info:
     cluster: test-cluster
     service: console-test-service
     details: true
   register: output
 
 # Basic listing example
-- ecs_service_info:
+- community.aws.ecs_service_info:
     cluster: test-cluster
   register: output
 '''

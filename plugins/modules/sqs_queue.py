@@ -169,8 +169,8 @@ tags:
 '''
 
 EXAMPLES = '''
-# Create SQS queue with redrive policy
-- sqs_queue:
+- name: Create SQS queue with redrive policy
+  community.aws.sqs_queue:
     name: my-queue
     region: ap-southeast-2
     default_visibility_timeout: 120
@@ -183,35 +183,35 @@ EXAMPLES = '''
       maxReceiveCount: 5
       deadLetterTargetArn: arn:aws:sqs:eu-west-1:123456789012:my-dead-queue
 
-# Drop redrive policy
-- sqs_queue:
+- name: Drop redrive policy
+  community.aws.sqs_queue:
     name: my-queue
     region: ap-southeast-2
     redrive_policy: {}
 
-# Create FIFO queue
-- sqs_queue:
+- name: Create FIFO queue
+  community.aws.sqs_queue:
     name: fifo-queue
     region: ap-southeast-2
     queue_type: fifo
     content_based_deduplication: yes
 
-# Tag queue
-- sqs_queue:
+- name: Tag queue
+  community.aws.sqs_queue:
     name: fifo-queue
     region: ap-southeast-2
     tags:
       example: SomeValue
 
-# Configure Encryption, automatically uses a new data key every hour
-- sqs_queue:
+- name: Configure Encryption, automatically uses a new data key every hour
+  community.aws.sqs_queue:
     name: fifo-queue
     region: ap-southeast-2
     kms_master_key_id: alias/MyQueueKey
     kms_data_key_reuse_period_seconds: 3600
 
-# Delete SQS queue
-- sqs_queue:
+- name: Delete SQS queue
+  community.aws.sqs_queue:
     name: my-queue
     region: ap-southeast-2
     state: absent

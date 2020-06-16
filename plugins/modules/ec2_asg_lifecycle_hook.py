@@ -78,8 +78,8 @@ requirements: [ boto3>=1.4.4 ]
 '''
 
 EXAMPLES = '''
-# Create / Update lifecycle hook
-- ec2_asg_lifecycle_hook:
+- name: Create / Update lifecycle hook
+  community.aws.ec2_asg_lifecycle_hook:
     region: eu-central-1
     state: present
     autoscaling_group_name: example
@@ -88,8 +88,8 @@ EXAMPLES = '''
     heartbeat_timeout: 7000
     default_result: ABANDON
 
-# Delete lifecycle hook
-- ec2_asg_lifecycle_hook:
+- name: Delete lifecycle hook
+  community.aws.ec2_asg_lifecycle_hook:
     region: eu-central-1
     state: absent
     autoscaling_group_name: example

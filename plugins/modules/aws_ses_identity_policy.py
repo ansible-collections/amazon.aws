@@ -46,28 +46,28 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: add sending authorization policy to domain identity
-  aws_ses_identity_policy:
+  community.aws.aws_ses_identity_policy:
     identity: example.com
     policy_name: ExamplePolicy
     policy: "{{ lookup('template', 'policy.json.j2') }}"
     state: present
 
 - name: add sending authorization policy to email identity
-  aws_ses_identity_policy:
+  community.aws.aws_ses_identity_policy:
     identity: example@example.com
     policy_name: ExamplePolicy
     policy: "{{ lookup('template', 'policy.json.j2') }}"
     state: present
 
 - name: add sending authorization policy to identity using ARN
-  aws_ses_identity_policy:
+  community.aws.aws_ses_identity_policy:
     identity: "arn:aws:ses:us-east-1:12345678:identity/example.com"
     policy_name: ExamplePolicy
     policy: "{{ lookup('template', 'policy.json.j2') }}"
     state: present
 
 - name: remove sending authorization policy
-  aws_ses_identity_policy:
+  community.aws.aws_ses_identity_policy:
     identity: example.com
     policy_name: ExamplePolicy
     state: absent

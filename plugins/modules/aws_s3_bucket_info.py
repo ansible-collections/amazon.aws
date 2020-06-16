@@ -16,7 +16,7 @@ requirements:
 description:
     - Lists S3 buckets in AWS
     - This module was called C(aws_s3_bucket_facts) before Ansible 2.9, returning C(ansible_facts).
-      Note that the M(aws_s3_bucket_info) module no longer returns C(ansible_facts)!
+      Note that the M(community.aws.aws_s3_bucket_info) module no longer returns C(ansible_facts)!
 author: "Gerben Geijteman (@hyperized)"
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -30,7 +30,7 @@ EXAMPLES = '''
 # Note: Only AWS S3 is currently supported
 
 # Lists all s3 buckets
-- aws_s3_bucket_info:
+- community.aws.aws_s3_bucket_info:
   register: result
 
 - name: List buckets

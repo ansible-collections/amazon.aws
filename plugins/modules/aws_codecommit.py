@@ -126,12 +126,12 @@ response_metadata:
 
 EXAMPLES = '''
 # Create a new repository
-- aws_codecommit:
+- community.aws.aws_codecommit:
     name: repo
     state: present
 
 # Delete a repository
-- aws_codecommit:
+- community.aws.aws_codecommit:
     name: repo
     state: absent
 '''

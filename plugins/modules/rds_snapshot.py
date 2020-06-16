@@ -67,13 +67,13 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
-# Create snapshot
-- rds_snapshot:
+- name: Create snapshot
+  community.aws.rds_snapshot:
     db_instance_identifier: new-database
     db_snapshot_identifier: new-database-snapshot
 
-# Delete snapshot
-- rds_snapshot:
+- name: Delete snapshot
+  community.aws.rds_snapshot:
     db_snapshot_identifier: new-database-snapshot
     state: absent
 '''

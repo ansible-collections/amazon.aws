@@ -36,15 +36,15 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all KMS keys
-- aws_kms_info:
+- community.aws.aws_kms_info:
 
 # Gather information about all keys with a Name tag
-- aws_kms_info:
+- community.aws.aws_kms_info:
     filters:
       tag-key: Name
 
 # Gather information about all keys with a specific name
-- aws_kms_info:
+- community.aws.aws_kms_info:
     filters:
       "tag:Name": Example
 '''

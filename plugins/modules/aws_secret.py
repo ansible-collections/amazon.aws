@@ -76,14 +76,14 @@ extends_documentation_fragment:
 
 EXAMPLES = r'''
 - name: Add string to AWS Secrets Manager
-  aws_secret:
+  community.aws.aws_secret:
     name: 'test_secret_string'
     state: present
     secret_type: 'string'
     secret: "{{ super_secret_string }}"
 
 - name: remove string from AWS Secrets Manager
-  aws_secret:
+  community.aws.aws_secret:
     name: 'test_secret_string'
     state: absent
     secret_type: 'string'

@@ -580,11 +580,9 @@ options:
 
 '''
 
-EXAMPLES = '''
-
-# create a basic distribution with defaults and tags
-
-- cloudfront_distribution:
+EXAMPLES = r'''
+- name: create a basic distribution with defaults and tags
+  community.aws.cloudfront_distribution:
     state: present
     default_origin_domain_name: www.my-cloudfront-origin.com
     tags:
@@ -592,31 +590,27 @@ EXAMPLES = '''
       Project: example project
       Priority: '1'
 
-# update a distribution comment by distribution_id
-
-- cloudfront_distribution:
+- name: update a distribution comment by distribution_id
+  community.aws.cloudfront_distribution:
     state: present
     distribution_id: E1RP5A2MJ8073O
     comment: modified by ansible cloudfront.py
 
-# update a distribution comment by caller_reference
-
-- cloudfront_distribution:
+- name: update a distribution comment by caller_reference
+  community.aws.cloudfront_distribution:
     state: present
     caller_reference: my cloudfront distribution 001
     comment: modified by ansible cloudfront.py
 
-# update a distribution's aliases and comment using the distribution_id as a reference
-
-- cloudfront_distribution:
+- name: update a distribution's aliases and comment using the distribution_id as a reference
+  community.aws.cloudfront_distribution:
     state: present
     distribution_id: E1RP5A2MJ8073O
     comment: modified by cloudfront.py again
     aliases: [ 'www.my-distribution-source.com', 'zzz.aaa.io' ]
 
-# update a distribution's aliases and comment using an alias as a reference
-
-- cloudfront_distribution:
+- name: update a distribution's aliases and comment using an alias as a reference
+  community.aws.cloudfront_distribution:
     state: present
     caller_reference: my test distribution
     comment: modified by cloudfront.py again
@@ -624,9 +618,8 @@ EXAMPLES = '''
       - www.my-distribution-source.com
       - zzz.aaa.io
 
-# update a distribution's comment and aliases and tags and remove existing tags
-
-- cloudfront_distribution:
+- name: update a distribution's comment and aliases and tags and remove existing tags
+  community.aws.cloudfront_distribution:
     state: present
     distribution_id: E15BU8SDCGSG57
     comment: modified by cloudfront.py again
@@ -636,9 +629,8 @@ EXAMPLES = '''
       Project: distribution 1.2
     purge_tags: yes
 
-# create a distribution with an origin, logging and default cache behavior
-
-- cloudfront_distribution:
+- name: create a distribution with an origin, logging and default cache behavior
+  community.aws.cloudfront_distribution:
     state: present
     caller_reference: unique test distribution ID
     origins:
@@ -674,9 +666,8 @@ EXAMPLES = '''
     enabled: false
     comment: this is a CloudFront distribution with logging
 
-# delete a distribution
-
-- cloudfront_distribution:
+- name: delete a distribution
+  community.aws.cloudfront_distribution:
     state: absent
     caller_reference: replaceable distribution
 '''

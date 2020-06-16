@@ -59,7 +59,7 @@ extends_documentation_fragment:
 
 EXAMPLES = r'''
 - name: Ensure tags are present on a resource
-  ecs_tag:
+  community.aws.ecs_tag:
     cluster_name: mycluster
     resource_type: cluster
     state: present
@@ -68,7 +68,7 @@ EXAMPLES = r'''
       env: prod
 
 - name: Remove the Env tag
-  ecs_tag:
+  community.aws.ecs_tag:
     cluster_name: mycluster
     resource_type: cluster
     tags:
@@ -76,7 +76,7 @@ EXAMPLES = r'''
     state: absent
 
 - name: Remove the Env tag if it's currently 'development'
-  ecs_tag:
+  community.aws.ecs_tag:
     cluster_name: mycluster
     resource_type: cluster
     tags:
@@ -84,7 +84,7 @@ EXAMPLES = r'''
     state: absent
 
 - name: Remove all tags except for Name from a cluster
-  ecs_tag:
+  community.aws.ecs_tag:
     cluster_name: mycluster
     resource_type: cluster
     tags:

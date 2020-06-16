@@ -82,7 +82,7 @@ options:
 EXAMPLES = """
 
 # create a Direct Connect connection
-- aws_direct_connect_link_aggregation_group:
+- community.aws.aws_direct_connect_link_aggregation_group:
   state: present
   location: EqDC2
   lag_id: dxlag-xxxxxxxx

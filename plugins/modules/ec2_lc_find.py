@@ -49,8 +49,8 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Search for the Launch Configurations that start with "app"
-- ec2_lc_find:
+- name: Search for the Launch Configurations that start with "app"
+  community.aws.ec2_lc_find:
     name_regex: app.*
     sort_order: descending
     limit: 2

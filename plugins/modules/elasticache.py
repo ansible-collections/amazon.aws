@@ -100,8 +100,8 @@ EXAMPLES = """
 # Note: None of these examples set aws_access_key, aws_secret_key, or region.
 # It is assumed that their matching environment variables are set.
 
-# Basic example
-- elasticache:
+- name: Basic example
+  community.aws.elasticache:
     name: "test-please-delete"
     state: present
     engine: memcached
@@ -114,13 +114,13 @@ EXAMPLES = """
     zone: us-east-1d
 
 
-# Ensure cache cluster is gone
-- elasticache:
+- name: Ensure cache cluster is gone
+  community.aws.elasticache:
     name: "test-please-delete"
     state: absent
 
-# Reboot cache cluster
-- elasticache:
+- name: Reboot cache cluster
+  community.aws.elasticache:
     name: "test-please-delete"
     state: rebooted
 

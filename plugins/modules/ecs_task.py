@@ -90,7 +90,7 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Simple example of run task
 - name: Run task
-  ecs_task:
+  community.aws.ecs_task:
     operation: run
     cluster: console-sample-app-static-cluster
     task_definition: console-sample-app-static-taskdef
@@ -101,7 +101,7 @@ EXAMPLES = '''
 # Simple example of start task
 
 - name: Start a task
-  ecs_task:
+  community.aws.ecs_task:
       operation: start
       cluster: console-sample-app-static-cluster
       task_definition: console-sample-app-static-taskdef
@@ -123,7 +123,7 @@ EXAMPLES = '''
   register: task_output
 
 - name: RUN a task on Fargate
-  ecs_task:
+  community.aws.ecs_task:
       operation: run
       cluster: console-sample-app-static-cluster
       task_definition: console-sample-app-static-taskdef
@@ -139,7 +139,7 @@ EXAMPLES = '''
   register: task_output
 
 - name: Stop a task
-  ecs_task:
+  community.aws.ecs_task:
       operation: stop
       cluster: console-sample-app-static-cluster
       task_definition: console-sample-app-static-taskdef

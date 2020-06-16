@@ -40,7 +40,7 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create a simple cors for s3 bucket
-- aws_s3_cors:
+- community.aws.aws_s3_cors:
     name: mys3bucket
     state: present
     rules:
@@ -57,7 +57,7 @@ EXAMPLES = '''
         max_age_seconds: 30000
 
 # Remove cors for s3 bucket
-- aws_s3_cors:
+- community.aws.aws_s3_cors:
     name: mys3bucket
     state: absent
 '''

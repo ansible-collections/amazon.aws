@@ -43,19 +43,19 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Simple example of listing all support AWS services for VPC endpoints
 - name: List supported AWS endpoint services
-  ec2_vpc_endpoint_info:
+  community.aws.ec2_vpc_endpoint_info:
     query: services
     region: ap-southeast-2
   register: supported_endpoint_services
 
 - name: Get all endpoints in ap-southeast-2 region
-  ec2_vpc_endpoint_info:
+  community.aws.ec2_vpc_endpoint_info:
     query: endpoints
     region: ap-southeast-2
   register: existing_endpoints
 
 - name: Get all endpoints with specific filters
-  ec2_vpc_endpoint_info:
+  community.aws.ec2_vpc_endpoint_info:
     query: endpoints
     region: ap-southeast-2
     filters:
@@ -68,7 +68,7 @@ EXAMPLES = '''
   register: existing_endpoints
 
 - name: Get details on specific endpoint
-  ec2_vpc_endpoint_info:
+  community.aws.ec2_vpc_endpoint_info:
     query: endpoints
     region: ap-southeast-2
     vpc_endpoint_ids:

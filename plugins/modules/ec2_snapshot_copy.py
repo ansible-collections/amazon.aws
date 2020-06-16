@@ -61,14 +61,14 @@ requirements:
 '''
 
 EXAMPLES = '''
-# Basic Snapshot Copy
-- ec2_snapshot_copy:
+- name: Basic Snapshot Copy
+  community.aws.ec2_snapshot_copy:
     source_region: eu-central-1
     region: eu-west-1
     source_snapshot_id: snap-xxxxxxx
 
-# Copy Snapshot and wait until available
-- ec2_snapshot_copy:
+- name: Copy Snapshot and wait until available
+  community.aws.ec2_snapshot_copy:
     source_region: eu-central-1
     region: eu-west-1
     source_snapshot_id: snap-xxxxxxx
@@ -76,23 +76,23 @@ EXAMPLES = '''
     wait_timeout: 1200   # Default timeout is 600
   register: snapshot_id
 
-# Tagged Snapshot copy
-- ec2_snapshot_copy:
+- name: Tagged Snapshot copy
+  community.aws.ec2_snapshot_copy:
     source_region: eu-central-1
     region: eu-west-1
     source_snapshot_id: snap-xxxxxxx
     tags:
         Name: Snapshot-Name
 
-# Encrypted Snapshot copy
-- ec2_snapshot_copy:
+- name: Encrypted Snapshot copy
+  community.aws.ec2_snapshot_copy:
     source_region: eu-central-1
     region: eu-west-1
     source_snapshot_id: snap-xxxxxxx
     encrypted: yes
 
-# Encrypted Snapshot copy with specified key
-- ec2_snapshot_copy:
+- name: Encrypted Snapshot copy with specified key
+  community.aws.ec2_snapshot_copy:
     source_region: eu-central-1
     region: eu-west-1
     source_snapshot_id: snap-xxxxxxx

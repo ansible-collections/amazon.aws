@@ -48,13 +48,13 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 # Create or update an application
-- aws_elasticbeanstalk_app:
+- community.aws.aws_elasticbeanstalk_app:
     app_name: Sample_App
     description: "Hello World App"
     state: present
 
 # Delete application
-- aws_elasticbeanstalk_app:
+- community.aws.aws_elasticbeanstalk_app:
     app_name: Sample_App
     state: absent
 

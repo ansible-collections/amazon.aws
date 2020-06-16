@@ -12,7 +12,7 @@ short_description: Manage EC2 launch templates
 description:
   - Create, modify, and delete EC2 Launch Templates, which can be used to
     create individual instances or with Autoscaling Groups.
-  - The I(ec2_instance) and I(ec2_asg) modules can, instead of specifying all
+  - The M(community.aws.ec2_instance) and M(community.aws.ec2_asg) modules can, instead of specifying all
     parameters on those tasks, be passed a Launch Template which contains
     settings like instance size, disk type, subnet, and more.
 requirements:
@@ -219,7 +219,7 @@ options:
     type: str
   key_name:
     description:
-    - The name of the key pair. You can create a key pair using M(ec2_key).
+    - The name of the key pair. You can create a key pair using M(amazon.aws.ec2_key).
     - If you do not specify a key pair, you can't connect to the instance
       unless you choose an AMI that is configured to allow users another way to
       log in.
@@ -326,7 +326,7 @@ options:
 
 EXAMPLES = '''
 - name: Create an ec2 launch template
-  ec2_launch_template:
+  community.aws.ec2_launch_template:
     name: "my_template"
     image_id: "ami-04b762b4289fba92b"
     key_name: my_ssh_key
@@ -337,13 +337,13 @@ EXAMPLES = '''
 - name: >
     Create a new version of an existing ec2 launch template with a different instance type,
     while leaving an older version as the default version
-  ec2_launch_template:
+  community.aws.ec2_launch_template:
     name: "my_template"
     default_version: 1
     instance_type: c5.4xlarge
 
 - name: Delete an ec2 launch template
-  ec2_launch_template:
+  community.aws.ec2_launch_template:
     name: "my_template"
     state: absent
 

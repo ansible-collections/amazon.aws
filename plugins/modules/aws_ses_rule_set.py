@@ -11,7 +11,7 @@ DOCUMENTATION = '''
 module: aws_ses_rule_set
 short_description: Manages SES inbound receipt rule sets
 description:
-    - The M(aws_ses_rule_set) module allows you to create, delete, and manage SES receipt rule sets
+    - The M(community.aws.aws_ses_rule_set) module allows you to create, delete, and manage SES receipt rule sets
 author:
   - "Ben Tomasik (@tomislacker)"
   - "Ed Costello (@orthanc)"
@@ -54,29 +54,29 @@ EXAMPLES = """
 # It is assumed that their matching environment variables are set.
 ---
 - name: Create default rule set and activate it if not already
-  aws_ses_rule_set:
+  community.aws.aws_ses_rule_set:
     name: default-rule-set
     state: present
     active: yes
 
 - name: Create some arbitrary rule set but do not activate it
-  aws_ses_rule_set:
+  community.aws.aws_ses_rule_set:
     name: arbitrary-rule-set
     state: present
 
 - name: Explicitly deactivate the default rule set leaving no active rule set
-  aws_ses_rule_set:
+  community.aws.aws_ses_rule_set:
     name: default-rule-set
     state: present
     active: no
 
 - name: Remove an arbitrary inactive rule set
-  aws_ses_rule_set:
+  community.aws.aws_ses_rule_set:
     name: arbitrary-rule-set
     state: absent
 
 - name: Remove an ruleset even if we have to first deactivate it to remove it
-  aws_ses_rule_set:
+  community.aws.aws_ses_rule_set:
     name: default-rule-set
     state: absent
     force: yes

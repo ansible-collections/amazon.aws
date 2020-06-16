@@ -28,10 +28,10 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: obtain all ElastiCache information
-  elasticache_info:
+  community.aws.elasticache_info:
 
 - name: obtain all information for a single ElastiCache cluster
-  elasticache_info:
+  community.aws.elasticache_info:
     name: test_elasticache
 '''
 

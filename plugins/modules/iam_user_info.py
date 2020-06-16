@@ -48,17 +48,17 @@ EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 # Gather facts about "test" user.
 - name: Get IAM user facts
-  iam_user_info:
+  community.aws.iam_user_info:
     name: "test"
 
 # Gather facts about all users in the "dev" group.
 - name: Get IAM user facts
-  iam_user_info:
+  community.aws.iam_user_info:
     group: "dev"
 
 # Gather facts about all users with "/division_abc/subdivision_xyz/" path.
 - name: Get IAM user facts
-  iam_user_info:
+  community.aws.iam_user_info:
     path: "/division_abc/subdivision_xyz/"
 '''
 
