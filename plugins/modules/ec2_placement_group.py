@@ -46,19 +46,19 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide
 # for details.
 
-# Create a placement group.
-- ec2_placement_group:
+- name: Create a placement group.
+  community.aws.ec2_placement_group:
     name: my-cluster
     state: present
 
-# Create a Spread placement group.
-- ec2_placement_group:
+- name: Create a Spread placement group.
+  community.aws.ec2_placement_group:
     name: my-cluster
     state: present
     strategy: spread
 
-# Delete a placement group.
-- ec2_placement_group:
+- name: Delete a placement group.
+  community.aws.ec2_placement_group:
     name: my-cluster
     state: absent
 
