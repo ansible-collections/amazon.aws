@@ -22,7 +22,7 @@ options:
   managed_policies:
     description:
       - A list of managed policy ARNs or friendly names to attach to the user.
-      - To embed an inline policy, use M(iam_policy).
+      - To embed an inline policy, use M(community.aws.iam_policy).
     required: false
     type: list
     aliases: ['managed_policy']
@@ -52,26 +52,26 @@ EXAMPLES = '''
 #       Groups should manage their membership directly using `iam_group`,
 #       as users belong to them.
 
-# Create a user
-- iam_user:
+- name: Create a user
+  community.aws.iam_user:
     name: testuser1
     state: present
 
-# Create a user and attach a managed policy using its ARN
-- iam_user:
+- name: Create a user and attach a managed policy using its ARN
+  community.aws.iam_user:
     name: testuser1
     managed_policies:
       - arn:aws:iam::aws:policy/AmazonSNSFullAccess
     state: present
 
-# Remove all managed policies from an existing user with an empty list
-- iam_user:
+- name: Remove all managed policies from an existing user with an empty list
+  community.aws.iam_user:
     name: testuser1
     state: present
     purge_policies: true
 
-# Delete the user
-- iam_user:
+- name: Delete the user
+  community.aws.iam_user:
     name: testuser1
     state: absent
 
