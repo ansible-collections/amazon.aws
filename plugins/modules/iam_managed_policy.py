@@ -61,7 +61,7 @@ requirements:
 EXAMPLES = '''
 # Create Policy ex nihilo
 - name: Create IAM Managed Policy
-  iam_managed_policy:
+  community.aws.iam_managed_policy:
     policy_name: "ManagedPolicy"
     policy_description: "A Helpful managed policy"
     policy: "{{ lookup('template', 'managed_policy.json.j2') }}"
@@ -69,14 +69,14 @@ EXAMPLES = '''
 
 # Update a policy with a new default version
 - name: Create IAM Managed Policy
-  iam_managed_policy:
+  community.aws.iam_managed_policy:
     policy_name: "ManagedPolicy"
     policy: "{{ lookup('file', 'managed_policy_update.json') }}"
     state: present
 
 # Update a policy with a new non default version
 - name: Create IAM Managed Policy
-  iam_managed_policy:
+  community.aws.iam_managed_policy:
     policy_name: "ManagedPolicy"
     policy: "{{ lookup('file', 'managed_policy_update.json') }}"
     make_default: false
@@ -84,7 +84,7 @@ EXAMPLES = '''
 
 # Update a policy and make it the only version and the default version
 - name: Create IAM Managed Policy
-  iam_managed_policy:
+  community.aws.iam_managed_policy:
     policy_name: "ManagedPolicy"
     policy: "{ 'Version': '2012-10-17', 'Statement':[{'Effect': 'Allow','Action': '*','Resource': '*'}]}"
     only_version: true
@@ -92,7 +92,7 @@ EXAMPLES = '''
 
 # Remove a policy
 - name: Create IAM Managed Policy
-  iam_managed_policy:
+  community.aws.iam_managed_policy:
     policy_name: "ManagedPolicy"
     state: absent
 '''
