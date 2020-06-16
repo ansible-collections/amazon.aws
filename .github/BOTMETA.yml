@@ -1,10 +1,15 @@
 automerge: false
 files:
+  docs/:
+    labels: docs
+  $connection/:
+    labels: connection 
   $connections/aws_ssm.py:
   $modules/:
     authors: wimnat
     maintainers: $team_aws
     ignore: erydo nadirollo seiffert tedder
+    label: modules
   $modules/_aws_region_facts.py:
     authors: Sodki
   $modules/_aws_s3_bucket_facts.py:
@@ -340,6 +345,15 @@ files:
     authors: bekelchik piontas
   $modules/sts_session_token.py:
     authors: pwnall
+  scripts/inventory/:
+    labels: inventory
+  tests/:
+    labels: tests
+  tests/integration/:
+    labels: integrations
+  tests/units/:
+    labels: units
+    
 macros:
   connections: plugins/connection
   modules: plugins/modules
