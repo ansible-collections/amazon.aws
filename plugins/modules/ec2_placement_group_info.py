@@ -29,22 +29,23 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details or the AWS region,
 # see the AWS Guide for details.
 
-# List all placement groups.
-- ec2_placement_group_info:
+- name: List all placement groups.
+  community.aws.ec2_placement_group_info:
   register: all_ec2_placement_groups
 
-# List two placement groups.
-- ec2_placement_group_info:
+- name: List two placement groups.
+  community.aws.ec2_placement_group_info:
     names:
      - my-cluster
      - my-other-cluster
   register: specific_ec2_placement_groups
 
-- debug: msg="{{ specific_ec2_placement_groups | json_query(\"[?name=='my-cluster']\") }}"
+- debug:
+    msg: "{{ specific_ec2_placement_groups | json_query(\"[?name=='my-cluster']\") }}"
 
 '''
 
