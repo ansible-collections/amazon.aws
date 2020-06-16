@@ -454,16 +454,17 @@ vpc_id:
     sample: vpc-0011223344
 '''
 
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, boto3_tag_list_to_ansible_dict, compare_aws_tags
 
-from ansible_collections.amazon.aws.plugins.module_utils.aws.elbv2 import (ApplicationLoadBalancer,
-                                                                           ELBListeners,
-                                                                           ELBListener,
-                                                                           ELBListenerRules,
-                                                                           ELBListenerRule,
-                                                                           )
-from ansible_collections.amazon.aws.plugins.module_utils.aws.elb_utils import get_elb_listener_rules
+from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import (
+    ApplicationLoadBalancer,
+    ELBListener,
+    ELBListenerRule,
+    ELBListenerRules,
+    ELBListeners,
+)
+from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import get_elb_listener_rules
 
 
 def create_or_update_elb(elb_obj):
