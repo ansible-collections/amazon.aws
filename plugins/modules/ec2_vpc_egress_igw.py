@@ -36,10 +36,10 @@ EXAMPLES = '''
 
 # Ensure that the VPC has an Internet Gateway.
 # The Internet Gateway ID is can be accessed via {{eigw.gateway_id}} for use in setting up NATs etc.
-ec2_vpc_egress_igw:
-  vpc_id: vpc-abcdefgh
-  state: present
-register: eigw
+- community.aws.ec2_vpc_egress_igw:
+    vpc_id: vpc-abcdefgh
+    state: present
+  register: eigw
 
 '''
 
