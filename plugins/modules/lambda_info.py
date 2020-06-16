@@ -12,8 +12,8 @@ module: lambda_info
 short_description: Gathers AWS Lambda function details
 description:
   - Gathers various details related to Lambda functions, including aliases, versions and event source mappings.
-  - Use module M(lambda) to manage the lambda function itself, M(lambda_alias) to manage function aliases and
-    M(lambda_event) to manage lambda event source mappings.
+  - Use module M(community.aws.lambda) to manage the lambda function itself, M(community.aws.lambda_alias) to manage function aliases and
+    M(community.aws.lambda_event) to manage lambda event source mappings.
 
 
 options:
@@ -45,19 +45,19 @@ EXAMPLES = '''
 ---
 # Simple example of listing all info for a function
 - name: List all for a specific function
-  lambda_info:
+  community.aws.lambda_info:
     query: all
     function_name: myFunction
   register: my_function_details
 # List all versions of a function
 - name: List function versions
-  lambda_info:
+  community.aws.lambda_info:
     query: versions
     function_name: myFunction
   register: my_function_versions
 # List all lambda function versions
 - name: List all function
-  lambda_info:
+  community.aws.lambda_info:
     query: all
     max_items: 20
   register: output
