@@ -299,7 +299,7 @@ def main():
     )
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
     if module._name == 'elasticache_facts':
-        module.deprecate("The 'elasticache_facts' module has been renamed to 'elasticache_info'", version='2.13')
+        module.deprecate("The 'elasticache_facts' module has been renamed to 'elasticache_info'", date='2021-12-01', collection_name='community.aws')
 
     client = module.client('elasticache')
 

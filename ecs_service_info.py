@@ -225,7 +225,7 @@ def main():
     is_old_facts = module._name == 'ecs_service_facts'
     if is_old_facts:
         module.deprecate("The 'ecs_service_facts' module has been renamed to 'ecs_service_info', "
-                         "and the renamed one no longer returns ansible_facts", version='2.13')
+                         "and the renamed one no longer returns ansible_facts", date='2021-12-01', collection_name='community.aws')
 
     show_details = module.params.get('details')
 

@@ -10,7 +10,8 @@ DOCUMENTATION = '''
 ---
 module: lambda_facts
 deprecated:
-  removed_in: '2.13'
+  removed_at_date: '2021-12-01'
+  removed_from_collection: 'community.aws'
   why: Deprecated in favour of C(_info) module.
   alternative: Use M(lambda_info) instead.
 short_description: Gathers AWS Lambda function details as Ansible facts

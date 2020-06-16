@@ -274,7 +274,7 @@ def main():
     acm_info = ACMServiceManager(module)
 
     if module._name == 'aws_acm_facts':
-        module.deprecate("The 'aws_acm_facts' module has been renamed to 'aws_acm_info'", version='2.13')
+        module.deprecate("The 'aws_acm_facts' module has been renamed to 'aws_acm_info'", date='2021-12-01', collection_name='community.aws')
 
     client = module.client('acm')
 

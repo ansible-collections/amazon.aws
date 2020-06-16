@@ -58,7 +58,7 @@ options:
     comparison:
         description:
           - Determines how the threshold value is compared
-          - Symbolic comparison operators have been deprecated, and will be removed in 2.14
+          - Symbolic comparison operators have been deprecated, and will be removed after 2022-06-22.
         required: false
         type: str
         choices:
@@ -238,7 +238,8 @@ def create_metric_alarm(connection, module):
                    '>': 'GreaterThanThreshold'}
     if comparison in ('<=', '<', '>', '>='):
         module.deprecate('Using the <=, <, > and >= operators for comparison has been deprecated. Please use LessThanOrEqualToThreshold, '
-                         'LessThanThreshold, GreaterThanThreshold or GreaterThanOrEqualToThreshold instead.', version="2.14")
+                         'LessThanThreshold, GreaterThanThreshold or GreaterThanOrEqualToThreshold instead.',
+                         date='2022-06-01', collection_name='community.aws')
         comparison = comparisons[comparison]
 
     if not isinstance(dimensions, list):

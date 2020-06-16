@@ -78,7 +78,7 @@ options:
     type: str
   wait_timeout:
     description:
-      - The I(wait_timeout) option does nothing and will be removed in Ansible 2.14.
+      - The I(wait_timeout) option does nothing and will be removed after 2022-06-01
     type: int
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -525,7 +525,7 @@ def main():
                                        default=False),
         release_on_disassociation=dict(required=False, type='bool', default=False),
         allow_reassociation=dict(type='bool', default=False),
-        wait_timeout=dict(type='int', removed_in_version='2.14'),
+        wait_timeout=dict(type='int', removed_at_date='2022-06-01', removed_from_collection='community.aws'),
         private_ip_address=dict(),
         tag_name=dict(),
         tag_value=dict(),

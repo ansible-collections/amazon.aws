@@ -94,7 +94,7 @@ def main():
     is_old_facts = module._name == 'aws_s3_bucket_facts'
     if is_old_facts:
         module.deprecate("The 'aws_s3_bucket_facts' module has been renamed to 'aws_s3_bucket_info', "
-                         "and the renamed one no longer returns ansible_facts", version='2.13')
+                         "and the renamed one no longer returns ansible_facts", date='2021-12-01', collection_name='community.aws')
 
     # Verify Boto3 is used
     if not HAS_BOTO3:

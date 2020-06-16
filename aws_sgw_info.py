@@ -345,7 +345,7 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=argument_spec)
     if module._name == 'aws_sgw_facts':
-        module.deprecate("The 'aws_sgw_facts' module has been renamed to 'aws_sgw_info'", version='2.13')
+        module.deprecate("The 'aws_sgw_facts' module has been renamed to 'aws_sgw_info'", date='2021-12-01', collection_name='community.aws')
     client = module.client('storagegateway')
 
     if client is None:  # this should never happen

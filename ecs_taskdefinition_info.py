@@ -314,7 +314,8 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
     if module._name == 'ecs_taskdefinition_facts':
-        module.deprecate("The 'ecs_taskdefinition_facts' module has been renamed to 'ecs_taskdefinition_info'", version='2.13')
+        module.deprecate("The 'ecs_taskdefinition_facts' module has been renamed to 'ecs_taskdefinition_info'",
+                         date='2021-12-01', collection_name='community.aws')
 
     ecs = module.client('ecs')
 

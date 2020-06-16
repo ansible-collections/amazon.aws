@@ -43,7 +43,7 @@ options:
     purge_policy:
         description:
             - If yes, remove the policy from the repository.
-            - Alias C(delete_policy) has been deprecated and will be removed in Ansible 2.14
+            - Alias C(delete_policy) has been deprecated and will be removed after 2022-06-01.
         required: false
         default: false
         type: bool
@@ -502,7 +502,7 @@ def main():
         image_tag_mutability=dict(required=False, choices=['mutable', 'immutable'],
                                   default='mutable'),
         purge_policy=dict(required=False, type='bool', aliases=['delete_policy'],
-                          deprecated_aliases=[dict(name='delete_policy', version='2.14')]),
+                          deprecated_aliases=[dict(name='delete_policy', date='2022-06-01', collection_name='community.aws')]),
         lifecycle_policy=dict(required=False, type='json'),
         purge_lifecycle_policy=dict(required=False, type='bool')
     )

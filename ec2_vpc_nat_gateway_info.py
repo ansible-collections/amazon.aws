@@ -133,7 +133,8 @@ def main():
     module = AnsibleModule(argument_spec=argument_spec,
                            supports_check_mode=True)
     if module._name == 'ec2_vpc_nat_gateway_facts':
-        module.deprecate("The 'ec2_vpc_nat_gateway_facts' module has been renamed to 'ec2_vpc_nat_gateway_info'", version='2.13')
+        module.deprecate("The 'ec2_vpc_nat_gateway_facts' module has been renamed to 'ec2_vpc_nat_gateway_info'",
+                         date='2021-12-01', collection_name='community.aws')
 
     # Validate Requirements
     if not HAS_BOTO3:

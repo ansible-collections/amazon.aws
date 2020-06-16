@@ -113,7 +113,8 @@ def main():
         supports_check_mode=True
     )
     if module._module._name == 'ec2_placement_group_facts':
-        module._module.deprecate("The 'ec2_placement_group_facts' module has been renamed to 'ec2_placement_group_info'", version='2.13')
+        module._module.deprecate("The 'ec2_placement_group_facts' module has been renamed to 'ec2_placement_group_info'",
+                                 date='2021-12-01', collection_name='community.aws')
 
     connection = module.client('ec2')
 

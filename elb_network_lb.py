@@ -440,7 +440,7 @@ def main():
         # See below, unless state==present we delete.  Ouch.
         module.deprecate('State currently defaults to absent.  This is inconsistent with other modules'
                          ' and the default will be changed to `present` in Ansible 2.14',
-                         version='2.14')
+                         date='2022-06-01', collection_name='community.aws')
 
     # Quick check of listeners parameters
     listeners = module.params.get("listeners")

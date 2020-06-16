@@ -273,7 +273,8 @@ def main():
                            supports_check_mode=True
                            )
     if module._name == 'elb_application_lb_facts':
-        module.deprecate("The 'elb_application_lb_facts' module has been renamed to 'elb_application_lb_info'", version='2.13')
+        module.deprecate("The 'elb_application_lb_facts' module has been renamed to 'elb_application_lb_info'",
+                         date='2021-12-01', collection_name='community.aws')
 
     if not HAS_BOTO3:
         module.fail_json(msg='boto3 required for this module')

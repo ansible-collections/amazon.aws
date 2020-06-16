@@ -335,7 +335,7 @@ def main():
         supports_check_mode=True
     )
     if module._name == 'redshift_facts':
-        module.deprecate("The 'redshift_facts' module has been renamed to 'redshift_info'", version='2.13')
+        module.deprecate("The 'redshift_facts' module has been renamed to 'redshift_info'", date='2021-12-01', collection_name='community.aws')
 
     cluster_identifier = module.params.get('cluster_identifier')
     cluster_tags = module.params.get('tags')

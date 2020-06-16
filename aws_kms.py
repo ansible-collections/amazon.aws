@@ -1052,7 +1052,7 @@ def main():
 
     if module.params.get('policy_grant_types') or mode == 'deny':
         module.deprecate('Managing the KMS IAM Policy via policy_mode and policy_grant_types is fragile'
-                         ' and has been deprecated in favour of the policy option.', version='2.13')
+                         ' and has been deprecated in favour of the policy option.', date='2021-12-01', collection_name='community.aws')
         result = update_policy_grants(kms, module, key_metadata, mode)
         module.exit_json(**result)
 
