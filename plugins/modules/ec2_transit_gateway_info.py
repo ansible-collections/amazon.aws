@@ -36,22 +36,22 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Gather info about all transit gateways
-- ec2_transit_gateway_info:
+- name: Gather info about all transit gateways
+  community.aws.ec2_transit_gateway_info:
 
-# Gather info about a particular transit gateway using filter transit gateway ID
-- ec2_transit_gateway_info:
+- name: Gather info about a particular transit gateway using filter transit gateway ID
+  community.aws.ec2_transit_gateway_info:
     filters:
       transit-gateway-id: tgw-02c42332e6b7da829
 
-# Gather info about a particular transit gateway using multiple option filters
-- ec2_transit_gateway_info:
+- name: Gather info about a particular transit gateway using multiple option filters
+  community.aws.ec2_transit_gateway_info:
     filters:
       options.dns-support: enable
       options.vpn-ecmp-support: enable
 
-# Gather info about multiple transit gateways using module param
-- ec2_transit_gateway_info:
+- name: Gather info about multiple transit gateways using module param
+  community.aws.ec2_transit_gateway_info:
     transit_gateway_ids:
       - tgw-02c42332e6b7da829
       - tgw-03c53443d5a8cb716
