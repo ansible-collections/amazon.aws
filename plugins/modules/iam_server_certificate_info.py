@@ -147,7 +147,8 @@ def main():
 
     module = AnsibleModule(argument_spec=argument_spec,)
     if module._name == 'iam_server_certificate_facts':
-        module.deprecate("The 'iam_server_certificate_facts' module has been renamed to 'iam_server_certificate_info'", version='2.13')
+        module.deprecate("The 'iam_server_certificate_facts' module has been renamed to 'iam_server_certificate_info'",
+                         date='2021-12-01', collection_name='community.aws')
 
     if not HAS_BOTO3:
         module.fail_json(msg='boto3 required for this module')
