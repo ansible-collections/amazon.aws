@@ -29,21 +29,21 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Gather information about all VPC route tables
-- ec2_vpc_route_table_info:
+- name: Gather information about all VPC route tables
+  community.aws.ec2_vpc_route_table_info:
 
-# Gather information about a particular VPC route table using route table ID
-- ec2_vpc_route_table_info:
+- name: Gather information about a particular VPC route table using route table ID
+  community.aws.ec2_vpc_route_table_info:
     filters:
       route-table-id: rtb-00112233
 
-# Gather information about any VPC route table with a tag key Name and value Example
-- ec2_vpc_route_table_info:
+- name: Gather information about any VPC route table with a tag key Name and value Example
+  community.aws.ec2_vpc_route_table_info:
     filters:
       "tag:Name": Example
 
-# Gather information about any VPC route table within VPC with ID vpc-abcdef00
-- ec2_vpc_route_table_info:
+- name: Gather information about any VPC route table within VPC with ID vpc-abcdef00
+  community.aws.ec2_vpc_route_table_info:
     filters:
       vpc-id: vpc-abcdef00
 
