@@ -185,7 +185,7 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create an ELB and attach a listener
-- elb_application_lb:
+- community.aws.elb_application_lb:
     name: myelb
     security_groups:
       - sg-12345678
@@ -206,7 +206,7 @@ EXAMPLES = '''
     state: present
 
 # Create an ELB and attach a listener with logging enabled
-- elb_application_lb:
+- community.aws.elb_application_lb:
     access_logs_enabled: yes
     access_logs_s3_bucket: mybucket
     access_logs_s3_prefix: "logs"
@@ -230,7 +230,7 @@ EXAMPLES = '''
     state: present
 
 # Create an ALB with listeners and rules
-- elb_application_lb:
+- community.aws.elb_application_lb:
     name: test-alb
     subnets:
       - subnet-12345678
@@ -293,7 +293,7 @@ EXAMPLES = '''
     state: present
 
 # Remove an ELB
-- elb_application_lb:
+- community.aws.elb_application_lb:
     name: myelb
     state: absent
 

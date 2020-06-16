@@ -36,22 +36,22 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Gather information about all target groups
-- elb_application_lb_info:
+- name: Gather information about all target groups
+  community.aws.elb_application_lb_info:
 
-# Gather information about the target group attached to a particular ELB
-- elb_application_lb_info:
+- name: Gather information about the target group attached to a particular ELB
+  community.aws.elb_application_lb_info:
     load_balancer_arns:
       - "arn:aws:elasticloadbalancing:ap-southeast-2:001122334455:loadbalancer/app/my-elb/aabbccddeeff"
 
-# Gather information about a target groups named 'tg1' and 'tg2'
-- elb_application_lb_info:
+- name: Gather information about a target groups named 'tg1' and 'tg2'
+  community.aws.elb_application_lb_info:
     names:
       - elb1
       - elb2
 
-# Gather information about specific ALB
-- elb_application_lb_info:
+- name: Gather information about specific ALB
+  community.aws.elb_application_lb_info:
     names: "alb-name"
     region: "aws-region"
   register: alb_info
