@@ -42,8 +42,8 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
-# Add or change a subnet group
-- rds_subnet_group:
+- name: Add or change a subnet group
+  community.aws.rds_subnet_group:
     state: present
     name: norwegian-blue
     description: My Fancy Ex Parrot Subnet Group
@@ -51,8 +51,8 @@ EXAMPLES = '''
       - subnet-aaaaaaaa
       - subnet-bbbbbbbb
 
-# Remove a subnet group
-- rds_subnet_group:
+- name: Remove a subnet group
+  community.aws.rds_subnet_group:
     state: absent
     name: norwegian-blue
 '''
