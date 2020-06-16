@@ -126,7 +126,7 @@ delete_parameter:
     type: dict
 '''
 
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 
 try:
     from botocore.exceptions import ClientError

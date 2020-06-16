@@ -282,7 +282,7 @@ creation_time:
     sample: '2017-09-28T08:22:51.881000-03:00'
 '''  # NOQA
 
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import _camel_to_snake, camel_dict_to_snake_dict
 
 try:

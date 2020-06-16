@@ -26,7 +26,7 @@ def is_subdict(subdict, superdict):
     return all(superdict[k] == v for k, v in subdict.items())
 
 
-@patch('ansible_collections.amazon.aws.plugins.module_utils.aws.core.HAS_BOTO3', new=True)
+@patch('ansible_collections.amazon.aws.plugins.module_utils.core.HAS_BOTO3', new=True)
 @patch.object(route53_zone.AnsibleAWSModule, 'client')
 @patch.object(route53_zone.time, 'time', return_value=1)
 class TestRoute53Module(ModuleTestCase):

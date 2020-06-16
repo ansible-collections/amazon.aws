@@ -87,7 +87,7 @@ EXAMPLES = '''
 
 RETURN = ''' # '''
 
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 
 
 class SnapshotController(object):

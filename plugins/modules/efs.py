@@ -233,7 +233,7 @@ try:
 except ImportError as e:
     pass  # Handled by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (compare_aws_tags,
                                                                      camel_dict_to_snake_dict,
                                                                      ansible_dict_to_boto3_tag_list,

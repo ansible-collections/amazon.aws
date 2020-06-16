@@ -12,7 +12,7 @@ import copy
 
 import pytest
 
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import HAS_BOTO3
+from ansible_collections.amazon.aws.plugins.module_utils.core import HAS_BOTO3
 from ansible_collections.community.aws.tests.unit.compat.mock import MagicMock
 from ansible_collections.community.aws.tests.unit.modules.utils import set_module_args
 

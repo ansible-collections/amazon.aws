@@ -115,8 +115,8 @@ wafs:
             ]
 '''
 
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.aws.waf import list_web_acls, get_web_acl
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.waf import list_web_acls, get_web_acl
 
 
 def main():

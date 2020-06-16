@@ -192,7 +192,7 @@ iam_role:
 
 import json
 
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, compare_policies
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (AWSRetry,
                                                                      ansible_dict_to_boto3_tag_list,

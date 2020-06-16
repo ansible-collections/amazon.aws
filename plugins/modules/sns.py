@@ -137,7 +137,7 @@ try:
 except ImportError:
     pass    # Handled by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.aws.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 
 
 def arn_topic_lookup(module, client, short_topic):
