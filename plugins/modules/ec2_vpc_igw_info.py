@@ -36,13 +36,13 @@ EXAMPLES = '''
 # # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all Internet Gateways for an account or profile
-  ec2_vpc_igw_info:
+  community.aws.ec2_vpc_igw_info:
     region: ap-southeast-2
     profile: production
   register: igw_info
 
 - name: Gather information about a filtered list of Internet Gateways
-  ec2_vpc_igw_info:
+  community.aws.ec2_vpc_igw_info:
     region: ap-southeast-2
     profile: production
     filters:
@@ -50,7 +50,7 @@ EXAMPLES = '''
   register: igw_info
 
 - name: Gather information about a specific internet gateway by InternetGatewayId
-  ec2_vpc_igw_info:
+  community.aws.ec2_vpc_igw_info:
     region: ap-southeast-2
     profile: production
     internet_gateway_ids: igw-c1231234
