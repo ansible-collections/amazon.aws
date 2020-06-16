@@ -64,7 +64,7 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: Create a new vgw attached to a specific VPC
-  ec2_vpc_vgw:
+  community.aws.ec2_vpc_vgw:
     state: present
     region: ap-southeast-2
     profile: personal
@@ -74,7 +74,7 @@ EXAMPLES = '''
   register: created_vgw
 
 - name: Create a new unattached vgw
-  ec2_vpc_vgw:
+  community.aws.ec2_vpc_vgw:
     state: present
     region: ap-southeast-2
     profile: personal
@@ -86,7 +86,7 @@ EXAMPLES = '''
   register: created_vgw
 
 - name: Remove a new vgw using the name
-  ec2_vpc_vgw:
+  community.aws.ec2_vpc_vgw:
     state: absent
     region: ap-southeast-2
     profile: personal
@@ -95,7 +95,7 @@ EXAMPLES = '''
   register: deleted_vgw
 
 - name: Remove a new vgw using the vpn_gateway_id
-  ec2_vpc_vgw:
+  community.aws.ec2_vpc_vgw:
     state: absent
     region: ap-southeast-2
     profile: personal
