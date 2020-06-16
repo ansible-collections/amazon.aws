@@ -88,13 +88,13 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Assume an existing role (more details: https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html)
-- sts_assume_role:
+- community.aws.sts_assume_role:
     role_arn: "arn:aws:iam::123456789012:role/someRole"
     role_session_name: "someRoleSession"
   register: assumed_role
 
 # Use the assumed role above to tag an instance in account 123456789012
-- ec2_tag:
+- amazon.aws.ec2_tag:
     aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
     aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
     security_token: "{{ assumed_role.sts_creds.session_token }}"
