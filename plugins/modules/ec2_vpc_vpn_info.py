@@ -37,16 +37,16 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # # Note: These examples do not set authentication details, see the AWS Guide for details.
 - name: Gather information about all vpn connections
-  ec2_vpc_vpn_info:
+  community.aws.ec2_vpc_vpn_info:
 
 - name: Gather information about a filtered list of vpn connections, based on tags
-  ec2_vpc_vpn_info:
+  community.aws.ec2_vpc_vpn_info:
     filters:
       "tag:Name": test-connection
   register: vpn_conn_info
 
 - name: Gather information about vpn connections by specifying connection IDs.
-  ec2_vpc_vpn_info:
+  community.aws.ec2_vpc_vpn_info:
     filters:
       vpn-gateway-id: vgw-cbe66beb
   register: vpn_conn_info
