@@ -42,15 +42,17 @@ mfa_devices:
         user_name: pwnall
 """
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# List MFA devices (more details: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListMFADevices.html)
-- iam_mfa_device_info:
+# more details: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListMFADevices.html
+- name: List MFA devices
+  community.aws.iam_mfa_device_info:
   register: mfa_devices
 
-# Assume an existing role (more details: https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html)
-- sts_assume_role:
+# more details: https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html
+- name: Assume an existing role
+  community.aws.sts_assume_role:
     mfa_serial_number: "{{ mfa_devices.mfa_devices[0].serial_number }}"
     role_arn: "arn:aws:iam::123456789012:role/someRole"
     role_session_name: "someRoleSession"
