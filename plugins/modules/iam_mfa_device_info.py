@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: iam_mfa_device_info
+version_added: 1.0.0
 short_description: List the MFA (Multi-Factor Authentication) devices registered for a user
 description:
     - List the MFA (Multi-Factor Authentication) devices registered for a user
