@@ -1,9 +1,6 @@
 namespace: community
 name: aws
-# the version key is generated during the release by Zuul
-# https://github.com/ansible-network/releases/tree/master/ansible_releases/cmd
-# A script based on https://pypi.org/project/pbr/ will generate the version
-# key. The version value depends on the tag or the last git tag.
+version: 0.1.0
 readme: README.md
 authors:
   - Ansible (https://github.com/ansible)
