@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_vol
+version_added: 1.0.0
 short_description: Create and attach a volume, return volume id and device map
 description:
     - Creates an EBS volume and optionally attaches it to an instance.

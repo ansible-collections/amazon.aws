@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_vpc_subnet_info
+version_added: 1.0.0
 short_description: Gather information about ec2 VPC subnets in AWS
 description:
     - Gather information about ec2 VPC subnets in AWS

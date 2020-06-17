@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_s3
+version_added: 1.0.0
 short_description: manage objects in S3.
 description:
     - This module allows the user to manage S3 buckets and the objects within them. Includes support for creating and

@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_vpc_net
+version_added: 1.0.0
 short_description: Configure AWS virtual private clouds
 description:
     - Create, modify, and terminate AWS virtual private clouds.

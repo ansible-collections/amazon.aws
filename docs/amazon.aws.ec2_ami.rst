@@ -1,5 +1,6 @@
+:orphan:
 
-.. _amazon.aws.ec2_ami_:
+.. _amazon.aws.ec2_ami_module:
 
 
 ******************
@@ -23,7 +24,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - python >= 2.6
 - boto
@@ -38,7 +39,6 @@ Parameters
         <tr>
             <th colspan="2">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -53,9 +53,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">"x86_64"</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The target architecture of the image to register</div>
                                                         </td>
             </tr>
@@ -70,9 +68,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -88,9 +84,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -107,9 +101,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -125,9 +117,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of valid billing codes. To be used with valid accounts by aws marketplace vendors.</div>
                                                         </td>
             </tr>
@@ -146,9 +136,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -167,9 +155,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Delete snapshots when deregistering the AMI.</div>
                                                         </td>
             </tr>
@@ -184,9 +170,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Human-readable string describing the contents and purpose of the AMI.</div>
                                                         </td>
             </tr>
@@ -201,9 +185,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>List of device hashes/dictionaries with custom configurations (same block-device-mapping parameters).</div>
                                                         </td>
             </tr>
@@ -223,9 +205,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether the device should be automatically deleted when the Instance is terminated.</div>
                                                         </td>
             </tr>
@@ -241,9 +221,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The device name. For example <code>/dev/sda</code>.</div>
                                                         </td>
             </tr>
@@ -263,9 +241,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether the volume should be encrypted.</div>
                                                         </td>
             </tr>
@@ -281,9 +257,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When using an <code>io1</code> <em>volume_type</em> this sets the number of IOPS provisioned for the volume</div>
                                                         </td>
             </tr>
@@ -303,9 +277,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Suppresses the specified device included in the block device mapping of the AMI.</div>
                                                         </td>
             </tr>
@@ -321,9 +293,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ID of the Snapshot.</div>
                                                         </td>
             </tr>
@@ -339,9 +309,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The size of the volume (in GiB)</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: size</div>
                                     </td>
@@ -358,9 +326,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The volume type.  Defaults to <code>gp2</code> when not set.</div>
                                                         </td>
             </tr>
@@ -376,9 +342,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -397,9 +361,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A boolean representing whether enhanced networking with ENA is enabled or not.</div>
                                                         </td>
             </tr>
@@ -414,9 +376,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Image ID to be deregistered.</div>
                                                         </td>
             </tr>
@@ -431,9 +391,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The s3 location of an image to use for the AMI.</div>
                                                         </td>
             </tr>
@@ -448,9 +406,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Instance ID to create the AMI from.</div>
                                                         </td>
             </tr>
@@ -465,9 +421,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The target kernel id of the image to register.</div>
                                                         </td>
             </tr>
@@ -482,9 +436,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Users and groups that should be able to launch the AMI. Expects dictionary with a key of user_ids and/or group_names. user_ids should be a list of account ids. group_name should be a list of groups, &quot;all&quot; is the only acceptable value currently.</div>
                                             <div>You must pass all desired launch permissions if you wish to modify existing launch permissions (passing just groups will remove all users)</div>
                                                         </td>
@@ -500,9 +452,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The name of the new AMI.</div>
                                                         </td>
             </tr>
@@ -521,9 +471,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Flag indicating that the bundling process should not attempt to shutdown the instance before bundling. If this flag is True, the responsibility of maintaining file system integrity is left to the owner of the instance.</div>
                                                         </td>
             </tr>
@@ -538,9 +486,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -559,9 +505,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether to remove existing tags that aren&#x27;t passed in the <code>tags</code> parameter</div>
                                                         </td>
             </tr>
@@ -576,9 +520,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ID of the RAM disk.</div>
                                                         </td>
             </tr>
@@ -593,9 +535,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -611,9 +551,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The root device name of the image to register.</div>
                                                         </td>
             </tr>
@@ -628,9 +566,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -646,9 +582,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Set to simple to enable enhanced networking with the Intel 82599 Virtual Function interface for the AMI and any instances that you launch from the AMI.</div>
                                                         </td>
             </tr>
@@ -667,9 +601,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>present</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Register or deregister an AMI.</div>
                                                         </td>
             </tr>
@@ -684,9 +616,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary of tags to add to the new image; &#x27;{&quot;key&quot;:&quot;value&quot;}&#x27; and &#x27;{&quot;key&quot;:&quot;value&quot;,&quot;key&quot;:&quot;value&quot;}&#x27;</div>
                                                         </td>
             </tr>
@@ -705,9 +635,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -723,9 +651,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">"hvm"</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The virtualization type of the image to register.</div>
                                                         </td>
             </tr>
@@ -744,9 +670,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Wait for the AMI to be in state &#x27;available&#x27; before returning.</div>
                                                         </td>
             </tr>
@@ -762,9 +686,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">900</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>How long before wait gives up, in seconds.</div>
                                                         </td>
             </tr>
@@ -876,7 +798,7 @@ Examples
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this :
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

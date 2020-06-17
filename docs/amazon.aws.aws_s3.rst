@@ -1,5 +1,6 @@
+:orphan:
 
-.. _amazon.aws.aws_s3_:
+.. _amazon.aws.aws_s3_module:
 
 
 *****************
@@ -23,7 +24,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - boto
 - boto3
@@ -40,7 +41,6 @@ Parameters
         <tr>
             <th colspan="1">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -54,9 +54,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -72,9 +70,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -91,9 +87,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -109,9 +103,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Bucket name.</div>
                                                         </td>
             </tr>
@@ -130,9 +122,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -147,9 +137,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The destination file path when downloading an object/key with a GET operation.</div>
                                                         </td>
             </tr>
@@ -168,9 +156,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Enables Amazon S3 Dual-Stack Endpoints, allowing S3 communications using both IPv4 and IPv6.</div>
                                             <div>Requires at least botocore version 1.4.45.</div>
                                                         </td>
@@ -186,9 +172,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -207,9 +191,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set for PUT mode, asks for server-side encryption.</div>
                                                         </td>
             </tr>
@@ -224,9 +206,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>KMS key id to use when encrypting objects using <em>encrypting=aws:kms</em>. Ignored if <em>encryption</em> is not <code>aws:kms</code></div>
                                                         </td>
             </tr>
@@ -245,9 +225,7 @@ Parameters
                                                                                                                                                                                                 <li>aws:kms</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>What encryption mode to use if <em>encrypt=true</em>.</div>
                                                         </td>
             </tr>
@@ -263,9 +241,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">600</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Time limit (in seconds) for the URL generated and returned by S3/Walrus when performing a <em>mode=put</em> or <em>mode=geturl</em> operation.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: expiration</div>
                                     </td>
@@ -281,9 +257,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Custom headers for PUT operation, as a dictionary of &#x27;key=value&#x27; and &#x27;key=value,key=value&#x27;.</div>
                                                         </td>
             </tr>
@@ -302,9 +276,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Overrides initial bucket lookups in case bucket or iam policies are restrictive. Example: a user may have the GetObject permission but no other permissions. In this case using the option mode: get will fail without specifying <em>ignore_nonexistent_bucket=true</em>.</div>
                                                         </td>
             </tr>
@@ -319,9 +291,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Specifies the key to start with when using list mode. Object keys are returned in alphabetical order, starting with key after the marker in order.</div>
                                                         </td>
             </tr>
@@ -337,9 +307,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">1000</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Max number of results to return in list mode, set this if you want to retrieve fewer than the default 1000 keys.</div>
                                                         </td>
             </tr>
@@ -354,9 +322,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Metadata for PUT operation, as a dictionary of &#x27;key=value&#x27; and &#x27;key=value,key=value&#x27;.</div>
                                                         </td>
             </tr>
@@ -381,9 +347,7 @@ Parameters
                                                                                                                                                                                                 <li>list</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Switches the module behaviour between put (upload), get (download), geturl (return download url, Ansible 1.3+), getstr (download object as string (1.3+)), list (list keys, Ansible 2.0+), create (bucket), delete (bucket), and delobj (delete object, Ansible 2.0+).</div>
                                                         </td>
             </tr>
@@ -398,9 +362,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Keyname of the object inside the bucket. Can be used to create &quot;virtual directories&quot;, see examples.</div>
                                                         </td>
             </tr>
@@ -416,9 +378,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">"always"</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Force overwrite either locally on the filesystem or remotely with the object/key. Used with PUT and GET operations. Boolean or one of [always, never, different], true is equal to &#x27;always&#x27; and false is equal to &#x27;never&#x27;, new in 2.0. When this is set to &#x27;different&#x27;, the md5 sum of the local file is compared with the &#x27;ETag&#x27; of the object/key in S3. The ETag may or may not be an MD5 digest of the object data. See the ETag response header here <a href='https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html'>https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: force</div>
                                     </td>
@@ -435,9 +395,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">["private"]</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>This option lets the user set the canned permissions on the object/bucket that are created. The permissions that can be set are <code>private</code>, <code>public-read</code>, <code>public-read-write</code>, <code>authenticated-read</code> for a bucket or <code>private</code>, <code>public-read</code>, <code>public-read-write</code>, <code>aws-exec-read</code>, <code>authenticated-read</code>, <code>bucket-owner-read</code>, <code>bucket-owner-full-control</code> for an object. Multiple permissions can be specified as a list.</div>
                                                         </td>
             </tr>
@@ -453,9 +411,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">""</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Limits the response to keys that begin with the specified prefix for list mode.</div>
                                                         </td>
             </tr>
@@ -470,9 +426,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -487,9 +441,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -506,9 +458,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">0</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>On recoverable failure, how many times to retry before actually failing.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: retry</div>
                                     </td>
@@ -528,9 +478,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Enable Ceph RGW S3 support. This option requires an explicit url via <em>s3_url</em>.</div>
                                                         </td>
             </tr>
@@ -545,9 +493,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>S3 URL endpoint for usage with Ceph, Eucalyptus and fakes3 etc. Otherwise assumes AWS.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: S3_URL</div>
                                     </td>
@@ -563,9 +509,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -581,9 +525,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The source file path when performing a PUT operation.</div>
                                                         </td>
             </tr>
@@ -602,9 +544,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -619,9 +559,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Version ID of the object inside the bucket. Can be used to get a specific version of a file if versioning is enabled in the target bucket.</div>
                                                         </td>
             </tr>
@@ -743,7 +681,7 @@ Examples
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this :
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2
+version_added: 1.0.0
 short_description: create, terminate, start or stop an instance in ec2
 description:
     - Creates or terminates ec2 instances.

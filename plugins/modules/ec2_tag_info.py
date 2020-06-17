@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_tag_info
+version_added: 1.0.0
 short_description: list tags on ec2 resources
 description:
     - Lists tags for any EC2 resource.

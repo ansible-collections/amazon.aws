@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_group
+version_added: 1.0.0
 author: "Andrew de Quincey (@adq)"
 requirements: [ boto3 ]
 short_description: maintain an ec2 VPC security group.

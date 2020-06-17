@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_metadata_facts
+version_added: 1.0.0
 short_description: Gathers facts (instance metadata) about remote hosts within ec2
 author:
     - Silviu Dicu (@silviud)

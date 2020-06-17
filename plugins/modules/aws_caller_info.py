@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_caller_info
+version_added: 1.0.0
 short_description: Get information about the user and account being used to make AWS calls.
 description:
     - This module returns information about the account and user / role from which the AWS access tokens originate.

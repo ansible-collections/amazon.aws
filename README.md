@@ -9,7 +9,7 @@ The Ansible Amazon AWS collection includes a variety of Ansible content to help 
 ## Included content
 
 <!--start collection content-->
-## Modules
+### Modules
 Name | Description
 --- | ---
 [amazon.aws.aws_az_info](https://github.com/ansible-collections/amazon.aws/blob/master/docs/amazon.aws.aws_az_info.rst)|Gather information about availability zones in AWS.
