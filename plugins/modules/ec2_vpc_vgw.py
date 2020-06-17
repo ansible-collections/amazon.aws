@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: ec2_vpc_vgw
 short_description: Create and delete AWS VPN Virtual Gateways.
+version_added: 1.0.0
 description:
   - Creates AWS VPN Virtual Gateways
   - Deletes AWS VPN Virtual Gateways
