@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: rds_instance
+version_added: 1.0.0
 short_description: Manage RDS instances
 description:
     - Create, modify, and delete RDS instances.
