@@ -8,6 +8,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: ec2_vpc_endpoint_info
 short_description: Retrieves AWS VPC endpoints details using AWS methods.
+version_added: 1.0.0
 description:
   - Gets various details related to AWS VPC Endpoints.
   - This module was called C(ec2_vpc_endpoint_facts) before Ansible 2.9. The usage did not change.
