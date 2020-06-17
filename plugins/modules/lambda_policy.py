@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: lambda_policy
+version_added: 1.0.0
 short_description: Creates, updates or deletes AWS Lambda policy statements.
 description:
     - This module allows the management of AWS Lambda policy statements.
