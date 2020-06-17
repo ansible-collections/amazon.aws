@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: cloudwatchlogs_log_group
+version_added: 1.0.0
 short_description: create or delete log_group in CloudWatchLogs
 notes:
     - For details of the parameters and returns see U(http://boto3.readthedocs.io/en/latest/reference/services/logs.html).
