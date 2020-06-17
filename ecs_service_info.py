@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ecs_service_info
+version_added: 1.0.0
 short_description: List or describe services in ECS
 description:
     - Lists or describes services in ECS.

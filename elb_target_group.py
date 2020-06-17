@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: elb_target_group
+version_added: 1.0.0
 short_description: Manage a target group for an Application or Network load balancer
 description:
     - Manage an AWS Elastic Load Balancer target group. See

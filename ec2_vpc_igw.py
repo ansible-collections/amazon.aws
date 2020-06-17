@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_vpc_igw
+version_added: 1.0.0
 short_description: Manage an AWS VPC Internet gateway
 description:
     - Manage an AWS VPC Internet gateway

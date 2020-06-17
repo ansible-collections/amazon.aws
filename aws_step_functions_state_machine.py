@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_step_functions_state_machine
+version_added: 1.0.0
 
 short_description: Manage AWS Step Functions state machines
 

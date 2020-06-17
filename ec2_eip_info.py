@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_eip_info
+version_added: 1.0.0
 short_description: List EC2 EIP details
 description:
     - List details of EC2 Elastic IP addresses.

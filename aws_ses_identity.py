@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_ses_identity
+version_added: 1.0.0
 short_description: Manages SES email and domain identity
 description:
     - This module allows the user to manage verified email and domain identity for SES.

@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 ---
 module: cloudwatchevent_rule
+version_added: 1.0.0
 short_description: Manage CloudWatch Event rules and targets
 description:
   - This module creates and manages CloudWatch event rules and targets.

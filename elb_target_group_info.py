@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: elb_target_group_info
+version_added: 1.0.0
 short_description: Gather information about ELB target groups in AWS
 description:
     - Gather information about ELB target groups in AWS

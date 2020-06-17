@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: lambda_event
+version_added: 1.0.0
 short_description: Creates, updates or deletes AWS Lambda function event mappings
 description:
     - This module allows the management of AWS Lambda function event source mappings such as DynamoDB and Kinesis stream

@@ -12,6 +12,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ecs_ecr
+version_added: 1.0.0
 short_description: Manage Elastic Container Registry repositories
 description:
     - Manage Elastic Container Registry repositories.

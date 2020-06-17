@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: lambda_alias
+version_added: 1.0.0
 short_description: Creates, updates or deletes AWS Lambda function aliases
 description:
     - This module allows the management of AWS Lambda functions aliases via the Ansible

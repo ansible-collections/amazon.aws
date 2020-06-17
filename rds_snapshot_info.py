@@ -11,6 +11,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: rds_snapshot_info
+version_added: 1.0.0
 short_description: obtain information about one or more RDS snapshots
 description:
   - Obtain information about one or more RDS snapshots. These can be for unclustered snapshots or snapshots of clustered DBs (Aurora).

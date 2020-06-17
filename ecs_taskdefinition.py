@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ecs_taskdefinition
+version_added: 1.0.0
 short_description: register a task definition in ecs
 description:
     - Registers or deregisters task definitions in the Amazon Web Services (AWS) EC2 Container Service (ECS).

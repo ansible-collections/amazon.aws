@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: s3_website
+version_added: 1.0.0
 short_description: Configure an s3 bucket as a website
 description:
     - Configure an s3 bucket as a website

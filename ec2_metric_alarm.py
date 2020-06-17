@@ -21,6 +21,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: ec2_metric_alarm
 short_description: "Create/update or delete AWS Cloudwatch 'metric alarms'"
+version_added: 1.0.0
 description:
  - Can create or delete AWS metric alarms.
  - Metrics you wish to alarm on must already exist.

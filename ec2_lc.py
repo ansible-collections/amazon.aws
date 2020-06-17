@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_lc
+version_added: 1.0.0
 
 short_description: Create or delete AWS Autoscaling Launch Configurations
 

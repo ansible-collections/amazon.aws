@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: lambda
+version_added: 1.0.0
 short_description: Manage AWS Lambda functions
 description:
      - Allows for the management of Lambda functions.

@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 
+version_added: 1.0.0
 module: cloudfront_origin_access_identity
 
 short_description: Create, update and delete origin access identities for a

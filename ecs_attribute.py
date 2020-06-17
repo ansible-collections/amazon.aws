@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ecs_attribute
+version_added: 1.0.0
 short_description: manage ecs attributes
 description:
     - Create, update or delete ECS container instance attributes.

@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: cloudwatchlogs_log_group_info
+version_added: 1.0.0
 short_description: Get information about log_group in CloudWatchLogs
 description:
     - Lists the specified log groups. You can list all your log groups or filter the results by prefix.

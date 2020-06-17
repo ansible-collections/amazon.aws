@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: ec2_vpc_nat_gateway_info
 short_description: Retrieves AWS VPC Managed Nat Gateway details using AWS methods.
+version_added: 1.0.0
 description:
   - Gets various details related to AWS VPC Managed Nat Gateways
   - This module was called C(ec2_vpc_nat_gateway_facts) before Ansible 2.9. The usage did not change.

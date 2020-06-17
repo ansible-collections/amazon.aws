@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: sqs_queue
+version_added: 1.0.0
 short_description: Creates or deletes AWS SQS queues.
 description:
   - Create or delete AWS SQS queues.

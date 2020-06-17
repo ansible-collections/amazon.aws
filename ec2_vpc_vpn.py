@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_vpc_vpn
+version_added: 1.0.0
 short_description: Create, modify, and delete EC2 VPN connections.
 description:
   - This module creates, modifies, and deletes VPN connections. Idempotence is achieved by using the filters

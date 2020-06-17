@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: aws_region_info
 short_description: Gather information about AWS regions.
+version_added: 1.0.0
 description:
     - Gather information about AWS regions.
     - This module was called C(aws_region_facts) before Ansible 2.9. The usage did not change.

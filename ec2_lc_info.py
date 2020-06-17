@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_lc_info
+version_added: 1.0.0
 short_description: Gather information about AWS Autoscaling Launch Configurations.
 description:
     - Gather information about AWS Autoscaling Launch Configurations.

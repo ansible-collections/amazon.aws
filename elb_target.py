@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: elb_target
+version_added: 1.0.0
 short_description: Manage a target in a target group
 description:
     - Used to register or deregister a target in a target group

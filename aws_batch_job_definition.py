@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_batch_job_definition
+version_added: 1.0.0
 short_description: Manage AWS Batch Job Definitions
 description:
     - This module allows the management of AWS Batch Job Definitions.

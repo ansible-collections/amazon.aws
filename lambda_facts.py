@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: lambda_facts
+version_added: 1.0.0
 deprecated:
   removed_at_date: '2021-12-01'
   removed_from_collection: 'community.aws'

@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: elasticache_info
 short_description: Retrieve information for AWS ElastiCache clusters
+version_added: 1.0.0
 description:
   - Retrieve information from AWS ElastiCache clusters
   - This module was called C(elasticache_facts) before Ansible 2.9. The usage did not change.

@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 
+version_added: 1.0.0
 module: cloudfront_distribution
 
 short_description: Create, update and delete AWS CloudFront distributions.

@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_config_delivery_channel
+version_added: 1.0.0
 short_description: Manage AWS Config delivery channels
 description:
     - This module manages AWS Config delivery locations for rule checks and configuration info.

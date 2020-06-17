@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: ec2_vpc_endpoint
 short_description: Create and delete AWS VPC Endpoints.
+version_added: 1.0.0
 description:
   - Creates AWS VPC endpoints.
   - Deletes AWS VPC endpoints.

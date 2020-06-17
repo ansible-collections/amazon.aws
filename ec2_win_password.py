@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_win_password
+version_added: 1.0.0
 short_description: Gets the default administrator password for ec2 windows instances
 description:
     - Gets the default administrator password from any EC2 Windows instance. The instance is referenced by its id (e.g. C(i-XXXXXXX)).

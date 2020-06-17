@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: elb_network_lb
+version_added: 1.0.0
 short_description: Manage a Network Load Balancer
 description:
     - Manage an AWS Network Elastic Load Balancer. See

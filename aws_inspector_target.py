@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_inspector_target
+version_added: 1.0.0
 short_description: Create, Update and Delete Amazon Inspector Assessment
                    Targets
 description: Creates, updates, or deletes Amazon Inspector Assessment Targets

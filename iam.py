@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: iam
+version_added: 1.0.0
 short_description: Manage IAM users, groups, roles and keys
 description:
      - Allows for the management of IAM users, user API keys, groups, roles.

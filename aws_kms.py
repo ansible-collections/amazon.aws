@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_kms
+version_added: 1.0.0
 short_description: Perform various KMS management tasks.
 description:
      - Manage role/user access to a KMS key. Not designed for encrypting/decrypting.

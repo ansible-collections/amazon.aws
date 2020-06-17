@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ecs_cluster
+version_added: 1.0.0
 short_description: Create or terminate ECS clusters.
 notes:
     - When deleting a cluster, the information returned is the state of the cluster prior to deletion.

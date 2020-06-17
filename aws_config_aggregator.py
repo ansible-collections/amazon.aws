@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_config_aggregator
+version_added: 1.0.0
 short_description: Manage AWS Config aggregations across multiple accounts
 description:
     - Module manages AWS Config resources

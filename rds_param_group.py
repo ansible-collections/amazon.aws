@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: rds_param_group
+version_added: 1.0.0
 short_description: manage RDS parameter groups
 description:
      - Creates, modifies, and deletes RDS parameter groups.

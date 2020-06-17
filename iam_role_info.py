@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: iam_role_info
+version_added: 1.0.0
 short_description: Gather information on IAM roles
 description:
     - Gathers information about IAM roles.

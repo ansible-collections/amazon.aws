@@ -11,6 +11,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 author:
+version_added: 1.0.0
   - "Jens Carl (@j-carl), Hothead Games Inc."
   - "Rafael Driutti (@rafaeldriutti)"
 module: redshift

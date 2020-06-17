@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: cloudtrail
+version_added: 1.0.0
 short_description: manage CloudTrail create, delete, update
 description:
   - Creates, deletes, or updates CloudTrail configuration. Ensures logging is also enabled.

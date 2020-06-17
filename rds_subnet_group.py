@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: rds_subnet_group
+version_added: 1.0.0
 short_description: manage RDS database subnet groups
 description:
      - Creates, modifies, and deletes RDS database subnet groups. This module has a dependency on python-boto >= 2.5.

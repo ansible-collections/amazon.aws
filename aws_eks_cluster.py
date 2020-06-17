@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_eks_cluster
+version_added: 1.0.0
 short_description: Manage Elastic Kubernetes Service Clusters
 description:
     - Manage Elastic Kubernetes Service Clusters

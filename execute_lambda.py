@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: execute_lambda
+version_added: 1.0.0
 short_description: Execute an AWS Lambda function
 description:
   - This module executes AWS Lambda functions, allowing synchronous and asynchronous

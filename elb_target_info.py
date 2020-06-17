@@ -7,6 +7,7 @@ from __future__ import absolute_import, division, print_function
 DOCUMENTATION = '''
 ---
 module: elb_target_info
+version_added: 1.0.0
 short_description: Gathers which target groups a target is associated with.
 description:
   - This module will search through every target group in a region to find

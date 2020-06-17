@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: elasticache
+version_added: 1.0.0
 short_description: Manage cache clusters in Amazon ElastiCache
 description:
   - Manage cache clusters in Amazon ElastiCache.

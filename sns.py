@@ -11,6 +11,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: sns
 short_description: Send Amazon Simple Notification Service messages
+version_added: 1.0.0
 description:
   - Sends a notification to a topic on your Amazon SNS account.
 author:

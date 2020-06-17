@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_elasticbeanstalk_app
+version_added: 1.0.0
 
 short_description: Create, update, and delete an elastic beanstalk application
 

@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_config_recorder
+version_added: 1.0.0
 short_description: Manage AWS Config Recorders
 description:
     - Module manages AWS Config configuration recorder settings.

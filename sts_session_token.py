@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: sts_session_token
+version_added: 1.0.0
 short_description: Obtain a session token from the AWS Security Token Service
 description:
     - Obtain a session token from the AWS Security Token Service.

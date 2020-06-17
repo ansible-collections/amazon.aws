@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_snapshot_copy
+version_added: 1.0.0
 short_description: Copies an EC2 snapshot and returns the new Snapshot ID.
 description:
     - Copies an EC2 Snapshot from a source region to a destination region.

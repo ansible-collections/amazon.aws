@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_ses_rule_set
+version_added: 1.0.0
 short_description: Manages SES inbound receipt rule sets
 description:
     - The M(community.aws.aws_ses_rule_set) module allows you to create, delete, and manage SES receipt rule sets

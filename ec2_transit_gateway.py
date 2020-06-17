@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: ec2_transit_gateway
 short_description: Create and delete AWS Transit Gateways
+version_added: 1.0.0
 description:
   - Creates AWS Transit Gateways.
   - Deletes AWS Transit Gateways.

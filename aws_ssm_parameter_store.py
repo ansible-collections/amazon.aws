@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_ssm_parameter_store
+version_added: 1.0.0
 short_description: Manage key-value pairs in aws parameter store.
 description:
   - Manage key-value pairs in aws parameter store.

@@ -11,6 +11,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: rds_instance_info
+version_added: 1.0.0
 short_description: obtain information about one or more RDS instances
 description:
   - Obtain information about one or more RDS instances.

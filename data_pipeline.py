@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: data_pipeline
+version_added: 1.0.0
 author:
   - Raghu Udiyar (@raags) <raghusiddarth@gmail.com>
   - Sloane Hertel (@s-hertel) <shertel@redhat.com>

@@ -11,6 +11,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_eip
+version_added: 1.0.0
 short_description: manages EC2 elastic IP (EIP) addresses.
 description:
     - This module can allocate or release an EIP.

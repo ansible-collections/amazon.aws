@@ -22,6 +22,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: iam_saml_federation
+version_added: 1.0.0
 short_description: Maintain IAM SAML federation configuration.
 requirements:
     - boto3

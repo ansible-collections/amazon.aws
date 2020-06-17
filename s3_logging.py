@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: s3_logging
+version_added: 1.0.0
 short_description: Manage logging facility of an s3 bucket in AWS
 description:
     - Manage logging facility of an s3 bucket in AWS

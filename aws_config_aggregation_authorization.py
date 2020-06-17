@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_config_aggregation_authorization
+version_added: 1.0.0
 short_description: Manage cross-account AWS Config authorizations
 description:
     - Module manages AWS Config resources.

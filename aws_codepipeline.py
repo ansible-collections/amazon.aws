@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_codepipeline
+version_added: 1.0.0
 short_description: Create or delete AWS CodePipelines
 notes:
     - for details of the parameters and returns see U(http://boto3.readthedocs.io/en/latest/reference/services/codepipeline.html)
