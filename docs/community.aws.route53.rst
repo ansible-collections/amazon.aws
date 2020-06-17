@@ -1,5 +1,6 @@
+:orphan:
 
-.. _community.aws.route53_:
+.. _community.aws.route53_module:
 
 
 *********************
@@ -23,7 +24,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - python >= 2.6
 - boto
@@ -38,7 +39,6 @@ Parameters
         <tr>
             <th colspan="1">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -56,9 +56,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Indicates if this is an alias record.</div>
                                                         </td>
             </tr>
@@ -77,9 +75,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether or not to evaluate an alias target health. Useful for aliases to Elastic Load Balancers.</div>
                                                         </td>
             </tr>
@@ -94,9 +90,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The hosted zone identifier.</div>
                                                         </td>
             </tr>
@@ -111,9 +105,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -129,9 +121,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -148,9 +138,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -170,9 +158,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -187,9 +173,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -208,9 +192,7 @@ Parameters
                                                                                                                                                                                                 <li>PRIMARY</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Failover resource record sets only. Whether this is the primary or secondary resource record set. Allowed values are PRIMARY and SECONDARY</div>
                                                         </td>
             </tr>
@@ -225,9 +207,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Health check to associate with this record</div>
                                                         </td>
             </tr>
@@ -242,9 +222,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The Hosted Zone ID of the DNS zone to modify.</div>
                                             <div>This is a required parameter, if parameter <em>zone</em> is not supplied.</div>
                                                         </td>
@@ -260,9 +238,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Have to be specified for Weighted, latency-based and failover resource record sets only. An identifier that differentiates among multiple resource record sets that have the same combination of DNS name and type.</div>
                                                         </td>
             </tr>
@@ -281,9 +257,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether an existing record should be overwritten on create if values do not match.</div>
                                                         </td>
             </tr>
@@ -302,9 +276,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>If set to <code>yes</code>, the private zone matching the requested name within the domain will be used if there are both public and private zones. The default is to use the public zone.</div>
                                                         </td>
             </tr>
@@ -319,9 +291,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -336,9 +306,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The full DNS record to create or delete.</div>
                                                         </td>
             </tr>
@@ -353,9 +321,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Latency-based resource record sets only Among resource record sets that have the same combination of DNS name and type, a value that determines which region this should be associated with for the latency-based routing</div>
                                                         </td>
             </tr>
@@ -371,9 +337,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">500</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>In the case that route53 is still servicing a prior request, this module will wait and try again after this many seconds. If you have many domain names, the default of 500 seconds may be too long.</div>
                                                         </td>
             </tr>
@@ -388,9 +352,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -413,9 +375,7 @@ Parameters
                                                                                                                                                                                                 <li>delete</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Specifies the state of the resource record. As of Ansible 2.4, the <em>command</em> option has been changed to <em>state</em> as default and the choices &#x27;present&#x27; and &#x27;absent&#x27; have been added, but <em>command</em> still works as well.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: command</div>
                                     </td>
@@ -432,9 +392,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">3600</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The TTL, in second, to give the new record.</div>
                                                         </td>
             </tr>
@@ -462,9 +420,7 @@ Parameters
                                                                                                                                                                                                 <li>SOA</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The type of DNS record to create.</div>
                                                         </td>
             </tr>
@@ -483,9 +439,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -500,9 +454,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The new value when creating a DNS record.  YAML lists or multiple comma-spaced values are allowed for non-alias records.</div>
                                             <div>When deleting a record all values for the record must be specified or Route53 will not delete it.</div>
                                                         </td>
@@ -518,9 +470,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When used in conjunction with private_zone: true, this will only modify records in the private hosted zone attached to this VPC.</div>
                                             <div>This allows you to have multiple private hosted zones, all with the same name, attached to different VPCs.</div>
                                                         </td>
@@ -540,9 +490,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Wait until the changes have been replicated to all Amazon Route 53 DNS servers.</div>
                                                         </td>
             </tr>
@@ -558,9 +506,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">300</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>How long to wait for the changes to be replicated, in seconds.</div>
                                                         </td>
             </tr>
@@ -575,9 +521,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Weighted resource record sets only. Among resource record sets that have the same combination of DNS name and type, a value that determines what portion of traffic for the current resource record set is routed to the associated location.</div>
                                                         </td>
             </tr>
@@ -592,9 +536,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The DNS zone to modify.</div>
                                             <div>This is a required parameter, if parameter <em>hosted_zone_id</em> is not supplied.</div>
                                                         </td>
@@ -619,107 +561,109 @@ Examples
 .. code-block:: yaml+jinja
 
     
-    # Add new.foo.com as an A record with 3 IPs and wait until the changes have been replicated
-    - route53:
-          state: present
-          zone: foo.com
-          record: new.foo.com
-          type: A
-          ttl: 7200
-          value: 1.1.1.1,2.2.2.2,3.3.3.3
-          wait: yes
+    - name: Add new.foo.com as an A record with 3 IPs and wait until the changes have been replicated
+      community.aws.route53:
+        state: present
+        zone: foo.com
+        record: new.foo.com
+        type: A
+        ttl: 7200
+        value: 1.1.1.1,2.2.2.2,3.3.3.3
+        wait: yes
 
-    # Update new.foo.com as an A record with a list of 3 IPs and wait until the changes have been replicated
-    - route53:
-          state: present
-          zone: foo.com
-          record: new.foo.com
-          type: A
-          ttl: 7200
-          value:
-            - 1.1.1.1
-            - 2.2.2.2
-            - 3.3.3.3
-          wait: yes
+    - name: Update new.foo.com as an A record with a list of 3 IPs and wait until the changes have been replicated
+      community.aws.route53:
+        state: present
+        zone: foo.com
+        record: new.foo.com
+        type: A
+        ttl: 7200
+        value:
+          - 1.1.1.1
+          - 2.2.2.2
+          - 3.3.3.3
+        wait: yes
 
-    # Retrieve the details for new.foo.com
-    - route53:
-          state: get
-          zone: foo.com
-          record: new.foo.com
-          type: A
+    - name: Retrieve the details for new.foo.com
+      community.aws.route53:
+        state: get
+        zone: foo.com
+        record: new.foo.com
+        type: A
       register: rec
 
-    # Delete new.foo.com A record using the results from the get command
-    - route53:
-          state: absent
-          zone: foo.com
-          record: "{{ rec.set.record }}"
-          ttl: "{{ rec.set.ttl }}"
-          type: "{{ rec.set.type }}"
-          value: "{{ rec.set.value }}"
+    - name: Delete new.foo.com A record using the results from the get command
+      community.aws.route53:
+        state: absent
+        zone: foo.com
+        record: "{{ rec.set.record }}"
+        ttl: "{{ rec.set.ttl }}"
+        type: "{{ rec.set.type }}"
+        value: "{{ rec.set.value }}"
 
     # Add an AAAA record.  Note that because there are colons in the value
     # that the IPv6 address must be quoted. Also shows using the old form command=create.
-    - route53:
-          command: create
-          zone: foo.com
-          record: localhost.foo.com
-          type: AAAA
-          ttl: 7200
-          value: "::1"
+    - name: Add an AAAA record
+      community.aws.route53:
+        command: create
+        zone: foo.com
+        record: localhost.foo.com
+        type: AAAA
+        ttl: 7200
+        value: "::1"
 
-    # Add a SRV record with multiple fields for a service on port 22222
     # For more information on SRV records see:
     # https://en.wikipedia.org/wiki/SRV_record
-    - route53:
-          state: present
-          zone: foo.com
-          record: "_example-service._tcp.foo.com"
-          type: SRV
-          value: "0 0 22222 host1.foo.com,0 0 22222 host2.foo.com"
+    - name: Add a SRV record with multiple fields for a service on port 22222
+      community.aws.route53:
+        state: present
+        zone: foo.com
+        record: "_example-service._tcp.foo.com"
+        type: SRV
+        value: "0 0 22222 host1.foo.com,0 0 22222 host2.foo.com"
 
-    # Add a TXT record. Note that TXT and SPF records must be surrounded
+    # Note that TXT and SPF records must be surrounded
     # by quotes when sent to Route 53:
-    - route53:
-          state: present
-          zone: foo.com
-          record: localhost.foo.com
-          type: TXT
-          ttl: 7200
-          value: '"bar"'
+    - name: Add a TXT record.
+      community.aws.route53:
+        state: present
+        zone: foo.com
+        record: localhost.foo.com
+        type: TXT
+        ttl: 7200
+        value: '"bar"'
 
-    # Add an alias record that points to an Amazon ELB:
-    - route53:
-          state: present
-          zone: foo.com
-          record: elb.foo.com
-          type: A
-          value: "{{ elb_dns_name }}"
-          alias: True
-          alias_hosted_zone_id: "{{ elb_zone_id }}"
+    - name: Add an alias record that points to an Amazon ELB
+      community.aws.route53:
+        state: present
+        zone: foo.com
+        record: elb.foo.com
+        type: A
+        value: "{{ elb_dns_name }}"
+        alias: True
+        alias_hosted_zone_id: "{{ elb_zone_id }}"
 
-    # Retrieve the details for elb.foo.com
-    - route53:
-          state: get
-          zone: foo.com
-          record: elb.foo.com
-          type: A
+    - name: Retrieve the details for elb.foo.com
+      community.aws.route53:
+        state: get
+        zone: foo.com
+        record: elb.foo.com
+        type: A
       register: rec
 
-    # Delete an alias record using the results from the get command
-    - route53:
-          state: absent
-          zone: foo.com
-          record: "{{ rec.set.record }}"
-          ttl: "{{ rec.set.ttl }}"
-          type: "{{ rec.set.type }}"
-          value: "{{ rec.set.value }}"
-          alias: True
-          alias_hosted_zone_id: "{{ rec.set.alias_hosted_zone_id }}"
+    - name: Delete an alias record using the results from the get command
+      community.aws.route53:
+        state: absent
+        zone: foo.com
+        record: "{{ rec.set.record }}"
+        ttl: "{{ rec.set.ttl }}"
+        type: "{{ rec.set.type }}"
+        value: "{{ rec.set.value }}"
+        alias: True
+        alias_hosted_zone_id: "{{ rec.set.alias_hosted_zone_id }}"
 
-    # Add an alias record that points to an Amazon ELB and evaluates it health:
-    - route53:
+    - name: Add an alias record that points to an Amazon ELB and evaluates it health
+      community.aws.route53:
         state: present
         zone: foo.com
         record: elb.foo.com
@@ -729,39 +673,39 @@ Examples
         alias_hosted_zone_id: "{{ elb_zone_id }}"
         alias_evaluate_target_health: True
 
-    # Add an AAAA record with Hosted Zone ID.
-    - route53:
-          state: present
-          zone: foo.com
-          hosted_zone_id: Z2AABBCCDDEEFF
-          record: localhost.foo.com
-          type: AAAA
-          ttl: 7200
-          value: "::1"
+    - name: Add an AAAA record with Hosted Zone ID
+      community.aws.route53:
+        state: present
+        zone: foo.com
+        hosted_zone_id: Z2AABBCCDDEEFF
+        record: localhost.foo.com
+        type: AAAA
+        ttl: 7200
+        value: "::1"
 
-    # Use a routing policy to distribute traffic:
-    - route53:
-          state: present
-          zone: foo.com
-          record: www.foo.com
-          type: CNAME
-          value: host1.foo.com
-          ttl: 30
-          # Routing policy
-          identifier: "host1@www"
-          weight: 100
-          health_check: "d994b780-3150-49fd-9205-356abdd42e75"
+    - name: Use a routing policy to distribute traffic
+      community.aws.route53:
+        state: present
+        zone: foo.com
+        record: www.foo.com
+        type: CNAME
+        value: host1.foo.com
+        ttl: 30
+        # Routing policy
+        identifier: "host1@www"
+        weight: 100
+        health_check: "d994b780-3150-49fd-9205-356abdd42e75"
 
-    # Add a CAA record (RFC 6844):
-    - route53:
-          state: present
-          zone: example.com
-          record: example.com
-          type: CAA
-          value:
-            - 0 issue "ca.example.net"
-            - 0 issuewild ";"
-            - 0 iodef "mailto:security@example.com"
+    - name: Add a CAA record (RFC 6844)
+      community.aws.route53:
+        state: present
+        zone: example.com
+        record: example.com
+        type: CAA
+        value:
+          - 0 issue "ca.example.net"
+          - 0 issuewild ";"
+          - 0 iodef "mailto:security@example.com"
 
 
 
@@ -769,7 +713,7 @@ Examples
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this :
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

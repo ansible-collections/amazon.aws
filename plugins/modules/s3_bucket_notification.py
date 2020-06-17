@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: s3_bucket_notification
+version_added: 1.0.0
 short_description: Creates, updates or deletes S3 Bucket notification for lambda
 description:
     - This module allows the management of AWS Lambda function bucket event mappings via the

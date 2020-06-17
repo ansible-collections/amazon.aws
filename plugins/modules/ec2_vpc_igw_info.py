@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_vpc_igw_info
+version_added: 1.0.0
 short_description: Gather information about internet gateways in AWS
 description:
     - Gather information about internet gateways in AWS.

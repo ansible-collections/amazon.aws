@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_ami_copy
+version_added: 1.0.0
 short_description: copies AMI between AWS regions, return new image id
 description:
     - Copies AMI from a source region to a destination region. B(Since version 2.3 this module depends on boto3.)

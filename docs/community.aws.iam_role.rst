@@ -1,5 +1,6 @@
+:orphan:
 
-.. _community.aws.iam_role_:
+.. _community.aws.iam_role_module:
 
 
 **********************
@@ -23,7 +24,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - boto
 - boto3
@@ -40,7 +41,6 @@ Parameters
         <tr>
             <th colspan="1">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -54,9 +54,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The trust relationship policy document that grants an entity permission to assume the role.</div>
                                             <div>This parameter is required when <em>state=present</em>.</div>
                                                         </td>
@@ -72,9 +70,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -90,9 +86,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -109,9 +103,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -127,9 +119,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ARN of an IAM managed policy to use to restrict the permissions this role can pass on to IAM roles/users that it creates.</div>
                                             <div>Boundaries cannot be set on Instance Profiles, as such if this option is specified then <em>create_instance_profile</em> must be <code>false</code>.</div>
                                             <div>This is intended for roles/users that have permissions to create new IAM objects.</div>
@@ -153,9 +143,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Creates an IAM instance profile along with the role.</div>
                                                         </td>
             </tr>
@@ -174,9 +162,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -195,9 +181,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When <em>delete_instance_profile=true</em> and <em>state=absent</em> deleting a role will also delete the instance profile created with the same <em>name</em> as the role.</div>
                                             <div>Only applies when <em>state=absent</em>.</div>
                                                         </td>
@@ -213,9 +197,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Provides a description of the role.</div>
                                                         </td>
             </tr>
@@ -230,9 +212,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -247,12 +227,10 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of managed policy ARNs or, since Ansible 2.4, a list of either managed policy ARNs or friendly names.</div>
                                             <div>To remove all policies set <em>purge_polices=true</em> and <em>managed_policies=[None]</em>.</div>
-                                            <div>To embed an inline policy, use <span class='module'>iam_policy</span>.</div>
+                                            <div>To embed an inline policy, use <span class='module'>community.aws.iam_policy</span>.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: managed_policy</div>
                                     </td>
             </tr>
@@ -267,9 +245,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The maximum duration (in seconds) of a session when assuming the role.</div>
                                             <div>Valid values are between 1 and 12 hours (3600 and 43200 seconds).</div>
                                                         </td>
@@ -285,9 +261,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The name of the role to create.</div>
                                                         </td>
             </tr>
@@ -303,9 +277,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">"/"</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The path to the role. For more information about paths, see <a href='https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html'>https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html</a>.</div>
                                                         </td>
             </tr>
@@ -320,9 +292,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -341,9 +311,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When <em>purge_policies=true</em> any managed policies not listed in <em>managed_policies</em> will be detatched.</div>
                                             <div>By default <em>purge_policies=true</em>.  In Ansible 2.14 this will be changed to <em>purge_policies=false</em>.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: purge_policy, purge_managed_policies</div>
@@ -364,9 +332,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Remove tags not listed in <em>tags</em> when tags is specified.</div>
                                                         </td>
             </tr>
@@ -381,9 +347,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -399,9 +363,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -421,9 +383,7 @@ Parameters
                                                                                                                                                                                                 <li>absent</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Create or remove the IAM role.</div>
                                                         </td>
             </tr>
@@ -438,9 +398,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Tag dict to apply to the queue.</div>
                                             <div>Requires botocore 1.12.46 or above.</div>
                                                         </td>
@@ -460,9 +418,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -489,7 +445,7 @@ Examples
     # Note: These examples do not set authentication details, see the AWS Guide for details.
 
     - name: Create a role with description and tags
-      iam_role:
+      community.aws.iam_role:
         name: mynewrole
         assume_role_policy_document: "{{ lookup('file','policy.json') }}"
         description: This is My New Role
@@ -497,20 +453,20 @@ Examples
           env: dev
 
     - name: "Create a role and attach a managed policy called 'PowerUserAccess'"
-      iam_role:
+      community.aws.iam_role:
         name: mynewrole
         assume_role_policy_document: "{{ lookup('file','policy.json') }}"
         managed_policies:
           - arn:aws:iam::aws:policy/PowerUserAccess
 
     - name: Keep the role created above but remove all managed policies
-      iam_role:
+      community.aws.iam_role:
         name: mynewrole
         assume_role_policy_document: "{{ lookup('file','policy.json') }}"
         managed_policies: []
 
     - name: Delete the role
-      iam_role:
+      community.aws.iam_role:
         name: mynewrole
         assume_role_policy_document: "{{ lookup('file', 'policy.json') }}"
         state: absent
@@ -521,7 +477,7 @@ Examples
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this :
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

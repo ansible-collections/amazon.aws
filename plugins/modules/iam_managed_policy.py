@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: iam_managed_policy
+version_added: 1.0.0
 short_description: Manage User Managed IAM policies
 description:
     - Allows creating and removing managed IAM policies

@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ecs_taskdefinition_info
+version_added: 1.0.0
 short_description: Describe a task definition in ECS
 notes:
     - For details of the parameters and returns see

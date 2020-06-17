@@ -1,5 +1,6 @@
+:orphan:
 
-.. _community.aws.ec2_eip_:
+.. _community.aws.ec2_eip_module:
 
 
 *********************
@@ -24,7 +25,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - python >= 2.6
 - boto
@@ -39,7 +40,6 @@ Parameters
         <tr>
             <th colspan="1">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -57,9 +57,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Specify this option to allow an Elastic IP address that is already associated with another network interface or instance to be re-associated with the specified instance or interface.</div>
                                                         </td>
             </tr>
@@ -74,9 +72,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -92,9 +88,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -111,9 +105,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -133,9 +125,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -150,9 +140,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The id of the device for the EIP. Can be an EC2 Instance id or Elastic Network Interface (ENI) id.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: instance_id</div>
                                     </td>
@@ -168,9 +156,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -189,9 +175,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Allocate an EIP inside a VPC or not.</div>
                                             <div>Required if specifying an ENI with <em>device_id</em>.</div>
                                                         </td>
@@ -207,9 +191,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The primary or secondary private IP address to associate with the Elastic IP address.</div>
                                                         </td>
             </tr>
@@ -224,9 +206,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -241,9 +221,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The IP address of a previously allocated EIP.</div>
                                             <div>When <em>public_ip=present</em> and device is specified, the EIP is associated with the device.</div>
                                             <div>When <em>public_ip=absent</em> and device is specified, the EIP is disassociated from the device.</div>
@@ -261,9 +239,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Allocates the new Elastic IP from the provided public IPv4 pool (BYOIP) only applies to newly allocated Elastic IPs, isn&#x27;t validated when <em>reuse_existing_ip_allowed=true</em>.</div>
                                                         </td>
             </tr>
@@ -278,9 +254,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -300,9 +274,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether or not to automatically release the EIP when it is disassociated.</div>
                                                         </td>
             </tr>
@@ -321,9 +293,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Reuse an EIP that is not associated to a device (when available), instead of allocating a new one.</div>
                                                         </td>
             </tr>
@@ -338,9 +308,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -360,9 +328,7 @@ Parameters
                                                                                                                                                                                                 <li>absent</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When <code>state=present</code>, allocate an EIP or associate an existing EIP with a device.</div>
                                             <div>When <code>state=absent</code>, disassociate the EIP from the device and optionally release it.</div>
                                                         </td>
@@ -378,9 +344,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When <em>reuse_existing_ip_allowed=true</em>, supplement with this option to only reuse an Elastic IP if it is tagged with <em>tag_name</em>.</div>
                                                         </td>
             </tr>
@@ -395,9 +359,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Supplements <em>tag_name</em> but also checks that the value of the tag provided in <em>tag_name</em> matches <em>tag_value</em>.</div>
                                                         </td>
             </tr>
@@ -416,9 +378,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -433,10 +393,8 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
-                                            <div>The <em>wait_timeout</em> option does nothing and will be removed in Ansible 2.14.</div>
+                                                                <td>
+                                            <div>The <em>wait_timeout</em> option does nothing and will be removed after 2022-06-01</div>
                                                         </td>
             </tr>
                         </table>
@@ -464,39 +422,39 @@ Examples
     # Note: These examples do not set authentication details, see the AWS Guide for details.
 
     - name: associate an elastic IP with an instance
-      ec2_eip:
+      community.aws.ec2_eip:
         device_id: i-1212f003
         ip: 93.184.216.119
 
     - name: associate an elastic IP with a device
-      ec2_eip:
+      community.aws.ec2_eip:
         device_id: eni-c8ad70f3
         ip: 93.184.216.119
 
     - name: associate an elastic IP with a device and allow reassociation
-      ec2_eip:
+      community.aws.ec2_eip:
         device_id: eni-c8ad70f3
         public_ip: 93.184.216.119
         allow_reassociation: true
 
     - name: disassociate an elastic IP from an instance
-      ec2_eip:
+      community.aws.ec2_eip:
         device_id: i-1212f003
         ip: 93.184.216.119
         state: absent
 
     - name: disassociate an elastic IP with a device
-      ec2_eip:
+      community.aws.ec2_eip:
         device_id: eni-c8ad70f3
         ip: 93.184.216.119
         state: absent
 
     - name: allocate a new elastic IP and associate it with an instance
-      ec2_eip:
+      community.aws.ec2_eip:
         device_id: i-1212f003
 
     - name: allocate a new elastic IP without associating it to anything
-      ec2_eip:
+      community.aws.ec2_eip:
         state: present
       register: eip
 
@@ -505,7 +463,7 @@ Examples
         msg: "Allocated IP is {{ eip.public_ip }}"
 
     - name: provision new instances with ec2
-      ec2:
+      amazon.aws.ec2:
         keypair: mykey
         instance_type: c1.medium
         image: ami-40603AD1
@@ -515,12 +473,12 @@ Examples
       register: ec2
 
     - name: associate new elastic IPs with each of the instances
-      ec2_eip:
+      community.aws.ec2_eip:
         device_id: "{{ item }}"
       loop: "{{ ec2.instance_ids }}"
 
     - name: allocate a new elastic IP inside a VPC in us-west-2
-      ec2_eip:
+      community.aws.ec2_eip:
         region: us-west-2
         in_vpc: true
       register: eip
@@ -530,14 +488,14 @@ Examples
         msg: "Allocated IP inside a VPC is {{ eip.public_ip }}"
 
     - name: allocate eip - reuse unallocated ips (if found) with FREE tag
-      ec2_eip:
+      community.aws.ec2_eip:
         region: us-east-1
         in_vpc: true
         reuse_existing_ip_allowed: true
         tag_name: FREE
 
-    - name: allocate eip - reuse unallocted ips if tag reserved is nope
-      ec2_eip:
+    - name: allocate eip - reuse unallocated ips if tag reserved is nope
+      community.aws.ec2_eip:
         region: us-east-1
         in_vpc: true
         reuse_existing_ip_allowed: true
@@ -545,13 +503,13 @@ Examples
         tag_value: nope
 
     - name: allocate new eip - from servers given ipv4 pool
-      ec2_eip:
+      community.aws.ec2_eip:
         region: us-east-1
         in_vpc: true
         public_ipv4_pool: ipv4pool-ec2-0588c9b75a25d1a02
 
     - name: allocate eip - from a given pool (if no free addresses where dev-servers tag is dynamic)
-      ec2_eip:
+      community.aws.ec2_eip:
         region: us-east-1
         in_vpc: true
         reuse_existing_ip_allowed: true
@@ -559,7 +517,7 @@ Examples
         public_ipv4_pool: ipv4pool-ec2-0588c9b75a25d1a02
 
     - name: allocate eip from pool - check if tag reserved_for exists and value is our hostname
-      ec2_eip:
+      community.aws.ec2_eip:
         region: us-east-1
         in_vpc: true
         reuse_existing_ip_allowed: true
@@ -572,7 +530,7 @@ Examples
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this :
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

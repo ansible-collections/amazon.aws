@@ -1,5 +1,6 @@
+:orphan:
 
-.. _community.aws.aws_ses_identity_:
+.. _community.aws.aws_ses_identity_module:
 
 
 ******************************
@@ -24,7 +25,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - boto
 - boto3
@@ -41,7 +42,6 @@ Parameters
         <tr>
             <th colspan="2">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -55,9 +55,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -73,9 +71,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -92,9 +88,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -110,9 +104,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Setup the SNS topic used to report bounce notifications.</div>
                                             <div>If omitted, bounce notifications will not be delivered to a SNS topic.</div>
                                             <div>If bounce notifications are not delivered to a SNS topic, <em>feedback_forwarding</em> must be enabled.</div>
@@ -134,9 +126,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether or not to include headers when delivering to the SNS topic.</div>
                                             <div>If <em>topic</em> is not specified this will have no impact, but the SES setting is updated even if there is no topic.</div>
                                                         </td>
@@ -153,9 +143,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ARN of the topic to send notifications to.</div>
                                             <div>If omitted, notifications will not be delivered to a SNS topic.</div>
                                                         </td>
@@ -172,9 +160,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Setup the SNS topic used to report complaint notifications.</div>
                                             <div>If omitted, complaint notifications will not be delivered to a SNS topic.</div>
                                             <div>If complaint notifications are not delivered to a SNS topic, <em>feedback_forwarding</em> must be enabled.</div>
@@ -196,9 +182,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether or not to include headers when delivering to the SNS topic.</div>
                                             <div>If <em>topic</em> is not specified this will have no impact, but the SES setting is updated even if there is no topic.</div>
                                                         </td>
@@ -215,9 +199,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ARN of the topic to send notifications to.</div>
                                             <div>If omitted, notifications will not be delivered to a SNS topic.</div>
                                                         </td>
@@ -238,9 +220,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -255,9 +235,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Setup the SNS topic used to report delivery notifications.</div>
                                             <div>If omitted, delivery notifications will not be delivered to a SNS topic.</div>
                                                         </td>
@@ -278,9 +256,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether or not to include headers when delivering to the SNS topic.</div>
                                             <div>If <em>topic</em> is not specified this will have no impact, but the SES setting is updated even if there is no topic.</div>
                                                         </td>
@@ -297,9 +273,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ARN of the topic to send notifications to.</div>
                                             <div>If omitted, notifications will not be delivered to a SNS topic.</div>
                                                         </td>
@@ -316,9 +290,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -337,9 +309,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether or not to enable feedback forwarding.</div>
                                             <div>This can only be false if both <em>bounce_notifications</em> and <em>complaint_notifications</em> specify SNS topics.</div>
                                                         </td>
@@ -355,9 +325,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>This is the email address or domain to verify / delete.</div>
                                             <div>If this contains an &#x27;@&#x27; then it will be considered an email. Otherwise it will be considered a domain.</div>
                                                         </td>
@@ -373,9 +341,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -390,9 +356,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -408,9 +372,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -430,9 +392,7 @@ Parameters
                                                                                                                                                                                                 <li>absent</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether to create(or update) or delete the identity.</div>
                                                         </td>
             </tr>
@@ -451,9 +411,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -480,31 +438,31 @@ Examples
     # Note: These examples do not set authentication details, see the AWS Guide for details.
 
     - name: Ensure example@example.com email identity exists
-      aws_ses_identity:
+      community.aws.aws_ses_identity:
         identity: example@example.com
         state: present
 
     - name: Delete example@example.com email identity
-      aws_ses_identity:
+      community.aws.aws_ses_identity:
         email: example@example.com
         state: absent
 
     - name: Ensure example.com domain identity exists
-      aws_ses_identity:
+      community.aws.aws_ses_identity:
         identity: example.com
         state: present
 
     # Create an SNS topic and send bounce and complaint notifications to it
     # instead of emailing the identity owner
     - name: Ensure complaints-topic exists
-      sns_topic:
+      community.aws.sns_topic:
         name: "complaints-topic"
         state: present
         purge_subscriptions: False
       register: topic_info
 
     - name: Deliver feedback to topic instead of owner email
-      aws_ses_identity:
+      community.aws.aws_ses_identity:
         identity: example@example.com
         state: present
         complaint_notifications:
@@ -518,14 +476,14 @@ Examples
     # Create an SNS topic for delivery notifications and leave complaints
     # Being forwarded to the identity owner email
     - name: Ensure delivery-notifications-topic exists
-      sns_topic:
+      community.aws.sns_topic:
         name: "delivery-notifications-topic"
         state: present
         purge_subscriptions: False
       register: topic_info
 
     - name: Delivery notifications to topic
-      aws_ses_identity:
+      community.aws.aws_ses_identity:
         identity: example@example.com
         state: present
         delivery_notifications:
@@ -536,7 +494,7 @@ Examples
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this :
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

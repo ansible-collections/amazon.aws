@@ -1,5 +1,5 @@
 
-.. _community.aws.aws_ssm_:
+.. _community.aws.aws_ssm_connection:
 
 
 *********************
@@ -23,7 +23,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the local master node that executes this connection.
 
 - The remote EC2 instance must be running the AWS Systems Manager Agent (SSM Agent).
 - The control machine must have the aws session manager plugin installed.

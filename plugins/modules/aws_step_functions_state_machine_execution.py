@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_step_functions_state_machine_execution
+version_added: 1.0.0
 
 short_description: Start or stop execution of an AWS Step Functions state machine.
 

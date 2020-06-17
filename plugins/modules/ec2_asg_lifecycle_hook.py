@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_asg_lifecycle_hook
+version_added: 1.0.0
 short_description: Create, delete or update AWS ASG Lifecycle Hooks.
 description:
   - Will create a new hook when I(state=present) and no given Hook is found.

@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: iam_policy
+version_added: 1.0.0
 short_description: Manage inline IAM policies for users, groups, and roles
 description:
     - Allows uploading or removing inline IAM policies for IAM users, groups or roles.

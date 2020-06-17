@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: dynamodb_ttl
+version_added: 1.0.0
 short_description: Set TTL for a given DynamoDB table
 description:
 - Uses boto3 to set TTL.

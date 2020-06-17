@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_customer_gateway
+version_added: 1.0.0
 short_description: Manage an AWS customer gateway
 description:
     - Manage an AWS customer gateway.

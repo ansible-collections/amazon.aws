@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: ec2_scaling_policy
 short_description: Create or delete AWS scaling policies for Autoscaling groups
+version_added: 1.0.0
 description:
   - Can create or delete scaling policies for autoscaling groups.
   - Referenced autoscaling groups must already exist.

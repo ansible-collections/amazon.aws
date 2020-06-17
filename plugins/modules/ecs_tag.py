@@ -8,6 +8,7 @@ from __future__ import absolute_import, division, print_function
 DOCUMENTATION = r'''
 ---
 module: ecs_tag
+version_added: 1.0.0
 short_description: create and remove tags on Amazon ECS resources
 notes:
     - none

@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_application_scaling_policy
+version_added: 1.0.0
 short_description: Manage Application Auto Scaling Scaling Policies
 notes:
     - for details of the parameters and returns see

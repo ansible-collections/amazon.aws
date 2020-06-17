@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: route53_info
 short_description: Retrieves route53 details using AWS methods
+version_added: 1.0.0
 description:
     - Gets various details related to Route53 zone, record set or health check details.
     - This module was called C(route53_facts) before Ansible 2.9. The usage did not change.

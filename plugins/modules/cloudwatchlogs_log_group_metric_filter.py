@@ -8,6 +8,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: cloudwatchlogs_log_group_metric_filter
+version_added: 1.0.0
 author:
   - "Markus Bergholz (@markuman)"
 short_description: Manage CloudWatch log group metric filter

@@ -1,5 +1,6 @@
+:orphan:
 
-.. _community.aws.aws_waf_condition_:
+.. _community.aws.aws_waf_condition_module:
 
 
 *******************************
@@ -23,7 +24,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - python >= 2.6
 - boto
@@ -38,7 +39,6 @@ Parameters
         <tr>
             <th colspan="3">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -52,9 +52,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -70,9 +68,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -89,9 +85,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -111,9 +105,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -128,9 +120,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -145,9 +135,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of the filters against which to match.</div>
                                             <div>For <em>type=byte</em>, valid keys are <em>field_to_match</em>, <em>position</em>, <em>header</em>, <em>transformation</em> and <em>target_string</em>.</div>
                                             <div>For <em>type=geo</em>, the only valid key is <em>country</em>.</div>
@@ -179,9 +167,7 @@ Parameters
                                                                                                                                                                                                 <li>GT</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>What type of comparison to perform.</div>
                                             <div>Only valid key when <em>type=size</em>.</div>
                                                         </td>
@@ -198,9 +184,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Value of geo constraint (typically a two letter country code).</div>
                                             <div>The only valid key when <em>type=geo</em>.</div>
                                                         </td>
@@ -224,9 +208,7 @@ Parameters
                                                                                                                                                                                                 <li>body</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The field upon which to perform the match.</div>
                                             <div>Valid when <em>type=byte</em>, <em>type=regex</em>, <em>type=sql</em> or <em>type=xss</em>.</div>
                                                         </td>
@@ -243,9 +225,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Which specific header should be matched.</div>
                                             <div>Required when <em>field_to_match=header</em>.</div>
                                             <div>Valid when <em>type=byte</em>.</div>
@@ -263,9 +243,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>An IP Address or CIDR to match.</div>
                                             <div>The only valid key when <em>type=ip</em>.</div>
                                                         </td>
@@ -289,9 +267,7 @@ Parameters
                                                                                                                                                                                                 <li>contains_word</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Where in the field the match needs to occur.</div>
                                             <div>Only valid when <em>type=byte</em>.</div>
                                                         </td>
@@ -308,9 +284,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dict describing the regular expressions used to perform the match.</div>
                                             <div>Only valid when <em>type=regex</em>.</div>
                                                         </td>
@@ -328,9 +302,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A name to describe the set of patterns.</div>
                                                         </td>
             </tr>
@@ -347,9 +319,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of regular expressions to match.</div>
                                                         </td>
             </tr>
@@ -366,9 +336,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The size of the field (in bytes).</div>
                                             <div>Only valid key when <em>type=size</em>.</div>
                                                         </td>
@@ -385,9 +353,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The string to search for.</div>
                                             <div>May be up to 50 bytes.</div>
                                             <div>Valid when <em>type=byte</em>.</div>
@@ -413,9 +379,7 @@ Parameters
                                                                                                                                                                                                 <li>url_decode</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A transform to apply on the field prior to performing the match.</div>
                                             <div>Valid when <em>type=byte</em>, <em>type=regex</em>, <em>type=sql</em> or <em>type=xss</em>.</div>
                                                         </td>
@@ -432,9 +396,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Name of the Web Application Firewall condition to manage.</div>
                                                         </td>
             </tr>
@@ -449,9 +411,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -470,9 +430,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether to remove existing filters from a condition if not passed in <em>filters</em>.</div>
                                                         </td>
             </tr>
@@ -487,9 +445,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -505,9 +461,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -527,9 +481,7 @@ Parameters
                                                                                                                                                                                                 <li>absent</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether the condition should be <code>present</code> or <code>absent</code>.</div>
                                                         </td>
             </tr>
@@ -553,9 +505,7 @@ Parameters
                                                                                                                                                                                                 <li>xss</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The type of matching to perform.</div>
                                                         </td>
             </tr>
@@ -574,9 +524,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -595,9 +543,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether to use waf-regional module.</div>
                                                         </td>
             </tr>
@@ -622,7 +568,7 @@ Examples
 
     
       - name: create WAF byte condition
-        aws_waf_condition:
+        community.aws.aws_waf_condition:
           name: my_byte_condition
           filters:
           - field_to_match: header
@@ -632,7 +578,7 @@ Examples
           type: byte
 
       - name: create WAF geo condition
-        aws_waf_condition:
+        community.aws.aws_waf_condition:
           name: my_geo_condition
           filters:
             - country: US
@@ -641,7 +587,7 @@ Examples
           type: geo
 
       - name: create IP address condition
-        aws_waf_condition:
+        community.aws.aws_waf_condition:
           name: "{{ resource_prefix }}_ip_condition"
           filters:
             - ip_address: "10.0.0.0/8"
@@ -649,7 +595,7 @@ Examples
           type: ip
 
       - name: create WAF regex condition
-        aws_waf_condition:
+        community.aws.aws_waf_condition:
           name: my_regex_condition
           filters:
             - field_to_match: query_string
@@ -662,7 +608,7 @@ Examples
           type: regex
 
       - name: create WAF size condition
-        aws_waf_condition:
+        community.aws.aws_waf_condition:
           name: my_size_condition
           filters:
             - field_to_match: query_string
@@ -671,7 +617,7 @@ Examples
           type: size
 
       - name: create WAF sql injection condition
-        aws_waf_condition:
+        community.aws.aws_waf_condition:
           name: my_sql_condition
           filters:
             - field_to_match: query_string
@@ -679,7 +625,7 @@ Examples
           type: sql
 
       - name: create WAF xss condition
-        aws_waf_condition:
+        community.aws.aws_waf_condition:
           name: my_xss_condition
           filters:
             - field_to_match: query_string
@@ -692,7 +638,7 @@ Examples
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this :
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

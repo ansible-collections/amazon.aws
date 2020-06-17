@@ -11,6 +11,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: iam_user_info
+version_added: 1.0.0
 short_description: Gather IAM user(s) facts in AWS
 description:
   - This module can be used to gather IAM user(s) facts in AWS.

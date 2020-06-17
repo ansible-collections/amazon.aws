@@ -2,13 +2,14 @@ namespace: community
 name: aws
 version: 0.1.0
 readme: README.md
-authors: null
+authors:
+  - Ansible (https://github.com/ansible)
 description: null
 license_file: COPYING
 tags: [community, aws, cloud, amazon]
 dependencies:
   amazon.aws: '>=0.1.0'
-repository: https://github.com/ansible-collections/community.aws.git
+repository: https://github.com/ansible-collections/community.aws
 documentation: https://github.com/ansible-collections/community.aws/tree/master/docs
 homepage: https://github.com/ansible-collections/community.aws
 issues: https://github.com/ansible-collections/community.aws/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc

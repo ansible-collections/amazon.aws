@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: sns_topic
 short_description: Manages AWS SNS topics and subscriptions
+version_added: 1.0.0
 description:
     - The M(community.aws.sns_topic) module allows you to create, delete, and manage subscriptions for AWS SNS topics.
     - As of 2.6, this module can be use to subscribe and unsubscribe to topics outside of your AWS account.

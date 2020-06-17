@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: sts_assume_role
+version_added: 1.0.0
 short_description: Assume a role using AWS Security Token Service and obtain temporary credentials
 description:
     - Assume a role using AWS Security Token Service and obtain temporary credentials.

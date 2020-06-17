@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_kms_info
+version_added: 1.0.0
 short_description: Gather information about AWS KMS keys
 description:
     - Gather information about AWS KMS keys including tags and grants

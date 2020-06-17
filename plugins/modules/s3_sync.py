@@ -21,6 +21,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: s3_sync
+version_added: 1.0.0
 short_description: Efficiently upload multiple files to S3
 description:
      - The S3 module is great, but it is very slow for a large volume of files- even a dozen will be noticeable. In addition to speed, it handles globbing,

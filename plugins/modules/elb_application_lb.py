@@ -21,6 +21,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: elb_application_lb
+version_added: 1.0.0
 short_description: Manage an Application load balancer
 description:
     - Manage an AWS Application Elastic Load Balancer. See U(https://aws.amazon.com/blogs/aws/new-aws-application-load-balancer/) for details.

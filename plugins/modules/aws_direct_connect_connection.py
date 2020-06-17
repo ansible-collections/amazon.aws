@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_direct_connect_connection
+version_added: 1.0.0
 short_description: Creates, deletes, modifies a DirectConnect connection
 description:
   - Create, update, or delete a Direct Connect connection between a network and a specific AWS Direct Connect location.

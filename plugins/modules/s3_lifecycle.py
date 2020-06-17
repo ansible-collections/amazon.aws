@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: s3_lifecycle
+version_added: 1.0.0
 short_description: Manage s3 bucket lifecycle rules in AWS
 description:
     - Manage s3 bucket lifecycle rules in AWS

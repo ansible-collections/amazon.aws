@@ -1,5 +1,6 @@
+:orphan:
 
-.. _community.aws.aws_kms_:
+.. _community.aws.aws_kms_module:
 
 
 *********************
@@ -23,7 +24,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - python >= 2.6
 - boto
@@ -38,7 +39,6 @@ Parameters
         <tr>
             <th colspan="2">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -52,10 +52,8 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
-                                            <div>An alias for a key. For safety, even though KMS does not require keys to have an alias, this module expects all new keys to be given an alias to make them easier to manage. Existing keys without an alias may be referred to by <em>key_id</em>. Use <span class='module'>aws_kms_info</span> to find key ids. Required if <em>key_id</em> is not given. Note that passing a <em>key_id</em> and <em>alias</em> will only cause a new alias to be added, an alias will never be renamed. The &#x27;alias/&#x27; prefix is optional.</div>
+                                                                <td>
+                                            <div>An alias for a key. For safety, even though KMS does not require keys to have an alias, this module expects all new keys to be given an alias to make them easier to manage. Existing keys without an alias may be referred to by <em>key_id</em>. Use <span class='module'>community.aws.aws_kms_info</span> to find key ids. Required if <em>key_id</em> is not given. Note that passing a <em>key_id</em> and <em>alias</em> will only cause a new alias to be added, an alias will never be renamed. The &#x27;alias/&#x27; prefix is optional.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: key_alias</div>
                                     </td>
             </tr>
@@ -70,9 +68,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -88,9 +84,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -107,9 +101,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -129,9 +121,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -146,9 +136,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A description of the CMK. Use a description that helps you decide whether the CMK is appropriate for a task.</div>
                                                         </td>
             </tr>
@@ -163,9 +151,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -184,9 +170,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether the key should be automatically rotated every year.</div>
                                                         </td>
             </tr>
@@ -205,9 +189,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether or not a key is enabled</div>
                                                         </td>
             </tr>
@@ -222,9 +204,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of grants to apply to the key. Each item must contain <em>grantee_principal</em>. Each item can optionally contain <em>retiring_principal</em>, <em>operations</em>, <em>constraints</em>, <em>name</em>.</div>
                                             <div><em>grantee_principal</em> and <em>retiring_principal</em> must be ARNs</div>
                                             <div>For full documentation of suboptions see the boto3 documentation:</div>
@@ -243,9 +223,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Constraints is a dict containing <code>encryption_context_subset</code> or <code>encryption_context_equals</code>, either or both being a dict specifying an encryption context match. See <a href='https://docs.aws.amazon.com/kms/latest/APIReference/API_GrantConstraints.html'>https://docs.aws.amazon.com/kms/latest/APIReference/API_GrantConstraints.html</a> or <a href='https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html#KMS.Client.create_grant'>https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/kms.html#KMS.Client.create_grant</a></div>
                                                         </td>
             </tr>
@@ -261,9 +239,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The full ARN of the principal being granted permissions.</div>
                                                         </td>
             </tr>
@@ -292,9 +268,7 @@ Parameters
                                                                                                                                                                                                 <li>Sign</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of operations that the grantee may perform using the CMK.</div>
                                                         </td>
             </tr>
@@ -310,9 +284,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The full ARN of the principal permitted to revoke/retire the grant.</div>
                                                         </td>
             </tr>
@@ -328,9 +300,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Key ID or ARN of the key.</div>
                                             <div>One of <em>alias</em> or <em>key_id</em> are required.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: key_arn</div>
@@ -347,9 +317,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>policy to apply to the KMS key.</div>
                                             <div>See <a href='https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html'>https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html</a></div>
                                                         </td>
@@ -369,9 +337,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>(deprecated) If adding/removing a role and invalid grantees are found, remove them. These entries will cause an update to fail in all known cases.</div>
                                             <div>Only cleans if changes are being made.</div>
                                             <div>Used for modifying the Key Policy rather than modifying a grant and only works on the default policy created through the AWS Console.</div>
@@ -390,9 +356,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>(deprecated) List of grants to give to user/role. Likely &quot;role,role grant&quot; or &quot;role,role grant,admin&quot;.</div>
                                             <div>Required when <em>policy_mode=grant</em>.</div>
                                             <div>Used for modifying the Key Policy rather than modifying a grant and only works on the default policy created through the AWS Console.</div>
@@ -415,9 +379,7 @@ Parameters
                                                                                                                                                                                                 <li>deny</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>(deprecated) Grant or deny access.</div>
                                             <div>Used for modifying the Key Policy rather than modifying a grant and only works on the default policy created through the AWS Console.</div>
                                             <div>This option has been deprecated, and will be removed in 2.13. Use <em>policy</em> instead.</div>
@@ -435,9 +397,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>(deprecated) ARN of role to allow/deny access.</div>
                                             <div>One of <em>policy_role_name</em> or <em>policy_role_arn</em> are required.</div>
                                             <div>Used for modifying the Key Policy rather than modifying a grant and only works on the default policy created through the AWS Console.</div>
@@ -456,9 +416,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>(deprecated) Role to allow/deny access.</div>
                                             <div>One of <em>policy_role_name</em> or <em>policy_role_arn</em> are required.</div>
                                             <div>Used for modifying the Key Policy rather than modifying a grant and only works on the default policy created through the AWS Console.</div>
@@ -477,9 +435,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -498,9 +454,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether the <em>grants</em> argument should cause grants not in the list to be removed</div>
                                                         </td>
             </tr>
@@ -519,9 +473,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether the <em>tags</em> argument should cause tags not in the list to be removed</div>
                                                         </td>
             </tr>
@@ -536,9 +488,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -554,9 +504,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -576,9 +524,7 @@ Parameters
                                                                                                                                                                                                 <li>absent</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether a key should be present or absent. Note that making an existing key absent only schedules a key for deletion.  Passing a key that is scheduled for deletion with state present will cancel key deletion.</div>
                                                         </td>
             </tr>
@@ -593,9 +539,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary of tags to apply to a key.</div>
                                                         </td>
             </tr>
@@ -614,9 +558,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -643,28 +585,28 @@ Examples
     # Managing the KMS IAM Policy via policy_mode and policy_grant_types is fragile
     # and has been deprecated in favour of the policy option.
     - name: grant user-style access to production secrets
-      aws_kms:
+      community.aws.aws_kms:
       args:
         alias: "alias/my_production_secrets"
         policy_mode: grant
         policy_role_name: "prod-appServerRole-1R5AQG2BSEL6L"
         policy_grant_types: "role,role grant"
     - name: remove access to production secrets from role
-      aws_kms:
+      community.aws.aws_kms:
       args:
         alias: "alias/my_production_secrets"
         policy_mode: deny
         policy_role_name: "prod-appServerRole-1R5AQG2BSEL6L"
 
     # Create a new KMS key
-    - aws_kms:
+    - community.aws.aws_kms:
         alias: mykey
         tags:
           Name: myKey
           Purpose: protect_stuff
 
     # Update previous key with more tags
-    - aws_kms:
+    - community.aws.aws_kms:
         alias: mykey
         tags:
           Name: myKey
@@ -674,7 +616,7 @@ Examples
     # Update a known key with grants allowing an instance with the billing-prod IAM profile
     # to decrypt data encrypted with the environment: production, application: billing
     # encryption context
-    - aws_kms:
+    - community.aws.aws_kms:
         key_id: abcd1234-abcd-1234-5678-ef1234567890
         grants:
           - name: billing_prod
@@ -688,13 +630,13 @@ Examples
               - RetireGrant
 
     - name: Update IAM policy on an existing KMS key
-      aws_kms:
+      community.aws.aws_kms:
         alias: my-kms-key
         policy: '{"Version": "2012-10-17", "Id": "my-kms-key-permissions", "Statement": [ { <SOME STATEMENT> } ]}'
         state: present
 
     - name: Example using lookup for policy json
-      aws_kms:
+      community.aws.aws_kms:
         alias: my-kms-key
         policy: "{{ lookup('template', 'kms_iam_policy_template.json.j2') }}"
         state: present
@@ -704,7 +646,7 @@ Examples
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this :
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

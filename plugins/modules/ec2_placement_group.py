@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_placement_group
+version_added: 1.0.0
 short_description: Create or delete an EC2 Placement Group
 description:
     - Create an EC2 Placement Group; if the placement group already exists,

@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_direct_connect_link_aggregation_group
+version_added: 1.0.0
 short_description: Manage Direct Connect LAG bundles
 description:
   - Create, delete, or modify a Direct Connect link aggregation group.

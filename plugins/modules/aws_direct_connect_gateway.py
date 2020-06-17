@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: aws_direct_connect_gateway
 author: Gobin Sougrakpam (@gobins)
+version_added: 1.0.0
 short_description: Manage AWS Direct Connect gateway
 description:
   - Creates AWS Direct Connect Gateway.

@@ -1,5 +1,6 @@
+:orphan:
 
-.. _community.aws.aws_acm_:
+.. _community.aws.aws_acm_module:
 
 
 *********************
@@ -39,7 +40,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - boto
 - boto3
@@ -55,7 +56,6 @@ Parameters
         <tr>
             <th colspan="1">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -69,9 +69,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -87,9 +85,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -106,9 +102,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -124,9 +118,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The body of the PEM encoded public certificate.</div>
                                             <div>Required when <em>state</em> is not <code>absent</code>.</div>
                                             <div>If your certificate is in a file, use <code>lookup(&#x27;file&#x27;, &#x27;path/to/cert.pem&#x27;</code>).</div>
@@ -143,9 +135,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ARN of a certificate in ACM to delete</div>
                                             <div>Ignored when <em>state=present</em>.</div>
                                             <div>If <em>state=absent</em>, you must provide one of <em>certificate_arn</em>, <em>domain_name</em> or <em>name_tag</em>.</div>
@@ -165,9 +155,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The body of the PEM encoded chain for your certificate.</div>
                                             <div>If your certificate chain is in a file, use <code>lookup(&#x27;file&#x27;, &#x27;path/to/chain.pem&#x27;</code>).</div>
                                             <div>Ignored when <em>state=absent</em></div>
@@ -188,9 +176,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -205,9 +191,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The domain name of the certificate.</div>
                                             <div>If <em>state=absent</em> and <em>domain_name</em> is specified, this task will delete all ACM certificates with this domain.</div>
                                             <div>Exactly one of <em>domain_name</em>, <em>name_tag</em>  and <em>certificate_arn</em> must be provided.</div>
@@ -226,9 +210,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -243,9 +225,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The unique identifier for tagging resources using AWS tags, with key <em>Name</em>.</div>
                                             <div>This can be any set of characters accepted by AWS for tag values.</div>
                                             <div>This is to ensure Ansible can treat certificates idempotently, even though the ACM API allows duplicate certificates.</div>
@@ -265,9 +245,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The body of the PEM encoded private key.</div>
                                             <div>Required when <em>state=present</em>.</div>
                                             <div>Ignored when <em>state=absent</em>.</div>
@@ -285,9 +263,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -302,9 +278,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -320,9 +294,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -342,9 +314,7 @@ Parameters
                                                                                                                                                                                                 <li>absent</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>If <em>state=present</em>, the specified public certificate and private key will be uploaded, with <em>Name</em> tag equal to <em>name_tag</em>.</div>
                                             <div>If <em>state=absent</em>, any certificates in this region with a corresponding <em>domain_name</em>, <em>name_tag</em> or <em>certificate_arn</em> will be deleted.</div>
                                                         </td>
@@ -364,9 +334,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -392,14 +360,14 @@ Examples
     
 
     - name: upload a self-signed certificate
-      aws_acm:
+      community.aws.aws_acm:
         certificate: "{{ lookup('file', 'cert.pem' ) }}"
         privateKey: "{{ lookup('file', 'key.pem' ) }}"
         name_tag: my_cert # to be applied through an AWS tag as  "Name":"my_cert"
         region: ap-southeast-2 # AWS region
 
     - name: create/update a certificate with a chain
-      aws_acm:
+      community.aws.aws_acm:
         certificate: "{{ lookup('file', 'cert.pem' ) }}"
         privateKey: "{{ lookup('file', 'key.pem' ) }}"
         name_tag: my_cert
@@ -413,19 +381,19 @@ Examples
         var: cert_create.certificate.arn
 
     - name: delete the cert we just created
-      aws_acm:
+      community.aws.aws_acm:
         name_tag: my_cert
         state: absent
         region: ap-southeast-2
 
     - name: delete a certificate with a particular ARN
-      aws_acm:
+      community.aws.aws_acm:
         certificate_arn: "arn:aws:acm:ap-southeast-2:123456789012:certificate/01234567-abcd-abcd-abcd-012345678901"
         state: absent
         region: ap-southeast-2
 
     - name: delete all certificates with a particular domain name
-      aws_acm:
+      community.aws.aws_acm:
         domain_name: acm.ansible.com
         state: absent
         region: ap-southeast-2
@@ -436,7 +404,7 @@ Examples
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this :
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

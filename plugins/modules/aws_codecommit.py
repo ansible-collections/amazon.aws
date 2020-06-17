@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_codecommit
+version_added: 1.0.0
 short_description: Manage repositories in AWS CodeCommit
 description:
   - Supports creation and deletion of CodeCommit repositories.

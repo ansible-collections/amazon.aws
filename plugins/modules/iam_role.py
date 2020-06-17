@@ -8,6 +8,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: iam_role
+version_added: 1.0.0
 short_description: Manage AWS IAM roles
 description:
   - Manage AWS IAM roles.

@@ -28,6 +28,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: aws_acm
 short_description: Upload and delete certificates in the AWS Certificate Manager service
+version_added: 1.0.0
 description:
   - Import and delete certificates in Amazon Web Service's Certificate Manager (AWS ACM).
   - >

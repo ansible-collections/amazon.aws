@@ -1,5 +1,6 @@
+:orphan:
 
-.. _community.aws.cloudfront_info_:
+.. _community.aws.cloudfront_info_module:
 
 
 *****************************
@@ -18,13 +19,13 @@ community.aws.cloudfront_info
 Synopsis
 --------
 - Gets information about an AWS CloudFront distribution.
-- This module was called ``cloudfront_facts`` before Ansible 2.9, returning ``ansible_facts``. Note that the :ref:`cloudfront_info <cloudfront_info_module>` module no longer returns ``ansible_facts``!
+- This module was called ``cloudfront_facts`` before Ansible 2.9, returning ``ansible_facts``. Note that the :ref:`community.aws.cloudfront_info <community.aws.cloudfront_info_module>` module no longer returns ``ansible_facts``!
 
 
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - boto
 - boto3 >= 1.0.0
@@ -40,7 +41,6 @@ Parameters
         <tr>
             <th colspan="1">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -58,9 +58,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Get all CloudFront lists that do not require parameters.</div>
                                                         </td>
             </tr>
@@ -75,9 +73,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -93,9 +89,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -112,9 +106,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -134,9 +126,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -155,9 +145,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Get information about a distribution.</div>
                                             <div>Requires <em>distribution_id</em> or <em>domain_name_alias</em> to be specified.</div>
                                                         </td>
@@ -177,9 +165,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Get the configuration information about a distribution.</div>
                                             <div>Requires <em>distribution_id</em> or <em>domain_name_alias</em> to be specified.</div>
                                                         </td>
@@ -195,9 +181,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The id of the CloudFront distribution. Used with <em>distribution</em>, <em>distribution_config</em>, <em>invalidation</em>, <em>streaming_distribution</em>, <em>streaming_distribution_config</em>, <em>list_invalidations</em>.</div>
                                                         </td>
             </tr>
@@ -212,9 +196,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Can be used instead of <em>distribution_id</em> - uses the aliased CNAME for the CloudFront distribution to get the distribution id where required.</div>
                                                         </td>
             </tr>
@@ -229,9 +211,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -250,9 +230,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Get information about an invalidation.</div>
                                             <div>Requires <em>invalidation_id</em> to be specified.</div>
                                                         </td>
@@ -268,9 +246,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The id of the invalidation to get information about.</div>
                                             <div>Used with <em>invalidation</em>.</div>
                                                         </td>
@@ -290,9 +266,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Get a list of CloudFront distributions.</div>
                                                         </td>
             </tr>
@@ -311,9 +285,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Get a list of distributions using web acl id as a filter.</div>
                                             <div>Requires <em>web_acl_id</em> to be set.</div>
                                                         </td>
@@ -333,9 +305,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Get a list of invalidations.</div>
                                             <div>Requires <em>distribution_id</em> or <em>domain_name_alias</em> to be specified.</div>
                                                         </td>
@@ -355,9 +325,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Get a list of CloudFront origin access identities.</div>
                                             <div>Requires <em>origin_access_identity_id</em> to be set.</div>
                                                         </td>
@@ -377,9 +345,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Get a list of streaming distributions.</div>
                                                         </td>
             </tr>
@@ -398,9 +364,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Get information about an origin access identity.</div>
                                             <div>Requires <em>origin_access_identity_id</em> to be specified.</div>
                                                         </td>
@@ -420,9 +384,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Get the configuration information about an origin access identity.</div>
                                             <div>Requires <em>origin_access_identity_id</em> to be specified.</div>
                                                         </td>
@@ -438,9 +400,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The id of the CloudFront origin access identity to get information about.</div>
                                                         </td>
             </tr>
@@ -455,9 +415,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -472,9 +430,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -490,9 +446,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -512,9 +466,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Get information about a specified RTMP distribution.</div>
                                             <div>Requires <em>distribution_id</em> or <em>domain_name_alias</em> to be specified.</div>
                                                         </td>
@@ -534,9 +486,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Get the configuration information about a specified RTMP distribution.</div>
                                             <div>Requires <em>distribution_id</em> or <em>domain_name_alias</em> to be specified.</div>
                                                         </td>
@@ -556,9 +506,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Returns a summary of all distributions, streaming distributions and origin_access_identities.</div>
                                             <div>This is the default behaviour if no option is selected.</div>
                                                         </td>
@@ -578,9 +526,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -606,21 +552,21 @@ Examples
     
     # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-    # Get a summary of distributions
-    - cloudfront_info:
+    - name: Get a summary of distributions
+      community.aws.cloudfront_info:
         summary: true
       register: result
 
-    # Get information about a distribution
-    - cloudfront_info:
+    - name: Get information about a distribution
+      community.aws.cloudfront_info:
         distribution: true
         distribution_id: my-cloudfront-distribution-id
       register: result_did
     - debug:
         msg: "{{ result_did['cloudfront']['my-cloudfront-distribution-id'] }}"
 
-    # Get information about a distribution using the CNAME of the cloudfront distribution.
-    - cloudfront_info:
+    - name: Get information about a distribution using the CNAME of the cloudfront distribution.
+      community.aws.cloudfront_info:
         distribution: true
         domain_name_alias: www.my-website.com
       register: result_website
@@ -630,36 +576,37 @@ Examples
     # When the module is called as cloudfront_facts, return values are published
     # in ansible_facts['cloudfront'][<id>] and can be used as follows.
     # Note that this is deprecated and will stop working in Ansible 2.13.
-    - cloudfront_facts:
+    - name: Gather facts
+      community.aws.cloudfront_facts:
         distribution: true
         distribution_id: my-cloudfront-distribution-id
     - debug:
         msg: "{{ ansible_facts['cloudfront']['my-cloudfront-distribution-id'] }}"
 
-    - cloudfront_facts:
+    - community.aws.cloudfront_facts:
         distribution: true
         domain_name_alias: www.my-website.com
     - debug:
         msg: "{{ ansible_facts['cloudfront']['www.my-website.com'] }}"
 
-    # Get all information about an invalidation for a distribution.
-    - cloudfront_facts:
+    - name: Get all information about an invalidation for a distribution.
+      community.aws.cloudfront_info:
         invalidation: true
         distribution_id: my-cloudfront-distribution-id
         invalidation_id: my-cloudfront-invalidation-id
 
-    # Get all information about a CloudFront origin access identity.
-    - cloudfront_facts:
+    - name: Get all information about a CloudFront origin access identity.
+      community.aws.cloudfront_info:
         origin_access_identity: true
         origin_access_identity_id: my-cloudfront-origin-access-identity-id
 
-    # Get all information about lists not requiring parameters (ie. list_origin_access_identities, list_distributions, list_streaming_distributions)
-    - cloudfront_facts:
+    - name: Get all information about lists not requiring parameters (ie. list_origin_access_identities, list_distributions, list_streaming_distributions)
+      community.aws.cloudfront_info:
         origin_access_identity: true
         origin_access_identity_id: my-cloudfront-origin-access-identity-id
 
-    # Get all information about lists not requiring parameters (ie. list_origin_access_identities, list_distributions, list_streaming_distributions)
-    - cloudfront_facts:
+    - name: Get all information about lists not requiring parameters (ie. list_origin_access_identities, list_distributions, list_streaming_distributions)
+      community.aws.cloudfront_info:
         all_lists: true
 
 
@@ -667,7 +614,7 @@ Examples
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this :
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

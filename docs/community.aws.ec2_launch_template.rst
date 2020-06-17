@@ -1,5 +1,6 @@
+:orphan:
 
-.. _community.aws.ec2_launch_template_:
+.. _community.aws.ec2_launch_template_module:
 
 
 *********************************
@@ -18,13 +19,13 @@ community.aws.ec2_launch_template
 Synopsis
 --------
 - Create, modify, and delete EC2 Launch Templates, which can be used to create individual instances or with Autoscaling Groups.
-- The *ec2_instance* and *ec2_asg* modules can, instead of specifying all parameters on those tasks, be passed a Launch Template which contains settings like instance size, disk type, subnet, and more.
+- The :ref:`community.aws.ec2_instance <community.aws.ec2_instance_module>` and :ref:`community.aws.ec2_asg <community.aws.ec2_asg_module>` modules can, instead of specifying all parameters on those tasks, be passed a Launch Template which contains settings like instance size, disk type, subnet, and more.
 
 
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - boto
 - boto3 >= 1.6.0
@@ -41,7 +42,6 @@ Parameters
         <tr>
             <th colspan="3">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -55,9 +55,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -73,9 +71,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -92,9 +88,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -110,9 +104,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The block device mapping. Supplying both a snapshot ID and an encryption value as arguments for block-device mapping results in an error. This is because only blank volumes can be encrypted on start, and these are not created from a snapshot. If a snapshot is the basis for the volume, it contains data by definition and its encryption status cannot be changed using this action.</div>
                                                         </td>
             </tr>
@@ -128,9 +120,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The device name (for example, /dev/sdh or xvdh).</div>
                                                         </td>
             </tr>
@@ -146,9 +136,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Parameters used to automatically set up EBS volumes when the instance is launched.</div>
                                                         </td>
             </tr>
@@ -169,9 +157,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Indicates whether the EBS volume is deleted on instance termination.</div>
                                                         </td>
             </tr>
@@ -192,9 +178,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Indicates whether the EBS volume is encrypted. Encrypted volumes can only be attached to instances that support Amazon EBS encryption. If you are creating a volume from a snapshot, you can&#x27;t specify an encryption value.</div>
                                                         </td>
             </tr>
@@ -211,9 +195,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The number of I/O operations per second (IOPS) that the volume supports. For io1, this represents the number of IOPS that are provisioned for the volume. For gp2, this represents the baseline performance of the volume and the rate at which the volume accumulates I/O credits for bursting. For more information about General Purpose SSD baseline performance, I/O credits, and bursting, see Amazon EBS Volume Types in the Amazon Elastic Compute Cloud User Guide.</div>
                                             <div>Condition: This parameter is required for requests to create io1 volumes; it is not used in requests to create gp2, st1, sc1, or standard volumes.</div>
                                                         </td>
@@ -231,9 +213,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ARN of the AWS Key Management Service (AWS KMS) CMK used for encryption.</div>
                                                         </td>
             </tr>
@@ -250,9 +230,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ID of the snapshot to create the volume from.</div>
                                                         </td>
             </tr>
@@ -269,9 +247,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The size of the volume, in GiB.</div>
                                             <div>Default: If you&#x27;re creating the volume from a snapshot and don&#x27;t specify a volume size, the default is the snapshot size.</div>
                                                         </td>
@@ -289,9 +265,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The volume type</div>
                                                         </td>
             </tr>
@@ -308,9 +282,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Suppresses the specified device included in the block device mapping of the AMI.</div>
                                                         </td>
             </tr>
@@ -326,9 +298,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The virtual device name (ephemeralN). Instance store volumes are numbered starting from 0. An instance type with 2 available instance store volumes can specify mappings for ephemeral0 and ephemeral1. The number of available instance store volumes depends on the instance type. After you connect to the instance, you must mount the volume.</div>
                                                         </td>
             </tr>
@@ -344,9 +314,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Choose CPU settings for the EC2 instances that will be created with this template.</div>
                                             <div>For more information, see <a href='http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-optimize-cpu.html'>http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-optimize-cpu.html</a></div>
                                                         </td>
@@ -363,9 +331,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The number of CPU cores for the instance.</div>
                                                         </td>
             </tr>
@@ -381,9 +347,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The number of threads per CPU core. To disable Intel Hyper-Threading Technology for the instance, specify a value of 1. Otherwise, specify the default value of 2.</div>
                                                         </td>
             </tr>
@@ -399,9 +363,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The credit option for CPU usage of the instance. Valid for T2 or T3 instances only.</div>
                                                         </td>
             </tr>
@@ -417,9 +379,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The credit option for CPU usage of a T2 or T3 instance. Valid values are <code>standard</code> and <code>unlimited</code>.</div>
                                                         </td>
             </tr>
@@ -439,9 +399,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -457,9 +415,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">"latest"</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Which version should be the default when users spin up new instances based on this template? By default, the latest version will be made the default.</div>
                                                         </td>
             </tr>
@@ -478,9 +434,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>This helps protect instances from accidental termination. If set to true, you can&#x27;t terminate the instance using the Amazon EC2 console, CLI, or API. To change this attribute to false after launch, use <em>ModifyInstanceAttribute</em>.</div>
                                                         </td>
             </tr>
@@ -499,9 +453,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Indicates whether the instance is optimized for Amazon EBS I/O. This optimization provides dedicated throughput to Amazon EBS and an optimized configuration stack to provide optimal Amazon EBS I/O performance. This optimization isn&#x27;t available with all instance types. Additional usage charges apply when using an EBS-optimized instance.</div>
                                                         </td>
             </tr>
@@ -516,9 +468,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -533,9 +483,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Settings for Elastic GPU attachments. See <a href='https://aws.amazon.com/ec2/elastic-gpus/'>https://aws.amazon.com/ec2/elastic-gpus/</a> for details.</div>
                                                         </td>
             </tr>
@@ -551,9 +499,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The type of Elastic GPU to attach</div>
                                                         </td>
             </tr>
@@ -569,9 +515,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The name or ARN of an IAM instance profile. Requires permissions to describe existing instance roles to confirm ARN is properly formed.</div>
                                                         </td>
             </tr>
@@ -586,9 +530,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AMI ID to use for new instances launched with this template. This value is region-dependent since AMIs are not global resources.</div>
                                                         </td>
             </tr>
@@ -607,9 +549,7 @@ Parameters
                                                                                                                                                                                                 <li>terminate</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Indicates whether an instance stops or terminates when you initiate shutdown from the instance using the operating system shutdown command.</div>
                                                         </td>
             </tr>
@@ -624,9 +564,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Options for alternative instance markets, currently only the spot market is supported.</div>
                                                         </td>
             </tr>
@@ -642,9 +580,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The market type. This should always be &#x27;spot&#x27;.</div>
                                                         </td>
             </tr>
@@ -660,9 +596,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Spot-market specific settings.</div>
                                                         </td>
             </tr>
@@ -679,9 +613,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The required duration for the Spot Instances (also known as Spot blocks), in minutes. This value must be a multiple of 60 (60, 120, 180, 240, 300, or 360).</div>
                                                         </td>
             </tr>
@@ -703,9 +635,7 @@ Parameters
                                                                                                                                                                                                 <li>terminate</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The behavior when a Spot Instance is interrupted. The default is <code>terminate</code>.</div>
                                                         </td>
             </tr>
@@ -722,9 +652,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The highest hourly price you&#x27;re willing to pay for this Spot Instance.</div>
                                                         </td>
             </tr>
@@ -745,9 +673,7 @@ Parameters
                                                                                                                                                                                                 <li>persistent</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The request type to send.</div>
                                                         </td>
             </tr>
@@ -764,9 +690,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The instance type, such as <code>c5.2xlarge</code>. For a full list of instance types, see <a href='http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html'>http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html</a>.</div>
                                                         </td>
             </tr>
@@ -781,9 +705,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ID of the kernel. We recommend that you use PV-GRUB instead of kernels and RAM disks. For more information, see <a href='http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UserProvidedkernels.html'>http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UserProvidedkernels.html</a></div>
                                                         </td>
             </tr>
@@ -798,10 +720,8 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
-                                            <div>The name of the key pair. You can create a key pair using <span class='module'>ec2_key</span>.</div>
+                                                                <td>
+                                            <div>The name of the key pair. You can create a key pair using <span class='module'>amazon.aws.ec2_key</span>.</div>
                                             <div>If you do not specify a key pair, you can&#x27;t connect to the instance unless you choose an AMI that is configured to allow users another way to log in.</div>
                                                         </td>
             </tr>
@@ -816,9 +736,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Settings for instance monitoring.</div>
                                                         </td>
             </tr>
@@ -838,9 +756,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether to turn on detailed monitoring for new instances. This will incur extra charges.</div>
                                                         </td>
             </tr>
@@ -856,9 +772,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>One or more network interfaces.</div>
                                                         </td>
             </tr>
@@ -878,9 +792,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Associates a public IPv4 address with eth0 for a new network interface.</div>
                                                         </td>
             </tr>
@@ -900,9 +812,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Indicates whether the network interface is deleted when the instance is terminated.</div>
                                                         </td>
             </tr>
@@ -918,9 +828,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A description for the network interface.</div>
                                                         </td>
             </tr>
@@ -936,9 +844,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The device index for the network interface attachment.</div>
                                                         </td>
             </tr>
@@ -954,9 +860,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>List of security group IDs to include on this instance.</div>
                                                         </td>
             </tr>
@@ -972,9 +876,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The number of IPv6 addresses to assign to a network interface. Amazon EC2 automatically selects the IPv6 addresses from the subnet range. You can&#x27;t use this option if specifying the <em>ipv6_addresses</em> option.</div>
                                                         </td>
             </tr>
@@ -990,9 +892,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of one or more specific IPv6 addresses from the IPv6 CIDR block range of your subnet. You can&#x27;t use this option if you&#x27;re specifying the <em>ipv6_address_count</em> option.</div>
                                                         </td>
             </tr>
@@ -1008,9 +908,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The eni ID of a network interface to attach.</div>
                                                         </td>
             </tr>
@@ -1026,9 +924,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The primary private IPv4 address of the network interface.</div>
                                                         </td>
             </tr>
@@ -1044,9 +940,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ID of the subnet for the network interface.</div>
                                                         </td>
             </tr>
@@ -1062,9 +956,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The placement group settings for the instance.</div>
                                                         </td>
             </tr>
@@ -1080,9 +972,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The affinity setting for an instance on a Dedicated Host.</div>
                                                         </td>
             </tr>
@@ -1098,9 +988,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The Availability Zone for the instance.</div>
                                                         </td>
             </tr>
@@ -1116,9 +1004,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The name of the placement group for the instance.</div>
                                                         </td>
             </tr>
@@ -1134,9 +1020,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ID of the Dedicated Host for the instance.</div>
                                                         </td>
             </tr>
@@ -1152,9 +1036,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The tenancy of the instance (if the instance is running in a VPC). An instance with a tenancy of dedicated runs on single-tenant hardware.</div>
                                                         </td>
             </tr>
@@ -1170,9 +1052,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -1187,9 +1067,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ID of the RAM disk to launch the instance with. We recommend that you use PV-GRUB instead of kernels and RAM disks. For more information, see <a href='http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UserProvidedkernels.html'>http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UserProvidedkernels.html</a></div>
                                                         </td>
             </tr>
@@ -1204,9 +1082,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -1222,9 +1098,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of security group IDs (VPC or EC2-Classic) that the new instances will be added to.</div>
                                                         </td>
             </tr>
@@ -1239,9 +1113,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of security group names (VPC or EC2-Classic) that the new instances will be added to.</div>
                                                         </td>
             </tr>
@@ -1256,9 +1128,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -1278,9 +1148,7 @@ Parameters
                                                                                                                                                                                                 <li>absent</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether the launch template should exist or not.</div>
                                             <div>Deleting specific versions of a launch template is not supported at this time.</div>
                                                         </td>
@@ -1296,9 +1164,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A set of key-value pairs to be applied to resources when this Launch Template is used.</div>
                                             <div>Tag key constraints: Tag keys are case-sensitive and accept a maximum of 127 Unicode characters. May not begin with <em>aws:</em></div>
                                             <div>Tag value constraints: Tag values are case-sensitive and accept a maximum of 255 Unicode characters.</div>
@@ -1315,9 +1181,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ID for the launch template, can be used for all cases except creating a new Launch Template.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: id</div>
                                     </td>
@@ -1333,9 +1197,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The template name. This must be unique in the region-account combination you are using.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: name</div>
                                     </td>
@@ -1351,9 +1213,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The Base64-encoded user data to make available to the instance. For more information, see the Linux <a href='http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html'>http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html</a> and Windows <a href='http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2-instance-metadata.html#instancedata-add-user-data'>http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2-instance-metadata.html#instancedata-add-user-data</a> documentation on user-data.</div>
                                                         </td>
             </tr>
@@ -1372,9 +1232,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -1399,7 +1257,7 @@ Examples
 
     
     - name: Create an ec2 launch template
-      ec2_launch_template:
+      community.aws.ec2_launch_template:
         name: "my_template"
         image_id: "ami-04b762b4289fba92b"
         key_name: my_ssh_key
@@ -1410,13 +1268,13 @@ Examples
     - name: >
         Create a new version of an existing ec2 launch template with a different instance type,
         while leaving an older version as the default version
-      ec2_launch_template:
+      community.aws.ec2_launch_template:
         name: "my_template"
         default_version: 1
         instance_type: c5.4xlarge
 
     - name: Delete an ec2 launch template
-      ec2_launch_template:
+      community.aws.ec2_launch_template:
         name: "my_template"
         state: absent
 
@@ -1427,7 +1285,7 @@ Examples
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this :
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 
+version_added: 1.0.0
 module: cloudfront_invalidation
 
 short_description: create invalidations for AWS CloudFront distributions

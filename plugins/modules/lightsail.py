@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: lightsail
+version_added: 1.0.0
 short_description: Manage instances in AWS Lightsail
 description:
      - Manage instances in AWS Lightsail.

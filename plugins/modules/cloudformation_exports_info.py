@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: cloudformation_exports_info
 short_description: Read a value from CloudFormation Exports
+version_added: 1.0.0
 description:
   - Module retrieves a value from CloudFormation Exports
 requirements: ['boto3 >= 1.11.15']

@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: aws_waf_rule
 short_description: Create and delete WAF Rules
+version_added: 1.0.0
 description:
   - Read the AWS documentation for WAF
     U(https://aws.amazon.com/documentation/waf/).

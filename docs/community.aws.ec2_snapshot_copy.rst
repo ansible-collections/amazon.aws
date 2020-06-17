@@ -1,5 +1,6 @@
+:orphan:
 
-.. _community.aws.ec2_snapshot_copy_:
+.. _community.aws.ec2_snapshot_copy_module:
 
 
 *******************************
@@ -23,7 +24,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - boto
 - boto3
@@ -39,7 +40,6 @@ Parameters
         <tr>
             <th colspan="1">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -53,9 +53,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -71,9 +69,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -90,9 +86,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -112,9 +106,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -129,9 +121,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>An optional human-readable string describing purpose of the new Snapshot.</div>
                                                         </td>
             </tr>
@@ -146,9 +136,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -167,9 +155,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether or not the destination Snapshot should be encrypted.</div>
                                                         </td>
             </tr>
@@ -184,9 +170,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>KMS key id used to encrypt snapshot. If not specified, AWS defaults to <code>alias/aws/ebs</code>.</div>
                                                         </td>
             </tr>
@@ -201,9 +185,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -218,9 +200,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -236,9 +216,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -254,9 +232,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The source region the Snapshot should be copied from.</div>
                                                         </td>
             </tr>
@@ -271,9 +247,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ID of the Snapshot in source region that should be copied.</div>
                                                         </td>
             </tr>
@@ -288,9 +262,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A hash/dictionary of tags to add to the new Snapshot; &#x27;{&quot;key&quot;:&quot;value&quot;}&#x27; and &#x27;{&quot;key&quot;:&quot;value&quot;,&quot;key&quot;:&quot;value&quot;}&#x27;</div>
                                                         </td>
             </tr>
@@ -309,9 +281,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -330,9 +300,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Wait for the copied Snapshot to be in &#x27;Available&#x27; state before returning.</div>
                                                         </td>
             </tr>
@@ -348,9 +316,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">600</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>How long before wait gives up, in seconds.</div>
                                                         </td>
             </tr>
@@ -374,14 +340,14 @@ Examples
 .. code-block:: yaml+jinja
 
     
-    # Basic Snapshot Copy
-    - ec2_snapshot_copy:
+    - name: Basic Snapshot Copy
+      community.aws.ec2_snapshot_copy:
         source_region: eu-central-1
         region: eu-west-1
         source_snapshot_id: snap-xxxxxxx
 
-    # Copy Snapshot and wait until available
-    - ec2_snapshot_copy:
+    - name: Copy Snapshot and wait until available
+      community.aws.ec2_snapshot_copy:
         source_region: eu-central-1
         region: eu-west-1
         source_snapshot_id: snap-xxxxxxx
@@ -389,23 +355,23 @@ Examples
         wait_timeout: 1200   # Default timeout is 600
       register: snapshot_id
 
-    # Tagged Snapshot copy
-    - ec2_snapshot_copy:
+    - name: Tagged Snapshot copy
+      community.aws.ec2_snapshot_copy:
         source_region: eu-central-1
         region: eu-west-1
         source_snapshot_id: snap-xxxxxxx
         tags:
             Name: Snapshot-Name
 
-    # Encrypted Snapshot copy
-    - ec2_snapshot_copy:
+    - name: Encrypted Snapshot copy
+      community.aws.ec2_snapshot_copy:
         source_region: eu-central-1
         region: eu-west-1
         source_snapshot_id: snap-xxxxxxx
         encrypted: yes
 
-    # Encrypted Snapshot copy with specified key
-    - ec2_snapshot_copy:
+    - name: Encrypted Snapshot copy with specified key
+      community.aws.ec2_snapshot_copy:
         source_region: eu-central-1
         region: eu-west-1
         source_snapshot_id: snap-xxxxxxx
@@ -417,7 +383,7 @@ Examples
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this :
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

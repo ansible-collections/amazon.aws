@@ -11,6 +11,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_api_gateway
+version_added: 1.0.0
 short_description: Manage AWS API Gateway APIs
 description:
      - Allows for the management of API Gateway APIs

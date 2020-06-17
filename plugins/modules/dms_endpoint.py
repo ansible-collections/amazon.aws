@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: dms_endpoint
+version_added: 1.0.0
 short_description: Creates or destroys a data migration services endpoint
 description:
     - Creates or destroys a data migration services endpoint,

@@ -1,5 +1,6 @@
+:orphan:
 
-.. _community.aws.route53_info_:
+.. _community.aws.route53_info_module:
 
 
 **************************
@@ -24,7 +25,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - python >= 2.6
 - boto
@@ -39,7 +40,6 @@ Parameters
         <tr>
             <th colspan="1">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -53,9 +53,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -71,9 +69,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -90,9 +86,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -108,9 +102,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ID of the change batch request.</div>
                                             <div>The value that you specify here is the value that ChangeResourceRecordSets returned in the Id element when you submitted the request.</div>
                                             <div>Required if <em>query=change</em>.</div>
@@ -131,9 +123,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -148,9 +138,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The DNS Zone delegation set ID.</div>
                                                         </td>
             </tr>
@@ -165,9 +153,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The first name in the lexicographic ordering of domain names that you want the list_command to start listing from.</div>
                                                         </td>
             </tr>
@@ -182,9 +168,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -199,9 +183,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ID of the health check.</div>
                                             <div>Required if <code>query</code> is set to <code>health_check</code> and <code>health_check_method</code> is set to <code>details</code> or <code>status</code> or <code>failure_reason</code>.</div>
                                                         </td>
@@ -225,9 +207,7 @@ Parameters
                                                                                                                                                                                                 <li>tags</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>This is used in conjunction with query: health_check. It allows for listing details, counts or tags of various health check details.</div>
                                                         </td>
             </tr>
@@ -242,9 +222,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The Hosted Zone ID of the DNS zone.</div>
                                             <div>Required if <em>query</em> is set to <em>hosted_zone</em> and <em>hosted_zone_method</em> is set to <em>details</em>.</div>
                                             <div>Required if <em>query</em> is set to <em>record_sets</em>.</div>
@@ -268,9 +246,7 @@ Parameters
                                                                                                                                                                                                 <li>tags</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>This is used in conjunction with query: hosted_zone. It allows for listing details, counts or tags of various hosted zone details.</div>
                                                         </td>
             </tr>
@@ -285,9 +261,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Maximum number of items to return for various get/list requests.</div>
                                                         </td>
             </tr>
@@ -302,9 +276,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Some requests such as list_command: hosted_zones will return a maximum number of entries - EG 100 or the number specified by <em>max_items</em>. If the number of entries exceeds this maximum another request can be sent using the NextMarker entry from the first response to get the next page of results.</div>
                                                         </td>
             </tr>
@@ -319,9 +291,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -344,9 +314,7 @@ Parameters
                                                                                                                                                                                                 <li>reusable_delegation_set</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Specifies the query action to take.</div>
                                                         </td>
             </tr>
@@ -361,9 +329,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -379,9 +345,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ID/s of the specified resource/s.</div>
                                             <div>Required if <em>query=health_check</em> and <em>health_check_method=tags</em>.</div>
                                             <div>Required if <em>query=hosted_zone</em> and <em>hosted_zone_method=tags</em>.</div>
@@ -399,9 +363,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -417,9 +379,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The first name in the lexicographic ordering of domain names that you want the list_command: record_sets to start listing from.</div>
                                                         </td>
             </tr>
@@ -446,9 +406,7 @@ Parameters
                                                                                                                                                                                                 <li>NS</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The type of DNS record.</div>
                                                         </td>
             </tr>
@@ -467,9 +425,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -495,19 +451,19 @@ Examples
     
     # Simple example of listing all hosted zones
     - name: List all hosted zones
-      route53_info:
+      community.aws.route53_info:
         query: hosted_zone
       register: hosted_zones
 
     # Getting a count of hosted zones
     - name: Return a count of all hosted zones
-      route53_info:
+      community.aws.route53_info:
         query: hosted_zone
         hosted_zone_method: count
       register: hosted_zone_count
 
     - name: List the first 20 resource record sets in a given hosted zone
-      route53_info:
+      community.aws.route53_info:
         profile: account_name
         query: record_sets
         hosted_zone_id: ZZZ1111112222
@@ -515,33 +471,33 @@ Examples
       register: record_sets
 
     - name: List first 20 health checks
-      route53_info:
+      community.aws.route53_info:
         query: health_check
         health_check_method: list
         max_items: 20
       register: health_checks
 
     - name: Get health check last failure_reason
-      route53_info:
+      community.aws.route53_info:
         query: health_check
         health_check_method: failure_reason
         health_check_id: 00000000-1111-2222-3333-12345678abcd
       register: health_check_failure_reason
 
     - name: Retrieve reusable delegation set details
-      route53_info:
+      community.aws.route53_info:
         query: reusable_delegation_set
         delegation_set_id: delegation id
       register: delegation_sets
 
     - name: setup of example for using next_marker
-      route53_info:
+      community.aws.route53_info:
         query: hosted_zone
         max_items: 1
       register: first_info
 
     - name: example for using next_marker
-      route53_info:
+      community.aws.route53_info:
         query: hosted_zone
         next_marker: "{{ first_info.NextMarker }}"
         max_items: 1
@@ -550,12 +506,12 @@ Examples
     - name: retrieve host entries starting with host1.workshop.test.io
       block:
         - name: grab zone id
-          route53_zone:
+          community.aws.route53_zone:
             zone: "test.io"
           register: AWSINFO
 
         - name: grab Route53 record information
-          route53_info:
+          community.aws.route53_info:
             type: A
             query: record_sets
             hosted_zone_id: "{{ AWSINFO.zone_id }}"

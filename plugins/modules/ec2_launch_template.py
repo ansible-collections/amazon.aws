@@ -8,6 +8,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_launch_template
+version_added: 1.0.0
 short_description: Manage EC2 launch templates
 description:
   - Create, modify, and delete EC2 Launch Templates, which can be used to

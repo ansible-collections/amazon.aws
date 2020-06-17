@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: elasticache_subnet_group
+version_added: 1.0.0
 short_description: manage ElastiCache subnet groups
 description:
      - Creates, modifies, and deletes ElastiCache subnet groups. This module has a dependency on python-boto >= 2.5.

@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_s3_bucket_info
+version_added: 1.0.0
 short_description: Lists S3 buckets in AWS
 requirements:
   - boto3 >= 1.4.4

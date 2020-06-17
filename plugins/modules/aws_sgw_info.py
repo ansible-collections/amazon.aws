@@ -11,6 +11,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_sgw_info
+version_added: 1.0.0
 short_description: Fetch AWS Storage Gateway information
 description:
     - Fetch AWS Storage Gateway information

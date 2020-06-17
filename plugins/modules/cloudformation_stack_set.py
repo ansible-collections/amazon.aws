@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: cloudformation_stack_set
+version_added: 1.0.0
 short_description: Manage groups of CloudFormation stacks
 description:
      - Launches/updates/deletes AWS CloudFormation Stack Sets.

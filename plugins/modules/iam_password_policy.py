@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: iam_password_policy
+version_added: 1.0.0
 short_description: Update an IAM Password Policy
 description:
     - Module updates an IAM Password Policy on a given AWS account

@@ -21,6 +21,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: iam_cert
+version_added: 1.0.0
 short_description: Manage server certificates for use on ELBs and CloudFront
 description:
      - Allows for the management of server certificates.

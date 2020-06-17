@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: dynamodb_table
+version_added: 1.0.0
 short_description: Create, update or delete AWS Dynamo DB tables
 description:
   - Create or delete AWS Dynamo DB tables.

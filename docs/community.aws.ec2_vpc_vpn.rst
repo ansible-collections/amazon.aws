@@ -1,5 +1,6 @@
+:orphan:
 
-.. _community.aws.ec2_vpc_vpn_:
+.. _community.aws.ec2_vpc_vpn_module:
 
 
 *************************
@@ -23,7 +24,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - boto
 - boto3
@@ -40,7 +41,6 @@ Parameters
         <tr>
             <th colspan="2">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -54,9 +54,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -72,9 +70,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -91,9 +87,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -110,9 +104,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">"ipsec.1"</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The type of VPN connection.</div>
                                             <div>At this time only &#x27;ipsec.1&#x27; is supported.</div>
                                                         </td>
@@ -128,9 +120,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ID of the customer gateway.</div>
                                                         </td>
             </tr>
@@ -149,9 +139,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -167,9 +155,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">15</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The time to wait before checking operation again. in seconds.</div>
                                                         </td>
             </tr>
@@ -184,9 +170,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -201,9 +185,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>An alternative to using vpn_connection_id. If multiple matches are found, vpn_connection_id is required. If one of the following suboptions is a list of items to filter by, only one item needs to match to find the VPN that correlates. e.g. if the filter &#x27;cidr&#x27; is [&#x27;194.168.2.0/24&#x27;, &#x27;192.168.2.0/24&#x27;] and the VPN route only has the destination cidr block of &#x27;192.168.2.0/24&#x27; it will be found with this filter (assuming there are not multiple VPNs that are matched). Another example, if the filter &#x27;vpn&#x27; is equal to [&#x27;vpn-ccf7e7ad&#x27;, &#x27;vpn-cb0ae2a2&#x27;] and one of of the VPNs has the state deleted (exists but is unmodifiable) and the other exists and is not deleted, it will be found via this filter. See examples.</div>
                                                         </td>
             </tr>
@@ -219,9 +201,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The BGP ASN number associated with a BGP device. Only works if the connection is attached. This filtering option is currently not working.</div>
                                                         </td>
             </tr>
@@ -237,9 +217,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The customer gateway id as a string or a list of those strings.</div>
                                                         </td>
             </tr>
@@ -255,9 +233,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The customer gateway configuration of the VPN as a string (in the format of the return value) or a list of those strings.</div>
                                                         </td>
             </tr>
@@ -273,9 +249,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The destination cidr of the VPN&#x27;s route as a string or a list of those strings.</div>
                                                         </td>
             </tr>
@@ -291,9 +265,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The type of routing; true or false.</div>
                                                         </td>
             </tr>
@@ -309,9 +281,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The key of a tag as a string or a list of those strings.</div>
                                                         </td>
             </tr>
@@ -327,9 +297,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The value of a tag as a string or a list of those strings.</div>
                                                         </td>
             </tr>
@@ -345,9 +313,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dict of key value pairs.</div>
                                                         </td>
             </tr>
@@ -363,9 +329,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The virtual private gateway as a string or a list of those strings.</div>
                                                         </td>
             </tr>
@@ -381,9 +345,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The VPN connection id as a string or a list of those strings.</div>
                                                         </td>
             </tr>
@@ -399,9 +361,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -420,9 +380,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether or not to delete VPN connections routes that are not specified in the task.</div>
                                                         </td>
             </tr>
@@ -441,9 +399,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether or not to delete VPN connections tags that are associated with the connection but not specified in the task.</div>
                                                         </td>
             </tr>
@@ -458,9 +414,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -476,9 +430,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Routes to add to the connection.</div>
                                                         </td>
             </tr>
@@ -493,9 +445,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -515,9 +465,7 @@ Parameters
                                                                                                                                                                                                 <li>absent</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The desired state of the VPN connection.</div>
                                                         </td>
             </tr>
@@ -536,9 +484,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Indicates whether the VPN connection uses static routes only. Static routes must be used for devices that don&#x27;t support BGP.</div>
                                                         </td>
             </tr>
@@ -553,9 +499,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Tags to attach to the VPN connection.</div>
                                                         </td>
             </tr>
@@ -570,9 +514,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>An optional list object containing no more than two dict members, each of which may contain &#x27;TunnelInsideCidr&#x27; and/or &#x27;PreSharedKey&#x27; keys with appropriate string values.  AWS defaults will apply in absence of either of the aforementioned keys.</div>
                                                         </td>
             </tr>
@@ -588,9 +530,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The pre-shared key (PSK) to establish initial authentication between the virtual private gateway and customer gateway.</div>
                                                         </td>
             </tr>
@@ -606,9 +546,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The range of inside IP addresses for the tunnel.</div>
                                                         </td>
             </tr>
@@ -628,9 +566,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -645,9 +581,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ID of the VPN connection. Required to modify or delete a connection if the filters option does not provide a unique match.</div>
                                                         </td>
             </tr>
@@ -662,9 +596,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ID of the virtual private gateway.</div>
                                                         </td>
             </tr>
@@ -680,9 +612,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">600</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>How long before wait gives up, in seconds.</div>
                                                         </td>
             </tr>
@@ -710,13 +640,13 @@ Examples
     # It is assumed that their matching environment variables are set.
 
     - name: create a VPN connection
-      ec2_vpc_vpn:
+      community.aws.ec2_vpc_vpn:
         state: present
         vpn_gateway_id: vgw-XXXXXXXX
         customer_gateway_id: cgw-XXXXXXXX
 
     - name: modify VPN connection tags
-      ec2_vpc_vpn:
+      community.aws.ec2_vpc_vpn:
         state: present
         vpn_connection_id: vpn-XXXXXXXX
         tags:
@@ -724,12 +654,12 @@ Examples
           Other: ansible-tag-2
 
     - name: delete a connection
-      ec2_vpc_vpn:
+      community.aws.ec2_vpc_vpn:
         vpn_connection_id: vpn-XXXXXXXX
         state: absent
 
     - name: modify VPN tags (identifying VPN by filters)
-      ec2_vpc_vpn:
+      community.aws.ec2_vpc_vpn:
         state: present
         filters:
           cidr: 194.168.1.0/24
@@ -742,7 +672,7 @@ Examples
         static_only: true
 
     - name: set up VPN with tunnel options utilizing 'TunnelInsideCidr' only
-      ec2_vpc_vpn:
+      community.aws.ec2_vpc_vpn:
         state: present
         filters:
           vpn: vpn-XXXXXXXX
@@ -754,7 +684,7 @@ Examples
             TunnelInsideCidr: '169.254.100.5/30'
 
     - name: add routes and remove any preexisting ones
-      ec2_vpc_vpn:
+      community.aws.ec2_vpc_vpn:
         state: present
         filters:
           vpn: vpn-XXXXXXXX
@@ -764,14 +694,14 @@ Examples
         purge_routes: true
 
     - name: remove all routes
-      ec2_vpc_vpn:
+      community.aws.ec2_vpc_vpn:
         state: present
         vpn_connection_id: vpn-XXXXXXXX
         routes: []
         purge_routes: true
 
     - name: delete a VPN identified by filters
-      ec2_vpc_vpn:
+      community.aws.ec2_vpc_vpn:
         state: absent
         filters:
           tags:
@@ -782,7 +712,7 @@ Examples
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this :
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

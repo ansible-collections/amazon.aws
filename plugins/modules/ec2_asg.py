@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_asg
+version_added: 1.0.0
 short_description: Create or delete AWS AutoScaling Groups (ASGs)
 description:
   - Can create or delete AWS AutoScaling Groups.

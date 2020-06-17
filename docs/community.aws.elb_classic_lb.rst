@@ -1,5 +1,6 @@
+:orphan:
 
-.. _community.aws.elb_classic_lb_:
+.. _community.aws.elb_classic_lb_module:
 
 
 ****************************
@@ -24,7 +25,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - python >= 2.6
 - boto
@@ -39,7 +40,6 @@ Parameters
         <tr>
             <th colspan="1">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -53,9 +53,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>An associative array of access logs configuration settings (see example)</div>
                                                         </td>
             </tr>
@@ -70,9 +68,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -88,9 +84,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -107,9 +101,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -125,9 +117,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Wait a specified timeout allowing connections to drain before terminating an instance</div>
                                                         </td>
             </tr>
@@ -146,9 +136,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Distribute load across all configured Availability Zones</div>
                                                         </td>
             </tr>
@@ -167,9 +155,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -184,9 +170,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -201,9 +185,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>An associative array of health check configuration settings (see example)</div>
                                                         </td>
             </tr>
@@ -218,9 +200,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>ELB connections from clients and to servers are timed out after this amount of time</div>
                                                         </td>
             </tr>
@@ -235,9 +215,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>List of instance ids to attach to this ELB</div>
                                                         </td>
             </tr>
@@ -252,9 +230,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>List of ports/protocols for this ELB to listen on (see example)</div>
                                                         </td>
             </tr>
@@ -269,9 +245,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The name of the ELB</div>
                                                         </td>
             </tr>
@@ -286,9 +260,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -307,9 +279,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Purge existing instance ids on ELB that are not found in instance_ids</div>
                                                         </td>
             </tr>
@@ -328,9 +298,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Purge existing listeners on ELB that are not found in listeners</div>
                                                         </td>
             </tr>
@@ -349,9 +317,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Purge existing subnet on ELB that are not found in subnets</div>
                                                         </td>
             </tr>
@@ -370,9 +336,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Purge existing availability zones on ELB that are not found in zones</div>
                                                         </td>
             </tr>
@@ -387,9 +351,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -409,9 +371,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>internet-facing</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The scheme to use when creating the ELB. For a private VPC-visible ELB use &#x27;internal&#x27;. If you choose to update your scheme with a different value the ELB will be destroyed and recreated. To update scheme you must use the option wait.</div>
                                                         </td>
             </tr>
@@ -426,9 +386,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of security groups to apply to the elb</div>
                                                         </td>
             </tr>
@@ -443,9 +401,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of security group names to apply to the elb</div>
                                                         </td>
             </tr>
@@ -460,9 +416,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -482,9 +436,7 @@ Parameters
                                                                                                                                                                                                 <li>absent</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Create or destroy the ELB</div>
                                                         </td>
             </tr>
@@ -499,9 +451,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>An associative array of stickiness policy settings. Policy will be applied to all listeners ( see example )</div>
                                                         </td>
             </tr>
@@ -516,9 +466,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of VPC subnets to use when creating ELB. Zones should be empty if using this.</div>
                                                         </td>
             </tr>
@@ -533,9 +481,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>An associative array of tags. To delete all tags, supply an empty dict.</div>
                                                         </td>
             </tr>
@@ -554,9 +500,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to <code>no</code>, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -575,9 +519,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When specified, Ansible will check the status of the load balancer to ensure it has been successfully removed from AWS.</div>
                                                         </td>
             </tr>
@@ -593,9 +535,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">60</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Used in conjunction with wait. Number of seconds to wait for the elb to be terminated. A maximum of 600 seconds (10 minutes) is allowed.</div>
                                                         </td>
             </tr>
@@ -610,9 +550,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>List of availability zones to enable on this ELB</div>
                                                         </td>
             </tr>
@@ -641,7 +579,7 @@ Examples
 
     # Basic provisioning example (non-VPC)
 
-    - elb_classic_lb:
+    - community.aws.elb_classic_lb:
         name: "test-please-delete"
         state: present
         zones:
@@ -662,7 +600,7 @@ Examples
 
     # Internal ELB example
 
-    - elb_classic_lb:
+    - community.aws.elb_classic_lb:
         name: "test-vpc"
         scheme: internal
         state: present
@@ -679,7 +617,7 @@ Examples
       delegate_to: localhost
 
     # Configure a health check and the access logs
-    - elb_classic_lb:
+    - community.aws.elb_classic_lb:
         name: "test-please-delete"
         state: present
         zones:
@@ -703,20 +641,20 @@ Examples
       delegate_to: localhost
 
     # Ensure ELB is gone
-    - elb_classic_lb:
+    - community.aws.elb_classic_lb:
         name: "test-please-delete"
         state: absent
       delegate_to: localhost
 
     # Ensure ELB is gone and wait for check (for default timeout)
-    - elb_classic_lb:
+    - community.aws.elb_classic_lb:
         name: "test-please-delete"
         state: absent
         wait: yes
       delegate_to: localhost
 
     # Ensure ELB is gone and wait for check with timeout value
-    - elb_classic_lb:
+    - community.aws.elb_classic_lb:
         name: "test-please-delete"
         state: absent
         wait: yes
@@ -726,7 +664,7 @@ Examples
     # Normally, this module will purge any listeners that exist on the ELB
     # but aren't specified in the listeners parameter. If purge_listeners is
     # false it leaves them alone
-    - elb_classic_lb:
+    - community.aws.elb_classic_lb:
         name: "test-please-delete"
         state: present
         zones:
@@ -742,7 +680,7 @@ Examples
     # Normally, this module will leave availability zones that are enabled
     # on the ELB alone. If purge_zones is true, then any extraneous zones
     # will be removed
-    - elb_classic_lb:
+    - community.aws.elb_classic_lb:
         name: "test-please-delete"
         state: present
         zones:
@@ -756,7 +694,7 @@ Examples
       delegate_to: localhost
 
     # Creates a ELB and assigns a list of subnets to it.
-    - elb_classic_lb:
+    - community.aws.elb_classic_lb:
         state: present
         name: 'New ELB'
         security_group_ids: 'sg-123456, sg-67890'
@@ -771,7 +709,7 @@ Examples
 
     # Create an ELB with connection draining, increased idle timeout and cross availability
     # zone load balancing
-    - elb_classic_lb:
+    - community.aws.elb_classic_lb:
         name: "New ELB"
         state: present
         connection_draining_timeout: 60
@@ -788,7 +726,7 @@ Examples
       delegate_to: localhost
 
     # Create an ELB with load balancer stickiness enabled
-    - elb_classic_lb:
+    - community.aws.elb_classic_lb:
         name: "New ELB"
         state: present
         region: us-east-1
@@ -806,7 +744,7 @@ Examples
       delegate_to: localhost
 
     # Create an ELB with application stickiness enabled
-    - elb_classic_lb:
+    - community.aws.elb_classic_lb:
         name: "New ELB"
         state: present
         region: us-east-1
@@ -824,7 +762,7 @@ Examples
       delegate_to: localhost
 
     # Create an ELB and add tags
-    - elb_classic_lb:
+    - community.aws.elb_classic_lb:
         name: "New ELB"
         state: present
         region: us-east-1
@@ -842,7 +780,7 @@ Examples
       delegate_to: localhost
 
     # Delete all tags from an ELB
-    - elb_classic_lb:
+    - community.aws.elb_classic_lb:
         name: "New ELB"
         state: present
         region: us-east-1

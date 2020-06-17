@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: kinesis_stream
+version_added: 1.0.0
 short_description: Manage a Kinesis Stream.
 description:
     - Create or Delete a Kinesis Stream.

@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: rds
+version_added: 1.0.0
 short_description: create, delete, or modify Amazon rds instances, rds snapshots, and related facts
 description:
     - Creates, deletes, or modifies rds resources.

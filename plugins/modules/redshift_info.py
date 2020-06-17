@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: redshift_info
+version_added: 1.0.0
 author: "Jens Carl (@j-carl)"
 short_description: Gather information about Redshift cluster(s)
 description:

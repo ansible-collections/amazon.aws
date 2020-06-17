@@ -11,6 +11,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_lc_find
+version_added: 1.0.0
 short_description: Find AWS Autoscaling Launch Configurations
 description:
   - Returns list of matching Launch Configurations for a given name, along with other useful information.

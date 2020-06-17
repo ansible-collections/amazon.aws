@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: dms_replication_subnet_group
+version_added: 1.0.0
 short_description: creates or destroys a data migration services subnet group
 description:
     - Creates or destroys a data migration services subnet group.

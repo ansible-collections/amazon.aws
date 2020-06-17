@@ -10,6 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 ---
 module: aws_secret
+version_added: 1.0.0
 short_description: Manage secrets stored in AWS Secrets Manager.
 description:
     - Create, update, and delete secrets stored in AWS Secrets Manager.

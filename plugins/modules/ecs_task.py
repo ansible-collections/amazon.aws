@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ecs_task
+version_added: 1.0.0
 short_description: Run, start or stop a task in ecs
 description:
     - Creates or deletes instances of task definitions.

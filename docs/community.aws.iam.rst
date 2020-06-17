@@ -1,5 +1,6 @@
+:orphan:
 
-.. _community.aws.iam_:
+.. _community.aws.iam_module:
 
 
 *****************
@@ -23,7 +24,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - python >= 2.6
 - boto
@@ -38,7 +39,6 @@ Parameters
         <tr>
             <th colspan="1">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -52,9 +52,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of the keys that you want affected by the <em>access_key_state</em> parameter.</div>
                                                         </td>
             </tr>
@@ -79,9 +77,7 @@ Parameters
                                                                                                                                                                                                 <li>Inactive</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When type is user, it creates, removes, deactivates or activates a user&#x27;s access key(s). Note that actions apply only to keys specified.</div>
                                                         </td>
             </tr>
@@ -96,9 +92,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -114,9 +108,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -133,9 +125,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -155,9 +145,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -172,9 +160,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -189,9 +175,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of groups the user should belong to. When <em>state=update</em>, will gracefully remove groups not listed.</div>
                                                         </td>
             </tr>
@@ -211,9 +195,7 @@ Parameters
                                                                                                                                                                                                 <li>role</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Type of IAM resource.</div>
                                                         </td>
             </tr>
@@ -229,9 +211,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">1</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When <em>access_key_state=create</em> it will ensure this quantity of keys are present.</div>
                                                         </td>
             </tr>
@@ -246,9 +226,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Name of IAM resource to create or identify.</div>
                                                         </td>
             </tr>
@@ -263,9 +241,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When <em>state=update</em>, will replace <em>name</em> with <em>new_name</em> on IAM resource.</div>
                                                         </td>
             </tr>
@@ -280,9 +256,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When <em>state=update</em>, will replace the path with new_path on the IAM resource.</div>
                                                         </td>
             </tr>
@@ -297,9 +271,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When <em>type=user</em> and either <em>state=present</em> or <em>state=update</em>, define the users login password.</div>
                                             <div>Note that this will always return &#x27;changed&#x27;.</div>
                                                         </td>
@@ -316,9 +288,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">"/"</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When creating or updating, specify the desired path of the resource.</div>
                                             <div>If <em>state=present</em>, it will replace the current path to match what is passed in when they do not match.</div>
                                                         </td>
@@ -334,9 +304,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -351,9 +319,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -369,9 +335,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -392,9 +356,7 @@ Parameters
                                                                                                                                                                                                 <li>update</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether to create, delete or update the IAM resource. Note, roles cannot be updated.</div>
                                                         </td>
             </tr>
@@ -409,9 +371,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The inline (JSON or YAML) trust policy document that grants an entity permission to assume the role.</div>
                                             <div>Mutually exclusive with <em>trust_policy_filepath</em>.</div>
                                                         </td>
@@ -427,9 +387,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The path to the trust policy document that grants an entity permission to assume the role.</div>
                                             <div>Mutually exclusive with <em>trust_policy</em>.</div>
                                                         </td>
@@ -449,9 +407,7 @@ Parameters
                                                                                                                                                                                                 <li>on_create</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When to update user passwords.</div>
                                             <div><em>update_password=always</em> will ensure the password is set to <em>password</em>.</div>
                                             <div><em>update_password=on_create</em> will only set the password for newly created users.</div>
@@ -472,9 +428,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -500,9 +454,8 @@ Examples
 
     
     # Basic user creation example
-    tasks:
     - name: Create two new IAM users with API keys
-      iam:
+      community.aws.iam:
         iam_type: user
         name: "{{ item }}"
         state: present
@@ -514,9 +467,8 @@ Examples
 
     # Advanced example, create two new groups and add the pre-existing user
     # jdavila to both groups.
-    task:
     - name: Create Two Groups, Mario and Luigi
-      iam:
+      community.aws.iam:
         iam_type: group
         name: "{{ item }}"
         state: present
@@ -525,8 +477,8 @@ Examples
          - Luigi
       register: new_groups
 
-    - name:
-      iam:
+    - name: Update user
+      community.aws.iam:
         iam_type: user
         name: jdavila
         state: update
@@ -535,7 +487,7 @@ Examples
 
     # Example of role with custom trust policy for Lambda service
     - name: Create IAM role with custom trust relationship
-      iam:
+      community.aws.iam:
         iam_type: role
         name: AAALambdaTestRole
         state: present
@@ -553,7 +505,7 @@ Examples
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this :
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

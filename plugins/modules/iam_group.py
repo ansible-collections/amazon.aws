@@ -21,6 +21,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: iam_group
+version_added: 1.0.0
 short_description: Manage AWS IAM groups
 description:
   - Manage AWS IAM groups.

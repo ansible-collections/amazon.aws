@@ -1,5 +1,6 @@
+:orphan:
 
-.. _community.aws.cloudformation_stack_set_:
+.. _community.aws.cloudformation_stack_set_module:
 
 
 **************************************
@@ -23,7 +24,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - boto
 - boto3>=1.6
@@ -40,7 +41,6 @@ Parameters
         <tr>
             <th colspan="2">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -54,9 +54,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of AWS accounts in which to create instance of CloudFormation stacks.</div>
                                             <div>At least one region must be specified to create a stack set. On updates, if fewer regions are specified only the specified regions will have their stack instances updated.</div>
                                                         </td>
@@ -72,9 +70,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>ARN of the administration role, meaning the role that CloudFormation Stack Sets use to assume the roles in your child accounts.</div>
                                             <div>This defaults to <code>arn:aws:iam::{{ account ID }}:role/AWSCloudFormationStackSetAdministrationRole</code> where <code>{{ account ID }}</code> is replaced with the account number of the current IAM role/user/STS credentials.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: admin_role_arn, admin_role, administration_role</div>
@@ -91,9 +87,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -109,9 +103,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -128,9 +120,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -150,9 +140,7 @@ Parameters
                                                                                                                                                                                                 <li>CAPABILITY_NAMED_IAM</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Capabilities allow stacks to create and modify IAM resources, which may include adding users or roles.</div>
                                             <div>Currently the only available values are &#x27;CAPABILITY_IAM&#x27; and &#x27;CAPABILITY_NAMED_IAM&#x27;. Either or both may be provided.</div>
                                             <div>The following resources require that one or both of these parameters is specified: AWS::IAM::AccessKey, AWS::IAM::Group, AWS::IAM::InstanceProfile, AWS::IAM::Policy, AWS::IAM::Role, AWS::IAM::User, AWS::IAM::UserToGroupAddition</div>
@@ -173,9 +161,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -190,9 +176,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A description of what this stack set creates.</div>
                                                         </td>
             </tr>
@@ -207,9 +191,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -224,9 +206,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>ARN of the execution role, meaning the role that CloudFormation Stack Sets assumes in your child accounts.</div>
                                             <div>This MUST NOT be an ARN, and the roles must exist in each child account specified.</div>
                                             <div>The default name for the execution role is <code>AWSCloudFormationStackSetExecutionRole</code></div>
@@ -244,9 +224,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Settings to change what is considered &quot;failed&quot; when running stack instance updates, and how many to do at a time.</div>
                                                         </td>
             </tr>
@@ -262,9 +240,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The number of accounts, per region, for which this operation can fail before CloudFormation stops the operation in that region.</div>
                                             <div>You must specify one of <em>fail_count</em> and <em>fail_percentage</em>.</div>
                                                         </td>
@@ -281,9 +257,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The percentage of accounts, per region, for which this stack operation can fail before CloudFormation stops the operation in that region.</div>
                                             <div>You must specify one of <em>fail_count</em> and <em>fail_percentage</em>.</div>
                                                         </td>
@@ -300,9 +274,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The maximum number of accounts in which to perform this operation at one time.</div>
                                             <div><em>parallel_count</em> may be at most one more than the <em>fail_count</em>.</div>
                                             <div>You must specify one of <em>parallel_count</em> and <em>parallel_percentage</em>.</div>
@@ -321,9 +293,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The maximum percentage of accounts in which to perform this operation at one time.</div>
                                             <div>You must specify one of <em>parallel_count</em> and <em>parallel_percentage</em>.</div>
                                             <div>Note that this setting lets you specify the maximum for operations. For large deployments, under certain circumstances the actual percentage may be lower.</div>
@@ -341,9 +311,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Name of the CloudFormation stack set.</div>
                                                         </td>
             </tr>
@@ -359,9 +327,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">{}</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of hashes of all the template variables for the stack. The value can be a string or a dict.</div>
                                             <div>Dict can be used to set additional template parameter attributes like UsePreviousValue (see example).</div>
                                                         </td>
@@ -377,9 +343,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -398,9 +362,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Only applicable when <em>state=absent</em>. Sets whether, when deleting a stack set, the stack instances should also be deleted.</div>
                                             <div>By default, instances will be deleted. To keep stacks when stack set is deleted set <em>purge_stacks=false</em>.</div>
                                                         </td>
@@ -416,9 +378,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -434,9 +394,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of AWS regions to create instances of a stack in. The <em>region</em> parameter chooses where the Stack Set is created, and <em>regions</em> specifies the region for stack instances.</div>
                                             <div>At least one region must be specified to create a stack set. On updates, if fewer regions are specified only the specified regions will have their stack instances updated.</div>
                                                         </td>
@@ -452,9 +410,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -474,9 +430,7 @@ Parameters
                                                                                                                                                                                                 <li>absent</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>If <em>state=present</em>, stack will be created.  If <em>state=present</em> and if stack exists and template has changed, it will be updated. If <em>state=absent</em>, stack will be removed.</div>
                                                         </td>
             </tr>
@@ -491,9 +445,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Dictionary of tags to associate with stack and its resources during stack creation.</div>
                                             <div>Can be updated later, updating tags removes previous entries.</div>
                                                         </td>
@@ -509,9 +461,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The local path of the CloudFormation template.</div>
                                             <div>This must be the full path to the file, relative to the working directory. If using roles this may look like <code>roles/cloudformation/files/cloudformation-example.json</code>.</div>
                                             <div>If <em>state=present</em> and the stack does not exist yet, either <em>template</em>, <em>template_body</em> or <em>template_url</em> must be specified (but only one of them).</div>
@@ -529,9 +479,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Template body. Use this to pass in the actual body of the CloudFormation template.</div>
                                             <div>If <em>state=present</em> and the stack does not exist yet, either <em>template</em>, <em>template_body</em> or <em>template_url</em> must be specified (but only one of them).</div>
                                             <div>If <em>state=present</em>, the stack does exist, and neither <em>template</em>, <em>template_body</em> nor <em>template_url</em> are specified, the previous template will be reused.</div>
@@ -548,9 +496,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Location of file containing the template body.</div>
                                             <div>The URL must point to a template (max size 307,200 bytes) located in an S3 bucket in the same region as the stack.</div>
                                             <div>If <em>state=present</em> and the stack does not exist yet, either <em>template</em>, <em>template_body</em> or <em>template_url</em> must be specified (but only one of them).</div>
@@ -572,9 +518,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -593,9 +537,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether or not to wait for stack operation to complete. This includes waiting for stack instances to reach UPDATE_COMPLETE status.</div>
                                             <div>If you choose not to wait, this module will not notify when stack operations fail because it will not wait for them to finish.</div>
                                                         </td>
@@ -612,9 +554,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">900</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>How long to wait (in seconds) for stacks to complete create/update/delete operations.</div>
                                                         </td>
             </tr>
@@ -626,7 +566,7 @@ Notes
 -----
 
 .. note::
-   - To make an individual stack, you want the :ref:`cloudformation <cloudformation_module>` module.
+   - To make an individual stack, you want the :ref:`amazon.aws.cloudformation <amazon.aws.cloudformation_module>` module.
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``
    - Ansible uses the boto configuration file (typically ~/.boto) if no credentials are provided. See https://boto.readthedocs.io/en/latest/boto_config_tut.html
    - ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be configured in the boto config file
@@ -640,7 +580,7 @@ Examples
 
     
     - name: Create a stack set with instances in two accounts
-      cloudformation_stack_set:
+      community.aws.cloudformation_stack_set:
         name: my-stack
         description: Test stack in two accounts
         state: present
@@ -650,7 +590,7 @@ Examples
         - us-east-1
 
     - name: on subsequent calls, templates are optional but parameters and tags can be altered
-      cloudformation_stack_set:
+      community.aws.cloudformation_stack_set:
         name: my-stack
         state: present
         parameters:
@@ -663,7 +603,7 @@ Examples
         - us-east-1
 
     - name: The same type of update, but wait for the update to complete in all stacks
-      cloudformation_stack_set:
+      community.aws.cloudformation_stack_set:
         name: my-stack
         state: present
         wait: true
@@ -681,7 +621,7 @@ Examples
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this :
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: aws_acm_info
 short_description: Retrieve certificate information from AWS Certificate Manager service
+version_added: 1.0.0
 description:
   - Retrieve information for ACM certificates
   - This module was called C(aws_acm_facts) before Ansible 2.9. The usage did not change.

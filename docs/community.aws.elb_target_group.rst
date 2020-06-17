@@ -1,5 +1,6 @@
+:orphan:
 
-.. _community.aws.elb_target_group_:
+.. _community.aws.elb_target_group_module:
 
 
 ******************************
@@ -23,7 +24,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - boto
 - boto3
@@ -39,7 +40,6 @@ Parameters
         <tr>
             <th colspan="1">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -53,9 +53,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -71,9 +69,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -90,9 +86,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -112,9 +106,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -129,9 +121,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The amount time for Elastic Load Balancing to wait before changing the state of a deregistering target from draining to unused. The range is 0-3600 seconds.</div>
                                                         </td>
             </tr>
@@ -146,9 +136,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -163,9 +151,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The approximate amount of time, in seconds, between health checks of an individual target.</div>
                                                         </td>
             </tr>
@@ -180,9 +166,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The ping path that is the destination on the targets for health checks. The path must be defined in order to set a health check.</div>
                                             <div>Requires the <em>health_check_protocol</em> parameter to be set.</div>
                                                         </td>
@@ -198,9 +182,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The port the load balancer uses when performing health checks on targets. Can be set to &#x27;traffic-port&#x27; to match target port.</div>
                                             <div>When not defined will default to the port on which each target receives traffic from the load balancer.</div>
                                                         </td>
@@ -230,9 +212,7 @@ Parameters
                                                                                                                                                                                                 <li>TCP_UDP</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The protocol the load balancer uses when performing health checks on targets.</div>
                                                         </td>
             </tr>
@@ -247,9 +227,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The amount of time, in seconds, during which no response from a target means a failed health check.</div>
                                                         </td>
             </tr>
@@ -264,9 +242,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The number of consecutive health checks successes required before considering an unhealthy target healthy.</div>
                                                         </td>
             </tr>
@@ -285,9 +261,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether or not to alter existing targets in the group to match what is passed with the module</div>
                                                         </td>
             </tr>
@@ -302,9 +276,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The name of the target group.</div>
                                                         </td>
             </tr>
@@ -319,9 +291,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The port on which the targets receive traffic. This port is used unless you specify a port override when registering the target. Required if <em>state</em> is <code>present</code>.</div>
                                                         </td>
             </tr>
@@ -336,9 +306,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -367,9 +335,7 @@ Parameters
                                                                                                                                                                                                 <li>TCP_UDP</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The protocol to use for routing traffic to the targets. Required when <em>state</em> is <code>present</code>.</div>
                                                         </td>
             </tr>
@@ -388,9 +354,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>If yes, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter. If the tag parameter is not set then tags will not be modified.</div>
                                                         </td>
             </tr>
@@ -405,9 +369,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -423,9 +385,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -445,9 +405,7 @@ Parameters
                                                                                                                                                                                                 <li>absent</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Create or destroy the target group.</div>
                                                         </td>
             </tr>
@@ -466,9 +424,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Indicates whether sticky sessions are enabled.</div>
                                                         </td>
             </tr>
@@ -483,9 +439,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The time period, in seconds, during which requests from a client should be routed to the same target. After this time period expires, the load balancer-generated cookie is considered stale. The range is 1 second to 1 week (604800 seconds).</div>
                                                         </td>
             </tr>
@@ -500,9 +454,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The type of sticky sessions.</div>
                                             <div>If not set AWS will default to <code>lb_cookie</code> for Application Load Balancers or <code>source_ip</code> for Network Load Balancers.</div>
                                                         </td>
@@ -518,9 +470,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The HTTP codes to use when checking for a successful response from a target.</div>
                                             <div>Accepts multiple values (for example, &quot;200,202&quot;) or a range of values (for example, &quot;200-299&quot;).</div>
                                             <div>Requires the <em>health_check_protocol</em> parameter to be set.</div>
@@ -537,9 +487,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary of one or more tags to assign to the target group.</div>
                                                         </td>
             </tr>
@@ -559,9 +507,7 @@ Parameters
                                                                                                                                                                                                 <li>lambda</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The type of target that you must specify when registering targets with this target group. The possible values are <code>instance</code> (targets are specified by instance ID), <code>ip</code> (targets are specified by IP address) or <code>lambda</code> (target is specified by ARN). Note that you can&#x27;t specify targets for a target group using more than one type. Target type lambda only accept one target. When more than one target is specified, only the first one is used. All additional targets are ignored. If the target type is ip, specify IP addresses from the subnets of the virtual private cloud (VPC) for the target group, the RFC 1918 range (10.0.0.0/8, 172.16.0.0/12, and 192.168.0.0/16), and the RFC 6598 range (100.64.0.0/10). You can&#x27;t specify publicly routable IP addresses.</div>
                                             <div>The default behavior is <code>instance</code>.</div>
                                                         </td>
@@ -577,9 +523,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of targets to assign to the target group. This parameter defaults to an empty list. Unless you set the &#x27;modify_targets&#x27; parameter then all existing targets will be removed from the group. The list should be an Id and a Port parameter. See the Examples for detail.</div>
                                                         </td>
             </tr>
@@ -594,9 +538,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The number of consecutive health check failures required before considering a target unhealthy.</div>
                                                         </td>
             </tr>
@@ -615,9 +557,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -632,9 +572,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The identifier of the virtual private cloud (VPC). Required when <em>state</em> is <code>present</code>.</div>
                                                         </td>
             </tr>
@@ -653,9 +591,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether or not to wait for the target group.</div>
                                                         </td>
             </tr>
@@ -671,9 +607,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">200</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The time to wait for the target group.</div>
                                                         </td>
             </tr>
@@ -700,16 +634,16 @@ Examples
     
     # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-    # Create a target group with a default health check
-    - elb_target_group:
+    - name: Create a target group with a default health check
+      community.aws.elb_target_group:
         name: mytargetgroup
         protocol: http
         port: 80
         vpc_id: vpc-01234567
         state: present
 
-    # Modify the target group with a custom health check
-    - elb_target_group:
+    - name: Modify the target group with a custom health check
+      community.aws.elb_target_group:
         name: mytargetgroup
         protocol: http
         port: 80
@@ -724,13 +658,13 @@ Examples
         unhealthy_threshold_count: 3
         state: present
 
-    # Delete a target group
-    - elb_target_group:
+    - name: Delete a target group
+      community.aws.elb_target_group:
         name: mytargetgroup
         state: absent
 
-    # Create a target group with instance targets
-    - elb_target_group:
+    - name: Create a target group with instance targets
+      community.aws.elb_target_group:
         name: mytargetgroup
         protocol: http
         port: 81
@@ -747,8 +681,8 @@ Examples
         wait_timeout: 200
         wait: True
 
-    # Create a target group with IP address targets
-    - elb_target_group:
+    - name: Create a target group with IP address targets
+      community.aws.elb_target_group:
         name: mytargetgroup
         protocol: http
         port: 81
@@ -771,10 +705,10 @@ Examples
     # itself is allow to invoke the lambda function.
     # therefore you need first to create an empty target group
     # to receive its arn, second, allow the target group
-    # to invoke the lamba function and third, add the target
+    # to invoke the lambda function and third, add the target
     # to the target group
     - name: first, create empty target group
-      elb_target_group:
+      community.aws.elb_target_group:
         name: my-lambda-targetgroup
         target_type: lambda
         state: present
@@ -782,7 +716,7 @@ Examples
       register: out
 
     - name: second, allow invoke of the lambda
-      lambda_policy:
+      community.aws.lambda_policy:
         state: "{{ state | default('present') }}"
         function_name: my-lambda-function
         statement_id: someID
@@ -791,7 +725,7 @@ Examples
         source_arn: "{{ out.target_group_arn }}"
 
     - name: third, add target
-      elb_target_group:
+      community.aws.elb_target_group:
         name: my-lambda-targetgroup
         target_type: lambda
         state: present
@@ -804,7 +738,7 @@ Examples
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this :
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

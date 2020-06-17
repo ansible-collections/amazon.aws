@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: efs
+version_added: 1.0.0
 short_description: create and maintain EFS file systems
 description:
     - Module allows create, search and destroy Amazon EFS file systems.

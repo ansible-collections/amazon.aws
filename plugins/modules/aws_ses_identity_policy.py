@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: aws_ses_identity_policy
+version_added: 1.0.0
 short_description: Manages SES sending authorization policies
 description:
     - This module allows the user to manage sending authorization policies associated with an SES identity (email or domain).

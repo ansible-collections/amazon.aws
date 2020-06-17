@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ecs_service
+version_added: 1.0.0
 short_description: Create, terminate, start or stop a service in ECS
 description:
   - Creates or terminates ECS. services.

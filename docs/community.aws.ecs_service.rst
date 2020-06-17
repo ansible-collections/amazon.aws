@@ -1,5 +1,6 @@
+:orphan:
 
-.. _community.aws.ecs_service_:
+.. _community.aws.ecs_service_module:
 
 
 *************************
@@ -23,7 +24,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - boto
 - boto3
@@ -41,7 +42,6 @@ Parameters
         <tr>
             <th colspan="2">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -55,9 +55,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -73,9 +71,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -92,9 +88,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -110,9 +104,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Unique, case-sensitive identifier you provide to ensure the idempotency of the request. Up to 32 ASCII characters are allowed.</div>
                                                         </td>
             </tr>
@@ -127,9 +119,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The name of the cluster in which the service exists.</div>
                                                         </td>
             </tr>
@@ -148,9 +138,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -166,9 +154,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">10</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The time to wait before checking that the service is available.</div>
                                                         </td>
             </tr>
@@ -183,9 +169,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Optional parameters that control the deployment_configuration.</div>
                                             <div>Format is &#x27;{&quot;maximum_percent&quot;:&lt;integer&gt;, &quot;minimum_healthy_percent&quot;:&lt;integer&gt;}</div>
                                                         </td>
@@ -202,9 +186,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Upper limit on the number of tasks in a service that are allowed in the RUNNING or PENDING state during a deployment.</div>
                                                         </td>
             </tr>
@@ -220,9 +202,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A lower limit on the number of tasks in a service that must remain in the RUNNING state during a deployment.</div>
                                                         </td>
             </tr>
@@ -238,9 +218,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The count of how many instances of the service.</div>
                                             <div>This parameter is required when <em>state=present</em>.</div>
                                                         </td>
@@ -256,9 +234,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -277,9 +253,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Force deployment of service even if there are no changes.</div>
                                                         </td>
             </tr>
@@ -294,9 +268,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Seconds to wait before health checking the freshly added/updated services.</div>
                                             <div>This option requires botocore &gt;= 1.8.20.</div>
                                                         </td>
@@ -316,9 +288,7 @@ Parameters
                                                                                                                                                                                                 <li>FARGATE</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The launch type on which to run your service.</div>
                                                         </td>
             </tr>
@@ -333,9 +303,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The list of ELBs defined for this service.</div>
                                                         </td>
             </tr>
@@ -350,9 +318,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The name of the service.</div>
                                                         </td>
             </tr>
@@ -367,9 +333,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Network configuration of the service. Only applicable for task definitions created with <em>network_mode=awsvpc</em>.</div>
                                             <div><em>assign_public_ip</em> requires botocore &gt;= 1.8.4</div>
                                                         </td>
@@ -390,9 +354,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Whether the task&#x27;s elastic network interface receives a public IP address.</div>
                                             <div>This option requires botocore &gt;= 1.8.4.</div>
                                                         </td>
@@ -409,9 +371,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of security group names or group IDs to associate with the task</div>
                                                         </td>
             </tr>
@@ -427,9 +387,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of subnet IDs to associate with the task</div>
                                                         </td>
             </tr>
@@ -445,9 +403,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The placement constraints for the tasks in the service.</div>
                                             <div>See <a href='https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_PlacementConstraint.html'>https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_PlacementConstraint.html</a> for more details.</div>
                                                         </td>
@@ -464,9 +420,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A cluster query language expression to apply to the constraint.</div>
                                                         </td>
             </tr>
@@ -482,9 +436,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The type of constraint.</div>
                                                         </td>
             </tr>
@@ -500,9 +452,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The placement strategy objects to use for tasks in your service. You can specify a maximum of 5 strategy rules per service.</div>
                                                         </td>
             </tr>
@@ -518,9 +468,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The field to apply the placement strategy against.</div>
                                                         </td>
             </tr>
@@ -536,9 +484,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The type of placement strategy.</div>
                                                         </td>
             </tr>
@@ -554,9 +500,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -571,9 +515,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -590,9 +532,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">10</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The number of times to check that the service is available.</div>
                                                         </td>
             </tr>
@@ -607,9 +547,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The name or full Amazon Resource Name (ARN) of the IAM role that allows your Amazon ECS container agent to make calls to your load balancer on your behalf.</div>
                                             <div>This parameter is only required if you are using a load balancer with your service in a network mode other than <code>awsvpc</code>.</div>
                                                         </td>
@@ -629,9 +567,7 @@ Parameters
                                                                                                                                                                                                 <li>REPLICA</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The scheduling strategy, defaults to &quot;REPLICA&quot; if not given to preserve previous behavior</div>
                                                         </td>
             </tr>
@@ -646,9 +582,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -664,9 +598,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Describes service discovery registries this service will register with.</div>
                                                         </td>
             </tr>
@@ -682,9 +614,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Service discovery registry ARN</div>
                                                         </td>
             </tr>
@@ -700,9 +630,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>container name for service discovery registration</div>
                                                         </td>
             </tr>
@@ -718,9 +646,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>container port for service discovery registration</div>
                                                         </td>
             </tr>
@@ -741,9 +667,7 @@ Parameters
                                                                                                                                                                                                 <li>deleting</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The desired state of the service.</div>
                                                         </td>
             </tr>
@@ -758,9 +682,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The task definition the service will run.</div>
                                             <div>This parameter is required when <em>state=present</em>.</div>
                                                         </td>
@@ -780,9 +702,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -812,7 +732,7 @@ Examples
     # Note: These examples do not set authentication details, see the AWS Guide for details.
 
     # Basic provisioning example
-    - ecs_service:
+    - community.aws.ecs_service:
         state: present
         name: console-test-service
         cluster: new_cluster
@@ -820,7 +740,7 @@ Examples
         desired_count: 0
 
     - name: create ECS service on VPC network
-      ecs_service:
+      community.aws.ecs_service:
         state: present
         name: console-test-service
         cluster: new_cluster
@@ -834,13 +754,13 @@ Examples
           - my_security_group
 
     # Simple example to delete
-    - ecs_service:
+    - community.aws.ecs_service:
         name: default
         state: absent
         cluster: new_cluster
 
     # With custom deployment configuration (added in version 2.3), placement constraints and strategy (added in version 2.4)
-    - ecs_service:
+    - community.aws.ecs_service:
         state: present
         name: test-service
         cluster: test-cluster
@@ -1297,7 +1217,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this :
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

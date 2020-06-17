@@ -1,5 +1,6 @@
+:orphan:
 
-.. _community.aws.rds_:
+.. _community.aws.rds_module:
 
 
 *****************
@@ -21,13 +22,13 @@ Synopsis
 - When creating an instance it can be either a new instance or a read-only replica of an existing instance.
 - This module has a dependency on python-boto >= 2.5 and will soon be deprecated.
 - The 'promote' command requires boto >= 2.18.0. Certain features such as tags rely on boto.rds2 (boto >= 2.26.0).
-- Please use boto3 based :ref:`rds_instance <rds_instance_module>` instead.
+- Please use boto3 based :ref:`community.aws.rds_instance <community.aws.rds_instance_module>` instead.
 
 
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - boto
 - python >= 2.6
@@ -42,7 +43,6 @@ Parameters
         <tr>
             <th colspan="1">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -60,9 +60,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When <em>apply_immediately=trye</em>, the modifications will be applied as soon as possible rather than waiting for the next preferred maintenance window.</div>
                                             <div>Used only when <em>command=modify</em>.</div>
                                                         </td>
@@ -78,9 +76,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -96,9 +92,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -115,9 +109,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -133,9 +125,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Number of days backups are retained.</div>
                                             <div>Set to 0 to disable backups.</div>
                                             <div>Default is 1 day.</div>
@@ -154,9 +144,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Backup window in format of <code>hh24:mi-hh24:mi</code>. (Example: <code>18:00-20:30</code>)</div>
                                             <div>Times are specified in UTC.</div>
                                             <div>If not specified then a random backup window is assigned.</div>
@@ -174,9 +162,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Associate the DB instance with a specified character set.</div>
                                             <div>Used with <em>command=create</em>.</div>
                                                         </td>
@@ -203,9 +189,7 @@ Parameters
                                                                                                                                                                                                 <li>restore</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Specifies the action to take. The &#x27;reboot&#x27; option is available starting at version 2.0.</div>
                                                         </td>
             </tr>
@@ -234,9 +218,7 @@ Parameters
                                                                                                                                                                                                 <li>aurora</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The type of database.</div>
                                             <div>Used only when <em>command=create</em>.</div>
                                             <div>mariadb was added in version 2.2.</div>
@@ -253,9 +235,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Name of a database to create within the instance.</div>
                                             <div>If not specified then no database is created.</div>
                                             <div>Used only when <em>command=create</em>.</div>
@@ -276,9 +256,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -293,9 +271,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -310,9 +286,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Version number of the database engine to use.</div>
                                             <div>If not specified then the current Amazon RDS default engine version is used</div>
                                             <div>Used only when <em>command=create</em>.</div>
@@ -333,9 +307,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>If enabled, the reboot is done using a MultiAZ failover.</div>
                                             <div>Used only when <em>command=reboot</em>.</div>
                                                         </td>
@@ -351,9 +323,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Database instance identifier.</div>
                                             <div>Required except when using <em>command=facts</em> or <em>command=delete</em> on just a snapshot.</div>
                                                         </td>
@@ -369,9 +339,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The instance type of the database.</div>
                                             <div>If not specified then the replica inherits the same instance type as the source instance.</div>
                                             <div>Required when <em>command=create</em>.</div>
@@ -390,9 +358,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Specifies the number of IOPS for the instance.</div>
                                             <div>Used only when <em>command=create</em> or <em>command=modify</em>.</div>
                                             <div>Must be an integer greater than 1000.</div>
@@ -415,9 +381,7 @@ Parameters
                                                                                                                                                                                                 <li>postgresql-license</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The license model for this DB instance.</div>
                                             <div>Used only when <em>command=create</em> or <em>command=restore</em>.</div>
                                                         </td>
@@ -433,9 +397,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Maintenance window in format of <code>ddd:hh24:mi-ddd:hh24:mi</code>.  (Example: <code>Mon:22:00-Mon:23:15</code>)</div>
                                             <div>Times are specified in UTC.</div>
                                             <div>If not specified then a random maintenance window is assigned.</div>
@@ -457,9 +419,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Specifies if this is a Multi-availability-zone deployment.</div>
                                             <div>Can not be used in conjunction with <em>zone</em> parameter.</div>
                                             <div>Used only when <em>command=create</em> or <em>command=modify</em>.</div>
@@ -476,9 +436,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Name to rename an instance to.</div>
                                             <div>Used only when <em>command=modify</em>.</div>
                                                         </td>
@@ -494,9 +452,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The name of the option group to use.</div>
                                             <div>If not specified then the default option group is used.</div>
                                             <div>Used only when <em>command=create</em>.</div>
@@ -513,9 +469,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Name of the DB parameter group to associate with this instance.</div>
                                             <div>If omitted then the RDS default DBParameterGroup will be used.</div>
                                             <div>Used only when <em>command=create</em> or <em>command=modify</em>.</div>
@@ -532,9 +486,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Password for the master database username.</div>
                                             <div>Used only when <em>command=create</em> or <em>command=modify</em>.</div>
                                                         </td>
@@ -550,9 +502,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Port number that the DB instance uses for connections.</div>
                                             <div>Used only when <em>command=create</em> or <em>command=replicate</em>.</div>
                                             <div>Defaults to the standard ports for each <em>db_engine</em>: <code>3306</code> for MySQL and MariaDB, <code>1521</code> for Oracle <code>1433</code> for SQL Server, <code>5432</code> for PostgreSQL.</div>
@@ -569,9 +519,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -586,9 +534,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Explicitly set whether the resource should be publicly accessible or not.</div>
                                             <div>Used with <em>command=create</em>, <em>command=replicate</em>.</div>
                                             <div>Requires boto &gt;= 2.26.0</div>
@@ -605,9 +551,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -623,9 +567,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Comma separated list of one or more security groups.</div>
                                             <div>Used only when <em>command=create</em> or <em>command=modify</em>.</div>
                                                         </td>
@@ -641,9 +583,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -659,9 +599,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Size in gigabytes of the initial storage for the DB instance.</div>
                                             <div>Used only when <em>command=create</em> or <em>command=modify</em>.</div>
                                                         </td>
@@ -677,9 +615,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Name of snapshot to take.</div>
                                             <div>When <em>command=delete</em>, if no <em>snapshot</em> name is provided then no snapshot is taken.</div>
                                             <div>When <em>command=delete</em>, if no <em>instance_name</em> is provided the snapshot is deleted.</div>
@@ -697,9 +633,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Name of the database to replicate.</div>
                                             <div>Used only when <em>command=replicate</em>.</div>
                                                         </td>
@@ -715,9 +649,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>VPC subnet group.</div>
                                             <div>If specified then a VPC instance is created.</div>
                                             <div>Used only when <em>command=create</em>.</div>
@@ -734,9 +666,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>tags dict to apply to a resource.</div>
                                             <div>Used with <em>command=create</em>, <em>command=replicate</em>, <em>command=restore</em>.</div>
                                             <div>Requires boto &gt;= 2.26.0</div>
@@ -757,9 +687,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Indicates that minor version upgrades should be applied automatically.</div>
                                             <div>Used only when <em>command=create</em> or <em>command=modify</em> or <em>command=restore</em> or <em>command=replicate</em>.</div>
                                                         </td>
@@ -775,9 +703,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Master database username.</div>
                                             <div>Used only when <em>command=create</em>.</div>
                                                         </td>
@@ -797,9 +723,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -814,9 +738,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Comma separated list of one or more vpc security group ids.</div>
                                             <div>Also requires <em>subnet</em> to be specified.</div>
                                             <div>Used only when <em>command=create</em> or <em>command=modify</em>.</div>
@@ -837,9 +759,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When <em>command=create</em>, replicate, modify or restore then wait for the database to enter the &#x27;available&#x27; state.</div>
                                             <div>When <em>command=delete</em>, wait for the database to be terminated.</div>
                                                         </td>
@@ -856,9 +776,7 @@ Parameters
                                 <td>
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">300</div>
                                     </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>How long before wait gives up, in seconds.</div>
                                             <div>Used when <em>wait=true</em>.</div>
                                                         </td>
@@ -874,9 +792,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>availability zone in which to launch the instance.</div>
                                             <div>Used only when <em>command=create</em>, <em>command=replicate</em> or <em>command=restore</em>.</div>
                                             <div>Can not be used in conjunction with <em>multi_zone</em> parameter.</div>
@@ -903,8 +819,8 @@ Examples
 .. code-block:: yaml+jinja
 
     
-    # Basic mysql provisioning example
-    - rds:
+    - name: Basic mysql provisioning example
+      community.aws.rds:
         command: create
         instance_name: new-database
         db_engine: MySQL
@@ -916,35 +832,35 @@ Examples
           Environment: testing
           Application: cms
 
-    # Create a read-only replica and wait for it to become available
-    - rds:
+    - name: Create a read-only replica and wait for it to become available
+      community.aws.rds:
         command: replicate
         instance_name: new-database-replica
         source_instance: new_database
         wait: yes
         wait_timeout: 600
 
-    # Delete an instance, but create a snapshot before doing so
-    - rds:
+    - name: Delete an instance, but create a snapshot before doing so
+      community.aws.rds:
         command: delete
         instance_name: new-database
         snapshot: new_database_snapshot
 
-    # Get facts about an instance
-    - rds:
+    - name: Get facts about an instance
+      community.aws.rds:
         command: facts
         instance_name: new-database
       register: new_database_facts
 
-    # Rename an instance and wait for the change to take effect
-    - rds:
+    - name: Rename an instance and wait for the change to take effect
+      community.aws.rds:
         command: modify
         instance_name: new-database
         new_instance_name: renamed-database
         wait: yes
 
-    # Reboot an instance and wait for it to become available again
-    - rds:
+    - name: Reboot an instance and wait for it to become available again
+      community.aws.rds:
         command: reboot
         instance_name: database
         wait: yes
@@ -952,27 +868,25 @@ Examples
     # Restore a Postgres db instance from a snapshot, wait for it to become available again, and
     #  then modify it to add your security group. Also, display the new endpoint.
     #  Note that the "publicly_accessible" option is allowed here just as it is in the AWS CLI
-    - local_action:
-         module: rds
-         command: restore
-         snapshot: mypostgres-snapshot
-         instance_name: MyNewInstanceName
-         region: us-west-2
-         zone: us-west-2b
-         subnet: default-vpc-xx441xxx
-         publicly_accessible: yes
-         wait: yes
-         wait_timeout: 600
-         tags:
-             Name: pg1_test_name_tag
+    - community.aws.rds:
+        command: restore
+        snapshot: mypostgres-snapshot
+        instance_name: MyNewInstanceName
+        region: us-west-2
+        zone: us-west-2b
+        subnet: default-vpc-xx441xxx
+        publicly_accessible: yes
+        wait: yes
+        wait_timeout: 600
+        tags:
+            Name: pg1_test_name_tag
       register: rds
 
-    - local_action:
-         module: rds
-         command: modify
-         instance_name: MyNewInstanceName
-         region: us-west-2
-         vpc_security_groups: sg-xxx945xx
+    - community.aws.rds:
+        command: modify
+        instance_name: MyNewInstanceName
+        region: us-west-2
+        vpc_security_groups: sg-xxx945xx
 
     - debug:
         msg: "The new db endpoint is {{ rds.instance.endpoint }}"
@@ -982,7 +896,7 @@ Examples
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this :
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

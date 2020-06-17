@@ -1,5 +1,6 @@
+:orphan:
 
-.. _community.aws.s3_lifecycle_:
+.. _community.aws.s3_lifecycle_module:
 
 
 **************************
@@ -23,7 +24,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this .
+The below requirements are needed on the host that executes this module.
 
 - boto
 - python >= 2.6
@@ -39,7 +40,6 @@ Parameters
         <tr>
             <th colspan="1">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
                         <th width="100%">Comments</th>
         </tr>
                     <tr>
@@ -53,9 +53,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                                     </td>
@@ -71,9 +69,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A dictionary to modify the botocore configuration.</div>
                                             <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
                                             <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
@@ -90,9 +86,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                                     </td>
@@ -112,9 +106,7 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
                                                         </td>
             </tr>
@@ -129,9 +121,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                                                         </td>
             </tr>
@@ -146,9 +136,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Indicates the lifetime of the objects that are subject to the rule by the date they will expire. The value must be ISO-8601 format, the time must be midnight and a GMT timezone must be specified.</div>
                                                         </td>
             </tr>
@@ -163,9 +151,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Indicates the lifetime, in days, of the objects that are subject to the rule. The value must be a non-zero positive integer.</div>
                                                         </td>
             </tr>
@@ -180,9 +166,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Name of the s3 bucket</div>
                                                         </td>
             </tr>
@@ -197,9 +181,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Delete noncurrent versions this many days after they become noncurrent</div>
                                                         </td>
             </tr>
@@ -219,9 +201,7 @@ Parameters
                                                                                                                                                                                                 <li>standard_ia</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Transition noncurrent versions to this storage class</div>
                                                         </td>
             </tr>
@@ -236,9 +216,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Transition noncurrent versions this many days after they become noncurrent</div>
                                                         </td>
             </tr>
@@ -253,9 +231,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of transition behaviors to be applied to noncurrent versions for the rule. Each storage class may be used only once. Each transition behavior contains these elements
       <em>transition_days</em>
       <em>storage_class</em></div>
@@ -272,9 +248,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Prefix identifying one or more objects to which the rule applies.  If no prefix is specified, the rule will apply to the whole bucket.</div>
                                                         </td>
             </tr>
@@ -289,9 +263,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                                                         </td>
             </tr>
@@ -310,9 +282,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>&quot;Whether to replace all the current transition(s) with the new transition(s). When false, the provided transition(s) will be added, replacing transitions with the same storage_class. When true, existing transitions will be removed and replaced with the new transition(s)</div>
                                                         </td>
             </tr>
@@ -327,9 +297,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
                                     </td>
@@ -349,10 +317,8 @@ Parameters
                                                                                                                                                                                                 <li>yes</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
-                                            <div>The <em>requester_pays</em> option does nothing and will be removed in Ansible 2.14.</div>
+                                                                <td>
+                                            <div>The <em>requester_pays</em> option does nothing and will be removed after 2022-06-01</div>
                                                         </td>
             </tr>
                                 <tr>
@@ -366,9 +332,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Unique identifier for the rule. The value cannot be longer than 255 characters. A unique value for the rule will be generated if no value is provided.</div>
                                                         </td>
             </tr>
@@ -383,9 +347,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: access_token</div>
                                     </td>
@@ -405,9 +367,7 @@ Parameters
                                                                                                                                                                                                 <li>absent</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Create or remove the lifecycle rule</div>
                                                         </td>
             </tr>
@@ -426,9 +386,7 @@ Parameters
                                                                                                                                                                                                 <li>disabled</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>If &#x27;enabled&#x27;, the rule is currently being applied. If &#x27;disabled&#x27;, the rule is not currently being applied.</div>
                                                         </td>
             </tr>
@@ -448,9 +406,7 @@ Parameters
                                                                                                                                                                                                 <li>standard_ia</li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>The storage class to transition to. Currently there are two supported values - &#x27;glacier&#x27;,  &#x27;onezone_ia&#x27;, or &#x27;standard_ia&#x27;.</div>
                                             <div>The &#x27;standard_ia&#x27; class is only being available from Ansible version 2.2.</div>
                                                         </td>
@@ -466,9 +422,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Indicates the lifetime of the objects that are subject to the rule by the date they will transition to a different storage class. The value must be ISO-8601 format, the time must be midnight and a GMT timezone must be specified. If transition_days is not specified, this parameter is required.&quot;</div>
                                                         </td>
             </tr>
@@ -483,9 +437,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>Indicates when, in days, an object transitions to a different storage class. If transition_date is not specified, this parameter is required.</div>
                                                         </td>
             </tr>
@@ -500,9 +452,7 @@ Parameters
                                     </td>
                                 <td>
                                                                                                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>A list of transition behaviors to be applied to the rule. Each storage class may be used only once. Each transition behavior may contain these elements <em>transition_days</em> <em>transition_date</em> <em>storage_class</em></div>
                                                         </td>
             </tr>
@@ -521,9 +471,7 @@ Parameters
                                                                                                                                                                                                 <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                                                                                     </ul>
                                                                             </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
+                                                                <td>
                                             <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                                                         </td>
             </tr>
@@ -551,16 +499,16 @@ Examples
     
     # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-    # Configure a lifecycle rule on a bucket to expire (delete) items with a prefix of /logs/ after 30 days
-    - s3_lifecycle:
+    - name: Configure a lifecycle rule on a bucket to expire (delete) items with a prefix of /logs/ after 30 days
+      community.aws.s3_lifecycle:
         name: mybucket
         expiration_days: 30
         prefix: logs/
         status: enabled
         state: present
 
-    # Configure a lifecycle rule to transition all items with a prefix of /logs/ to glacier after 7 days and then delete after 90 days
-    - s3_lifecycle:
+    - name: Configure a lifecycle rule to transition all items with a prefix of /logs/ to glacier after 7 days and then delete after 90 days
+      community.aws.s3_lifecycle:
         name: mybucket
         transition_days: 7
         expiration_days: 90
@@ -568,10 +516,10 @@ Examples
         status: enabled
         state: present
 
-    # Configure a lifecycle rule to transition all items with a prefix of /logs/ to glacier on 31 Dec 2020 and then delete on 31 Dec 2030.
     # Note that midnight GMT must be specified.
     # Be sure to quote your date strings
-    - s3_lifecycle:
+    - name: Configure a lifecycle rule to transition all items with a prefix of /logs/ to glacier on 31 Dec 2020 and then delete on 31 Dec 2030.
+      community.aws.s3_lifecycle:
         name: mybucket
         transition_date: "2020-12-30T00:00:00.000Z"
         expiration_date: "2030-12-30T00:00:00.000Z"
@@ -579,21 +527,21 @@ Examples
         status: enabled
         state: present
 
-    # Disable the rule created above
-    - s3_lifecycle:
+    - name: Disable the rule created above
+      community.aws.s3_lifecycle:
         name: mybucket
         prefix: logs/
         status: disabled
         state: present
 
-    # Delete the lifecycle rule created above
-    - s3_lifecycle:
+    - name: Delete the lifecycle rule created above
+      community.aws.s3_lifecycle:
         name: mybucket
         prefix: logs/
         state: absent
 
-    # Configure a lifecycle rule to transition all backup files older than 31 days in /backups/ to standard infrequent access class.
-    - s3_lifecycle:
+    - name: Configure a lifecycle rule to transition all backup files older than 31 days in /backups/ to standard infrequent access class.
+      community.aws.s3_lifecycle:
         name: mybucket
         prefix: backups/
         storage_class: standard_ia
@@ -601,8 +549,8 @@ Examples
         state: present
         status: enabled
 
-    # Configure a lifecycle rule to transition files to infrequent access after 30 days and glacier after 90
-    - s3_lifecycle:
+    - name: Configure a lifecycle rule to transition files to infrequent access after 30 days and glacier after 90
+      community.aws.s3_lifecycle:
         name: mybucket
         prefix: logs/
         state: present

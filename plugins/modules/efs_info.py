@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: efs_info
+version_added: 1.0.0
 short_description: Get information about Amazon EFS file systems
 description:
     - This module can be used to search Amazon EFS file systems.

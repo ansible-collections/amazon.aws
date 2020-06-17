@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_customer_gateway_info
+version_added: 1.0.0
 short_description: Gather information about customer gateways in AWS
 description:
     - Gather information about customer gateways in AWS.

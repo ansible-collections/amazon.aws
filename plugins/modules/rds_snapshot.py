@@ -11,6 +11,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: rds_snapshot
+version_added: 1.0.0
 short_description: manage Amazon RDS snapshots.
 description:
      - Creates or deletes RDS snapshots.
