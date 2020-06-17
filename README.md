@@ -93,6 +93,8 @@ You can either call modules by their Fully Qualified Collection Namespace (FQCN)
     register: instance
 ```
 
+**NOTE**: For Ansible 2.9, you may not see deprecation warnings when you run your playbooks with this collection. Use this documentation to track when a module is deprecated.
+
 
 ### See Also:
 
