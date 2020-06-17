@@ -1,6 +1,6 @@
 # Amazon AWS Collection
 [![Shippable build status](https://api.shippable.com/projects/5e4451b6aa9a61000733064c/badge?branch=master)](https://api.shippable.com/projects/5e4451b6aa9a61000733064c/badge?branch=master)
-<!--[![Codecov](https://img.shields.io/codecov/c/github/ansible-collections/amazon.aws)](https://codecov.io/gh/ansible-collections/amazon.aws)-->
+[![Codecov](https://img.shields.io/codecov/c/github/ansible-collections/amazon.aws)](https://codecov.io/gh/ansible-collections/amazon.aws)
 
 The Ansible Amazon AWS collection includes a variety of Ansible content to help automate the management of AWS instances. This collection is maintained by the Ansible cloud team.
 
@@ -71,7 +71,6 @@ You can also include it in a `requirements.yml` file and install it with `ansibl
 ---
 collections:
   - name: amazon.aws
-    version: 0.1.1
 ```
 ## Using this collection
 
@@ -102,7 +101,7 @@ You can either call modules by their Fully Qualified Collection Namespace (FQCN)
 
 ## Contributing to this collection
 
-We welcome community contributions to this collection. If you find problems, please open an issue or create a PR against the [Amazon AWS collection repository](https://github.com/ansible-collections/amazon.aws).
+We welcome community contributions to this collection. If you find problems, please open an issue or create a PR against the [Amazon AWS collection repository](https://github.com/ansible-collections/amazon.aws). See [Contributing to Ansible-maintained collections](https://docs.ansible.com/ansible/devel/community/contributing_maintained_collections.html#contributing-maintained-collections) for more details.
 
 You can also join us on:
 
@@ -129,4 +128,4 @@ See the [Ansible Community Guide](https://docs.ansible.com/ansible/latest/commun
 
 GNU General Public License v3.0 or later.
 
-See [LICENSE](https://www.gnu.org/licenses/gpl-3.0.txt) to see the full text.
+See [COPYING](https://www.gnu.org/licenses/gpl-3.0.txt) to see the full text.
