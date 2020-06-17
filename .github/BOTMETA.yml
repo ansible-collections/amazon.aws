@@ -27,6 +27,9 @@ files:
   $module_utils/ec2.py:
     labels: ec2
   $modules/:
+    authors: wimnat
+    maintainers: $team_aws
+    ignore: erydo nadirollo seiffert tedder
     labels: modules
   $modules/_aws_az_facts.py:
     authors: Sodki
@@ -38,10 +41,6 @@ files:
     authors: prasadkatti
   $modules/_ec2_group_facts.py:
     authors: Sodki
-  $modules/:
-    authors: wimnat
-    maintainers: $team_aws
-    ignore: erydo nadirollo seiffert tedder
   $modules/_ec2_vpc_dhcp_option_facts.py:
     authors: naslanidis
   $modules/aws_az_info.py:
