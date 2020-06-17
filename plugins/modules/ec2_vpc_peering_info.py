@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: ec2_vpc_peering_info
 short_description: Retrieves AWS VPC Peering details using AWS methods.
+version_added: 1.0.0
 description:
   - Gets various details related to AWS VPC Peers
   - This module was called C(ec2_vpc_peering_facts) before Ansible 2.9. The usage did not change.
