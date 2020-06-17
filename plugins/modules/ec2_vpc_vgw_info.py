@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_vpc_vgw_info
+version_added: 1.0.0
 short_description: Gather information about virtual gateways in AWS
 description:
     - Gather information about virtual gateways in AWS.
