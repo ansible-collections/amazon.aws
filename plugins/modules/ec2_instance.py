@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_instance
+version_added: 1.0.0
 short_description: Create & manage EC2 instances
 description:
   - Create and manage AWS EC2 instances.
