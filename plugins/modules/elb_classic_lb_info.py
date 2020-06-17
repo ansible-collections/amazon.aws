@@ -20,6 +20,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: elb_classic_lb_info
+version_added: 1.0.0
 short_description: Gather information about EC2 Elastic Load Balancers in AWS
 description:
     - Gather information about EC2 Elastic Load Balancers in AWS
