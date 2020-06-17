@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: iam_policy_info
+version_added: 1.0.0
 short_description: Retrieve inline IAM policies for users, groups, and roles
 description:
      - Supports fetching of inline IAM policies for IAM users, groups and roles.
