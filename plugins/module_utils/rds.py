@@ -55,7 +55,7 @@ def get_rds_method_attribute(method_name, module):
         else:
             waiter = 'db_instance_available'
     else:
-        raise NotImplementedError("method {0} hasn't been added to the list of accepted methods to use a waiter in module_utils/aws/rds.py".format(method_name))
+        raise NotImplementedError("method {0} hasn't been added to the list of accepted methods to use a waiter in module_utils/rds.py".format(method_name))
 
     return Boto3ClientMethod(name=method_name, waiter=waiter, operation_description=readable_op, cluster=cluster, instance=instance)
 
@@ -69,7 +69,7 @@ def get_final_identifier(method_name, module):
         identifier = module.params['db_instance_identifier']
         updated_identifier = module.params['new_db_instance_identifier']
     else:
-        raise NotImplementedError("method {0} hasn't been added to the list of accepted methods in module_utils/aws/rds.py".format(method_name))
+        raise NotImplementedError("method {0} hasn't been added to the list of accepted methods in module_utils/rds.py".format(method_name))
     if not module.check_mode and updated_identifier and apply_immediately:
         identifier = updated_identifier
     return identifier
@@ -139,7 +139,7 @@ def wait_for_instance_status(client, module, db_instance_id, waiter_name):
         try:
             waiter = client.get_waiter(waiter_name)
         except ValueError:
-            # using a waiter in ansible.module_utils.aws.waiters
+            # using a waiter in module_utils/waiters.py
             waiter = get_waiter(client, waiter_name)
         waiter.wait(WaiterConfig={'Delay': 60, 'MaxAttempts': 60}, DBInstanceIdentifier=db_instance_id)
 
