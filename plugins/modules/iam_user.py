@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: iam_user
+version_added: 1.0.0
 short_description: Manage AWS IAM users
 description:
   - Manage AWS IAM users.
