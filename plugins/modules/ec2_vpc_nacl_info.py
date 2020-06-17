@@ -8,6 +8,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_vpc_nacl_info
+version_added: 1.0.0
 short_description: Gather information about Network ACLs in an AWS VPC
 description:
     - Gather information about Network ACLs in an AWS VPC

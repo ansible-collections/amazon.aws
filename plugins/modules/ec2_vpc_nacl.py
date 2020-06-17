@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 module: ec2_vpc_nacl
 short_description: create and delete Network ACLs.
+version_added: 1.0.0
 description:
   - Read the AWS documentation for Network ACLS
     U(https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_ACLs.html)
