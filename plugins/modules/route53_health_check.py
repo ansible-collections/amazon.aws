@@ -9,6 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: route53_health_check
+version_added: 1.0.0
 short_description: Add or delete health-checks in Amazons Route53 DNS service
 description:
   - Creates and deletes DNS Health checks in Amazons Route53 service.

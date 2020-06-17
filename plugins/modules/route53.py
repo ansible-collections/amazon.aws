@@ -11,6 +11,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: route53
+version_added: 1.0.0
 short_description: add or delete entries in Amazons Route53 DNS service
 description:
      - Creates and deletes DNS records in Amazons Route53 service
