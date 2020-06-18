@@ -58,6 +58,7 @@ Expected test criteria:
 * Resource deletion (of a non-existent resource) under check mode
 * Resource deletion (of a non-existent resource)
 
+Where modules have multiple parameters we recommend running through the 4-step modification cycle for each parameter the module accepts, as well as a modification cycle where as most, if not all, parameters are modified at the same time.
 
 ### Code of Conduct
 The `amazon.aws` collection follows the Ansible project's 
