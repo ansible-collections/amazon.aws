@@ -33,7 +33,7 @@ to be promoted and migrated into `amazon.aws`.
 All software has bugs, and the `amazon.aws` collection is no exception. When you find a bug, 
 you can help tremendously by [telling us about it](https://github.com/ansible-collections/amazon.aws/issues/new/choose).
 
-If you should discover that the bug you’re trying to file already exists in an issue, 
+If you should discover that the bug you're trying to file already exists in an issue, 
 you can help by verifying the behavior of the reported bug with a comment in that 
 issue, or by reporting any additional information
 
@@ -60,6 +60,12 @@ Expected test criteria:
 
 Where modules have multiple parameters we recommend running through the 4-step modification cycle for each parameter the module accepts, as well as a modification cycle where as most, if not all, parameters are modified at the same time.
 
+For general information on running the integration tests see the
+[Integration Tests page of the Module Development Guide](https://docs.ansible.com/ansible/devel/dev_guide/testing_integration.html#testing-integration),
+especially the section on configuration for cloud tests.  For questions about writing tests the Ansible AWS community can
+be found on Freenode IRC as detailed below.
+
+
 ### Code of Conduct
 The `amazon.aws` collection follows the Ansible project's 
 [Code of Conduct](https://docs.ansible.com/ansible/devel/community/code_of_conduct.html). 
@@ -67,7 +73,7 @@ Please read and familiarize yourself with this document.
 
 ### IRC
 Our IRC channels may require you to register your nickname. If you receive an error when you connect, see 
-[Freenode’s Nickname Registration guide](https://freenode.net/kb/answer/registration) for instructions
+[Freenode's Nickname Registration guide](https://freenode.net/kb/answer/registration) for instructions
 
 The `#ansible-aws` channel on Freenode irc is the main and official place to discuss use and development
 of the `amazon.aws` collection.
