@@ -45,14 +45,18 @@ New modules should be submitted to the [community.aws](https://github.com/ansibl
 and MUST have integration tests.
 
 Expected test criteria:
-* Resource creation
-* Resource creation again (idempotency)
 * Resource creation under check mode
-* Resource modification
-* Resource modification again (idempotency)
+* Resource creation
+* Resource creation again (idempotency) under check mode
+* Resource creation again (idempotency)
 * Resource modification under check mode
-* Resource deletion
+* Resource modification
+* Resource modification again (idempotency) under check mode
+* Resource modification again (idempotency)
 * Resource deletion under check mode
+* Resource deletion
+* Resource deletion (of a non-existent resource) under check mode
+* Resource deletion (of a non-existent resource)
 
 
 ### Code of Conduct
@@ -66,4 +70,3 @@ Our IRC channels may require you to register your nickname. If you receive an er
 
 The `#ansible-aws` channel on Freenode irc is the main and official place to discuss use and development
 of the `amazon.aws` collection.
-
