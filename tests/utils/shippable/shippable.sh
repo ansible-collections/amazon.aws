@@ -119,7 +119,7 @@ function cleanup
             cp -a tests/output/reports/coverage=*.xml "$SHIPPABLE_RESULT_DIR/codecoverage/"
 
             # analyze and capture code coverage aggregated by integration test target if not on 2.9
-            if [ -n "${ANSIBLE_BASE_REV:-}" ] || [ "${ANSIBLE_BASE_REV:-}" != "2.9" ]; then
+            if [ -z "${ANSIBLE_BASE_REV:-}" ] || [ "${ANSIBLE_BASE_REV:-}" != "2.9" ]; then
                 ansible-test coverage analyze targets generate -v "$SHIPPABLE_RESULT_DIR/testresults/coverage-analyze-targets.json"
             fi
 
