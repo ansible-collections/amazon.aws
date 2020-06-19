@@ -21,7 +21,6 @@ matrix:
     - env: T=units/3.6/1 A_REV=2.9
     - env: T=units/3.7/1 A_REV=2.9
     - env: T=units/3.8/1 A_REV=2.9
-    - env: T=units/3.9/1 A_REV=2.9
     - env: T=units/2.7/1 A_REV=2.10
     - env: T=units/3.6/1 A_REV=2.10
     - env: T=units/3.7/1 A_REV=2.10
@@ -31,8 +30,8 @@ matrix:
     - env: T=aws/2.7/1
     - env: T=aws/3.7/1
     - env: T=aws/2.7/1 A_REV=2.9
-    - env: T=aws/2.7/1 A_REV=2.9
-    - env: T=aws/3.7/1 A_REV=2.10
+    - env: T=aws/3.7/1 A_REV=2.9
+    - env: T=aws/2.7/1 A_REV=2.10
     - env: T=aws/3.7/1 A_REV=2.10
 
     - env: T=aws/2.7/2
