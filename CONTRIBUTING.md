@@ -20,6 +20,8 @@ Content in this collection is included downstream in Red Hat Ansible Automation 
 
 Code standards, test coverage, and other supportability criteria may be higher in this collection. 
 
+The `amazon.aws` collection is an [Ansible-maintained collection](https://docs.ansible.com/ansible/devel/community/contributing_maintained_collections.html).
+
 ### community.aws
 This collection contains modules and plugins contributed and maintained by the Ansible AWS
 community.  The `community.aws` collection is tested and generally assured to work in
