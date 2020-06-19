@@ -118,7 +118,7 @@ function cleanup
             ansible-test coverage xml --color --requirements --group-by command --group-by version ${stub:+"$stub"}
             cp -a tests/output/reports/coverage=*.xml "$SHIPPABLE_RESULT_DIR/codecoverage/"
 
-            # analyze and capture code coverage aggregated by integration test target if not on 2.9
+            # analyze and capture code coverage aggregated by integration test target if not on 2.9, default if unspecified is devel
             if [ -z "${ANSIBLE_BASE_REV:-}" ] || [ "${ANSIBLE_BASE_REV:-}" != "2.9" ]; then
                 ansible-test coverage analyze targets generate -v "$SHIPPABLE_RESULT_DIR/testresults/coverage-analyze-targets.json"
             fi
@@ -138,7 +138,7 @@ function cleanup
                         -f "${file}" \
                         -F "${flags}" \
                         -n "${test}" \
-                        -t bc371da7-e5d2-4743-93b5-309f81d457a4
+                        -t bc371da7-e5d2-4743-93b5-309f81d457a4 \
                         -X coveragepy \
                         -X gcov \
                         -X fix \
