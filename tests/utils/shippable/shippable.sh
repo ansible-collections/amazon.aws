@@ -76,7 +76,12 @@ set -ux
 pip install setuptools==44.1.0
 
 if [ -n "${A_REV:-}" ]; then
-    pip install "ansible~=${A_REV}"
+    if [ "${A_REV:-}" = "2.9" ]; then
+        pip install "ansible~=${A_REV}"
+    else
+        # 2.10 and above should be ansible-base
+        pip install "ansible-base~=${A_REV}"
+    fi
 else
     pip install https://github.com/ansible/ansible/archive/devel.tar.gz --disable-pip-version-check
 fi
