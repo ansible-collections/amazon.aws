@@ -75,11 +75,7 @@ set -ux
 
 pip install setuptools==44.1.0
 
-if [ -n "${ANSIBLE_BASE_REV:-}" ]; then
-    pip install "ansible~=${ANSIBLE_BASE_REV}"
-else
-    pip install https://github.com/ansible/ansible/archive/devel.tar.gz --disable-pip-version-check
-fi
+pip install https://github.com/ansible/ansible/archive/"${A_REV:-devel}".tar.gz --disable-pip-version-check
 
 #ansible-galaxy collection install community.general
 mkdir -p "${HOME}/.ansible/collections/ansible_collections/community"
@@ -119,7 +115,7 @@ function cleanup
             cp -a tests/output/reports/coverage=*.xml "$SHIPPABLE_RESULT_DIR/codecoverage/"
 
             # analyze and capture code coverage aggregated by integration test target if not on 2.9, default if unspecified is devel
-            if [ -z "${ANSIBLE_BASE_REV:-}" ] || [ "${ANSIBLE_BASE_REV:-}" != "2.9" ]; then
+            if [ -z "${A_REV:-}" ] || [ "${A_REV:-}" != "stable-2.9" ]; then
                 ansible-test coverage analyze targets generate -v "$SHIPPABLE_RESULT_DIR/testresults/coverage-analyze-targets.json"
             fi
 
@@ -138,7 +134,7 @@ function cleanup
                         -f "${file}" \
                         -F "${flags}" \
                         -n "${test}" \
-                        -t bc371da7-e5d2-4743-93b5-309f81d457a4
+                        -t bc371da7-e5d2-4743-93b5-309f81d457a4 \
                         -X coveragepy \
                         -X gcov \
                         -X fix \
