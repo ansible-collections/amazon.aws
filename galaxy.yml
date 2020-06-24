@@ -16,3 +16,4 @@ issues: https://github.com/ansible-collections/community.aws/issues?q=is%3Aissue
 build_ignore:
   - '*cloud-config-aws.ini'
   - '*cloud-config-aws.yml'
+  - 'changelogs/.plugin-cache.yaml'
