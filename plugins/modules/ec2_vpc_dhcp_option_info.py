@@ -121,7 +121,7 @@ def main():
     argument_spec = dict(
         filters=dict(type='dict', default={}),
         dry_run=dict(type='bool', default=False, aliases=['DryRun']),
-        dhcp_options_ids=dict(type='list', aliases=['DhcpOptionIds'])
+        dhcp_options_ids=dict(type='list', elements='str', aliases=['DhcpOptionIds'])
     )
 
     module = AnsibleAWSModule(

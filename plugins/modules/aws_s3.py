@@ -659,7 +659,7 @@ def main():
         metadata=dict(type='dict'),
         mode=dict(choices=['get', 'put', 'delete', 'create', 'geturl', 'getstr', 'delobj', 'list'], required=True),
         object=dict(),
-        permission=dict(type='list', default=['private']),
+        permission=dict(type='list', elements='str', default=['private']),
         version=dict(default=None),
         overwrite=dict(aliases=['force'], default='always'),
         prefix=dict(default=""),

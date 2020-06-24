@@ -1608,8 +1608,8 @@ def main():
     argument_spec = dict(
         key_name=dict(aliases=['keypair']),
         id=dict(),
-        group=dict(type='list', aliases=['groups']),
-        group_id=dict(type='list'),
+        group=dict(type='list', elements='str', aliases=['groups']),
+        group_id=dict(type='list', elements='str'),
         zone=dict(aliases=['aws_zone', 'ec2_zone']),
         instance_type=dict(aliases=['type']),
         spot_price=dict(),
@@ -1630,17 +1630,17 @@ def main():
         assign_public_ip=dict(type='bool'),
         private_ip=dict(),
         instance_profile_name=dict(),
-        instance_ids=dict(type='list', aliases=['instance_id']),
+        instance_ids=dict(type='list', elements='str', aliases=['instance_id']),
         source_dest_check=dict(type='bool', default=None),
         termination_protection=dict(type='bool', default=None),
         state=dict(default='present', choices=['present', 'absent', 'running', 'restarted', 'stopped']),
         instance_initiated_shutdown_behavior=dict(default='stop', choices=['stop', 'terminate']),
         exact_count=dict(type='int', default=None),
         count_tag=dict(type='raw'),
-        volumes=dict(type='list'),
+        volumes=dict(type='list', elements='dict',),
         ebs_optimized=dict(type='bool', default=False),
         tenancy=dict(default='default', choices=['default', 'dedicated']),
-        network_interfaces=dict(type='list', aliases=['network_interface'])
+        network_interfaces=dict(type='list', elements='str', aliases=['network_interface'])
     )
 
     module = AnsibleAWSModule(

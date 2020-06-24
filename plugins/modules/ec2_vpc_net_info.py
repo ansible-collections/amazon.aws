@@ -254,7 +254,7 @@ def describe_vpcs(connection, module):
 
 def main():
     argument_spec = dict(
-        vpc_ids=dict(type='list', default=[]),
+        vpc_ids=dict(type='list', elements='str', default=[]),
         filters=dict(type='dict', default={})
     )
 

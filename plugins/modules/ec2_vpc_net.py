@@ -366,7 +366,7 @@ def get_cidr_network_bits(module, cidr_block):
 def main():
     argument_spec = dict(
         name=dict(required=True),
-        cidr_block=dict(type='list', required=True),
+        cidr_block=dict(type='list', required=True, elements='str'),
         ipv6_cidr=dict(type='bool', default=False),
         tenancy=dict(choices=['default', 'dedicated'], default='default'),
         dns_support=dict(type='bool', default=True),
