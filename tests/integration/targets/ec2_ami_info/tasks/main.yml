@@ -34,8 +34,8 @@
         filters:
           is-public: true
         <<: *aws_connection_info
-        register: ami_info_result
-        ignore_errors: true
+      register: ami_info_result
+      ignore_errors: true
 
     - name: assert that the right image was found
       assert:
@@ -50,8 +50,8 @@
         filters:
           owner-id: 137112412989
         <<: *aws_connection_info
-        register: ami_info_result
-        ignore_errors: true
+      register: ami_info_result
+      ignore_errors: true
 
     - name: assert that the right image was found
       assert:
