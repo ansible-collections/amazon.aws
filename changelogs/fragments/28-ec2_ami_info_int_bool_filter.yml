@@ -1,2 +1,2 @@
 minor_changes:
-  - ec2_ami_info - allow integer and bool values for filtering images
+  - ec2_ami_info - allow integer and bool values for filtering images (https://github.com/ansible/ansible/issues/43570).
