@@ -77,21 +77,6 @@ pip install setuptools==44.1.0
 
 pip install https://github.com/ansible/ansible/archive/"${A_REV:-devel}".tar.gz --disable-pip-version-check
 
-#ansible-galaxy collection install community.general
-mkdir -p "${HOME}/.ansible/collections/ansible_collections/community"
-mkdir -p "${HOME}/.ansible/collections/ansible_collections/google"
-mkdir -p "${HOME}/.ansible/collections/ansible_collections/openstack"
-cwd=$(pwd)
-cd "${HOME}/.ansible/collections/ansible_collections/"
-git clone https://github.com/ansible-collections/community.general community/general
-git clone https://github.com/ansible-collections/community.aws community/aws
-# community.general requires a lot of things we need to manual pull in
-# once community.general is published this will be handled by galaxy cli
-git clone https://github.com/ansible-collections/ansible_collections_google google/cloud
-git clone https://opendev.org/openstack/ansible-collections-openstack openstack/cloud
-ansible-galaxy collection install ansible.netcommon
-cd "${cwd}"
-
 export ANSIBLE_COLLECTIONS_PATHS="${HOME}/.ansible/"
 SHIPPABLE_RESULT_DIR="$(pwd)/shippable"
 TEST_DIR="${HOME}/.ansible/collections/ansible_collections/amazon/aws/"
