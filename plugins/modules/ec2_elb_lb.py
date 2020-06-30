@@ -32,7 +32,7 @@ options:
     description:
       - List of ports/protocols for this ELB to listen on (see example)
     type: list
-    elements: str
+    elements: dict
   purge_listeners:
     description:
       - Purge existing listeners on ELB that are not found in listeners
@@ -1214,7 +1214,7 @@ def main():
     argument_spec = dict(
         state={'required': True, 'choices': ['present', 'absent']},
         name={'required': True},
-        listeners={'default': None, 'required': False, 'type': 'list', 'elements': 'str'},
+        listeners={'default': None, 'required': False, 'type': 'list', 'elements': 'dict'},
         purge_listeners={'default': True, 'required': False, 'type': 'bool'},
         instance_ids={'default': None, 'required': False, 'type': 'list', 'elements': 'str'},
         purge_instance_ids={'default': False, 'required': False, 'type': 'bool'},
