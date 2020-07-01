@@ -26,6 +26,23 @@ fi
 command -v python
 python -V
 
+function retry
+{
+    # shellcheck disable=SC2034
+    for repetition in 1 2 3; do
+        set +e
+        "$@"
+        result=$?
+        set -e
+        if [ ${result} == 0 ]; then
+            return ${result}
+        fi
+        echo "@* -> ${result}"
+    done
+    echo "Command '@*' failed 3 times!"
+    exit -1
+}
+
 command -v pip
 pip --version
 pip list --disable-pip-version-check
@@ -77,16 +94,20 @@ pip install setuptools==44.1.0
 
 pip install https://github.com/ansible/ansible/archive/"${A_REV:-devel}".tar.gz --disable-pip-version-check
 
-ansible-galaxy collection install ansible.netcommon
-ansible-galaxy collection install ansible.windows
-ansible-galaxy collection install community.aws
-ansible-galaxy collection install community.general
 export ANSIBLE_COLLECTIONS_PATHS="${HOME}/.ansible/"
 SHIPPABLE_RESULT_DIR="$(pwd)/shippable"
 TEST_DIR="${HOME}/.ansible/collections/ansible_collections/amazon/aws/"
 mkdir -p "${TEST_DIR}"
 cp -aT "${SHIPPABLE_BUILD_DIR}" "${TEST_DIR}"
 cd "${TEST_DIR}"
+
+# START: HACK install dependencies
+retry ansible-galaxy collection install ansible.netcommon
+#retry ansible-galaxy collection install ansible.windows
+retry git clone https://github.com/ansible-collections/ansible.windows.git "${ANSIBLE_COLLECTIONS_PATHS}/ansible_collections/ansible/windows"
+retry ansible-galaxy collection install community.aws
+retry ansible-galaxy collection install community.general
+# END: HACK
 
 function cleanup
 {
