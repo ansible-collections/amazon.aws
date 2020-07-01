@@ -644,7 +644,7 @@ def main():
         backoff_retries=dict(type='int', default=10, required=False),
         backoff_delay=dict(type='int', default=3, required=False),
         backoff_max_delay=dict(type='int', default=30, required=False),
-        capabilities=dict(type='list', default=['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'])
+        capabilities=dict(type='list', elements='str', default=['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'])
     )
 
     module = AnsibleAWSModule(

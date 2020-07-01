@@ -262,10 +262,10 @@ def list_ec2_images(ec2_client, module):
 def main():
 
     argument_spec = dict(
-        image_ids=dict(default=[], type='list', aliases=['image_id']),
+        image_ids=dict(default=[], type='list', elements='str', aliases=['image_id']),
         filters=dict(default={}, type='dict'),
-        owners=dict(default=[], type='list', aliases=['owner']),
-        executable_users=dict(default=[], type='list', aliases=['executable_user']),
+        owners=dict(default=[], type='list', elements='str', aliases=['owner']),
+        executable_users=dict(default=[], type='list', elements='str', aliases=['executable_user']),
         describe_image_attributes=dict(default=False, type='bool')
     )
 

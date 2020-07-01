@@ -281,9 +281,9 @@ def main():
     argument_spec = dict(
         dhcp_options_id=dict(type='str', default=None),
         domain_name=dict(type='str', default=None),
-        dns_servers=dict(type='list', default=None),
-        ntp_servers=dict(type='list', default=None),
-        netbios_name_servers=dict(type='list', default=None),
+        dns_servers=dict(type='list', elements='str', default=None),
+        ntp_servers=dict(type='list', elements='str', default=None),
+        netbios_name_servers=dict(type='list', elements='str', default=None),
         netbios_node_type=dict(type='int', default=None),
         vpc_id=dict(type='str', default=None),
         delete_old=dict(type='bool', default=True),
