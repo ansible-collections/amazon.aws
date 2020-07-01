@@ -1,6 +1,6 @@
 integration_tests_dependencies:
-- ansible.windows
 - ansible.netcommon
-- community.general
+- ansible.windows
 - community.aws
+- community.general
 unit_tests_dependencies: []

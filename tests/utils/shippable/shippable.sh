@@ -77,6 +77,10 @@ pip install setuptools==44.1.0
 
 pip install https://github.com/ansible/ansible/archive/"${A_REV:-devel}".tar.gz --disable-pip-version-check
 
+ansible-galaxy collection install ansible.netcommon
+ansible-galaxy collection install ansible.windows
+ansible-galaxy collection install community.aws
+ansible-galaxy collection install community.general
 export ANSIBLE_COLLECTIONS_PATHS="${HOME}/.ansible/"
 SHIPPABLE_RESULT_DIR="$(pwd)/shippable"
 TEST_DIR="${HOME}/.ansible/collections/ansible_collections/amazon/aws/"
