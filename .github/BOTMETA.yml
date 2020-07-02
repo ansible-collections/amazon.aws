@@ -1,21 +1,36 @@
 automerge: false
 files:
-  $actions/aws_s3.py:
-    labels: aws_s3
-  $callbacks/aws_resource_actions.py:
+  maintainers: $team_aws
+  docs/:
+    labels: docs
+  $action/:
+    labels: action
+  $action/aws_s3.py:
+  $callback/:
+    labels: callback
+  $doc_fragments/:
+    labels: doc_fragments
   $doc_fragments/aws.py:
   $doc_fragments/aws_credentials.py:
   $doc_fragments/aws_region.py:
   $doc_fragments/ec2.py:
-  $inventories/aws_ec2.py:
-    maintainers: $team_aws
-    labels: aws_ec2
-  $inventories/aws_rds.py:
-  $lookups/:
-    labels: aws cloud
+  $inventory/:
+    labels: inventory
+  $inventory/aws_ec2.py:
+    labels: inventory
+  $inventory/aws_rds.py:
+    labels: inventory
+  $lookup/:
+    labels: lookup
   $module_utils/:
+    labels: module_utils
   $module_utils/ec2.py:
-    labels: aws cloud ec2
+    labels: ec2
+  $modules/:
+    authors: wimnat
+    maintainers: $team_aws
+    ignore: erydo nadirollo seiffert tedder
+    labels: modules
   $modules/_aws_az_facts.py:
     authors: Sodki
   $modules/_aws_caller_facts.py:
@@ -26,10 +41,6 @@ files:
     authors: prasadkatti
   $modules/_ec2_group_facts.py:
     authors: Sodki
-  $modules/:
-    authors: wimnat
-    maintainers: $team_aws
-    ignore: erydo nadirollo seiffert tedder
   $modules/_ec2_vpc_dhcp_option_facts.py:
     authors: naslanidis
   $modules/aws_az_info.py:
@@ -38,10 +49,8 @@ files:
     authors: orthanc sdubrul
   $modules/aws_s3.py:
     authors: lwade s-hertel
-    maintainers: jillr tremble
   $modules/cloudformation.py:
     authors: jsmartin
-    labels: cloudformation
   $modules/cloudformation_info.py:
     authors: jmenga waffie1
   $modules/ec2.py:
@@ -56,45 +65,46 @@ files:
     authors: jsdalton
   $modules/ec2_group.py:
     authors: adq
-    labels: ec2_group
   $modules/ec2_group_info.py:
     authors: Sodki
   $modules/ec2_key.py:
     authors: prasadkatti zbal
-    labels: ec2_key
   $modules/ec2_metadata_facts.py:
     authors: roadmapper silviud
   $modules/ec2_snapshot.py:
     authors: willthames
   $modules/ec2_tag.py:
     authors: flowerysong lwade
-    labels: ec2_tag
   $modules/ec2_tag_info.py:
     authors: tremble
     maintainers: jillr s-hertel
   $modules/ec2_vol.py:
     authors: lwade
-    labels: ec2_vol
   $modules/ec2_vpc_dhcp_option.py:
     authors: joelthompson
   $modules/ec2_vpc_dhcp_option_info.py:
     authors: naslanidis
   $modules/ec2_vpc_net.py:
     authors: defionscode s-hertel
-    maintainers: jillr tremble
-    labels: ec2_vpc_net
     ignore: defionscode joshsouza ryansb simplesteph
   $modules/ec2_vpc_net_info.py:
-    maintainers: $team_aws whiter
-    labels: ec2_vpc_net_info
+    maintainers: whiter
   $modules/ec2_vpc_subnet.py:
     authors: brandond erydo
+  scripts/inventory/:
+    labels: inventory
+  tests/:
+    labels: tests
+  tests/integration/:
+    labels: integrations
+  tests/units/:
+    labels: units
 macros:
-  actions: plugins/action
-  callbacks: plugins/callback
+  action: plugins/action
+  callback: plugins/callback
   doc_fragments: plugins/doc_fragments
-  inventories: plugins/inventory
-  lookups: plugins/lookup
+  inventory: plugins/inventory
+  lookup: plugins/lookup
   module_utils: plugins/module_utils
   modules: plugins/modules
   team_aws: jillr s-hertel tremble
