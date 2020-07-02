@@ -10,6 +10,7 @@ tags: [amazon, aws, cloud]
 dependencies:
   ansible.netcommon: '>=0.0.1'
 repository: https://github.com/ansible-collections/amazon.aws
+documentation: https://github.com/ansible-collections/amazon.aws/tree/main/docs
 homepage: https://github.com/ansible-collections/amazon.aws
 issues: https://github.com/ansible-collections/amazon.aws/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc
 build_ignore:
