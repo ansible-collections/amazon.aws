@@ -80,6 +80,8 @@ options:
           type: str
           description:
           - The device name. For example C(/dev/sda).
+          required: yes
+          aliases: ['DeviceName']
         virtual_name:
           type: str
           description:
@@ -687,7 +689,7 @@ def rename_item_if_exists(dict_object, attribute, new_attribute, child_node=None
 
 def main():
     mapping_options = dict(
-        device_name=dict(type='str'),
+        device_name=dict(type='str', aliases=['DeviceName'], required=True),
         virtual_name=dict(
             type='str', aliases=['VirtualName'],
             deprecated_aliases=[dict(name='VirtualName', date='2022-06-01', collection_name='amazon.aws')]),
