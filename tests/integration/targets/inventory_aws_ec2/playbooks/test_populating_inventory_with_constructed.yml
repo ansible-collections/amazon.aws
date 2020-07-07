@@ -5,22 +5,19 @@
   environment: "{{ ansible_test.environment }}"
   tasks:
 
-    - block:
+    - module_defaults:
+        group/aws:
+          aws_access_key: '{{ aws_access_key }}'
+          aws_secret_key: '{{ aws_secret_key }}'
+          security_token: '{{ security_token | default(omit) }}'
+          region: '{{ aws_region }}'
+      block:
 
         # Create VPC, subnet, security group, and find image_id to create instance
 
         - include_tasks: setup.yml
 
         # Create new host, refresh inventory
-
-        - name: set connection information for all tasks
-          set_fact:
-            aws_connection_info: &aws_connection_info
-              aws_access_key: '{{ aws_access_key }}'
-              aws_secret_key: '{{ aws_secret_key }}'
-              security_token: '{{ security_token }}'
-              region: '{{ aws_region }}'
-          no_log: yes
 
         - name: create a new host
           ec2:
@@ -36,7 +33,6 @@
             wait: yes
             group_id: '{{ sg_id }}'
             vpc_subnet_id: '{{ subnet_id }}'
-            <<: *aws_connection_info
           register: setup_instance
 
         - meta: refresh_inventory
@@ -72,7 +68,6 @@
               Name: '{{ resource_prefix }}'
             group_id: "{{ sg_id }}"
             vpc_subnet_id: "{{ subnet_id }}"
-            <<: *aws_connection_info
           ignore_errors: yes
           when: setup_instance is defined
 

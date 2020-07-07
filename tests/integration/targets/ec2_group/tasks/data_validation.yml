@@ -1,25 +1,15 @@
 ---
 - block:
-    - name: set up aws connection info
-      set_fact:
-        aws_connection_info: &aws_connection_info
-          aws_access_key: "{{ aws_access_key }}"
-          aws_secret_key: "{{ aws_secret_key }}"
-          security_token: "{{ security_token }}"
-          region: "{{ aws_region }}"
-      no_log: yes
     - name: Create a group with only the default rule
       ec2_group:
         name: '{{ec2_group_name}}-input-tests'
         vpc_id: '{{ vpc_result.vpc.id }}'
         description: '{{ec2_group_description}}'
-        <<: *aws_connection_info
 
     - name: Run through some common weird port specs
       ec2_group:
         name: '{{ec2_group_name}}-input-tests'
         description: '{{ec2_group_description}}'
-        <<: *aws_connection_info
         rules:
           - "{{ item }}"
       with_items:
@@ -40,5 +30,4 @@
         name: '{{ec2_group_name}}-input-tests'
         vpc_id: '{{ vpc_result.vpc.id }}'
         state: absent
-        <<: *aws_connection_info
       ignore_errors: yes
