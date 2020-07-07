@@ -1,5 +1,5 @@
 ---
-# Test suite for aws_s3
+# Integration tests for aws_s3
 - module_defaults:
     group/aws:
       aws_access_key: "{{ aws_access_key }}"
