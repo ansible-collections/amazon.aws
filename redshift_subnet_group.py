@@ -10,9 +10,9 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 author:
-version_added: 1.0.0
   - "Jens Carl (@j-carl), Hothead Games Inc."
 module: redshift_subnet_group
+version_added: 1.0.0
 short_description: manage Redshift cluster subnet groups
 description:
   - Create, modifies, and deletes Redshift cluster subnet groups.
