@@ -177,10 +177,11 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info, AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, boto3_tag_list_to_ansible_dict
 from ansible.module_utils._text import to_native
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
 class EFSConnection(object):
@@ -196,7 +197,7 @@ class EFSConnection(object):
         except Exception as e:
             module.fail_json(msg="Failed to connect to AWS: %s" % to_native(e))
 
-        self.region = get_aws_connection_info(module, boto3=True)[0]
+        self.region = module.region
 
     @AWSRetry.exponential_backoff(catch_extra_error_codes=['ThrottlingException'])
     def list_file_systems(self, **kwargs):
