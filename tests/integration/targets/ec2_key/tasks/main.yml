@@ -1,16 +1,15 @@
 ---
-# A Note about ec2 environment variable name preference:
-#  - EC2_URL -> AWS_URL
-#  - EC2_ACCESS_KEY -> AWS_ACCESS_KEY_ID -> AWS_ACCESS_KEY
-#  - EC2_SECRET_KEY -> AWS_SECRET_ACCESS_KEY -> AWX_SECRET_KEY
-#  - EC2_REGION -> AWS_REGION
-#
 # TODO - name: test 'validate_certs' parameter
 # TODO - name: test creating key pair with another_key_material with force=yes
 # ============================================================
-# - include: ../../setup_ec2/tasks/common.yml module_name=ec2_key
 
-- block:
+- module_defaults:
+    group/aws:
+      region: '{{ aws_region }}'
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+  block:
 
     # ============================================================
     - name: test with no parameters
@@ -27,12 +26,8 @@
     # ============================================================
     - name: test removing a non-existent key pair
       ec2_key:
-        name='{{ec2_key_name}}'
-        ec2_region={{ec2_region}}
-        ec2_access_key={{ec2_access_key}}
-        ec2_secret_key={{ec2_secret_key}}
-        security_token={{security_token}}
-        state=absent
+        name: '{{ ec2_key_name }}'
+        state: absent
       register: result
 
     - name: assert removing a non-existent key pair
@@ -43,12 +38,8 @@
     # ============================================================
     - name: test creating a new key pair
       ec2_key:
-        name='{{ec2_key_name}}'
-        ec2_region={{ec2_region}}
-        ec2_access_key={{ec2_access_key}}
-        ec2_secret_key={{ec2_secret_key}}
-        security_token={{security_token}}
-        state=present
+        name: '{{ ec2_key_name }}'
+        state: present
       register: result
 
     - name: assert creating a new key pair
@@ -64,13 +55,8 @@
     # ============================================================
     - name: test removing an existent key
       ec2_key:
-        name='{{ec2_key_name}}'
-        state=absent
-      environment:
-        EC2_REGION: '{{ec2_region}}'
-        EC2_ACCESS_KEY: '{{ec2_access_key}}'
-        EC2_SECRET_KEY: '{{ec2_secret_key}}'
-        EC2_SECURITY_TOKEN: '{{security_token|default("")}}'
+        name: '{{ ec2_key_name }}'
+        state: absent
       register: result
 
     - name: assert removing an existent key
@@ -83,14 +69,9 @@
     # ============================================================
     - name: test state=present with key_material
       ec2_key:
-        name='{{ec2_key_name}}'
-        key_material='{{key_material}}'
-        state=present
-      environment:
-        EC2_REGION: '{{ec2_region}}'
-        EC2_ACCESS_KEY: '{{ec2_access_key}}'
-        EC2_SECRET_KEY: '{{ec2_secret_key}}'
-        EC2_SECURITY_TOKEN: '{{security_token|default("")}}'
+        name: '{{ ec2_key_name }}'
+        key_material: '{{ key_material }}'
+        state: present
       register: result
 
     - name: assert state=present with key_material
@@ -109,10 +90,6 @@
     - name: test force=no with another_key_material (expect changed=false)
       ec2_key:
         name: '{{ ec2_key_name }}'
-        ec2_region: '{{ ec2_region }}'
-        ec2_access_key: '{{ ec2_access_key }}'
-        ec2_secret_key: '{{ ec2_secret_key }}'
-        security_token: '{{ security_token }}'
         key_material: '{{ another_key_material }}'
         force: no
       register: result
@@ -128,10 +105,6 @@
     - name: test updating a key pair using another_key_material (expect changed=True)
       ec2_key:
         name: '{{ ec2_key_name }}'
-        ec2_region: '{{ ec2_region }}'
-        ec2_access_key: '{{ ec2_access_key }}'
-        ec2_secret_key: '{{ ec2_secret_key }}'
-        security_token: '{{ security_token }}'
         key_material: '{{ another_key_material }}'
       register: result
 
@@ -142,18 +115,10 @@
           - 'result.key.fingerprint != "{{ fingerprint }}"'
 
     # ============================================================
-
-  always:
-
-    # ============================================================
     - name: test state=absent (expect changed=true)
       ec2_key:
-        name='{{ec2_key_name}}'
-        ec2_region='{{ec2_region}}'
-        ec2_access_key='{{ec2_access_key}}'
-        ec2_secret_key='{{ec2_secret_key}}'
-        security_token='{{security_token}}'
-        state=absent
+        name: '{{ ec2_key_name }}'
+        state: absent
       register: result
 
     - name: assert state=absent with key_material (expect changed=true)
@@ -162,3 +127,11 @@
            - 'result.changed'
            - '"key" in result'
            - 'result.key == None'
+
+  always:
+
+    # ============================================================
+    - name: Always delete the key we might create
+      ec2_key:
+        name: '{{ ec2_key_name }}'
+        state: absent
