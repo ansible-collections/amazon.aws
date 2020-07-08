@@ -7,7 +7,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 module: aws_waf_condition
 short_description: Create and delete WAF Conditions
 version_added: 1.0.0
@@ -137,7 +137,7 @@ options:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
   - name: create WAF byte condition
     community.aws.aws_waf_condition:
       name: my_byte_condition
@@ -205,7 +205,7 @@ EXAMPLES = '''
 
 '''
 
-RETURN = '''
+RETURN = r'''
 condition:
   description: Condition returned by operation.
   returned: always
@@ -705,7 +705,7 @@ def main():
     argument_spec = dict(
         name=dict(required=True),
         type=dict(required=True, choices=['byte', 'geo', 'ip', 'regex', 'size', 'sql', 'xss']),
-        filters=dict(type='list'),
+        filters=dict(type='list', elements='dict'),
         purge_filters=dict(type='bool', default=False),
         waf_regional=dict(type='bool', default=False),
         state=dict(default='present', choices=['present', 'absent']),

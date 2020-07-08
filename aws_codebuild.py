@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: aws_codebuild
 version_added: 1.0.0
@@ -163,7 +163,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - community.aws.aws_codebuild:
@@ -191,7 +191,7 @@ EXAMPLES = '''
     state: present
 '''
 
-RETURN = '''
+RETURN = r'''
 project:
   description: Returns the dictionary describing the code project configuration.
   returned: success
@@ -379,7 +379,7 @@ def main():
         service_role=dict(),
         timeout_in_minutes=dict(type='int', default=60),
         encryption_key=dict(),
-        tags=dict(type='list'),
+        tags=dict(type='list', elements='dict'),
         vpc_config=dict(type='dict'),
         state=dict(choices=['present', 'absent'], default='present')
     )

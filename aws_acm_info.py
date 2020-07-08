@@ -6,7 +6,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 module: aws_acm_info
 short_description: Retrieve certificate information from AWS Certificate Manager service
 version_added: 1.0.0
@@ -49,7 +49,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 - name: obtain all ACM certificates
   community.aws.aws_acm_info:
 
@@ -76,7 +76,7 @@ EXAMPLES = '''
 
 '''
 
-RETURN = '''
+RETURN = r'''
 certificates:
   description: A list of certificates
   returned: always
@@ -268,7 +268,11 @@ def main():
     argument_spec = dict(
         certificate_arn=dict(aliases=['arn']),
         domain_name=dict(aliases=['name']),
-        statuses=dict(type='list', choices=['PENDING_VALIDATION', 'ISSUED', 'INACTIVE', 'EXPIRED', 'VALIDATION_TIMED_OUT', 'REVOKED', 'FAILED']),
+        statuses=dict(
+            type='list',
+            elements='str',
+            choices=['PENDING_VALIDATION', 'ISSUED', 'INACTIVE', 'EXPIRED', 'VALIDATION_TIMED_OUT', 'REVOKED', 'FAILED']
+        ),
         tags=dict(type='dict'),
     )
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)

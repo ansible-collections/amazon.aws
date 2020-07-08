@@ -6,7 +6,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: aws_direct_connect_virtual_interface
 version_added: 1.0.0
@@ -83,7 +83,7 @@ extends_documentation_fragment:
 
 '''
 
-RETURN = '''
+RETURN = r'''
 address_family:
   description: The address family for the BGP peer.
   returned: always
@@ -217,7 +217,7 @@ vlan:
   sample: 100
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 ---
 - name: create an association between a LAG and connection
   community.aws.aws_direct_connect_virtual_interface:
@@ -467,7 +467,7 @@ def main():
         amazon_address=dict(),
         customer_address=dict(),
         address_type=dict(),
-        cidr=dict(type='list'),
+        cidr=dict(type='list', elements='str'),
         virtual_gateway_id=dict(),
         virtual_interface_id=dict()
     )

@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: aws_config_aggregator
 version_added: 1.0.0
@@ -75,7 +75,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 - name: Create cross-account aggregator
   community.aws.aws_config_aggregator:
     name: test_config_rule
@@ -88,7 +88,7 @@ EXAMPLES = '''
       all_aws_regions: yes
 '''
 
-RETURN = '''#'''
+RETURN = r'''#'''
 
 
 try:
@@ -165,7 +165,7 @@ def main():
         argument_spec={
             'name': dict(type='str', required=True),
             'state': dict(type='str', choices=['present', 'absent'], default='present'),
-            'account_sources': dict(type='list', required=True),
+            'account_sources': dict(type='list', required=True, elements='dict'),
             'organization_source': dict(type='dict', required=True)
         },
         supports_check_mode=False,
