@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+# Copyright: (c) 2012, Peter Sankauskas
+
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
 
 '''
 EC2 external inventory script
@@ -134,13 +139,6 @@ destination_format_tags: Name,clusterid,deployment,private_dns_name
 These settings would produce a destination_format as the following:
 'webserver-ansible-blue-172.31.0.1'
 '''
-
-# (c) 2012, Peter Sankauskas
-
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
 
 import sys
 import os

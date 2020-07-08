@@ -7,7 +7,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 module: aws_waf_rule
 short_description: Create and delete WAF Rules
 version_added: 1.0.0
@@ -73,8 +73,7 @@ options:
         type: bool
 '''
 
-EXAMPLES = '''
-
+EXAMPLES = r'''
   - name: create WAF rule
     community.aws.aws_waf_rule:
       name: my_waf_rule
@@ -93,10 +92,9 @@ EXAMPLES = '''
     community.aws.aws_waf_rule:
       name: "my_waf_rule"
       state: absent
-
 '''
 
-RETURN = '''
+RETURN = r'''
 rule:
   description: WAF rule contents
   returned: always
@@ -153,8 +151,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.waf import (
     list_regional_rules_with_backoff,
     list_rules_with_backoff,
     run_func_with_change_token_backoff,
-)
-from ansible_collections.amazon.aws.plugins.module_utils.waf import (
     get_web_acl_with_backoff,
     list_web_acls_with_backoff,
     list_regional_web_acls_with_backoff,
@@ -340,7 +336,7 @@ def main():
         name=dict(required=True),
         metric_name=dict(),
         state=dict(default='present', choices=['present', 'absent']),
-        conditions=dict(type='list'),
+        conditions=dict(type='list', elements='dict'),
         purge_conditions=dict(type='bool', default=False),
         waf_regional=dict(type='bool', default=False),
     )

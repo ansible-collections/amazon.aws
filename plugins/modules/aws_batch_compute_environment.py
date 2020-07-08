@@ -6,14 +6,15 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: aws_batch_compute_environment
 version_added: 1.0.0
 short_description: Manage AWS Batch Compute Environments
 description:
     - This module allows the management of AWS Batch Compute Environments.
-      It is idempotent and supports "Check" mode.  Use module M(community.aws.aws_batch_compute_environment) to manage the compute
+    - It is idempotent and supports "Check" mode.
+    - Use module M(community.aws.aws_batch_compute_environment) to manage the compute
       environment, M(community.aws.aws_batch_job_queue) to manage job queues, M(community.aws.aws_batch_job_definition) to manage job definitions.
 
 
@@ -21,8 +22,8 @@ author: Jon Meran (@jonmer85)
 options:
   compute_environment_name:
     description:
-      - The name for your compute environment. Up to 128 letters (uppercase and lowercase), numbers, and underscores
-        are allowed.
+      - The name for your compute environment.
+      - Up to 128 letters (uppercase and lowercase), numbers, and underscores are allowed.
     required: true
     type: str
   type:
@@ -39,7 +40,8 @@ options:
     type: str
   compute_environment_state:
     description:
-      - The state of the compute environment. If the state is ENABLED, then the compute environment accepts jobs
+      - The state of the compute environment.
+      - If the state is C(ENABLED), then the compute environment accepts jobs
         from a queue and can scale out automatically based on queues.
     default: "ENABLED"
     choices: ["ENABLED", "DISABLED"]
@@ -108,7 +110,8 @@ options:
   bid_percentage:
     description:
       - The minimum percentage that a Spot Instance price must be when compared with the On-Demand price for that
-        instance type before instances are launched. For example, if your bid percentage is 20%, then the Spot price
+        instance type before instances are launched.
+      - For example, if your bid percentage is 20%, then the Spot price
         must be below 20% of the current On-Demand price for that EC2 instance.
     type: int
   spot_iam_fleet_role:
@@ -124,45 +127,39 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
----
-- hosts: localhost
-  gather_facts: no
-  vars:
+EXAMPLES = r'''
+- name: My Batch Compute Environment
+  community.aws.aws_batch_compute_environment:
+    compute_environment_name: computeEnvironmentName
     state: present
-  tasks:
-  - name: My Batch Compute Environment
-    community.aws.aws_batch_compute_environment:
-      compute_environment_name: computeEnvironmentName
-      state: present
-      region: us-east-1
-      compute_environment_state: ENABLED
-      type: MANAGED
-      compute_resource_type: EC2
-      minv_cpus: 0
-      maxv_cpus: 2
-      desiredv_cpus: 1
-      instance_types:
-        - optimal
-      subnets:
-        - my-subnet1
-        - my-subnet2
-      security_group_ids:
-        - my-sg1
-        - my-sg2
-      instance_role: arn:aws:iam::<account>:instance-profile/<role>
-      tags:
-        tag1: value1
-        tag2: value2
-      service_role: arn:aws:iam::<account>:role/service-role/<role>
-    register: aws_batch_compute_environment_action
+    region: us-east-1
+    compute_environment_state: ENABLED
+    type: MANAGED
+    compute_resource_type: EC2
+    minv_cpus: 0
+    maxv_cpus: 2
+    desiredv_cpus: 1
+    instance_types:
+      - optimal
+    subnets:
+      - my-subnet1
+      - my-subnet2
+    security_group_ids:
+      - my-sg1
+      - my-sg2
+    instance_role: arn:aws:iam::<account>:instance-profile/<role>
+    tags:
+      tag1: value1
+      tag2: value2
+    service_role: arn:aws:iam::<account>:role/service-role/<role>
+  register: aws_batch_compute_environment_action
 
-  - name: show results
-    debug:
-      var: aws_batch_compute_environment_action
+- name: show results
+  debug:
+    var: aws_batch_compute_environment_action
 '''
 
-RETURN = '''
+RETURN = r'''
 ---
 output:
   description: "returns what action was taken, whether something was changed, invocation and response"
@@ -229,9 +226,9 @@ output:
   type: dict
 '''
 
+import re
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict, camel_dict_to_snake_dict
-import re
 
 try:
     from botocore.exceptions import ClientError, BotoCoreError
@@ -459,10 +456,10 @@ def main():
         minv_cpus=dict(type='int', required=True),
         maxv_cpus=dict(type='int', required=True),
         desiredv_cpus=dict(type='int'),
-        instance_types=dict(type='list', required=True),
+        instance_types=dict(type='list', required=True, elements='str'),
         image_id=dict(),
-        subnets=dict(type='list', required=True),
-        security_group_ids=dict(type='list', required=True),
+        subnets=dict(type='list', required=True, elements='str'),
+        security_group_ids=dict(type='list', required=True, elements='str'),
         ec2_key_pair=dict(),
         instance_role=dict(required=True),
         tags=dict(type='dict'),

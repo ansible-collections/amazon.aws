@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: aws_codepipeline
 version_added: 1.0.0
@@ -79,7 +79,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Example for creating a pipeline for continuous deploy of Github code to an ECS cluster (container)
@@ -148,7 +148,7 @@ EXAMPLES = '''
     state: present
 '''
 
-RETURN = '''
+RETURN = r'''
 pipeline:
   description: Returns the dictionary describing the code pipeline configuration.
   returned: success
@@ -266,7 +266,7 @@ def main():
         name=dict(required=True, type='str'),
         role_arn=dict(required=True, type='str'),
         artifact_store=dict(required=True, type='dict'),
-        stages=dict(required=True, type='list'),
+        stages=dict(required=True, type='list', elements='dict'),
         version=dict(type='int'),
         state=dict(choices=['present', 'absent'], default='present')
     )

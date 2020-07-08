@@ -6,7 +6,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 module: aws_waf_web_acl
 short_description: Create and delete WAF Web ACLs.
 version_added: 1.0.0
@@ -84,7 +84,7 @@ options:
         type: bool
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
   - name: create web ACL
     community.aws.aws_waf_web_acl:
       name: my_web_acl
@@ -102,7 +102,7 @@ EXAMPLES = '''
       state: absent
 '''
 
-RETURN = '''
+RETURN = r'''
 web_acl:
   description: contents of the Web ACL.
   returned: always
@@ -339,7 +339,7 @@ def main():
         default_action=dict(choices=['block', 'allow', 'count']),
         metric_name=dict(),
         state=dict(default='present', choices=['present', 'absent']),
-        rules=dict(type='list'),
+        rules=dict(type='list', elements='dict'),
         purge_rules=dict(type='bool', default=False),
         waf_regional=dict(type='bool', default=False)
     )

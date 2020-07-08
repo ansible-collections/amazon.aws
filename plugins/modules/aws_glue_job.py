@@ -6,7 +6,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: aws_glue_job
 version_added: 1.0.0
@@ -81,7 +81,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create an AWS Glue job
@@ -98,7 +98,7 @@ EXAMPLES = '''
 
 '''
 
-RETURN = '''
+RETURN = r'''
 allocated_capacity:
     description: The number of AWS Glue data processing units (DPUs) allocated to runs of this job. From 2 to
                  100 DPUs can be allocated; the default is 10. A DPU is a relative measure of processing power
@@ -337,7 +337,7 @@ def main():
             allocated_capacity=dict(type='int'),
             command_name=dict(type='str', default='glueetl'),
             command_script_location=dict(type='str'),
-            connections=dict(type='list'),
+            connections=dict(type='list', elements='str'),
             default_arguments=dict(type='dict'),
             description=dict(type='str'),
             max_concurrent_runs=dict(type='int'),

@@ -6,7 +6,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: aws_kms
 version_added: 1.0.0
@@ -174,7 +174,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Managing the KMS IAM Policy via policy_mode and policy_grant_types is fragile
 # and has been deprecated in favour of the policy option.
 - name: grant user-style access to production secrets
@@ -235,7 +235,7 @@ EXAMPLES = '''
     state: present
 '''
 
-RETURN = '''
+RETURN = r'''
 key_id:
   description: ID of key
   type: str
@@ -1022,14 +1022,14 @@ def main():
         policy_mode=dict(aliases=['mode'], choices=['grant', 'deny'], default='grant'),
         policy_role_name=dict(aliases=['role_name']),
         policy_role_arn=dict(aliases=['role_arn']),
-        policy_grant_types=dict(aliases=['grant_types'], type='list'),
+        policy_grant_types=dict(aliases=['grant_types'], type='list', elements='str'),
         policy_clean_invalid_entries=dict(aliases=['clean_invalid_entries'], type='bool', default=True),
         key_id=dict(aliases=['key_arn']),
         description=dict(),
         enabled=dict(type='bool', default=True),
         tags=dict(type='dict', default={}),
         purge_tags=dict(type='bool', default=False),
-        grants=dict(type='list', default=[]),
+        grants=dict(type='list', default=[], elements='dict'),
         policy=dict(type='json'),
         purge_grants=dict(type='bool', default=False),
         state=dict(default='present', choices=['present', 'absent']),

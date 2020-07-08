@@ -6,7 +6,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: aws_glue_connection
 version_added: 1.0.0
@@ -67,7 +67,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create an AWS Glue connection
@@ -86,7 +86,7 @@ EXAMPLES = '''
 
 '''
 
-RETURN = '''
+RETURN = r'''
 connection_properties:
     description: A dict of key-value pairs used as parameters for this connection.
     returned: when state is present
@@ -306,9 +306,9 @@ def main():
             connection_properties=dict(type='dict'),
             connection_type=dict(type='str', default='JDBC', choices=['JDBC', 'SFTP']),
             description=dict(type='str'),
-            match_criteria=dict(type='list'),
+            match_criteria=dict(type='list', elements='str'),
             name=dict(required=True, type='str'),
-            security_groups=dict(type='list'),
+            security_groups=dict(type='list', elements='str'),
             state=dict(required=True, choices=['present', 'absent'], type='str'),
             subnet_id=dict(type='str')
         )

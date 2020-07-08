@@ -6,7 +6,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: aws_eks_cluster
 version_added: 1.0.0
@@ -62,7 +62,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create an EKS cluster
@@ -84,7 +84,7 @@ EXAMPLES = '''
     state: absent
 '''
 
-RETURN = '''
+RETURN = r'''
 arn:
   description: ARN of the EKS cluster
   returned: when state is present
@@ -270,8 +270,8 @@ def main():
         name=dict(required=True),
         version=dict(),
         role_arn=dict(),
-        subnets=dict(type='list'),
-        security_groups=dict(type='list'),
+        subnets=dict(type='list', elements='str'),
+        security_groups=dict(type='list', elements='str'),
         state=dict(choices=['absent', 'present'], default='present'),
         wait=dict(default=False, type='bool'),
         wait_timeout=dict(default=1200, type='int')
