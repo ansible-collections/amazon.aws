@@ -55,7 +55,7 @@ options:
     type: dict
   purge_tags:
     description:
-      - Whether or not to remove tags that do not appear in the M(tags) list.
+      - Whether or not to remove tags that do not appear in the C(tags) list.
     type: bool
     default: False
 author:
