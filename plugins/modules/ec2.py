@@ -15,16 +15,16 @@ description:
     - Creates or terminates ec2 instances.
     - >
       Note: This module uses the older boto Python module to interact with the EC2 API.
-      M(ec2) will still receive bug fixes, but no new features.
-      Consider using the M(ec2_instance) module instead.
-      If M(ec2_instance) does not support a feature you need that is available in M(ec2), please
+      M(amazon.aws.ec2) will still receive bug fixes, but no new features.
+      Consider using the M(amazon.aws.ec2_instance) module instead.
+      If M(amazon.aws.ec2_instance) does not support a feature you need that is available in M(amazon.aws.ec2), please
       file a feature request.
 options:
   key_name:
     description:
       - Key pair to use on the instance.
       - The SSH key must already exist in AWS in order to use this argument.
-      - Keys can be created / deleted using the M(ec2_key) module.
+      - Keys can be created / deleted using the M(amazon.aws.ec2_key) module.
     aliases: ['keypair']
     type: str
   id:
