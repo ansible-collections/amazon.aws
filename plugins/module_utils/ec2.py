@@ -641,10 +641,16 @@ def py3cmp(a, b):
         raise
 
 
-def compare_policies(current_policy, new_policy):
+def compare_policies(current_policy, new_policy, default_version="2008-10-17"):
     """ Compares the existing policy and the updated policy
         Returns True if there is a difference between policies.
     """
+    if default_version:
+        current_policy = current_policy.copy()
+        new_policy = new_policy.copy()
+        current_policy.setdefault("Version", default_version)
+        new_policy.setdefault("Version", default_version)
+
     return set(_hashable_policy(new_policy, [])) != set(_hashable_policy(current_policy, []))
 
 

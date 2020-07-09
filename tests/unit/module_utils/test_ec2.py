@@ -105,6 +105,44 @@ class Ec2Utils(unittest.TestCase):
             ]
         }
 
+        self.version_policy_missing = {
+            'Statement': [
+                {
+                    'Action': 's3:PutObjectAcl',
+                    'Sid': 'AddCannedAcl2',
+                    'Resource': 'arn:aws:s3:::test_policy/*',
+                    'Effect': 'Allow',
+                    'Principal': {'AWS': ['arn:aws:iam::XXXXXXXXXXXX:user/username1', 'arn:aws:iam::XXXXXXXXXXXX:user/username2']}
+                }
+            ]
+        }
+
+        self.version_policy_old = {
+            'Version': '2008-10-17',
+            'Statement': [
+                {
+                    'Action': 's3:PutObjectAcl',
+                    'Sid': 'AddCannedAcl2',
+                    'Resource': 'arn:aws:s3:::test_policy/*',
+                    'Effect': 'Allow',
+                    'Principal': {'AWS': ['arn:aws:iam::XXXXXXXXXXXX:user/username1', 'arn:aws:iam::XXXXXXXXXXXX:user/username2']}
+                }
+            ]
+        }
+
+        self.version_policy_new = {
+            'Version': '2012-10-17',
+            'Statement': [
+                {
+                    'Action': 's3:PutObjectAcl',
+                    'Sid': 'AddCannedAcl2',
+                    'Resource': 'arn:aws:s3:::test_policy/*',
+                    'Effect': 'Allow',
+                    'Principal': {'AWS': ['arn:aws:iam::XXXXXXXXXXXX:user/username1', 'arn:aws:iam::XXXXXXXXXXXX:user/username2']}
+                }
+            ]
+        }
+
         self.larger_policy_one = {
             "Version": "2012-10-17",
             "Statement": [
@@ -232,3 +270,27 @@ class Ec2Utils(unittest.TestCase):
     def test_compare_numeric_policy_number_and_string_are_equal(self):
         """ Testing two policies one using a quoted number, the other an int """
         self.assertFalse(compare_policies(self.numeric_policy_string, self.numeric_policy_number))
+
+    def test_compare_version_policies_defaults_old(self):
+        """ Testing that a policy without Version is considered identical to one
+        with the 'old' Version (by default)
+        """
+        self.assertFalse(compare_policies(self.version_policy_old, self.version_policy_missing))
+        self.assertTrue(compare_policies(self.version_policy_new, self.version_policy_missing))
+
+    def test_compare_version_policies_default_disabled(self):
+        """ Testing that a policy without Version not considered identical when default_version=None
+        """
+        self.assertFalse(compare_policies(self.version_policy_missing, self.version_policy_missing, default_version=None))
+        self.assertTrue(compare_policies(self.version_policy_old, self.version_policy_missing, default_version=None))
+        self.assertTrue(compare_policies(self.version_policy_new, self.version_policy_missing, default_version=None))
+
+    def test_compare_version_policies_default_set(self):
+        """ Testing that a policy without Version is only considered identical
+        when default_version=
+        """
+        self.assertFalse(compare_policies(self.version_policy_missing, self.version_policy_missing, default_version="2012-10-17"))
+        self.assertTrue(compare_policies(self.version_policy_old, self.version_policy_missing, default_version="2012-10-17"))
+        self.assertFalse(compare_policies(self.version_policy_old, self.version_policy_missing, default_version="2008-10-17"))
+        self.assertFalse(compare_policies(self.version_policy_new, self.version_policy_missing, default_version="2012-10-17"))
+        self.assertTrue(compare_policies(self.version_policy_new, self.version_policy_missing, default_version="2008-10-17"))
