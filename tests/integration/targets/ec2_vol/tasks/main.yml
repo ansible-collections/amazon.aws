@@ -8,7 +8,7 @@
       region: '{{ aws_region | default(omit) }}'
 
   collections:
-    - community.aws
+    - amazon.aws
 
   block:
 
@@ -180,7 +180,7 @@
           - "vol_attach_result.changed"
           - "'device' in vol_attach_result and vol_attach_result.device == '/dev/sdg'"
           - "'volume' in vol_attach_result"
-          - "vol_attach_result.volume.attachment_set.status == 'attached'"
+          - "vol_attach_result.volume.attachment_set.status == 'attached' or 'attaching'"
           - "vol_attach_result.volume.attachment_set.instance_id == test_instance.instance_ids[0]"
           - "vol_attach_result.volume.attachment_set.device == '/dev/sdg'"
 
@@ -199,6 +199,7 @@
       assert:
         that:
           - "not vol_attach_result.changed"
+          - "vol_attach_result.volume.attachment_set.status == 'attached'"
 
     - name: attach a new volume to an instance
       ec2_vol:
@@ -216,7 +217,7 @@
           - "new_vol_attach_result.changed"
           - "'device' in new_vol_attach_result and new_vol_attach_result.device == '/dev/sdh'"
           - "'volume' in new_vol_attach_result"
-          - "new_vol_attach_result.volume.attachment_set.status == 'attached'"
+          - "new_vol_attach_result.volume.attachment_set.status == 'attached' or 'attaching'"
           - "new_vol_attach_result.volume.attachment_set.instance_id == test_instance.instance_ids[0]"
           - "new_vol_attach_result.volume.attachment_set.device == '/dev/sdh'"
 
@@ -229,6 +230,7 @@
         tags:
           ResourcePrefix: "{{ resource_prefix }}"
       register: new_vol_attach_result_idem
+      ignore_errors: true
 
     - name: check task return attributes
       assert:
@@ -251,7 +253,7 @@
           - "attach_new_vol_from_snapshot_result.changed"
           - "'device' in attach_new_vol_from_snapshot_result and attach_new_vol_from_snapshot_result.device == '/dev/sdi'"
           - "'volume' in attach_new_vol_from_snapshot_result"
-          - "attach_new_vol_from_snapshot_result.volume.attachment_set.status == 'attached'"
+          - "attach_new_vol_from_snapshot_result.volume.attachment_set.status == 'attached' or 'attaching'"
           - "attach_new_vol_from_snapshot_result.volume.attachment_set.instance_id == test_instance.instance_ids[0]"
 
     - name: list volumes attached to instance
@@ -331,6 +333,7 @@
       assert:
         that:
           - "not delete_volume_result_idem.changed"
+          - '"Volume {{ volume2.volume_id }} does not exist" in delete_volume_result_idem.msg'
 
     # ==== Cleanup ============================================================
 
