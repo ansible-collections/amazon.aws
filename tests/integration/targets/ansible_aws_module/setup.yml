@@ -1,0 +1,9 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+  - name: 'Write out boto config file'
+    template:
+      dest: './boto3_config'
+      src: 'boto_config.j2'

@@ -1,0 +1,4 @@
+- hosts: all
+  gather_facts: no
+  roles:
+  - 'ansible_aws_module'
