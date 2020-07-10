@@ -126,14 +126,21 @@ options:
   src:
     description:
       - The source file path when performing a PUT operation.
-      - Either I(content) or I(src) must be specified for a PUT operation. Ignored otherwise.
+      - Either I(content), I(content_base64) or I(src) must be specified for a PUT operation. Ignored otherwise.
     type: str
   content:
     description:
       - The content to PUT into an object.
-      - This parameter will be treated as a string and converted to UTF-8 before sending it to S3.
-        To send binary data, use the I(src) parameter instead.
-      - Either I(content) or I(src) must be specified for a PUT operation. Ignored otherwise.
+      - The parameter value will be treated as a string and converted to UTF-8 before sending it to S3.
+        To send binary data, use the I(content_base64) parameter instead.
+      - Either I(content), I(content_base64) or I(src) must be specified for a PUT operation. Ignored otherwise.
+    version_added: "1.1.0"
+    type: str
+  content_base64:
+    description:
+      - The base64-encoded binary data to PUT into an object.
+      - Use this if you need to put raw binary data, and don't forget to encode in base64.
+      - Either I(content), I(content_base64) or I(src) must be specified for a PUT operation. Ignored otherwise.
     version_added: "1.1.0"
     type: str
   ignore_nonexistent_bucket:
@@ -293,6 +300,7 @@ import mimetypes
 import os
 import io
 from ssl import SSLError
+import base64
 
 try:
     import botocore
@@ -681,6 +689,7 @@ def main():
         rgw=dict(default='no', type='bool'),
         src=dict(type='path'),
         content=dict(),
+        content_base64=dict(),
         ignore_nonexistent_bucket=dict(default=False, type='bool'),
         encryption_kms_key_id=dict()
     )
@@ -691,7 +700,7 @@ def main():
                      ['mode', 'get', ['dest', 'object']],
                      ['mode', 'getstr', ['object']],
                      ['mode', 'geturl', ['object']]],
-        mutually_exclusive=[['content', 'src']],
+        mutually_exclusive=[['content', 'content_base64', 'src']],
     )
 
     bucket = module.params.get('bucket')
@@ -713,6 +722,7 @@ def main():
     rgw = module.params.get('rgw')
     src = module.params.get('src')
     content = module.params.get('content')
+    content_base64 = module.params.get('content')
     ignore_nonexistent_bucket = module.params.get('ignore_nonexistent_bucket')
 
     object_canned_acl = ["private", "public-read", "public-read-write", "aws-exec-read", "authenticated-read", "bucket-owner-read", "bucket-owner-full-control"]
@@ -809,7 +819,7 @@ def main():
         # if putting an object in a bucket yet to be created, acls for the bucket and/or the object may be specified
         # these were separated into the variables bucket_acl and object_acl above
 
-        if content is None and src is None:
+        if content is None and content_base64 is None and src is None:
             module.fail_json('Either content or src must be specified for PUT operations')
         if src is not None and not path_check(src):
             module.fail_json('Local object "%s" does not exist for PUT operation' % (src))
@@ -823,18 +833,20 @@ def main():
             create_bucket(module, s3, bucket, location)
 
         # the content will be uploaded as a byte string, so we must encode it first
-        utfcontent = None
+        bincontent = None
         if content is not None:
-            utfcontent = content.encode('utf-8')
+            bincontent = content.encode('utf-8')
+        if content_base64 is not None:
+            bincontent = base64.standard_b64decode(content_base64)
 
         if keyrtn and overwrite != 'always':
-            if overwrite == 'never' or etag_compare(module, s3, bucket, obj, version=version, local_file=src, content=utfcontent):
+            if overwrite == 'never' or etag_compare(module, s3, bucket, obj, version=version, local_file=src, content=bincontent):
                 # Return the download URL for the existing object
                 get_download_url(module, s3, bucket, obj, expiry, changed=False)
 
         # only use valid object acls for the upload_s3file function
         module.params['permission'] = object_acl
-        upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, src=src, content=utfcontent)
+        upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, src=src, content=bincontent)
 
     # Delete an object from a bucket, not the entire bucket
     if mode == 'delobj':
