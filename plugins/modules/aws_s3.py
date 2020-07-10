@@ -134,7 +134,7 @@ options:
       - This parameter will be treated as a string and converted to UTF-8 before sending it to S3.
         To send binary data, use the I(src) parameter instead.
       - Either I(content) or I(src) must be specified for a PUT operation. Ignored otherwise.
-    version_added: "2.10"
+    version_added: "1.1.0"
     type: str
   ignore_nonexistent_bucket:
     description:
