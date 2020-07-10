@@ -1,0 +1,3 @@
+boto
+botocore>=1.10.0
+boto3>=1.0.0
