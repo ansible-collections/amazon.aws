@@ -1,19 +1,16 @@
-- name: test updating inventory
+- name: Test updating inventory
+  module_defaults:
+    group/aws:
+       aws_access_key: '{{ aws_access_key }}'
+       aws_secret_key: '{{ aws_secret_key }}'
+       security_token: '{{ security_token | default(omit) }}'
+       region: '{{ aws_region }}'
   block:
     - name: assert group was populated with inventory but is empty
       assert:
         that:
           - "'aws_ec2' in groups"
           - "not groups.aws_ec2"
-
-    - name: set connection information for all tasks
-      set_fact:
-        aws_connection_info: &aws_connection_info
-          aws_access_key: "{{ aws_access_key }}"
-          aws_secret_key: "{{ aws_secret_key }}"
-          security_token: "{{ security_token }}"
-          region: "{{ aws_region }}"
-      no_log: yes
 
     - name: create a new host
       ec2:
@@ -27,7 +24,6 @@
         wait: yes
         group_id: '{{ setup_sg.group_id }}'
         vpc_subnet_id: '{{ setup_subnet.subnet.id }}'
-        <<: *aws_connection_info
       register: setup_instance
 
     - meta: refresh_inventory
@@ -49,7 +45,6 @@
           Name: '{{ resource_prefix }}'
         group_id: '{{ setup_sg.group_id }}'
         vpc_subnet_id: '{{ setup_subnet.subnet.id }}'
-        <<: *aws_connection_info
 
     - meta: refresh_inventory
 
@@ -70,5 +65,4 @@
           Name: '{{ resource_prefix }}'
         group_id: '{{ setup_sg.group_id }}'
         vpc_subnet_id: '{{ setup_subnet.subnet.id }}'
-        <<: *aws_connection_info
       ignore_errors: yes

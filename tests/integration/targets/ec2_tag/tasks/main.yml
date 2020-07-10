@@ -1,7 +1,6 @@
 ---
 # tasks file for test_ec2_tag
-- name: Set up AWS connection info
-  module_defaults:
+- module_defaults:
     group/aws:
       aws_access_key: "{{ aws_access_key }}"
       aws_secret_key: "{{ aws_secret_key }}"
