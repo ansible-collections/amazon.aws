@@ -595,6 +595,46 @@
         that:
           - result.contents == "{{ lookup('template', 'templates/put-template.txt.j2') }}"
 
+    # at present, there is no lookup that can process binary data, so we use slurp instead
+    - slurp:
+        src: test.png
+      register: put_binary
+
+    - name: create an object from binary data
+      aws_s3:
+        bucket: "{{ bucket_name }}"
+        object: put-binary.bin
+        mode: put
+        content_base64: "{{ put_binary.content }}"
+        <<: *aws_connection_info
+      register: result
+
+    - assert:
+        that:
+          - result is changed
+
+    - name: fetch binary content
+      aws_s3:
+        bucket: "{{ bucket_name }}"
+        mode: get
+        dest: "{{ tmpdir.path }}/download_binary.bin"
+        object: put-binary.bin
+        <<: *aws_connection_info
+      register: result
+
+    - name: stat the files so we can compare the checksums
+      stat:
+        path: "{{ item }}"
+        get_checksum: yes
+      loop:
+      - test.bin
+      - "{{ tmpdir.path }}/download_binary.bin"
+      register: binary_files
+
+    - assert:
+        that:
+          - binary_files.results[0].stat.checksum == binary_files.results[1].stat.checksum
+
   always:
     - name: remove uploaded files
       aws_s3:
@@ -608,6 +648,7 @@
         - delete_encrypt_kms.txt
         - put-content.txt
         - put-template.txt
+        - put-binary.txt
       ignore_errors: yes
 
     - name: delete temporary files
