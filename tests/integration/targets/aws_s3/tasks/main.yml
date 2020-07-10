@@ -597,7 +597,7 @@
 
     # at present, there is no lookup that can process binary data, so we use slurp instead
     - slurp:
-        src: test.png
+        src: "{{ role_path }}/files/test.png"
       register: put_binary
 
     - name: create an object from binary data
@@ -627,7 +627,7 @@
         path: "{{ item }}"
         get_checksum: yes
       loop:
-      - test.bin
+      - "{{ role_path }}/files/test.png"
       - "{{ tmpdir.path }}/download_binary.bin"
       register: binary_files
 
