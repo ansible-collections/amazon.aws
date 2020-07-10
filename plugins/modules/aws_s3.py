@@ -127,7 +127,7 @@ options:
     description:
       - The source file path when performing a PUT operation.
       - Either I(content), I(content_base64) or I(src) must be specified for a PUT operation. Ignored otherwise.
-    type: str
+    type: path
   content:
     description:
       - The content to PUT into an object.
