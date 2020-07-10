@@ -722,7 +722,7 @@ def main():
     rgw = module.params.get('rgw')
     src = module.params.get('src')
     content = module.params.get('content')
-    content_base64 = module.params.get('content')
+    content_base64 = module.params.get('content_base64')
     ignore_nonexistent_bucket = module.params.get('ignore_nonexistent_bucket')
 
     object_canned_acl = ["private", "public-read", "public-read-write", "aws-exec-read", "authenticated-read", "bucket-owner-read", "bucket-owner-full-control"]
@@ -820,7 +820,7 @@ def main():
         # these were separated into the variables bucket_acl and object_acl above
 
         if content is None and content_base64 is None and src is None:
-            module.fail_json('Either content or src must be specified for PUT operations')
+            module.fail_json('Either content, content_base64 or src must be specified for PUT operations')
         if src is not None and not path_check(src):
             module.fail_json('Local object "%s" does not exist for PUT operation' % (src))
 
