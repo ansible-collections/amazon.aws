@@ -164,19 +164,6 @@ from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
-@AWSRetry.exponential_backoff()
-def describe_vpc_attr_with_backoff(connection, vpc_id, vpc_attribute):
-    """
-    Describe VPC Attributes with AWSRetry backoff throttling support.
-
-    connection  : boto3 client connection object
-    vpc_id      : The VPC ID to pull attribute value from
-    vpc_attribute     : The VPC attribute to get the value from - valid options = enableDnsSupport or enableDnsHostnames
-    """
-
-    return connection.describe_vpc_attribute(VpcId=vpc_id, Attribute=vpc_attribute)
-
-
 def describe_vpcs(connection, module):
     """
     Describe VPCs.
@@ -204,14 +191,14 @@ def describe_vpcs(connection, module):
 
     # We can get these results in bulk but still needs two separate calls to the API
     try:
-        cl_enabled = connection.describe_vpc_classic_link(VpcIds=vpc_list)
+        cl_enabled = connection.describe_vpc_classic_link(VpcIds=vpc_list, aws_retry=True)
     except is_boto3_error_code('UnsupportedOperation'):
         cl_enabled = {'Vpcs': [{'VpcId': vpc_id, 'ClassicLinkEnabled': False} for vpc_id in vpc_list]}
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg='Unable to describe if ClassicLink is enabled')
 
     try:
-        cl_dns_support = connection.describe_vpc_classic_link_dns_support(VpcIds=vpc_list)
+        cl_dns_support = connection.describe_vpc_classic_link_dns_support(VpcIds=vpc_list, aws_retry=True)
     except is_boto3_error_code('UnsupportedOperation'):
         cl_dns_support = {'Vpcs': [{'VpcId': vpc_id, 'ClassicLinkDnsSupported': False} for vpc_id in vpc_list]}
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
@@ -222,11 +209,13 @@ def describe_vpcs(connection, module):
         error_message = "Unable to describe VPC attribute {0}"
         # We have to make two separate calls per VPC to get these attributes.
         try:
-            dns_support = describe_vpc_attr_with_backoff(connection, vpc['VpcId'], 'enableDnsSupport')
+            dns_support = connection.describe_vpc_attribute(VpcId=vpc['VpcId'],
+                                                            Attribute='enableDnsSupport', aws_retry=True)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg=error_message.format('enableDnsSupport'))
         try:
-            dns_hostnames = describe_vpc_attr_with_backoff(connection, vpc['VpcId'], 'enableDnsHostnames')
+            dns_hostnames = connection.describe_vpc_attribute(VpcId=vpc['VpcId'],
+                                                              Attribute='enableDnsHostnames', aws_retry=True)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg=error_message.format('enableDnsHostnames'))
 
@@ -262,7 +251,7 @@ def main():
     if module._name == 'ec2_vpc_net_facts':
         module.deprecate("The 'ec2_vpc_net_facts' module has been renamed to 'ec2_vpc_net_info'", date='2021-12-01', collection_name='amazon.aws')
 
-    connection = module.client('ec2')
+    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff(retries=10))
 
     describe_vpcs(connection, module)
 
