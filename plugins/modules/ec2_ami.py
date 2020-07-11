@@ -450,9 +450,11 @@ def create_image(module, connection):
 
         block_device_mapping = None
 
+        # Remove empty values injected by using options
         if device_mapping:
             block_device_mapping = []
             for device in device_mapping:
+                device = {k: v for k, v in device.items() if v is not None}
                 device['Ebs'] = {}
                 device = rename_item_if_exists(device, 'device_name', 'DeviceName')
                 device = rename_item_if_exists(device, 'virtual_name', 'VirtualName')
@@ -681,7 +683,7 @@ def rename_item_if_exists(dict_object, attribute, new_attribute, child_node=None
 
 def main():
     mapping_options = dict(
-        device_name=dict(type='str', aliases=['DeviceName'], required=True),
+        device_name=dict(type='str', required=True),
         virtual_name=dict(type='str'),
         no_device=dict(type='bool'),
         volume_type=dict(type='str'),
