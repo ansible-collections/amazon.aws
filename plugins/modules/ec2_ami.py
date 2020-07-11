@@ -86,10 +86,14 @@ options:
           description:
           - The virtual name for the device.
           - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_BlockDeviceMapping.html).
+          - Alias C(VirtualName) has been deprecated and will be removed after 2022-06-01.
+          aliases: ['VirtualName']
         no_device:
           type: bool
           description:
           - Suppresses the specified device included in the block device mapping of the AMI.
+          - Alias C(NoDevice) has been deprecated and will be removed after 2022-06-01.
+          aliases: ['NoDevice']
         volume_type:
           type: str
           description: The volume type.  Defaults to C(gp2) when not set.
@@ -684,8 +688,12 @@ def rename_item_if_exists(dict_object, attribute, new_attribute, child_node=None
 def main():
     mapping_options = dict(
         device_name=dict(type='str', required=True),
-        virtual_name=dict(type='str'),
-        no_device=dict(type='bool'),
+        virtual_name=dict(
+            type='str', aliases=['VirtualName'],
+            deprecated_aliases=[dict(name='VirtualName', date='2022-06-01', collection_name='amazon.aws')]),
+        no_device=dict(
+            type='bool', aliases=['NoDevice'],
+            deprecated_aliases=[dict(name='NoDevice', date='2022-06-01', collection_name='amazon.aws')]),
         volume_type=dict(type='str'),
         delete_on_termination=dict(type='bool'),
         snapshot_id=dict(type='str'),
