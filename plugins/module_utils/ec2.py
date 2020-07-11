@@ -95,8 +95,11 @@ class AWSRetry(CloudRetry):
 
     @staticmethod
     def status_code_from_exception(error):
-        if hasattr(error, "last_response"):
-            return error.last_response['Error']['Code']
+        try:
+            if hasattr(error, "last_response"):
+                return error.last_response['Error']['Code']
+        except KeyError:
+            pass
         return error.response['Error']['Code']
 
     @staticmethod

@@ -505,8 +505,11 @@ def create_image(module, connection):
         waiter = connection.get_waiter('image_available')
         delay = wait_timeout // 30
         max_attempts = 30
-        # This isn't perfect: throttling errors mid-wait would reset the count.
-        AWSRetry.jittered_backoff()(waiter.wait)(ImageIds=[image_id], WaiterConfig=dict(Delay=delay, MaxAttempts=max_attempts))
+        try:
+            # This isn't perfect: throttling errors mid-wait would reset the count.
+            AWSRetry.jittered_backoff()(waiter.wait)(ImageIds=[image_id], WaiterConfig=dict(Delay=delay, MaxAttempts=max_attempts))
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError, botocore.exceptions.WaiterError) as e:
+            module.fail_json_aws(e, msg="Error waiting for image availability", response=e.response, last_response=e.last_response)
 
     if tags:
         try:
@@ -662,8 +665,10 @@ def get_image_by_id(module, connection, image_id):
         if no_images == 1:
             result = images[0]
             try:
-                result['LaunchPermissions'] = connection.describe_image_attribute(aws_retry=True, Attribute='launchPermission', ImageId=image_id)['LaunchPermissions']
-                result['ProductCodes'] = connection.describe_image_attribute(aws_retry=True, Attribute='productCodes', ImageId=image_id)['ProductCodes']
+                result['LaunchPermissions'] = connection.describe_image_attribute(aws_retry=True, Attribute='launchPermission',
+                                                                                  ImageId=image_id)['LaunchPermissions']
+                result['ProductCodes'] = connection.describe_image_attribute(aws_retry=True, Attribute='productCodes',
+                                                                             ImageId=image_id)['ProductCodes']
             except botocore.exceptions.ClientError as e:
                 if e.response['Error']['Code'] != 'InvalidAMIID.Unavailable':
                     module.fail_json_aws(e, msg="Error retrieving image attributes for image %s" % image_id)
