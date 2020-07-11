@@ -167,6 +167,12 @@
     - name: VPC info (no filters)
       ec2_vpc_net_info:
       register: vpc_info
+      retries: 3
+      delay: 3
+      # Because we're running many copies of these tests concurrently VPCs
+      # sometimes disappear after we've pulled the list of VPCs, but before
+      # we've fetched their details.
+      until: '"InvalidVpcID.NotFound" not in ( vpc_info.msg | default("") )'
 
     - name: Test that our new VPC shows up in the results
       assert:
