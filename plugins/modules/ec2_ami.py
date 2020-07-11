@@ -458,7 +458,7 @@ def create_image(module, connection):
         if device_mapping:
             block_device_mapping = []
             for device in device_mapping:
-                device = {k: v for k, v in device.items() if v is not None}
+                device = dict((k, v) for k, v in device.items() if v is not None)
                 device['Ebs'] = {}
                 device = rename_item_if_exists(device, 'device_name', 'DeviceName')
                 device = rename_item_if_exists(device, 'virtual_name', 'VirtualName')
