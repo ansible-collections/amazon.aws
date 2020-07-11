@@ -504,7 +504,8 @@ def create_image(module, connection):
         waiter = connection.get_waiter('image_available')
         delay = wait_timeout // 30
         max_attempts = 30
-        waiter.wait(ImageIds=[image_id], WaiterConfig=dict(Delay=delay, MaxAttempts=max_attempts))
+        # This isn't perfect: throttling errors mid-wait would reset the count.
+        AWSRetry.jittered_backoff()(waiter.wait)(ImageIds=[image_id], WaiterConfig=dict(Delay=delay, MaxAttempts=max_attempts))
 
     if tags:
         try:

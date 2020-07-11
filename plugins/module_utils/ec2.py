@@ -86,7 +86,7 @@ def _botocore_exception_maybe():
     botocore.exceptions instead of assigning from it directly.
     """
     if HAS_BOTO3:
-        return botocore.exceptions.ClientError
+        return (botocore.exceptions.ClientError, botocore.exceptions.WaiterError,)
     return type(None)
 
 
@@ -95,6 +95,8 @@ class AWSRetry(CloudRetry):
 
     @staticmethod
     def status_code_from_exception(error):
+        if hasattr(error, "last_response"):
+            return error.last_response['Error']['Code']
         return error.response['Error']['Code']
 
     @staticmethod
