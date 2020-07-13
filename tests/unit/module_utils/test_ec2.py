@@ -294,3 +294,10 @@ class Ec2Utils(unittest.TestCase):
         self.assertFalse(compare_policies(self.version_policy_old, self.version_policy_missing, default_version="2008-10-17"))
         self.assertFalse(compare_policies(self.version_policy_new, self.version_policy_missing, default_version="2012-10-17"))
         self.assertTrue(compare_policies(self.version_policy_new, self.version_policy_missing, default_version="2008-10-17"))
+
+    def test_compare_version_policies_with_none(self):
+        """ Testing that comparing with no policy works
+        """
+        self.assertTrue(compare_policies(self.small_policy_one, None))
+        self.assertTrue(compare_policies(None, self.small_policy_one))
+        self.assertFalse(compare_policies(None, None))
