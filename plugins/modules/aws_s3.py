@@ -287,6 +287,8 @@ from ansible.module_utils.basic import to_native
 from ansible.module_utils.six.moves.urllib.parse import urlparse
 
 from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.core import is_boto3_error_code
+from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import boto3_conn
 from ..module_utils.ec2 import get_aws_connection_info
 from ..module_utils.s3 import HAS_MD5
@@ -374,7 +376,9 @@ def create_bucket(module, s3, bucket, location=None):
             # Wait for the bucket to exist before setting ACLs
             s3.get_waiter('bucket_exists').wait(Bucket=bucket)
         for acl in module.params.get('permission'):
-            s3.put_bucket_acl(ACL=acl, Bucket=bucket)
+            AWSRetry.jittered_backoff(
+                max_delay=120, catch_extra_error_codes=['NoSuchBucket']
+            )(s3.put_bucket_acl)(ACL=acl, Bucket=bucket)
     except botocore.exceptions.ClientError as e:
         if e.response['Error']['Code'] in IGNORE_S3_DROP_IN_EXCEPTIONS:
             module.warn("PutBucketAcl is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning")
@@ -430,6 +434,8 @@ def delete_bucket(module, s3, bucket):
                 s3.delete_objects(Bucket=bucket, Delete={'Objects': keys})
         s3.delete_bucket(Bucket=bucket)
         return True
+    except is_boto3_error_code('NoSuchBucket'):
+        return False
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed while deleting bucket %s." % bucket)
 
