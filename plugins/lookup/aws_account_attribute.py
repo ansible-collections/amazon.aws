@@ -92,7 +92,8 @@ def _get_credentials(options):
     credentials['aws_profile'] = options['aws_profile']
     credentials['aws_secret_access_key'] = options['aws_secret_key']
     credentials['aws_access_key_id'] = options['aws_access_key']
-    credentials['aws_session_token'] = options['aws_security_token']
+    if options['aws_security_token']:
+        credentials['aws_session_token'] = options['aws_security_token']
 
     return credentials
 

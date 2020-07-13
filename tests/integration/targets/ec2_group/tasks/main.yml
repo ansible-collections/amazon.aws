@@ -1,6 +1,9 @@
 ---
 # Runs a set of tets without the AWS connection credentials configured
 - include: ./credential_tests.yml
+- set_fact:
+    aws_security_token: '{{ security_token | default("") }}'
+  no_log: True
 
 # ============================================================
 # EC2 Classic tests can only be run on a pre-2013 AWS account with supported-platforms=EC2
@@ -15,7 +18,7 @@
                                 region=aws_region,
                                 aws_access_key=aws_access_key,
                                 aws_secret_key=aws_secret_key,
-                                aws_security_token=security_token,
+                                aws_security_token=aws_security_token,
                                 wantlist=True) }}"
 
 # ============================================================
@@ -43,7 +46,7 @@
                               region=aws_region,
                               aws_access_key=aws_access_key,
                               aws_secret_key=aws_secret_key,
-                              aws_security_token=security_token) }}"
+                              aws_security_token=aws_security_token) }}"
       register: default_vpc
 
     - name: create a VPC
