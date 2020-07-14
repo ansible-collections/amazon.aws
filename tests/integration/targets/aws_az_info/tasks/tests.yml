@@ -28,6 +28,28 @@
       - '"zone_name" in first_az'
       - '"zone_type" in first_az'
 
+  - name: 'List available AZs in current Region - check_mode'
+    aws_az_info:
+    check_mode: yes
+    register: check_azs
+
+  - name: check task return attributes
+    vars:
+      first_az: '{{ check_azs.availability_zones[0] }}'
+    assert:
+      that:
+      - check_azs is successful
+      - '"availability_zones" in check_azs'
+      - '"group_name" in first_az'
+      - '"messages" in first_az'
+      - '"network_border_group" in first_az'
+      - '"opt_in_status" in first_az'
+      - '"region_name" in first_az'
+      - '"state" in first_az'
+      - '"zone_id" in first_az'
+      - '"zone_name" in first_az'
+      - '"zone_type" in first_az'
+
 
   # Be specific - aws_region isn't guaranteed to be any specific value
   - name: 'List Available AZs in us-east-1'

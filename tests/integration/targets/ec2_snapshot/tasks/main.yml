@@ -79,11 +79,28 @@
     - assert:
         that:
           - result is changed
+          - info_result is not changed
           - info_result.snapshots| length == 1
           - info_result.snapshots[0].snapshot_id == result.snapshot_id
           - info_result.snapshots[0].volume_id == result.volume_id
           - info_result.snapshots[0].volume_size == result.volume_size
           - info_result.snapshots[0].tags == result.tags
+
+    - name: Get info about snapshots (check_mode)
+      ec2_snapshot_info:
+        filters:
+          "tag:Name": '{{ resource_prefix }}'
+      register: info_check
+      check_mode: yes
+
+    - assert:
+        that:
+          - info_check is not changed
+          - info_check.snapshots| length == 1
+          - info_check.snapshots[0].snapshot_id == result.snapshot_id
+          - info_check.snapshots[0].volume_id == result.volume_id
+          - info_check.snapshots[0].volume_size == result.volume_size
+          - info_check.snapshots[0].tags == result.tags
 
 #    JR: Check mode not supported
 #    - name: Take snapshot if most recent >1hr (False) (check mode)

@@ -252,7 +252,7 @@ def main():
         filters=dict(default=None, type='dict')
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec)
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
     if module._name == 'ec2_eni_facts':
         module.deprecate("The 'ec2_eni_facts' module has been renamed to 'ec2_eni_info'", date='2021-12-01', collection_name='amazon.aws')
 
