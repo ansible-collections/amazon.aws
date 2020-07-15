@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: iam_user
 version_added: 1.0.0
@@ -26,6 +26,7 @@ options:
       - To embed an inline policy, use M(community.aws.iam_policy).
     required: false
     type: list
+    elements: str
     aliases: ['managed_policy']
   state:
     description:
@@ -47,7 +48,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 # Note: This module does not allow management of groups that users belong to.
 #       Groups should manage their membership directly using `iam_group`,
@@ -77,7 +78,7 @@ EXAMPLES = '''
     state: absent
 
 '''
-RETURN = '''
+RETURN = r'''
 user:
     description: dictionary containing all the user information
     returned: success
@@ -344,7 +345,7 @@ def main():
 
     argument_spec = dict(
         name=dict(required=True, type='str'),
-        managed_policies=dict(default=[], type='list', aliases=['managed_policy']),
+        managed_policies=dict(default=[], type='list', aliases=['managed_policy'], elements='str'),
         state=dict(choices=['present', 'absent'], required=True),
         purge_policies=dict(default=False, type='bool', aliases=['purge_policy', 'purge_managed_policies'])
     )
