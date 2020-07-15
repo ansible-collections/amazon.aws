@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ec2_vpc_vgw_info
 version_added: 1.0.0
@@ -33,7 +33,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all virtual gateways for an account or profile
@@ -58,7 +58,7 @@ EXAMPLES = '''
   register: vgw_info
 '''
 
-RETURN = '''
+RETURN = r'''
 virtual_gateways:
     description: The virtual gateways for the account.
     returned: always
@@ -138,7 +138,7 @@ def main():
     argument_spec.update(
         dict(
             filters=dict(type='dict', default=dict()),
-            vpn_gateway_ids=dict(type='list', default=None)
+            vpn_gateway_ids=dict(type='list', default=None, elements='str')
         )
     )
 
