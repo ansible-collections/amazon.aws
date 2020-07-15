@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: lambda
 version_added: 1.0.0
@@ -116,7 +116,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Create Lambda functions
 - name: looped creation
   community.aws.lambda:
@@ -168,7 +168,7 @@ EXAMPLES = '''
     - ByeBye
 '''
 
-RETURN = '''
+RETURN = r'''
 code:
     description: the lambda function location returned by get_function in boto3
     returned: success
@@ -344,8 +344,8 @@ def main():
         description=dict(default=''),
         timeout=dict(type='int', default=3),
         memory_size=dict(type='int', default=128),
-        vpc_subnet_ids=dict(type='list'),
-        vpc_security_group_ids=dict(type='list'),
+        vpc_subnet_ids=dict(type='list', elements='str'),
+        vpc_security_group_ids=dict(type='list', elements='str'),
         environment_variables=dict(type='dict'),
         dead_letter_arn=dict(),
         tracing_mode=dict(choices=['Active', 'PassThrough']),
