@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 module: ec2_vpc_peering_info
 short_description: Retrieves AWS VPC Peering details using AWS methods.
 version_added: 1.0.0
@@ -33,7 +33,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Simple example of listing all VPC Peers
 - name: List all vpc peers
   community.aws.ec2_vpc_peering_info:
@@ -60,7 +60,7 @@ EXAMPLES = '''
   register: pending_vpc_peers
 '''
 
-RETURN = '''
+RETURN = r'''
 result:
   description: The result of the describe.
   returned: success
@@ -107,7 +107,7 @@ def main():
     argument_spec.update(
         dict(
             filters=dict(default=dict(), type='dict'),
-            peer_connection_ids=dict(default=None, type='list'),
+            peer_connection_ids=dict(default=None, type='list', elements='str'),
         )
     )
 
