@@ -17,7 +17,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: elb_classic_lb_info
 version_added: 1.0.0
@@ -33,6 +33,7 @@ options:
     description:
       - List of ELB names to gather information about. Pass this option to gather information about a set of ELBs, otherwise, all ELBs are returned.
     type: list
+    elements: str
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -42,7 +43,7 @@ requirements:
   - boto3
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 # Output format tries to match amazon.aws.ec2_elb_lb module input parameters
 
@@ -75,7 +76,7 @@ EXAMPLES = '''
 
 '''
 
-RETURN = '''
+RETURN = r'''
 elbs:
   description: a list of load balancers
   returned: always
@@ -193,7 +194,7 @@ def lb_instance_health(connection, load_balancer_name, instances, state):
 
 def main():
     argument_spec = dict(
-        names={'default': [], 'type': 'list'}
+        names={'default': [], 'type': 'list', 'elements': 'str'}
     )
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               supports_check_mode=True)
