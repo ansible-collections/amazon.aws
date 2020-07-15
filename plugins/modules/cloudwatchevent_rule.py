@@ -107,7 +107,7 @@ options:
     required: false
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 - community.aws.cloudwatchevent_rule:
     name: MyCronTask
     schedule_expression: "cron(0 20 * * ? *)"
@@ -131,7 +131,7 @@ EXAMPLES = '''
     state: absent
 '''
 
-RETURN = '''
+RETURN = r'''
 rule:
     description: CloudWatch Event rule data.
     returned: success
@@ -430,7 +430,7 @@ def main():
                    default='present'),
         description=dict(),
         role_arn=dict(),
-        targets=dict(type='list', default=[]),
+        targets=dict(type='list', default=[], elements='dict'),
     )
     module = AnsibleAWSModule(argument_spec=argument_spec)
 
