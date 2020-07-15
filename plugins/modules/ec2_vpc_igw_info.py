@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ec2_vpc_igw_info
 version_added: 1.0.0
@@ -33,7 +33,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all Internet Gateways for an account or profile
@@ -58,7 +58,7 @@ EXAMPLES = '''
   register: igw_info
 '''
 
-RETURN = '''
+RETURN = r'''
 internet_gateways:
     description: The internet gateways for the account.
     returned: always
@@ -132,7 +132,7 @@ def main():
     argument_spec.update(
         dict(
             filters=dict(type='dict', default=dict()),
-            internet_gateway_ids=dict(type='list', default=None)
+            internet_gateway_ids=dict(type='list', default=None, elements='str')
         )
     )
 
