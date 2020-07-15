@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: rds
 version_added: 1.0.0
@@ -188,7 +188,7 @@ options:
     type: int
   apply_immediately:
     description:
-      - When I(apply_immediately=trye), the modifications will be applied as soon as possible rather than waiting for the
+      - When I(apply_immediately=true), the modifications will be applied as soon as possible rather than waiting for the
         next preferred maintenance window.
       - Used only when I(command=modify).
     type: bool
@@ -235,7 +235,7 @@ extends_documentation_fragment:
 
 # FIXME: the command stuff needs a 'state' like alias to make things consistent -- MPD
 
-EXAMPLES = '''
+EXAMPLES = r'''
 - name: Basic mysql provisioning example
   community.aws.rds:
     command: create
@@ -309,7 +309,7 @@ EXAMPLES = '''
     msg: "The new db endpoint is {{ rds.instance.endpoint }}"
 '''
 
-RETURN = '''
+RETURN = r'''
 instance:
     description: the rds instance
     returned: always
@@ -352,7 +352,7 @@ instance:
             sample: "1489707802.0"
         secondary_availability_zone:
             description: the name of the secondary AZ for a DB instance with multi-AZ support
-            returned: when RDS instance exists and is multy-AZ
+            returned: when RDS instance exists and is multi-AZ
             type: str
             sample: "eu-west-1b"
         backup_window:
@@ -1329,7 +1329,7 @@ def main():
         multi_zone=dict(type='bool', required=False),
         iops=dict(required=False),
         security_groups=dict(required=False),
-        vpc_security_groups=dict(type='list', required=False),
+        vpc_security_groups=dict(type='list', required=False, elements='str'),
         port=dict(required=False, type='int'),
         upgrade=dict(type='bool', default=False),
         option_group=dict(required=False),

@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: rds_subnet_group
 version_added: 1.0.0
@@ -35,6 +35,7 @@ options:
       - List of subnet IDs that make up the database subnet group.
       - Required when I(state=present).
     type: list
+    elements: str
 author: "Scott Anderson (@tastychutney)"
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -42,7 +43,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 - name: Add or change a subnet group
   community.aws.rds_subnet_group:
     state: present
@@ -58,7 +59,7 @@ EXAMPLES = '''
     name: norwegian-blue
 '''
 
-RETURN = '''
+RETURN = r'''
 subnet_group:
     description: Dictionary of DB subnet group values
     returned: I(state=present)
@@ -125,7 +126,7 @@ def main():
         state=dict(required=True, choices=['present', 'absent']),
         name=dict(required=True),
         description=dict(required=False),
-        subnets=dict(required=False, type='list'),
+        subnets=dict(required=False, type='list', elements='str'),
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)

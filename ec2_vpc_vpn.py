@@ -6,7 +6,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ec2_vpc_vpn
 version_added: 1.0.0
@@ -141,7 +141,7 @@ options:
     default: 15
 '''
 
-EXAMPLES = """
+EXAMPLES = r"""
 # Note: None of these examples set aws_access_key, aws_secret_key, or region.
 # It is assumed that their matching environment variables are set.
 
@@ -214,7 +214,7 @@ EXAMPLES = """
         Ansible: Tag
 """
 
-RETURN = """
+RETURN = r"""
 changed:
   description: If the VPN connection has changed.
   type: bool
@@ -742,12 +742,12 @@ def main():
         vpn_gateway_id=dict(type='str'),
         tags=dict(default={}, type='dict'),
         connection_type=dict(default='ipsec.1', type='str'),
-        tunnel_options=dict(no_log=True, type='list', default=[]),
+        tunnel_options=dict(no_log=True, type='list', default=[], elements='dict'),
         static_only=dict(default=False, type='bool'),
         customer_gateway_id=dict(type='str'),
         vpn_connection_id=dict(type='str'),
         purge_tags=dict(type='bool', default=False),
-        routes=dict(type='list', default=[]),
+        routes=dict(type='list', default=[], elements='str'),
         purge_routes=dict(type='bool', default=False),
         wait_timeout=dict(type='int', default=600),
         delay=dict(type='int', default=15),

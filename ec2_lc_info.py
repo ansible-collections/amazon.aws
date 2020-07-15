@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ec2_lc_info
 version_added: 1.0.0
@@ -52,7 +52,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all launch configurations
@@ -68,7 +68,7 @@ EXAMPLES = '''
     sort_order: descending
 '''
 
-RETURN = '''
+RETURN = r'''
 block_device_mapping:
     description: Block device mapping for the instances of launch configuration
     type: list
@@ -206,7 +206,7 @@ def main():
     argument_spec = ec2_argument_spec()
     argument_spec.update(
         dict(
-            name=dict(required=False, default=[], type='list'),
+            name=dict(required=False, default=[], type='list', elements='str'),
             sort=dict(required=False, default=None,
                       choices=['launch_configuration_name', 'image_id', 'created_time', 'instance_type', 'kernel_id', 'ramdisk_id', 'key_name']),
             sort_order=dict(required=False, default='ascending',

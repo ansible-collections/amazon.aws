@@ -7,7 +7,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: s3_bucket_notification
 version_added: 1.0.0
@@ -89,7 +89,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 ---
 # Example that creates a lambda event notification for a bucket
 - name: Process jpg image
@@ -103,7 +103,7 @@ EXAMPLES = '''
     suffix: .jpg
 '''
 
-RETURN = '''
+RETURN = r'''
 notification_configuration:
     description: list of currently applied notifications
     returned: success
@@ -216,7 +216,7 @@ def main():
         event_name=dict(required=True),
         lambda_function_arn=dict(aliases=['function_arn']),
         bucket_name=dict(required=True),
-        events=dict(type='list', default=[], choices=event_types),
+        events=dict(type='list', default=[], choices=event_types, elements='str'),
         prefix=dict(default=''),
         suffix=dict(default=''),
         lambda_alias=dict(),

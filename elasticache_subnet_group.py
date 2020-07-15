@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: elasticache_subnet_group
 version_added: 1.0.0
@@ -41,7 +41,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 - name: Add or change a subnet group
   community.aws.elasticache_subnet_group:
     state: present
@@ -75,7 +75,7 @@ def main():
         state=dict(required=True, choices=['present', 'absent']),
         name=dict(required=True),
         description=dict(required=False),
-        subnets=dict(required=False, type='list'),
+        subnets=dict(required=False, type='list', elements='str'),
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)

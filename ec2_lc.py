@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ec2_lc
 version_added: 1.0.0
@@ -190,7 +190,7 @@ requirements:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 
 # create a launch configuration using an AMI image and instance type as a basis
 
@@ -260,7 +260,7 @@ EXAMPLES = '''
     register: lc_info
 '''
 
-RETURN = '''
+RETURN = r'''
 arn:
   description: The Amazon Resource Name of the launch configuration.
   returned: when I(state=present)
@@ -657,11 +657,11 @@ def main():
             image_id=dict(),
             instance_id=dict(),
             key_name=dict(),
-            security_groups=dict(default=[], type='list'),
+            security_groups=dict(default=[], type='list', elements='str'),
             user_data=dict(),
             user_data_path=dict(type='path'),
             kernel_id=dict(),
-            volumes=dict(type='list'),
+            volumes=dict(type='list', elements='dict'),
             instance_type=dict(),
             state=dict(default='present', choices=['present', 'absent']),
             spot_price=dict(type='float'),
@@ -671,7 +671,7 @@ def main():
             associate_public_ip_address=dict(type='bool', removed_at_date='2022-06-01', removed_from_collection='community.aws'),
             instance_monitoring=dict(default=False, type='bool'),
             assign_public_ip=dict(type='bool'),
-            classic_link_vpc_security_groups=dict(type='list'),
+            classic_link_vpc_security_groups=dict(type='list', elements='str'),
             classic_link_vpc_id=dict(),
             vpc_id=dict(),
             placement_tenancy=dict(choices=['default', 'dedicated'])

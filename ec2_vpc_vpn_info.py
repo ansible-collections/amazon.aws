@@ -6,7 +6,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ec2_vpc_vpn_info
 version_added: 1.0.0
@@ -35,7 +35,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # # Note: These examples do not set authentication details, see the AWS Guide for details.
 - name: Gather information about all vpn connections
   community.aws.ec2_vpc_vpn_info:
@@ -53,7 +53,7 @@ EXAMPLES = '''
   register: vpn_conn_info
 '''
 
-RETURN = '''
+RETURN = r'''
 vpn_connections:
     description: List of one or more VPN Connections.
     returned: always
@@ -198,7 +198,7 @@ def list_vpn_connections(connection, module):
 def main():
 
     argument_spec = dict(
-        vpn_connection_ids=dict(default=[], type='list'),
+        vpn_connection_ids=dict(default=[], type='list', elements='str'),
         filters=dict(default={}, type='dict')
     )
 

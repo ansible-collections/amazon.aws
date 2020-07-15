@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 module: ec2_vpc_endpoint_info
 short_description: Retrieves AWS VPC endpoints details using AWS methods.
 version_added: 1.0.0
@@ -41,7 +41,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Simple example of listing all support AWS services for VPC endpoints
 - name: List supported AWS endpoint services
   community.aws.ec2_vpc_endpoint_info:
@@ -77,7 +77,7 @@ EXAMPLES = '''
   register: endpoint_details
 '''
 
-RETURN = '''
+RETURN = r'''
 service_names:
   description: AWS VPC endpoint service names
   returned: I(query) is C(services)
@@ -169,7 +169,7 @@ def main():
         dict(
             query=dict(choices=['services', 'endpoints'], required=True),
             filters=dict(default={}, type='dict'),
-            vpc_endpoint_ids=dict(type='list'),
+            vpc_endpoint_ids=dict(type='list', elements='str'),
         )
     )
 

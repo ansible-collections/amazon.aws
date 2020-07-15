@@ -17,7 +17,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ec2_elb_info
 version_added: 1.0.0
@@ -33,18 +33,19 @@ options:
     description:
       - List of ELB names to gather information about. Pass this option to gather information about a set of ELBs, otherwise, all ELBs are returned.
     type: list
+    elements: str
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 # Output format tries to match amazon.aws.ec2_elb_lb module input parameters
 
 - name: Gather information about all ELBs
-  ec2_elb_info:
+  community.aws.ec2_elb_info:
   register: elb_info
 - debug:
     msg: "{{ item.dns_name }}"
@@ -59,7 +60,7 @@ EXAMPLES = '''
     msg: "{{ elb_info.elbs.0.dns_name }}"
 
 - name: Gather information about a set of ELBs
-  ec2_elb_info:
+  community.aws.ec2_elb_info:
     names:
     - frontend-prod-elb
     - backend-prod-elb
@@ -93,11 +94,7 @@ except ImportError:
 class ElbInformation(object):
     """Handles ELB information."""
 
-    def __init__(self,
-                 module,
-                 names,
-                 region,
-                 **aws_connect_params):
+    def __init__(self, module, names, region, **aws_connect_params):
 
         self.module = module
         self.names = names
@@ -227,7 +224,7 @@ class ElbInformation(object):
 def main():
     argument_spec = ec2_argument_spec()
     argument_spec.update(dict(
-        names={'default': [], 'type': 'list'}
+        names={'default': [], 'type': 'list', 'elements': 'str'}
     )
     )
     module = AnsibleModule(argument_spec=argument_spec,

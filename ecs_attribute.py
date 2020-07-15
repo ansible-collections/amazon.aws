@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ecs_attribute
 version_added: 1.0.0
@@ -60,7 +60,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Set attributes
@@ -84,7 +84,7 @@ EXAMPLES = '''
   delegate_to: localhost
 '''
 
-RETURN = '''
+RETURN = r'''
 attributes:
     description: attributes
     type: complex
@@ -259,7 +259,7 @@ def main():
         state=dict(required=False, default='present', choices=['present', 'absent']),
         cluster=dict(required=True, type='str'),
         ec2_instance_id=dict(required=True, type='str'),
-        attributes=dict(required=True, type='list'),
+        attributes=dict(required=True, type='list', elements='dict'),
     ))
 
     required_together = [['cluster', 'ec2_instance_id', 'attributes']]

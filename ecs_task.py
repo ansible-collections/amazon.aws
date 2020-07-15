@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ecs_task
 version_added: 1.0.0
@@ -88,7 +88,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Simple example of run task
 - name: Run task
   community.aws.ecs_task:
@@ -146,7 +146,7 @@ EXAMPLES = '''
       task_definition: console-sample-app-static-taskdef
       task: "arn:aws:ecs:us-west-2:172139249013:task/3f8353d1-29a8-4689-bbf6-ad79937ffe8a"
 '''
-RETURN = '''
+RETURN = r'''
 task:
     description: details about the task that was started
     returned: success
@@ -340,7 +340,7 @@ def main():
         overrides=dict(required=False, type='dict'),  # R S
         count=dict(required=False, type='int'),  # R
         task=dict(required=False, type='str'),  # P*
-        container_instances=dict(required=False, type='list'),  # S*
+        container_instances=dict(required=False, type='list', elements='str'),  # S*
         started_by=dict(required=False, type='str'),  # R S
         network_configuration=dict(required=False, type='dict'),
         launch_type=dict(required=False, choices=['EC2', 'FARGATE']),

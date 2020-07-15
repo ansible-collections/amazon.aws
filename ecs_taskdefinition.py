@@ -6,7 +6,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ecs_taskdefinition
 version_added: 1.0.0
@@ -104,7 +104,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 - name: Create task definition
   community.aws.ecs_taskdefinition:
     containers:
@@ -200,7 +200,7 @@ EXAMPLES = '''
     state: present
     network_mode: awsvpc
 '''
-RETURN = '''
+RETURN = r'''
 taskdefinition:
     description: a reflection of the input parameters
     type: dict
@@ -321,11 +321,11 @@ def main():
         family=dict(required=False, type='str'),
         revision=dict(required=False, type='int'),
         force_create=dict(required=False, default=False, type='bool'),
-        containers=dict(required=False, type='list'),
+        containers=dict(required=False, type='list', elements='str'),
         network_mode=dict(required=False, default='bridge', choices=['default', 'bridge', 'host', 'none', 'awsvpc'], type='str'),
         task_role_arn=dict(required=False, default='', type='str'),
         execution_role_arn=dict(required=False, default='', type='str'),
-        volumes=dict(required=False, type='list'),
+        volumes=dict(required=False, type='list', elements='dict'),
         launch_type=dict(required=False, choices=['EC2', 'FARGATE']),
         cpu=dict(),
         memory=dict(required=False, type='str')

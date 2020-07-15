@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 module: route53_info
 short_description: Retrieves route53 details using AWS methods
 version_added: 1.0.0
@@ -134,7 +134,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Simple example of listing all hosted zones
 - name: List all hosted zones
   community.aws.route53_info:
@@ -436,7 +436,7 @@ def main():
             'A', 'CNAME', 'MX', 'AAAA', 'TXT', 'PTR', 'SRV', 'SPF', 'CAA', 'NS'
         ]),
         dns_name=dict(),
-        resource_id=dict(type='list', aliases=['resource_ids']),
+        resource_id=dict(type='list', aliases=['resource_ids'], elements='str'),
         health_check_id=dict(),
         hosted_zone_method=dict(choices=[
             'details',

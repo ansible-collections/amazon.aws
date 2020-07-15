@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: efs_info
 version_added: 1.0.0
@@ -44,7 +44,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 - name: Find all existing efs
   community.aws.efs_info:
   register: result
@@ -67,7 +67,7 @@ EXAMPLES = '''
     msg: "{{ result['efs'] }}"
 '''
 
-RETURN = '''
+RETURN = r'''
 creation_time:
     description: timestamp of creation date
     returned: always
@@ -359,7 +359,7 @@ def main():
         id=dict(),
         name=dict(aliases=['creation_token']),
         tags=dict(type="dict", default={}),
-        targets=dict(type="list", default=[])
+        targets=dict(type="list", default=[], elements='str')
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec,

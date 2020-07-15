@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ec2_launch_template
 version_added: 1.0.0
@@ -567,6 +567,7 @@ def main():
     template_options = dict(
         block_device_mappings=dict(
             type='list',
+            elements='dict',
             options=dict(
                 device_name=dict(),
                 ebs=dict(
@@ -603,6 +604,7 @@ def main():
         elastic_gpu_specifications=dict(
             options=dict(type=dict()),
             type='list',
+            elements='dict',
         ),
         iam_instance_profile=dict(),
         image_id=dict(),
@@ -633,14 +635,15 @@ def main():
         ),
         network_interfaces=dict(
             type='list',
+            elements='dict',
             options=dict(
                 associate_public_ip_address=dict(type='bool'),
                 delete_on_termination=dict(type='bool'),
                 description=dict(),
                 device_index=dict(type='int'),
-                groups=dict(type='list'),
+                groups=dict(type='list', elements='str'),
                 ipv6_address_count=dict(type='int'),
-                ipv6_addresses=dict(type='list'),
+                ipv6_addresses=dict(type='list', elements='str'),
                 network_interface_id=dict(),
                 private_ip_address=dict(),
                 subnet_id=dict(),
@@ -657,8 +660,8 @@ def main():
             type='dict',
         ),
         ram_disk_id=dict(),
-        security_group_ids=dict(type='list'),
-        security_groups=dict(type='list'),
+        security_group_ids=dict(type='list', elements='str'),
+        security_groups=dict(type='list', elements='str'),
         tags=dict(type='dict'),
         user_data=dict(),
     )

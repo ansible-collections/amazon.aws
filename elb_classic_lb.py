@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: elb_classic_lb
 version_added: 1.0.0
@@ -32,6 +32,7 @@ options:
     description:
       - List of ports/protocols for this ELB to listen on (see example)
     type: list
+    elements: dict
   purge_listeners:
     description:
       - Purge existing listeners on ELB that are not found in listeners
@@ -41,6 +42,7 @@ options:
     description:
       - List of instance ids to attach to this ELB
     type: list
+    elements: str
   purge_instance_ids:
     description:
       - Purge existing instance ids on ELB that are not found in instance_ids
@@ -50,6 +52,7 @@ options:
     description:
       - List of availability zones to enable on this ELB
     type: list
+    elements: str
   purge_zones:
     description:
       - Purge existing availability zones on ELB that are not found in zones
@@ -59,10 +62,12 @@ options:
     description:
       - A list of security groups to apply to the elb
     type: list
+    elements: str
   security_group_names:
     description:
       - A list of security group names to apply to the elb
     type: list
+    elements: str
   health_check:
     description:
       - An associative array of health check configuration settings (see example)
@@ -75,6 +80,7 @@ options:
     description:
       - A list of VPC subnets to use when creating ELB. Zones should be empty if using this.
     type: list
+    elements: str
   purge_subnets:
     description:
       - Purge existing subnet on ELB that are not found in subnets
@@ -133,7 +139,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = """
+EXAMPLES = r"""
 # Note: None of these examples set aws_access_key, aws_secret_key, or region.
 # It is assumed that their matching environment variables are set.
 
@@ -1221,16 +1227,16 @@ def main():
     argument_spec.update(dict(
         state={'required': True, 'choices': ['present', 'absent']},
         name={'required': True},
-        listeners={'default': None, 'required': False, 'type': 'list'},
+        listeners={'default': None, 'required': False, 'type': 'list', 'elements': 'dict'},
         purge_listeners={'default': True, 'required': False, 'type': 'bool'},
-        instance_ids={'default': None, 'required': False, 'type': 'list'},
+        instance_ids={'default': None, 'required': False, 'type': 'list', 'elements': 'str'},
         purge_instance_ids={'default': False, 'required': False, 'type': 'bool'},
-        zones={'default': None, 'required': False, 'type': 'list'},
+        zones={'default': None, 'required': False, 'type': 'list', 'elements': 'str'},
         purge_zones={'default': False, 'required': False, 'type': 'bool'},
-        security_group_ids={'default': None, 'required': False, 'type': 'list'},
-        security_group_names={'default': None, 'required': False, 'type': 'list'},
+        security_group_ids={'default': None, 'required': False, 'type': 'list', 'elements': 'str'},
+        security_group_names={'default': None, 'required': False, 'type': 'list', 'elements': 'str'},
         health_check={'default': None, 'required': False, 'type': 'dict'},
-        subnets={'default': None, 'required': False, 'type': 'list'},
+        subnets={'default': None, 'required': False, 'type': 'list', 'elements': 'str'},
         purge_subnets={'default': False, 'required': False, 'type': 'bool'},
         scheme={'default': 'internet-facing', 'required': False, 'choices': ['internal', 'internet-facing']},
         connection_draining_timeout={'default': None, 'required': False, 'type': 'int'},

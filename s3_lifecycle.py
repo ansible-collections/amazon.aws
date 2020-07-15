@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: s3_lifecycle
 version_added: 1.0.0
@@ -72,6 +72,7 @@ options:
           I(transition_days)
           I(storage_class)
     type: list
+    elements: dict
   rule_id:
     description:
       - "Unique identifier for the rule. The value cannot be longer than 255 characters. A unique value for the rule will be generated if no value is provided."
@@ -114,6 +115,7 @@ options:
           I(transition_date)
           I(storage_class)
     type: list
+    elements: dict
   requester_pays:
     description:
       - The I(requester_pays) option does nothing and will be removed after 2022-06-01
@@ -124,7 +126,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Configure a lifecycle rule on a bucket to expire (delete) items with a prefix of /logs/ after 30 days
@@ -442,7 +444,7 @@ def main():
         noncurrent_version_expiration_days=dict(type='int'),
         noncurrent_version_storage_class=dict(default='glacier', type='str', choices=['glacier', 'onezone_ia', 'standard_ia']),
         noncurrent_version_transition_days=dict(type='int'),
-        noncurrent_version_transitions=dict(type='list'),
+        noncurrent_version_transitions=dict(type='list', elements='dict'),
         prefix=dict(),
         requester_pays=dict(type='bool', removed_at_date='2022-06-01', removed_from_collection='community.aws'),
         rule_id=dict(),
@@ -451,7 +453,7 @@ def main():
         storage_class=dict(default='glacier', type='str', choices=['glacier', 'onezone_ia', 'standard_ia']),
         transition_days=dict(type='int'),
         transition_date=dict(),
-        transitions=dict(type='list'),
+        transitions=dict(type='list', elements='dict'),
         purge_transitions=dict(default='yes', type='bool')
     )
 

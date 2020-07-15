@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ec2_instance
 version_added: 1.0.0
@@ -25,6 +25,7 @@ options:
     description:
       - If you specify one or more instance IDs, only instances that have the specified IDs are returned.
     type: list
+    elements: str
   state:
     description:
       - Goal state for the instances.
@@ -107,6 +108,7 @@ options:
     description:
       - A list of security group IDs or names (strings). Mutually exclusive with I(security_group).
     type: list
+    elements: str
   security_group:
     description:
       - A security group ID or name. Mutually exclusive with I(security_groups).
@@ -180,6 +182,7 @@ options:
       ebs.iops, and ebs.delete_on_termination.
     - For more information about each parameter, see U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_BlockDeviceMapping.html).
     type: list
+    elements: dict
   launch_template:
     description:
       - The EC2 launch template to base instance configuration on.
@@ -1681,7 +1684,7 @@ def main():
         ebs_optimized=dict(type='bool'),
         vpc_subnet_id=dict(type='str', aliases=['subnet_id']),
         availability_zone=dict(type='str'),
-        security_groups=dict(default=[], type='list'),
+        security_groups=dict(default=[], type='list', elements='str'),
         security_group=dict(type='str'),
         instance_role=dict(type='str'),
         name=dict(type='str'),
@@ -1700,9 +1703,9 @@ def main():
         instance_initiated_shutdown_behavior=dict(type='str', choices=['stop', 'terminate']),
         termination_protection=dict(type='bool'),
         detailed_monitoring=dict(type='bool'),
-        instance_ids=dict(default=[], type='list'),
+        instance_ids=dict(default=[], type='list', elements='str'),
         network=dict(default=None, type='dict'),
-        volumes=dict(default=None, type='list'),
+        volumes=dict(default=None, type='list', elements='dict'),
     )
     # running/present are synonyms
     # as are terminated/absent

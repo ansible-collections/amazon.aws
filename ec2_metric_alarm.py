@@ -18,7 +18,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 module: ec2_metric_alarm
 short_description: "Create/update or delete AWS Cloudwatch 'metric alarms'"
 version_added: 1.0.0
@@ -166,7 +166,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
   - name: create alarm
     community.aws.ec2_metric_alarm:
       state: present
@@ -383,9 +383,9 @@ def main():
         evaluation_periods=dict(type='int'),
         description=dict(type='str'),
         dimensions=dict(type='dict', default={}),
-        alarm_actions=dict(type='list', default=[]),
-        insufficient_data_actions=dict(type='list', default=[]),
-        ok_actions=dict(type='list', default=[]),
+        alarm_actions=dict(type='list', default=[], elements='str'),
+        insufficient_data_actions=dict(type='list', default=[], elements='str'),
+        ok_actions=dict(type='list', default=[], elements='str'),
         treat_missing_data=dict(type='str', choices=['breaching', 'notBreaching', 'ignore', 'missing'], default='missing'),
         state=dict(default='present', choices=['present', 'absent']),
     )
