@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 module: ec2_vpc_nat_gateway_info
 short_description: Retrieves AWS VPC Managed Nat Gateway details using AWS methods.
 version_added: 1.0.0
@@ -33,7 +33,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Simple example of listing all nat gateways
 - name: List all managed nat gateways in ap-southeast-2
   community.aws.ec2_vpc_nat_gateway_info:
@@ -68,7 +68,7 @@ EXAMPLES = '''
   register: existing_nat_gateways
 '''
 
-RETURN = '''
+RETURN = r'''
 result:
   description: The result of the describe, converted to ansible snake case style.
     See http://boto3.readthedocs.io/en/latest/reference/services/ec2.html#EC2.Client.describe_nat_gateways for the response.
@@ -127,7 +127,7 @@ def main():
     argument_spec.update(
         dict(
             filters=dict(default={}, type='dict'),
-            nat_gateway_ids=dict(default=[], type='list'),
+            nat_gateway_ids=dict(default=[], type='list', elements='str'),
         )
     )
 

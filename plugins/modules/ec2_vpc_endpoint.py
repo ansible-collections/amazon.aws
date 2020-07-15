@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 module: ec2_vpc_endpoint
 short_description: Create and delete AWS VPC Endpoints.
 version_added: 1.0.0
@@ -96,7 +96,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create new vpc endpoint with a json template for policy
@@ -141,7 +141,7 @@ EXAMPLES = '''
     region: ap-southeast-2
 '''
 
-RETURN = '''
+RETURN = r'''
 endpoints:
   description: The resulting endpoints from the module call
   returned: success
@@ -345,7 +345,7 @@ def main():
             state=dict(default='present', choices=['present', 'absent']),
             wait=dict(type='bool', default=False),
             wait_timeout=dict(type='int', default=320, required=False),
-            route_table_ids=dict(type='list'),
+            route_table_ids=dict(type='list', elements='str'),
             vpc_endpoint_id=dict(),
             client_token=dict(),
         )
