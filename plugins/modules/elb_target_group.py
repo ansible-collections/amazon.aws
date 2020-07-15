@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: elb_target_group
 version_added: 1.0.0
@@ -138,6 +138,7 @@ options:
         all existing targets will be removed from the group. The list should be an Id and a Port parameter. See the Examples for detail.
     required: false
     type: list
+    elements: dict
   unhealthy_threshold_count:
     description:
       - The number of consecutive health check failures required before considering a target unhealthy.
@@ -166,7 +167,7 @@ notes:
   - Once a target group has been created, only its health check can then be modified using subsequent calls
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create a target group with a default health check
@@ -269,7 +270,7 @@ EXAMPLES = '''
 
 '''
 
-RETURN = '''
+RETURN = r'''
 deregistration_delay_timeout_seconds:
     description: The amount time for Elastic Load Balancing to wait before changing the state of a deregistering target from draining to unused.
     returned: when state present
@@ -828,7 +829,7 @@ def main():
         successful_response_codes=dict(),
         tags=dict(default={}, type='dict'),
         target_type=dict(choices=['instance', 'ip', 'lambda']),
-        targets=dict(type='list'),
+        targets=dict(type='list', elements='dict'),
         unhealthy_threshold_count=dict(type='int'),
         vpc_id=dict(),
         wait_timeout=dict(type='int', default=200),

@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ec2_instance_info
 version_added: 1.0.0
@@ -24,6 +24,7 @@ options:
       - If you specify one or more instance IDs, only instances that have the specified IDs are returned.
     required: false
     type: list
+    elements: str
   filters:
     description:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value. See
@@ -39,7 +40,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all instances
@@ -67,7 +68,7 @@ EXAMPLES = '''
 
 '''
 
-RETURN = '''
+RETURN = r'''
 instances:
     description: a list of ec2 instances
     returned: always
@@ -540,7 +541,7 @@ def main():
     argument_spec = ec2_argument_spec()
     argument_spec.update(
         dict(
-            instance_ids=dict(default=[], type='list'),
+            instance_ids=dict(default=[], type='list', elements='str'),
             filters=dict(default={}, type='dict')
         )
     )

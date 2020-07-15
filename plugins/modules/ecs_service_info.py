@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ecs_service_info
 version_added: 1.0.0
@@ -49,7 +49,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Basic listing example
@@ -65,7 +65,7 @@ EXAMPLES = '''
   register: output
 '''
 
-RETURN = '''
+RETURN = r'''
 services:
     description: When details is false, returns an array of service ARNs, otherwise an array of complex objects as described below.
     returned: success
@@ -219,7 +219,7 @@ def main():
         details=dict(type='bool', default=False),
         events=dict(type='bool', default=True),
         cluster=dict(),
-        service=dict(type='list')
+        service=dict(type='list', elements='str')
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)

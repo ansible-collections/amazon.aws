@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: cloudformation_stack_set
 version_added: 1.0.0
@@ -176,7 +176,7 @@ extends_documentation_fragment:
 requirements: [ boto3>=1.6, botocore>=1.10.26 ]
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 - name: Create a stack set with instances in two accounts
   community.aws.cloudformation_stack_set:
     name: my-stack
@@ -215,7 +215,7 @@ EXAMPLES = '''
     - us-east-1
 '''
 
-RETURN = '''
+RETURN = r'''
 operations_log:
   type: list
   description: Most recent events in CloudFormation's event log. This may be from a previous run in some cases.
@@ -505,9 +505,9 @@ def main():
         template=dict(type='path'),
         template_url=dict(),
         template_body=dict(),
-        capabilities=dict(type='list', choices=['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM']),
-        regions=dict(type='list'),
-        accounts=dict(type='list'),
+        capabilities=dict(type='list', elements='str', choices=['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM']),
+        regions=dict(type='list', elements='str'),
+        accounts=dict(type='list', elements='str'),
         failure_tolerance=dict(
             type='dict',
             default={},

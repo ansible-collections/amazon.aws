@@ -8,7 +8,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 author:
   - "Jens Carl (@j-carl), Hothead Games Inc."
@@ -174,7 +174,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 - name: Basic cluster provisioning example
   community.aws.redshift:
     command: create
@@ -191,7 +191,7 @@ EXAMPLES = '''
     wait: true
 '''
 
-RETURN = '''
+RETURN = r'''
 cluster:
     description: dictionary containing all the cluster information
     returned: success
@@ -556,8 +556,8 @@ def main():
         password=dict(no_log=True, required=False),
         db_name=dict(required=False),
         cluster_type=dict(choices=['multi-node', 'single-node'], default='single-node'),
-        cluster_security_groups=dict(aliases=['security_groups'], type='list'),
-        vpc_security_group_ids=dict(aliases=['vpc_security_groups'], type='list'),
+        cluster_security_groups=dict(aliases=['security_groups'], type='list', elements='str'),
+        vpc_security_group_ids=dict(aliases=['vpc_security_groups'], type='list', elements='str'),
         skip_final_cluster_snapshot=dict(aliases=['skip_final_snapshot'],
                                          type='bool', default=False),
         final_cluster_snapshot_identifier=dict(aliases=['final_snapshot_id'], required=False),

@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ec2_customer_gateway_info
 version_added: 1.0.0
@@ -33,7 +33,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all customer gateways
@@ -56,7 +56,7 @@ EXAMPLES = '''
   register: cust_gw_info
 '''
 
-RETURN = '''
+RETURN = r'''
 customer_gateways:
     description: List of one or more customer gateways.
     returned: always
@@ -119,7 +119,7 @@ def list_customer_gateways(connection, module):
 def main():
 
     argument_spec = dict(
-        customer_gateway_ids=dict(default=[], type='list'),
+        customer_gateway_ids=dict(default=[], type='list', elements='str'),
         filters=dict(default={}, type='dict')
     )
 

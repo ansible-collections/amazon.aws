@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: efs
 version_added: 1.0.0
@@ -106,7 +106,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 - name: EFS provisioning
   community.aws.efs:
     state: present
@@ -134,7 +134,7 @@ EXAMPLES = '''
     name: myTestEFS
 '''
 
-RETURN = '''
+RETURN = r'''
 creation_time:
     description: timestamp of creation date
     returned: always
@@ -692,7 +692,7 @@ def main():
         id=dict(required=False, type='str', default=None),
         name=dict(required=False, type='str', default=None),
         tags=dict(required=False, type="dict", default={}),
-        targets=dict(required=False, type="list", default=[]),
+        targets=dict(required=False, type="list", default=[], elements='dict'),
         performance_mode=dict(required=False, type='str', choices=["general_purpose", "max_io"], default="general_purpose"),
         throughput_mode=dict(required=False, type='str', choices=["bursting", "provisioned"], default=None),
         provisioned_throughput_in_mibps=dict(required=False, type='float'),

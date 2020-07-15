@@ -6,7 +6,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 
 version_added: 1.0.0
@@ -220,7 +220,7 @@ options:
                 whitelisted_names:
                   type: list
                   elements: str
-                  description: A list of coockies to forward to the origin for this cache behavior.
+                  description: A list of cookies to forward to the origin for this cache behavior.
             headers:
               description:
               - A list of headers to forward to the origin for this cache behavior.
@@ -337,7 +337,7 @@ options:
                 whitelisted_names:
                   type: list
                   elements: str
-                  description: A list of coockies to forward to the origin for this cache behavior.
+                  description: A list of cookies to forward to the origin for this cache behavior.
             headers:
               description:
               - A list of headers to forward to the origin for this cache behavior.
@@ -534,7 +534,7 @@ options:
         - A config element that is a complex object that describes how a distribution should restrict it's content.
       suboptions:
         geo_restriction:
-          description: Apply a restriciton based on the location of the requester.
+          description: Apply a restriction based on the location of the requester.
           type: dict
           suboptions:
             restriction_type:
@@ -673,7 +673,7 @@ EXAMPLES = r'''
     caller_reference: replaceable distribution
 '''
 
-RETURN = '''
+RETURN = r'''
 active_trusted_signers:
   description: Key pair IDs that CloudFront is aware of for each trusted signer.
   returned: always
@@ -2093,15 +2093,15 @@ def main():
         tags=dict(type='dict', default={}),
         purge_tags=dict(type='bool', default=False),
         alias=dict(),
-        aliases=dict(type='list', default=[]),
+        aliases=dict(type='list', default=[], elements='str'),
         purge_aliases=dict(type='bool', default=False),
         default_root_object=dict(),
-        origins=dict(type='list'),
+        origins=dict(type='list', elements='dict'),
         purge_origins=dict(type='bool', default=False),
         default_cache_behavior=dict(type='dict'),
-        cache_behaviors=dict(type='list'),
+        cache_behaviors=dict(type='list', elements='dict'),
         purge_cache_behaviors=dict(type='bool', default=False),
-        custom_error_responses=dict(type='list'),
+        custom_error_responses=dict(type='list', elements='dict'),
         purge_custom_error_responses=dict(type='bool', default=False),
         logging=dict(type='dict'),
         price_class=dict(),

@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: elb_target_group_info
 version_added: 1.0.0
@@ -27,11 +27,13 @@ options:
       - The Amazon Resource Names (ARN) of the target groups.
     required: false
     type: list
+    elements: str
   names:
     description:
       - The names of the target groups.
     required: false
     type: list
+    elements: str
   collect_targets_health:
     description:
       - When set to "yes", output contains targets health description
@@ -45,7 +47,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all target groups
@@ -63,7 +65,7 @@ EXAMPLES = '''
 
 '''
 
-RETURN = '''
+RETURN = r'''
 target_groups:
     description: a list of target groups
     returned: always
@@ -299,8 +301,8 @@ def main():
     argument_spec.update(
         dict(
             load_balancer_arn=dict(type='str'),
-            target_group_arns=dict(type='list'),
-            names=dict(type='list'),
+            target_group_arns=dict(type='list', elements='str'),
+            names=dict(type='list', elements='str'),
             collect_targets_health=dict(default=False, type='bool', required=False)
         )
     )

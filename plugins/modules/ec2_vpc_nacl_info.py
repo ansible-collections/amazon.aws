@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ec2_vpc_nacl_info
 version_added: 1.0.0
@@ -23,6 +23,7 @@ options:
     default: []
     aliases: [nacl_id]
     type: list
+    elements: str
   filters:
     description:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value. See
@@ -40,7 +41,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all Network ACLs:
@@ -58,7 +59,7 @@ EXAMPLES = '''
   register: default_nacls
 '''
 
-RETURN = '''
+RETURN = r'''
 nacls:
     description: Returns an array of complex objects as described below.
     returned: success
@@ -205,7 +206,7 @@ def nacl_entry_to_list(entry):
 def main():
 
     argument_spec = dict(
-        nacl_ids=dict(default=[], type='list', aliases=['nacl_id']),
+        nacl_ids=dict(default=[], type='list', aliases=['nacl_id'], elements='str'),
         filters=dict(default={}, type='dict'))
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)

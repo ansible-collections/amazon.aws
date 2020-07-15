@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ec2_asg
 version_added: 1.0.0
@@ -241,7 +241,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Basic configuration with Launch Configuration
 
 - community.aws.ec2_asg:
@@ -348,7 +348,7 @@ EXAMPLES = '''
         propagate_at_launch: no
 '''
 
-RETURN = '''
+RETURN = r'''
 ---
 auto_scaling_group_name:
     description: The unique name of the auto scaling group
@@ -539,8 +539,6 @@ try:
     import botocore
 except ImportError:
     pass  # will be detected by imported HAS_BOTO3
-
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 
 ASG_ATTRIBUTES = ('AvailabilityZones', 'DefaultCooldown', 'DesiredCapacity',
                   'HealthCheckGracePeriod', 'HealthCheckType', 'LaunchConfigurationName',
@@ -1678,9 +1676,9 @@ def asg_exists(connection):
 def main():
     argument_spec = dict(
         name=dict(required=True, type='str'),
-        load_balancers=dict(type='list'),
-        target_group_arns=dict(type='list'),
-        availability_zones=dict(type='list'),
+        load_balancers=dict(type='list', elements='str'),
+        target_group_arns=dict(type='list', elements='str'),
+        availability_zones=dict(type='list', elements='str'),
         launch_config_name=dict(type='str'),
         launch_template=dict(
             type='dict',
@@ -1706,20 +1704,20 @@ def main():
         ),
         placement_group=dict(type='str'),
         desired_capacity=dict(type='int'),
-        vpc_zone_identifier=dict(type='list'),
+        vpc_zone_identifier=dict(type='list', elements='str'),
         replace_batch_size=dict(type='int', default=1),
         replace_all_instances=dict(type='bool', default=False),
-        replace_instances=dict(type='list', default=[]),
+        replace_instances=dict(type='list', default=[], elements='str'),
         lc_check=dict(type='bool', default=True),
         lt_check=dict(type='bool', default=True),
         wait_timeout=dict(type='int', default=300),
         state=dict(default='present', choices=['present', 'absent']),
-        tags=dict(type='list', default=[]),
+        tags=dict(type='list', default=[], elements='dict'),
         health_check_period=dict(type='int', default=300),
         health_check_type=dict(default='EC2', choices=['EC2', 'ELB']),
         default_cooldown=dict(type='int', default=300),
         wait_for_instances=dict(type='bool', default=True),
-        termination_policies=dict(type='list', default='Default'),
+        termination_policies=dict(type='list', default='Default', elements='str'),
         notification_topic=dict(type='str', default=None),
         notification_types=dict(
             type='list',
@@ -1728,9 +1726,10 @@ def main():
                 'autoscaling:EC2_INSTANCE_LAUNCH_ERROR',
                 'autoscaling:EC2_INSTANCE_TERMINATE',
                 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
-            ]
+            ],
+            elements='str'
         ),
-        suspend_processes=dict(type='list', default=[]),
+        suspend_processes=dict(type='list', default=[], elements='str'),
         metrics_collection=dict(type='bool', default=False),
         metrics_granularity=dict(type='str', default='1Minute'),
         metrics_list=dict(
@@ -1744,7 +1743,8 @@ def main():
                 'GroupStandbyInstances',
                 'GroupTerminatingInstances',
                 'GroupTotalInstances'
-            ]
+            ],
+            elements='str'
         )
     )
 

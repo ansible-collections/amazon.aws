@@ -7,7 +7,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 author:
   - "Jens Carl (@j-carl), Hothead Games Inc."
@@ -47,7 +47,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 - name: Create a Redshift subnet group
   community.aws.redshift_subnet_group:
     state: present
@@ -63,7 +63,7 @@ EXAMPLES = '''
     group_name: redshift-subnet
 '''
 
-RETURN = '''
+RETURN = r'''
 group:
     description: dictionary containing all Redshift subnet group information
     returned: success
@@ -98,7 +98,7 @@ def main():
         state=dict(required=True, choices=['present', 'absent']),
         group_name=dict(required=True, aliases=['name']),
         group_description=dict(required=False, aliases=['description']),
-        group_subnets=dict(required=False, aliases=['subnets'], type='list'),
+        group_subnets=dict(required=False, aliases=['subnets'], type='list', elements='str'),
     ))
     module = AnsibleModule(argument_spec=argument_spec)
 

@@ -7,7 +7,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 module: ec2_transit_gateway_info
 short_description: Gather information about ec2 transit gateways in AWS
 version_added: 1.0.0
@@ -23,6 +23,7 @@ options:
       - A list of transit gateway IDs to gather information for.
     aliases: [transit_gateway_id]
     type: list
+    elements: str
   filters:
     description:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value.
@@ -34,7 +35,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather info about all transit gateways
@@ -58,7 +59,7 @@ EXAMPLES = '''
       - tgw-03c53443d5a8cb716
 '''
 
-RETURN = '''
+RETURN = r'''
 transit_gateways:
     description: >
         Transit gateways that match the provided filters. Each element consists of a dict with all the information

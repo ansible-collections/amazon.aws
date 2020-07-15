@@ -8,7 +8,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: route53
 version_added: 1.0.0
@@ -69,6 +69,7 @@ options:
       - The new value when creating a DNS record.  YAML lists or multiple comma-spaced values are allowed for non-alias records.
       - When deleting a record all values for the record must be specified or Route53 will not delete it.
     type: list
+    elements: str
   overwrite:
     description:
       - Whether an existing record should be overwritten on create if values do not match.
@@ -137,7 +138,7 @@ extends_documentation_fragment:
 
 '''
 
-RETURN = '''
+RETURN = r'''
 nameservers:
   description: Nameservers associated with the zone.
   returned: when state is 'get'
@@ -501,7 +502,7 @@ def main():
         alias=dict(type='bool'),
         alias_hosted_zone_id=dict(type='str'),
         alias_evaluate_target_health=dict(type='bool', default=False),
-        value=dict(type='list'),
+        value=dict(type='list', elements='str'),
         overwrite=dict(type='bool'),
         retry_interval=dict(type='int', default=500),
         private_zone=dict(type='bool', default=False),

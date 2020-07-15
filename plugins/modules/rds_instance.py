@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: rds_instance
 version_added: 1.0.0
@@ -152,6 +152,7 @@ options:
         description:
           - (EC2-Classic platform) A list of DB security groups to associate with this DB instance.
         type: list
+        elements: str
     db_snapshot_identifier:
         description:
           - The identifier for the DB snapshot to restore from if using I(creation_source=snapshot).
@@ -176,6 +177,7 @@ options:
         aliases:
           - cloudwatch_log_exports
         type: list
+        elements: str
     enable_iam_database_authentication:
         description:
           - Enable mapping of AWS Identity and Access Management (IAM) accounts to database accounts.
@@ -412,9 +414,10 @@ options:
         description:
           - A list of EC2 VPC security groups to associate with the DB cluster.
         type: list
+        elements: str
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 - name: create minimal aurora instance in default VPC and default subnet group
   community.aws.rds_instance:
@@ -449,7 +452,7 @@ EXAMPLES = '''
     final_snapshot_identifier: "{{ snapshot_id }}"
 '''
 
-RETURN = '''
+RETURN = r'''
 allocated_storage:
   description: The allocated storage size in gibibytes. This is always 1 for aurora database engines.
   returned: always
@@ -1094,12 +1097,12 @@ def main():
         db_instance_identifier=dict(required=True, aliases=['instance_id', 'id']),
         db_name=dict(),
         db_parameter_group_name=dict(),
-        db_security_groups=dict(type='list'),
+        db_security_groups=dict(type='list', elements='str'),
         db_snapshot_identifier=dict(),
         db_subnet_group_name=dict(aliases=['subnet_group']),
         domain=dict(),
         domain_iam_role_name=dict(),
-        enable_cloudwatch_logs_exports=dict(type='list', aliases=['cloudwatch_log_exports']),
+        enable_cloudwatch_logs_exports=dict(type='list', aliases=['cloudwatch_log_exports'], elements='str'),
         enable_iam_database_authentication=dict(type='bool'),
         enable_performance_insights=dict(type='bool'),
         engine=dict(),
@@ -1142,7 +1145,7 @@ def main():
         tde_credential_password=dict(no_log=True, aliases=['transparent_data_encryption_password']),
         timezone=dict(),
         use_latest_restorable_time=dict(type='bool', aliases=['restore_from_latest']),
-        vpc_security_group_ids=dict(type='list')
+        vpc_security_group_ids=dict(type='list', elements='str')
     )
     arg_spec.update(parameter_options)
 

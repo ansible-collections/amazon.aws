@@ -7,7 +7,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: elb_network_lb
 version_added: 1.0.0
@@ -98,6 +98,7 @@ options:
       - Required when I(state=present).
       - This parameter is mutually exclusive with I(subnet_mappings).
     type: list
+    elements: str
   scheme:
     description:
       - Internet-facing or internal load balancer. An ELB scheme can not be modified after creation.
@@ -133,7 +134,7 @@ notes:
   - Listener rules are matched based on priority. If a rule's priority is changed then a new rule will be created.
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create an ELB and attach a listener
@@ -171,7 +172,7 @@ EXAMPLES = '''
 
 '''
 
-RETURN = '''
+RETURN = r'''
 availability_zones:
     description: The Availability Zones for the load balancer.
     returned: when state is present
@@ -411,15 +412,15 @@ def main():
                                Protocol=dict(type='str', required=True),
                                Port=dict(type='int', required=True),
                                SslPolicy=dict(type='str'),
-                               Certificates=dict(type='list'),
-                               DefaultActions=dict(type='list', required=True)
+                               Certificates=dict(type='list', elements='dict'),
+                               DefaultActions=dict(type='list', required=True, elements='dict')
                            )
                            ),
             name=dict(required=True, type='str'),
             purge_listeners=dict(default=True, type='bool'),
             purge_tags=dict(default=True, type='bool'),
-            subnets=dict(type='list'),
-            subnet_mappings=dict(type='list'),
+            subnets=dict(type='list', elements='str'),
+            subnet_mappings=dict(type='list', elements='dict'),
             scheme=dict(default='internet-facing', choices=['internet-facing', 'internal']),
             state=dict(choices=['present', 'absent'], type='str'),
             tags=dict(type='dict'),

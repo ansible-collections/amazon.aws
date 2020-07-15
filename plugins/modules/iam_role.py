@@ -5,7 +5,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: iam_role
 version_added: 1.0.0
@@ -49,6 +49,7 @@ options:
       - To embed an inline policy, use M(community.aws.iam_policy).
     aliases: ['managed_policy']
     type: list
+    elements: str
   max_session_duration:
     description:
       - The maximum duration (in seconds) of a session when assuming the role.
@@ -95,7 +96,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create a role with description and tags
@@ -126,7 +127,7 @@ EXAMPLES = '''
     state: absent
 
 '''
-RETURN = '''
+RETURN = r'''
 iam_role:
     description: dictionary containing the IAM Role data
     returned: success
@@ -613,7 +614,7 @@ def main():
         name=dict(type='str', required=True),
         path=dict(type='str', default="/"),
         assume_role_policy_document=dict(type='json'),
-        managed_policies=dict(type='list', aliases=['managed_policy']),
+        managed_policies=dict(type='list', aliases=['managed_policy'], elements='str'),
         max_session_duration=dict(type='int'),
         state=dict(type='str', choices=['present', 'absent'], default='present'),
         description=dict(type='str'),
@@ -630,7 +631,7 @@ def main():
 
     if module.params.get('purge_policies') is None:
         module.deprecate('In Ansible 2.14 the default value of purge_policies will change from true to false.'
-                         '  To maintain the existing behaviour explicity set purge_policies=true', date='2022-06-01', collection_name='community.aws')
+                         '  To maintain the existing behaviour explicitly set purge_policies=true', date='2022-06-01', collection_name='community.aws')
 
     if module.params.get('boundary'):
         if module.params.get('create_instance_profile'):

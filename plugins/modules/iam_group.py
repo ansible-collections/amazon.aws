@@ -18,7 +18,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: iam_group
 version_added: 1.0.0
@@ -74,7 +74,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create a group
@@ -119,7 +119,7 @@ EXAMPLES = '''
     state: absent
 
 '''
-RETURN = '''
+RETURN = r'''
 iam_group:
     description: dictionary containing all the group information including group membership
     returned: success
@@ -410,8 +410,8 @@ def main():
 
     argument_spec = dict(
         name=dict(required=True),
-        managed_policies=dict(default=[], type='list', aliases=['managed_policy']),
-        users=dict(default=[], type='list'),
+        managed_policies=dict(default=[], type='list', aliases=['managed_policy'], elements='str'),
+        users=dict(default=[], type='list', elements='str'),
         state=dict(choices=['present', 'absent'], required=True),
         purge_users=dict(default=False, type='bool'),
         purge_policies=dict(default=False, type='bool', aliases=['purge_policy', 'purge_managed_policies'])

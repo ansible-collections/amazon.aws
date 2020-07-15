@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: dynamodb_table
 version_added: 1.0.0
@@ -121,7 +121,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 - name: Create dynamo table with hash and range primary key
   community.aws.dynamodb_table:
     name: my-table
@@ -164,7 +164,7 @@ EXAMPLES = '''
     state: absent
 '''
 
-RETURN = '''
+RETURN = r'''
 table_status:
     description: The current status of the table.
     returned: success
@@ -196,12 +196,12 @@ except ImportError:
 
 try:
     import botocore
-    from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list, boto3_conn
     HAS_BOTO3 = True
 except ImportError:
     HAS_BOTO3 = False
 
 from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list, boto3_conn
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleAWSError, connect_to_aws, ec2_argument_spec, get_aws_connection_info
 
 
@@ -467,7 +467,7 @@ def main():
         range_key_type=dict(default='STRING', type='str', choices=['STRING', 'NUMBER', 'BINARY']),
         read_capacity=dict(default=1, type='int'),
         write_capacity=dict(default=1, type='int'),
-        indexes=dict(default=[], type='list'),
+        indexes=dict(default=[], type='list', elements='dict'),
         tags=dict(type='dict'),
         wait_for_active_timeout=dict(default=60, type='int'),
     ))

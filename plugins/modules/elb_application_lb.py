@@ -18,7 +18,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: elb_application_lb
 version_added: 1.0.0
@@ -66,6 +66,7 @@ options:
       - A list of dicts containing listeners to attach to the ELB. See examples for detail of the dict required. Note that listener keys
         are CamelCased.
     type: list
+    elements: dict
     suboptions:
         Port:
             description: The port on which the load balancer is listening.
@@ -78,6 +79,7 @@ options:
         Certificates:
             description: The SSL server certificate.
             type: list
+            elements: dict
             suboptions:
                 CertificateArn:
                     description: The Amazon Resource Name (ARN) of the certificate.
@@ -89,6 +91,7 @@ options:
             description: The default actions for the listener.
             required: true
             type: list
+            elements: dict
             suboptions:
                 Type:
                     description: The type of action.
@@ -98,6 +101,7 @@ options:
                     type: str
         Rules:
             type: list
+            elements: dict
             description:
               - A list of ALB Listener Rules.
               - 'For the complete documentation of possible Conditions and Actions please see the boto3 documentation:'
@@ -136,12 +140,14 @@ options:
         at least two Availability Zones.
       - Required if I(state=present).
     type: list
+    elements: str
   security_groups:
     description:
       - A list of the names or IDs of the security groups to assign to the load balancer.
       - Required if I(state=present).
     default: []
     type: list
+    elements: str
   scheme:
     description:
       - Internet-facing or internal load balancer. An ELB scheme can not be modified after creation.
@@ -182,7 +188,7 @@ notes:
   - Listener rules are matched based on priority. If a rule's priority is changed then a new rule will be created.
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create an ELB and attach a listener
@@ -300,7 +306,7 @@ EXAMPLES = '''
 
 '''
 
-RETURN = '''
+RETURN = r'''
 access_logs_s3_bucket:
     description: The name of the S3 bucket for the access logs.
     returned: when state is present
@@ -603,16 +609,16 @@ def main():
                            Protocol=dict(type='str', required=True),
                            Port=dict(type='int', required=True),
                            SslPolicy=dict(type='str'),
-                           Certificates=dict(type='list'),
-                           DefaultActions=dict(type='list', required=True),
-                           Rules=dict(type='list')
+                           Certificates=dict(type='list', elements='dict'),
+                           DefaultActions=dict(type='list', required=True, elements='dict'),
+                           Rules=dict(type='list', elements='dict')
                        )
                        ),
         name=dict(required=True, type='str'),
         purge_listeners=dict(default=True, type='bool'),
         purge_tags=dict(default=True, type='bool'),
-        subnets=dict(type='list'),
-        security_groups=dict(type='list'),
+        subnets=dict(type='list', elements='str'),
+        security_groups=dict(type='list', elements='str'),
         scheme=dict(default='internet-facing', choices=['internet-facing', 'internal']),
         state=dict(choices=['present', 'absent'], default='present'),
         tags=dict(type='dict'),

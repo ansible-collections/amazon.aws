@@ -6,7 +6,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 
 version_added: 1.0.0
@@ -58,7 +58,7 @@ notes:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 
 - name: create a batch of invalidations using a distribution_id for a reference
   community.aws.cloudfront_invalidation:
@@ -80,7 +80,7 @@ EXAMPLES = '''
 
 '''
 
-RETURN = '''
+RETURN = r'''
 invalidation:
   description: The invalidation's information.
   returned: always
@@ -247,7 +247,7 @@ def main():
         caller_reference=dict(),
         distribution_id=dict(),
         alias=dict(),
-        target_paths=dict(required=True, type='list')
+        target_paths=dict(required=True, type='list', elements='str')
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=False, mutually_exclusive=[['distribution_id', 'alias']])

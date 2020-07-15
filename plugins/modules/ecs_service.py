@@ -6,7 +6,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ecs_service
 version_added: 1.0.0
@@ -192,7 +192,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Basic provisioning example
@@ -241,7 +241,7 @@ EXAMPLES = '''
         field: memory
 '''
 
-RETURN = '''
+RETURN = r'''
 service:
     description: Details of created service.
     returned: when creating a service
@@ -648,7 +648,7 @@ def main():
         name=dict(required=True, type='str'),
         cluster=dict(required=False, type='str'),
         task_definition=dict(required=False, type='str'),
-        load_balancers=dict(required=False, default=[], type='list'),
+        load_balancers=dict(required=False, default=[], type='list', elements='str'),
         desired_count=dict(required=False, type='int'),
         client_token=dict(required=False, default='', type='str'),
         role=dict(required=False, default='', type='str'),
@@ -656,22 +656,34 @@ def main():
         repeat=dict(required=False, type='int', default=10),
         force_new_deployment=dict(required=False, default=False, type='bool'),
         deployment_configuration=dict(required=False, default={}, type='dict'),
-        placement_constraints=dict(required=False, default=[], type='list', options=dict(
-            type=dict(type='str'),
-            expression=dict(type='str')
-        )),
-        placement_strategy=dict(required=False, default=[], type='list', options=dict(
-            type=dict(type='str'),
-            field=dict(type='str'),
-        )),
+        placement_constraints=dict(
+            required=False,
+            default=[],
+            type='list',
+            elements='dict',
+            options=dict(
+                type=dict(type='str'),
+                expression=dict(type='str')
+            )
+        ),
+        placement_strategy=dict(
+            required=False,
+            default=[],
+            type='list',
+            elements='dict',
+            options=dict(
+                type=dict(type='str'),
+                field=dict(type='str'),
+            )
+        ),
         health_check_grace_period_seconds=dict(required=False, type='int'),
         network_configuration=dict(required=False, type='dict', options=dict(
-            subnets=dict(type='list'),
-            security_groups=dict(type='list'),
+            subnets=dict(type='list', elements='str'),
+            security_groups=dict(type='list', elements='str'),
             assign_public_ip=dict(type='bool')
         )),
         launch_type=dict(required=False, choices=['EC2', 'FARGATE']),
-        service_registries=dict(required=False, type='list', default=[]),
+        service_registries=dict(required=False, type='list', default=[], elements='dict'),
         scheduling_strategy=dict(required=False, choices=['DAEMON', 'REPLICA'])
     )
 
