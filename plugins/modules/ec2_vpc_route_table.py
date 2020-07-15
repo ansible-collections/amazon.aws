@@ -6,7 +6,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ec2_vpc_route_table
 version_added: 1.0.0
@@ -81,7 +81,7 @@ extends_documentation_fragment:
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Basic creation example:
@@ -124,7 +124,7 @@ EXAMPLES = '''
     state: absent
 '''
 
-RETURN = '''
+RETURN = r'''
 route_table:
   description: Route Table result
   returned: always
@@ -710,14 +710,14 @@ def ensure_route_table_present(connection, module):
 def main():
     argument_spec = dict(
         lookup=dict(default='tag', choices=['tag', 'id']),
-        propagating_vgw_ids=dict(type='list'),
+        propagating_vgw_ids=dict(type='list', elements='str'),
         purge_routes=dict(default=True, type='bool'),
         purge_subnets=dict(default=True, type='bool'),
         purge_tags=dict(default=False, type='bool'),
         route_table_id=dict(),
-        routes=dict(default=[], type='list'),
+        routes=dict(default=[], type='list', elements='dict'),
         state=dict(default='present', choices=['present', 'absent']),
-        subnets=dict(type='list'),
+        subnets=dict(type='list', elements='str'),
         tags=dict(type='dict', aliases=['resource_tags']),
         vpc_id=dict()
     )
