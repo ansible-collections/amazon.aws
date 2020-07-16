@@ -1,3 +1,2 @@
 deprecated_features:
-- 'ec2_vol: deprecate the `list` option in favor of ec2_vol_info'
-
+  - 'ec2_vol: deprecate the `list` option in favor of ec2_vol_info'
