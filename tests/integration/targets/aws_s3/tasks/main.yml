@@ -1,16 +1,13 @@
 ---
-# tasks file for test_s3
-
-- name: set up aws connection info
-  set_fact:
-    aws_connection_info: &aws_connection_info
+# Integration tests for aws_s3
+- module_defaults:
+    group/aws:
       aws_access_key: "{{ aws_access_key }}"
       aws_secret_key: "{{ aws_secret_key }}"
-      security_token: "{{ security_token }}"
+      security_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
-  no_log: yes
 
-- block:
+  block:
     - name: Create temporary directory
       tempfile:
         state: directory
@@ -21,6 +18,7 @@
           content: "{{ lookup('password', '/dev/null chars=ascii_letters,digits,hexdigits,punctuation') }}"
 
     - name: test create bucket without permissions
+      module_defaults: { group/aws: {} }
       aws_s3:
         bucket: "{{ bucket_name }}"
         mode: create
@@ -36,7 +34,6 @@
       aws_s3:
         bucket: "{{ bucket_name }}"
         mode: create
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -47,7 +44,6 @@
       aws_s3:
         bucket: "{{ bucket_name }}"
         mode: create
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -71,7 +67,6 @@
         mode: put
         src: "{{ tmpdir.path }}/upload.txt"
         object: delete.txt
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -87,7 +82,6 @@
         mode: put
         src: "{{ tmpdir.path }}/upload.txt"
         object: delete.txt
-        <<: *aws_connection_info
       register: test_async
       async: 30
       poll: 0
@@ -106,7 +100,6 @@
         src: "{{ tmpdir.path }}/upload.txt"
         object: delete.txt
         overwrite: different
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -121,7 +114,6 @@
         mode: put
         src: hello.txt
         object: delete.txt
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -138,7 +130,6 @@
         src: "{{ tmpdir.path }}/upload.txt"
         object: delete.txt
         overwrite: never
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -154,7 +145,6 @@
         src: "{{ tmpdir.path }}/upload.txt"
         object: delete.txt
         overwrite: different
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -170,7 +160,6 @@
         src: "{{ tmpdir.path }}/upload.txt"
         object: delete.txt
         overwrite: always
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -185,7 +174,6 @@
         mode: get
         dest: "{{ tmpdir.path }}/download.txt"
         object: delete.txt
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -208,7 +196,6 @@
         dest: "{{ tmpdir.path }}/download.txt"
         object: delete.txt
         overwrite: different
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -229,7 +216,6 @@
         dest: "{{ tmpdir.path }}/download.txt"
         object: delete.txt
         overwrite: never
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -245,7 +231,6 @@
         dest: "{{ tmpdir.path }}/download.txt"
         object: delete.txt
         overwrite: different
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -261,7 +246,6 @@
         dest: "{{ tmpdir.path }}/download.txt"
         object: delete.txt
         overwrite: always
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -275,7 +259,6 @@
         bucket: "{{ bucket_name }}"
         mode: geturl
         object: delete.txt
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -291,7 +274,6 @@
         bucket: "{{ bucket_name }}"
         mode: getstr
         object: delete.txt
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -305,7 +287,6 @@
       aws_s3:
         bucket: "{{ bucket_name }}"
         mode: list
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -320,7 +301,6 @@
         bucket: "{{ bucket_name }}"
         mode: delobj
         object: delete.txt
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -337,7 +317,6 @@
         src: "{{ tmpdir.path }}/upload.txt"
         encrypt: yes
         object: delete_encrypt.txt
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -353,7 +332,6 @@
         mode: get
         dest: "{{ tmpdir.path }}/download_encrypted.txt"
         object: delete_encrypt.txt
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -374,7 +352,6 @@
         bucket: "{{ bucket_name }}"
         mode: delobj
         object: delete_encrypt.txt
-        <<: *aws_connection_info
       retries: 3
       delay: 3
 
@@ -386,7 +363,6 @@
         encrypt: yes
         encryption_mode: aws:kms
         object: delete_encrypt_kms.txt
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -402,7 +378,6 @@
         mode: get
         dest: "{{ tmpdir.path }}/download_kms.txt"
         object: delete_encrypt_kms.txt
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -425,7 +400,6 @@
         bucket: "{{ bucket_name }}"
         mode: delobj
         object: delete_encrypt_kms.txt
-        <<: *aws_connection_info
       retries: 3
       delay: 3
 
@@ -438,7 +412,6 @@
         bucket: "{{ bucket_name }}"
         mode: create
         object: foo/bar/baz/
-        <<: *aws_connection_info
       retries: 3
       delay: 3
       register: result
@@ -453,7 +426,6 @@
         bucket: "{{ bucket_name }}"
         mode: delobj
         object: foo/bar/baz/
-        <<: *aws_connection_info
       retries: 3
       delay: 3
 
@@ -461,7 +433,6 @@
       aws_s3:
         bucket: "{{ bucket_name }}"
         mode: delete
-        <<: *aws_connection_info
       register: result
       retries: 3
       delay: 3
@@ -475,7 +446,6 @@
       aws_s3:
         bucket: "{{ bucket_name + '.bucket' }}"
         mode: create
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -486,7 +456,6 @@
       aws_s3:
         bucket: "{{ bucket_name + '.bucket' }}"
         mode: delete
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -497,7 +466,6 @@
       aws_s3:
         bucket: "{{ bucket_name + '.bucket' }}"
         mode: delete
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -520,7 +488,6 @@
           aws_s3:
             bucket: "{{ bucket_name }}"
             mode: create
-            <<: *aws_connection_info
 
         - name: upload the file to the bucket
           aws_s3:
@@ -528,7 +495,6 @@
             mode: put
             src: "{{ tmpdir.path }}/largefile"
             object: multipart.txt
-            <<: *aws_connection_info
 
         - name: download file once
           aws_s3:
@@ -537,7 +503,6 @@
             dest: "{{ tmpdir.path }}/download.txt"
             object: multipart.txt
             overwrite: different
-            <<: *aws_connection_info
           retries: 3
           delay: 3
           until: "result.msg == 'GET operation complete'"
@@ -554,7 +519,6 @@
             dest: "{{ tmpdir.path }}/download.txt"
             object: multipart.txt
             overwrite: different
-            <<: *aws_connection_info
           register: result
 
         - assert:
@@ -568,7 +532,6 @@
         bucket: "{{ bucket_name }}"
         mode: delobj
         object: "{{ item }}"
-        <<: *aws_connection_info
       loop:
         - hello.txt
         - delete.txt
@@ -586,5 +549,4 @@
       aws_s3:
         bucket: "{{ bucket_name }}"
         mode: delete
-        <<: *aws_connection_info
       ignore_errors: yes

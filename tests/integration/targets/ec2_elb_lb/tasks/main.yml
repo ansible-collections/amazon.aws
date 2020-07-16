@@ -24,7 +24,13 @@
 # test credentials from environment
 # test credential parameters
 
-- block:
+- module_defaults:
+    group/aws:
+      region: "{{ aws_region }}"
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+  block:
 
     # ============================================================
     # create test elb with listeners, certificate, and health check
@@ -32,14 +38,10 @@
     - name: Create ELB
       ec2_elb_lb:
         name: "{{ tag_prefix }}"
-        region: "{{ ec2_region }}"
-        ec2_access_key: "{{ ec2_access_key }}"
-        ec2_secret_key: "{{ ec2_secret_key }}"
-        security_token: "{{ security_token }}"
         state: present
         zones:
-          - "{{ ec2_region }}a"
-          - "{{ ec2_region }}b"
+          - "{{ aws_region }}a"
+          - "{{ aws_region }}b"
         listeners:
           - protocol: http
             load_balancer_port: 80
@@ -61,8 +63,8 @@
         that:
           - 'info.changed'
           - 'info.elb.status == "created"'
-          - '"{{ ec2_region }}a" in info.elb.zones'
-          - '"{{ ec2_region }}b" in info.elb.zones'
+          - '"{{ aws_region }}a" in info.elb.zones'
+          - '"{{ aws_region }}b" in info.elb.zones'
           - 'info.elb.health_check.healthy_threshold == 10'
           - 'info.elb.health_check.interval == 30'
           - 'info.elb.health_check.target == "HTTP:80/index.html"'
@@ -97,13 +99,9 @@
     - name: Change AZ's
       ec2_elb_lb:
         name: "{{ tag_prefix }}"
-        region: "{{ ec2_region }}"
-        ec2_access_key: "{{ ec2_access_key }}"
-        ec2_secret_key: "{{ ec2_secret_key }}"
-        security_token: "{{ security_token }}"
         state: present
         zones:
-          - "{{ ec2_region }}c"
+          - "{{ aws_region }}c"
         listeners:
           - protocol: http
             load_balancer_port: 80
@@ -125,7 +123,7 @@
         that:
           - 'info.elb.status == "ok"'
           - 'info.changed'
-          - 'info.elb.zones[0] == "{{ ec2_region }}c"'
+          - 'info.elb.zones[0] == "{{ aws_region }}c"'
 
     # ============================================================
 
@@ -134,15 +132,11 @@
     - name: Update AZ's
       ec2_elb_lb:
         name: "{{ tag_prefix }}"
-        region: "{{ ec2_region }}"
-        ec2_access_key: "{{ ec2_access_key }}"
-        ec2_secret_key: "{{ ec2_secret_key }}"
-        security_token: "{{ security_token }}"
         state: present
         zones:
-          - "{{ ec2_region }}a"
-          - "{{ ec2_region }}b"
-          - "{{ ec2_region }}c"
+          - "{{ aws_region }}a"
+          - "{{ aws_region }}b"
+          - "{{ aws_region }}c"
         listeners:
           - protocol: http
             load_balancer_port: 80
@@ -154,9 +148,9 @@
         that:
           - 'info.changed'
           - 'info.elb.status == "ok"'
-          - '"{{ ec2_region }}a" in info.elb.zones'
-          - '"{{ ec2_region }}b" in info.elb.zones'
-          - '"{{ ec2_region }}c" in info.elb.zones'
+          - '"{{ aws_region }}a" in info.elb.zones'
+          - '"{{ aws_region }}b" in info.elb.zones'
+          - '"{{ aws_region }}c" in info.elb.zones'
 
 
     # ============================================================
@@ -166,15 +160,11 @@
     - name: Purge Listeners
       ec2_elb_lb:
         name: "{{ tag_prefix }}"
-        region: "{{ ec2_region }}"
-        ec2_access_key: "{{ ec2_access_key }}"
-        ec2_secret_key: "{{ ec2_secret_key }}"
-        security_token: "{{ security_token }}"
         state: present
         zones:
-          - "{{ ec2_region }}a"
-          - "{{ ec2_region }}b"
-          - "{{ ec2_region }}c"
+          - "{{ aws_region }}a"
+          - "{{ aws_region }}b"
+          - "{{ aws_region }}c"
         listeners:
           - protocol: http
             load_balancer_port: 80
@@ -198,15 +188,11 @@
     - name: Add Listeners
       ec2_elb_lb:
         name: "{{ tag_prefix }}"
-        region: "{{ ec2_region }}"
-        ec2_access_key: "{{ ec2_access_key }}"
-        ec2_secret_key: "{{ ec2_secret_key }}"
-        security_token: "{{ security_token }}"
         state: present
         zones:
-          - "{{ ec2_region }}a"
-          - "{{ ec2_region }}b"
-          - "{{ ec2_region }}c"
+          - "{{ aws_region }}a"
+          - "{{ aws_region }}b"
+          - "{{ aws_region }}c"
         listeners:
           - protocol: http
             load_balancer_port: 8081
@@ -225,8 +211,9 @@
 
     # ============================================================
 
-    - name: test with no parameters
+    - name: test with no name
       ec2_elb_lb:
+        state: present
       register: result
       ignore_errors: true
 
@@ -234,13 +221,13 @@
       assert:
         that:
            - 'result.failed'
-           - '"missing required arguments" in result.msg'
+           - 'result.msg == "missing required arguments: name"'
 
 
     # ============================================================
-    - name: test with only name
+    - name: test with only name (state missing)
       ec2_elb_lb:
-        name="{{ tag_prefix }}"
+        name: "{{ tag_prefix }}"
       register: result
       ignore_errors: true
 
@@ -255,16 +242,16 @@
     - name: test invalid region parameter
       ec2_elb_lb:
         name: "{{ tag_prefix }}"
-        region: 'asdf querty 1234'
         state: present
+        region: 'asdf querty 1234'
+        zones:
+          - "{{ aws_region }}a"
+          - "{{ aws_region }}b"
+          - "{{ aws_region }}c"
         listeners:
           - protocol: http
             load_balancer_port: 80
             instance_port: 80
-        zones:
-          - "{{ ec2_region }}a"
-          - "{{ ec2_region }}b"
-          - "{{ ec2_region }}c"
       register: result
       ignore_errors: true
 
@@ -276,20 +263,21 @@
 
 
     # ============================================================
-    - name: test valid region parameter
+    - name: test no authentication parameters
       ec2_elb_lb:
         name: "{{ tag_prefix }}"
-        region: "{{ ec2_region }}"
         state: present
+        aws_access_key: '{{ omit }}'
+        aws_secret_key: '{{ omit }}'
+        security_token: '{{ omit }}'
         zones:
-          - "{{ ec2_region }}a"
-          - "{{ ec2_region }}b"
-          - "{{ ec2_region }}c"
+          - "{{ aws_region }}a"
+          - "{{ aws_region }}b"
+          - "{{ aws_region }}c"
         listeners:
           - protocol: http
             load_balancer_port: 80
             instance_port: 80
-
       register: result
       ignore_errors: true
 
@@ -301,72 +289,21 @@
 
 
     # ============================================================
-
-    - name: test invalid ec2_url parameter
-      ec2_elb_lb:
-        name: "{{ tag_prefix }}"
-        region: "{{ ec2_region }}"
-        state: present
-        zones:
-          - "{{ ec2_region }}a"
-          - "{{ ec2_region }}b"
-          - "{{ ec2_region }}c"
-        listeners:
-          - protocol: http
-            load_balancer_port: 80
-            instance_port: 80
-      environment:
-        EC2_URL: bogus.example.com
-      register: result
-      ignore_errors: true
-
-    - name: assert invalid ec2_url parameter
-      assert:
-        that:
-           - 'result.failed'
-           - '"No handler was ready to authenticate" in result.msg'
-
-
-    # ============================================================
-    - name: test valid ec2_url parameter
-      ec2_elb_lb:
-        name: "{{ tag_prefix }}"
-        region: "{{ ec2_region }}"
-        state: present
-        zones:
-          - "{{ ec2_region }}a"
-          - "{{ ec2_region }}b"
-          - "{{ ec2_region }}c"
-        listeners:
-          - protocol: http
-            load_balancer_port: 80
-            instance_port: 80
-      environment:
-        EC2_URL: '{{ec2_url}}'
-      register: result
-      ignore_errors: true
-
-    - name: assert valid ec2_url parameter
-      assert:
-        that:
-           - 'result.failed'
-           - '"No handler was ready to authenticate" in result.msg'
-
-
-    # ============================================================
     - name: test credentials from environment
       ec2_elb_lb:
         name: "{{ tag_prefix }}"
-        region: "{{ ec2_region }}"
         state: present
+        aws_access_key: "{{ omit }}"
+        aws_secret_key: "{{ omit }}"
+        security_token: "{{ omit }}"
         zones:
-          - "{{ ec2_region }}a"
-          - "{{ ec2_region }}b"
-          - "{{ ec2_region }}c"
+          - "{{ aws_region }}a"
+          - "{{ aws_region }}b"
+          - "{{ aws_region }}c"
         listeners:
           - protocol: http
             load_balancer_port: 80
-            instance_port: 80
+            instance_port: 81
       environment:
         EC2_ACCESS_KEY: bogus_access_key
         EC2_SECRET_KEY: bogus_secret_key
@@ -380,40 +317,13 @@
            - '"InvalidClientTokenId" in result.exception'
 
 
-    # ============================================================
-    - name: test credential parameters
-      ec2_elb_lb:
-        name: "{{ tag_prefix }}"
-        region: "{{ ec2_region }}"
-        state: present
-        zones:
-          - "{{ ec2_region }}a"
-          - "{{ ec2_region }}b"
-          - "{{ ec2_region }}c"
-        listeners:
-          - protocol: http
-            load_balancer_port: 80
-            instance_port: 80
-      register: result
-      ignore_errors: true
-
-    - name: assert credential parameters
-      assert:
-        that:
-           - 'result.failed'
-           - '"No handler was ready to authenticate. 1 handlers were checked." in result.msg'
-
   always:
 
     # ============================================================
     - name: remove the test load balancer completely
       ec2_elb_lb:
         name: "{{ tag_prefix }}"
-        region: "{{ ec2_region }}"
         state: absent
-        ec2_access_key: "{{ ec2_access_key }}"
-        ec2_secret_key: "{{ ec2_secret_key }}"
-        security_token: "{{ security_token }}"
       register: result
 
     - name: assert the load balancer was removed

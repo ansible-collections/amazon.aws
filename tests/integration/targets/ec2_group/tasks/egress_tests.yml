@@ -1,21 +1,10 @@
 ---
 - block:
-    - name: set up aws connection info
-      set_fact:
-        aws_connection_info: &aws_connection_info
-          aws_access_key: "{{ aws_access_key }}"
-          aws_secret_key: "{{ aws_secret_key }}"
-          security_token: "{{ security_token }}"
-          region: "{{ aws_region }}"
-      no_log: yes
-
-
     - name: Create a group with only the default rule
       ec2_group:
         name: '{{ec2_group_name}}-egress-tests'
         vpc_id: '{{ vpc_result.vpc.id }}'
         description: '{{ec2_group_description}}'
-        <<: *aws_connection_info
         state: present
       register: result
 
@@ -33,7 +22,6 @@
         vpc_id: '{{ vpc_result.vpc.id }}'
         description: '{{ec2_group_description}}'
         purge_rules_egress: false
-        <<: *aws_connection_info
         state: present
       register: result
 
@@ -52,7 +40,6 @@
         vpc_id: '{{ vpc_result.vpc.id }}'
         purge_rules_egress: false
         rules_egress: []
-        <<: *aws_connection_info
         state: present
       register: result
 
@@ -71,7 +58,6 @@
         vpc_id: '{{ vpc_result.vpc.id }}'
         purge_rules_egress: true
         rules_egress: []
-        <<: *aws_connection_info
         state: present
       register: result
 
@@ -92,7 +78,6 @@
           ports:
           - 1212
           cidr_ip: 1.2.1.2/32
-        <<: *aws_connection_info
         state: present
       register: result
 
@@ -112,7 +97,6 @@
           ports:
           - 2323
           cidr_ip: 2.3.2.3/32
-        <<: *aws_connection_info
         state: present
       register: result
 
@@ -131,7 +115,6 @@
           ports:
           - 1212
           cidr_ip: 1.2.1.2/32
-        <<: *aws_connection_info
         state: present
       register: result
       check_mode: True
@@ -154,7 +137,6 @@
           ports:
           - 1212
           cidr_ip: 1.2.1.2/32
-        <<: *aws_connection_info
         state: present
       register: result
 
@@ -172,7 +154,6 @@
         - proto: tcp
           ports: 0-65535
           cidr_ip: 0.0.0.0/0
-        <<: *aws_connection_info
         state: present
         vpc_id: '{{ vpc_result.vpc.id }}'
       register: result
@@ -184,7 +165,6 @@
         rules_egress:
         - proto: -1
           cidr_ip: 0.0.0.0/0
-        <<: *aws_connection_info
         state: present
         vpc_id: '{{ vpc_result.vpc.id }}'
       register: result
@@ -194,5 +174,4 @@
         name: '{{ec2_group_name}}-egress-tests'
         state: absent
         vpc_id: '{{ vpc_result.vpc.id }}'
-        <<: *aws_connection_info
       ignore_errors: yes

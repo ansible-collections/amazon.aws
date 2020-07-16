@@ -220,9 +220,9 @@ def list_ec2_snapshots(connection, module):
 def main():
 
     argument_spec = dict(
-        snapshot_ids=dict(default=[], type='list'),
-        owner_ids=dict(default=[], type='list'),
-        restorable_by_user_ids=dict(default=[], type='list'),
+        snapshot_ids=dict(default=[], type='list', elements='str'),
+        owner_ids=dict(default=[], type='list', elements='str'),
+        restorable_by_user_ids=dict(default=[], type='list', elements='str'),
         filters=dict(default={}, type='dict')
     )
 

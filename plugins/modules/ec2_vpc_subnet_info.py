@@ -209,7 +209,7 @@ def describe_subnets(connection, module):
 
 def main():
     argument_spec = dict(
-        subnet_ids=dict(type='list', default=[], aliases=['subnet_id']),
+        subnet_ids=dict(type='list', elements='str', default=[], aliases=['subnet_id']),
         filters=dict(type='dict', default={})
     )
 

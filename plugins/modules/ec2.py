@@ -15,16 +15,16 @@ description:
     - Creates or terminates ec2 instances.
     - >
       Note: This module uses the older boto Python module to interact with the EC2 API.
-      M(ec2) will still receive bug fixes, but no new features.
-      Consider using the M(ec2_instance) module instead.
-      If M(ec2_instance) does not support a feature you need that is available in M(ec2), please
+      M(amazon.aws.ec2) will still receive bug fixes, but no new features.
+      Consider using the M(amazon.aws.ec2_instance) module instead.
+      If M(amazon.aws.ec2_instance) does not support a feature you need that is available in M(amazon.aws.ec2), please
       file a feature request.
 options:
   key_name:
     description:
       - Key pair to use on the instance.
       - The SSH key must already exist in AWS in order to use this argument.
-      - Keys can be created / deleted using the M(ec2_key) module.
+      - Keys can be created / deleted using the M(amazon.aws.ec2_key) module.
     aliases: ['keypair']
     type: str
   id:
@@ -1608,8 +1608,8 @@ def main():
     argument_spec = dict(
         key_name=dict(aliases=['keypair']),
         id=dict(),
-        group=dict(type='list', aliases=['groups']),
-        group_id=dict(type='list'),
+        group=dict(type='list', elements='str', aliases=['groups']),
+        group_id=dict(type='list', elements='str'),
         zone=dict(aliases=['aws_zone', 'ec2_zone']),
         instance_type=dict(aliases=['type']),
         spot_price=dict(),
@@ -1630,17 +1630,17 @@ def main():
         assign_public_ip=dict(type='bool'),
         private_ip=dict(),
         instance_profile_name=dict(),
-        instance_ids=dict(type='list', aliases=['instance_id']),
+        instance_ids=dict(type='list', elements='str', aliases=['instance_id']),
         source_dest_check=dict(type='bool', default=None),
         termination_protection=dict(type='bool', default=None),
         state=dict(default='present', choices=['present', 'absent', 'running', 'restarted', 'stopped']),
         instance_initiated_shutdown_behavior=dict(default='stop', choices=['stop', 'terminate']),
         exact_count=dict(type='int', default=None),
         count_tag=dict(type='raw'),
-        volumes=dict(type='list'),
+        volumes=dict(type='list', elements='dict',),
         ebs_optimized=dict(type='bool', default=False),
         tenancy=dict(default='default', choices=['default', 'dedicated']),
-        network_interfaces=dict(type='list', aliases=['network_interface'])
+        network_interfaces=dict(type='list', elements='str', aliases=['network_interface'])
     )
 
     module = AnsibleAWSModule(
