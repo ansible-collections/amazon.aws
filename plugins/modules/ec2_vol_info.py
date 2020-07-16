@@ -107,7 +107,7 @@ volumes:
             type: str
             sample: "standard"
         zone:
-            description:
+            description: The Availability Zone of the volume.
             type: str
             sample: "us-east-1b"
 '''
