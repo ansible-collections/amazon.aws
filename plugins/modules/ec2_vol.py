@@ -78,7 +78,10 @@ options:
     default: true
   state:
     description:
-      - Whether to ensure the volume is present or absent, or to list existing volumes (The C(list) option was added in version 1.8).
+      - Whether to ensure the volume is present or absent.
+      - The use of I(state=list) to interrogate the volume has been deprecated
+        and will be removed after 2022-06-01.  The 'list' functionality
+        has been moved to a dedicated module M(amazon.aws.ec2_vol_info).
     default: present
     choices: ['absent', 'present', 'list']
     type: str
@@ -519,6 +522,10 @@ def main():
     snapshot = module.params.get('snapshot')
     state = module.params.get('state')
     tags = module.params.get('tags')
+
+    if state == 'list':
+        module.deprecate(
+            'Using the "list" state has been deprecated.  Please use the ec2_vol_info module instead', date='2022-06-01', collection_name='amazon.aws')
 
     # Ensure we have the zone or can get the zone
     if instance is None and zone is None and state == 'present':
