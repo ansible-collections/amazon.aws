@@ -73,10 +73,10 @@ def test_validate_ip():
         def warn(self, msg):
             return
     ips = [
-        ('1.1.1.1/24', '1.1.1.0/24'),
+        ('10.1.1.1/24', '10.1.1.0/24'),
         ('192.168.56.101/16', '192.168.0.0/16'),
         # Don't modify IPv6 CIDRs, AWS supports /128 and device ranges
-        ('1203:8fe0:fe80:b897:8990:8a7c:99bf:323d/128', '1203:8fe0:fe80:b897:8990:8a7c:99bf:323d/128'),
+        ('fc00:8fe0:fe80:b897:8990:8a7c:99bf:323d/128', 'fc00:8fe0:fe80:b897:8990:8a7c:99bf:323d/128'),
     ]
 
     for ip, net in ips:

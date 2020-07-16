@@ -370,7 +370,7 @@
         - proto: "tcp"
           from_port: 8182
           to_port: 8182
-          cidr_ip: "1.1.1.1/32"
+          cidr_ip: "10.1.1.1/32"
       check_mode: true
       register: result
 
@@ -388,7 +388,7 @@
         - proto: "tcp"
           from_port: 8182
           to_port: 8182
-          cidr_ip: "1.1.1.1/32"
+          cidr_ip: "10.1.1.1/32"
       register: result
 
     - name: assert state=present (expected changed=true)
@@ -409,7 +409,7 @@
         - proto: "tcp"
           from_port: 8182
           to_port: 8182
-          cidr_ip: "1.1.1.1/32"
+          cidr_ip: "10.1.1.1/32"
       check_mode: true
       diff: true
       register: check_result
@@ -429,7 +429,7 @@
         - proto: "tcp"
           from_port: 8182
           to_port: 8182
-          cidr_ip: "1.1.1.1/32"
+          cidr_ip: "10.1.1.1/32"
       register: result
 
     - name: assert state=present (expected changed=false)
@@ -497,12 +497,12 @@
         - proto: "tcp"
           from_port: "8183"
           to_port: "8183"
-          cidr_ip: "1.1.1.1/32"
+          cidr_ip: "10.1.1.1/32"
         rules_egress:
         - proto: "tcp"
           from_port: "8184"
           to_port: "8184"
-          cidr_ip: "1.1.1.1/32"
+          cidr_ip: "10.1.1.1/32"
       check_mode: true
       register: result
 
@@ -521,12 +521,12 @@
         - proto: "tcp"
           from_port: "8183"
           to_port: "8183"
-          cidr_ip: "1.1.1.1/32"
+          cidr_ip: "10.1.1.1/32"
         rules_egress:
         - proto: "tcp"
           from_port: "8184"
           to_port: "8184"
-          cidr_ip: "1.1.1.1/32"
+          cidr_ip: "10.1.1.1/32"
       register: result
 
     - name: assert state=present (expected changed=true)
@@ -600,7 +600,7 @@
           ports:
             - 8183-8190
             - '8192'
-          cidr_ip: 1.1.1.1/32
+          cidr_ip: 10.1.1.1/32
       check_mode: true
       register: result
 
@@ -622,7 +622,7 @@
           ports:
             - 8183-8190
             - '8192'
-          cidr_ip: 1.1.1.1/32
+          cidr_ip: 10.1.1.1/32
       register: result
 
     - name: assert state=present (expected changed=true)
@@ -823,7 +823,7 @@
         - proto: "tcp"
           from_port: 8182
           to_port: 8182
-          cidr_ip: "1.1.1.1/32"
+          cidr_ip: "10.1.1.1/32"
       check_mode: true
       register: result
 
@@ -843,7 +843,7 @@
         - proto: "tcp"
           from_port: 8182
           to_port: 8182
-          cidr_ip: "1.1.1.1/32"
+          cidr_ip: "10.1.1.1/32"
       register: result
 
     - name: assert state=present (expected changed=true)
@@ -864,7 +864,7 @@
         - proto: "tcp"
           from_port: 8182
           to_port: 8182
-          cidr_ip: "1.1.1.1/32"
+          cidr_ip: "10.1.1.1/32"
         tags:
           tag1: test1
           tag2: test2
@@ -891,7 +891,7 @@
         - proto: "tcp"
           from_port: 8182
           to_port: 8182
-          cidr_ip: "1.1.1.1/32"
+          cidr_ip: "10.1.1.1/32"
         tags:
           tag1: test1
           tag2: test2
@@ -915,7 +915,7 @@
         - proto: "tcp"
           from_port: 8182
           to_port: 8182
-          cidr_ip: "1.1.1.1/32"
+          cidr_ip: "10.1.1.1/32"
         tags:
           tag1: test1
           tag2: test2
@@ -939,7 +939,7 @@
         - proto: "tcp"
           from_port: 8182
           to_port: 8182
-          cidr_ip: "1.1.1.1/32"
+          cidr_ip: "10.1.1.1/32"
         tags:
           tag1: test1
           tag2: test2
@@ -962,7 +962,7 @@
         - proto: "tcp"
           from_port: 8182
           to_port: 8182
-          cidr_ip: "1.1.1.1/32"
+          cidr_ip: "10.1.1.1/32"
         tags:
           tag1: test1
       check_mode: true
@@ -984,7 +984,7 @@
         - proto: "tcp"
           from_port: 8182
           to_port: 8182
-          cidr_ip: "1.1.1.1/32"
+          cidr_ip: "10.1.1.1/32"
         tags:
           tag1: test1
       register: result
@@ -1007,7 +1007,7 @@
         - proto: "tcp"
           from_port: 8182
           to_port: 8182
-          cidr_ip: "1.1.1.1/32"
+          cidr_ip: "10.1.1.1/32"
       register: result
 
     - name: assert that the tags stayed the same (expected changed=false)
@@ -1028,7 +1028,7 @@
         - proto: "tcp"
           from_port: 8182
           to_port: 8182
-          cidr_ip: "1.1.1.1/32"
+          cidr_ip: "10.1.1.1/32"
         tags: {}
       register: result
 
@@ -1058,7 +1058,7 @@
         - proto: "tcp"
           ports:
           - 8282
-          cidr_ip: 2.2.2.2/32
+          cidr_ip: 10.2.2.2/32
           rule_desc: egress rule desc 1
       check_mode: true
       register: result
@@ -1097,7 +1097,7 @@
         - proto: "tcp"
           ports:
           - 8282
-          cidr_ip: 2.2.2.2/32
+          cidr_ip: 10.2.2.2/32
       register: result
 
     # ============================================================
@@ -1120,7 +1120,7 @@
         - proto: "tcp"
           ports:
           - 8282
-          cidr_ip: 2.2.2.2/32
+          cidr_ip: 10.2.2.2/32
           rule_desc: egress rule desc 1
       register: result
 
@@ -1160,7 +1160,7 @@
         - proto: "tcp"
           ports:
           - 8282
-          cidr_ip: 2.2.2.2/32
+          cidr_ip: 10.2.2.2/32
           rule_desc: egress rule desc 2
       check_mode: true
       register: result
@@ -1200,7 +1200,7 @@
         - proto: "tcp"
           ports:
           - 8282
-          cidr_ip: 2.2.2.2/32
+          cidr_ip: 10.2.2.2/32
           rule_desc: egress rule desc 2
       register: result
 
@@ -1233,13 +1233,13 @@
         - proto: "tcp"
           ports:
           - 8281
-          cidr_ip: 1.1.1.1/24
+          cidr_ip: 10.1.1.1/24
           rule_desc: ipv4 rule desc
         rules_egress:
         - proto: "tcp"
           ports:
           - 8282
-          cidr_ip: 2.2.2.2/32
+          cidr_ip: 10.2.2.2/32
           rule_desc: egress rule desc 2
       register: result
 
@@ -1271,7 +1271,7 @@
         - proto: "tcp"
           ports:
           - 8282
-          cidr_ip: 2.2.2.2/32
+          cidr_ip: 10.2.2.2/32
           rule_desc: egress rule desc 2
       check_mode: true
       register: result
@@ -1310,7 +1310,7 @@
         - proto: "tcp"
           ports:
           - 8282
-          cidr_ip: 2.2.2.2/32
+          cidr_ip: 10.2.2.2/32
           rule_desc: egress rule desc 2
       register: result
 
@@ -1350,7 +1350,7 @@
         - proto: "tcp"
           ports:
           - 8282
-          cidr_ip: 2.2.2.2/32
+          cidr_ip: 10.2.2.2/32
           rule_desc:
       check_mode: true
       register: result
@@ -1389,7 +1389,7 @@
         - proto: "tcp"
           ports:
           - 8282
-          cidr_ip: 2.2.2.2/32
+          cidr_ip: 10.2.2.2/32
           rule_desc:
       register: result
       ignore_errors: true
