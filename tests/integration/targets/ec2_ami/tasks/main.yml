@@ -129,7 +129,6 @@
     - name: gather info about the image
       ec2_ami_info:
         image_ids: '{{ ec2_region_images[ec2_region] }}'
-        <<: *aws_connection_info
       register: ami_info_result
       ignore_errors: true
 
@@ -145,7 +144,6 @@
         image_ids: '{{ ec2_region_images[ec2_region] }}'
         filters:
           is-public: true
-        <<: *aws_connection_info
       register: ami_info_result
       ignore_errors: true
 
@@ -161,7 +159,6 @@
         image_ids: '{{ ec2_region_images[ec2_region] }}'
         filters:
           owner-id: 137112412989
-        <<: *aws_connection_info
       register: ami_info_result
       ignore_errors: true
 
@@ -177,7 +174,6 @@
         image_ids: '{{ ec2_region_images[ec2_region] }}'
         filters:
           name: 'amzn-ami-hvm-2017.09.0.20170930-x86_64-gp2'
-        <<: *aws_connection_info
       register: ami_info_result
       ignore_errors: true
 

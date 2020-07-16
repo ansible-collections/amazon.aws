@@ -194,12 +194,12 @@ class Ec2Utils(unittest.TestCase):
         }
 
         self.filter_list_string = [
-                    {
-                        'Name': 'some-aws-id',
-                        'Values': [
-                            'i-01234567',
-                              ]
-                          }
+            {
+                'Name': 'some-aws-id',
+                'Values': [
+                    'i-01234567',
+                ]
+            }
         ]
 
         self.filter_list_boolean = [
