@@ -25,8 +25,7 @@
               Name: '{{ resource_prefix }}'
             instance_tags:
               Name: '{{ resource_prefix }}'
-              tag1: value1
-              tag2: value2
+              OtherTag: value
             instance_type: t2.micro
             wait: yes
             group_id: '{{ sg_id }}'
@@ -37,7 +36,7 @@
 
         - name: register the current hostname
           set_fact:
-            hostname: "{{ resource_prefix | replace('-', '_') }}_{{ ansible_default_ipv4.address }}"
+            hostname: "{{ resource_prefix | replace('-', '_') }}_value"
 
         - name: "assert the hostname  is properly formed, '{{ hostname }}' should equal '{{ inventory_hostname }}'"
           assert:
