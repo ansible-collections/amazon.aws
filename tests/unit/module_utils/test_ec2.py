@@ -287,7 +287,7 @@ class Ec2Utils(unittest.TestCase):
 
     def test_compare_version_policies_default_set(self):
         """ Testing that a policy without Version is only considered identical
-        when default_version=
+        when default_version="2008-10-17"
         """
         self.assertFalse(compare_policies(self.version_policy_missing, self.version_policy_missing, default_version="2012-10-17"))
         self.assertTrue(compare_policies(self.version_policy_old, self.version_policy_missing, default_version="2012-10-17"))
