@@ -86,7 +86,7 @@ EXAMPLES = '''
       name: myLambdaFunction
     register: lambda_info
   - name: show results
-    debug:
+    ansible.builtin.debug:
       msg: "{{ lambda_info['lambda_facts'] }}"
 
 # The following will set the Dev alias to the latest version ($LATEST) since version is omitted (or = 0)

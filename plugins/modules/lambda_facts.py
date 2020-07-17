@@ -69,7 +69,7 @@ EXAMPLES = '''
     query: all
     max_items: 20
 - name: show Lambda facts
-  debug:
+  ansible.builtin.debug:
     var: lambda_facts
 '''
 
