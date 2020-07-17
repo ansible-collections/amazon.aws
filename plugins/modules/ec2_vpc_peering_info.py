@@ -41,7 +41,7 @@ EXAMPLES = r'''
   register: all_vpc_peers
 
 - name: Debugging the result
-  debug:
+  ansible.builtin.debug:
     msg: "{{ all_vpc_peers.result }}"
 
 - name: Get details on specific VPC peer
