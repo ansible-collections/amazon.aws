@@ -83,7 +83,7 @@ EXAMPLES = '''
   register: batch_job_queue_action
 
 - name: show results
-  debug:
+  ansible.builtin.debug:
     var: batch_job_queue_action
 '''
 

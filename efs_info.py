@@ -63,7 +63,7 @@ EXAMPLES = r'''
         - sg-4d3c2b1a
   register: result
 
-- debug:
+- ansible.builtin.debug:
     msg: "{{ result['efs'] }}"
 '''
 

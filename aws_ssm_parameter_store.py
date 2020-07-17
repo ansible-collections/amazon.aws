@@ -112,7 +112,7 @@ EXAMPLES = '''
     overwrite_value: "always"
 
 - name: recommend to use with aws_ssm lookup plugin
-  debug:
+  ansible.builtin.debug:
     msg: "{{ lookup('amazon.aws.aws_ssm', 'hello') }}"
 '''
 

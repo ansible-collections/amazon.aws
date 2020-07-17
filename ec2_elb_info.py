@@ -47,7 +47,7 @@ EXAMPLES = r'''
 - name: Gather information about all ELBs
   community.aws.ec2_elb_info:
   register: elb_info
-- debug:
+- ansible.builtin.debug:
     msg: "{{ item.dns_name }}"
   loop: "{{ elb_info.elbs }}"
 
@@ -56,7 +56,7 @@ EXAMPLES = r'''
     names: frontend-prod-elb
   register: elb_info
 
-- debug:
+- ansible.builtin.debug:
     msg: "{{ elb_info.elbs.0.dns_name }}"
 
 - name: Gather information about a set of ELBs
@@ -66,7 +66,7 @@ EXAMPLES = r'''
     - backend-prod-elb
   register: elb_info
 
-- debug:
+- ansible.builtin.debug:
     msg: "{{ item.dns_name }}"
   loop: "{{ elb_info.elbs }}"
 

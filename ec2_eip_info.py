@@ -44,7 +44,7 @@ EXAMPLES = r'''
        instance-id: i-123456789
   register: my_vm_eips
 
-- debug:
+- ansible.builtin.debug:
     msg: "{{ my_vm_eips.addresses | json_query(\"[?private_ip_address=='10.0.0.5']\") }}"
 
 - name: List all EIP addresses for several VMs.
@@ -69,7 +69,7 @@ EXAMPLES = r'''
 
 # Set the variable eip_alloc to the value of the first allocation_id
 # and set the variable my_pub_ip to the value of the first public_ip
-- set_fact:
+- ansible.builtin.set_fact:
     eip_alloc: my_vms_eips.addresses[0].allocation_id
     my_pub_ip: my_vms_eips.addresses[0].public_ip
 

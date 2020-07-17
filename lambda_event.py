@@ -102,7 +102,7 @@ EXAMPLES = '''
   register: event
 
 - name: Show source event
-  debug:
+  ansible.builtin.debug:
     var: event.lambda_stream_events
 '''
 

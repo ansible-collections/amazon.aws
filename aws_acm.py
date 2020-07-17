@@ -175,7 +175,7 @@ EXAMPLES = '''
   register: cert_create
 
 - name: print ARN of cert we just created
-  debug:
+  ansible.builtin.debug:
     var: cert_create.certificate.arn
 
 - name: delete the cert we just created
