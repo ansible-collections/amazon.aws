@@ -35,7 +35,7 @@ EXAMPLES = '''
   register: result
 
 - name: List buckets
-  debug:
+  ansible.builtin.debug:
     msg: "{{ result['buckets'] }}"
 '''
 

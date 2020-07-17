@@ -50,7 +50,7 @@ EXAMPLES = """
     register: target_info
 
   - name: save fact for later
-    set_fact:
+    ansible.builtin.set_fact:
       original_tgs: "{{ target_info.instance_target_groups }}"
 
   - name: Deregister instance from all target groups
@@ -118,7 +118,7 @@ EXAMPLES = """
 # instance - useful in case the playbook fails mid-run and manual
 #            rollback is required
   - name: "reregistration commands: ELBv2s"
-    debug:
+    ansible.builtin.debug:
       msg: >
              aws --region {{ansible_ec2_placement_region}} elbv2
              register-targets --target-group-arn {{item.target_group_arn}}

@@ -27,7 +27,7 @@ EXAMPLES = '''
     profile: 'my_aws_profile'
     region: 'my_region'
   register: cf_exports
-- debug:
+- ansible.builtin.debug:
     msg: "{{ cf_exports }}"
 '''
 

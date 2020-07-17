@@ -163,7 +163,7 @@ EXAMPLES = '''
     distribution: true
     distribution_id: my-cloudfront-distribution-id
   register: result_did
-- debug:
+- ansible.builtin.debug:
     msg: "{{ result_did['cloudfront']['my-cloudfront-distribution-id'] }}"
 
 - name: Get information about a distribution using the CNAME of the cloudfront distribution.
@@ -171,7 +171,7 @@ EXAMPLES = '''
     distribution: true
     domain_name_alias: www.my-website.com
   register: result_website
-- debug:
+- ansible.builtin.debug:
     msg: "{{ result_website['cloudfront']['www.my-website.com'] }}"
 
 # When the module is called as cloudfront_facts, return values are published
@@ -181,13 +181,13 @@ EXAMPLES = '''
   community.aws.cloudfront_facts:
     distribution: true
     distribution_id: my-cloudfront-distribution-id
-- debug:
+- ansible.builtin.debug:
     msg: "{{ ansible_facts['cloudfront']['my-cloudfront-distribution-id'] }}"
 
 - community.aws.cloudfront_facts:
     distribution: true
     domain_name_alias: www.my-website.com
-- debug:
+- ansible.builtin.debug:
     msg: "{{ ansible_facts['cloudfront']['www.my-website.com'] }}"
 
 - name: Get all information about an invalidation for a distribution.

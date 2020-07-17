@@ -155,7 +155,7 @@ EXAMPLES = r'''
   register: aws_batch_compute_environment_action
 
 - name: show results
-  debug:
+  ansible.builtin.debug:
     var: aws_batch_compute_environment_action
 '''
 

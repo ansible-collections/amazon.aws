@@ -63,7 +63,7 @@ EXAMPLES = '''
     max_items: 20
   register: output
 - name: show Lambda information
-  debug:
+  ansible.builtin.debug:
     msg: "{{ output['function'] }}"
 '''
 

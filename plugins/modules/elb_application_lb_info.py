@@ -58,7 +58,7 @@ EXAMPLES = r'''
     names: "alb-name"
     region: "aws-region"
   register: alb_info
-- debug:
+- ansible.builtin.debug:
     var: alb_info
 '''
 

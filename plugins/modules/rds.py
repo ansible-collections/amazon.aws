@@ -305,7 +305,7 @@ EXAMPLES = r'''
     region: us-west-2
     vpc_security_groups: sg-xxx945xx
 
-- debug:
+- ansible.builtin.debug:
     msg: "The new db endpoint is {{ rds.instance.endpoint }}"
 '''
 

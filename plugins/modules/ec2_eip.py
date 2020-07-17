@@ -137,7 +137,7 @@ EXAMPLES = '''
   register: eip
 
 - name: output the IP
-  debug:
+  ansible.builtin.debug:
     msg: "Allocated IP is {{ eip.public_ip }}"
 
 - name: provision new instances with ec2
@@ -162,7 +162,7 @@ EXAMPLES = '''
   register: eip
 
 - name: output the IP
-  debug:
+  ansible.builtin.debug:
     msg: "Allocated IP inside a VPC is {{ eip.public_ip }}"
 
 - name: allocate eip - reuse unallocated ips (if found) with FREE tag

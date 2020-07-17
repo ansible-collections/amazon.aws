@@ -204,7 +204,7 @@ EXAMPLES = r'''
   register: job_definition_create_result
 
 - name: show results
-  debug: var=job_definition_create_result
+  ansible.builtin.debug: var=job_definition_create_result
 '''
 
 RETURN = r'''

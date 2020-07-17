@@ -41,7 +41,7 @@ EXAMPLES = r'''
   register: all_ngws
 
 - name: Debugging the result
-  debug:
+  ansible.builtin.debug:
     msg: "{{ all_ngws.result }}"
 
 - name: Get details on specific nat gateways

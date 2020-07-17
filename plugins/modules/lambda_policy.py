@@ -120,7 +120,7 @@ EXAMPLES = '''
   register: lambda_policy_action
 
 - name: show results
-  debug:
+  ansible.builtin.debug:
     var: lambda_policy_action
 '''
 

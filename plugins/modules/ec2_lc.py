@@ -238,7 +238,7 @@ EXAMPLES = r'''
 - name: Use EBS snapshot ID for volume
   block:
   - name: Set Volume Facts
-    set_fact:
+    ansible.builtin.set_fact:
       volumes:
       - device_name: /dev/sda1
         volume_size: 20
