@@ -193,6 +193,7 @@ def aws_common_argument_spec():
         aws_secret_key=dict(aliases=['ec2_secret_key', 'secret_key'], no_log=True),
         aws_access_key=dict(aliases=['ec2_access_key', 'access_key']),
         validate_certs=dict(default=True, type='bool'),
+        aws_ca_bundle=dict(type='path'),
         security_token=dict(aliases=['access_token'], no_log=True),
         profile=dict(),
         aws_config=dict(type='dict'),
@@ -254,6 +255,7 @@ def get_aws_connection_info(module, boto3=False):
     region = get_aws_region(module, boto3)
     profile_name = module.params.get('profile')
     validate_certs = module.params.get('validate_certs')
+    ca_bundle = module.params.get('aws_ca_bundle')
     config = module.params.get('aws_config')
 
     if not ec2_url:
@@ -307,11 +309,18 @@ def get_aws_connection_info(module, boto3=False):
             # in case secret_token came in as empty string
             security_token = None
 
+    if not ca_bundle:
+        if os.environ.get('AWS_CA_BUNDLE'):
+            ca_bundle = os.environ.get('AWS_CA_BUNDLE')
+
     if HAS_BOTO3 and boto3:
         boto_params = dict(aws_access_key_id=access_key,
                            aws_secret_access_key=secret_key,
                            aws_session_token=security_token)
-        boto_params['verify'] = validate_certs
+        if validate_certs and ca_bundle:
+            boto_params['verify'] = ca_bundle
+        else:
+            boto_params['verify'] = validate_certs
 
         if profile_name:
             boto_params = dict(aws_access_key_id=None, aws_secret_access_key=None, aws_session_token=None)

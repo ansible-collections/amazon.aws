@@ -40,6 +40,11 @@ options:
       - AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.
     type: str
     aliases: [ access_token ]
+  aws_ca_bundle:
+    description:
+      - The location of a CA Bundle to use when validating SSL certificates.
+      - Only used for boto3 based modules.
+    type: path
   validate_certs:
     description:
       - When set to "no", SSL certificates will not be validated for boto versions >= 2.6.0.
@@ -65,7 +70,8 @@ notes:
     C(AWS_ACCESS_KEY_ID) or C(AWS_ACCESS_KEY) or C(EC2_ACCESS_KEY),
     C(AWS_SECRET_ACCESS_KEY) or C(AWS_SECRET_KEY) or C(EC2_SECRET_KEY),
     C(AWS_SECURITY_TOKEN) or C(EC2_SECURITY_TOKEN),
-    C(AWS_REGION) or C(EC2_REGION)
+    C(AWS_REGION) or C(EC2_REGION),
+    C(AWS_CA_BUNDLE)
   - Ansible uses the boto configuration file (typically ~/.boto) if no
     credentials are provided. See https://boto.readthedocs.io/en/latest/boto_config_tut.html
   - C(AWS_REGION) or C(EC2_REGION) can be typically be used to specify the
