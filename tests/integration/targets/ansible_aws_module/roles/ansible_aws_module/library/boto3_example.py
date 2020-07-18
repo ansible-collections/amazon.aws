@@ -15,6 +15,7 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
@@ -24,18 +25,19 @@ def main():
         supports_check_mode=True,
     )
 
-    client = module.client('sts')
+    client = module.client('ec2')
+
+    filters = ansible_dict_to_boto3_filter_list({'name': 'amzn2-ami-hvm-2.0.202006*-x86_64-gp2'})
 
     try:
-        caller_info = client.get_caller_identity()
-        caller_info.pop('ResponseMetadata', None)
+        images = client.describe_images(ImageIds=[], Filters=filters, Owners=['amazon'], ExecutableUsers=[])
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Failed to retrieve caller identity')
+        module.fail_json_aws(e, msg='Failed to retrieve list of amis')
 
     # Return something, just because we can.
     module.exit_json(
         changed=False,
-        **camel_dict_to_snake_dict(caller_info))
+        **camel_dict_to_snake_dict(images))
 
 
 if __name__ == '__main__':

@@ -8,4 +8,4 @@ export ANSIBLE_ROLES_PATH
 export AWS_CONFIG_FILE
 
 ansible-playbook setup.yml -i localhost "$@"
-ansible-playbook main.yml -i inventory "$@"
+ansible-playbook main.yml -i inventory "$@" -e "@session_credentials.yml"

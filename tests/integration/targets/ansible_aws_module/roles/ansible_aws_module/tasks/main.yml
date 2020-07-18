@@ -1,8 +1,3 @@
 ---
-- name: 'run test module'
-  boto3_example:
-    #region: '{{ aws_region }}'
-    #aws_access_key: "{{ aws_access_key }}"
-    #aws_secret_key: "{{ aws_secret_key }}"
-    #security_token: "{{ security_token | default(omit) }}"
-    profile: 'test_profile'
+- name: 'Test that the varients we expect to succeed, do'
+  include_tasks: 'success.yml'
