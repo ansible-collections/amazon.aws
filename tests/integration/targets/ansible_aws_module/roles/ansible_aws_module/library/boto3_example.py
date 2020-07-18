@@ -32,7 +32,7 @@ def main():
     try:
         images = client.describe_images(ImageIds=[], Filters=filters, Owners=['amazon'], ExecutableUsers=[])
     except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Failed to retrieve list of amis')
+        module.fail_json_aws(e, msg='Fail JSON AWS')
 
     # Return something, just because we can.
     module.exit_json(

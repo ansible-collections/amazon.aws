@@ -1,0 +1,158 @@
+---
+- name: 'Create temporary location for CA files'
+  tempfile:
+    state: directory
+    suffix: 'test-CAs'
+  register: ca_tmp
+
+- name: 'Ensure we have Amazons root CA available to us'
+  copy:
+    src: 'amazonroot.pem'
+    dest: '{{ ca_tmp.path }}/amazonroot.pem'
+
+- name: 'Ensure we have a another CA (ISRG-X1) bundle available to us'
+  copy:
+    src: 'isrg-x1.pem'
+    dest: '{{ ca_tmp.path }}/isrg-x1.pem'
+
+##################################################################################
+# Test disabling cert validation (make sure we don't error)
+
+- name: 'Test basic operation using default CA bundle (no validation) - parameter'
+  boto3_example:
+    region: '{{ aws_region }}'
+    access_key: '{{ aws_access_key }}'
+    secret_key: '{{ aws_secret_key }}'
+    security_token: '{{ security_token }}'
+    validate_certs: False
+  register: default_bundle_result
+
+- assert:
+    that:
+    - default_bundle_result is successful
+
+##################################################################################
+# Tests using Amazon's CA (the one the endpoint certs should be signed with)
+
+- name: 'Test basic operation using Amazons root CA - parameter'
+  boto3_example:
+    region: '{{ aws_region }}'
+    access_key: '{{ aws_access_key }}'
+    secret_key: '{{ aws_secret_key }}'
+    security_token: '{{ security_token }}'
+    aws_ca_bundle: '{{ ca_tmp.path }}/amazonroot.pem'
+  register: amazon_ca_result
+
+- assert:
+    that:
+    - amazon_ca_result is successful
+
+- name: 'Test basic operation using Amazons root CA - environment'
+  boto3_example:
+    region: '{{ aws_region }}'
+    access_key: '{{ aws_access_key }}'
+    secret_key: '{{ aws_secret_key }}'
+    security_token: '{{ security_token }}'
+  environment:
+    AWS_CA_BUNDLE: '{{ ca_tmp.path }}/amazonroot.pem'
+  register: amazon_ca_result
+
+- assert:
+    that:
+    - amazon_ca_result is successful
+
+- name: 'Test basic operation using Amazons root CA (no validation) - parameter'
+  boto3_example:
+    region: '{{ aws_region }}'
+    access_key: '{{ aws_access_key }}'
+    secret_key: '{{ aws_secret_key }}'
+    security_token: '{{ security_token }}'
+    aws_ca_bundle: '{{ ca_tmp.path }}/amazonroot.pem'
+    validate_certs: False
+  register: amazon_ca_result
+
+- assert:
+    that:
+    - amazon_ca_result is successful
+
+- name: 'Test basic operation using Amazons root CA (no validation) - environment'
+  boto3_example:
+    region: '{{ aws_region }}'
+    access_key: '{{ aws_access_key }}'
+    secret_key: '{{ aws_secret_key }}'
+    security_token: '{{ security_token }}'
+    validate_certs: False
+  environment:
+    AWS_CA_BUNDLE: '{{ ca_tmp.path }}/amazonroot.pem'
+  register: amazon_ca_result
+
+- assert:
+    that:
+    - amazon_ca_result is successful
+
+##################################################################################
+# Tests using ISRG's CA (one that the endpoint certs *aren't* signed with)
+
+- name: 'Test basic operation using a different CA - parameter'
+  boto3_example:
+    region: '{{ aws_region }}'
+    access_key: '{{ aws_access_key }}'
+    secret_key: '{{ aws_secret_key }}'
+    security_token: '{{ security_token }}'
+    aws_ca_bundle: '{{ ca_tmp.path }}/isrg-x1.pem'
+  register: isrg_ca_result
+  ignore_errors: yes
+
+- assert:
+    that:
+    - isrg_ca_result is failed
+    # Caught when we try to do something, and passed to fail_json_aws
+    - '"CERTIFICATE_VERIFY_FAILED" in isrg_ca_result.msg'
+    - '"Fail JSON AWS" in isrg_ca_result.msg'
+
+- name: 'Test basic operation using a different CA - environment'
+  boto3_example:
+    region: '{{ aws_region }}'
+    access_key: '{{ aws_access_key }}'
+    secret_key: '{{ aws_secret_key }}'
+    security_token: '{{ security_token }}'
+  environment:
+    AWS_CA_BUNDLE: '{{ ca_tmp.path }}/isrg-x1.pem'
+  register: isrg_ca_result
+  ignore_errors: yes
+
+- assert:
+    that:
+    - isrg_ca_result is failed
+    # Caught when we try to do something, and passed to fail_json_aws
+    - '"CERTIFICATE_VERIFY_FAILED" in isrg_ca_result.msg'
+    - '"Fail JSON AWS" in isrg_ca_result.msg'
+
+- name: 'Test basic operation using a different CA (no validation) - parameter'
+  boto3_example:
+    region: '{{ aws_region }}'
+    access_key: '{{ aws_access_key }}'
+    secret_key: '{{ aws_secret_key }}'
+    security_token: '{{ security_token }}'
+    aws_ca_bundle: '{{ ca_tmp.path }}/isrg-x1.pem'
+    validate_certs: False
+  register: isrg_ca_result
+
+- assert:
+    that:
+    - isrg_ca_result is successful
+
+- name: 'Test basic operation using a different CA (no validation) - environment'
+  boto3_example:
+    region: '{{ aws_region }}'
+    access_key: '{{ aws_access_key }}'
+    secret_key: '{{ aws_secret_key }}'
+    security_token: '{{ security_token }}'
+    validate_certs: False
+  environment:
+    AWS_CA_BUNDLE: '{{ ca_tmp.path }}/isrg-x1.pem'
+  register: isrg_ca_result
+
+- assert:
+    that:
+    - isrg_ca_result is successful
