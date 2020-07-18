@@ -1,0 +1,863 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default('') }}"
+      region: "{{ aws_region }}"
+  vars:
+    vpc_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/24'
+  block:
+
+  - name: create a VPC with a default DHCP option set to test inheritance and delete_old
+    ec2_vpc_net:
+      name: "{{ resource_prefix }}"
+      cidr_block: "{{ vpc_cidr }}"
+      state: present
+    register: vpc
+
+  - set_fact:
+      vpc_id: "{{ vpc.vpc.id }}"
+
+  - name: set up initial DHCP option set
+    environment:
+      AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+      AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+      AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+      AWS_DEFAULT_REGION: "{{ aws_region }}"
+    block:
+      - name: find all DHCP options sets
+        command: 'aws ec2 describe-dhcp-options --filters --query "DhcpOptions[*].DhcpOptionsId" --output text'
+        register: associations
+
+      - name: find the associated VPCs
+        command: 'aws ec2 describe-vpcs --filters "Name=dhcp-options-id,Values={{ item }}" --query "Vpcs[*].VpcId" --output text'
+        loop: "{{ associations.stdout.split('\t') | list }}"
+        register: associated_vpcs
+
+      - set_fact:
+          in_use: True
+        when: vpc_id in item.stdout.split('\t') | list and item.stdout.split('\t') | list | length > 1
+        loop: "{{ associated_vpcs.results }}"
+
+      - name: create a new initial DHCP set if it already has another association
+        when: in_use is defined
+        block:
+        - command: 'aws ec2 associate-dhcp-options --vpc-id {{ vpc_id }} --dhcp-options-id default'
+
+        - name: create the new DHCP set
+          ec2_vpc_dhcp_option:
+            state: present
+            domain_name: "{{ (aws_region == 'us-east-1') | ternary('ec2.internal', aws_region + '.compute.internal') }}"
+            dns_servers:
+              - AmazonProvidedDNS
+            delete_old: True
+            tags:
+              Name: "{{ resource_prefix }}"
+          register: dhcp_options
+          environment: {}
+
+        - name: associate it with the VPC
+          ec2_vpc_dhcp_option:
+            state: present
+            dhcp_options_id: "{{ dhcp_options.dhcp_options_id }}"
+            vpc_id: "{{ vpc_id }}"
+          environment: {}
+
+  - name: test a DHCP option exists (check mode)
+    ec2_vpc_dhcp_option:
+      state: present
+      vpc_id: "{{ vpc_id }}"
+    register: found_dhcp_options
+    check_mode: true
+
+  - assert:
+      that:
+        # FIXME: options have to be provided to match the option associated with the VPC
+        - not found_dhcp_options.changed or dhcp_options is defined and dhcp_options.dhcp_options_id == found_dhcp_options.dhcp_options_id
+        - not found_dhcp_options.new_options
+
+  # FIXME: always reassociated when vpc_id is provided without options
+  - name: test a DHCP option exists
+    ec2_vpc_dhcp_option:
+      state: present
+      vpc_id: "{{ vpc_id }}"
+      domain_name: "{{ (aws_region == 'us-east-1') | ternary('ec2.internal', aws_region + '.compute.internal') }}"
+      dns_servers:
+        - AmazonProvidedDNS
+      tags:
+        Name: "{{ resource_prefix }}"
+    register: found_dhcp_options
+
+  - assert:
+      that:
+        - found_dhcp_options.dhcp_options_id is defined
+        - not dhcp_options.changed or dhcp_options is defined and dhcp_options.dhcp_options_id == found_dhcp_options.dhcp_options_id
+
+  - set_fact:
+      original_dhcp_options_id: "{{ found_dhcp_options.dhcp_options_id }}"
+
+  - name: get information about the DHCP option
+    ec2_vpc_dhcp_option_info:
+      dhcp_options_ids: ["{{ original_dhcp_options_id }}"]
+    register: original_dhcp_options
+
+  - assert:
+      that:
+        - original_dhcp_options.dhcp_options | length == 1
+
+  - set_fact:
+      original_config: "{{ original_dhcp_options.dhcp_options[0].dhcp_configurations | items2dict(key_name='key', value_name='values') }}"
+
+  - assert:
+      that:
+        - original_config.keys() | list | sort == ['domain-name', 'domain-name-servers']
+        - original_config['domain-name'] | community.general.json_query("[*].value") | list | sort in [['ec2.internal'], [aws_region + '.compute.internal']]
+        - original_config['domain-name-servers'] | community.general.json_query("[*].value") | list | sort == ['AmazonProvidedDNS']
+
+  # Create a DHCP option set that inherits from the default set and does not delete the old set
+
+  # FIXME: check mode causes a traceback
+  #- name: create a DHCP option set that inherits from the default set (check mode)
+  #  ec2_vpc_dhcp_option:
+  #    state: present
+  #    vpc_id: "{{ vpc_id }}"
+  #    inherit_existing: True
+  #    ntp_servers:
+  #        - 10.0.0.2
+  #        - 10.0.1.2
+  #    netbios_name_servers:
+  #        - 10.0.0.1
+  #        - 10.0.1.1
+  #    netbios_node_type: 2
+  #    delete_old: False
+  #  register: dhcp_options
+  #  check_mode: true
+
+  #- assert:
+  #    that:
+  #      - dhcp_options.changed
+
+  - name: create a DHCP option set that inherits from the default set
+    ec2_vpc_dhcp_option:
+      state: present
+      vpc_id: "{{ vpc_id }}"
+      inherit_existing: True
+      ntp_servers:
+          - 10.0.0.2
+          - 10.0.1.2
+      netbios_name_servers:
+          - 10.0.0.1
+          - 10.0.1.1
+      netbios_node_type: 2
+      delete_old: False
+    register: dhcp_options
+
+  - debug: msg="{{ dhcp_options.new_options['netbios-node-type'] }}"
+
+  - assert:
+      that:
+        - dhcp_options.changed
+        - dhcp_options.new_options
+        - dhcp_options.new_options.keys() | list | sort == ['domain-name', 'domain-name-servers', 'netbios-name-servers', 'netbios-node-type', 'ntp-servers']
+        - dhcp_options.new_options['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
+        - dhcp_options.new_options['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
+        # FIXME: module/aws randomly returns as a string or list
+        - dhcp_options.new_options['netbios-node-type'] == '2' or dhcp_options.new_options['netbios-node-type'] == ['2']
+        - dhcp_options.new_options['domain-name'] in ['ec2.internal', aws_region + '.compute.internal', ['ec2.internal'], [aws_region + '.compute.internal']]
+        - dhcp_options.new_options['domain-name-servers'] == ['AmazonProvidedDNS']
+        - original_dhcp_options_id != dhcp_options.dhcp_options_id
+
+  - set_fact:
+      new_dhcp_options_id: "{{ dhcp_options.dhcp_options_id }}"
+
+  - name: get information about the new DHCP option
+    ec2_vpc_dhcp_option_info:
+      dhcp_options_ids: ["{{ new_dhcp_options_id }}"]
+    register: new_dhcp_options
+
+  - set_fact:
+      new_config: "{{ new_dhcp_options.dhcp_options[0].dhcp_configurations | items2dict(key_name='key', value_name='values') }}"
+
+  - assert:
+      that:
+        - new_config.keys() | list | sort == ['domain-name', 'domain-name-servers', 'netbios-name-servers', 'netbios-node-type', 'ntp-servers']
+        - new_config['domain-name'] | community.general.json_query('[*].value') | list | sort in [['ec2.internal'], [aws_region + '.compute.internal']]
+        - new_config['domain-name-servers'] | community.general.json_query('[*].value') | list | sort == ['AmazonProvidedDNS']
+        - new_config['ntp-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.2', '10.0.1.2']
+        - new_config['netbios-name-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.1', '10.0.1.1']
+        - new_config['netbios-node-type'] | community.general.json_query('[*].value') | list | sort == ['2']
+
+  # FIXME: no way to associate default in the module
+  - name: disassociate the new DHCP option set so it can be deleted
+    command: 'aws ec2 associate-dhcp-options --vpc-id {{ vpc_id }} --dhcp-options-id default'
+    environment:
+      AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+      AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+      AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+      AWS_DEFAULT_REGION: "{{ aws_region }}"
+
+  - name: delete it for the next test
+    ec2_vpc_dhcp_option:
+      dhcp_options_id: "{{ new_dhcp_options_id }}"
+      state: absent
+
+  # Create a DHCP option set that does not inherit from the old set and doesn't delete the old set
+
+  # FIXME: check mode causes a traceback
+  #- name: create a DHCP option set that does not inherit from the default set (check mode)
+  #  ec2_vpc_dhcp_option:
+  #    state: present
+  #    vpc_id: "{{ vpc_id }}"
+  #    inherit_existing: False
+  #    ntp_servers:
+  #        - 10.0.0.2
+  #        - 10.0.1.2
+  #    netbios_name_servers:
+  #        - 10.0.0.1
+  #        - 10.0.1.1
+  #    netbios_node_type: 2
+  #    delete_old: False
+  #  register: dhcp_options
+  #  check_mode: true
+
+  #- assert:
+  #    that:
+  #      - dhcp_options.changed
+
+  - name: create a DHCP option set that does not inherit from the default set
+    ec2_vpc_dhcp_option:
+      state: present
+      vpc_id: "{{ vpc_id }}"
+      inherit_existing: False
+      ntp_servers:
+          - 10.0.0.2
+          - 10.0.1.2
+      netbios_name_servers:
+          - 10.0.0.1
+          - 10.0.1.1
+      netbios_node_type: 2
+      delete_old: False
+    register: dhcp_options
+
+  - assert:
+      that:
+        - dhcp_options.changed
+        - dhcp_options.new_options
+        # FIXME extra keys are returned unpredictably
+        - dhcp_options.new_options.keys() | list | sort is superset(['netbios-name-servers', 'netbios-node-type', 'ntp-servers'])
+        - dhcp_options.new_options['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
+        - dhcp_options.new_options['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
+        - dhcp_options.new_options['netbios-node-type'] in ['2', ['2']]
+        - original_dhcp_options_id != dhcp_options.dhcp_options_id
+
+  - set_fact:
+      new_dhcp_options_id: "{{ dhcp_options.dhcp_options_id }}"
+
+  - name: get information about the new DHCP option
+    ec2_vpc_dhcp_option_info:
+      dhcp_options_ids: ["{{ new_dhcp_options_id }}"]
+    register: new_dhcp_options
+
+  - set_fact:
+      new_config: "{{ new_dhcp_options.dhcp_options[0].dhcp_configurations | items2dict(key_name='key', value_name='values') }}"
+
+  - assert:
+      that:
+        - new_config.keys() | list | sort == ['netbios-name-servers', 'netbios-node-type', 'ntp-servers']
+        - new_config['ntp-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.2', '10.0.1.2']
+        - new_config['netbios-name-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.1', '10.0.1.1']
+        - new_config['netbios-node-type'] | community.general.json_query('[*].value') | list | sort == ['2']
+
+  - name: disassociate the new DHCP option set so it can be deleted
+    command: 'aws ec2 associate-dhcp-options --vpc-id {{ vpc_id }} --dhcp-options-id default'
+    environment:
+      AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+      AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+      AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+      AWS_DEFAULT_REGION: "{{ aws_region }}"
+
+  - name: delete it for the next test
+    ec2_vpc_dhcp_option:
+      dhcp_options_id: "{{ new_dhcp_options_id }}"
+      state: absent
+
+  # Create a DHCP option set that inherits from the default set overwrites a default and deletes the old set
+
+  # FIXME: check mode traceback
+  #- name: create a DHCP option set that inherits from the default set and deletes the original set (check mode)
+  #  ec2_vpc_dhcp_option:
+  #    state: present
+  #    vpc_id: "{{ vpc_id }}"
+  #    inherit_existing: True
+  #    domain_name: us-west-2.compute.internal
+  #    ntp_servers:
+  #        - 10.0.0.2
+  #        - 10.0.1.2
+  #    netbios_name_servers:
+  #        - 10.0.0.1
+  #        - 10.0.1.1
+  #    netbios_node_type: 2
+  #    delete_old: True
+  #  register: dhcp_options
+  #  check_mode: true
+
+  #- assert:
+  #    that:
+  #      - dhcp_options.changed
+
+  # FIXME: doesn't delete the original set
+  - name: create a DHCP option set that inherits from the default set and deletes the original set
+    ec2_vpc_dhcp_option:
+      state: present
+      vpc_id: "{{ vpc_id }}"
+      inherit_existing: True
+      domain_name: us-west-2.compute.internal
+      ntp_servers:
+          - 10.0.0.2
+          - 10.0.1.2
+      netbios_name_servers:
+          - 10.0.0.1
+          - 10.0.1.1
+      netbios_node_type: 1
+      delete_old: True
+    register: dhcp_options
+
+  - assert:
+      that:
+        - dhcp_options.changed
+        - dhcp_options.new_options
+        - dhcp_options.new_options.keys() | list | sort is superset(['domain-name', 'netbios-name-servers', 'netbios-node-type', 'ntp-servers'])
+        - dhcp_options.new_options['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
+        - dhcp_options.new_options['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
+        - dhcp_options.new_options['netbios-node-type'] in ['1', ['1']]
+        - dhcp_options.new_options['domain-name'] in ['us-west-2.compute.internal', ['us-west-2.compute.internal']]
+        - original_dhcp_options_id != dhcp_options.dhcp_options_id
+
+  - set_fact:
+      new_dhcp_options_id: "{{ dhcp_options.dhcp_options_id }}"
+
+  - name: get information about the new DHCP option
+    ec2_vpc_dhcp_option_info:
+      dhcp_options_ids: ["{{ new_dhcp_options_id }}"]
+    register: new_dhcp_options
+
+  - set_fact:
+      new_config: "{{ new_dhcp_options.dhcp_options[0].dhcp_configurations | items2dict(key_name='key', value_name='values') }}"
+
+  - assert:
+      that:
+        - new_config.keys() | list | sort == ['domain-name', 'netbios-name-servers', 'netbios-node-type', 'ntp-servers']
+        - new_config['domain-name'] | community.general.json_query('[*].value') | list | sort == ['us-west-2.compute.internal']
+        - new_config['ntp-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.2', '10.0.1.2']
+        - new_config['netbios-name-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.1', '10.0.1.1']
+        - new_config['netbios-node-type'] | community.general.json_query('[*].value') | list | sort == ['1']
+
+  - name: verify the original set was deleted
+    ec2_vpc_dhcp_option_info:
+      dhcp_options_ids: ["{{ original_dhcp_options_id }}"]
+    register: dhcp_options
+    ignore_errors: yes
+
+  - assert:
+      that:
+        - dhcp_options.failed
+        - '"does not exist" in dhcp_options.error.message'
+    ignore_errors: yes  # FIXME - remove line and the following retry tasks
+
+  - name: try to delete the original again
+    ec2_vpc_dhcp_option:
+      dhcp_options_id: "{{ original_dhcp_options_id }}"
+      state: absent
+
+  - name: verify the original set was deleted
+    ec2_vpc_dhcp_option_info:
+      dhcp_options_ids: ["{{ original_dhcp_options_id }}"]
+    register: dhcp_options
+    ignore_errors: yes
+
+  - assert:
+      that:
+        - dhcp_options.failed
+        - '"does not exist" in dhcp_options.error.message'
+
+  - set_fact:
+      original_dhcp_options_id: "{{ new_dhcp_options_id }}"
+
+  # Create a DHCP option set that does not inherit from the old set and deletes the old set
+
+  # FIXME: check mode causes a traceback
+  #- name: create a DHCP option set that does not inherit from the default set and deletes the original set (check mode)
+  #  ec2_vpc_dhcp_option:
+  #    state: present
+  #    vpc_id: "{{ vpc_id }}"
+  #    inherit_existing: False
+  #    domain_name: "{{ (aws_region == 'us-east-1') | ternary('ec2.internal', aws_region + '.compute.internal') }}"
+  #    dns_servers:
+  #      - AmazonProvidedDNS
+  #    delete_old: True
+  #  register: dhcp_options
+  #  check_mode: true
+
+  #- assert:
+  #    that:
+  #      - dhcp_options.changed
+
+  - name: create a DHCP option set that does not inherit from the default set and deletes the original set
+    ec2_vpc_dhcp_option:
+      state: present
+      vpc_id: "{{ vpc_id }}"
+      inherit_existing: False
+      domain_name: "{{ (aws_region == 'us-east-1') | ternary('ec2.internal', aws_region + '.compute.internal') }}"
+      dns_servers:
+        - AmazonProvidedDNS
+      delete_old: True
+    register: dhcp_options
+
+  - assert:
+      that:
+        - dhcp_options.new_options
+        - dhcp_options.new_options.keys() | list | sort is superset(['domain-name', 'domain-name-servers'])
+        - dhcp_options.new_options['domain-name'] in ['ec2.internal', aws_region + '.compute.internal', ['ec2.internal'], [aws_region + '.compute.internal']]
+        - dhcp_options.new_options['domain-name-servers'] == ['AmazonProvidedDNS']
+        - original_dhcp_options_id != dhcp_options.dhcp_options_id
+
+  - set_fact:
+      new_dhcp_options_id: "{{ dhcp_options.dhcp_options_id }}"
+
+  - name: get information about the new DHCP option
+    ec2_vpc_dhcp_option_info:
+      dhcp_options_ids: ["{{ new_dhcp_options_id }}"]
+    register: new_dhcp_options
+
+  - set_fact:
+      new_config: "{{ new_dhcp_options.dhcp_options[0].dhcp_configurations | items2dict(key_name='key', value_name='values') }}"
+
+  - assert:
+      that:
+        - new_config.keys() | list | sort == ['domain-name', 'domain-name-servers']
+        - new_config['domain-name'] | community.general.json_query('[*].value') | list | sort in [['ec2.internal'], [aws_region + '.compute.internal']]
+        - new_config['domain-name-servers'] | community.general.json_query('[*].value') | list | sort == ['AmazonProvidedDNS']
+
+  - name: verify the original set was deleted
+    ec2_vpc_dhcp_option_info:
+      dhcp_options_ids: ["{{ original_dhcp_options_id }}"]
+    register: dhcp_options
+    ignore_errors: yes
+
+  - assert:
+      that:
+        - dhcp_options.failed
+        - '"does not exist" in dhcp_options.error.message'
+
+  - set_fact:
+      original_dhcp_options_id: "{{ new_dhcp_options_id }}"
+
+  # Create a DHCP option set with tags
+
+  # FIXME: check mode causes a traceback
+  #- name: create a DHCP option set with tags (check mode)
+  #  ec2_vpc_dhcp_option:
+  #    state: present
+  #    vpc_id: "{{ vpc_id }}"
+  #    inherit_existing: False
+  #    delete_old: True
+  #    ntp_servers:
+  #        - 10.0.0.2
+  #        - 10.0.1.2
+  #    netbios_name_servers:
+  #        - 10.0.0.1
+  #        - 10.0.1.1
+  #    tags:
+  #      CreatedBy: ansible-test
+  #      Collection: amazon.aws
+  #  register: dhcp_options
+  #  check_mode: true
+
+  #- assert:
+  #    that:
+  #      - dhcp_options.changed
+
+  - name: create a DHCP option set with tags
+    ec2_vpc_dhcp_option:
+      state: present
+      vpc_id: "{{ vpc_id }}"
+      inherit_existing: False
+      delete_old: True
+      ntp_servers:
+          - 10.0.0.2
+          - 10.0.1.2
+      netbios_name_servers:
+          - 10.0.0.1
+          - 10.0.1.1
+      tags:
+        CreatedBy: ansible-test
+        Collection: amazon.aws
+    register: dhcp_options
+
+  - assert:
+      that:
+        - dhcp_options.changed
+        - dhcp_options.new_options.keys() | list | sort is superset(['ntp-servers', 'netbios-name-servers'])
+        - dhcp_options.new_options['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
+        - dhcp_options.new_options['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
+        - original_dhcp_options_id != dhcp_options.dhcp_options_id
+
+  - set_fact:
+      new_dhcp_options_id: "{{ dhcp_options.dhcp_options_id }}"
+
+  # FIXME: ec2_vpc_dhcp_option_info needs to use camel_dict_to_snake_dict(..., ignore_list=['Tags'])
+  - name: check if the expected tags are associated
+    ec2_vpc_dhcp_option_info:
+      dhcp_options_ids: ["{{ new_dhcp_options_id }}"]
+    register: dhcp_options_info
+
+  - assert:
+      that:
+        - dhcp_options_info.dhcp_options[0].tags is defined
+        - dhcp_options_info.dhcp_options[0].tags.keys() | length == 2
+        - dhcp_options_info.dhcp_options[0].tags['collection'] == 'amazon.aws'
+        - dhcp_options_info.dhcp_options[0].tags['created_by'] == 'ansible-test'
+
+  - name: test no changes with the same tags (check mode)
+    ec2_vpc_dhcp_option:
+      state: present
+      vpc_id: "{{ vpc_id }}"
+      inherit_existing: False
+      delete_old: True
+      ntp_servers:
+          - 10.0.0.2
+          - 10.0.1.2
+      netbios_name_servers:
+          - 10.0.0.1
+          - 10.0.1.1
+      tags:
+        CreatedBy: ansible-test
+        Collection: amazon.aws
+    register: dhcp_options
+    check_mode: true
+
+  - assert:
+      that:
+        - not dhcp_options.changed
+        - dhcp_options.new_options.keys() | list | sort == ['netbios-name-servers', 'ntp-servers']
+        - dhcp_options.new_options['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
+        - dhcp_options.new_options['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
+
+  - name: test no changes with the same tags
+    ec2_vpc_dhcp_option:
+      state: present
+      vpc_id: "{{ vpc_id }}"
+      inherit_existing: False
+      delete_old: True
+      ntp_servers:
+          - 10.0.0.2
+          - 10.0.1.2
+      netbios_name_servers:
+          - 10.0.0.1
+          - 10.0.1.1
+      tags:
+        CreatedBy: ansible-test
+        Collection: amazon.aws
+    register: dhcp_options
+
+  - name: check if the expected tags are associated
+    ec2_vpc_dhcp_option_info:
+      dhcp_options_ids: ["{{ dhcp_options.dhcp_options_id }}"]
+    register: dhcp_options_info
+
+  - assert:
+      that:
+        - not dhcp_options.changed
+        - dhcp_options.new_options.keys() | list | sort == ['netbios-name-servers', 'ntp-servers']
+        - dhcp_options.new_options['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
+        - dhcp_options.new_options['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
+        - new_dhcp_options_id == dhcp_options.dhcp_options_id
+        - dhcp_options_info.dhcp_options[0].tags is defined
+        - dhcp_options_info.dhcp_options[0].tags.keys() | length == 2
+        - dhcp_options_info.dhcp_options[0].tags['collection'] == 'amazon.aws'
+        - dhcp_options_info.dhcp_options[0].tags['created_by'] == 'ansible-test'
+
+  - name: test no changes without specifying tags (check mode)
+    ec2_vpc_dhcp_option:
+      state: present
+      vpc_id: "{{ vpc_id }}"
+      inherit_existing: False
+      delete_old: True
+      ntp_servers:
+          - 10.0.0.2
+          - 10.0.1.2
+      netbios_name_servers:
+          - 10.0.0.1
+          - 10.0.1.1
+    register: dhcp_options
+    check_mode: true
+
+  - assert:
+      that:
+        - not dhcp_options.changed
+        - dhcp_options.new_options.keys() | list | sort == ['netbios-name-servers', 'ntp-servers']
+        - dhcp_options.new_options['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
+        - dhcp_options.new_options['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
+
+  - name: test no changes without specifying tags
+    ec2_vpc_dhcp_option:
+      state: present
+      vpc_id: "{{ vpc_id }}"
+      inherit_existing: False
+      delete_old: True
+      ntp_servers:
+          - 10.0.0.2
+          - 10.0.1.2
+      netbios_name_servers:
+          - 10.0.0.1
+          - 10.0.1.1
+    register: dhcp_options
+
+  - name: check if the expected tags are associated
+    ec2_vpc_dhcp_option_info:
+      dhcp_options_ids: ["{{ dhcp_options.dhcp_options_id }}"]
+    register: dhcp_options_info
+
+  - assert:
+      that:
+        - not dhcp_options.changed
+        - dhcp_options.new_options.keys() | list | sort == ['netbios-name-servers', 'ntp-servers']
+        - dhcp_options.new_options['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
+        - dhcp_options.new_options['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
+        - new_dhcp_options_id == dhcp_options.dhcp_options_id
+        - dhcp_options_info.dhcp_options[0].tags is defined
+        - dhcp_options_info.dhcp_options[0].tags.keys() | length == 2
+        - dhcp_options_info.dhcp_options[0].tags['collection'] == 'amazon.aws'
+        - dhcp_options_info.dhcp_options[0].tags['created_by'] == 'ansible-test'
+
+  # FIXME: the additional tag is silently ignored and no change is made
+  - name: add a tag without using dhcp_options_id
+    ec2_vpc_dhcp_option:
+      state: present
+      vpc_id: "{{ vpc_id }}"
+      inherit_existing: False
+      delete_old: True
+      ntp_servers:
+          - 10.0.0.2
+          - 10.0.1.2
+      netbios_name_servers:
+          - 10.0.0.1
+          - 10.0.1.1
+      tags:
+        CreatedBy: ansible-test
+        Collection: amazon.aws
+        another: tag
+    register: dhcp_options
+
+  - name: check if the expected tags are associated
+    ec2_vpc_dhcp_option_info:
+      dhcp_options_ids: ["{{ dhcp_options.dhcp_options_id }}"]
+    register: dhcp_options_info
+
+  - assert:
+      that:
+         #- dhcp_options.changed
+        - dhcp_options.new_options.keys() | list | sort == ['netbios-name-servers', 'ntp-servers']
+        - dhcp_options.new_options['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
+        - dhcp_options.new_options['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
+        - new_dhcp_options_id == dhcp_options.dhcp_options_id
+        - dhcp_options_info.dhcp_options[0].tags is defined
+        - dhcp_options_info.dhcp_options[0].tags.keys() | length == 2
+        #- dhcp_options_info.dhcp_options[0].tags.keys() | length == 3
+        - dhcp_options_info.dhcp_options[0].tags['collection'] == 'amazon.aws'
+        - dhcp_options_info.dhcp_options[0].tags['created_by'] == 'ansible-test'
+
+  # FIXME: another check_mode traceback
+  #- name: add and removing tags (check mode)
+  #  ec2_vpc_dhcp_option:
+  #    dhcp_options_id: "{{ dhcp_options.dhcp_options_id }}"
+  #    state: present
+  #    vpc_id: "{{ vpc_id }}"
+  #    inherit_existing: False
+  #    delete_old: True
+  #    ntp_servers:
+  #        - 10.0.0.2
+  #        - 10.0.1.2
+  #    netbios_name_servers:
+  #        - 10.0.0.1
+  #        - 10.0.1.1
+  #    tags:
+  #      AnsibleTest: integration
+  #      Collection: amazon.aws
+  #  register: dhcp_options
+  #  check_mode: true
+
+  #- assert:
+  #    that:
+  #      - dhcp_options.changed
+
+  - name: add and remove tags
+    ec2_vpc_dhcp_option:
+      dhcp_options_id: "{{ dhcp_options.dhcp_options_id }}"
+      state: present
+      vpc_id: "{{ vpc_id }}"
+      inherit_existing: False
+      delete_old: True
+      ntp_servers:
+          - 10.0.0.2
+          - 10.0.1.2
+      netbios_name_servers:
+          - 10.0.0.1
+          - 10.0.1.1
+      tags:
+        AnsibleTest: integration
+        Collection: amazon.aws
+    register: dhcp_options
+
+  - name: check if the expected tags are associated
+    ec2_vpc_dhcp_option_info:
+      dhcp_options_ids: ["{{ dhcp_options.dhcp_options_id }}"]
+    register: dhcp_options_info
+
+  - assert:
+      that:
+        - dhcp_options.changed
+        - not dhcp_options.new_options
+        - new_dhcp_options_id == dhcp_options.dhcp_options_id
+        - dhcp_options_info.dhcp_options[0].tags is defined
+        - dhcp_options_info.dhcp_options[0].tags.keys() | length == 2
+        - dhcp_options_info.dhcp_options[0].tags['collection'] == 'amazon.aws'
+        - dhcp_options_info.dhcp_options[0].tags['ansible_test'] == 'integration'
+
+  # FIXME does nothing, but reports changed
+  - name: test purging all tags
+    ec2_vpc_dhcp_option:
+      dhcp_options_id: "{{ dhcp_options.dhcp_options_id }}"
+      state: present
+      vpc_id: "{{ vpc_id }}"
+      inherit_existing: False
+      delete_old: True
+      ntp_servers:
+          - 10.0.0.2
+          - 10.0.1.2
+      netbios_name_servers:
+          - 10.0.0.1
+          - 10.0.1.1
+      tags: {}
+    register: dhcp_options
+
+  - name: check if the expected tags are associated
+    ec2_vpc_dhcp_option_info:
+      dhcp_options_ids: ["{{ dhcp_options.dhcp_options_id }}"]
+    register: dhcp_options_info
+
+  - assert:
+      that:
+        - dhcp_options.changed
+        - new_dhcp_options_id == dhcp_options.dhcp_options_id
+        #- not dhcp_options_info.dhcp_options[0].tags
+
+  - name: test no changes removing all tags
+    ec2_vpc_dhcp_option:
+      dhcp_options_id: "{{ dhcp_options.dhcp_options_id }}"
+      state: present
+      vpc_id: "{{ vpc_id }}"
+      inherit_existing: False
+      delete_old: True
+      ntp_servers:
+          - 10.0.0.2
+          - 10.0.1.2
+      netbios_name_servers:
+          - 10.0.0.1
+          - 10.0.1.1
+      tags: {}
+    register: dhcp_options
+
+  - name: check if the expected tags are associated
+    ec2_vpc_dhcp_option_info:
+      dhcp_options_ids: ["{{ dhcp_options.dhcp_options_id }}"]
+    register: dhcp_options_info
+
+  - assert:
+      that:
+        #- not dhcp_options.changed
+        - new_dhcp_options_id == dhcp_options.dhcp_options_id
+        #- not dhcp_options_info.dhcp_options[0].tags
+
+  # FIXME: check mode returns changed as False
+  - name: remove the DHCP option set (check mode)
+    ec2_vpc_dhcp_option:
+      state: absent
+      vpc_id: "{{ vpc_id }}"
+      dhcp_options_id: "{{ new_dhcp_options_id }}"
+    register: dhcp_options
+    check_mode: true
+
+  #- assert:
+  #    that:
+  #      - dhcp_options.changed
+
+  # FIXME: does nothing - the module should associate "default" with the VPC provided
+  - name: removing the DHCP option set
+    ec2_vpc_dhcp_option:
+      state: absent
+      vpc_id: "{{ vpc_id }}"
+      dhcp_options_id: "{{ new_dhcp_options_id }}"
+    register: dhcp_options
+
+  #- assert:
+  #    that:
+  #      - dhcp_options.changed
+
+  - name: remove the DHCP option set again (check mode)
+    ec2_vpc_dhcp_option:
+      state: absent
+      vpc_id: "{{ vpc_id }}"
+      dhcp_options_id: "{{ new_dhcp_options_id }}"
+    register: dhcp_options
+    check_mode: true
+
+  - assert:
+      that:
+        - not dhcp_options.changed
+
+  - name: remove the DHCP option set again
+    ec2_vpc_dhcp_option:
+      state: absent
+      vpc_id: "{{ vpc_id }}"
+      dhcp_options_id: "{{ new_dhcp_options_id }}"
+    register: dhcp_options
+
+  - assert:
+      that:
+        - not dhcp_options.changed
+
+  always:
+
+  - name: disassociate the new DHCP option set so it can be deleted
+    command: 'aws ec2 associate-dhcp-options --vpc-id {{ vpc_id }} --dhcp-options-id default'
+    environment:
+      AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+      AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+      AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+      AWS_DEFAULT_REGION: "{{ aws_region }}"
+    when: vpc_id is defined
+    ignore_errors: yes
+
+  - name: clean up DHCP option sets
+    ec2_vpc_dhcp_option:
+      state: absent
+      dhcp_options_id: "{{ original_dhcp_options_id }}"
+      vpc_id: "{{ vpc_id }}"
+    when: original_dhcp_options_id is defined
+    ignore_errors: yes
+
+  - name: clean up DHCP option sets
+    ec2_vpc_dhcp_option:
+      state: absent
+      dhcp_options_id: "{{ new_dhcp_options_id }}"
+      vpc_id: "{{ vpc_id }}"
+    when: new_dhcp_options_id is defined
+    ignore_errors: yes
+
+  - name: create a VPC with a default DHCP option set to test inheritance and delete_old
+    ec2_vpc_net:
+      name: "{{ resource_prefix }}"
+      cidr_block: "{{ vpc_cidr }}"
+      state: absent
