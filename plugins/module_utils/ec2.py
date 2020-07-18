@@ -313,6 +313,12 @@ def get_aws_connection_info(module, boto3=False):
         if os.environ.get('AWS_CA_BUNDLE'):
             ca_bundle = os.environ.get('AWS_CA_BUNDLE')
 
+    if not profile_name:
+        if os.environ.get('AWS_PROFILE'):
+            profile_name = os.environ.get('AWS_PROFILE')
+        if os.environ.get('AWS_DEFAULT_PROFILE'):
+            profile_name = os.environ.get('AWS_DEFAULT_PROFILE')
+
     if HAS_BOTO3 and boto3:
         boto_params = dict(aws_access_key_id=access_key,
                            aws_secret_access_key=secret_key,
