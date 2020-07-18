@@ -43,9 +43,9 @@ options:
     aliases: [ aws_security_token, access_token ]
   aws_ca_bundle:
     description:
-      - The location of a CA Bundle to use when validating SSL certificates.
-      - Only used for boto3 based modules.
-      - Note: The CA Bundle is read 'module' side and may need to be explicitly copied from the controller if not run locally.
+      - "The location of a CA Bundle to use when validating SSL certificates."
+      - "Only used for boto3 based modules."
+      - "Note: The CA Bundle is read 'module' side and may need to be explicitly copied from the controller if not run locally."
     type: path
   validate_certs:
     description:
