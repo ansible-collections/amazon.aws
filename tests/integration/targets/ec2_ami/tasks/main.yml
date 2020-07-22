@@ -123,6 +123,66 @@
         that:
           - "ami_facts_result.images[0].image_id == ec2_ami_image_id"
 
+   # some ec2_ami_info tests to test if the filtering is working fine.
+   # ============================================================
+
+    - name: gather info about the image
+      ec2_ami_info:
+        image_ids: '{{ ec2_region_images[ec2_region] }}'
+      register: ami_info_result
+      ignore_errors: true
+
+    - name: assert that the right image was found
+      assert:
+        that:
+          - "ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'"
+
+    # ============================================================
+
+    - name: gather info about the image using boolean filter
+      ec2_ami_info:
+        image_ids: '{{ ec2_region_images[ec2_region] }}'
+        filters:
+          is-public: true
+      register: ami_info_result
+      ignore_errors: true
+
+    - name: assert that the right image was found
+      assert:
+        that:
+          - "ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'"
+
+    # ============================================================
+
+    - name: gather info about the image using integer filter
+      ec2_ami_info:
+        image_ids: '{{ ec2_region_images[ec2_region] }}'
+        filters:
+          owner-id: 137112412989
+      register: ami_info_result
+      ignore_errors: true
+
+    - name: assert that the right image was found
+      assert:
+        that:
+          - "ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'"
+
+    # ============================================================
+
+    - name: gather info about the image using string filter
+      ec2_ami_info:
+        image_ids: '{{ ec2_region_images[ec2_region] }}'
+        filters:
+          name: 'amzn-ami-hvm-2017.09.0.20170930-x86_64-gp2'
+      register: ami_info_result
+      ignore_errors: true
+
+    - name: assert that the right image was found
+      assert:
+        that:
+          - "ami_info_result.images[0].image_id == '{{ ec2_region_images[ec2_region] }}'"
+
+    # e2_ami_info filtering tests ends
     # ============================================================
 
     - name: delete the image
@@ -146,7 +206,7 @@
           - "'image_id' not in result"
           - "result.snapshots_deleted"
 
-    # ============================================================
+    # ==============================================================
 
     - name: test removing an ami if no image ID is provided (expected failed=true)
       ec2_ami:

@@ -8,7 +8,7 @@ __metaclass__ = type
 
 import unittest
 
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import map_complex_type, compare_policies
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import map_complex_type, compare_policies, ansible_dict_to_boto3_filter_list
 
 
 class Ec2Utils(unittest.TestCase):
@@ -231,6 +231,33 @@ class Ec2Utils(unittest.TestCase):
             ]
         }
 
+        self.filter_list_string = [
+            {
+                'Name': 'some-aws-id',
+                'Values': [
+                    'i-01234567',
+                ]
+            }
+        ]
+
+        self.filter_list_boolean = [
+            {
+                'Name': 'enabled',
+                'Values': [
+                    'true',
+                ]
+            }
+        ]
+
+        self.filter_list_integer = [
+            {
+                'Name': 'version',
+                'Values': [
+                    '1',
+                ]
+            }
+        ]
+
     def test_map_complex_type_over_dict(self):
         complex_type = {'minimum_healthy_percent': "75", 'maximum_percent': "150"}
         type_map = {'minimum_healthy_percent': 'int', 'maximum_percent': 'int'}
@@ -270,6 +297,21 @@ class Ec2Utils(unittest.TestCase):
     def test_compare_numeric_policy_number_and_string_are_equal(self):
         """ Testing two policies one using a quoted number, the other an int """
         self.assertFalse(compare_policies(self.numeric_policy_string, self.numeric_policy_number))
+
+    def test_ansible_dict_with_string_to_boto3_filter_list(self):
+        filters = {'some-aws-id': 'i-01234567'}
+        converted_filters_list = ansible_dict_to_boto3_filter_list(filters)
+        self.assertEqual(converted_filters_list, self.filter_list_string)
+
+    def test_ansible_dict_with_boolean_to_boto3_filter_list(self):
+        filters = {'enabled': True}
+        converted_filters_bool = ansible_dict_to_boto3_filter_list(filters)
+        self.assertEqual(converted_filters_bool, self.filter_list_boolean)
+
+    def test_ansible_dict_with_integer_to_boto3_filter_list(self):
+        filters = {'version': 1}
+        converted_filters_int = ansible_dict_to_boto3_filter_list(filters)
+        self.assertEqual(converted_filters_int, self.filter_list_integer)
 
     def test_compare_version_policies_defaults_old(self):
         """ Testing that a policy without Version is considered identical to one
