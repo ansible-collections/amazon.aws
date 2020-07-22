@@ -78,16 +78,27 @@ options:
     suboptions:
         device_name:
           type: str
-          description: The device name. For example C(/dev/sda).
+          description:
+          - The device name. For example C(/dev/sda).
+        virtual_name:
+          type: str
+          description:
+          - The virtual name for the device.
+          - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_BlockDeviceMapping.html).
+          - Alias C(VirtualName) has been deprecated and will be removed after 2022-06-01.
+          aliases: ['VirtualName']
+        no_device:
+          type: bool
+          description:
+          - Suppresses the specified device included in the block device mapping of the AMI.
+          - Alias C(NoDevice) has been deprecated and will be removed after 2022-06-01.
+          aliases: ['NoDevice']
         volume_type:
           type: str
           description: The volume type.  Defaults to C(gp2) when not set.
         delete_on_termination:
           type: bool
           description: Whether the device should be automatically deleted when the Instance is terminated.
-        no_device:
-          type: bool
-          description: Suppresses the specified device included in the block device mapping of the AMI.
         snapshot_id:
           type: str
           description: The ID of the Snapshot.
@@ -442,12 +453,12 @@ def create_image(module, connection):
 
         block_device_mapping = None
 
+        # Remove empty values injected by using options
         if device_mapping:
             block_device_mapping = []
             for device in device_mapping:
+                device = dict((k, v) for k, v in device.items() if v is not None)
                 device['Ebs'] = {}
-                if 'device_name' not in device:
-                    module.fail_json(msg="Error - Device name must be set for volume.")
                 device = rename_item_if_exists(device, 'device_name', 'DeviceName')
                 device = rename_item_if_exists(device, 'virtual_name', 'VirtualName')
                 device = rename_item_if_exists(device, 'no_device', 'NoDevice')
@@ -674,6 +685,21 @@ def rename_item_if_exists(dict_object, attribute, new_attribute, child_node=None
 
 
 def main():
+    mapping_options = dict(
+        device_name=dict(type='str'),
+        virtual_name=dict(
+            type='str', aliases=['VirtualName'],
+            deprecated_aliases=[dict(name='VirtualName', date='2022-06-01', collection_name='amazon.aws')]),
+        no_device=dict(
+            type='bool', aliases=['NoDevice'],
+            deprecated_aliases=[dict(name='NoDevice', date='2022-06-01', collection_name='amazon.aws')]),
+        volume_type=dict(type='str'),
+        delete_on_termination=dict(type='bool'),
+        snapshot_id=dict(type='str'),
+        iops=dict(type='int'),
+        encrypted=dict(type='bool'),
+        volume_size=dict(type='int', aliases=['size']),
+    )
     argument_spec = dict(
         instance_id=dict(),
         image_id=dict(),
@@ -688,7 +714,7 @@ def main():
         description=dict(default=''),
         no_reboot=dict(default=False, type='bool'),
         state=dict(default='present', choices=['present', 'absent']),
-        device_mapping=dict(type='list', elements='dict',),
+        device_mapping=dict(type='list', elements='dict', options=mapping_options),
         tags=dict(type='dict'),
         launch_permissions=dict(type='dict'),
         image_location=dict(),

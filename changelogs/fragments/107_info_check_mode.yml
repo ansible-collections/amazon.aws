@@ -1,0 +1,4 @@
+minor_changes:
+- Added check_mode support to aws_az_info
+- Added check_mode support to ec2_eni_info
+- Added check_mode support to ec2_snapshot_info
