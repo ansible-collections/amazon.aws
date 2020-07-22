@@ -930,7 +930,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                                                                         <div>Inbound rules associated with the security group.</div>
                                                                 <br/>
                                             <div style="font-size: smaller"><b>Sample:</b></div>
-                                                <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[{&#x27;from_port&#x27;: 8182, &#x27;ip_protocol&#x27;: &#x27;tcp&#x27;, &#x27;ip_ranges&#x27;: [{&#x27;cidr_ip&#x27;: &#x27;1.1.1.1/32&#x27;}], &#x27;ipv6_ranges&#x27;: [], &#x27;prefix_list_ids&#x27;: [], &#x27;to_port&#x27;: 8182, &#x27;user_id_group_pairs&#x27;: []}]</div>
+                                                <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[{&#x27;from_port&#x27;: 8182, &#x27;ip_protocol&#x27;: &#x27;tcp&#x27;, &#x27;ip_ranges&#x27;: [{&#x27;cidr_ip&#x27;: &#x27;198.51.100.1/32&#x27;}], &#x27;ipv6_ranges&#x27;: [], &#x27;prefix_list_ids&#x27;: [], &#x27;to_port&#x27;: 8182, &#x27;user_id_group_pairs&#x27;: []}]</div>
                                     </td>
             </tr>
                                 <tr>

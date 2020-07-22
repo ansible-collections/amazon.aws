@@ -18,7 +18,7 @@ Version added: 1.0.0
 Synopsis
 --------
 - Creates or terminates ec2 instances.
-- Note: This module uses the older boto Python module to interact with the EC2 API. :ref:`ec2 <ec2_module>` will still receive bug fixes, but no new features. Consider using the :ref:`ec2_instance <ec2_instance_module>` module instead. If :ref:`ec2_instance <ec2_instance_module>` does not support a feature you need that is available in :ref:`ec2 <ec2_module>`, please file a feature request.
+- Note: This module uses the older boto Python module to interact with the EC2 API. :ref:`amazon.aws.ec2 <amazon.aws.ec2_module>` will still receive bug fixes, but no new features. Consider using the :ref:`amazon.aws.ec2_instance <amazon.aws.ec2_instance_module>` module instead. If :ref:`amazon.aws.ec2_instance <amazon.aws.ec2_instance_module>` does not support a feature you need that is available in :ref:`amazon.aws.ec2 <amazon.aws.ec2_module>`, please file a feature request.
 
 
 
@@ -384,7 +384,7 @@ Parameters
                                                                 <td>
                                             <div>Key pair to use on the instance.</div>
                                             <div>The SSH key must already exist in AWS in order to use this argument.</div>
-                                            <div>Keys can be created / deleted using the <span class='module'>ec2_key</span> module.</div>
+                                            <div>Keys can be created / deleted using the <span class='module'>amazon.aws.ec2_key</span> module.</div>
                                                                 <div style="font-size: small; color: darkgreen"><br/>aliases: keypair</div>
                                     </td>
             </tr>

@@ -333,7 +333,8 @@ Parameters
                                                                                     </ul>
                                                                             </td>
                                                                 <td>
-                                            <div>Whether to ensure the volume is present or absent, or to list existing volumes (The <code>list</code> option was added in version 1.8).</div>
+                                            <div>Whether to ensure the volume is present or absent.</div>
+                                            <div>The use of <em>state=list</em> to interrogate the volume has been deprecated and will be removed after 2022-06-01.  The &#x27;list&#x27; functionality has been moved to a dedicated module <span class='module'>amazon.aws.ec2_vol_info</span>.</div>
                                                         </td>
             </tr>
                                 <tr>
