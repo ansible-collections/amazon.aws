@@ -206,7 +206,7 @@
           - "'image_id' not in result"
           - "result.snapshots_deleted"
 
-    # ============================================================
+    # ==============================================================
 
     - name: test removing an ami if no image ID is provided (expected failed=true)
       ec2_ami:
