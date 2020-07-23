@@ -452,7 +452,8 @@ class Ec2Utils(unittest.TestCase):
         self.assertEqual(new_keys, keys_to_set)
         self.assertEqual([], keys_to_unset)
 
-    def test_compare_aws_tags_changed(self):
+    def test_compare_aws_tags_complex_update(self):
+        # Adds 'Me too!', Changes 'UpperCamel' and removes 'Normal case'
         new_dict = dict(self.tag_example_dict)
         new_keys = {'UpperCamel': 'anotherCamelValue', 'Me too!': 'Contributing'}
         new_dict.update(new_keys)
