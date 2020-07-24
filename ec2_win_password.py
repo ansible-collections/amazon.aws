@@ -111,12 +111,12 @@ try:
 except ImportError:
     HAS_CRYPTOGRAPHY = False
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO, ec2_argument_spec, ec2_connect
 from ansible.module_utils._text import to_bytes
 
 
-def main():
+def setup_module_object():
     argument_spec = ec2_argument_spec()
     argument_spec.update(dict(
         instance_id=dict(required=True),
@@ -127,21 +127,21 @@ def main():
         wait_timeout=dict(default=120, required=False, type='int'),
     )
     )
-    module = AnsibleModule(argument_spec=argument_spec)
+    module = AnsibleAWSModule(argument_spec=argument_spec)
+    return module
 
-    if not HAS_BOTO:
-        module.fail_json(msg='Boto required for this module.')
 
-    if not HAS_CRYPTOGRAPHY:
-        module.fail_json(msg='cryptography package required for this module.')
-
+def ec2_win_password(module):
     instance_id = module.params.get('instance_id')
     key_file = module.params.get('key_file')
-    key_data = module.params.get('key_data')
     if module.params.get('key_passphrase') is None:
         b_key_passphrase = None
     else:
         b_key_passphrase = to_bytes(module.params.get('key_passphrase'), errors='surrogate_or_strict')
+    if module.params.get('key_data') is None:
+        b_key_data = None
+    else:
+        b_key_data = to_bytes(module.params.get('key_data'), errors='surrogate_or_strict')
     wait = module.params.get('wait')
     wait_timeout = module.params.get('wait_timeout')
 
@@ -165,7 +165,7 @@ def main():
     if wait and datetime.datetime.now() >= end:
         module.fail_json(msg="wait for password timeout after %d seconds" % wait_timeout)
 
-    if key_file is not None and key_data is None:
+    if key_file is not None and b_key_data is None:
         try:
             with open(key_file, 'rb') as f:
                 key = load_pem_private_key(f.read(), b_key_passphrase, default_backend())
@@ -175,9 +175,9 @@ def main():
         except (ValueError, TypeError) as e:
             # Handle issues loading key
             module.fail_json(msg="unable to parse key file")
-    elif key_data is not None and key_file is None:
+    elif b_key_data is not None and key_file is None:
         try:
-            key = load_pem_private_key(key_data.encode('ascii'), b_key_passphrase, default_backend())
+            key = load_pem_private_key(b_key_data, b_key_passphrase, default_backend())
         except (ValueError, TypeError) as e:
             module.fail_json(msg="unable to parse key data")
 
@@ -194,6 +194,18 @@ def main():
             module.exit_json(win_password=decrypted, changed=True, elapsed=elapsed.seconds)
         else:
             module.exit_json(win_password=decrypted, changed=True)
+
+
+def main():
+    module = setup_module_object()
+
+    if not HAS_BOTO:
+        module.fail_json(msg='Boto required for this module.')
+
+    if not HAS_CRYPTOGRAPHY:
+        module.fail_json(msg='cryptography package required for this module.')
+
+    ec2_win_password(module)
 
 
 if __name__ == '__main__':
