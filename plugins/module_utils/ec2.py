@@ -466,7 +466,7 @@ def boto3_tag_list_to_ansible_dict(tags_list, tag_name_key_name=None, tag_value_
         tag_candidates = {'key': 'value', 'Key': 'Value'}
 
     # minio seems to return [{}] as an empty tags_list
-    if not tags_list or not tags_list[0]:
+    if not tags_list or not any(tag for tag in tags_list):
         return {}
     for k, v in tag_candidates.items():
         if k in tags_list[0] and v in tags_list[0]:
