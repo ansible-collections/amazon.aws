@@ -12,7 +12,7 @@ fixture_prefix = 'tests/unit/modules/fixtures/certs'
 
 class TestEc2WinPasswordModule(ModuleTestCase):
     @patch('ansible_collections.community.aws.plugins.modules.ec2_win_password.ec2_connect')
-    def test_first(self, mock_connect):
+    def test_decryption(self, mock_connect):
 
         path = fixture_prefix + '/ec2_win_password.pem'
         with open(path, 'r') as f:
