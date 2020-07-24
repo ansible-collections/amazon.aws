@@ -394,6 +394,12 @@ class Ec2Utils(unittest.TestCase):
         converted_dict = boto3_tag_list_to_ansible_dict(self.tag_example_boto3_list)
         self.assertEqual(converted_dict, self.tag_example_dict)
 
+    def test_boto3_tag_list_to_ansible_dict_empty(self):
+        # AWS returns [] when there are no tags
+        self.assertEqual(boto3_tag_list_to_ansible_dict([], {}))
+        # Minio returns [{}] when there are no tags
+        self.assertEqual(boto3_tag_list_to_ansible_dict([{}], {}))
+
     # ========================================================
     #   ec2.compare_aws_tags
     # ========================================================
