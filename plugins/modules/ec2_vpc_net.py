@@ -205,6 +205,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.ec2 import AWSRetry
+from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import compare_aws_tags
@@ -216,10 +217,12 @@ def vpc_exists(module, vpc, name, cidr_block, multi):
     otherwise it will assume the VPC does not exist and thus return None.
     """
     try:
-        matching_vpcs = vpc.describe_vpcs(Filters=[{'Name': 'tag:Name', 'Values': [name]}, {'Name': 'cidr-block', 'Values': cidr_block}])['Vpcs']
+        vpc_filters = ansible_dict_to_boto3_filter_list({'tag:Name': name, 'cidr-block': cidr_block})
+        matching_vpcs = vpc.describe_vpcs(aws_retry=True, Filters=vpc_filters)['Vpcs']
         # If an exact matching using a list of CIDRs isn't found, check for a match with the first CIDR as is documented for C(cidr_block)
         if not matching_vpcs:
-            matching_vpcs = vpc.describe_vpcs(Filters=[{'Name': 'tag:Name', 'Values': [name]}, {'Name': 'cidr-block', 'Values': [cidr_block[0]]}])['Vpcs']
+            vpc_filters = ansible_dict_to_boto3_filter_list({'tag:Name': name, 'cidr-block': [cidr_block[0]]})
+            matching_vpcs = vpc.describe_vpcs(aws_retry=True, Filters=vpc_filters)['Vpcs']
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe VPCs")
 
@@ -271,7 +274,7 @@ def update_vpc_tags(connection, module, vpc_id, tags, name):
     tags.update({'Name': name})
     tags = dict((k, to_native(v)) for k, v in tags.items())
     try:
-        filters = [{'Name': 'resource-id', 'Values': [vpc_id]}]
+        filters = ansible_dict_to_boto3_filter_list({'resource-id': vpc_id})
         current_tags = dict((t['Key'], t['Value']) for t in connection.describe_tags(Filters=filters, aws_retry=True)['Tags'])
         tags_to_update, dummy = compare_aws_tags(current_tags, tags, False)
         if tags_to_update:
