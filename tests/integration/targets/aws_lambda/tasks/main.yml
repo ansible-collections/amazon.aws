@@ -79,6 +79,7 @@
     copy:
       src: mini_lambda.py
       dest: '{{output_dir}}/mini_lambda.py'
+      mode: preserve
   - name: bundle lambda into a zip
     register: zip_res
     archive:
