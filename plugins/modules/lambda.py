@@ -212,21 +212,24 @@ configuration:
 '''
 
 from ansible.module_utils._text import to_native
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info, boto3_conn, camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
+
 import base64
 import hashlib
 import traceback
 import re
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError, ValidationError, ParamValidationError
+    from botocore.exceptions import ClientError, BotoCoreError
 except ImportError:
     pass  # protected by AnsibleAWSModule
 
 
-def get_account_info(module, region=None, endpoint=None, **aws_connect_kwargs):
+def get_account_info(module):
     """return the account information (account id and partition) we are currently working on
 
     get_account_info tries too find out the account that we are working
@@ -237,27 +240,25 @@ def get_account_info(module, region=None, endpoint=None, **aws_connect_kwargs):
     account_id = None
     partition = None
     try:
-        sts_client = boto3_conn(module, conn_type='client', resource='sts',
-                                region=region, endpoint=endpoint, **aws_connect_kwargs)
-        caller_id = sts_client.get_caller_identity()
+        sts_client = module.client('sts', retry_decorator=AWSRetry.jittered_backoff())
+        caller_id = sts_client.get_caller_identity(aws_retry=True)
         account_id = caller_id.get('Account')
         partition = caller_id.get('Arn').split(':')[1]
-    except ClientError:
+    except (BotoCoreError, ClientError):
         try:
-            iam_client = boto3_conn(module, conn_type='client', resource='iam',
-                                    region=region, endpoint=endpoint, **aws_connect_kwargs)
-            arn, partition, service, reg, account_id, resource = iam_client.get_user()['User']['Arn'].split(':')
-        except ClientError as e:
-            if (e.response['Error']['Code'] == 'AccessDenied'):
+            iam_client = module.client('iam', retry_decorator=AWSRetry.jittered_backoff())
+            arn, partition, service, reg, account_id, resource = iam_client.get_user(aws_retry=True)['User']['Arn'].split(':')
+        except is_boto3_error_code('AccessDenied') as e:
+            try:
                 except_msg = to_native(e.message)
-                m = except_msg.search(r"arn:(aws(-([a-z\-]+))?):iam::([0-9]{12,32}):\w+/")
-                account_id = m.group(4)
-                partition = m.group(1)
-            if account_id is None:
+            except AttributeError:
+                except_msg = to_native(e)
+            m = re.search(r"arn:(aws(-([a-z\-]+))?):iam::([0-9]{12,32}):\w+/", except_msg)
+            if m is None:
                 module.fail_json_aws(e, msg="getting account information")
-            if partition is None:
-                module.fail_json_aws(e, msg="getting account information: partition")
-        except Exception as e:
+            account_id = m.group(4)
+            partition = m.group(1)
+        except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="getting account information")
 
     return account_id, partition
@@ -266,15 +267,10 @@ def get_account_info(module, region=None, endpoint=None, **aws_connect_kwargs):
 def get_current_function(connection, function_name, qualifier=None):
     try:
         if qualifier is not None:
-            return connection.get_function(FunctionName=function_name, Qualifier=qualifier)
-        return connection.get_function(FunctionName=function_name)
-    except ClientError as e:
-        try:
-            if e.response['Error']['Code'] == 'ResourceNotFoundException':
-                return None
-        except (KeyError, AttributeError):
-            pass
-        raise e
+            return connection.get_function(FunctionName=function_name, Qualifier=qualifier, aws_retry=True)
+        return connection.get_function(FunctionName=function_name, aws_retry=True)
+    except is_boto3_error_code('ResourceNotFoundException'):
+        return None
 
 
 def sha256sum(filename):
@@ -290,17 +286,14 @@ def sha256sum(filename):
 
 
 def set_tag(client, module, tags, function):
-    if not hasattr(client, "list_tags"):
-        module.fail_json(msg="Using tags requires botocore 1.5.40 or above")
 
     changed = False
     arn = function['Configuration']['FunctionArn']
 
     try:
-        current_tags = client.list_tags(Resource=arn).get('Tags', {})
-    except ClientError as e:
-        module.fail_json(msg="Unable to list tags: {0}".format(to_native(e)),
-                         exception=traceback.format_exc())
+        current_tags = client.list_tags(Resource=arn, aws_retry=True).get('Tags', {})
+    except (BotoCoreError, ClientError) as e:
+        module.fail_json_aws(e, msg="Unable to list tags")
 
     tags_to_add, tags_to_remove = compare_aws_tags(current_tags, tags, purge_tags=True)
 
@@ -308,24 +301,21 @@ def set_tag(client, module, tags, function):
         if tags_to_remove:
             client.untag_resource(
                 Resource=arn,
-                TagKeys=tags_to_remove
+                TagKeys=tags_to_remove,
+                aws_retry=True
             )
             changed = True
 
         if tags_to_add:
             client.tag_resource(
                 Resource=arn,
-                Tags=tags_to_add
+                Tags=tags_to_add,
+                aws_retry=True
             )
             changed = True
 
-    except ClientError as e:
-        module.fail_json(msg="Unable to tag resource {0}: {1}".format(arn,
-                         to_native(e)), exception=traceback.format_exc(),
-                         **camel_dict_to_snake_dict(e.response))
-    except BotoCoreError as e:
-        module.fail_json(msg="Unable to tag resource {0}: {1}".format(arn,
-                         to_native(e)), exception=traceback.format_exc())
+    except (BotoCoreError, ClientError) as e:
+        module.fail_json_aws(e, msg="Unable to tag resource {0}".format(arn))
 
     return changed
 
@@ -389,22 +379,21 @@ def main():
     check_mode = module.check_mode
     changed = False
 
-    region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
-    if not region:
-        module.fail_json(msg='region must be specified')
-
     try:
-        client = boto3_conn(module, conn_type='client', resource='lambda',
-                            region=region, endpoint=ec2_url, **aws_connect_kwargs)
-    except (ClientError, ValidationError) as e:
+        client = module.client('lambda', retry_decorator=AWSRetry.jittered_backoff())
+    except (ClientError, BotoCoreError) as e:
         module.fail_json_aws(e, msg="Trying to connect to AWS")
+
+    if tags is not None:
+        if not hasattr(client, "list_tags"):
+            module.fail_json(msg="Using tags requires botocore 1.5.40 or above")
 
     if state == 'present':
         if re.match(r'^arn:aws(-([a-z\-]+))?:iam', role):
             role_arn = role
         else:
             # get account ID and assemble ARN
-            account_id, partition = get_account_info(module, region=region, endpoint=ec2_url, **aws_connect_kwargs)
+            account_id, partition = get_account_info(module)
             role_arn = 'arn:{0}:iam::{1}:role/{2}'.format(partition, account_id, role)
 
     # Get function configuration if present, False otherwise
@@ -447,9 +436,7 @@ def main():
             func_kwargs.update({'TracingConfig': {'Mode': tracing_mode}})
 
         # If VPC configuration is desired
-        if vpc_subnet_ids or vpc_security_group_ids:
-            if not vpc_subnet_ids or not vpc_security_group_ids:
-                module.fail_json(msg='vpc connectivity requires at least one security group and one subnet')
+        if vpc_subnet_ids:
 
             if 'VpcConfig' in current_config:
                 # Compare VPC config with current config
@@ -472,10 +459,10 @@ def main():
         if len(func_kwargs) > 1:
             try:
                 if not check_mode:
-                    response = client.update_function_configuration(**func_kwargs)
+                    response = client.update_function_configuration(aws_retry=True, **func_kwargs)
                     current_version = response['Version']
                 changed = True
-            except (ParamValidationError, ClientError) as e:
+            except (BotoCoreError, ClientError) as e:
                 module.fail_json_aws(e, msg="Trying to update lambda configuration")
 
         # Update code configuration
@@ -513,10 +500,10 @@ def main():
         if len(code_kwargs) > 2:
             try:
                 if not check_mode:
-                    response = client.update_function_code(**code_kwargs)
+                    response = client.update_function_code(aws_retry=True, **code_kwargs)
                     current_version = response['Version']
                 changed = True
-            except (ParamValidationError, ClientError) as e:
+            except (BotoCoreError, ClientError) as e:
                 module.fail_json_aws(e, msg="Trying to upload new code")
 
         # Describe function code and configuration
@@ -573,10 +560,7 @@ def main():
             func_kwargs.update({'TracingConfig': {'Mode': tracing_mode}})
 
         # If VPC configuration is given
-        if vpc_subnet_ids or vpc_security_group_ids:
-            if not vpc_subnet_ids or not vpc_security_group_ids:
-                module.fail_json(msg='vpc connectivity requires at least one security group and one subnet')
-
+        if vpc_subnet_ids:
             func_kwargs.update({'VpcConfig': {'SubnetIds': vpc_subnet_ids,
                                               'SecurityGroupIds': vpc_security_group_ids}})
 
@@ -584,10 +568,10 @@ def main():
         current_version = None
         try:
             if not check_mode:
-                response = client.create_function(**func_kwargs)
+                response = client.create_function(aws_retry=True, **func_kwargs)
                 current_version = response['Version']
             changed = True
-        except (ParamValidationError, ClientError) as e:
+        except (BotoCoreError, ClientError) as e:
             module.fail_json_aws(e, msg="Trying to create function")
 
         # Tag Function
@@ -604,9 +588,9 @@ def main():
     if state == 'absent' and current_function:
         try:
             if not check_mode:
-                client.delete_function(FunctionName=name)
+                client.delete_function(FunctionName=name, aws_retry=True)
             changed = True
-        except (ParamValidationError, ClientError) as e:
+        except (BotoCoreError, ClientError) as e:
             module.fail_json_aws(e, msg="Trying to delete Lambda function")
 
         module.exit_json(changed=changed)
