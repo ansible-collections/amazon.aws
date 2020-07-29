@@ -715,6 +715,11 @@
         filters:
           "tag:Name": "{{ resource_prefix }}"
       register: vpc_info
+      until:
+        - vpc_info.vpcs | length == 1
+        - vpc_info.vpcs[0].tags | length == 2
+      retries: 5
+      delay: 5
 
     - name: assert the VPC has Name and Ansible tags
       assert:
