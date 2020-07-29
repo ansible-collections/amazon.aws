@@ -254,8 +254,9 @@ You can also join us on:
 
 - Freenode IRC - ``#ansible-aws`` Freenode channel
 
-See the [Ansible Community Guide](https://docs.ansible.com/ansible/latest/community/index.html) for details on contributing to Ansible.
+See the [Collection Developer Guide](https://docs.ansible.com/ansible/devel/dev_guide/developing_collections.html) for details on contributing to this repository.
 
+See the [Ansible Community Guide](https://docs.ansible.com/ansible/latest/community/index.html) for details on contributing to Ansible more generally.
 
 ## Release notes
 <!--Add a link to a changelog.rst file or an external docsite to cover this information. -->
@@ -269,6 +270,7 @@ See the [Ansible Community Guide](https://docs.ansible.com/ansible/latest/commun
 - [Ansible Collection overview](https://github.com/ansible-collections/overview)
 - [Ansible User guide](https://docs.ansible.com/ansible/latest/user_guide/index.html)
 - [Ansible Developer guide](https://docs.ansible.com/ansible/latest/dev_guide/index.html)
+- [Ansible Collection Developer Guide](https://docs.ansible.com/ansible/devel/dev_guide/developing_collections.html)
 - [Ansible Community code of conduct](https://docs.ansible.com/ansible/latest/community/code_of_conduct.html)
 
 ## Licensing
