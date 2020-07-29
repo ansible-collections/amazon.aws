@@ -496,7 +496,7 @@ def main():
                     Filters=[{'Name': 'cidr-block-association.cidr-block', 'Values': expected_cidrs}]
                 )
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, "Failed to wait for CIDRs to update")
+                module.fail_json_aws(e, "Failed to wait for CIDRs to update", vpc_id=vpc_id)
 
         # try to wait for enableDnsSupport and enableDnsHostnames to match
         wait_for_vpc_attribute(connection, module, vpc_id, 'enableDnsSupport', dns_support)

@@ -1301,6 +1301,10 @@
         state: absent
       ignore_errors: true
 
+    - name: Describe VPCs before deleting them (for debugging)
+      ec2_vpc_net_info:
+      ignore_errors: true
+
     - name: remove the VPC
       ec2_vpc_net:
         cidr_block: "{{ vpc_cidr }}"
