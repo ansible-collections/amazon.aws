@@ -458,7 +458,7 @@
            - 'vpc_subnet_ipv6_recreate.subnet == vpc_subnet_ipv6_create.subnet'
 
     # ============================================================
-    - name: change subnet ipv6 attribute (expected changed=true) (CHECK MODE)
+    - name: change subnet assign_instances_ipv6 attribute (expected changed=true) (CHECK MODE)
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
@@ -474,7 +474,7 @@
         that:
            - vpc_change_attribute is changed
 
-    - name: change subnet ipv6 attribute (expected changed=true)
+    - name: change subnet assign_instances_ipv6 attribute (expected changed=true)
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
