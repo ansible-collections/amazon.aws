@@ -9,7 +9,7 @@
     - community.general
   block:
   - name: test with no parameters
-    lambda: null
+    lambda:
     register: result
     ignore_errors: true
   - name: assert failure when called with no parameters
@@ -44,37 +44,14 @@
       runtime: python2.7
       handler: no-handler
       role: arn:fake-role-doesnt-exist
-      region: null
+      region: '{{ omit }}'
     register: result
     ignore_errors: true
   - name: assert failure when called with only 'name'
     assert:
       that:
       - result.failed
-      - result.msg == "region must be specified"
-  - name: test with all module required variables, no region and all possible variables set to blank
-    lambda:
-      name: ansible-testing-fake-should-not-be-created
-      state: present
-      runtime: python2.7
-      role: arn:fake-role-doesnt-exist
-      handler: null
-      s3_bucket: null
-      s3_key: null
-      s3_object_version: null
-      description: null
-      vpc_subnet_ids: null
-      vpc_security_group_ids: null
-      environment_variables: null
-      dead_letter_arn: null
-      region: null
-    register: result
-    ignore_errors: true
-  - name: assert failure when called with only 'name'
-    assert:
-      that:
-      - result.failed
-      - result.msg == "region must be specified"
+      - '"requires a region and none was found" in result.msg'
   - name: move lambda into place for archive module
     copy:
       src: mini_lambda.py
@@ -233,12 +210,12 @@
       runtime: python2.7
       role: ansible_lambda_role
       zip_file: '{{zip_res.dest}}'
-      handler: null
-      description: null
-      vpc_subnet_ids: null
+      handler: '{{ omit }}'
+      description: '{{ omit }}'
+      vpc_subnet_ids: '{{ omit }}'
       vpc_security_group_ids: sg-FA6E
-      environment_variables: null
-      dead_letter_arn: null
+      environment_variables: '{{ omit }}'
+      dead_letter_arn: '{{ omit }}'
     register: result
     ignore_errors: true
   - name: assert lambda fails with proper message
@@ -247,7 +224,7 @@
       - result is failed
       - result.msg != "MODULE FAILURE"
       - result.changed == False
-      - '"requires at least one security group and one subnet" in result.msg'
+      - '"parameters are required together" in result.msg'
   - name: test state=present with all nullable variables explicitly set to null
     lambda:
       name: '{{lambda_function_name}}'
