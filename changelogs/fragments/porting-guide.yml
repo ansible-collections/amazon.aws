@@ -1,0 +1,12 @@
+---
+deprecated_features:
+  - iam_managed_policy - the ``fail_on_delete`` option has been deprecated and will be removed in a later release.  It has always been ignored by the module.
+  - s3_lifecycle - the ``requester_pays`` option has been deprecated and will be removed in a later release. It has always been ignored by the module.
+  - s3_sync - the ``retries`` option has been deprecated and will be removed in a later release. It has always been ignored by the module.
+  - data_pipeline - the ``version`` option has been deprecated and will be removed in a later release. It has always been ignored by the module.
+  - ec2_eip - the ``wait_timeout`` option has been deprecated and will be removed in a later release. It has had no effect since Ansible 2.3.
+  - ec2_lc - the ``associate_public_ip_address`` option has been deprecated and will be removed in a later release. It has always been ignored by the module.
+  - iam_policy - the ``policy_document`` option has been deprecated and will be removed in a later release. To maintain the existing behavior use the ``policy_json`` option and read the file with the ``lookup`` plugin.
+  - iam_policy - in a later release, the default value for the ``skip_duplicates`` option will change from ``true`` to ``false``.  To maintain the existing behavior explicitly set it to ``true``.
+  - iam_role - in a later release, the ``purge_policies`` option (also know as ``purge_policy``) default value will change from ``true`` to ``false``
+  - elb_network_lb - in a later release, the default behaviour for the ``state`` option will change from ``absent`` to ``present``.  To maintain the existing behavior explicitly set state to ``absent``.
