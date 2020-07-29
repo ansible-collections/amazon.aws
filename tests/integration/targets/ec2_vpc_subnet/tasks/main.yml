@@ -30,6 +30,9 @@
     - set_fact:
         vpc_ipv6_cidr: "{{ vpc_result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block }}"
 
+    - set_fact:
+        subnet_ipv6_cidr: "{{ vpc_ipv6_cidr | regex_replace('::/.*', '::/64') }}"
+
     # ============================================================
     - name: create subnet (expected changed=true) (CHECK MODE)
       ec2_vpc_subnet:
@@ -381,7 +384,7 @@
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        ipv6_cidr: "{{ vpc_ipv6_cidr | regex_replace('::/56', '::/64') }}"
+        ipv6_cidr: "{{ subnet_ipv6_cidr }}"
         assign_instances_ipv6: true
         state: present
         tags:
@@ -399,7 +402,7 @@
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        ipv6_cidr: "{{ vpc_ipv6_cidr | regex_replace('::/56', '::/64') }}"
+        ipv6_cidr: "{{ subnet_ipv6_cidr }}"
         assign_instances_ipv6: true
         state: present
         tags:
@@ -412,7 +415,7 @@
         that:
            - vpc_subnet_ipv6_create is changed
            - 'vpc_subnet_ipv6_create.subnet.id.startswith("subnet-")'
-           - "vpc_subnet_ipv6_create.subnet.ipv6_cidr_block == '{{ vpc_ipv6_cidr | regex_replace('::/56', '::/64') }}'"
+           - "vpc_subnet_ipv6_create.subnet.ipv6_cidr_block == subnet_ipv6_cidr"
            - '"Name" in vpc_subnet_ipv6_create.subnet.tags and vpc_subnet_ipv6_create.subnet.tags["Name"] == ec2_vpc_subnet_name'
            - '"Description" in vpc_subnet_ipv6_create.subnet.tags and vpc_subnet_ipv6_create.subnet.tags["Description"] == ec2_vpc_subnet_description'
            - 'vpc_subnet_ipv6_create.subnet.assign_ipv6_address_on_creation'
@@ -422,7 +425,7 @@
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        ipv6_cidr: "{{ vpc_ipv6_cidr | regex_replace('::/56', '::/64') }}"
+        ipv6_cidr: "{{ subnet_ipv6_cidr }}"
         assign_instances_ipv6: true
         state: present
         tags:
@@ -440,7 +443,7 @@
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        ipv6_cidr: "{{ vpc_ipv6_cidr | regex_replace('::/56', '::/64') }}"
+        ipv6_cidr: "{{ subnet_ipv6_cidr }}"
         assign_instances_ipv6: true
         state: present
         tags:
@@ -459,7 +462,7 @@
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        ipv6_cidr: "{{ vpc_ipv6_cidr | regex_replace('::/56', '::/64') }}"
+        ipv6_cidr: "{{ subnet_ipv6_cidr }}"
         assign_instances_ipv6: false
         state: present
         purge_tags: false
@@ -475,7 +478,7 @@
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        ipv6_cidr: "{{ vpc_ipv6_cidr | regex_replace('::/56', '::/64') }}"
+        ipv6_cidr: "{{ subnet_ipv6_cidr }}"
         assign_instances_ipv6: false
         state: present
         purge_tags: false
@@ -492,7 +495,7 @@
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr_b }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        ipv6_cidr: "{{ vpc_ipv6_cidr | regex_replace('::/56', '::/64') }}"
+        ipv6_cidr: "{{ subnet_ipv6_cidr }}"
         state: present
         purge_tags: false
       register: vpc_add_duplicate_ipv6
@@ -502,7 +505,7 @@
       assert:
         that:
            - vpc_add_duplicate_ipv6 is failed
-           - "'The IPv6 CIDR \\'{{ vpc_ipv6_cidr | regex_replace('::/56', '::/64') }}\\' conflicts with another subnet' in vpc_add_duplicate_ipv6.msg"
+           - "'The IPv6 CIDR \\'{{ subnet_ipv6_cidr }}\\' conflicts with another subnet' in vpc_add_duplicate_ipv6.msg"
 
     # ============================================================
     - name: remove subnet ipv6 cidr (expected changed=true) (CHECK MODE)
