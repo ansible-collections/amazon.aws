@@ -23,7 +23,7 @@
 - name: 'Test basic operation using FIPS endpoint (aws-parameters)'
   boto3_example:
     region: '{{ aws_region }}'
-    aws_endpoint_url: 'https://ec2-fips.{{ aws_region }}.amazonaws.com'
+    aws_endpoint_url: 'https://ec2-fips.us-east-1.amazonaws.com'
     aws_access_key: '{{ aws_access_key }}'
     aws_secret_key: '{{ aws_secret_key }}'
     aws_security_token: '{{ security_token }}'
@@ -38,7 +38,7 @@
 - name: 'Test basic operation using FIPS endpoint (aws-parameters)'
   boto3_example:
     region: '{{ aws_region }}'
-    endpoint_url: 'https://ec2-fips.{{ aws_region }}.amazonaws.com'
+    endpoint_url: 'https://ec2-fips.us-east-1.amazonaws.com'
     aws_access_key: '{{ aws_access_key }}'
     aws_secret_key: '{{ aws_secret_key }}'
     aws_security_token: '{{ security_token }}'
@@ -53,7 +53,7 @@
 - name: 'Test basic operation using FIPS endpoint (aws-parameters)'
   boto3_example:
     region: '{{ aws_region }}'
-    ec2_url: 'https://ec2-fips.{{ aws_region }}.amazonaws.com'
+    ec2_url: 'https://ec2-fips.us-east-1.amazonaws.com'
     aws_access_key: '{{ aws_access_key }}'
     aws_secret_key: '{{ aws_secret_key }}'
     aws_security_token: '{{ security_token }}'
@@ -75,7 +75,7 @@
     aws_secret_key: '{{ aws_secret_key }}'
     aws_security_token: '{{ security_token }}'
   environment:
-    AWS_URL: 'https://ec2-fips.{{ aws_region }}.amazonaws.com'
+    AWS_URL: 'https://ec2-fips.us-east-1.amazonaws.com'
   register: fips_endpoint_result
 
 - name: 'Check that we connected to the FIPS endpoint'
@@ -91,7 +91,7 @@
     aws_secret_key: '{{ aws_secret_key }}'
     aws_security_token: '{{ security_token }}'
   environment:
-    EC2_URL: 'https://ec2-fips.{{ aws_region }}.amazonaws.com'
+    EC2_URL: 'https://ec2-fips.us-east-1.amazonaws.com'
   register: fips_endpoint_result
 
 - name: 'Check that we connected to the FIPS endpoint'
