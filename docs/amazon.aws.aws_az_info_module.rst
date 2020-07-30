@@ -139,7 +139,12 @@ Parameters
                                                                                                                                                                     <b>Default:</b><br/><div style="color: blue">{}</div>
                                     </td>
                                                                 <td>
-                                            <div>A dict of filters to apply. Each dict item consists of a filter key and a filter value. See <a href='https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeAvailabilityZones.html'>https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeAvailabilityZones.html</a> for possible filters. Filter names and values are case sensitive. You can also use underscores instead of dashes (-) in the filter keys, which will take precedence in case of conflict.</div>
+                                            <div>A dict of filters to apply.</div>
+                                            <div>Each dict item consists of a filter key and a filter value.</div>
+                                            <div>See <a href='https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeAvailabilityZones.html'>https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeAvailabilityZones.html</a> for possible filters.</div>
+                                            <div>Filter names and values are case sensitive.</div>
+                                            <div>You can use underscores instead of dashes (-) in the filter keys.</div>
+                                            <div>Filter keys with underscores will take precedence in case of conflict.</div>
                                                         </td>
             </tr>
                                 <tr>

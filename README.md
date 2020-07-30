@@ -7,7 +7,7 @@ The Ansible Amazon AWS collection includes a variety of Ansible content to help 
 <!--start requires_ansible-->
 ## Ansible version compatibility
 
-This collection has been tested against following Ansible versions: **>=2.9,<2.11**.
+This collection has been tested against following Ansible versions: **>=2.9**.
 
 Plugins and modules within a collection may be tested with only specific Ansible versions.
 A collection may contain metadata that identifies these versions.
@@ -56,6 +56,12 @@ Name | Description
 [amazon.aws.ec2_vpc_subnet](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_subnet_module.rst)|Manage subnets in AWS virtual private clouds
 [amazon.aws.ec2_vpc_subnet_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_subnet_info_module.rst)|Gather information about ec2 VPC subnets in AWS
 [amazon.aws.s3_bucket](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.s3_bucket_module.rst)|Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID
+
+### Inventory plugins
+Name | Description
+--- | ---
+[amazon.aws.aws_ec2](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.aws_ec2_inventory.rst)|EC2 inventory source
+[amazon.aws.aws_rds](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.aws_rds_inventory.rst)|rds instance source
 
 <!--end collection content-->
 

@@ -19,7 +19,7 @@ Synopsis
 --------
 - Lists tags for any EC2 resource.
 - Resources are referenced by their resource id (e.g. an instance being i-XXXXXXX, a vpc being vpc-XXXXXX).
-- Resource tags can be managed using the :ref:`ec2_tag <ec2_tag_module>` module.
+- Resource tags can be managed using the :ref:`amazon.aws.ec2_tag <amazon.aws.ec2_tag_module>` module.
 
 
 

@@ -227,7 +227,7 @@ Parameters
                                                                             </td>
                                                                 <td>
                                             <div>Whether the tags should be present or absent on the resource.</div>
-                                            <div>The use of <em>state=list</em> to interrogate the tags of an instance has been deprecated and will be removed after 2022-06-01.  The &#x27;list&#x27; functionality has been moved to a dedicated module <span class='module'>ec2_tag_info</span>.</div>
+                                            <div>The use of <em>state=list</em> to interrogate the tags of an instance has been deprecated and will be removed after 2022-06-01.  The &#x27;list&#x27; functionality has been moved to a dedicated module <span class='module'>amazon.aws.ec2_tag_info</span>.</div>
                                                         </td>
             </tr>
                                 <tr>

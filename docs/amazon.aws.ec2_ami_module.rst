@@ -278,7 +278,9 @@ Parameters
                                                                             </td>
                                                                 <td>
                                             <div>Suppresses the specified device included in the block device mapping of the AMI.</div>
-                                                        </td>
+                                            <div>Alias <code>NoDevice</code> has been deprecated and will be removed after 2022-06-01.</div>
+                                                                <div style="font-size: small; color: darkgreen"><br/>aliases: NoDevice</div>
+                                    </td>
             </tr>
                                 <tr>
                                                     <td class="elbow-placeholder"></td>
@@ -295,6 +297,25 @@ Parameters
                                                                 <td>
                                             <div>The ID of the Snapshot.</div>
                                                         </td>
+            </tr>
+                                <tr>
+                                                    <td class="elbow-placeholder"></td>
+                                                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>virtual_name</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                                                                    </div>
+                                    </td>
+                                <td>
+                                                                                                                                                            </td>
+                                                                <td>
+                                            <div>The virtual name for the device.</div>
+                                            <div>See the AWS documentation for more detail <a href='https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_BlockDeviceMapping.html'>https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_BlockDeviceMapping.html</a>.</div>
+                                            <div>Alias <code>VirtualName</code> has been deprecated and will be removed after 2022-06-01.</div>
+                                                                <div style="font-size: small; color: darkgreen"><br/>aliases: VirtualName</div>
+                                    </td>
             </tr>
                                 <tr>
                                                     <td class="elbow-placeholder"></td>
