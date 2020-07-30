@@ -25,6 +25,7 @@ options:
         Ignored for modules where region is required. Must be specified for all other modules if region is not used.
         If not set then the value of the EC2_URL environment variable, if any, is used.
     type: str
+    aliases: [ aws_endpoint_url, endpoint_url ]
   aws_secret_key:
     description:
       - AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.
@@ -39,7 +40,13 @@ options:
     description:
       - AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.
     type: str
-    aliases: [ access_token ]
+    aliases: [ aws_security_token, access_token ]
+  aws_ca_bundle:
+    description:
+      - "The location of a CA Bundle to use when validating SSL certificates."
+      - "Only used for boto3 based modules."
+      - "Note: The CA Bundle is read 'module' side and may need to be explicitly copied from the controller if not run locally."
+    type: path
   validate_certs:
     description:
       - When set to "no", SSL certificates will not be validated for boto versions >= 2.6.0.
@@ -49,6 +56,7 @@ options:
     description:
       - Uses a boto profile. Only works with boto >= 2.24.0.
     type: str
+    aliases: [ aws_profile ]
   aws_config:
     description:
       - A dictionary to modify the botocore configuration.
@@ -65,7 +73,9 @@ notes:
     C(AWS_ACCESS_KEY_ID) or C(AWS_ACCESS_KEY) or C(EC2_ACCESS_KEY),
     C(AWS_SECRET_ACCESS_KEY) or C(AWS_SECRET_KEY) or C(EC2_SECRET_KEY),
     C(AWS_SECURITY_TOKEN) or C(EC2_SECURITY_TOKEN),
-    C(AWS_REGION) or C(EC2_REGION)
+    C(AWS_REGION) or C(EC2_REGION),
+    C(AWS_PROFILE) or C(AWS_DEFAULT_PROFILE),
+    C(AWS_CA_BUNDLE)
   - Ansible uses the boto configuration file (typically ~/.boto) if no
     credentials are provided. See https://boto.readthedocs.io/en/latest/boto_config_tut.html
   - C(AWS_REGION) or C(EC2_REGION) can be typically be used to specify the
