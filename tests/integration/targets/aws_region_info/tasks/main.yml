@@ -1,0 +1,107 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key | default(omit) }}'
+      aws_secret_key: '{{ aws_secret_key | default(omit) }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region | default(omit) }}'
+
+  block:
+  - name: 'List available Regions'
+    aws_region_info:
+    register: regions
+
+  - name: check task return attributes
+    vars:
+      first_region: '{{ regions.regions[0] }}'
+    assert:
+      that:
+      - regions is successful
+      - regions is not changed
+      - '"regions" in regions'
+      - '"endpoint" in first_region'
+      - '"opt_in_status" in first_region'
+      - '"region_name" in first_region'
+
+  - name: 'List available Regions - check_mode'
+    aws_region_info:
+    register: check_regions
+
+  - name: check task return attributes - check_mode
+    vars:
+      first_region: '{{ check_regions.regions[0] }}'
+    assert:
+      that:
+      - check_regions is successful
+      - check_regions is not changed
+      - '"regions" in check_regions'
+      - '"endpoint" in first_region'
+      - '"opt_in_status" in first_region'
+      - '"region_name" in first_region'
+
+  - name: 'Filter available Regions using - ("region-name")'
+    aws_region_info:
+      filters:
+        region-name: 'us-west-1'
+    register: us_west_1
+
+  - name: check task return attributes - filtering using -
+    vars:
+      first_region: '{{ us_west_1.regions[0] }}'
+    assert:
+      that:
+      - us_west_1 is successful
+      - us_west_1 is not changed
+      - '"regions" in us_west_1'
+      - us_west_1.regions | length == 1
+      - '"endpoint" in first_region'
+      - first_region.endpoint == 'ec2.us-west-1.amazonaws.com'
+      - '"opt_in_status" in first_region'
+      - first_region.opt_in_status == 'opt-in-not-required'
+      - '"region_name" in first_region'
+      - first_region.region_name == 'us-west-1'
+
+  - name: 'Filter available Regions using _ ("region_name")'
+    aws_region_info:
+      filters:
+        region_name: 'us-west-2'
+    register: us_west_2
+
+  - name: check task return attributes - filtering using _
+    vars:
+      first_region: '{{ us_west_2.regions[0] }}'
+    assert:
+      that:
+      - us_west_2 is successful
+      - us_west_2 is not changed
+      - '"regions" in us_west_2'
+      - us_west_2.regions | length == 1
+      - '"endpoint" in first_region'
+      - first_region.endpoint == 'ec2.us-west-2.amazonaws.com'
+      - '"opt_in_status" in first_region'
+      - first_region.opt_in_status == 'opt-in-not-required'
+      - '"region_name" in first_region'
+      - first_region.region_name == 'us-west-2'
+
+  - name: 'Filter available Regions using _ and - to check precedence'
+    aws_region_info:
+      filters:
+        region-name: 'eu-west-1'
+        region_name: 'eu-central-1'
+    register: regions_prededence
+
+  - name: check task return attributes - precedence
+    vars:
+      first_region: '{{ regions_prededence.regions[0] }}'
+    assert:
+      that:
+      - regions_prededence is successful
+      - regions_prededence is not changed
+      - '"regions" in regions_prededence'
+      - regions_prededence.regions | length == 1
+      - '"endpoint" in first_region'
+      - first_region.endpoint == 'ec2.eu-central-1.amazonaws.com'
+      - '"opt_in_status" in first_region'
+      - first_region.opt_in_status == 'opt-in-not-required'
+      - '"region_name" in first_region'
+      - first_region.region_name == 'eu-central-1'
