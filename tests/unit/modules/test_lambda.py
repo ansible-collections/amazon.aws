@@ -13,8 +13,7 @@ import pytest
 
 from ansible_collections.community.aws.tests.unit.compat.mock import MagicMock, Mock, patch
 from ansible.module_utils import basic
-from ansible_collections.community.aws.tests.unit.modules.utils import set_module_args
-
+from ansible_collections.community.aws.tests.unit.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
 boto3 = pytest.importorskip("boto3")
 
@@ -32,6 +31,7 @@ base_lambda_config = {
     'MemorySize': 128,
     'Runtime': 'python2.7',
     'CodeSha256': 'AqMZ+xptM7aC9VXu+5jyp1sqO+Nj4WFMNzQxtPMP2n8=',
+    'Version': 1,
 }
 
 one_change_lambda_config = copy.copy(base_lambda_config)
@@ -40,6 +40,7 @@ two_change_lambda_config = copy.copy(one_change_lambda_config)
 two_change_lambda_config['Role'] = 'arn:aws:iam::987654321012:role/lambda_advanced_execution'
 code_change_lambda_config = copy.copy(base_lambda_config)
 code_change_lambda_config['CodeSha256'] = 'P+Zy8U4T4RiiHWElhL10VBKj9jw4rSJ5bm/TiW+4Rts='
+code_change_lambda_config['Version'] = 2
 
 base_module_args = {
     "region": "us-west-1",
@@ -52,222 +53,134 @@ base_module_args = {
     "timeout": 3,
     "handler": 'lambda_python.my_handler'
 }
+one_change_module_args = copy.copy(base_module_args)
+one_change_module_args['timeout'] = 4
+two_change_module_args = copy.copy(one_change_module_args)
+two_change_module_args['role'] = 'arn:aws:iam::987654321012:role/lambda_advanced_execution'
 module_args_with_environment = dict(base_module_args, environment_variables={
     "variable_name": "variable_value"
 })
+delete_module_args = {
+    "region": "us-west-1",
+    "name": "lambda_name",
+    "state": "absent",
+
+}
 
 
-def make_mock_no_connection_connection(config):
-    """return a mock of ansible's boto3_conn ready to return a mock AWS API client"""
-    lambda_client_double = MagicMock()
-    lambda_client_double.get_function.configure_mock(
-        return_value=False
-    )
-    lambda_client_double.update_function_configuration.configure_mock(
-        return_value={
-            'Version': 1
-        }
-    )
-    fake_boto3_conn = Mock(return_value=lambda_client_double)
-    return (fake_boto3_conn, lambda_client_double)
+@patch('ansible_collections.amazon.aws.plugins.module_utils.core.HAS_BOTO3', new=True)
+@patch.object(lda.AnsibleAWSModule, 'client')
+class TestLambdaModule(ModuleTestCase):
+    # TODO: def test_handle_different_types_in_config_params():
 
+    def test_create_lambda_if_not_exist(self, client_mock):
+        client_mock.return_value.create_function.return_value = base_lambda_config
+        get_function_after_create = {'FunctionName': 'lambda_name', 'Version': '1', 'aws_retry': True}
+        client_mock.return_value.get_function.side_effect = [None, get_function_after_create]
 
-def make_mock_connection(config):
-    """return a mock of ansible's boto3_conn ready to return a mock AWS API client"""
-    lambda_client_double = MagicMock()
-    lambda_client_double.get_function.configure_mock(
-        return_value={
-            'Configuration': config
-        }
-    )
-    lambda_client_double.update_function_configuration.configure_mock(
-        return_value={
-            'Version': 1
-        }
-    )
-    fake_boto3_conn = Mock(return_value=lambda_client_double)
-    return (fake_boto3_conn, lambda_client_double)
-
-
-class AnsibleFailJson(Exception):
-    pass
-
-
-def fail_json_double(*args, **kwargs):
-    """works like fail_json but returns module results inside exception instead of stdout"""
-    kwargs['failed'] = True
-    raise AnsibleFailJson(kwargs)
-
-
-# TODO: def test_handle_different_types_in_config_params():
-
-
-def test_create_lambda_if_not_exist():
-
-    set_module_args(base_module_args)
-    (boto3_conn_double, lambda_client_double) = make_mock_no_connection_connection(code_change_lambda_config)
-
-    with patch.object(lda, 'boto3_conn', boto3_conn_double):
-        try:
+        with self.assertRaises(AnsibleExitJson) as exec_info:
+            set_module_args(base_module_args)
             lda.main()
-        except SystemExit:
-            pass
 
-    # guard against calling other than for a lambda connection (e.g. IAM)
-    assert(len(boto3_conn_double.mock_calls) > 0), "boto connections never used"
-    assert(len(boto3_conn_double.mock_calls) < 2), "multiple boto connections used unexpectedly"
-    assert(len(lambda_client_double.update_function_configuration.mock_calls) == 0), \
-        "unexpectedly updated lambda configuration when should have only created"
-    assert(len(lambda_client_double.update_function_code.mock_calls) == 0), \
-        "update lambda function code when function should have been created only"
-    assert(len(lambda_client_double.create_function.mock_calls) > 0), \
-        "failed to call create_function "
-    (create_args, create_kwargs) = lambda_client_double.create_function.call_args
-    assert (len(create_kwargs) > 0), "expected create called with keyword args, none found"
+        self.assertEqual(exec_info.exception.args[0]['changed'], True)
+        client_mock.return_value.get_function.assert_called()
 
-    try:
-        # For now I assume that we should NOT send an empty environment.  It might
-        # be okay / better to explicitly send an empty environment.  However `None'
-        # is not acceptable - mikedlr
-        create_kwargs["Environment"]
-        raise(Exception("Environment sent to boto when none expected"))
-    except KeyError:
-        pass  # We are happy, no environment is fine
+        client_mock.return_value.update_function_configuration.assert_not_called()
+        client_mock.return_value.create_function.assert_called()
 
+        (create_args, create_kwargs) = client_mock.return_value.create_function.call_args
+        client_mock.return_value.create_function.assert_called_once_with(**create_kwargs)
 
-def test_update_lambda_if_code_changed():
+    @patch.object(lda, 'sha256sum')
+    def test_update_lambda_if_code_changed(self, mock_sha256sum, client_mock):
+        client_mock.return_value.get_function.side_effect = [{'Configuration': base_lambda_config}, code_change_lambda_config]
+        mock_sha256sum.return_value = code_change_lambda_config['CodeSha256']
 
-    set_module_args(base_module_args)
-    (boto3_conn_double, lambda_client_double) = make_mock_connection(code_change_lambda_config)
-
-    with patch.object(lda, 'boto3_conn', boto3_conn_double):
-        try:
+        with self.assertRaises(AnsibleExitJson) as exec_info:
+            set_module_args(base_module_args)
             lda.main()
-        except SystemExit:
-            pass
 
-    # guard against calling other than for a lambda connection (e.g. IAM)
-    assert(len(boto3_conn_double.mock_calls) > 0), "boto connections never used"
-    assert(len(boto3_conn_double.mock_calls) < 2), "multiple boto connections used unexpectedly"
-    assert(len(lambda_client_double.update_function_configuration.mock_calls) == 0), \
-        "unexpectedly updatede lambda configuration when only code changed"
-    assert(len(lambda_client_double.update_function_configuration.mock_calls) < 2), \
-        "lambda function update called multiple times when only one time should be needed"
-    assert(len(lambda_client_double.update_function_code.mock_calls) > 1), \
-        "failed to update lambda function when code changed"
-    # 3 because after uploading we call into the return from mock to try to find what function version
-    # was returned so the MagicMock actually sees two calls for one update.
-    assert(len(lambda_client_double.update_function_code.mock_calls) < 3), \
-        "lambda function code update called multiple times when only one time should be needed"
+        self.assertEqual(exec_info.exception.args[0]['changed'], True)
+        client_mock.return_value.get_function.assert_called()
+        client_mock.return_value.update_function_code.assert_called()
+        client_mock.return_value.create_function.assert_not_called()
 
+        (update_args, update_kwargs) = client_mock.return_value.update_function_code.call_args
+        client_mock.return_value.update_function_code.assert_called_once_with(**update_kwargs)
 
-def test_update_lambda_if_config_changed():
+    def test_update_lambda_if_config_changed(self, client_mock):
+        client_mock.return_value.get_function.side_effect = [{'Configuration': base_lambda_config}, two_change_lambda_config]
 
-    set_module_args(base_module_args)
-    (boto3_conn_double, lambda_client_double) = make_mock_connection(two_change_lambda_config)
-
-    with patch.object(lda, 'boto3_conn', boto3_conn_double):
-        try:
+        with self.assertRaises(AnsibleExitJson) as exec_info:
+            set_module_args(two_change_module_args)
             lda.main()
-        except SystemExit:
-            pass
 
-    # guard against calling other than for a lambda connection (e.g. IAM)
-    assert(len(boto3_conn_double.mock_calls) > 0), "boto connections never used"
-    assert(len(boto3_conn_double.mock_calls) < 2), "multiple boto connections used unexpectedly"
-    assert(len(lambda_client_double.update_function_configuration.mock_calls) > 0), \
-        "failed to update lambda function when configuration changed"
-    assert(len(lambda_client_double.update_function_configuration.mock_calls) < 2), \
-        "lambda function update called multiple times when only one time should be needed"
-    assert(len(lambda_client_double.update_function_code.mock_calls) == 0), \
-        "updated lambda code when no change should have happened"
+        self.assertEqual(exec_info.exception.args[0]['changed'], True)
+        client_mock.return_value.get_function.assert_called()
+        client_mock.return_value.update_function_configuration.assert_called()
+        client_mock.return_value.create_function.assert_not_called()
 
+        (update_args, update_kwargs) = client_mock.return_value.update_function_configuration.call_args
+        client_mock.return_value.update_function_configuration.assert_called_once_with(**update_kwargs)
 
-def test_update_lambda_if_only_one_config_item_changed():
+    def test_update_lambda_if_only_one_config_item_changed(self, client_mock):
+        client_mock.return_value.get_function.side_effect = [{'Configuration': base_lambda_config}, one_change_lambda_config]
 
-    set_module_args(base_module_args)
-    (boto3_conn_double, lambda_client_double) = make_mock_connection(one_change_lambda_config)
-
-    with patch.object(lda, 'boto3_conn', boto3_conn_double):
-        try:
+        with self.assertRaises(AnsibleExitJson) as exec_info:
+            set_module_args(one_change_module_args)
             lda.main()
-        except SystemExit:
-            pass
 
-    # guard against calling other than for a lambda connection (e.g. IAM)
-    assert(len(boto3_conn_double.mock_calls) > 0), "boto connections never used"
-    assert(len(boto3_conn_double.mock_calls) < 2), "multiple boto connections used unexpectedly"
-    assert(len(lambda_client_double.update_function_configuration.mock_calls) > 0), \
-        "failed to update lambda function when configuration changed"
-    assert(len(lambda_client_double.update_function_configuration.mock_calls) < 2), \
-        "lambda function update called multiple times when only one time should be needed"
-    assert(len(lambda_client_double.update_function_code.mock_calls) == 0), \
-        "updated lambda code when no change should have happened"
+        self.assertEqual(exec_info.exception.args[0]['changed'], True)
+        client_mock.return_value.get_function.assert_called()
+        client_mock.return_value.update_function_configuration.assert_called()
+        client_mock.return_value.create_function.assert_not_called()
 
+        (update_args, update_kwargs) = client_mock.return_value.update_function_configuration.call_args
+        client_mock.return_value.update_function_configuration.assert_called_once_with(**update_kwargs)
 
-def test_update_lambda_if_added_environment_variable():
+    def test_update_lambda_if_added_environment_variable(self, client_mock):
+        client_mock.return_value.get_function.side_effect = [{'Configuration': base_lambda_config}, base_lambda_config]
 
-    set_module_args(module_args_with_environment)
-    (boto3_conn_double, lambda_client_double) = make_mock_connection(base_lambda_config)
-
-    with patch.object(lda, 'boto3_conn', boto3_conn_double):
-        try:
+        with self.assertRaises(AnsibleExitJson) as exec_info:
+            set_module_args(module_args_with_environment)
             lda.main()
-        except SystemExit:
-            pass
 
-    # guard against calling other than for a lambda connection (e.g. IAM)
-    assert(len(boto3_conn_double.mock_calls) > 0), "boto connections never used"
-    assert(len(boto3_conn_double.mock_calls) < 2), "multiple boto connections used unexpectedly"
-    assert(len(lambda_client_double.update_function_configuration.mock_calls) > 0), \
-        "failed to update lambda function when configuration changed"
-    assert(len(lambda_client_double.update_function_configuration.mock_calls) < 2), \
-        "lambda function update called multiple times when only one time should be needed"
-    assert(len(lambda_client_double.update_function_code.mock_calls) == 0), \
-        "updated lambda code when no change should have happened"
+        self.assertEqual(exec_info.exception.args[0]['changed'], True)
+        client_mock.return_value.get_function.assert_called()
+        client_mock.return_value.update_function_configuration.assert_called()
+        client_mock.return_value.create_function.assert_not_called()
 
-    (update_args, update_kwargs) = lambda_client_double.update_function_configuration.call_args
-    assert (len(update_kwargs) > 0), "expected update configuration called with keyword args, none found"
-    assert update_kwargs['Environment']['Variables'] == module_args_with_environment['environment_variables']
+        (update_args, update_kwargs) = client_mock.return_value.update_function_configuration.call_args
+        client_mock.return_value.update_function_configuration.assert_called_once_with(**update_kwargs)
 
+        self.assertEqual(update_kwargs['Environment']['Variables'], module_args_with_environment['environment_variables'])
 
-def test_dont_update_lambda_if_nothing_changed():
-    set_module_args(base_module_args)
-    (boto3_conn_double, lambda_client_double) = make_mock_connection(base_lambda_config)
+    def test_dont_update_lambda_if_nothing_changed(self, client_mock):
+        client_mock.return_value.get_function.side_effect = [{'Configuration': base_lambda_config}, base_lambda_config]
 
-    with patch.object(lda, 'boto3_conn', boto3_conn_double):
-        try:
+        with self.assertRaises(AnsibleExitJson) as exec_info:
+            set_module_args(base_module_args)
             lda.main()
-        except SystemExit:
-            pass
 
-    # guard against calling other than for a lambda connection (e.g. IAM)
-    assert(len(boto3_conn_double.mock_calls) > 0), "boto connections never used"
-    assert(len(boto3_conn_double.mock_calls) < 2), "multiple boto connections used unexpectedly"
-    assert(len(lambda_client_double.update_function_configuration.mock_calls) == 0), \
-        "updated lambda function when no configuration changed"
-    assert(len(lambda_client_double.update_function_code.mock_calls) == 0), \
-        "updated lambda code when no change should have happened"
+        self.assertEqual(exec_info.exception.args[0]['changed'], False)
+        client_mock.return_value.get_function.assert_called()
+        client_mock.return_value.update_function_configuration.assert_not_called()
+        client_mock.return_value.create_function.assert_not_called()
 
+    def test_delete_lambda_that_exists(self, client_mock):
+        client_mock.return_value.create_function.return_value = base_lambda_config
+        client_mock.return_value.get_function.side_effect = [base_lambda_config, None]
 
-def test_warn_region_not_specified():
+        with self.assertRaises(AnsibleExitJson) as exec_info:
+            set_module_args(delete_module_args)
+            lda.main()
 
-    set_module_args({
-        "name": "lambda_name",
-        "state": "present",
-        # Module is called without a region causing error
-        # "region": "us-east-1",
-        "zip_file": "test/units/modules/fixturesthezip.zip",
-        "runtime": 'python2.7',
-        "role": 'arn:aws:iam::987654321012:role/lambda_basic_execution',
-        "handler": 'lambda_python.my_handler'})
+        self.assertEqual(exec_info.exception.args[0]['changed'], True)
+        client_mock.return_value.get_function.assert_called()
 
-    get_aws_connection_info_double = Mock(return_value=(None, None, None))
+        client_mock.return_value.delete_function.assert_called()
+        client_mock.return_value.update_function_configuration.assert_not_called()
+        client_mock.return_value.create_function.assert_not_called()
 
-    with patch.object(lda, 'get_aws_connection_info', get_aws_connection_info_double):
-        with patch.object(basic.AnsibleModule, 'fail_json', fail_json_double):
-            try:
-                lda.main()
-            except AnsibleFailJson as e:
-                result = e.args[0]
-                assert("region must be specified" in result['msg'])
+        (delete_args, delete_kwargs) = client_mock.return_value.delete_function.call_args
+        client_mock.return_value.delete_function.assert_called_once_with(**delete_kwargs)
