@@ -14,13 +14,14 @@
   - name: move lambda into place for archive module
     copy:
       src: mini_lambda.py
-      dest: '{{output_dir}}/mini_lambda.py'
+      dest: '{{ output_dir }}/mini_lambda.py'
+      mode: preserve
   - name: bundle lambda into a zip
     register: function_res
     archive:
       format: zip
-      path: '{{output_dir}}/mini_lambda.py'
-      dest: '{{output_dir}}/mini_lambda.zip'
+      path: '{{ output_dir }}/mini_lambda.py'
+      dest: '{{ output_dir }}/mini_lambda.zip'
   - name: register bucket
     s3_bucket:
       aws_access_key: '{{ aws_access_key }}'
