@@ -401,7 +401,6 @@ def main():
             peering_id=dict(),
             peer_owner_id=dict(),
             tags=dict(required=False, type='dict'),
-            profile=dict(),
             state=dict(default='present', choices=['present', 'absent', 'accept', 'reject'])
         )
     )
