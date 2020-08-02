@@ -323,9 +323,12 @@ def create_vpc(connection, module, cidr_block, tenancy):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, "Failed to create the VPC")
 
-    # wait for vpc to exist
+    # wait up to 30 seconds for vpc to exist
     try:
-        connection.get_waiter('vpc_exists').wait(VpcIds=[vpc_obj['Vpc']['VpcId']])
+        connection.get_waiter('vpc_exists').wait(
+            VpcIds=[vpc_obj['Vpc']['VpcId']],
+            WaiterConfig=dict(MaxAttempts=30)
+        )
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to wait for VPC {0} to be created.".format(vpc_obj['Vpc']['VpcId']))
 
@@ -505,8 +508,9 @@ def main():
         final_state = camel_dict_to_snake_dict(get_vpc(module, connection, vpc_id))
         final_state['tags'] = boto3_tag_list_to_ansible_dict(final_state.get('tags', []))
         final_state['id'] = final_state.pop('vpc_id')
+        debugging = dict(to_add=to_add, to_remove=to_remove, expected_cidrs=expected_cidrs)
 
-        module.exit_json(changed=changed, vpc=final_state)
+        module.exit_json(changed=changed, vpc=final_state, debugging=debugging)
 
     elif state == 'absent':
 
