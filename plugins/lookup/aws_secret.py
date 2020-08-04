@@ -70,7 +70,7 @@ EXAMPLES = r"""
      tags:
        Environment: staging
 
-- name: skip if secret does not exist
+ - name: skip if secret does not exist
    debug: msg="{{ lookup('aws_secret', 'secret-not-exist', on_missing='skip')}}"
 
  - name: skip if access to the secret is denied
