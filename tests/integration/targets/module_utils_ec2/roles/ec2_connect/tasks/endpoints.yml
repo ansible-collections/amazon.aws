@@ -2,8 +2,8 @@
 # Note 1: With boto3 we can use the FIPS endpoints as a minimal proxy for testing that
 # we're using something different.  With boto2 the authentication fails.
 #
-# Note 2: Region currently overrides the Endpoint which is different to the boto2_ec2
-# based behaviour
+# Note 2: Region currently overrides the Endpoint which is different to the
+# ec2_connect based behaviour.  Once changed we should update the test cases.
 #
 ##################################################################################
 # Tests using Endpoints
