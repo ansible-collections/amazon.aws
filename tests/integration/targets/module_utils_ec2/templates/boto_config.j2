@@ -1,0 +1,5 @@
+[profile test_profile]
+region = {{ aws_region }}
+aws_access_key_id = {{ session_access_key | default(aws_access_key) }}
+aws_secret_access_key = {{ session_secret_key | default(aws_secret_key) }}
+aws_security_token = {{ session_security_token | default(security_token) }}
