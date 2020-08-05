@@ -79,7 +79,12 @@ EXAMPLES = '''
 - name: Create IAM Managed Policy
   community.aws.iam_managed_policy:
     policy_name: "ManagedPolicy"
-    policy: "{{ lookup('file', 'managed_policy_update.json') }}"
+    policy:
+      Version: "2012-10-17"
+      Statement:
+      - Effect: "Allow"
+        Action: "logs:CreateLogGroup"
+        Resource: "*"
     make_default: false
     state: present
 
@@ -87,7 +92,15 @@ EXAMPLES = '''
 - name: Create IAM Managed Policy
   community.aws.iam_managed_policy:
     policy_name: "ManagedPolicy"
-    policy: "{ 'Version': '2012-10-17', 'Statement':[{'Effect': 'Allow','Action': '*','Resource': '*'}]}"
+    policy: |
+      {
+        "Version": "2012-10-17",
+        "Statement":[{
+          "Effect": "Allow",
+          "Action": "logs:PutRetentionPolicy",
+          "Resource": "*"
+        }]
+      }
     only_version: true
     state: present
 
