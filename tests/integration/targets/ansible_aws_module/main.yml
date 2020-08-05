@@ -1,7 +1,0 @@
-- hosts: all
-  gather_facts: no
-  collections:
-  - community.aws
-  - amazon.aws
-  roles:
-  - 'ansible_aws_module'
