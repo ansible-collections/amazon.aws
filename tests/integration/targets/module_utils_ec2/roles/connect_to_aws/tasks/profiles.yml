@@ -1,0 +1,63 @@
+---
+# Note: unlike boto3 modules, boto2 modules can't read region from the profile
+#
+##################################################################################
+# Tests using profiles instead of directly consuming credentials
+
+- name: 'Test basic operation using profile (simple-parameters)'
+  example_module:
+    region: '{{ aws_region }}'
+    profile: 'test_profile'
+  register: profile_result
+
+- assert:
+    that:
+    - profile_result is successful
+
+- name: 'Test basic operation using profile (aws-parameters)'
+  example_module:
+    region: '{{ aws_region }}'
+    aws_profile: 'test_profile'
+  register: profile_result
+
+- assert:
+    that:
+    - profile_result is successful
+
+- name: 'Test basic operation using profile (aws-environment)'
+  example_module:
+    region: '{{ aws_region }}'
+  environment:
+    AWS_PROFILE: 'test_profile'
+  register: profile_result
+
+- assert:
+    that:
+    - profile_result is successful
+
+- name: 'Test basic operation using profile (aws2-environment)'
+  example_module:
+    region: '{{ aws_region }}'
+  environment:
+    AWS_DEFAULT_PROFILE: 'test_profile'
+  register: profile_result
+
+- assert:
+    that:
+    - profile_result is successful
+
+##################################################################################
+# Tests with bad profile
+
+- name: 'Test with bad profile'
+  example_module:
+    region: '{{ aws_region }}'
+    profile: 'junk-profile'
+  register: bad_profile
+  ignore_errors: True
+
+- assert:
+    that:
+    - bad_profile is failed
+    - '"msg" in bad_profile'
+    - '"Profile given for AWS was not found." in bad_profile.msg'

@@ -16,8 +16,9 @@ except ImportError:
     pass
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ec2_connect
-
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 def main():
     module = AnsibleAWSModule(
@@ -26,16 +27,22 @@ def main():
         check_boto3=False,
     )
 
+    region, ec2_url, aws_connect_params = get_aws_connection_info(module)
+    if not region:
+        module.fail_json(msg="Fail JSON: No Region")
+
     try:
-        client = ec2_connect(module)
+        client = connect_to_aws(boto.ec2, region, **aws_connect_params)
     except boto.exception.NoAuthHandlerFound as e:
-        module.fail_json_aws(e, msg='Failed to get connection')
+        module.fail_json_aws(e, msg='No Authentication Handler Found')
+    except AnsibleAWSError as e:
+        module.fail_json_aws(e, msg='Fail JSON AWS')
 
     filters = {'name': 'amzn2-ami-hvm-2.0.202006*-x86_64-gp2'}
 
     try:
         images = client.get_all_images(image_ids=[], filters=filters, owners=['amazon'], executable_by=[])
-    except boto.exception.BotoServerError as e:
+    except (boto.exception.BotoServerError, AnsibleAWSError) as e:
         module.fail_json_aws(e, msg='Fail JSON AWS')
 
     images_out = []
