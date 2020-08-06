@@ -436,7 +436,7 @@ def ensure_present(ec2, module, domain, address, private_ip_address, device_id,
         if is_instance:
             instance = find_device(ec2, module, device_id)
             if reuse_existing_ip_allowed:
-                if instance.vpc_id and len(instance.vpc_id) > 0 and domain is None:
+                if instance['VpcId'] and len(instance['VpcId']) > 0 and domain is None:
                     msg = "You must set 'in_vpc' to true to associate an instance with an existing ip in a vpc"
                     module.fail_json_aws(botocore.exceptions.ClientError, msg=msg)
 

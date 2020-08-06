@@ -10,6 +10,7 @@
   collections:
     - amazon.aws
   block:
+  # =====================================================
   - name: Get the current caller identity facts
     aws_caller_info: null
     register: caller_info
@@ -39,6 +40,32 @@
       state: present
       vpc_id: '{{ vpc_result.vpc.id }}'
     register: vpc_igw
+  - name: "Find AMI to use"
+    ec2_ami_info:
+      owners: 'amazon'
+      filters:
+        name: 'amzn2-ami-hvm-2.0.20190612-x86_64-gp2'
+    register: ec2_amis
+  - name: "create a security group"
+    ec2_group:
+      state: present
+      name: '{{ resource_prefix }}-sg'
+      description: a security group for ansible tests
+      vpc_id: '{{ vpc_result.vpc.id }}'
+      rules:
+        - proto: tcp
+          from_port: 22
+          to_port: 22
+          cidr_ip: 0.0.0.0/0
+    register: security_group
+  - name: Create instance for attaching
+    ec2_instance:
+      name: '{{ resource_prefix }}-instance'
+      image_id: '{{ ec2_amis.images[0].image_id }}'
+      security_group: '{{ security_group.group_id }}'
+      wait: no  ## Don't delay the tests, we'll check again before we need it
+    register: ec2_instance_result
+  # =====================================================
   - name: Look for signs of concurrent EIP tests.  Pause if they are running or their prefix comes before ours.
     vars:
       running_query: vpcs[?tags.AnsibleEIPTest=='Running']
@@ -62,6 +89,7 @@
       tags:
         AnsibleEIPTest: Running
         AnsibleEIPTestPrefix: '{{ resource_prefix }}'
+  # =====================================================
   - name: Get current state of EIPs
     ec2_eip_info: null
     register: eip_info_start
@@ -520,11 +548,45 @@
     ec2_eni:
       state: absent
       eni_id: '{{ eni_create_a.interface.id }}'
+  - name: Make sure the instance is ready
+    ec2_instance_info:
+      filters:
+        "tag:Name": '{{ resource_prefix }}-instance'
+    register: instance_info
+    until: instance_info.instances[0].state.name == 'running'
+  - name: Attach eip to an EC2 instance
+    ec2_eip:
+      device_id: '{{ instance_info.instances[0].instance_id }}'
+      state: present
+      release_on_disassociation: yes
+    register: instance_eip
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ instance_eip.public_ip }}'
+    register: eip_info
+  - assert:
+      that:
+        - instance_eip is success
+        - eip_info.addresses[0].allocation_id is defined
+        - eip_info.addresses[0].instance_id == '{{ instance_info.instances[0].instance_id }}'
+  # =====================================================
   - name: Cleanup IGW
     ec2_vpc_igw:
       state: absent
       vpc_id: '{{ vpc_result.vpc.id }}'
     register: vpc_igw
+  - name: Cleanup instance
+    ec2_instance:
+      name: '{{ resource_prefix }}-instance'
+      state: absent
+  - name: Cleanup instance eip
+    ec2_eip:
+      state: absent
+      public_ip: '{{ instance_eip.public_ip }}'
+  - name: Cleanup security group
+    ec2_group:
+      state: absent
+      name: '{{ resource_prefix }}-sg'
   - name: Cleanup Subnet
     ec2_vpc_subnet:
       state: absent
@@ -578,6 +640,7 @@
       state: absent
       name: '{{ resource_prefix }}-vpc'
       cidr_block: '{{ vpc_cidr }}'
+  # =====================================================
   always:
   - name: Cleanup ENI A
     ec2_eni:
@@ -594,6 +657,21 @@
       state: absent
       vpc_id: '{{ vpc_result.vpc.id }}'
     register: vpc_igw
+  - name: Cleanup instance
+    ec2_instance:
+      name: '{{ resource_prefix }}-instance'
+      state: absent
+    ignore_errors: true
+  - name: Cleanup instance eip
+    ec2_eip:
+      state: absent
+      public_ip: '{{ instance_eip.public_ip }}'
+    ignore_errors: true
+  - name: Cleanup security group
+    ec2_group:
+      state: absent
+      name: '{{ resource_prefix }}-sg'
+    ignore_errors: true
   - name: Cleanup Subnet
     ec2_vpc_subnet:
       state: absent
