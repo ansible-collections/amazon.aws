@@ -6,5 +6,3 @@
   roles:
   # Test the behaviour of module_utils.ec2.ec2_connect
   - 'ec2_connect'
-  # Test the behaviour of module_utils.connect_to_aws
-  - 'connect_to_aws'

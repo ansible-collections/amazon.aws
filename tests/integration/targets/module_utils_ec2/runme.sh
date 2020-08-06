@@ -13,4 +13,5 @@ export AWS_CONFIG_FILE
 export BOTO_CONFIG
 
 ansible-playbook setup.yml -i localhost "$@"
-ansible-playbook main.yml -i inventory "$@" -e "@session_credentials.yml"
+ansible-playbook ec2_connect.yml -i inventory "$@" -e "@session_credentials.yml"
+ansible-playbook connect_to_aws.yml -i inventory "$@" -e "@session_credentials.yml"
