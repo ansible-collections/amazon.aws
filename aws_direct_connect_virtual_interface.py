@@ -72,6 +72,14 @@ options:
   virtual_gateway_id:
     description:
       - The virtual gateway ID required for creating a private virtual interface.
+      - To create a private virtual interface I(virtual_gateway_id) or I(direct_connect_gateway_id) is required.
+        These options are mutually exclusive.
+    type: str
+  direct_connect_gateway_id:
+    description:
+      - The direct connect gateway ID for creating a private virtual interface.
+      - To create a private virtual interface I(virtual_gateway_id) or I(direct_connect_gateway_id) is required.
+        These options are mutually exclusive.
     type: str
   virtual_interface_id:
     description:
@@ -190,6 +198,11 @@ virtual_gateway_id:
   returned: when I(public=False)
   type: str
   sample: vgw-f3ce259a
+direct_connect_gateway_id:
+  description: The ID of the Direct Connect gateway. This only applies to private virtual interfaces.
+  returned: when I(public=False)
+  type: str
+  sample: f7593767-eded-44e8-926d-a2234175835d
 virtual_interface_id:
   description: The ID of the virtual interface.
   returned: always
@@ -364,6 +377,7 @@ def assemble_params_for_creating_vi(params):
     family_addr = params['address_type']
     cidr = params['cidr']
     virtual_gateway_id = params['virtual_gateway_id']
+    direct_connect_gateway_id = params['direct_connect_gateway_id']
 
     parameters = dict(virtualInterfaceName=name, vlan=vlan, asn=bgp_asn)
     opt_params = dict(authKey=auth_key, amazonAddress=amazon_addr, customerAddress=customer_addr, addressFamily=family_addr)
@@ -376,7 +390,10 @@ def assemble_params_for_creating_vi(params):
     if public and cidr:
         parameters['routeFilterPrefixes'] = [{'cidr': c} for c in cidr]
     if not public:
-        parameters['virtualGatewayId'] = virtual_gateway_id
+        if virtual_gateway_id:
+            parameters['virtualGatewayId'] = virtual_gateway_id
+        elif direct_connect_gateway_id:
+            parameters['directConnectGatewayId'] = direct_connect_gateway_id
 
     return parameters
 
@@ -469,16 +486,17 @@ def main():
         address_type=dict(),
         cidr=dict(type='list', elements='str'),
         virtual_gateway_id=dict(),
+        direct_connect_gateway_id=dict(),
         virtual_interface_id=dict()
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               required_one_of=[['virtual_interface_id', 'name']],
                               required_if=[['state', 'present', ['public']],
-                                           ['public', False, ['virtual_gateway_id']],
                                            ['public', True, ['amazon_address']],
                                            ['public', True, ['customer_address']],
-                                           ['public', True, ['cidr']]])
+                                           ['public', True, ['cidr']]],
+                              mutually_exclusive=[['virtual_gateway_id', 'direct_connect_gateway_id']])
 
     connection = module.client('directconnect')
 
