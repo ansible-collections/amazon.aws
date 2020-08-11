@@ -1,0 +1,52 @@
+{
+  "status_code": 200,
+  "data": {
+    "ownerAccount": "123412341234",
+    "virtualInterfaceId": "dxvif-aaaaaaaa",
+    "location": "EqSe2",
+    "connectionId": "dxcon-aaaaaaaa",
+    "virtualInterfaceType": "private",
+    "virtualInterfaceName": "aaaaaaaa",
+    "vlan": 2,
+    "asn": 123,
+    "amazonSideAsn": 64512,
+    "authKey": "aaaabbbb",
+    "amazonAddress": "169.254.0.2/30",
+    "customerAddress": "169.254.0.1/30",
+    "addressFamily": "ipv4",
+    "virtualInterfaceState": "down",
+    "customerRouterConfig": "",
+    "mtu": 1500,
+    "jumboFrameCapable": true,
+    "virtualGatewayId": "",
+    "directConnectGatewayId": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    "routeFilterPrefixes": [],
+    "bgpPeers": [
+      {
+        "bgpPeerId": "dxpeer-aaaaaaa",
+        "asn": 123,
+        "authKey": "aaaabbbb",
+        "addressFamily": "ipv4",
+        "amazonAddress": "169.254.0.2/30",
+        "customerAddress": "169.254.0.1/30",
+        "bgpPeerState": "available",
+        "bgpStatus": "down",
+        "awsDeviceV2": "EqSe2-aaaaaaaaaaaa"
+      }
+    ],
+    "region": "us-west-2",
+    "awsDeviceV2": "EqSe2-aaaaaaaaaaaa",
+    "tags": [],
+    "ResponseMetadata": {
+      "RetryAttempts": 0,
+      "HTTPHeaders": {
+        "x-amzn-requestid": "b9e352dd-5b55-11e7-9750-d97c605bdcae",
+        "content-type": "application/x-amz-json-1.1",
+        "date": "Tue, 27 Jun 2017 16:29:00 GMT",
+        "content-length": "18"
+      },
+      "RequestId": "b9e352dd-5b55-11e7-9750-d97c605bdcae",
+      "HTTPStatusCode": 200
+    }
+  }
+}
