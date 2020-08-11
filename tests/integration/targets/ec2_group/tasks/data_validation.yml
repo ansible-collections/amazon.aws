@@ -16,14 +16,14 @@
         - proto: tcp
           from_port: "8182"
           to_port: 8182
-          cidr_ipv6: "64:ff9b::/96"
+          cidr_ipv6: "fc00:ff9b::/96"
           rule_desc: Mixed string and non-string ports
         - proto: tcp
           ports:
           - "9000"
           - 9001
           - 9002-9005
-          cidr_ip: "1.2.3.0/24"
+          cidr_ip: "10.2.3.0/24"
   always:
     - name: tidy up input testing group
       ec2_group:

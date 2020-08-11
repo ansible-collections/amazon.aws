@@ -53,7 +53,7 @@
       ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
         state: present
-        cidr_block: "10.232.232.128/26"
+        cidr_block: "{{ vpc_cidr }}"
         tags:
           Name: "{{ resource_prefix }}-vpc"
           Description: "Created by ansible-test"
@@ -1455,5 +1455,5 @@
       ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
         state: absent
-        cidr_block: "10.232.232.128/26"
+        cidr_block: "{{ vpc_cidr }}"
       ignore_errors: yes

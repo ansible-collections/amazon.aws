@@ -205,6 +205,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.ec2 import AWSRetry
+from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import compare_aws_tags
@@ -216,10 +217,12 @@ def vpc_exists(module, vpc, name, cidr_block, multi):
     otherwise it will assume the VPC does not exist and thus return None.
     """
     try:
-        matching_vpcs = vpc.describe_vpcs(Filters=[{'Name': 'tag:Name', 'Values': [name]}, {'Name': 'cidr-block', 'Values': cidr_block}])['Vpcs']
+        vpc_filters = ansible_dict_to_boto3_filter_list({'tag:Name': name, 'cidr-block': cidr_block})
+        matching_vpcs = vpc.describe_vpcs(aws_retry=True, Filters=vpc_filters)['Vpcs']
         # If an exact matching using a list of CIDRs isn't found, check for a match with the first CIDR as is documented for C(cidr_block)
         if not matching_vpcs:
-            matching_vpcs = vpc.describe_vpcs(Filters=[{'Name': 'tag:Name', 'Values': [name]}, {'Name': 'cidr-block', 'Values': [cidr_block[0]]}])['Vpcs']
+            vpc_filters = ansible_dict_to_boto3_filter_list({'tag:Name': name, 'cidr-block': [cidr_block[0]]})
+            matching_vpcs = vpc.describe_vpcs(aws_retry=True, Filters=vpc_filters)['Vpcs']
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe VPCs")
 
@@ -271,7 +274,7 @@ def update_vpc_tags(connection, module, vpc_id, tags, name):
     tags.update({'Name': name})
     tags = dict((k, to_native(v)) for k, v in tags.items())
     try:
-        filters = [{'Name': 'resource-id', 'Values': [vpc_id]}]
+        filters = ansible_dict_to_boto3_filter_list({'resource-id': vpc_id})
         current_tags = dict((t['Key'], t['Value']) for t in connection.describe_tags(Filters=filters, aws_retry=True)['Tags'])
         tags_to_update, dummy = compare_aws_tags(current_tags, tags, False)
         if tags_to_update:
@@ -320,9 +323,12 @@ def create_vpc(connection, module, cidr_block, tenancy):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, "Failed to create the VPC")
 
-    # wait for vpc to exist
+    # wait up to 30 seconds for vpc to exist
     try:
-        connection.get_waiter('vpc_exists').wait(VpcIds=[vpc_obj['Vpc']['VpcId']])
+        connection.get_waiter('vpc_exists').wait(
+            VpcIds=[vpc_obj['Vpc']['VpcId']],
+            WaiterConfig=dict(MaxAttempts=30)
+        )
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to wait for VPC {0} to be created.".format(vpc_obj['Vpc']['VpcId']))
 
@@ -493,7 +499,7 @@ def main():
                     Filters=[{'Name': 'cidr-block-association.cidr-block', 'Values': expected_cidrs}]
                 )
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, "Failed to wait for CIDRs to update")
+                module.fail_json_aws(e, "Failed to wait for CIDRs to update", vpc_id=vpc_id)
 
         # try to wait for enableDnsSupport and enableDnsHostnames to match
         wait_for_vpc_attribute(connection, module, vpc_id, 'enableDnsSupport', dns_support)
@@ -502,8 +508,9 @@ def main():
         final_state = camel_dict_to_snake_dict(get_vpc(module, connection, vpc_id))
         final_state['tags'] = boto3_tag_list_to_ansible_dict(final_state.get('tags', []))
         final_state['id'] = final_state.pop('vpc_id')
+        debugging = dict(to_add=to_add, to_remove=to_remove, expected_cidrs=expected_cidrs)
 
-        module.exit_json(changed=changed, vpc=final_state)
+        module.exit_json(changed=changed, vpc=final_state, debugging=debugging)
 
     elif state == 'absent':
 

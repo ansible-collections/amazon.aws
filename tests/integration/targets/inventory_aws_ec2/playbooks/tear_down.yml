@@ -1,3 +1,7 @@
+- set_fact:
+    vpc_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/16'
+    subnet_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/24'
+
 - name: remove setup security group
   ec2_group:
     name: '{{ resource_prefix }}_setup'
@@ -11,7 +15,7 @@
     az: '{{ aws_region }}a'
     tags: '{{ resource_prefix }}_setup'
     vpc_id: '{{ vpc_id }}'
-    cidr: 10.10.0.0/24
+    cidr: '{{ subnet_cidr }}'
     state: absent
     resource_tags:
       Name: '{{ resource_prefix }}_setup'
@@ -19,7 +23,7 @@
 
 - name: remove setup VPC
   ec2_vpc_net:
-    cidr_block: 10.10.0.0/24
+    cidr_block: '{{ vpc_cidr }}'
     state: absent
     name: '{{ resource_prefix }}_setup'
     resource_tags:

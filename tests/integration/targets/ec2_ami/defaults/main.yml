@@ -6,3 +6,6 @@ ec2_ami_description: 'Created by ansible integration tests'
 ec2_ami_image:
   us-east-1: ami-4fffc834
   us-east-2: ami-ea87a78f
+
+vpc_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/16'
+subnet_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.1.0/24'

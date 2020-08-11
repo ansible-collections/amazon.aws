@@ -20,7 +20,7 @@
       ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
         state: present
-        cidr_block: "10.232.232.128/26"
+        cidr_block: "{{ vpc_cidr }}"
         ipv6_cidr: True
         tags:
           Name: "{{ resource_prefix }}-vpc"
@@ -30,10 +30,13 @@
     - set_fact:
         vpc_ipv6_cidr: "{{ vpc_result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block }}"
 
+    - set_fact:
+        subnet_ipv6_cidr: "{{ vpc_ipv6_cidr | regex_replace('::/.*', '::/64') }}"
+
     # ============================================================
     - name: create subnet (expected changed=true) (CHECK MODE)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         az: "{{ subnet_az }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
@@ -50,7 +53,7 @@
 
     - name: create subnet (expected changed=true)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         az: "{{ subnet_az }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
@@ -69,7 +72,7 @@
     # ============================================================
     - name: recreate subnet (expected changed=false) (CHECK MODE)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         az: "{{ subnet_az }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
@@ -86,7 +89,7 @@
 
     - name: recreate subnet (expected changed=false)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         az: "{{ subnet_az }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
@@ -104,7 +107,7 @@
     # ============================================================
     - name: update subnet so instances launched in it are assigned an IP (CHECK MODE)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         az: "{{ subnet_az }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
@@ -122,7 +125,7 @@
 
     - name: update subnet so instances launched in it are assigned an IP
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         az: "{{ subnet_az }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
@@ -141,7 +144,7 @@
     # ============================================================
     - name: add invalid ipv6 block to subnet (expected failed)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         az: "{{ subnet_az }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         ipv6_cidr: 2001:db8::/64
@@ -161,7 +164,7 @@
     # ============================================================
     - name: add a tag (expected changed=true) (CHECK MODE)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         az: "{{ subnet_az }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
@@ -179,7 +182,7 @@
 
     - name: add a tag (expected changed=true)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         az: "{{ subnet_az }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
@@ -200,7 +203,7 @@
     # ============================================================
     - name: remove tags with default purge_tags=true (expected changed=true) (CHECK MODE)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         az: "{{ subnet_az }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
@@ -216,7 +219,7 @@
 
     - name: remove tags with default purge_tags=true (expected changed=true)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         az: "{{ subnet_az }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
@@ -235,7 +238,7 @@
     # ============================================================
     - name: change tags with purge_tags=false (expected changed=true) (CHECK MODE)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         az: "{{ subnet_az }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
@@ -253,7 +256,7 @@
 
     - name: change tags with purge_tags=false (expected changed=true)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         az: "{{ subnet_az }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
@@ -274,7 +277,7 @@
     # ============================================================
     - name: test state=absent (expected changed=true) (CHECK MODE)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: absent
       check_mode: true
@@ -287,7 +290,7 @@
 
     - name: test state=absent (expected changed=true)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: absent
       register: result
@@ -300,7 +303,7 @@
     # ============================================================
     - name: test state=absent (expected changed=false) (CHECK MODE)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: absent
       check_mode: true
@@ -313,7 +316,7 @@
 
     - name: test state=absent (expected changed=false)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: absent
       register: result
@@ -326,7 +329,7 @@
     # ============================================================
     - name: create subnet without AZ (CHECK MODE)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: present
       check_mode: true
@@ -339,7 +342,7 @@
 
     - name: create subnet without AZ
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: present
       register: subnet_without_az
@@ -352,7 +355,7 @@
     # ============================================================
     - name: remove subnet without AZ (CHECK MODE)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: absent
       check_mode: true
@@ -365,7 +368,7 @@
 
     - name: remove subnet without AZ
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: absent
       register: result
@@ -379,9 +382,9 @@
     # ============================================================
     - name: create subnet with IPv6 (expected changed=true) (CHECK MODE)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        ipv6_cidr: "{{ vpc_ipv6_cidr | regex_replace('::/56', '::/64') }}"
+        ipv6_cidr: "{{ subnet_ipv6_cidr }}"
         assign_instances_ipv6: true
         state: present
         tags:
@@ -397,9 +400,9 @@
 
     - name: create subnet with IPv6 (expected changed=true)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        ipv6_cidr: "{{ vpc_ipv6_cidr | regex_replace('::/56', '::/64') }}"
+        ipv6_cidr: "{{ subnet_ipv6_cidr }}"
         assign_instances_ipv6: true
         state: present
         tags:
@@ -412,7 +415,7 @@
         that:
            - vpc_subnet_ipv6_create is changed
            - 'vpc_subnet_ipv6_create.subnet.id.startswith("subnet-")'
-           - "vpc_subnet_ipv6_create.subnet.ipv6_cidr_block == '{{ vpc_ipv6_cidr | regex_replace('::/56', '::/64') }}'"
+           - "vpc_subnet_ipv6_create.subnet.ipv6_cidr_block == subnet_ipv6_cidr"
            - '"Name" in vpc_subnet_ipv6_create.subnet.tags and vpc_subnet_ipv6_create.subnet.tags["Name"] == ec2_vpc_subnet_name'
            - '"Description" in vpc_subnet_ipv6_create.subnet.tags and vpc_subnet_ipv6_create.subnet.tags["Description"] == ec2_vpc_subnet_description'
            - 'vpc_subnet_ipv6_create.subnet.assign_ipv6_address_on_creation'
@@ -420,9 +423,9 @@
     # ============================================================
     - name: recreate subnet (expected changed=false) (CHECK MODE)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        ipv6_cidr: "{{ vpc_ipv6_cidr | regex_replace('::/56', '::/64') }}"
+        ipv6_cidr: "{{ subnet_ipv6_cidr }}"
         assign_instances_ipv6: true
         state: present
         tags:
@@ -438,9 +441,9 @@
 
     - name: recreate subnet (expected changed=false)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        ipv6_cidr: "{{ vpc_ipv6_cidr | regex_replace('::/56', '::/64') }}"
+        ipv6_cidr: "{{ subnet_ipv6_cidr }}"
         assign_instances_ipv6: true
         state: present
         tags:
@@ -455,11 +458,11 @@
            - 'vpc_subnet_ipv6_recreate.subnet == vpc_subnet_ipv6_create.subnet'
 
     # ============================================================
-    - name: change subnet ipv6 attribute (expected changed=true) (CHECK MODE)
+    - name: change subnet assign_instances_ipv6 attribute (expected changed=true) (CHECK MODE)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        ipv6_cidr: "{{ vpc_ipv6_cidr | regex_replace('::/56', '::/64') }}"
+        ipv6_cidr: "{{ subnet_ipv6_cidr }}"
         assign_instances_ipv6: false
         state: present
         purge_tags: false
@@ -471,11 +474,11 @@
         that:
            - vpc_change_attribute is changed
 
-    - name: change subnet ipv6 attribute (expected changed=true)
+    - name: change subnet assign_instances_ipv6 attribute (expected changed=true)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        ipv6_cidr: "{{ vpc_ipv6_cidr | regex_replace('::/56', '::/64') }}"
+        ipv6_cidr: "{{ subnet_ipv6_cidr }}"
         assign_instances_ipv6: false
         state: present
         purge_tags: false
@@ -490,9 +493,9 @@
     # ============================================================
     - name: add second subnet with duplicate ipv6 cidr (expected failure)
       ec2_vpc_subnet:
-        cidr: "10.232.232.144/28"
+        cidr: "{{ subnet_cidr_b }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
-        ipv6_cidr: "{{ vpc_ipv6_cidr | regex_replace('::/56', '::/64') }}"
+        ipv6_cidr: "{{ subnet_ipv6_cidr }}"
         state: present
         purge_tags: false
       register: vpc_add_duplicate_ipv6
@@ -502,12 +505,12 @@
       assert:
         that:
            - vpc_add_duplicate_ipv6 is failed
-           - "'The IPv6 CIDR \\'{{ vpc_ipv6_cidr | regex_replace('::/56', '::/64') }}\\' conflicts with another subnet' in vpc_add_duplicate_ipv6.msg"
+           - "'The IPv6 CIDR \\'{{ subnet_ipv6_cidr }}\\' conflicts with another subnet' in vpc_add_duplicate_ipv6.msg"
 
     # ============================================================
     - name: remove subnet ipv6 cidr (expected changed=true) (CHECK MODE)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: present
         purge_tags: false
@@ -521,7 +524,7 @@
 
     - name: remove subnet ipv6 cidr (expected changed=true)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: present
         purge_tags: false
@@ -537,7 +540,7 @@
     # ============================================================
     - name: test adding a tag that looks like a boolean to the subnet (CHECK MODE)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: present
         purge_tags: false
@@ -553,7 +556,7 @@
 
     - name: test adding a tag that looks like a boolean to the subnet
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: present
         purge_tags: false
@@ -570,7 +573,7 @@
     # ============================================================
     - name: test idempotence adding a tag that looks like a boolean (CHECK MODE)
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: present
         purge_tags: false
@@ -586,7 +589,7 @@
 
     - name: test idempotence adding a tag that looks like a boolean
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: present
         purge_tags: false
@@ -607,7 +610,7 @@
 
     - name: tidy up subnet
       ec2_vpc_subnet:
-        cidr: "10.232.232.128/28"
+        cidr: "{{ subnet_cidr }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         state: absent
 
@@ -615,4 +618,4 @@
       ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
         state: absent
-        cidr_block: "10.232.232.128/26"
+        cidr_block: "{{ vpc_cidr }}"

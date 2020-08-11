@@ -715,6 +715,11 @@
         filters:
           "tag:Name": "{{ resource_prefix }}"
       register: vpc_info
+      until:
+        - vpc_info.vpcs | length == 1
+        - vpc_info.vpcs[0].tags | length == 2
+      retries: 5
+      delay: 5
 
     - name: assert the VPC has Name and Ansible tags
       assert:
@@ -1299,6 +1304,10 @@
       ec2_vpc_dhcp_option:
         dhcp_options_id: "{{ new_dhcp.dhcp_options_id }}"
         state: absent
+      ignore_errors: true
+
+    - name: Describe VPCs before deleting them (for debugging)
+      ec2_vpc_net_info:
       ignore_errors: true
 
     - name: remove the VPC

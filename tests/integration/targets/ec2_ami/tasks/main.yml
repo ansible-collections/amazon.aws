@@ -13,7 +13,7 @@
     # SETUP: vpc, ec2 key pair, subnet, security group, ec2 instance, snapshot
     - name: create a VPC to work in
       ec2_vpc_net:
-        cidr_block: 10.0.0.0/24
+        cidr_block: '{{ vpc_cidr }}'
         state: present
         name: '{{ ec2_ami_name }}_setup'
         resource_tags:
@@ -31,7 +31,7 @@
         az: '{{ ec2_region }}a'
         tags: '{{ ec2_ami_name }}_setup'
         vpc_id: '{{ setup_vpc.vpc.id }}'
-        cidr: 10.0.0.0/24
+        cidr: '{{ subnet_cidr }}'
         state: present
         resource_tags:
           Name: '{{ ec2_ami_name }}_setup'
@@ -474,7 +474,7 @@
         az: '{{ ec2_region }}a'
         tags: '{{ec2_ami_name}}_setup'
         vpc_id: '{{ setup_vpc.vpc.id }}'
-        cidr: 10.0.0.0/24
+        cidr: '{{ subnet_cidr }}'
         state: absent
         resource_tags:
           Name: '{{ ec2_ami_name }}_setup'
@@ -482,7 +482,7 @@
 
     - name: remove setup VPC
       ec2_vpc_net:
-        cidr_block: 10.0.0.0/24
+        cidr_block: '{{ vpc_cidr }}'
         state: absent
         name: '{{ ec2_ami_name }}_setup'
         resource_tags:

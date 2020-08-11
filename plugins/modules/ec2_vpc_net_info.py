@@ -181,7 +181,7 @@ def describe_vpcs(connection, module):
 
     # Get the basic VPC info
     try:
-        response = connection.describe_vpcs(VpcIds=vpc_ids, Filters=filters)
+        response = connection.describe_vpcs(VpcIds=vpc_ids, Filters=filters, aws_retry=True)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to describe VPCs {0}".format(vpc_ids))
 
