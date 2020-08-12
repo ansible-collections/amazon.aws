@@ -82,12 +82,12 @@ EXAMPLES = '''
 try:
     import boto3
     from botocore.exceptions import ClientError
-    HAS_BOTO3 = True
 except ImportError:
-    HAS_BOTO3 = False
+    pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn, ec2_argument_spec, get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
 def normalize_credentials(credentials):
@@ -128,19 +128,13 @@ def get_session_token(connection, module):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            duration_seconds=dict(required=False, default=None, type='int'),
-            mfa_serial_number=dict(required=False, default=None),
-            mfa_token=dict(required=False, default=None)
-        )
+    argument_spec = dict(
+        duration_seconds=dict(required=False, default=None, type='int'),
+        mfa_serial_number=dict(required=False, default=None),
+        mfa_token=dict(required=False, default=None),
     )
 
-    module = AnsibleModule(argument_spec=argument_spec)
-
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 and botocore are required.')
+    module = AnsibleAWSModule(argument_spec=argument_spec)
 
     region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
     if region:

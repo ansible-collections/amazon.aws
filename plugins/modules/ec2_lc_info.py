@@ -154,17 +154,13 @@ user_data:
 try:
     import boto3
     from botocore.exceptions import ClientError
-    HAS_BOTO3 = True
 except ImportError:
-    HAS_BOTO3 = False
+    pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (HAS_BOTO3,
-                                                                     boto3_conn,
-                                                                     camel_dict_to_snake_dict,
-                                                                     ec2_argument_spec,
-                                                                     get_aws_connection_info,
-                                                                     )
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
 def list_launch_configs(connection, module):
@@ -203,25 +199,19 @@ def list_launch_configs(connection, module):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            name=dict(required=False, default=[], type='list', elements='str'),
-            sort=dict(required=False, default=None,
-                      choices=['launch_configuration_name', 'image_id', 'created_time', 'instance_type', 'kernel_id', 'ramdisk_id', 'key_name']),
-            sort_order=dict(required=False, default='ascending',
-                            choices=['ascending', 'descending']),
-            sort_start=dict(required=False, type='int'),
-            sort_end=dict(required=False, type='int'),
-        )
+    argument_spec = dict(
+        name=dict(required=False, default=[], type='list', elements='str'),
+        sort=dict(required=False, default=None,
+                  choices=['launch_configuration_name', 'image_id', 'created_time', 'instance_type', 'kernel_id', 'ramdisk_id', 'key_name']),
+        sort_order=dict(required=False, default='ascending',
+                        choices=['ascending', 'descending']),
+        sort_start=dict(required=False, type='int'),
+        sort_end=dict(required=False, type='int'),
     )
 
-    module = AnsibleModule(argument_spec=argument_spec)
+    module = AnsibleAWSModule(argument_spec=argument_spec)
     if module._name == 'ec2_lc_facts':
         module.deprecate("The 'ec2_lc_facts' module has been renamed to 'ec2_lc_info'", date='2021-12-01', collection_name='community.aws')
-
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 required for this module')
 
     region, ec2_url, aws_connect_params = get_aws_connection_info(module, boto3=True)
 

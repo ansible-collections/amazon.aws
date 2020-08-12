@@ -532,9 +532,11 @@ try:
 except ImportError:
     HAS_RDS2 = False
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO, connect_to_aws, ec2_argument_spec, get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
 DEFAULT_PORTS = {
@@ -1311,8 +1313,7 @@ def validate_parameters(required_vars, valid_vars, module):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         command=dict(choices=['create', 'replicate', 'delete', 'facts', 'modify', 'promote', 'snapshot', 'reboot', 'restore'], required=True),
         instance_name=dict(required=False),
         source_instance=dict(required=False),
@@ -1346,12 +1347,12 @@ def main():
         tags=dict(type='dict', required=False),
         publicly_accessible=dict(required=False),
         character_set_name=dict(required=False),
-        force_failover=dict(type='bool', required=False, default=False)
-    )
+        force_failover=dict(type='bool', required=False, default=False),
     )
 
-    module = AnsibleModule(
+    module = AnsibleAWSModule(
         argument_spec=argument_spec,
+        check_boto3=False,
     )
 
     if not HAS_BOTO:

@@ -128,19 +128,17 @@ EXAMPLES = r"""
 """
 from time import sleep
 from traceback import format_exc
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (ec2_argument_spec,
-                                                                     get_aws_connection_info,
-                                                                     boto3_conn,
-                                                                     HAS_BOTO3,
-                                                                     camel_dict_to_snake_dict,
-                                                                     )
 
 try:
     import boto3
     import botocore
 except ImportError:
-    pass  # will be detected by imported HAS_BOTO3
+    pass  # Handled by AnsibleAWSModule
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
 class ElastiCacheManager(object):
@@ -485,8 +483,7 @@ class ElastiCacheManager(object):
 
 def main():
     """ elasticache ansible module """
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         state=dict(required=True, choices=['present', 'absent', 'rebooted']),
         name=dict(required=True),
         engine=dict(default='memcached'),
@@ -501,15 +498,12 @@ def main():
         security_group_ids=dict(default=[], type='list', elements='str'),
         zone=dict(),
         wait=dict(default=True, type='bool'),
-        hard_modify=dict(type='bool')
-    ))
-
-    module = AnsibleModule(
-        argument_spec=argument_spec,
+        hard_modify=dict(type='bool'),
     )
 
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 required for this module')
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+    )
 
     region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module)
 

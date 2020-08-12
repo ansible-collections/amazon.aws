@@ -116,12 +116,13 @@ import traceback
 try:
     import boto3
     import botocore
-    HAS_BOTO3 = True
 except ImportError:
-    HAS_BOTO3 = False
+    pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn, get_aws_connection_info, ec2_argument_spec, camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
 def create(module, connection, replication_id, cluster_id, name):
@@ -170,22 +171,16 @@ def delete(module, connection, name):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            name=dict(required=True, type='str'),
-            state=dict(required=True, type='str', choices=['present', 'absent', 'copy']),
-            replication_id=dict(type='str'),
-            cluster_id=dict(type='str'),
-            target=dict(type='str'),
-            bucket=dict(type='str'),
-        )
+    argument_spec = dict(
+        name=dict(required=True, type='str'),
+        state=dict(required=True, type='str', choices=['present', 'absent', 'copy']),
+        replication_id=dict(type='str'),
+        cluster_id=dict(type='str'),
+        target=dict(type='str'),
+        bucket=dict(type='str'),
     )
 
-    module = AnsibleModule(argument_spec=argument_spec)
-
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto required for this module')
+    module = AnsibleAWSModule(argument_spec=argument_spec)
 
     name = module.params.get('name')
     state = module.params.get('state')

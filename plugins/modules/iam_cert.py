@@ -116,17 +116,19 @@ EXAMPLES = '''
     state: present
 
 '''
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ec2_argument_spec, get_aws_connection_info, connect_to_aws
 import os
 
 try:
     import boto
     import boto.iam
     import boto.ec2
-    HAS_BOTO = True
 except ImportError:
-    HAS_BOTO = False
+    pass  # Handled by HAS_BOTO
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
 
 
 def cert_meta(iam, name):
@@ -239,8 +241,7 @@ def load_data(cert, key, cert_chain):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         state=dict(required=True, choices=['present', 'absent']),
         name=dict(required=True),
         cert=dict(),
@@ -249,11 +250,10 @@ def main():
         new_name=dict(),
         path=dict(default='/'),
         new_path=dict(),
-        dup_ok=dict(type='bool')
-    )
+        dup_ok=dict(type='bool'),
     )
 
-    module = AnsibleModule(
+    module = AnsibleAWSModule(
         argument_spec=argument_spec,
         mutually_exclusive=[
             ['new_path', 'key'],
@@ -263,6 +263,7 @@ def main():
             ['new_name', 'cert'],
             ['new_name', 'cert_chain'],
         ],
+        check_boto3=False,
     )
 
     if not HAS_BOTO:

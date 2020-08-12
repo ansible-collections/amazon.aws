@@ -107,12 +107,12 @@ import time
 
 try:
     import boto3
-    HAS_BOTO3 = True
 except ImportError:
-    HAS_BOTO3 = False
+    pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn, ec2_argument_spec, get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
 class EcsClusterManager:
@@ -157,19 +157,19 @@ class EcsClusterManager:
 
 def main():
 
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         state=dict(required=True, choices=['present', 'absent', 'has_instances']),
         name=dict(required=True, type='str'),
         delay=dict(required=False, type='int', default=10),
         repeat=dict(required=False, type='int', default=10)
-    ))
+    )
     required_together = [['state', 'name']]
 
-    module = AnsibleModule(argument_spec=argument_spec, supports_check_mode=True, required_together=required_together)
-
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 is required.')
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+        required_together=required_together,
+    )
 
     cluster_mgr = EcsClusterManager(module)
     try:

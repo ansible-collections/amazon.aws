@@ -110,23 +110,26 @@ snapshot_id:
 '''
 
 import traceback
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (boto3_conn, ec2_argument_spec, get_aws_connection_info, camel_dict_to_snake_dict)
-from ansible.module_utils._text import to_native
 
 try:
     import boto3
     from botocore.exceptions import ClientError, WaiterError
-    HAS_BOTO3 = True
 except ImportError:
-    HAS_BOTO3 = False
+    pass  # Handled by AnsibleAWSModule
+
+from ansible.module_utils._text import to_native
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
 def copy_snapshot(module, ec2):
     """
     Copies an EC2 Snapshot to another region
 
-    module : AnsibleModule object
+    module : AnsibleAWSModule object
     ec2: ec2 connection object
     """
 
@@ -168,8 +171,7 @@ def copy_snapshot(module, ec2):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         source_region=dict(required=True),
         source_snapshot_id=dict(required=True),
         description=dict(default=''),
@@ -177,12 +179,10 @@ def main():
         kms_key_id=dict(type='str', required=False),
         wait=dict(type='bool', default=False),
         wait_timeout=dict(type='int', default=600),
-        tags=dict(type='dict')))
+        tags=dict(type='dict'),
+    )
 
-    module = AnsibleModule(argument_spec=argument_spec)
-
-    if not HAS_BOTO3:
-        module.fail_json(msg='botocore and boto3 are required.')
+    module = AnsibleAWSModule(argument_spec=argument_spec)
 
     region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
     client = boto3_conn(module, conn_type='client', resource='ec2',

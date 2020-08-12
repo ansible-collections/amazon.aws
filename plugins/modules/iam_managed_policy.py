@@ -135,18 +135,16 @@ import traceback
 try:
     import botocore
 except ImportError:
-    pass  # caught by imported HAS_BOTO3
+    pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (boto3_conn,
-                                                                     get_aws_connection_info,
-                                                                     ec2_argument_spec,
-                                                                     AWSRetry,
-                                                                     camel_dict_to_snake_dict,
-                                                                     HAS_BOTO3,
-                                                                     compare_policies,
-                                                                     )
 from ansible.module_utils._text import to_native
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
 
 
 @AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
@@ -296,8 +294,7 @@ def detach_all_entities(module, iam, policy, **kwargs):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         policy_name=dict(required=True),
         policy_description=dict(default=''),
         policy=dict(type='json'),
@@ -305,15 +302,12 @@ def main():
         only_version=dict(type='bool', default=False),
         fail_on_delete=dict(type='bool', removed_at_date='2022-06-01', removed_from_collection='community.aws'),
         state=dict(default='present', choices=['present', 'absent']),
-    ))
-
-    module = AnsibleModule(
-        argument_spec=argument_spec,
-        required_if=[['state', 'present', ['policy']]]
     )
 
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 is required for this module')
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        required_if=[['state', 'present', ['policy']]],
+    )
 
     name = module.params.get('policy_name')
     description = module.params.get('policy_description')

@@ -222,8 +222,10 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule, is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry, ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 
 
 def associate_ip_and_device(ec2, module, address, private_ip_address, device_id, allow_reassociation, check_mode, is_instance=True):
@@ -499,7 +501,7 @@ def allocate_address_from_pool(ec2, module, domain, check_mode, public_ipv4_pool
 
 
 def generate_tag_dict(module, tag_name, tag_value):
-    # type: (AnsibleModule, str, str) -> Optional[Dict]
+    # type: (AnsibleAWSModule, str, str) -> Optional[Dict]
     """ Generates a dictionary to be passed as a filter to Amazon """
     if tag_name and not tag_value:
         if tag_name.startswith('tag:'):

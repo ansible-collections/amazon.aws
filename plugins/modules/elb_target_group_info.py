@@ -212,17 +212,14 @@ import traceback
 try:
     import boto3
     from botocore.exceptions import ClientError, NoCredentialsError
-    HAS_BOTO3 = True
 except ImportError:
-    HAS_BOTO3 = False
+    pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (boto3_conn,
-                                                                     boto3_tag_list_to_ansible_dict,
-                                                                     camel_dict_to_snake_dict,
-                                                                     ec2_argument_spec,
-                                                                     get_aws_connection_info,
-                                                                     )
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
 def get_target_group_attributes(connection, module, target_group_arn):
@@ -297,25 +294,20 @@ def list_target_groups(connection, module):
 
 def main():
 
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            load_balancer_arn=dict(type='str'),
-            target_group_arns=dict(type='list', elements='str'),
-            names=dict(type='list', elements='str'),
-            collect_targets_health=dict(default=False, type='bool', required=False)
-        )
+    argument_spec = dict(
+        load_balancer_arn=dict(type='str'),
+        target_group_arns=dict(type='list', elements='str'),
+        names=dict(type='list', elements='str'),
+        collect_targets_health=dict(default=False, type='bool', required=False),
     )
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           mutually_exclusive=[['load_balancer_arn', 'target_group_arns', 'names']],
-                           supports_check_mode=True
-                           )
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        mutually_exclusive=[['load_balancer_arn', 'target_group_arns', 'names']],
+        supports_check_mode=True,
+    )
     if module._name == 'elb_target_group_facts':
         module.deprecate("The 'elb_target_group_facts' module has been renamed to 'elb_target_group_info'", date='2021-12-01', collection_name='community.aws')
-
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 required for this module')
 
     region, ec2_url, aws_connect_params = get_aws_connection_info(module, boto3=True)
 

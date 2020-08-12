@@ -164,17 +164,13 @@ import time
 try:
     import boto3
     from botocore.exceptions import ClientError, ParamValidationError
-    HAS_BOTO3 = True
 except ImportError:
-    HAS_BOTO3 = False
+    pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (HAS_BOTO3,
-                                                                     boto3_conn,
-                                                                     camel_dict_to_snake_dict,
-                                                                     ec2_argument_spec,
-                                                                     get_aws_connection_info,
-                                                                     )
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
 def _create_redirect_dict(url):
@@ -294,26 +290,21 @@ def disable_bucket_as_website(client_connection, module):
 
 def main():
 
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            name=dict(type='str', required=True),
-            state=dict(type='str', required=True, choices=['present', 'absent']),
-            suffix=dict(type='str', required=False, default='index.html'),
-            error_key=dict(type='str', required=False),
-            redirect_all_requests=dict(type='str', required=False)
-        )
+    argument_spec = dict(
+        name=dict(type='str', required=True),
+        state=dict(type='str', required=True, choices=['present', 'absent']),
+        suffix=dict(type='str', required=False, default='index.html'),
+        error_key=dict(type='str', required=False),
+        redirect_all_requests=dict(type='str', required=False),
     )
 
-    module = AnsibleModule(
+    module = AnsibleAWSModule(
         argument_spec=argument_spec,
         mutually_exclusive=[
             ['redirect_all_requests', 'suffix'],
             ['redirect_all_requests', 'error_key']
-        ])
-
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 required for this module')
+        ],
+    )
 
     region, ec2_url, aws_connect_params = get_aws_connection_info(module, boto3=True)
 

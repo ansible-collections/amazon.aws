@@ -262,16 +262,19 @@ result:
     type: dict
 '''
 
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info, ec2_argument_spec, boto3_conn, HAS_BOTO3
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict, camel_dict_to_snake_dict
-from ansible.module_utils.basic import AnsibleModule
 from functools import partial
 import traceback
 
 try:
     import botocore
 except ImportError:
-    pass  # will be caught by imported HAS_BOTO3
+    pass  # Handled by AnsibleAWSModule
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
 class CloudFrontServiceManager:
@@ -577,8 +580,7 @@ def set_facts_for_distribution_id_and_alias(details, facts, distribution_id, ali
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         distribution_id=dict(required=False, type='str'),
         invalidation_id=dict(required=False, type='str'),
         origin_access_identity_id=dict(required=False, type='str'),
@@ -596,17 +598,14 @@ def main():
         list_distributions_by_web_acl_id=dict(required=False, default=False, type='bool'),
         list_invalidations=dict(required=False, default=False, type='bool'),
         list_streaming_distributions=dict(required=False, default=False, type='bool'),
-        summary=dict(required=False, default=False, type='bool')
-    ))
+        summary=dict(required=False, default=False, type='bool'),
+    )
 
-    module = AnsibleModule(argument_spec=argument_spec, supports_check_mode=False)
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=False)
     is_old_facts = module._name == 'cloudfront_facts'
     if is_old_facts:
         module.deprecate("The 'cloudfront_facts' module has been renamed to 'cloudfront_info', "
                          "and the renamed one no longer returns ansible_facts", date='2021-12-01', collection_name='community.aws')
-
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 is required.')
 
     service_mgr = CloudFrontServiceManager(module)
 

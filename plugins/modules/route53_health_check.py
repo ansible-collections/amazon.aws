@@ -123,13 +123,13 @@ try:
     from boto import route53
     from boto.route53 import Route53Connection, exception
     from boto.route53.healthcheck import HealthCheck
-    HAS_BOTO = True
 except ImportError:
-    HAS_BOTO = False
+    pass  # Handled by HAS_BOTO
 
 # import module snippets
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ec2_argument_spec, get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
 
 
 # Things that can't get changed:
@@ -280,8 +280,7 @@ def update_health_check(conn, health_check_id, health_check_version, health_chec
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         state=dict(choices=['present', 'absent'], default='present'),
         ip_address=dict(),
         port=dict(type='int'),
@@ -292,8 +291,7 @@ def main():
         request_interval=dict(type='int', choices=[10, 30], default=30),
         failure_threshold=dict(type='int', choices=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], default=3),
     )
-    )
-    module = AnsibleModule(argument_spec=argument_spec)
+    module = AnsibleAWSModule(argument_spec=argument_spec, check_boto3=False)
 
     if not HAS_BOTO:
         module.fail_json(msg='boto 2.27.0+ required for this module')

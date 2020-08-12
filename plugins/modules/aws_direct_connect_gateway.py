@@ -101,17 +101,15 @@ import traceback
 
 try:
     import botocore
-    HAS_BOTO3 = True
 except ImportError:
-    HAS_BOTO3 = False
+    pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (camel_dict_to_snake_dict,
-                                                                     ec2_argument_spec,
-                                                                     get_aws_connection_info,
-                                                                     boto3_conn,
-                                                                     )
 from ansible.module_utils._text import to_native
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
 
 
 def dx_gateway_info(client, gateway_id, module):
@@ -340,20 +338,18 @@ def ensure_absent(client, module):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(state=dict(default='present', choices=['present', 'absent']),
-                              name=dict(),
-                              amazon_asn=dict(),
-                              virtual_gateway_id=dict(),
-                              direct_connect_gateway_id=dict(),
-                              wait_timeout=dict(type='int', default=320)))
+    argument_spec = dict(
+        state=dict(default='present', choices=['present', 'absent']),
+        name=dict(),
+        amazon_asn=dict(),
+        virtual_gateway_id=dict(),
+        direct_connect_gateway_id=dict(),
+        wait_timeout=dict(type='int', default=320),
+    )
     required_if = [('state', 'present', ['name', 'amazon_asn']),
                    ('state', 'absent', ['direct_connect_gateway_id'])]
-    module = AnsibleModule(argument_spec=argument_spec,
-                           required_if=required_if)
-
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 is required for this module')
+    module = AnsibleAWSModule(argument_spec=argument_spec,
+                              required_if=required_if)
 
     state = module.params.get('state')
 

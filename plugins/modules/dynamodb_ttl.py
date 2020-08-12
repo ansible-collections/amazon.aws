@@ -71,15 +71,12 @@ import traceback
 try:
     import botocore
 except ImportError:
-    pass
+    pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (HAS_BOTO3,
-                                                                     boto3_conn,
-                                                                     camel_dict_to_snake_dict,
-                                                                     ec2_argument_spec,
-                                                                     get_aws_connection_info,
-                                                                     )
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
 def get_current_ttl_state(c, table_name):
@@ -123,19 +120,16 @@ def set_ttl_state(c, table_name, state, attribute_name):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         state=dict(choices=['enable', 'disable']),
         table_name=dict(required=True),
-        attribute_name=dict(required=True))
+        attribute_name=dict(required=True),
     )
-    module = AnsibleModule(
+    module = AnsibleAWSModule(
         argument_spec=argument_spec,
     )
 
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 required for this module')
-    elif distutils.version.StrictVersion(botocore.__version__) < distutils.version.StrictVersion('1.5.24'):
+    if distutils.version.StrictVersion(botocore.__version__) < distutils.version.StrictVersion('1.5.24'):
         # TTL was added in this version.
         module.fail_json(msg='Found botocore in version {0}, but >= {1} is required for TTL support'.format(botocore.__version__, '1.5.24'))
 
