@@ -372,12 +372,12 @@ try:
     from boto.route53 import Route53Connection
     from boto.route53.record import Record, ResourceRecordSets
     from boto.route53.status import Status
-    HAS_BOTO = True
 except ImportError:
-    HAS_BOTO = False
+    pass  # Handled by HAS_BOTO
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ec2_argument_spec, get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
 
 
 MINIMUM_BOTO_VERSION = '2.28.0'
@@ -491,8 +491,7 @@ def to_dict(rset, zone_in, zone_id):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         state=dict(type='str', required=True, choices=['absent', 'create', 'delete', 'get', 'present'], aliases=['command']),
         zone=dict(type='str'),
         hosted_zone_id=dict(type='str'),
@@ -514,9 +513,9 @@ def main():
         vpc_id=dict(type='str'),
         wait=dict(type='bool', default=False),
         wait_timeout=dict(type='int', default=300),
-    ))
+    )
 
-    module = AnsibleModule(
+    module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
         required_one_of=[['zone', 'hosted_zone_id']],
@@ -537,6 +536,7 @@ def main():
             region=('identifier',),
             weight=('identifier',),
         ),
+        check_boto3=False,
     )
 
     if not HAS_BOTO:
