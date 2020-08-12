@@ -71,7 +71,7 @@ def delete_eigw(module, conn, eigw_id):
     """
     Delete EIGW.
 
-    module     : AnsibleModule object
+    module     : AnsibleAWSModule object
     conn       : boto3 client connection object
     eigw_id    : ID of the EIGW to delete
     """
@@ -99,7 +99,7 @@ def create_eigw(module, conn, vpc_id):
     """
     Create EIGW.
 
-    module       : AnsibleModule object
+    module       : AnsibleAWSModule object
     conn         : boto3 client connection object
     vpc_id       : ID of the VPC we are operating on
     """
@@ -139,7 +139,7 @@ def describe_eigws(module, conn, vpc_id):
     """
     Describe EIGWs.
 
-    module     : AnsibleModule object
+    module     : AnsibleAWSModule object
     conn       : boto3 client connection object
     vpc_id     : ID of the VPC we are operating on
     """
