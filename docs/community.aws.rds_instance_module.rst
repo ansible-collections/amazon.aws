@@ -191,7 +191,9 @@ Parameters
                                 <td>
                                                                                                                                                             </td>
                                                                 <td>
-                                            <div>The number of days for which automated backups are retained (must be greater or equal to 1). May be used when creating a new cluster, when restoring from S3, or when modifying a cluster.</div>
+                                            <div>The number of days for which automated backups are retained.</div>
+                                            <div>When set to 0, automated backups will be disabled. (Not applicable if the DB instance is a source to read replicas)</div>
+                                            <div>May be used when creating a new cluster, when restoring from S3, or when modifying a cluster.</div>
                                                         </td>
             </tr>
                                 <tr>
