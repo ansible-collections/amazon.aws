@@ -117,15 +117,17 @@ import traceback
 try:
     import botocore
     import boto3
-    HAS_BOTO3 = True
 except ImportError:
-    HAS_BOTO3 = False
+    pass  # Handled by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3, boto3_conn, ec2_argument_spec, get_aws_connection_info, AWSRetry
 from ansible.module_utils._text import to_native
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
 def get_vgw_info(vgws):
@@ -539,8 +541,7 @@ def ensure_vgw_absent(client, module):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         state=dict(default='present', choices=['present', 'absent']),
         name=dict(),
         vpn_gateway_id=dict(),
@@ -550,12 +551,8 @@ def main():
         type=dict(default='ipsec.1', choices=['ipsec.1']),
         tags=dict(default=None, required=False, type='dict', aliases=['resource_tags']),
     )
-    )
-    module = AnsibleModule(argument_spec=argument_spec,
-                           required_if=[['state', 'present', ['name']]])
-
-    if not HAS_BOTO3:
-        module.fail_json(msg='json and boto3 is required.')
+    module = AnsibleAWSModule(argument_spec=argument_spec,
+                              required_if=[['state', 'present', ['name']]])
 
     state = module.params.get('state').lower()
 

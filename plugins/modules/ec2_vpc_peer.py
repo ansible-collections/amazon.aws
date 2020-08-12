@@ -219,13 +219,14 @@ task:
 try:
     import botocore
 except ImportError:
-    pass  # caught by imported HAS_BOTO3
+    pass  # Handled by AnsibleAWSModule
 
 import distutils.version
 import traceback
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn, ec2_argument_spec, get_aws_connection_info, HAS_BOTO3
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
@@ -392,17 +393,14 @@ def find_pcx_by_id(pcx_id, client, module):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            vpc_id=dict(),
-            peer_vpc_id=dict(),
-            peer_region=dict(),
-            peering_id=dict(),
-            peer_owner_id=dict(),
-            tags=dict(required=False, type='dict'),
-            state=dict(default='present', choices=['present', 'absent', 'accept', 'reject'])
-        )
+    argument_spec = dict(
+        vpc_id=dict(),
+        peer_vpc_id=dict(),
+        peer_region=dict(),
+        peering_id=dict(),
+        peer_owner_id=dict(),
+        tags=dict(required=False, type='dict'),
+        state=dict(default='present', choices=['present', 'absent', 'accept', 'reject']),
     )
     required_if = [
         ('state', 'present', ['vpc_id', 'peer_vpc_id']),
@@ -410,10 +408,8 @@ def main():
         ('state', 'reject', ['peering_id'])
     ]
 
-    module = AnsibleModule(argument_spec=argument_spec, required_if=required_if)
+    module = AnsibleAWSModule(argument_spec=argument_spec, required_if=required_if)
 
-    if not HAS_BOTO3:
-        module.fail_json(msg='json, botocore and boto3 are required.')
     state = module.params.get('state')
     peering_id = module.params.get('peering_id')
     vpc_id = module.params.get('vpc_id')
