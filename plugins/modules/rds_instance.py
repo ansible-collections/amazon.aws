@@ -99,8 +99,9 @@ options:
         type: str
     backup_retention_period:
         description:
-          - The number of days for which automated backups are retained (must be greater or equal to 1).
-            May be used when creating a new cluster, when restoring from S3, or when modifying a cluster.
+          - The number of days for which automated backups are retained.
+          - When set to C(0), automated backups will be disabled. (Not applicable if the DB instance is a source to read replicas)
+          - May be used when creating a new cluster, when restoring from S3, or when modifying a cluster.
         type: int
     ca_certificate_identifier:
         description:
