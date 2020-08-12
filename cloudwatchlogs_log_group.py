@@ -129,19 +129,18 @@ log_groups:
 '''
 
 import traceback
-from ansible.module_utils._text import to_native
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (HAS_BOTO3,
-                                                                     camel_dict_to_snake_dict,
-                                                                     boto3_conn,
-                                                                     ec2_argument_spec,
-                                                                     get_aws_connection_info,
-                                                                     )
 
 try:
     import botocore
 except ImportError:
-    pass  # will be detected by imported HAS_BOTO3
+    pass  # Handled by AnsibleAWSModule
+
+from ansible.module_utils._text import to_native
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
 def create_log_group(client, log_group_name, kms_key_id, tags, retention, module):
@@ -237,8 +236,7 @@ def describe_log_group(client, log_group_name, module):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         log_group_name=dict(required=True, type='str'),
         state=dict(choices=['present', 'absent'],
                    default='present'),
@@ -246,14 +244,11 @@ def main():
         tags=dict(required=False, type='dict'),
         retention=dict(required=False, type='int'),
         purge_retention_policy=dict(required=False, type='bool', default=False),
-        overwrite=dict(required=False, type='bool', default=False)
-    ))
+        overwrite=dict(required=False, type='bool', default=False),
+    )
 
     mutually_exclusive = [['retention', 'purge_retention_policy'], ['purge_retention_policy', 'overwrite']]
-    module = AnsibleModule(argument_spec=argument_spec, mutually_exclusive=mutually_exclusive)
-
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 is required.')
+    module = AnsibleAWSModule(argument_spec=argument_spec, mutually_exclusive=mutually_exclusive)
 
     region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
     logs = boto3_conn(module, conn_type='client', resource='logs', region=region, endpoint=ec2_url, **aws_connect_kwargs)

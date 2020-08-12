@@ -202,15 +202,12 @@ import time
 try:
     import botocore
 except ImportError:
-    pass  # caught by imported HAS_BOTO3
+    pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (ec2_argument_spec,
-                                                                     get_aws_connection_info,
-                                                                     boto3_conn,
-                                                                     camel_dict_to_snake_dict,
-                                                                     HAS_BOTO3,
-                                                                     )
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
 DRY_RUN_GATEWAYS = [
@@ -933,34 +930,27 @@ def remove(client, nat_gateway_id, wait=False, wait_timeout=0,
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            subnet_id=dict(type='str'),
-            eip_address=dict(type='str'),
-            allocation_id=dict(type='str'),
-            if_exist_do_not_create=dict(type='bool', default=False),
-            state=dict(default='present', choices=['present', 'absent']),
-            wait=dict(type='bool', default=False),
-            wait_timeout=dict(type='int', default=320, required=False),
-            release_eip=dict(type='bool', default=False),
-            nat_gateway_id=dict(type='str'),
-            client_token=dict(type='str'),
-        )
+    argument_spec = dict(
+        subnet_id=dict(type='str'),
+        eip_address=dict(type='str'),
+        allocation_id=dict(type='str'),
+        if_exist_do_not_create=dict(type='bool', default=False),
+        state=dict(default='present', choices=['present', 'absent']),
+        wait=dict(type='bool', default=False),
+        wait_timeout=dict(type='int', default=320, required=False),
+        release_eip=dict(type='bool', default=False),
+        nat_gateway_id=dict(type='str'),
+        client_token=dict(type='str'),
     )
-    module = AnsibleModule(
+    module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
         mutually_exclusive=[
             ['allocation_id', 'eip_address']
         ],
         required_if=[['state', 'absent', ['nat_gateway_id']],
-                     ['state', 'present', ['subnet_id']]]
+                     ['state', 'present', ['subnet_id']]],
     )
-
-    # Validate Requirements
-    if not HAS_BOTO3:
-        module.fail_json(msg='botocore/boto3 is required.')
 
     state = module.params.get('state').lower()
     check_mode = module.check_mode

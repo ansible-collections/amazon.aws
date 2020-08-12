@@ -229,17 +229,6 @@ import os
 import stat as osstat  # os.stat constants
 import traceback
 
-# import module snippets
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (camel_dict_to_snake_dict,
-                                                                     ec2_argument_spec,
-                                                                     boto3_conn,
-                                                                     get_aws_connection_info,
-                                                                     HAS_BOTO3,
-                                                                     boto_exception,
-                                                                     )
-from ansible.module_utils._text import to_text
-
 try:
     from dateutil import tz
     HAS_DATEUTIL = True
@@ -249,8 +238,16 @@ except ImportError:
 try:
     import botocore
 except ImportError:
-    # Handled by imported HAS_BOTO3
-    pass
+    pass  # Handled by AnsibleAWSModule
+
+from ansible.module_utils._text import to_text
+
+# import module snippets
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto_exception
 
 
 # the following function, calculate_multipart_etag, is from tlastowka
@@ -504,8 +501,7 @@ def remove_files(s3, sourcelist, params):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         mode=dict(choices=['push'], default='push'),
         file_change_strategy=dict(choices=['force', 'date_size', 'checksum'], default='date_size'),
         bucket=dict(required=True),
@@ -521,17 +517,13 @@ def main():
         delete=dict(required=False, type='bool', default=False),
         # future options: encoding, metadata, storage_class, retries
     )
-    )
 
-    module = AnsibleModule(
+    module = AnsibleAWSModule(
         argument_spec=argument_spec,
     )
 
     if not HAS_DATEUTIL:
         module.fail_json(msg='dateutil required for this module')
-
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 required for this module')
 
     result = {}
     mode = module.params['mode']

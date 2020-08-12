@@ -113,12 +113,12 @@ attributes:
 try:
     import boto3
     from botocore.exceptions import ClientError, EndpointConnectionError
-    HAS_BOTO3 = True
 except ImportError:
-    HAS_BOTO3 = False
+    pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn, ec2_argument_spec, get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
 class EcsAttributes(object):
@@ -254,21 +254,20 @@ class Ec2EcsInstance(object):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         state=dict(required=False, default='present', choices=['present', 'absent']),
         cluster=dict(required=True, type='str'),
         ec2_instance_id=dict(required=True, type='str'),
         attributes=dict(required=True, type='list', elements='dict'),
-    ))
+    )
 
     required_together = [['cluster', 'ec2_instance_id', 'attributes']]
 
-    module = AnsibleModule(argument_spec=argument_spec, supports_check_mode=True,
-                           required_together=required_together)
-
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 is required.')
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+        required_together=required_together,
+    )
 
     cluster = module.params['cluster']
     ec2_instance_id = module.params['ec2_instance_id']

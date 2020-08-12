@@ -184,13 +184,11 @@ try:
 except ImportError:
     pass  # Taken care of by ec2.HAS_BOTO
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (HAS_BOTO,
-                                                                     boto_exception,
-                                                                     connect_to_aws,
-                                                                     ec2_argument_spec,
-                                                                     get_aws_connection_info,
-                                                                     )
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto_exception
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
 def _paginate(func, attr):
@@ -619,8 +617,7 @@ def delete_role(module, iam, name, role_list, prof_list):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         iam_type=dict(required=True, choices=['user', 'group', 'role']),
         groups=dict(type='list', default=None, required=False, elements='str'),
         state=dict(required=True, choices=['present', 'absent', 'update']),
@@ -636,13 +633,13 @@ def main():
         trust_policy=dict(type='dict', default=None, required=False),
         new_name=dict(default=None, required=False),
         path=dict(default='/', required=False),
-        new_path=dict(default=None, required=False)
-    )
+        new_path=dict(default=None, required=False),
     )
 
-    module = AnsibleModule(
+    module = AnsibleAWSModule(
         argument_spec=argument_spec,
         mutually_exclusive=[['trust_policy', 'trust_policy_filepath']],
+        check_boto3=False,
     )
 
     if not HAS_BOTO:

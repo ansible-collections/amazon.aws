@@ -113,20 +113,24 @@ tags:
     returned: when state is present
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ec2_argument_spec, get_aws_connection_info, boto3_conn
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, HAS_BOTO3, compare_aws_tags
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list, boto3_tag_list_to_ansible_dict
-from ansible.module_utils.parsing.convert_bool import BOOLEANS_TRUE
-from ansible.module_utils.six import string_types
-from ansible.module_utils._text import to_native
-
 import traceback
 
 try:
     import botocore
 except ImportError:
-    pass  # caught by imported HAS_BOTO3
+    pass  # Handled by AnsibleAWSModule
+
+from ansible.module_utils.parsing.convert_bool import BOOLEANS_TRUE
+from ansible.module_utils.six import string_types
+from ansible.module_utils._text import to_native
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 INT_MODIFIERS = {
     'K': 1024,
@@ -309,24 +313,20 @@ def ensure_absent(module, connection):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            state=dict(required=True, choices=['present', 'absent']),
-            name=dict(required=True),
-            engine=dict(),
-            description=dict(),
-            params=dict(aliases=['parameters'], type='dict'),
-            immediate=dict(type='bool', aliases=['apply_immediately']),
-            tags=dict(type='dict', default={}),
-            purge_tags=dict(type='bool', default=False)
-        )
+    argument_spec = dict(
+        state=dict(required=True, choices=['present', 'absent']),
+        name=dict(required=True),
+        engine=dict(),
+        description=dict(),
+        params=dict(aliases=['parameters'], type='dict'),
+        immediate=dict(type='bool', aliases=['apply_immediately']),
+        tags=dict(type='dict', default={}),
+        purge_tags=dict(type='bool', default=False),
     )
-    module = AnsibleModule(argument_spec=argument_spec,
-                           required_if=[['state', 'present', ['description', 'engine']]])
-
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 and botocore are required for this module')
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        required_if=[['state', 'present', ['description', 'engine']]],
+    )
 
     # Retrieve any AWS settings from the environment.
     region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)

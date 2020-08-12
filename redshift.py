@@ -258,8 +258,10 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry, snake_dict_to_camel_dict
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule, is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
 def _collect_facts(resource):
@@ -342,7 +344,7 @@ def create_cluster(module, redshift):
     """
     Create a new cluster
 
-    module: AnsibleModule object
+    module: AnsibleAWSModule object
     redshift: authenticated redshift connection object
 
     Returns:

@@ -538,7 +538,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
 try:
     import botocore
 except ImportError:
-    pass  # will be detected by imported HAS_BOTO3
+    pass  # Handled by AnsibleAWSModule
 
 ASG_ATTRIBUTES = ('AvailabilityZones', 'DefaultCooldown', 'DesiredCapacity',
                   'HealthCheckGracePeriod', 'HealthCheckType', 'LaunchConfigurationName',

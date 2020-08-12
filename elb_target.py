@@ -110,21 +110,20 @@ RETURN = '''
 
 import traceback
 from time import time, sleep
-from ansible.module_utils._text import to_native
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (boto3_conn,
-                                                                     camel_dict_to_snake_dict,
-                                                                     ec2_argument_spec,
-                                                                     get_aws_connection_info,
-                                                                     AWSRetry,
-                                                                     )
 
 try:
     import boto3
     from botocore.exceptions import ClientError, BotoCoreError
-    HAS_BOTO3 = True
 except ImportError:
-    HAS_BOTO3 = False
+    pass  # Handled by AnsibleAWSModule
+
+from ansible.module_utils._text import to_native
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 @AWSRetry.jittered_backoff(retries=10, delay=10, catch_extra_error_codes=['TargetGroupNotFound'])
@@ -318,27 +317,22 @@ def target_status_check(connection, module, target_group_arn, target, target_sta
 
 def main():
 
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            deregister_unused=dict(type='bool', default=False),
-            target_az=dict(type='str'),
-            target_group_arn=dict(type='str'),
-            target_group_name=dict(type='str'),
-            target_id=dict(type='str', required=True),
-            target_port=dict(type='int'),
-            target_status=dict(choices=['initial', 'healthy', 'unhealthy', 'unused', 'draining', 'unavailable'], type='str'),
-            target_status_timeout=dict(type='int', default=60),
-            state=dict(required=True, choices=['present', 'absent'], type='str'),
-        )
+    argument_spec = dict(
+        deregister_unused=dict(type='bool', default=False),
+        target_az=dict(type='str'),
+        target_group_arn=dict(type='str'),
+        target_group_name=dict(type='str'),
+        target_id=dict(type='str', required=True),
+        target_port=dict(type='int'),
+        target_status=dict(choices=['initial', 'healthy', 'unhealthy', 'unused', 'draining', 'unavailable'], type='str'),
+        target_status_timeout=dict(type='int', default=60),
+        state=dict(required=True, choices=['present', 'absent'], type='str'),
     )
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           mutually_exclusive=[['target_group_arn', 'target_group_name']]
-                           )
-
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 required for this module')
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        mutually_exclusive=[['target_group_arn', 'target_group_name']],
+    )
 
     region, ec2_url, aws_connect_params = get_aws_connection_info(module, boto3=True)
     connection = boto3_conn(module, conn_type='client', resource='elbv2', region=region, endpoint=ec2_url, **aws_connect_params)

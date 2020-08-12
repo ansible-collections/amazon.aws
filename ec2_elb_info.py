@@ -74,21 +74,18 @@ EXAMPLES = r'''
 
 import traceback
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
-    AWSRetry,
-    connect_to_aws,
-    ec2_argument_spec,
-    get_aws_connection_info,
-)
-
 try:
     import boto.ec2.elb
     from boto.ec2.tag import Tag
     from boto.exception import BotoServerError
-    HAS_BOTO = True
 except ImportError:
-    HAS_BOTO = False
+    pass  # Handled by ec2.HAS_BOTO
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
 
 
 class ElbInformation(object):
@@ -222,13 +219,11 @@ class ElbInformation(object):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         names={'default': [], 'type': 'list', 'elements': 'str'}
     )
-    )
-    module = AnsibleModule(argument_spec=argument_spec,
-                           supports_check_mode=True)
+    module = AnsibleAWSModule(argument_spec=argument_spec,
+                              supports_check_mode=True)
     if module._name == 'ec2_elb_facts':
         module.deprecate("The 'ec2_elb_facts' module has been renamed to 'ec2_elb_info'", date='2021-12-01', collection_name='community.aws')
 

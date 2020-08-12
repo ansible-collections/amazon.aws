@@ -215,17 +215,19 @@ keys:
 '''
 
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn, ec2_argument_spec, get_aws_connection_info
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry, camel_dict_to_snake_dict, HAS_BOTO3
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-
 import traceback
 
 try:
     import botocore
 except ImportError:
-    pass  # caught by imported HAS_BOTO3
+    pass  # Handled by AnsibleAWSModule
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 # Caching lookup for aliases
 _aliases = dict()
@@ -399,21 +401,15 @@ def get_kms_info(connection, module):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            filters=dict(type='dict'),
-            pending_deletion=dict(type='bool', default=False)
-        )
+    argument_spec = dict(
+        filters=dict(type='dict'),
+        pending_deletion=dict(type='bool', default=False),
     )
 
-    module = AnsibleModule(argument_spec=argument_spec,
-                           supports_check_mode=True)
+    module = AnsibleAWSModule(argument_spec=argument_spec,
+                              supports_check_mode=True)
     if module._name == 'aws_kms_facts':
         module.deprecate("The 'aws_kms_facts' module has been renamed to 'aws_kms_info'", date='2021-12-01', collection_name='community.aws')
-
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 and botocore are required for this module')
 
     region, ec2_url, aws_connect_params = get_aws_connection_info(module, boto3=True)
 

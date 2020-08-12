@@ -372,14 +372,17 @@ try:
     import boto.vpc
     from boto.ec2.elb.healthcheck import HealthCheck
     from boto.ec2.tag import Tag
-    HAS_BOTO = True
 except ImportError:
-    HAS_BOTO = False
+    pass  # Handled by HAS_BOTO
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ec2_argument_spec, connect_to_aws, AnsibleAWSError, get_aws_connection_info
 from ansible.module_utils.six import string_types
 from ansible.module_utils._text import to_native
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleAWSError
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
 
 
 def _throttleable_operation(max_retries):
@@ -1223,8 +1226,7 @@ class ElbManager(object):
 
 
 def main():
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(dict(
+    argument_spec = dict(
         state={'required': True, 'choices': ['present', 'absent']},
         name={'required': True},
         listeners={'default': None, 'required': False, 'type': 'list', 'elements': 'dict'},
@@ -1246,13 +1248,13 @@ def main():
         access_logs={'default': None, 'required': False, 'type': 'dict'},
         wait={'default': False, 'type': 'bool', 'required': False},
         wait_timeout={'default': 60, 'type': 'int', 'required': False},
-        tags={'default': None, 'required': False, 'type': 'dict'}
-    )
+        tags={'default': None, 'required': False, 'type': 'dict'},
     )
 
-    module = AnsibleModule(
+    module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[['security_group_ids', 'security_group_names']]
+        mutually_exclusive=[['security_group_ids', 'security_group_names']],
+        check_boto3=False,
     )
 
     if not HAS_BOTO:
