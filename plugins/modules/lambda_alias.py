@@ -146,17 +146,13 @@ import re
 try:
     import boto3
     from botocore.exceptions import ClientError, ParamValidationError, MissingParametersError
-    HAS_BOTO3 = True
 except ImportError:
-    HAS_BOTO3 = False
+    pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (HAS_BOTO3,
-                                                                     boto3_conn,
-                                                                     camel_dict_to_snake_dict,
-                                                                     ec2_argument_spec,
-                                                                     get_aws_connection_info,
-                                                                     )
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
 class AWSConnection:
@@ -354,27 +350,20 @@ def main():
 
     :return dict: ansible facts
     """
-    argument_spec = ec2_argument_spec()
-    argument_spec.update(
-        dict(
-            state=dict(required=False, default='present', choices=['present', 'absent']),
-            function_name=dict(required=True),
-            name=dict(required=True, aliases=['alias_name']),
-            function_version=dict(type='int', required=False, default=0, aliases=['version']),
-            description=dict(required=False, default=None),
-        )
+    argument_spec = dict(
+        state=dict(required=False, default='present', choices=['present', 'absent']),
+        function_name=dict(required=True),
+        name=dict(required=True, aliases=['alias_name']),
+        function_version=dict(type='int', required=False, default=0, aliases=['version']),
+        description=dict(required=False, default=None),
     )
 
-    module = AnsibleModule(
+    module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
         mutually_exclusive=[],
-        required_together=[]
+        required_together=[],
     )
-
-    # validate dependencies
-    if not HAS_BOTO3:
-        module.fail_json(msg='boto3 is required for this module.')
 
     aws = AWSConnection(module, ['lambda'])
 
