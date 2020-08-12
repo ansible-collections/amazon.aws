@@ -1,5 +1,5 @@
 ---
-requires_ansible: '>=2.9'
+requires_ansible: '>=2.9.10'
 action_groups:
   aws:
   - aws_s3

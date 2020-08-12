@@ -25,7 +25,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this lookup.
+The below requirements are needed on the local Ansible controller node that executes this lookup.
 
 - boto3
 - botocore
@@ -37,85 +37,85 @@ Parameters
 .. raw:: html
 
     <table  border=0 cellpadding=0 class="documentation-table">
-        <tr>
+<tr>
             <th colspan="1">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
-                        <th width="100%">Comments</th>
+                <th>Configuration</th>
+            <th width="100%">Comments</th>
         </tr>
-                    <tr>
-                                                                <td colspan="1">
+            <tr>
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>bypath</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">boolean</span>
-                                                                    </div>
-                                    </td>
-                                <td>
-                                                                                                                                                                                                                <b>Default:</b><br/><div style="color: blue">"no"</div>
-                                    </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
-                                            <div>A boolean to indicate whether the parameter is provided as a hierarchy.</div>
-                                                        </td>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">"no"</div>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>A boolean to indicate whether the parameter is provided as a hierarchy.</div>
+                </td>
             </tr>
-                                <tr>
-                                                                <td colspan="1">
+            <tr>
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>decrypt</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">boolean</span>
-                                                                    </div>
-                                    </td>
-                                <td>
-                                                                                                                                                                                                                <b>Default:</b><br/><div style="color: blue">"yes"</div>
-                                    </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
-                                            <div>A boolean to indicate whether to decrypt the parameter.</div>
-                                                        </td>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">"yes"</div>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>A boolean to indicate whether to decrypt the parameter.</div>
+                </td>
             </tr>
-                                <tr>
-                                                                <td colspan="1">
+            <tr>
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>recursive</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">boolean</span>
-                                                                    </div>
-                                    </td>
-                                <td>
-                                                                                                                                                                                                                <b>Default:</b><br/><div style="color: blue">"no"</div>
-                                    </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
-                                            <div>A boolean to indicate whether to retrieve all parameters within a hierarchy.</div>
-                                                        </td>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">"no"</div>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>A boolean to indicate whether to retrieve all parameters within a hierarchy.</div>
+                </td>
             </tr>
-                                <tr>
-                                                                <td colspan="1">
+            <tr>
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>shortnames</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">boolean</span>
-                                                                    </div>
-                                    </td>
-                                <td>
-                                                                                                                                                                                                                <b>Default:</b><br/><div style="color: blue">"no"</div>
-                                    </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
-                                            <div>Indicates whether to return the name only without path if using a parameter hierarchy.</div>
-                                                        </td>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">"no"</div>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>Indicates whether to return the name only without path if using a parameter hierarchy.</div>
+                </td>
             </tr>
-                        </table>
+    </table>
     <br/>
 
 
@@ -126,7 +126,6 @@ Examples
 
 .. code-block:: yaml+jinja
 
-    
     # lookup sample:
     - name: lookup ssm parameter store in the current region
       debug: msg="{{ lookup('aws_ssm', 'Hello' ) }}"
@@ -173,8 +172,6 @@ Examples
     - name: Iterate over multiple paths as dictionaries (one iteration per path)
       debug: msg='Path contains {{ item }}'
       loop: '{{ lookup("aws_ssm", "/demo/", "/demo1/", bypath=True)}}'
-
-
 
 
 
