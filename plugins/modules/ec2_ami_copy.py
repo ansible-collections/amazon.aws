@@ -134,7 +134,8 @@ image_id:
 '''
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ansible.module_utils._text import to_native
 
 try:
@@ -147,7 +148,7 @@ def copy_image(module, ec2):
     """
     Copies an AMI
 
-    module : AnsibleModule object
+    module : AnsibleAWSModule object
     ec2: ec2 connection object
     """
 
