@@ -22,7 +22,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this connection.
+The below requirements are needed on the local Ansible controller node that executes this connection.
 
 - The remote EC2 instance must be running the AWS Systems Manager Agent (SSM Agent).
 - The control machine must have the aws session manager plugin installed.
@@ -35,125 +35,125 @@ Parameters
 .. raw:: html
 
     <table  border=0 cellpadding=0 class="documentation-table">
-        <tr>
+    <tr>
             <th colspan="1">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
-                        <th width="100%">Comments</th>
+                <th>Configuration</th>
+            <th width="100%">Comments</th>
         </tr>
-                    <tr>
-                                                                <td colspan="1">
+            <tr>
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>bucket_name</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">-</span>
-                                                                    </div>
-                                    </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                    <td>
-                                                                                                                                    <div>var: ansible_aws_ssm_bucket_name</div>
-                                                                        </td>
-                                                <td>
-                                            <div>The name of the S3 bucket used for file transfers.</div>
-                                                        </td>
+                    </div>
+                </td>
+                <td>
+                </td>
+                    <td>
+                                <div>var: ansible_aws_ssm_bucket_name</div>
+                    </td>
+                <td>
+                        <div>The name of the S3 bucket used for file transfers.</div>
+                </td>
             </tr>
-                                <tr>
-                                                                <td colspan="1">
+            <tr>
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>instance_id</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">-</span>
-                                                                    </div>
-                                    </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                    <td>
-                                                                                                                                    <div>var: ansible_aws_ssm_instance_id</div>
-                                                                        </td>
-                                                <td>
-                                            <div>The EC2 instance ID.</div>
-                                                        </td>
+                    </div>
+                </td>
+                <td>
+                </td>
+                    <td>
+                                <div>var: ansible_aws_ssm_instance_id</div>
+                    </td>
+                <td>
+                        <div>The EC2 instance ID.</div>
+                </td>
             </tr>
-                                <tr>
-                                                                <td colspan="1">
+            <tr>
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>plugin</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">-</span>
-                                                                    </div>
-                                    </td>
-                                <td>
-                                                                                                                                                                    <b>Default:</b><br/><div style="color: blue">"/usr/local/bin/session-manager-plugin"</div>
-                                    </td>
-                                                    <td>
-                                                                                                                                    <div>var: ansible_aws_ssm_plugin</div>
-                                                                        </td>
-                                                <td>
-                                            <div>This defines the location of the session-manager-plugin binary.</div>
-                                                        </td>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">"/usr/local/bin/session-manager-plugin"</div>
+                </td>
+                    <td>
+                                <div>var: ansible_aws_ssm_plugin</div>
+                    </td>
+                <td>
+                        <div>This defines the location of the session-manager-plugin binary.</div>
+                </td>
             </tr>
-                                <tr>
-                                                                <td colspan="1">
+            <tr>
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>region</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">-</span>
-                                                                    </div>
-                                    </td>
-                                <td>
-                                                                                                                                                                    <b>Default:</b><br/><div style="color: blue">"us-east-1"</div>
-                                    </td>
-                                                    <td>
-                                                                                                                                    <div>var: ansible_aws_ssm_region</div>
-                                                                        </td>
-                                                <td>
-                                            <div>The region the EC2 instance is located.</div>
-                                                        </td>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">"us-east-1"</div>
+                </td>
+                    <td>
+                                <div>var: ansible_aws_ssm_region</div>
+                    </td>
+                <td>
+                        <div>The region the EC2 instance is located.</div>
+                </td>
             </tr>
-                                <tr>
-                                                                <td colspan="1">
+            <tr>
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>retries</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">integer</span>
-                                                                    </div>
-                                    </td>
-                                <td>
-                                                                                                                                                                    <b>Default:</b><br/><div style="color: blue">3</div>
-                                    </td>
-                                                    <td>
-                                                                                                                                    <div>var: ansible_aws_ssm_retries</div>
-                                                                        </td>
-                                                <td>
-                                            <div>Number of attempts to connect.</div>
-                                                        </td>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">3</div>
+                </td>
+                    <td>
+                                <div>var: ansible_aws_ssm_retries</div>
+                    </td>
+                <td>
+                        <div>Number of attempts to connect.</div>
+                </td>
             </tr>
-                                <tr>
-                                                                <td colspan="1">
+            <tr>
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>timeout</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">integer</span>
-                                                                    </div>
-                                    </td>
-                                <td>
-                                                                                                                                                                    <b>Default:</b><br/><div style="color: blue">60</div>
-                                    </td>
-                                                    <td>
-                                                                                                                                    <div>var: ansible_aws_ssm_timeout</div>
-                                                                        </td>
-                                                <td>
-                                            <div>Connection timeout seconds.</div>
-                                                        </td>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">60</div>
+                </td>
+                    <td>
+                                <div>var: ansible_aws_ssm_timeout</div>
+                    </td>
+                <td>
+                        <div>Connection timeout seconds.</div>
+                </td>
             </tr>
-                        </table>
+    </table>
     <br/>
 
 
@@ -163,8 +163,6 @@ Examples
 --------
 
 .. code-block:: yaml+jinja
-
-    
 
     # Stop Spooler Process on Windows Instances
     - name: Stop Spooler Service on Windows Instances
@@ -254,7 +252,6 @@ Examples
             state: directory
     # Execution:  ansible-playbook win_file.yaml -i aws_ec2.yml
     # The playbook tasks will get executed on the instance ids returned from the dynamic inventory plugin using ssm connection.
-
 
 
 

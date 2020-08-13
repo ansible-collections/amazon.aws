@@ -7,12 +7,16 @@ The Ansible Community AWS collection includes a variety of Ansible content to he
 <!--start requires_ansible-->
 ## Ansible version compatibility
 
-This collection has been tested against following Ansible versions: **>=2.9,<2.11**.
+This collection has been tested against following Ansible versions: **>=2.9.10**.
 
 Plugins and modules within a collection may be tested with only specific Ansible versions.
 A collection may contain metadata that identifies these versions.
 PEP440 is the schema used to describe the versions of Ansible.
 <!--end requires_ansible-->
+
+## Python version compatibility
+
+This collection depends on the AWS SDK for Python (Boto3 and Botocore). As AWS has [ceased supporting Python 2.6](https://aws.amazon.com/blogs/developer/deprecation-of-python-2-6-and-python-3-3-in-botocore-boto3-and-the-aws-cli/), this collection requires Python 2.7 or greater.
 
 ## Included content
 <!--start collection content-->
@@ -39,6 +43,7 @@ Name | Description
 [community.aws.aws_config_delivery_channel](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_config_delivery_channel_module.rst)|Manage AWS Config delivery channels
 [community.aws.aws_config_recorder](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_config_recorder_module.rst)|Manage AWS Config Recorders
 [community.aws.aws_config_rule](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_config_rule_module.rst)|Manage AWS Config resources
+[community.aws.aws_direct_connect_confirm_connection](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_direct_connect_confirm_connection_module.rst)|Confirms the creation of a hosted DirectConnect connection.
 [community.aws.aws_direct_connect_connection](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_direct_connect_connection_module.rst)|Creates, deletes, modifies a DirectConnect connection
 [community.aws.aws_direct_connect_gateway](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_direct_connect_gateway_module.rst)|Manage AWS Direct Connect gateway
 [community.aws.aws_direct_connect_link_aggregation_group](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_direct_connect_link_aggregation_group_module.rst)|Manage Direct Connect LAG bundles
@@ -278,3 +283,5 @@ See the [Ansible Community Guide](https://docs.ansible.com/ansible/latest/commun
 GNU General Public License v3.0 or later.
 
 See [LICENSE](https://www.gnu.org/licenses/gpl-3.0.txt) to see the full text.
+
+

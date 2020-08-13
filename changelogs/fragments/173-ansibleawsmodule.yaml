@@ -1,2 +1,0 @@
-minor_changes:
-- Remaining community.aws AnsibleModule based modules migrated to AnsibleAWSModule.

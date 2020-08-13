@@ -1,0 +1,706 @@
+ancestor: null
+releases:
+  1.0.0:
+    changes:
+      bugfixes:
+      - '**security issue** - Convert CLI provided passwords to text initially, to
+        prevent unsafe context being lost when converting from bytes->text during
+        post processing of PlayContext. This prevents CLI provided passwords from
+        being incorrectly templated (CVE-2019-14856)'
+      - '**security issue** - Update ``AnsibleUnsafeText`` and ``AnsibleUnsafeBytes``
+        to maintain unsafe context by overriding ``.encode`` and ``.decode``. This
+        prevents future issues with ``to_text``, ``to_bytes``, or ``to_native`` removing
+        the unsafe wrapper when converting between string types (CVE-2019-14856)'
+      - azure_rm_dnsrecordset_info - no longer returns empty ``azure_dnsrecordset``
+        facts when called as ``_info`` module.
+      - azure_rm_resourcegroup_info - no longer returns ``azure_resourcegroups`` facts
+        when called as ``_info`` module.
+      - azure_rm_storageaccount_info - no longer returns empty ``azure_storageaccounts``
+        facts when called as ``_info`` module.
+      - azure_rm_virtualmachineimage_info - no longer returns empty ``azure_vmimages``
+        facts when called as ``_info`` module.
+      - azure_rm_virtualmachinescaleset_info - fix wrongly empty result, or ``ansible_facts``
+        result, when called as ``_info`` module.
+      - azure_rm_virtualnetwork_info - no longer returns empty ``azure_virtualnetworks``
+        facts when called as ``_info`` module.
+      - cloudfront_distribution - Always add field_level_encryption_id to cache behaviour
+        to match AWS requirements
+      - cloudwatchlogs_log_group - Fix a KeyError when updating a log group that does
+        not have a retention period (https://github.com/ansible/ansible/issues/47945)
+      - cloudwatchlogs_log_group_info - remove limitation of max 50 results
+      - ec2_asg - Ensure "wait" is honored during replace operations
+      - ec2_launch_template - Update output to include latest_version and default_version,
+        matching the documentation
+      - ec2_transit_gateway - Use AWSRetry before ClientError is handled when describing
+        transit gateways
+      - ec2_transit_gateway - fixed issue where auto_attach set to yes was not being
+        honored (https://github.com/ansible/ansible/issues/61907)
+      - edgeos_config - fix issue where module would silently filter out encrypted
+        passwords
+      - fixed issue with sns_topic's delivery_policy option resulting in changed always
+        being true
+      - lineinfile - properly handle inserting a line when backrefs are enabled and
+        the line already exists in the file (https://github.com/ansible/ansible/issues/63756)
+      - route53 - improve handling of octal encoded characters
+      - win_credential - Fix issue that errors when trying to add a ``name`` with
+        wildcards.
+      deprecated_features:
+      - cloudformation - The ``template_format`` option had no effect since Ansible
+        2.3 and will be removed after 2022-06-01
+      - data_pipeline - The ``version`` option had no effect and will be removed after
+        2022-06-01
+      - ec2_eip - The ``wait_timeout`` option had no effect and will be removed after
+        2022-06-01
+      - ec2_key - The ``wait_timeout`` option had no effect and will be removed after
+        2022-06-01
+      - ec2_key - The ``wait`` option had no effect and will be removed after 2022-06-01
+      - ec2_lc - The ``associate_public_ip_address`` option had no effect and will
+        be removed after 2022-06-01
+      - elb_network_lb - The current default value of the ``state`` option has been
+        deprecated and will change from absent to present after 2022-06-01
+      - iam_managed_policy - The ``fail_on_delete`` option had no effect and will
+        be removed after 2022-06-01
+      - iam_policy - The ``policy_document`` will be removed after 2022-06-01.  To
+        maintain the existing behavior use the ``policy_json`` option and read the
+        file with the ``lookup`` plugin.
+      - iam_policy - The default value of ``skip_duplicates`` will change after 2022-06-01
+        from ``true`` to ``false``.
+      - iam_role - The default value of the purge_policies has been deprecated and
+        will change from true to false after 2022-06-01
+      - s3_lifecycle - The ``requester_pays`` option had no effect and will be removed
+        after 2022-06-01
+      - s3_sync - The ``retries`` option had no effect and will be removed after 2022-06-01
+      minor_changes:
+      - Allow all params that boto support in aws_api_gateway module
+      - aws_acm - Add the module to group/aws for module_defaults.
+      - aws_acm - Update automatic retries to stabilize the integration tests.
+      - aws_codecommit - Support updating the description
+      - aws_kms - Adds the ``enable_key_rotation`` option to enable or disable automatically
+        key rotation.
+      - aws_kms - code refactor, some error messages updated'
+      - aws_kms_info - Adds the ``enable_key_rotation`` info to the return value.
+      - ec2_asg - Add the ability to use mixed_instance_policy in launch template
+        driven autoscaling groups
+      - ec2_asg - Add support for Max Instance Lifetime
+      - ec2_asg - Migrated to AnsibleAWSModule
+      - ec2_placement_group - make ``name`` a required field.
+      - ecs_task_definition - Add network_mode=default to support Windows ECS tasks.
+      - elb_network_lb - added support to UDP and TCP_UDP protocols
+      - elb_target - add awsretry to prevent rate exceeded errors (https://github.com/ansible/ansible/issues/51108)
+      - elb_target_group - allow UDP and TCP_UDP protocols; permit only HTTP/HTTPS
+        health checks using response codes and paths
+      - iam - make ``name`` a required field.
+      - iam_cert - make ``name`` a required field.
+      - iam_policy - The iam_policy module has been migrated from boto to boto3.
+      - iam_policy - make ``iam_name`` a required field.
+      - iam_role - Add support for managing the maximum session duration
+      - iam_role - Add support for removing the related instance profile when we delete
+        the role
+      - iam_role, iam_user and iam_group - the managed_policy option has been renamed
+        to managed_policies (with an alias added)
+      - iam_role, iam_user and iam_group - the purge_policy option has been renamed
+        to purge_policies (with an alias added)
+      - lambda - add a tracing_mode parameter to set the TracingConfig for AWS X-Ray.
+        Also allow updating Lambda runtime.
+      - purefa_volume - Change I(qos) parameter to I(bw_iops), but retain I(qos) as
+        an alias for backwards compatability (https://github.com/ansible/ansible/pull/61577).
+      - redshift - Add AWSRetry calls for errors outside our control
+      - route53 - the module now has diff support.
+      - sns_topic - Add backoff when we get Topic ``NotFound`` exceptions while listing
+        the subscriptions.
+      - sqs_queue - Add support for tagging, KMS and FIFO queues
+      - sqs_queue - updated to use boto3 instead of boto
+    fragments:
+    - 480004-cloudwatchlogs_log_group-KeyError.yaml
+    - 56468-deprecate-lnb-absent.yml
+    - 58118-aws_api_gateway-params.yml
+    - 58822-aws-lamda-tracing-config.yaml
+    - 59597-ecs-allow_default_network_mode.yml
+    - 60508-route53-improve-octal-characters-handling.yml
+    - 60944-sns_topic-delivery_policy-changed.yml
+    - 61263-aws_codecommit-description.yml
+    - 61271-cloudfront_distribution-encryptionid.yml
+    - 61279-ec2_launch_template-output.yml
+    - 61577-support-iops-in-purefa_volume.yml
+    - 61805-azure-facts-info.yml
+    - 61933-ec2_transit_gateway-honor-auto_attach-setting.yaml
+    - 62014-iam_role_session_instanceprofile.yml
+    - 63362-remove-edgeos-filtering.yaml
+    - 63924-boto3.yml
+    - 63961-deprecate-fail_on_delete.yml
+    - 63989-deprecate-unused.yml
+    - 64230-deprecate-unused.yml
+    - 64258-purge_policies.yml
+    - 64368-deprecate-unused.yml
+    - 64598-add-next-token-support.yml
+    - 64867-route53-diff.yml
+    - 65265-allow-udp-tcpudp-protocol.yaml
+    - 65555-amazon-sanity-required.yml
+    - 65557-iam-make-name-required.yml
+    - 65558-iam_cert-require-name.yml
+    - 65559-iam_policy-require-iam_name.yml
+    - 66037-aws_kms.yml
+    - 66673-elb_target-awsretry.yaml
+    - 66779-redshift-backoff.yml
+    - 66795-sqs_queue-boto3.yaml
+    - 66863-ec2_asg-max_instance_lifetime-and-honor-wait-on-replace.yaml
+    - 67045-ec2_asg_mixed_instance_policy.yml
+    - 67089-sns_topic-notfound-backoff.yaml
+    - 67247-fix-ec2_transit_gateway-retries.yaml
+    - 67651-aws-kms-key-rotation.yml
+    - 67671-aws_acm-module_defaults.yaml
+    - 67770-aws-kms-info-key-rotation.yml
+    - dont-template-cli-passwords.yml
+    - lineinfile-backrefs-match-object-type.yaml
+    - win_credential-wildcard.yaml
+    modules:
+    - description: Upload and delete certificates in the AWS Certificate Manager service
+      name: aws_acm
+      namespace: ''
+    - description: Retrieve certificate information from AWS Certificate Manager service
+      name: aws_acm_info
+      namespace: ''
+    - description: Manage AWS API Gateway APIs
+      name: aws_api_gateway
+      namespace: ''
+    - description: Manage Application Auto Scaling Scaling Policies
+      name: aws_application_scaling_policy
+      namespace: ''
+    - description: Manage AWS Batch Compute Environments
+      name: aws_batch_compute_environment
+      namespace: ''
+    - description: Manage AWS Batch Job Definitions
+      name: aws_batch_job_definition
+      namespace: ''
+    - description: Manage AWS Batch Job Queues
+      name: aws_batch_job_queue
+      namespace: ''
+    - description: Create or delete an AWS CodeBuild project
+      name: aws_codebuild
+      namespace: ''
+    - description: Manage repositories in AWS CodeCommit
+      name: aws_codecommit
+      namespace: ''
+    - description: Create or delete AWS CodePipelines
+      name: aws_codepipeline
+      namespace: ''
+    - description: Manage cross-account AWS Config authorizations
+      name: aws_config_aggregation_authorization
+      namespace: ''
+    - description: Manage AWS Config aggregations across multiple accounts
+      name: aws_config_aggregator
+      namespace: ''
+    - description: Manage AWS Config delivery channels
+      name: aws_config_delivery_channel
+      namespace: ''
+    - description: Manage AWS Config Recorders
+      name: aws_config_recorder
+      namespace: ''
+    - description: Manage AWS Config resources
+      name: aws_config_rule
+      namespace: ''
+    - description: Creates, deletes, modifies a DirectConnect connection
+      name: aws_direct_connect_connection
+      namespace: ''
+    - description: Manage AWS Direct Connect gateway
+      name: aws_direct_connect_gateway
+      namespace: ''
+    - description: Manage Direct Connect LAG bundles
+      name: aws_direct_connect_link_aggregation_group
+      namespace: ''
+    - description: Manage Direct Connect virtual interfaces
+      name: aws_direct_connect_virtual_interface
+      namespace: ''
+    - description: Manage Elastic Kubernetes Service Clusters
+      name: aws_eks_cluster
+      namespace: ''
+    - description: Create, update, and delete an elastic beanstalk application
+      name: aws_elasticbeanstalk_app
+      namespace: ''
+    - description: Manage an AWS Glue connection
+      name: aws_glue_connection
+      namespace: ''
+    - description: Manage an AWS Glue job
+      name: aws_glue_job
+      namespace: ''
+    - description: Create, Update and Delete Amazon Inspector Assessment Targets
+      name: aws_inspector_target
+      namespace: ''
+    - description: Perform various KMS management tasks.
+      name: aws_kms
+      namespace: ''
+    - description: Gather information about AWS KMS keys
+      name: aws_kms_info
+      namespace: ''
+    - description: Gather information about AWS regions.
+      name: aws_region_info
+      namespace: ''
+    - description: Lists S3 buckets in AWS
+      name: aws_s3_bucket_info
+      namespace: ''
+    - description: Manage CORS for S3 buckets in AWS
+      name: aws_s3_cors
+      namespace: ''
+    - description: Manage secrets stored in AWS Secrets Manager.
+      name: aws_secret
+      namespace: ''
+    - description: Manages SES email and domain identity
+      name: aws_ses_identity
+      namespace: ''
+    - description: Manages SES sending authorization policies
+      name: aws_ses_identity_policy
+      namespace: ''
+    - description: Manages SES inbound receipt rule sets
+      name: aws_ses_rule_set
+      namespace: ''
+    - description: Fetch AWS Storage Gateway information
+      name: aws_sgw_info
+      namespace: ''
+    - description: Manage key-value pairs in aws parameter store.
+      name: aws_ssm_parameter_store
+      namespace: ''
+    - description: Manage AWS Step Functions state machines
+      name: aws_step_functions_state_machine
+      namespace: ''
+    - description: Start or stop execution of an AWS Step Functions state machine.
+      name: aws_step_functions_state_machine_execution
+      namespace: ''
+    - description: Create and delete WAF Conditions
+      name: aws_waf_condition
+      namespace: ''
+    - description: Retrieve information for WAF ACLs, Rule , Conditions and Filters.
+      name: aws_waf_info
+      namespace: ''
+    - description: Create and delete WAF Rules
+      name: aws_waf_rule
+      namespace: ''
+    - description: Create and delete WAF Web ACLs.
+      name: aws_waf_web_acl
+      namespace: ''
+    - description: Read a value from CloudFormation Exports
+      name: cloudformation_exports_info
+      namespace: ''
+    - description: Manage groups of CloudFormation stacks
+      name: cloudformation_stack_set
+      namespace: ''
+    - description: Create, update and delete AWS CloudFront distributions.
+      name: cloudfront_distribution
+      namespace: ''
+    - description: Obtain facts about an AWS CloudFront distribution
+      name: cloudfront_info
+      namespace: ''
+    - description: create invalidations for AWS CloudFront distributions
+      name: cloudfront_invalidation
+      namespace: ''
+    - description: Create, update and delete origin access identities for a CloudFront
+        distribution
+      name: cloudfront_origin_access_identity
+      namespace: ''
+    - description: manage CloudTrail create, delete, update
+      name: cloudtrail
+      namespace: ''
+    - description: Manage CloudWatch Event rules and targets
+      name: cloudwatchevent_rule
+      namespace: ''
+    - description: create or delete log_group in CloudWatchLogs
+      name: cloudwatchlogs_log_group
+      namespace: ''
+    - description: Get information about log_group in CloudWatchLogs
+      name: cloudwatchlogs_log_group_info
+      namespace: ''
+    - description: Manage CloudWatch log group metric filter
+      name: cloudwatchlogs_log_group_metric_filter
+      namespace: ''
+    - description: Create and manage AWS Datapipelines
+      name: data_pipeline
+      namespace: ''
+    - description: Creates or destroys a data migration services endpoint
+      name: dms_endpoint
+      namespace: ''
+    - description: creates or destroys a data migration services subnet group
+      name: dms_replication_subnet_group
+      namespace: ''
+    - description: Create, update or delete AWS Dynamo DB tables
+      name: dynamodb_table
+      namespace: ''
+    - description: Set TTL for a given DynamoDB table
+      name: dynamodb_ttl
+      namespace: ''
+    - description: copies AMI between AWS regions, return new image id
+      name: ec2_ami_copy
+      namespace: ''
+    - description: Create or delete AWS AutoScaling Groups (ASGs)
+      name: ec2_asg
+      namespace: ''
+    - description: Gather information about ec2 Auto Scaling Groups (ASGs) in AWS
+      name: ec2_asg_info
+      namespace: ''
+    - description: Create, delete or update AWS ASG Lifecycle Hooks.
+      name: ec2_asg_lifecycle_hook
+      namespace: ''
+    - description: Manage an AWS customer gateway
+      name: ec2_customer_gateway
+      namespace: ''
+    - description: Gather information about customer gateways in AWS
+      name: ec2_customer_gateway_info
+      namespace: ''
+    - description: manages EC2 elastic IP (EIP) addresses.
+      name: ec2_eip
+      namespace: ''
+    - description: List EC2 EIP details
+      name: ec2_eip_info
+      namespace: ''
+    - description: De-registers or registers instances from EC2 ELBs
+      name: ec2_elb
+      namespace: ''
+    - description: Gather information about EC2 Elastic Load Balancers in AWS
+      name: ec2_elb_info
+      namespace: ''
+    - description: Create & manage EC2 instances
+      name: ec2_instance
+      namespace: ''
+    - description: Gather information about ec2 instances in AWS
+      name: ec2_instance_info
+      namespace: ''
+    - description: Manage EC2 launch templates
+      name: ec2_launch_template
+      namespace: ''
+    - description: Create or delete AWS Autoscaling Launch Configurations
+      name: ec2_lc
+      namespace: ''
+    - description: Find AWS Autoscaling Launch Configurations
+      name: ec2_lc_find
+      namespace: ''
+    - description: Gather information about AWS Autoscaling Launch Configurations.
+      name: ec2_lc_info
+      namespace: ''
+    - description: Create/update or delete AWS Cloudwatch 'metric alarms'
+      name: ec2_metric_alarm
+      namespace: ''
+    - description: Create or delete an EC2 Placement Group
+      name: ec2_placement_group
+      namespace: ''
+    - description: List EC2 Placement Group(s) details
+      name: ec2_placement_group_info
+      namespace: ''
+    - description: Create or delete AWS scaling policies for Autoscaling groups
+      name: ec2_scaling_policy
+      namespace: ''
+    - description: Copies an EC2 snapshot and returns the new Snapshot ID.
+      name: ec2_snapshot_copy
+      namespace: ''
+    - description: Create and delete AWS Transit Gateways
+      name: ec2_transit_gateway
+      namespace: ''
+    - description: Gather information about ec2 transit gateways in AWS
+      name: ec2_transit_gateway_info
+      namespace: ''
+    - description: Manage an AWS VPC Egress Only Internet gateway
+      name: ec2_vpc_egress_igw
+      namespace: ''
+    - description: Create and delete AWS VPC Endpoints.
+      name: ec2_vpc_endpoint
+      namespace: ''
+    - description: Retrieves AWS VPC endpoints details using AWS methods.
+      name: ec2_vpc_endpoint_info
+      namespace: ''
+    - description: Manage an AWS VPC Internet gateway
+      name: ec2_vpc_igw
+      namespace: ''
+    - description: Gather information about internet gateways in AWS
+      name: ec2_vpc_igw_info
+      namespace: ''
+    - description: create and delete Network ACLs.
+      name: ec2_vpc_nacl
+      namespace: ''
+    - description: Gather information about Network ACLs in an AWS VPC
+      name: ec2_vpc_nacl_info
+      namespace: ''
+    - description: Manage AWS VPC NAT Gateways.
+      name: ec2_vpc_nat_gateway
+      namespace: ''
+    - description: Retrieves AWS VPC Managed Nat Gateway details using AWS methods.
+      name: ec2_vpc_nat_gateway_info
+      namespace: ''
+    - description: create, delete, accept, and reject VPC peering connections between
+        two VPCs.
+      name: ec2_vpc_peer
+      namespace: ''
+    - description: Retrieves AWS VPC Peering details using AWS methods.
+      name: ec2_vpc_peering_info
+      namespace: ''
+    - description: Manage route tables for AWS virtual private clouds
+      name: ec2_vpc_route_table
+      namespace: ''
+    - description: Gather information about ec2 VPC route tables in AWS
+      name: ec2_vpc_route_table_info
+      namespace: ''
+    - description: Create and delete AWS VPN Virtual Gateways.
+      name: ec2_vpc_vgw
+      namespace: ''
+    - description: Gather information about virtual gateways in AWS
+      name: ec2_vpc_vgw_info
+      namespace: ''
+    - description: Create, modify, and delete EC2 VPN connections.
+      name: ec2_vpc_vpn
+      namespace: ''
+    - description: Gather information about VPN Connections in AWS.
+      name: ec2_vpc_vpn_info
+      namespace: ''
+    - description: Gets the default administrator password for ec2 windows instances
+      name: ec2_win_password
+      namespace: ''
+    - description: manage ecs attributes
+      name: ecs_attribute
+      namespace: ''
+    - description: Create or terminate ECS clusters.
+      name: ecs_cluster
+      namespace: ''
+    - description: Manage Elastic Container Registry repositories
+      name: ecs_ecr
+      namespace: ''
+    - description: Create, terminate, start or stop a service in ECS
+      name: ecs_service
+      namespace: ''
+    - description: List or describe services in ECS
+      name: ecs_service_info
+      namespace: ''
+    - description: create and remove tags on Amazon ECS resources
+      name: ecs_tag
+      namespace: ''
+    - description: Run, start or stop a task in ecs
+      name: ecs_task
+      namespace: ''
+    - description: register a task definition in ecs
+      name: ecs_taskdefinition
+      namespace: ''
+    - description: Describe a task definition in ECS
+      name: ecs_taskdefinition_info
+      namespace: ''
+    - description: create and maintain EFS file systems
+      name: efs
+      namespace: ''
+    - description: Get information about Amazon EFS file systems
+      name: efs_info
+      namespace: ''
+    - description: Manage cache clusters in Amazon ElastiCache
+      name: elasticache
+      namespace: ''
+    - description: Retrieve information for AWS ElastiCache clusters
+      name: elasticache_info
+      namespace: ''
+    - description: Manage cache parameter groups in Amazon ElastiCache.
+      name: elasticache_parameter_group
+      namespace: ''
+    - description: Manage cache snapshots in Amazon ElastiCache
+      name: elasticache_snapshot
+      namespace: ''
+    - description: manage ElastiCache subnet groups
+      name: elasticache_subnet_group
+      namespace: ''
+    - description: Manage an Application load balancer
+      name: elb_application_lb
+      namespace: ''
+    - description: Gather information about application ELBs in AWS
+      name: elb_application_lb_info
+      namespace: ''
+    - description: Creates or destroys Amazon ELB.
+      name: elb_classic_lb
+      namespace: ''
+    - description: Gather information about EC2 Elastic Load Balancers in AWS
+      name: elb_classic_lb_info
+      namespace: ''
+    - description: De-registers or registers instances from EC2 ELBs
+      name: elb_instance
+      namespace: ''
+    - description: Manage a Network Load Balancer
+      name: elb_network_lb
+      namespace: ''
+    - description: Manage a target in a target group
+      name: elb_target
+      namespace: ''
+    - description: Manage a target group for an Application or Network load balancer
+      name: elb_target_group
+      namespace: ''
+    - description: Gather information about ELB target groups in AWS
+      name: elb_target_group_info
+      namespace: ''
+    - description: Gathers which target groups a target is associated with.
+      name: elb_target_info
+      namespace: ''
+    - description: Execute an AWS Lambda function
+      name: execute_lambda
+      namespace: ''
+    - description: Manage IAM users, groups, roles and keys
+      name: iam
+      namespace: ''
+    - description: Manage server certificates for use on ELBs and CloudFront
+      name: iam_cert
+      namespace: ''
+    - description: Manage AWS IAM groups
+      name: iam_group
+      namespace: ''
+    - description: Manage User Managed IAM policies
+      name: iam_managed_policy
+      namespace: ''
+    - description: List the MFA (Multi-Factor Authentication) devices registered for
+        a user
+      name: iam_mfa_device_info
+      namespace: ''
+    - description: Update an IAM Password Policy
+      name: iam_password_policy
+      namespace: ''
+    - description: Manage inline IAM policies for users, groups, and roles
+      name: iam_policy
+      namespace: ''
+    - description: Retrieve inline IAM policies for users, groups, and roles
+      name: iam_policy_info
+      namespace: ''
+    - description: Manage AWS IAM roles
+      name: iam_role
+      namespace: ''
+    - description: Gather information on IAM roles
+      name: iam_role_info
+      namespace: ''
+    - description: Maintain IAM SAML federation configuration.
+      name: iam_saml_federation
+      namespace: ''
+    - description: Retrieve the information of a server certificate
+      name: iam_server_certificate_info
+      namespace: ''
+    - description: Manage AWS IAM users
+      name: iam_user
+      namespace: ''
+    - description: Gather IAM user(s) facts in AWS
+      name: iam_user_info
+      namespace: ''
+    - description: Manage a Kinesis Stream.
+      name: kinesis_stream
+      namespace: ''
+    - description: Manage AWS Lambda functions
+      name: lambda
+      namespace: ''
+    - description: Creates, updates or deletes AWS Lambda function aliases
+      name: lambda_alias
+      namespace: ''
+    - description: Creates, updates or deletes AWS Lambda function event mappings
+      name: lambda_event
+      namespace: ''
+    - description: Gathers AWS Lambda function details as Ansible facts
+      name: lambda_facts
+      namespace: ''
+    - description: Gathers AWS Lambda function details
+      name: lambda_info
+      namespace: ''
+    - description: Creates, updates or deletes AWS Lambda policy statements.
+      name: lambda_policy
+      namespace: ''
+    - description: Manage instances in AWS Lightsail
+      name: lightsail
+      namespace: ''
+    - description: create, delete, or modify Amazon rds instances, rds snapshots,
+        and related facts
+      name: rds
+      namespace: ''
+    - description: Manage RDS instances
+      name: rds_instance
+      namespace: ''
+    - description: obtain information about one or more RDS instances
+      name: rds_instance_info
+      namespace: ''
+    - description: manage RDS parameter groups
+      name: rds_param_group
+      namespace: ''
+    - description: manage Amazon RDS snapshots.
+      name: rds_snapshot
+      namespace: ''
+    - description: obtain information about one or more RDS snapshots
+      name: rds_snapshot_info
+      namespace: ''
+    - description: manage RDS database subnet groups
+      name: rds_subnet_group
+      namespace: ''
+    - description: Manage Redshift Cross Region Snapshots
+      name: redshift_cross_region_snapshots
+      namespace: ''
+    - description: Gather information about Redshift cluster(s)
+      name: redshift_info
+      namespace: ''
+    - description: add or delete entries in Amazons Route53 DNS service
+      name: route53
+      namespace: ''
+    - description: Add or delete health-checks in Amazons Route53 DNS service
+      name: route53_health_check
+      namespace: ''
+    - description: Retrieves route53 details using AWS methods
+      name: route53_info
+      namespace: ''
+    - description: add or delete Route53 zones
+      name: route53_zone
+      namespace: ''
+    - description: Creates, updates or deletes S3 Bucket notification for lambda
+      name: s3_bucket_notification
+      namespace: ''
+    - description: Manage s3 bucket lifecycle rules in AWS
+      name: s3_lifecycle
+      namespace: ''
+    - description: Manage logging facility of an s3 bucket in AWS
+      name: s3_logging
+      namespace: ''
+    - description: Efficiently upload multiple files to S3
+      name: s3_sync
+      namespace: ''
+    - description: Configure an s3 bucket as a website
+      name: s3_website
+      namespace: ''
+    - description: Send Amazon Simple Notification Service messages
+      name: sns
+      namespace: ''
+    - description: Manages AWS SNS topics and subscriptions
+      name: sns_topic
+      namespace: ''
+    - description: Creates or deletes AWS SQS queues.
+      name: sqs_queue
+      namespace: ''
+    - description: Assume a role using AWS Security Token Service and obtain temporary
+        credentials
+      name: sts_assume_role
+      namespace: ''
+    - description: Obtain a session token from the AWS Security Token Service
+      name: sts_session_token
+      namespace: ''
+    release_date: '2020-06-24'
+  1.1.0:
+    changes:
+      deprecated_features:
+      - data_pipeline - the ``version`` option has been deprecated and will be removed
+        in a later release. It has always been ignored by the module.
+      - ec2_eip - the ``wait_timeout`` option has been deprecated and will be removed
+        in a later release. It has had no effect since Ansible 2.3.
+      - ec2_lc - the ``associate_public_ip_address`` option has been deprecated and
+        will be removed after a later release. It has always been ignored by the module.
+      - elb_network_lb - in a later release, the default behaviour for the ``state``
+        option will change from ``absent`` to ``present``.  To maintain the existing
+        behavior explicitly set state to ``absent``.
+      - iam_managed_policy - the ``fail_on_delete`` option has been deprecated and
+        will be removed after a later release.  It has always been ignored by the module.
+      - iam_policy - in a later release, the default value for the ``skip_duplicates``
+        option will change from ``true`` to ``false``.  To maintain the existing behavior
+        explicitly set it to ``true``.
+      - iam_policy - the ``policy_document`` option has been deprecated and will be
+        removed after a later release. To maintain the existing behavior use the ``policy_json``
+        option and read the file with the ``lookup`` plugin.
+      - iam_role - in a later release, the ``purge_policies`` option (also know as
+        ``purge_policy``) default value will change from ``true`` to ``false``
+      - s3_lifecycle - the ``requester_pays`` option has been deprecated and will
+        be removed after a later release. It has always been ignored by the module.
+      - s3_sync - the ``retries`` option has been deprecated and will be removed after
+        2022-06-01. It has always been ignored by the module.
+      minor_changes:
+      - Remaining community.aws AnsibleModule based modules migrated to AnsibleAWSModule.
+      - sanity - add future imports in all missing places.
+    fragments:
+    - 173-ansibleawsmodule.yaml
+    - porting-guide.yml
+    - sanity_fix_future_boilerplate.yml
+    release_date: '2020-08-13'
