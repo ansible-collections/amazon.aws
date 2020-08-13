@@ -1,3 +1,0 @@
-minor_changes:
-  - ec2_ami_info - allow integer and bool values for filtering images (https://github.com/ansible/ansible/issues/43570).
-  - ansible_dict_to_boto3_filter_list - convert integers and bools to strings before using them in filters.

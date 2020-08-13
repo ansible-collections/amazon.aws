@@ -1,4 +1,0 @@
-minor_changes:
-- 'Add support for `aws_ca_bundle` to boto3 based AWS modules'
-- 'Add `aws_security_token`, `aws_endpoint_url` and `endpoint_url` aliases to improve AWS module parameter naming consistency.'
-- 'Add support for configuring boto3 profiles using `AWS_PROFILE` and `AWS_DEFAULT_PROFILE`'

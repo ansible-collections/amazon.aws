@@ -23,7 +23,7 @@ Synopsis
 
 Requirements
 ------------
-The below requirements are needed on the local master node that executes this lookup.
+The below requirements are needed on the local Ansible controller node that executes this lookup.
 
 - must have public internet connectivity
 
@@ -34,47 +34,47 @@ Parameters
 .. raw:: html
 
     <table  border=0 cellpadding=0 class="documentation-table">
-        <tr>
+    <tr>
             <th colspan="1">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
-                            <th>Configuration</th>
-                        <th width="100%">Comments</th>
+                <th>Configuration</th>
+            <th width="100%">Comments</th>
         </tr>
-                    <tr>
-                                                                <td colspan="1">
+            <tr>
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>region</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">-</span>
-                                                                    </div>
-                                    </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
-                                            <div>The AWS region to narrow the ranges to. Examples: us-east-1, eu-west-2, ap-southeast-1</div>
-                                                        </td>
+                    </div>
+                </td>
+                <td>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>The AWS region to narrow the ranges to. Examples: us-east-1, eu-west-2, ap-southeast-1</div>
+                </td>
             </tr>
-                                <tr>
-                                                                <td colspan="1">
+            <tr>
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>service</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">-</span>
-                                                                    </div>
-                                    </td>
-                                <td>
-                                                                                                                                                            </td>
-                                                    <td>
-                                                                                            </td>
-                                                <td>
-                                            <div>The service to filter ranges by. Options: EC2, S3, CLOUDFRONT, CODEbUILD, ROUTE53, ROUTE53_HEALTHCHECKS</div>
-                                                        </td>
+                    </div>
+                </td>
+                <td>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>The service to filter ranges by. Options: EC2, S3, CLOUDFRONT, CODEbUILD, ROUTE53, ROUTE53_HEALTHCHECKS</div>
+                </td>
             </tr>
-                        </table>
+    </table>
     <br/>
 
 
@@ -85,7 +85,6 @@ Examples
 
 .. code-block:: yaml+jinja
 
-    
     vars:
       ec2_ranges: "{{ lookup('aws_service_ip_ranges', region='ap-southeast-2', service='EC2', wantlist=True) }}"
     tasks:
@@ -97,7 +96,6 @@ Examples
     - name: "Pull S3 IP ranges, and print the default return style"
       debug: msg="{{ lookup('aws_service_ip_ranges', region='us-east-1', service='S3') }}"
     # "52.92.16.0/20,52.216.0.0/15,54.231.0.0/17"
-
 
 
 
@@ -113,22 +111,22 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             <th>Returned</th>
             <th width="100%">Description</th>
         </tr>
-                    <tr>
-                                <td colspan="1">
+            <tr>
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>_raw</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">-</span>
-                                          </div>
-                                    </td>
+                    </div>
+                </td>
                 <td></td>
                 <td>
-                                                                        <div>comma-separated list of CIDR ranges</div>
-                                                                <br/>
-                                    </td>
+                            <div>comma-separated list of CIDR ranges</div>
+                    <br/>
+                </td>
             </tr>
-                        </table>
+    </table>
     <br/><br/>
 
 
