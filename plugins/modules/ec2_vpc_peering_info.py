@@ -74,6 +74,7 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils._text import to_native
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
@@ -94,7 +95,7 @@ def get_vpc_peers(client, module):
     try:
         result = json.loads(json.dumps(client.describe_vpc_peering_connections(**params), default=date_handler))
     except Exception as e:
-        module.fail_json(msg=str(e.message))
+        module.fail_json(msg=to_native(e))
 
     return result['VpcPeeringConnections']
 
@@ -114,7 +115,7 @@ def main():
         region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
     except NameError as e:
         # Getting around the get_aws_connection_info boto reliance for region
-        if "global name 'boto' is not defined" in e.message:
+        if "global name 'boto' is not defined" in to_native(e):
             module.params['region'] = botocore.session.get_session().get_config_variable('region')
             if not module.params['region']:
                 module.fail_json(msg="Error - no region provided")

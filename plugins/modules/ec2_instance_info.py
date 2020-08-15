@@ -516,7 +516,7 @@ def list_ec2_instances(connection, module):
         reservations_paginator = connection.get_paginator('describe_instances')
         reservations = reservations_paginator.paginate(InstanceIds=instance_ids, Filters=filters).build_full_result()
     except ClientError as e:
-        module.fail_json(msg=e.message, exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
+        module.fail_json_aws(e, msg="Failed to list ec2 instances")
 
     # Get instances from reservations
     instances = []

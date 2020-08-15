@@ -82,7 +82,7 @@ def list_mfa_devices(connection, module):
     try:
         response = connection.list_mfa_devices(**args)
     except ClientError as e:
-        module.fail_json(msg=e.message, **camel_dict_to_snake_dict(e.response))
+        module.fail_json_aws(e, msg="Failed to list MFA devices")
 
     module.exit_json(changed=changed, **camel_dict_to_snake_dict(response))
 

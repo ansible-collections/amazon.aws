@@ -227,8 +227,7 @@ class ElastiCacheManager(object):
             self.conn.create_cache_cluster(**kwargs)
 
         except botocore.exceptions.ClientError as e:
-            self.module.fail_json(msg=e.message, exception=format_exc(),
-                                  **camel_dict_to_snake_dict(e.response))
+            self.module.fail_json_aws(e, msg="Failed to create cache cluster")
 
         self._refresh_data()
 
@@ -255,8 +254,7 @@ class ElastiCacheManager(object):
         try:
             response = self.conn.delete_cache_cluster(CacheClusterId=self.name)
         except botocore.exceptions.ClientError as e:
-            self.module.fail_json(msg=e.message, exception=format_exc(),
-                                  **camel_dict_to_snake_dict(e.response))
+            self.module.fail_json_aws(e, msg="Failed to delete cache cluster")
 
         cache_cluster_data = response['CacheCluster']
         self._refresh_data(cache_cluster_data)
@@ -306,8 +304,7 @@ class ElastiCacheManager(object):
                                            ApplyImmediately=True,
                                            EngineVersion=self.cache_engine_version)
         except botocore.exceptions.ClientError as e:
-            self.module.fail_json(msg=e.message, exception=format_exc(),
-                                  **camel_dict_to_snake_dict(e.response))
+            self.module.fail_json_aws(e, msg="Failed to modify cache cluster")
 
         self._refresh_data()
 
@@ -335,8 +332,7 @@ class ElastiCacheManager(object):
             self.conn.reboot_cache_cluster(CacheClusterId=self.name,
                                            CacheNodeIdsToReboot=cache_node_ids)
         except botocore.exceptions.ClientError as e:
-            self.module.fail_json(msg=e.message, exception=format_exc(),
-                                  **camel_dict_to_snake_dict(e.response))
+            self.module.fail_json_aws(e, msg="Failed to reboot cache cluster")
 
         self._refresh_data()
 
@@ -455,8 +451,7 @@ class ElastiCacheManager(object):
                     self.status = 'gone'
                     return
                 else:
-                    self.module.fail_json(msg=e.message, exception=format_exc(),
-                                          **camel_dict_to_snake_dict(e.response))
+                    self.module.fail_json_aws(e, msg="Failed to describe cache clusters")
             cache_cluster_data = response['CacheClusters'][0]
         self.data = cache_cluster_data
         self.status = self.data['CacheClusterStatus']

@@ -75,7 +75,6 @@ except ImportError:
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
@@ -157,11 +156,11 @@ def main():
             result['current_status'] = current_state
 
     except botocore.exceptions.ClientError as e:
-        module.fail_json(msg=e.message, exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
+        module.fail_json_aws(e, msg="Failed to get or update ttl state")
     except botocore.exceptions.ParamValidationError as e:
-        module.fail_json(msg=e.message, exception=traceback.format_exc())
+        module.fail_json_aws(e, msg="Failed due to invalid parameters")
     except ValueError as e:
-        module.fail_json(msg=str(e))
+        module.fail_json_aws(e, msg="Failed")
 
     module.exit_json(**result)
 
