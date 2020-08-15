@@ -307,7 +307,9 @@ options:
     type: list
     elements: str
   security_groups:
-    description: A list of security group names (VPC or EC2-Classic) that the new instances will be added to.
+    description: >
+      A list of security group names (Default VPC or EC2-Classic) that the new instances will be added to.
+      For any VPC other than Default, you must use I(security_group_ids).
     type: list
     elements: str
   tags:
