@@ -91,7 +91,7 @@ def list_ec2_vpc_route_tables(connection, module):
     try:
         all_route_tables = connection.get_all_route_tables(filters=filters)
     except BotoServerError as e:
-        module.fail_json(msg=e.message)
+        module.fail_json_aws(e, msg="Failed to get route tables")
 
     for route_table in all_route_tables:
         route_table_dict_array.append(get_route_table_info(route_table))
