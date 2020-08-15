@@ -83,6 +83,7 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils._text import to_native
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
@@ -105,7 +106,7 @@ def get_nat_gateways(client, module, nat_gateway_id=None):
     try:
         result = json.loads(json.dumps(client.describe_nat_gateways(**params), default=date_handler))
     except Exception as e:
-        module.fail_json(msg=str(e.message))
+        module.fail_json(msg=to_native(e))
 
     for gateway in result['NatGateways']:
         # Turn the boto3 result into ansible_friendly_snaked_names
