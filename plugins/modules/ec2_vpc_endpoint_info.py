@@ -113,6 +113,7 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils._text import to_native
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
@@ -156,7 +157,7 @@ def get_endpoints(client, module):
     try:
         results = json.loads(json.dumps(results, default=date_handler))
     except Exception as e:
-        module.fail_json(msg=str(e.message))
+        module.fail_json_aws(e, msg="Failed to get endpoints")
     return dict(vpc_endpoints=[camel_dict_to_snake_dict(result) for result in results])
 
 
