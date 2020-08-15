@@ -168,6 +168,7 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
@@ -221,22 +222,21 @@ def enable_or_update_bucket_as_website(client_connection, resource_connection, m
     try:
         bucket_website = resource_connection.BucketWebsite(bucket_name)
     except ClientError as e:
-        module.fail_json(msg=e.message, **camel_dict_to_snake_dict(e.response))
+        module.fail_json_aws(e, msg="Failed to get bucket")
 
     try:
         website_config = client_connection.get_bucket_website(Bucket=bucket_name)
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchWebsiteConfiguration':
-            website_config = None
-        else:
-            module.fail_json(msg=e.message, **camel_dict_to_snake_dict(e.response))
+    except is_boto3_error_code('NoSuchWebsiteConfiguration'):
+        website_config = None
+    except ClientError as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to get website configuration")
 
     if website_config is None:
         try:
             bucket_website.put(WebsiteConfiguration=_create_website_configuration(suffix, error_key, redirect_all_requests))
             changed = True
         except (ClientError, ParamValidationError) as e:
-            module.fail_json(msg=e.message, **camel_dict_to_snake_dict(e.response))
+            module.fail_json_aws(e, msg="Failed to set bucket website configuration")
         except ValueError as e:
             module.fail_json(msg=str(e))
     else:
@@ -249,13 +249,13 @@ def enable_or_update_bucket_as_website(client_connection, resource_connection, m
                     bucket_website.put(WebsiteConfiguration=_create_website_configuration(suffix, error_key, redirect_all_requests))
                     changed = True
                 except (ClientError, ParamValidationError) as e:
-                    module.fail_json(msg=e.message, **camel_dict_to_snake_dict(e.response))
+                    module.fail_json_aws(e, msg="Failed to update bucket website configuration")
         except KeyError as e:
             try:
                 bucket_website.put(WebsiteConfiguration=_create_website_configuration(suffix, error_key, redirect_all_requests))
                 changed = True
             except (ClientError, ParamValidationError) as e:
-                module.fail_json(msg=e.message, **camel_dict_to_snake_dict(e.response))
+                module.fail_json(e, msg="Failed to update bucket website configuration")
         except ValueError as e:
             module.fail_json(msg=str(e))
 
@@ -273,17 +273,16 @@ def disable_bucket_as_website(client_connection, module):
 
     try:
         client_connection.get_bucket_website(Bucket=bucket_name)
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchWebsiteConfiguration':
-            module.exit_json(changed=changed)
-        else:
-            module.fail_json(msg=e.message, **camel_dict_to_snake_dict(e.response))
+    except is_boto3_error_code('NoSuchWebsiteConfiguration'):
+        module.exit_json(changed=changed)
+    except ClientError as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to get bucket website")
 
     try:
         client_connection.delete_bucket_website(Bucket=bucket_name)
         changed = True
     except ClientError as e:
-        module.fail_json(msg=e.message, **camel_dict_to_snake_dict(e.response))
+        module.fail_json_aws(e, msg="Failed to delete bucket website")
 
     module.exit_json(changed=changed)
 

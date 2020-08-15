@@ -186,8 +186,10 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible.module_utils.six import string_types
+from ansible.module_utils._text import to_native
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
@@ -289,19 +291,15 @@ def create_vpc_endpoint(client, module):
             status_achieved, result = wait_for_status(client, module, result['vpc_endpoint_id'], 'available')
             if not status_achieved:
                 module.fail_json(msg='Error waiting for vpc endpoint to become available - please check the AWS console')
-    except botocore.exceptions.ClientError as e:
-        if "DryRunOperation" in e.message:
-            changed = True
-            result = 'Would have created VPC Endpoint if not in check mode'
-        elif "IdempotentParameterMismatch" in e.message:
-            module.fail_json(msg="IdempotentParameterMismatch - updates of endpoints are not allowed by the API")
-        elif "RouteAlreadyExists" in e.message:
-            module.fail_json(msg="RouteAlreadyExists for one of the route tables - update is not allowed by the API")
-        else:
-            module.fail_json(msg=str(e), exception=traceback.format_exc(),
-                             **camel_dict_to_snake_dict(e.response))
+    except is_boto3_error_code('DryRunOperation'):
+        changed = True
+        result = 'Would have created VPC Endpoint if not in check mode'
+    except is_boto3_error_code('IdempotentParameterMismatch'):  # pylint: disable=duplicate-except
+        module.fail_json(msg="IdempotentParameterMismatch - updates of endpoints are not allowed by the API")
+    except is_boto3_error_code('RouteAlreadyExists'):  # pylint: disable=duplicate-except
+        module.fail_json(msg="RouteAlreadyExists for one of the route tables - update is not allowed by the API")
     except Exception as e:
-        module.fail_json(msg=str(e), exception=traceback.format_exc(),
+        module.fail_json(msg=to_native(e), exception=traceback.format_exc(),
                          **camel_dict_to_snake_dict(e.response))
 
     return changed, result
@@ -319,15 +317,13 @@ def setup_removal(client, module):
         result = client.delete_vpc_endpoints(**params)['Unsuccessful']
         if not module.check_mode and (result != []):
             module.fail_json(msg=result)
-    except botocore.exceptions.ClientError as e:
-        if "DryRunOperation" in e.message:
-            changed = True
-            result = 'Would have deleted VPC Endpoint if not in check mode'
-        else:
-            module.fail_json(msg=str(e), exception=traceback.format_exc(),
-                             **camel_dict_to_snake_dict(e.response))
+    except is_boto3_error_code('DryRunOperation'):
+        changed = True
+        result = 'Would have deleted VPC Endpoint if not in check mode'
+    except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, "Failed to delete VPC endpoint")
     except Exception as e:
-        module.fail_json(msg=str(e), exception=traceback.format_exc(),
+        module.fail_json(msg=to_native(e), exception=traceback.format_exc(),
                          **camel_dict_to_snake_dict(e.response))
     return changed, result
 
@@ -362,7 +358,7 @@ def main():
         region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
     except NameError as e:
         # Getting around the get_aws_connection_info boto reliance for region
-        if "global name 'boto' is not defined" in e.message:
+        if "global name 'boto' is not defined" in to_native(e):
             module.params['region'] = botocore.session.get_session().get_config_variable('region')
             if not module.params['region']:
                 module.fail_json(msg="Error - no region provided")

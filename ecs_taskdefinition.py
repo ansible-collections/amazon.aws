@@ -273,7 +273,7 @@ class EcsTaskManager:
         try:
             response = self.ecs.register_task_definition(**params)
         except botocore.exceptions.ClientError as e:
-            self.module.fail_json(msg=e.message, **camel_dict_to_snake_dict(e.response))
+            self.module.fail_json_aws(e, msg="Failed to register task")
 
         return response['taskDefinition']
 

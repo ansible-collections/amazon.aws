@@ -133,7 +133,7 @@ class Ec2CustomerGatewayManager:
                 module.fail_json(msg="Region must be specified as a parameter, in EC2_REGION or AWS_REGION environment variables or in boto configuration file")
             self.ec2 = boto3_conn(module, conn_type='client', resource='ec2', region=region, endpoint=ec2_url, **aws_connect_kwargs)
         except ClientError as e:
-            module.fail_json(msg=e.message)
+            module.fail_json_aws(e, msg="Failed to get connection")
 
     @AWSRetry.jittered_backoff(delay=2, max_delay=30, retries=6, catch_extra_error_codes=['IncorrectState'])
     def ensure_cgw_absent(self, gw_id):

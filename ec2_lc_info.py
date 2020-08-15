@@ -175,7 +175,7 @@ def list_launch_configs(connection, module):
         pg = connection.get_paginator('describe_launch_configurations')
         launch_configs = pg.paginate(LaunchConfigurationNames=launch_config_name).build_full_result()
     except ClientError as e:
-        module.fail_json(msg=e.message)
+        module.fail_json_aws(e, msg="Failed to list launch configs")
 
     snaked_launch_configs = []
     for launch_config in launch_configs['LaunchConfigurations']:
