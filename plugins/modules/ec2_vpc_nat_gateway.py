@@ -204,7 +204,9 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils._text import to_native
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
@@ -698,13 +700,15 @@ def create(client, subnet_id, allocation_id, client_token=None,
                     'NAT gateway {0} created'.format(result['nat_gateway_id'])
                 )
 
-    except botocore.exceptions.ClientError as e:
-        if "IdempotentParameterMismatch" in e.message:
-            err_msg = (
-                'NAT Gateway does not support update and token has already been provided: ' + str(e)
-            )
-        else:
-            err_msg = str(e)
+    except is_boto3_error_code('IdempotentParameterMismatch'):
+        err_msg = (
+            'NAT Gateway does not support update and token has already been provided: ' + err_msg
+        )
+        success = False
+        changed = False
+        result = None
+    except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
+        err_msg = to_native(e)
         success = False
         changed = False
         result = None
