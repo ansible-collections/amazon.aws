@@ -170,7 +170,9 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils._text import to_native
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
@@ -182,7 +184,7 @@ def get_elb_listeners(connection, module, elb_arn):
     try:
         return connection.describe_listeners(LoadBalancerArn=elb_arn)['Listeners']
     except ClientError as e:
-        module.fail_json(msg=e.message, exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
+        module.fail_json_aws(e, msg="Failed to describe elb listeners")
 
 
 def get_listener_rules(connection, module, listener_arn):
@@ -190,7 +192,7 @@ def get_listener_rules(connection, module, listener_arn):
     try:
         return connection.describe_rules(ListenerArn=listener_arn)['Rules']
     except ClientError as e:
-        module.fail_json(msg=e.message, exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
+        module.fail_json_aws(e, msg="Failed to describe listener rules")
 
 
 def get_load_balancer_attributes(connection, module, load_balancer_arn):
@@ -198,7 +200,7 @@ def get_load_balancer_attributes(connection, module, load_balancer_arn):
     try:
         load_balancer_attributes = boto3_tag_list_to_ansible_dict(connection.describe_load_balancer_attributes(LoadBalancerArn=load_balancer_arn)['Attributes'])
     except ClientError as e:
-        module.fail_json(msg=e.message, exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
+        module.fail_json_aws(e, msg="Failed to describe load balancer attributes")
 
     # Replace '.' with '_' in attribute key names to make it more Ansibley
     for k, v in list(load_balancer_attributes.items()):
@@ -213,7 +215,7 @@ def get_load_balancer_tags(connection, module, load_balancer_arn):
     try:
         return boto3_tag_list_to_ansible_dict(connection.describe_tags(ResourceArns=[load_balancer_arn])['TagDescriptions'][0]['Tags'])
     except ClientError as e:
-        module.fail_json(msg=e.message, exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
+        module.fail_json_aws(e, msg="Failed to describe load balancer tags")
 
 
 def list_load_balancers(connection, module):
@@ -229,13 +231,12 @@ def list_load_balancers(connection, module):
             load_balancers = load_balancer_paginator.paginate(LoadBalancerArns=load_balancer_arns).build_full_result()
         if names:
             load_balancers = load_balancer_paginator.paginate(Names=names).build_full_result()
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'LoadBalancerNotFound':
-            module.exit_json(load_balancers=[])
-        else:
-            module.fail_json(msg=e.message, exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
+    except is_boto3_error_code('LoadBalancerNotFound'):
+        module.exit_json(load_balancers=[])
+    except ClientError as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to list load balancers")
     except NoCredentialsError as e:
-        module.fail_json(msg="AWS authentication problem. " + e.message, exception=traceback.format_exc())
+        module.fail_json(msg="AWS authentication problem. " + to_native(e), exception=traceback.format_exc())
 
     for load_balancer in load_balancers['LoadBalancers']:
         # Get the attributes for each elb
