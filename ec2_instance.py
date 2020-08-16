@@ -808,9 +808,9 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
-from ansible.module_utils.six import text_type, string_types
+from ansible.module_utils.six import string_types
 from ansible.module_utils.six.moves.urllib import parse as urlparse
-from ansible.module_utils._text import to_bytes, to_native
+from ansible.module_utils._text import to_native
 import ansible_collections.amazon.aws.plugins.module_utils.ec2 as ec2_utils
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (AWSRetry,
                                                                      ansible_dict_to_boto3_filter_list,
@@ -1337,15 +1337,47 @@ def diff_instance_and_params(instance, params, ec2=None, skip=None):
     ]
 
     for mapping in param_mappings:
-        if params.get(mapping.param_key) is not None and mapping.instance_key not in skip:
-            value = AWSRetry.jittered_backoff()(ec2.describe_instance_attribute)(Attribute=mapping.attribute_name, InstanceId=id_)
-            if params.get(mapping.param_key) is not None and value[mapping.instance_key]['Value'] != params.get(mapping.param_key):
-                arguments = dict(
-                    InstanceId=instance['InstanceId'],
-                    # Attribute=mapping.attribute_name,
-                )
-                arguments[mapping.instance_key] = mapping.add_value(params.get(mapping.param_key))
-                changes_to_apply.append(arguments)
+        if params.get(mapping.param_key) is None:
+            continue
+        if mapping.instance_key in skip:
+            continue
+
+        value = AWSRetry.jittered_backoff()(ec2.describe_instance_attribute)(Attribute=mapping.attribute_name, InstanceId=id_)
+        if value[mapping.instance_key]['Value'] != params.get(mapping.param_key):
+            arguments = dict(
+                InstanceId=instance['InstanceId'],
+                # Attribute=mapping.attribute_name,
+            )
+            arguments[mapping.instance_key] = mapping.add_value(params.get(mapping.param_key))
+            changes_to_apply.append(arguments)
+
+    if params.get('security_group') or params.get('security_groups'):
+        value = AWSRetry.jittered_backoff()(ec2.describe_instance_attribute)(Attribute="groupSet", InstanceId=id_)
+        # managing security groups
+        if params.get('vpc_subnet_id'):
+            subnet_id = params.get('vpc_subnet_id')
+        else:
+            default_vpc = get_default_vpc(ec2)
+            if default_vpc is None:
+                module.fail_json(
+                    msg="No default subnet could be found - you must include a VPC subnet ID (vpc_subnet_id parameter) to modify security groups.")
+            else:
+                sub = get_default_subnet(ec2, default_vpc)
+                subnet_id = sub['SubnetId']
+
+        groups = discover_security_groups(
+            group=params.get('security_group'),
+            groups=params.get('security_groups'),
+            subnet_id=subnet_id,
+            ec2=ec2
+        )
+        expected_groups = [g['GroupId'] for g in groups]
+        instance_groups = [g['GroupId'] for g in value['Groups']]
+        if set(instance_groups) != set(expected_groups):
+            changes_to_apply.append(dict(
+                Groups=expected_groups,
+                InstanceId=instance['InstanceId']
+            ))
 
     if (params.get('network') or {}).get('source_dest_check') is not None:
         # network.source_dest_check is nested, so needs to be treated separately
