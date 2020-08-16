@@ -36,9 +36,8 @@ except ImportError:
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from .ec2 import boto3_conn
+from .ec2 import AWSRetry
 from .ec2 import boto3_tag_list_to_ansible_dict
-from .ec2 import get_aws_connection_info
 
 
 class CloudFrontFactsServiceManager(object):
@@ -46,51 +45,47 @@ class CloudFrontFactsServiceManager(object):
 
     def __init__(self, module):
         self.module = module
-
-        region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
-        self.client = boto3_conn(module, conn_type='client',
-                                 resource='cloudfront', region=region,
-                                 endpoint=ec2_url, **aws_connect_kwargs)
+        self.client = module.client('cloudfront', retry_decorator=AWSRetry.jittered_backoff())
 
     def get_distribution(self, distribution_id):
         try:
-            return self.client.get_distribution(Id=distribution_id)
+            return self.client.get_distribution(Id=distribution_id, aws_retry=True)
         except botocore.exceptions.ClientError as e:
             self.module.fail_json_aws(e, msg="Error describing distribution")
 
     def get_distribution_config(self, distribution_id):
         try:
-            return self.client.get_distribution_config(Id=distribution_id)
+            return self.client.get_distribution_config(Id=distribution_id, aws_retry=True)
         except botocore.exceptions.ClientError as e:
             self.module.fail_json_aws(e, msg="Error describing distribution configuration")
 
     def get_origin_access_identity(self, origin_access_identity_id):
         try:
-            return self.client.get_cloud_front_origin_access_identity(Id=origin_access_identity_id)
+            return self.client.get_cloud_front_origin_access_identity(Id=origin_access_identity_id, aws_retry=True)
         except botocore.exceptions.ClientError as e:
             self.module.fail_json_aws(e, msg="Error describing origin access identity")
 
     def get_origin_access_identity_config(self, origin_access_identity_id):
         try:
-            return self.client.get_cloud_front_origin_access_identity_config(Id=origin_access_identity_id)
+            return self.client.get_cloud_front_origin_access_identity_config(Id=origin_access_identity_id, aws_retry=True)
         except botocore.exceptions.ClientError as e:
             self.module.fail_json_aws(e, msg="Error describing origin access identity configuration")
 
     def get_invalidation(self, distribution_id, invalidation_id):
         try:
-            return self.client.get_invalidation(DistributionId=distribution_id, Id=invalidation_id)
+            return self.client.get_invalidation(DistributionId=distribution_id, Id=invalidation_id, aws_retry=True)
         except botocore.exceptions.ClientError as e:
             self.module.fail_json_aws(e, msg="Error describing invalidation")
 
     def get_streaming_distribution(self, distribution_id):
         try:
-            return self.client.get_streaming_distribution(Id=distribution_id)
+            return self.client.get_streaming_distribution(Id=distribution_id, aws_retry=True)
         except botocore.exceptions.ClientError as e:
             self.module.fail_json_aws(e, msg="Error describing streaming distribution")
 
     def get_streaming_distribution_config(self, distribution_id):
         try:
-            return self.client.get_streaming_distribution_config(Id=distribution_id)
+            return self.client.get_streaming_distribution_config(Id=distribution_id, aws_retry=True)
         except botocore.exceptions.ClientError as e:
             self.module.fail_json_aws(e, msg="Error describing streaming distribution")
 
@@ -115,7 +110,7 @@ class CloudFrontFactsServiceManager(object):
 
     def list_distributions_by_web_acl_id(self, web_acl_id):
         try:
-            result = self.client.list_distributions_by_web_acl_id(WebAclId=web_acl_id)
+            result = self.client.list_distributions_by_web_acl_id(WebAclId=web_acl_id, aws_retry=True)
             distribution_list = result.get('DistributionList', {}).get('Items', [])
             return self.keyed_list_helper(distribution_list)
         except botocore.exceptions.ClientError as e:
@@ -177,7 +172,7 @@ class CloudFrontFactsServiceManager(object):
                     invalidation_ids = self.get_list_of_invalidation_ids_from_distribution_id(dist['Id'])
                     if invalidation_ids:
                         temp_distribution['Invalidations'] = invalidation_ids
-                resource_tags = self.client.list_tags_for_resource(Resource=dist['ARN'])
+                resource_tags = self.client.list_tags_for_resource(Resource=dist['ARN'], aws_retry=True)
                 temp_distribution['Tags'] = boto3_tag_list_to_ansible_dict(resource_tags['Tags'].get('Items', []))
                 distribution_list[list_name].append(temp_distribution)
             return distribution_list
