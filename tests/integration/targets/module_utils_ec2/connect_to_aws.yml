@@ -1,0 +1,8 @@
+- hosts: all
+  gather_facts: no
+  collections:
+  - community.aws
+  - amazon.aws
+  roles:
+  # Test the behaviour of module_utils.connect_to_aws
+  - 'connect_to_aws'

@@ -3,7 +3,7 @@
 # Tests using Endpoints
 
 - name: 'Test basic operation using standard endpoint (aws-parameters)'
-  boto3_example:
+  example_module:
     region: '{{ aws_region }}'
     aws_endpoint_url: 'https://ec2.{{ aws_region }}.amazonaws.com'
     aws_access_key: '{{ aws_access_key }}'
@@ -21,7 +21,7 @@
 # outside of: [ us-east-1, us-east-2, us-west-1, us-west-2 ]
 
 - name: 'Test basic operation using FIPS endpoint (aws-parameters)'
-  boto3_example:
+  example_module:
     region: '{{ aws_region }}'
     aws_endpoint_url: 'https://ec2-fips.us-east-1.amazonaws.com'
     aws_access_key: '{{ aws_access_key }}'
@@ -36,7 +36,7 @@
     - '"ec2-fips:DescribeImages" in fips_endpoint_result.resource_actions'
 
 - name: 'Test basic operation using FIPS endpoint (aws-parameters)'
-  boto3_example:
+  example_module:
     region: '{{ aws_region }}'
     endpoint_url: 'https://ec2-fips.us-east-1.amazonaws.com'
     aws_access_key: '{{ aws_access_key }}'
@@ -51,7 +51,7 @@
     - '"ec2-fips:DescribeImages" in fips_endpoint_result.resource_actions'
 
 - name: 'Test basic operation using FIPS endpoint (aws-parameters)'
-  boto3_example:
+  example_module:
     region: '{{ aws_region }}'
     ec2_url: 'https://ec2-fips.us-east-1.amazonaws.com'
     aws_access_key: '{{ aws_access_key }}'
@@ -69,7 +69,7 @@
 # Tests using environment variables
 
 - name: 'Test basic operation using FIPS endpoint (aws-environment)'
-  boto3_example:
+  example_module:
     region: '{{ aws_region }}'
     aws_access_key: '{{ aws_access_key }}'
     aws_secret_key: '{{ aws_secret_key }}'
@@ -85,7 +85,7 @@
     - '"ec2-fips:DescribeImages" in fips_endpoint_result.resource_actions'
 
 - name: 'Test basic operation using FIPS endpoint (ec2-environment)'
-  boto3_example:
+  example_module:
     region: '{{ aws_region }}'
     aws_access_key: '{{ aws_access_key }}'
     aws_secret_key: '{{ aws_secret_key }}'
@@ -102,9 +102,10 @@
 
 ##################################################################################
 # Tests using a bad endpoint URL
+#   - This demonstrates that endpoint_url overrode region
 
 - name: 'Test with bad endpoint URL'
-  boto3_example:
+  example_module:
     region: '{{ aws_region }}'
     endpoint_url: 'https://junk.{{ aws_region }}.amazonaws.com'
     access_key: '{{ aws_access_key }}'

@@ -19,7 +19,7 @@
 # Test disabling cert validation (make sure we don't error)
 
 - name: 'Test basic operation using default CA bundle (no validation) - parameter'
-  boto3_example:
+  example_module:
     region: '{{ aws_region }}'
     access_key: '{{ aws_access_key }}'
     secret_key: '{{ aws_secret_key }}'
@@ -35,7 +35,7 @@
 # Tests using Amazon's CA (the one the endpoint certs should be signed with)
 
 - name: 'Test basic operation using Amazons root CA - parameter'
-  boto3_example:
+  example_module:
     region: '{{ aws_region }}'
     access_key: '{{ aws_access_key }}'
     secret_key: '{{ aws_secret_key }}'
@@ -48,7 +48,7 @@
     - amazon_ca_result is successful
 
 - name: 'Test basic operation using Amazons root CA - environment'
-  boto3_example:
+  example_module:
     region: '{{ aws_region }}'
     access_key: '{{ aws_access_key }}'
     secret_key: '{{ aws_secret_key }}'
@@ -62,7 +62,7 @@
     - amazon_ca_result is successful
 
 - name: 'Test basic operation using Amazons root CA (no validation) - parameter'
-  boto3_example:
+  example_module:
     region: '{{ aws_region }}'
     access_key: '{{ aws_access_key }}'
     secret_key: '{{ aws_secret_key }}'
@@ -76,7 +76,7 @@
     - amazon_ca_result is successful
 
 - name: 'Test basic operation using Amazons root CA (no validation) - environment'
-  boto3_example:
+  example_module:
     region: '{{ aws_region }}'
     access_key: '{{ aws_access_key }}'
     secret_key: '{{ aws_secret_key }}'
@@ -94,7 +94,7 @@
 # Tests using ISRG's CA (one that the endpoint certs *aren't* signed with)
 
 - name: 'Test basic operation using a different CA - parameter'
-  boto3_example:
+  example_module:
     region: '{{ aws_region }}'
     access_key: '{{ aws_access_key }}'
     secret_key: '{{ aws_secret_key }}'
@@ -111,7 +111,7 @@
     - '"Fail JSON AWS" in isrg_ca_result.msg'
 
 - name: 'Test basic operation using a different CA - environment'
-  boto3_example:
+  example_module:
     region: '{{ aws_region }}'
     access_key: '{{ aws_access_key }}'
     secret_key: '{{ aws_secret_key }}'
@@ -129,7 +129,7 @@
     - '"Fail JSON AWS" in isrg_ca_result.msg'
 
 - name: 'Test basic operation using a different CA (no validation) - parameter'
-  boto3_example:
+  example_module:
     region: '{{ aws_region }}'
     access_key: '{{ aws_access_key }}'
     secret_key: '{{ aws_secret_key }}'
@@ -143,7 +143,7 @@
     - isrg_ca_result is successful
 
 - name: 'Test basic operation using a different CA (no validation) - environment'
-  boto3_example:
+  example_module:
     region: '{{ aws_region }}'
     access_key: '{{ aws_access_key }}'
     secret_key: '{{ aws_secret_key }}'

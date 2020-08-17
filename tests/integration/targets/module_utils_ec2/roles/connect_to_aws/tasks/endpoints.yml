@@ -1,0 +1,105 @@
+---
+# Note: connect_to_aws currently *ignores* aws_endpoint_url
+#
+##################################################################################
+# Tests using Endpoints
+
+- name: 'Test basic operation using standard endpoint (aws-parameters)'
+  example_module:
+    region: '{{ aws_region }}'
+    aws_endpoint_url: 'https://ec2.{{ aws_region }}.amazonaws.com'
+    aws_access_key: '{{ aws_access_key }}'
+    aws_secret_key: '{{ aws_secret_key }}'
+    aws_security_token: '{{ security_token }}'
+  register: standard_endpoint_result
+
+- name: 'Check that we connected to the standard endpoint'
+  assert:
+    that:
+    - standard_endpoint_result is successful
+    #- '"ec2:DescribeImages" in standard_endpoint_result.resource_actions'
+
+- name: 'Test basic operation using standard endpoint (aws-parameters)'
+  example_module:
+    region: '{{ aws_region }}'
+    endpoint_url: 'https://ec2.us-east-1.amazonaws.com'
+    aws_access_key: '{{ aws_access_key }}'
+    aws_secret_key: '{{ aws_secret_key }}'
+    aws_security_token: '{{ security_token }}'
+  register: standard_endpoint_result
+
+- name: 'Check that we connected to the standard endpoint'
+  assert:
+    that:
+    - standard_endpoint_result is successful
+    #- '"ec2:DescribeImages" in standard_endpoint_result.resource_actions'
+
+- name: 'Test basic operation using standard endpoint (aws-parameters)'
+  example_module:
+    region: '{{ aws_region }}'
+    ec2_url: 'https://ec2.us-east-1.amazonaws.com'
+    aws_access_key: '{{ aws_access_key }}'
+    aws_secret_key: '{{ aws_secret_key }}'
+    aws_security_token: '{{ security_token }}'
+  register: standard_endpoint_result
+
+- name: 'Check that we connected to the standard endpoint'
+  assert:
+    that:
+    - standard_endpoint_result is successful
+    #- '"ec2:DescribeImages" in standard_endpoint_result.resource_actions'
+
+##################################################################################
+# Tests using environment variables
+
+- name: 'Test basic operation using standard endpoint (aws-environment)'
+  example_module:
+    region: '{{ aws_region }}'
+    aws_access_key: '{{ aws_access_key }}'
+    aws_secret_key: '{{ aws_secret_key }}'
+    aws_security_token: '{{ security_token }}'
+  environment:
+    AWS_URL: 'https://ec2.us-east-1.amazonaws.com'
+  register: standard_endpoint_result
+
+- name: 'Check that we connected to the standard endpoint'
+  assert:
+    that:
+    - standard_endpoint_result is successful
+    #- '"ec2:DescribeImages" in standard_endpoint_result.resource_actions'
+
+- name: 'Test basic operation using standard endpoint (ec2-environment)'
+  example_module:
+    region: '{{ aws_region }}'
+    aws_access_key: '{{ aws_access_key }}'
+    aws_secret_key: '{{ aws_secret_key }}'
+    aws_security_token: '{{ security_token }}'
+  environment:
+    EC2_URL: 'https://ec2.us-east-1.amazonaws.com'
+  register: standard_endpoint_result
+
+- name: 'Check that we connected to the standard endpoint'
+  assert:
+    that:
+    - standard_endpoint_result is successful
+    #- '"ec2:DescribeImages" in standard_endpoint_result.resource_actions'
+
+##################################################################################
+# Tests using a bad endpoint URL
+#   - This demonstrates that endpoint_url overrode region
+
+- name: 'Test with bad endpoint URL'
+  example_module:
+    region: '{{ aws_region }}'
+    endpoint_url: 'https://junk.{{ aws_region }}.amazonaws.com'
+    access_key: '{{ aws_access_key }}'
+    secret_key: '{{ aws_secret_key }}'
+    security_token: '{{ security_token }}'
+  register: bad_endpoint
+  ignore_errors: True
+
+- assert:
+    that:
+    # endpoint_url is ignored by connect_to_aws
+    - bad_endpoint is successful
+    #- bad_endpoint is failed
