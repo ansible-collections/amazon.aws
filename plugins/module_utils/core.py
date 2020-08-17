@@ -199,7 +199,7 @@ class AnsibleAWSModule(object):
     def region(self, boto3=True):
         return get_aws_region(self, boto3)
 
-    def fail_json_aws(self, exception, msg=None):
+    def fail_json_aws(self, exception, msg=None, **kwargs):
         """call fail_json with processed exception
 
         function for converting exceptions thrown by AWS SDK modules,
@@ -229,6 +229,8 @@ class AnsibleAWSModule(object):
             exception=last_traceback,
             **self._gather_versions()
         )
+
+        failure.update(kwargs)
 
         if response is not None:
             failure.update(**camel_dict_to_snake_dict(response))
