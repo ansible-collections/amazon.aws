@@ -743,7 +743,6 @@ def _get_vpc_id(connection, module, subnet_id):
         module.fail_json_aws(e, "Failed to get vpc_id for {0}".format(subnet_id))
 
 
-@AWSRetry.jittered_backoff()
 def manage_tags(eni, name, new_tags, purge_tags, connection):
     changed = False
 
@@ -815,6 +814,7 @@ def main():
         ])
     )
 
+    # connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
     connection = module.client('ec2')
     state = module.params.get("state")
 
