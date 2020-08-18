@@ -1,0 +1,4 @@
+---
+minor_changes:
+  - ec2_eni - Port ec2_eni module to boto3 and add an integration test suite.
+  - ec2_eni - Add support for tagging.
