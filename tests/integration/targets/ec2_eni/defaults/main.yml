@@ -1,7 +1,10 @@
 ---
-vpc_cidr: "10.232.232.128/26"
-ip_1: "10.232.232.132"
-ip_2: "10.232.232.133"
-ip_3: "10.232.232.134"
-ip_4: "10.232.232.135"
-ip_5: "10.232.232.136"
+vpc_seed_a: '{{ resource_prefix }}'
+vpc_seed_b: '{{ resource_prefix }}-ec2_eni'
+vpc_prefix: '10.{{ 256 | random(seed=vpc_seed_a) }}.{{ 256 | random(seed=vpc_seed_b ) }}'
+vpc_cidr: '{{ vpc_prefix}}.128/26'
+ip_1: "{{ vpc_prefix }}.132"
+ip_2: "{{ vpc_prefix }}.133"
+ip_3: "{{ vpc_prefix }}.134"
+ip_4: "{{ vpc_prefix }}.135"
+ip_5: "{{ vpc_prefix }}.136"

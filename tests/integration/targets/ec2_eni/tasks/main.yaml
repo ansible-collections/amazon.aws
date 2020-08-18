@@ -7,6 +7,15 @@
       region: "{{ aws_region }}"
 
   block:
+  - name: Get available AZs
+    aws_az_info:
+      filters:
+        region-name: "{{ aws_region }}"
+    register: az_info
+
+  - name: Pick an AZ
+    set_fact:
+      availability_zone: "{{ az_info['availability_zones'][0]['zone_name'] }}"
 
   # ============================================================
   - name: create a VPC
@@ -23,7 +32,7 @@
   - name: create a subnet
     ec2_vpc_subnet:
       cidr: "{{ vpc_cidr }}"
-      az: "{{ aws_region }}a"
+      az: "{{ availability_zone }}"
       vpc_id: "{{ vpc_result.vpc.id }}"
       tags:
         Name: "{{ resource_prefix }}-vpc"
@@ -53,6 +62,27 @@
   - name: Set image_id to the latest image
     set_fact:
       image_id: "{{ images_info.images | sort(attribute='creation_date') | reverse | first | json_query('image_id') }}"
+
+  # ============================================================
+
+  - name: Create 2 instances to test attaching and detaching network interfaces
+    ec2_instance:
+      name: "{{ resource_prefix }}-eni-instance-{{ item }}"
+      image_id: "{{ image_id }}"
+      vpc_subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+      instance_type: t2.micro
+      wait: false
+      security_group: "{{ vpc_sg_result.group_id }}"
+    register: ec2_instances
+    loop:
+      - 1
+      - 2
+
+  # We only need these instances to be running
+  - name: set variables for the instance IDs
+    set_fact:
+      instance_id_1: "{{ ec2_instances.results[0].instance_ids[0] }}"
+      instance_id_2: "{{ ec2_instances.results[1].instance_ids[0] }}"
 
   # ============================================================
   - name: create a network interface
@@ -291,26 +321,6 @@
         - result.interface.private_ip_addresses | length == 1
 
   # ============================================================
-
-  - name: Create 2 instances to test attaching and detaching network interfaces
-    ec2_instance:
-      name: "{{ resource_prefix }}-eni-instance-{{ item }}"
-      image_id: "{{ image_id }}"
-      vpc_subnet_id: "{{ vpc_subnet_result.subnet.id }}"
-      instance_type: t2.micro
-      wait: true
-      security_group: "{{ vpc_sg_result.group_id }}"
-    register: ec2_instances
-    loop:
-      - 1
-      - 2
-
-  - name: set variables for the instance IDs
-    set_fact:
-      instance_id_1: "{{ ec2_instances.results[0].instance_ids[0] }}"
-      instance_id_2: "{{ ec2_instances.results[1].instance_ids[0] }}"
-
-  # ============================================================
   - name: test attaching and detaching network interfaces
     include_tasks: ./test_attachment.yaml
 
@@ -483,7 +493,7 @@
       - name: remove the subnet
         ec2_vpc_subnet:
           cidr: "{{ vpc_cidr }}"
-          az: "{{ aws_region }}a"
+          az: "{{ availability_zone }}"
           vpc_id: "{{ vpc_result.vpc.id }}"
           state: absent
         ignore_errors: true
