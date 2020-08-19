@@ -1,0 +1,7 @@
+- hosts: all
+  gather_facts: no
+  collections:
+  - amazon.aws
+  roles:
+  # Test the behaviour of module_utils.core.AnsibleAWSModule.client (boto3)
+  - 'get_waiter'
