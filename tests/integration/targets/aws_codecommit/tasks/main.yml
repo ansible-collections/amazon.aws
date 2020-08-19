@@ -96,6 +96,35 @@
       that:
         - output is not changed
 
+  - name: Create a repository without description
+    aws_codecommit:
+      name: "{{ resource_prefix }}_repo"
+      state: present
+    register: output
+  - assert:
+      that:
+        - output is changed
+        - output.repository_metadata.repository_name == '{{ resource_prefix }}_repo'
+
+  - name: No-op update to repository without description
+    aws_codecommit:
+      name: "{{ resource_prefix }}_repo"
+      state: present
+    register: output
+  - assert:
+      that:
+        - output is not changed
+        - output.repository_metadata.repository_name == '{{ resource_prefix }}_repo'
+
+  - name: Delete  a repository without description
+    aws_codecommit:
+      name: "{{ resource_prefix }}_repo"
+      state: absent
+    register: output
+  - assert:
+      that:
+        - output is changed
+
   always:
      ###### TEARDOWN STARTS HERE ######
     - name: Delete  a repository

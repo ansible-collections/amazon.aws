@@ -162,6 +162,8 @@ class CodeCommit(object):
                 result['changed'] = True
             else:
                 metadata = self._get_repository()['repositoryMetadata']
+                if not metadata.get('repositoryDescription'):
+                    metadata['repositoryDescription'] = ''
                 if metadata['repositoryDescription'] != self._module.params['description']:
                     if not self._check_mode:
                         self._update_repository()
