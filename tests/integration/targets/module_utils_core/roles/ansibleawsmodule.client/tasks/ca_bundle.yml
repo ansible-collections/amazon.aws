@@ -9,11 +9,13 @@
   copy:
     src: 'amazonroot.pem'
     dest: '{{ ca_tmp.path }}/amazonroot.pem'
+    mode: 0644
 
 - name: 'Ensure we have a another CA (ISRG-X1) bundle available to us'
   copy:
     src: 'isrg-x1.pem'
     dest: '{{ ca_tmp.path }}/isrg-x1.pem'
+    mode: 0644
 
 ##################################################################################
 # Test disabling cert validation (make sure we don't error)
