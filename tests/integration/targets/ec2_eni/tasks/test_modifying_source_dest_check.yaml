@@ -19,10 +19,22 @@
     state: present
   register: result
 
+- name: Check source_dest_check state
+  vars:
+    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+  ec2_eni_info:
+    eni_id: "{{ eni_id_1 }}"
+  register: eni_info
+  until: _interface_0.source_dest_check == False
+  retries: 5
+  delay: 2
+
 - assert:
     that:
       - result.changed
-      - result.interface.source_dest_check == false
+      - _interface_0.source_dest_check == False
+  vars:
+    _interface_0: '{{ eni_info.network_interfaces[0] }}'
 
 - name: test idempotence disabling source_dest_check
   ec2_eni:
@@ -44,7 +56,19 @@
     state: present
   register: result
 
+- name: Check source_dest_check state
+  vars:
+    _interface_0: '{{ eni_info.network_interfaces[0] }}'
+  ec2_eni_info:
+    eni_id: "{{ eni_id_1 }}"
+  register: eni_info
+  until: _interface_0.source_dest_check == True
+  retries: 5
+  delay: 2
+
 - assert:
     that:
       - result.changed
-      - result.interface.source_dest_check == true
+      - _interface_0.source_dest_check == True
+  vars:
+    _interface_0: '{{ eni_info.network_interfaces[0] }}'

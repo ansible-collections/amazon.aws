@@ -56,7 +56,7 @@ network_interfaces:
   contains:
     association:
       description: Info of associated elastic IP (EIP)
-      returned: always, empty dict if no association exists
+      returned: When an ENI is associated with an EIP
       type: dict
       sample: {
           allocation_id: "eipalloc-5sdf123",
@@ -67,7 +67,7 @@ network_interfaces:
         }
     attachment:
       description: Info about attached ec2 instance
-      returned: always, empty dict if ENI is not attached
+      returned: When an ENI is attached to an ec2 instance
       type: dict
       sample: {
         attach_time: "2017-08-05T15:25:47+00:00",

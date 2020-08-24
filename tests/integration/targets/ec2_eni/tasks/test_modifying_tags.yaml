@@ -21,6 +21,9 @@
     tags:
       CreatedBy: "{{ resource_prefix }}"
   register: result
+- ec2_eni_info:
+    eni_id: "{{ eni_id_1 }}"
+  register: eni_info
 
 - assert:
     that:
@@ -30,6 +33,15 @@
       - result.interface.tags.CreatedBy == resource_prefix
       - result.interface.tags.Name == resource_prefix
       - result.interface.name == resource_prefix
+      - _interface_0.tags | length == 2
+      - _interface_0.tags.CreatedBy == resource_prefix
+      - _interface_0.tags.Name == resource_prefix
+      - _interface_0.tag_set | length == 2
+      - _interface_0.tag_set.CreatedBy == resource_prefix
+      - _interface_0.tag_set.Name == resource_prefix
+      - _interface_0.name == resource_prefix
+  vars:
+    _interface_0: '{{ eni_info.network_interfaces[0] }}'
 
   # ============================================================
 - name: test idempotence by using the Name tag and the subnet
@@ -51,6 +63,9 @@
     state: present
     subnet_id: "{{ vpc_subnet_result.subnet.id }}"
   register: result
+- ec2_eni_info:
+    eni_id: "{{ eni_id_1 }}"
+  register: eni_info
 
 - assert:
     that:
@@ -60,6 +75,12 @@
       - result.interface.tags.CreatedBy == resource_prefix
       - result.interface.tags.Name == resource_prefix
       - result.interface.name == resource_prefix
+      - _interface_0.tag_set | length == 2
+      - _interface_0.tag_set.CreatedBy == resource_prefix
+      - _interface_0.tag_set.Name == resource_prefix
+      - _interface_0.name == resource_prefix
+  vars:
+    _interface_0: '{{ eni_info.network_interfaces[0] }}'
 
   # ============================================================
 - name: test setting purge tags to false
@@ -69,6 +90,9 @@
     purge_tags: false
     tags: {}
   register: result
+- ec2_eni_info:
+    eni_id: "{{ eni_id_1 }}"
+  register: eni_info
 
 - assert:
     that:
@@ -77,6 +101,12 @@
       - result.interface.tags.CreatedBy == resource_prefix
       - result.interface.tags.Name == resource_prefix
       - result.interface.name == resource_prefix
+      - _interface_0.tag_set | length == 2
+      - _interface_0.tag_set.CreatedBy == resource_prefix
+      - _interface_0.tag_set.Name == resource_prefix
+      - _interface_0.name == resource_prefix
+  vars:
+    _interface_0: '{{ eni_info.network_interfaces[0] }}'
 
   # ============================================================
 - name: test adding a new tag without removing any others
@@ -87,6 +117,9 @@
     tags:
       environment: test
   register: result
+- ec2_eni_info:
+    eni_id: "{{ eni_id_1 }}"
+  register: eni_info
 
 - assert:
     that:
@@ -96,6 +129,13 @@
       - result.interface.tags.CreatedBy == resource_prefix
       - result.interface.tags.Name == resource_prefix
       - result.interface.name == resource_prefix
+      - _interface_0.tag_set | length == 3
+      - _interface_0.tag_set.environment == 'test'
+      - _interface_0.tag_set.CreatedBy == resource_prefix
+      - _interface_0.tag_set.Name == resource_prefix
+      - _interface_0.name == resource_prefix
+  vars:
+    _interface_0: '{{ eni_info.network_interfaces[0] }}'
 
   # ============================================================
 - name: test purging tags and adding a new one
@@ -106,6 +146,9 @@
     tags:
       Description: "{{ resource_prefix }}"
   register: result
+- ec2_eni_info:
+    eni_id: "{{ eni_id_1 }}"
+  register: eni_info
 
 - assert:
     that:
@@ -115,6 +158,12 @@
       - result.interface.tags.Description == resource_prefix
       - result.interface.tags.Name == resource_prefix
       - result.interface.name == resource_prefix
+      - _interface_0.tag_set | length == 2
+      - _interface_0.tag_set.Description == resource_prefix
+      - _interface_0.tag_set.Name == resource_prefix
+      - _interface_0.name == resource_prefix
+  vars:
+    _interface_0: '{{ eni_info.network_interfaces[0] }}'
 
 - name: test purging tags and adding a new one is idempotent
   ec2_eni:
@@ -124,6 +173,9 @@
     tags:
       Description: "{{ resource_prefix }}"
   register: result
+- ec2_eni_info:
+    eni_id: "{{ eni_id_1 }}"
+  register: eni_info
 
 - assert:
     that:
@@ -133,6 +185,12 @@
       - result.interface.tags.Description == resource_prefix
       - result.interface.tags.Name == resource_prefix
       - result.interface.name == resource_prefix
+      - _interface_0.tag_set | length == 2
+      - _interface_0.tag_set.Description == resource_prefix
+      - _interface_0.tag_set.Name == resource_prefix
+      - _interface_0.name == resource_prefix
+  vars:
+    _interface_0: '{{ eni_info.network_interfaces[0] }}'
 
   # ============================================================
 - name: test purging all tags
@@ -141,9 +199,15 @@
     state: present
     tags: {}
   register: result
+- ec2_eni_info:
+    eni_id: "{{ eni_id_1 }}"
+  register: eni_info
 
 - assert:
     that:
       - result.changed
       - not result.interface.tags
       - result.interface.name is undefined
+      - _interface_0.tag_set is undefined
+  vars:
+    _interface_0: '{{ eni_info.network_interfaces[0] }}'

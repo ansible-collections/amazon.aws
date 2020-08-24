@@ -1,0 +1,92 @@
+---
+# ============================================================
+- name: test deleting the unattached network interface by using the ID
+  ec2_eni:
+    eni_id: "{{ eni_id_1 }}"
+    name: "{{ resource_prefix }}"
+    subnet_id: "{{ vpc_subnet_id }}"
+    state: absent
+  register: result
+- ec2_eni_info:
+    eni_id: "{{ eni_id_1 }}"
+  register: eni_info
+
+- assert:
+    that:
+      - result.changed
+      - result.interface is undefined
+      - '"network_interfaces" in eni_info'
+      - eni_id_1 not in ( eni_info | community.general.json_query("network_interfaces[].id") | list )
+
+- name: test removing the network interface by ID is idempotent
+  ec2_eni:
+    eni_id: "{{ eni_id_1 }}"
+    name: "{{ resource_prefix }}"
+    subnet_id: "{{ vpc_subnet_id }}"
+    state: absent
+  register: result
+
+- assert:
+    that:
+      - not result.changed
+      - result.interface is undefined
+
+# ============================================================
+- name: add a name tag to the other network interface before deleting it
+  ec2_eni:
+    eni_id: "{{ eni_id_2 }}"
+    name: "{{ resource_prefix }}"
+    state: present
+
+- name: test deleting the unattached network interface by using the name
+  ec2_eni:
+    name: "{{ resource_prefix }}"
+    subnet_id: "{{ vpc_subnet_id }}"
+    state: absent
+  register: result
+- ec2_eni_info:
+    eni_id: "{{ eni_id_2 }}"
+  register: eni_info
+
+- assert:
+    that:
+      - result.changed
+      - result.interface is undefined
+      - '"network_interfaces" in eni_info'
+      - eni_id_2 not in ( eni_info | community.general.json_query("network_interfaces[].id") | list )
+
+- name: test removing the network interface by name is idempotent
+  ec2_eni:
+    name: "{{ resource_prefix }}"
+    subnet_id: "{{ vpc_subnet_id }}"
+    state: absent
+  register: result
+
+- assert:
+    that:
+      - not result.changed
+      - result.interface is undefined
+
+- name: verify that the network interface ID does not exist (retry-delete by ID)
+  ec2_eni:
+    eni_id: "{{ eni_id_2 }}"
+    state: absent
+  register: result
+
+- assert:
+    that:
+      - not result.changed
+      - result.interface is undefined
+
+# ============================================================
+
+- name: Fetch ENI info without filter
+  ec2_eni_info:
+  register: eni_info
+
+- name: Assert that ec2_eni_info doesn't contain the two interfaces we just deleted
+  assert:
+    that:
+      - '"network_interfaces" in eni_info'
+      - eni_id_1 not in ( eni_info | community.general.json_query("network_interfaces[].id") | list )
+      - eni_id_2 not in ( eni_info | community.general.json_query("network_interfaces[].id") | list )
