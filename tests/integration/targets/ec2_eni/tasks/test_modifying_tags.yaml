@@ -208,6 +208,6 @@
       - result.changed
       - not result.interface.tags
       - result.interface.name is undefined
-      - _interface_0.tag_set is undefined
+      - _interface_0.tag_set | length == 0
   vars:
     _interface_0: '{{ eni_info.network_interfaces[0] }}'

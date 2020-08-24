@@ -118,6 +118,11 @@ network_interfaces:
       returned: always
       type: str
       sample: "0a:f8:10:2f:ab:a1"
+    name:
+      description: The Name tag of the ENI, often displayed in the AWS UIs as Name
+      returned: When a Name tag has been set
+      type: str
+      version_added: 1.2.0
     network_interface_id:
       description: The id of the ENI
       returned: always
@@ -168,6 +173,12 @@ network_interfaces:
       returned: always
       type: str
       sample: "subnet-7bbf01234"
+    tags:
+      description: Dictionary of tags added to the ENI
+      returned: always
+      type: dict
+      sample: {}
+      version_added: 1.2.0
     tag_set:
       description: Dictionary of tags added to the ENI
       returned: always
@@ -214,9 +225,12 @@ def list_eni(connection, module):
     camel_network_interfaces = []
     for network_interface in network_interfaces_result:
         network_interface['TagSet'] = boto3_tag_list_to_ansible_dict(network_interface['TagSet'])
+        network_interface['Tags'] = network_interface['TagSet']
+        if 'Name' in network_interface['Tags']:
+            network_interface['Name'] = network_interface['Tags']['Name']
         # Added id to interface info to be compatible with return values of ec2_eni module:
         network_interface['Id'] = network_interface['NetworkInterfaceId']
-        camel_network_interfaces.append(camel_dict_to_snake_dict(network_interface))
+        camel_network_interfaces.append(camel_dict_to_snake_dict(network_interface, ignore_list=['Tags', 'TagSet']))
 
     module.exit_json(network_interfaces=camel_network_interfaces)
 
