@@ -1,0 +1,5 @@
+bugfixes:
+- aws_kms_info - fixes issue where module execution fails because certain AWS KMS keys (e.g. aws/acm)
+  do not permit the calling the API kms:GetKeyRotationStatus
+  (example - https://forums.aws.amazon.com/thread.jspa?threadID=312992)
+  (https://github.com/ansible-collections/community.aws/pull/199)

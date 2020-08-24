@@ -344,6 +344,22 @@
           - update_key.key_state == "Disabled"
           - update_key.changed
 
+    - name: update policy to remove access to key rotation status
+      aws_kms:
+        alias: "alias/{{ resource_prefix }}-kms"
+        policy: "{{ lookup('template', 'console-policy-no-key-rotation.j2') | to_json }}"
+
+    - name: find facts about the key without key rotation status
+      aws_kms_info:
+        filters:
+          alias: "{{ resource_prefix }}-kms"
+      register: update_key
+
+    - name: assert that key rotation status is set to None
+      assert:
+        that:
+          - update_key.enable_key_rotation is undefined
+
     - name: delete the key
       aws_kms:
         alias: "{{ resource_prefix }}-kms"
