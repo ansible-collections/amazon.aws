@@ -183,6 +183,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
@@ -194,7 +195,7 @@ def list_eni(connection, module):
         filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
 
     try:
-        network_interfaces_result = connection.describe_network_interfaces(Filters=filters)['NetworkInterfaces']
+        network_interfaces_result = connection.describe_network_interfaces(Filters=filters, aws_retry=True)['NetworkInterfaces']
     except (ClientError, NoCredentialsError) as e:
         module.fail_json_aws(e)
 
@@ -256,7 +257,7 @@ def main():
     if module._name == 'ec2_eni_facts':
         module.deprecate("The 'ec2_eni_facts' module has been renamed to 'ec2_eni_info'", date='2021-12-01', collection_name='amazon.aws')
 
-    connection = module.client('ec2')
+    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
     list_eni(connection, module)
 
