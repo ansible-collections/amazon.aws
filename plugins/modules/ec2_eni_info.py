@@ -17,10 +17,17 @@ description:
 author: "Rob White (@wimnat)"
 requirements: [ boto3 ]
 options:
+  eni_id:
+    description:
+      - The ID of the ENI.
+      - This option is mutually exclusive of I(filters).
+    type: str
+    version_added: 1.2.0
   filters:
     description:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value.
         See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeNetworkInterfaces.html) for possible filters.
+      - This option is mutually exclusive of I(eni_id).
     type: dict
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -189,10 +196,14 @@ from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 def list_eni(connection, module):
 
-    if module.params.get("filters") is None:
-        filters = []
+    # Options are mutually exclusive
+    if module.params.get("eni_id"):
+        filters = {'network-interface-id': module.params.get("eni_id")}
+    elif module.params.get("filters"):
+        filters = module.params.get("filters")
     else:
-        filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
+        filters = {}
+    filters = ansible_dict_to_boto3_filter_list(filters)
 
     try:
         network_interfaces_result = connection.describe_network_interfaces(Filters=filters, aws_retry=True)['NetworkInterfaces']
@@ -250,8 +261,12 @@ def get_eni_info(interface):
 
 def main():
     argument_spec = dict(
+        eni_id=dict(type='str'),
         filters=dict(default=None, type='dict')
     )
+    mutually_exclusive = [
+        ['eni_id', 'filters']
+    ]
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
     if module._name == 'ec2_eni_facts':
