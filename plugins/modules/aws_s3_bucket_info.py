@@ -59,9 +59,7 @@ except ImportError:
 from ansible.module_utils._text import to_native
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
 def get_bucket_list(module, connection):
@@ -96,9 +94,10 @@ def main():
                          "and the renamed one no longer returns ansible_facts", date='2021-12-01', collection_name='community.aws')
 
     # Set up connection
-    region, ec2_url, aws_connect_params = get_aws_connection_info(module, boto3=True)
-    connection = boto3_conn(module, conn_type='client', resource='s3', region=region, endpoint=ec2_url,
-                            **aws_connect_params)
+    try:
+        connection = module.client('s3')
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to connect to AWS')
 
     # Gather results
     result['buckets'] = get_bucket_list(module, connection)

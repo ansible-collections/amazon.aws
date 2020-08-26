@@ -192,8 +192,6 @@ except ImportError:
 from ansible.module_utils._text import to_native
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
 def convert_to_lower(data):
@@ -1364,20 +1362,9 @@ def main():
 
     check_mode = module.check_mode
     try:
-        region, ec2_url, aws_connect_kwargs = (
-            get_aws_connection_info(module, boto3=True)
-        )
-        client = (
-            boto3_conn(
-                module, conn_type='client', resource='kinesis',
-                region=region, endpoint=ec2_url, **aws_connect_kwargs
-            )
-        )
-    except botocore.exceptions.ClientError as e:
-        err_msg = 'Boto3 Client Error - {0}'.format(to_native(e.msg))
-        module.fail_json(
-            success=False, changed=False, result={}, msg=err_msg
-        )
+        client = module.client('kinesis')
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to connect to AWS')
 
     if state == 'present':
         success, changed, err_msg, results = (

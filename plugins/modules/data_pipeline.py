@@ -204,6 +204,7 @@ import traceback
 
 try:
     import boto3
+    import botocore
     from botocore.exceptions import ClientError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
@@ -211,8 +212,6 @@ except ImportError:
 from ansible.module_utils._text import to_text
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
@@ -618,14 +617,9 @@ def main():
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=False)
 
     try:
-        region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
-        if not region:
-            module.fail_json(msg="Region must be specified as a parameter, in EC2_REGION or AWS_REGION environment variables or in boto configuration file")
-        client = boto3_conn(module, conn_type='client',
-                            resource='datapipeline', region=region,
-                            endpoint=ec2_url, **aws_connect_kwargs)
-    except ClientError as e:
-        module.fail_json(msg="Can't authorize connection - " + str(e))
+        client = module.client('datapipeline')
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to connect to AWS')
 
     state = module.params.get('state')
     if state == 'present':

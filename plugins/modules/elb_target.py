@@ -113,6 +113,7 @@ from time import time, sleep
 
 try:
     import boto3
+    import botocore
     from botocore.exceptions import ClientError, BotoCoreError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
@@ -120,9 +121,7 @@ except ImportError:
 from ansible.module_utils._text import to_native
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
@@ -334,8 +333,10 @@ def main():
         mutually_exclusive=[['target_group_arn', 'target_group_name']],
     )
 
-    region, ec2_url, aws_connect_params = get_aws_connection_info(module, boto3=True)
-    connection = boto3_conn(module, conn_type='client', resource='elbv2', region=region, endpoint=ec2_url, **aws_connect_params)
+    try:
+        connection = module.client('elbv2')
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to connect to AWS')
 
     state = module.params.get("state")
 

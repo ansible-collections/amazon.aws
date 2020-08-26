@@ -171,9 +171,7 @@ except Exception:
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 from ansible_collections.amazon.aws.plugins.module_utils.direct_connect import DirectConnectError
 from ansible_collections.amazon.aws.plugins.module_utils.direct_connect import delete_connection
@@ -424,13 +422,10 @@ def main():
         required_if=[('state', 'present', ('location', 'bandwidth'))],
     )
 
-    region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
-    if not region:
-        module.fail_json(msg="Either region or AWS_REGION or EC2_REGION environment variable or boto config aws_region or ec2_region must be set.")
-
-    connection = boto3_conn(module, conn_type='client',
-                            resource='directconnect', region=region,
-                            endpoint=ec2_url, **aws_connect_kwargs)
+    try:
+        connection = module.client('directconnect')
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to connect to AWS')
 
     state = module.params.get('state')
     response = {}
