@@ -42,9 +42,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from .ec2 import AWSRetry
 from .ec2 import ansible_dict_to_boto3_tag_list
-from .ec2 import boto3_conn
 from .ec2 import boto3_tag_list_to_ansible_dict
-from .ec2 import get_aws_connection_info
 
 
 class ACMServiceManager(object):
@@ -52,8 +50,6 @@ class ACMServiceManager(object):
 
     def __init__(self, module):
         self.module = module
-
-        region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
         self.client = module.client('acm')
 
     @AWSRetry.backoff(tries=5, delay=5, backoff=2.0, catch_extra_error_codes=['RequestInProgressException'])
