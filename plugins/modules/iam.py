@@ -622,7 +622,8 @@ def main():
         groups=dict(type='list', default=None, required=False, elements='str'),
         state=dict(required=True, choices=['present', 'absent', 'update']),
         password=dict(default=None, required=False, no_log=True),
-        update_password=dict(default='always', required=False, choices=['always', 'on_create']),
+        # setting no_log=False on update_password avoids a false positive warning about not setting no_log
+        update_password=dict(default='always', required=False, choices=['always', 'on_create'], no_log=False),
         access_key_state=dict(default=None, required=False, choices=[
             'active', 'inactive', 'create', 'remove',
             'Active', 'Inactive', 'Create', 'Remove']),
