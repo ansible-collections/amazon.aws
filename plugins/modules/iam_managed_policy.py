@@ -140,8 +140,6 @@ except ImportError:
 from ansible.module_utils._text import to_native
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
@@ -321,12 +319,9 @@ def main():
         policy = json.dumps(json.loads(module.params.get('policy')))
 
     try:
-        region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
-        iam = boto3_conn(module, conn_type='client', resource='iam',
-                         region=region, endpoint=ec2_url, **aws_connect_kwargs)
-    except (botocore.exceptions.NoCredentialsError, botocore.exceptions.ProfileNotFound) as e:
-        module.fail_json(msg="Can't authorize connection. Check your credentials and profile.",
-                         exceptions=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
+        iam = module.client('iam')
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to connect to AWS')
 
     p = get_policy_by_name(module, iam, name)
     if state == 'present':
