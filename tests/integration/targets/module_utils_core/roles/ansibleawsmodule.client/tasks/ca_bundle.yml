@@ -9,11 +9,13 @@
   copy:
     src: 'amazonroot.pem'
     dest: '{{ ca_tmp.path }}/amazonroot.pem'
+    mode: 0644
 
 - name: 'Ensure we have a another CA (ISRG-X1) bundle available to us'
   copy:
     src: 'isrg-x1.pem'
     dest: '{{ ca_tmp.path }}/isrg-x1.pem'
+    mode: 0644
 
 ##################################################################################
 # Test disabling cert validation (make sure we don't error)
@@ -156,3 +158,45 @@
 - assert:
     that:
     - isrg_ca_result is successful
+
+##################################################################################
+# https://github.com/ansible-collections/amazon.aws/issues/129
+- name: 'Test CA bundle is used when authenticating with a profile - implied validation'
+  example_module:
+    profile: 'test_profile'
+    aws_ca_bundle: '{{ ca_tmp.path }}/isrg-x1.pem'
+  register: isrg_ca_result
+  ignore_errors: yes
+
+- assert:
+    that:
+    - isrg_ca_result is failed
+    # Caught when we try to do something, and passed to fail_json_aws
+    - '"CERTIFICATE_VERIFY_FAILED" in isrg_ca_result.msg'
+    - '"Fail JSON AWS" in isrg_ca_result.msg'
+
+- name: 'Test CA bundle is used when authenticating with a profile - explicit validation'
+  example_module:
+    profile: 'test_profile'
+    aws_ca_bundle: '{{ ca_tmp.path }}/isrg-x1.pem'
+    validate_certs: True
+  register: isrg_ca_result
+  ignore_errors: yes
+
+- assert:
+    that:
+    - isrg_ca_result is failed
+    # Caught when we try to do something, and passed to fail_json_aws
+    - '"CERTIFICATE_VERIFY_FAILED" in isrg_ca_result.msg'
+    - '"Fail JSON AWS" in isrg_ca_result.msg'
+
+- name: 'Test CA bundle is used when authenticating with a profile - explicitly disable validation'
+  example_module:
+    profile: 'test_profile'
+    aws_ca_bundle: '{{ ca_tmp.path }}/isrg-x1.pem'
+    validate_certs: False
+  register: isrg_ca_result
+
+- assert:
+    that:
+    - isrg_ca_result is success

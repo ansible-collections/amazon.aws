@@ -323,14 +323,15 @@ def get_aws_connection_info(module, boto3=False):
         boto_params = dict(aws_access_key_id=access_key,
                            aws_secret_access_key=secret_key,
                            aws_session_token=security_token)
-        if validate_certs and ca_bundle:
-            boto_params['verify'] = ca_bundle
-        else:
-            boto_params['verify'] = validate_certs
 
         if profile_name:
             boto_params = dict(aws_access_key_id=None, aws_secret_access_key=None, aws_session_token=None)
             boto_params['profile_name'] = profile_name
+
+        if validate_certs and ca_bundle:
+            boto_params['verify'] = ca_bundle
+        else:
+            boto_params['verify'] = validate_certs
 
     else:
         boto_params = dict(aws_access_key_id=access_key,
