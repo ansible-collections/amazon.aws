@@ -195,7 +195,6 @@ except ImportError:
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleAWSError
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
@@ -492,13 +491,12 @@ def main():
 
     if module.params.get('tags'):
         try:
-            region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
-            boto3_dynamodb = boto3_conn(module, conn_type='client', resource='dynamodb', region=region, endpoint=ec2_url, **aws_connect_kwargs)
+            boto3_dynamodb = module.client('dynamodb')
             if not hasattr(boto3_dynamodb, 'tag_resource'):
                 module.fail_json(msg='boto3 connection does not have tag_resource(), likely due to using an old version')
-            boto3_sts = boto3_conn(module, conn_type='client', resource='sts', region=region, endpoint=ec2_url, **aws_connect_kwargs)
-        except botocore.exceptions.NoCredentialsError as e:
-            module.fail_json(msg='cannot connect to AWS', exception=traceback.format_exc())
+            boto3_sts = module.client('sts')
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg='Failed to connect to AWS')
     else:
         boto3_dynamodb = None
         boto3_sts = None

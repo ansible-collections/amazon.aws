@@ -139,8 +139,6 @@ except ImportError:
 from ansible.module_utils._text import to_native
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
 def main():
@@ -172,17 +170,10 @@ def main():
     if not (name or function_arn):
         module.fail_json(msg="Must provide either a function_arn or a name to invoke.")
 
-    region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
-    if not region:
-        module.fail_json(msg="The AWS region must be specified as an "
-                         "environment variable or in the AWS credentials "
-                         "profile.")
-
     try:
-        client = boto3_conn(module, conn_type='client', resource='lambda',
-                            region=region, endpoint=ec2_url, **aws_connect_kwargs)
-    except (botocore.exceptions.ClientError, botocore.exceptions.ValidationError) as e:
-        module.fail_json(msg="Failure connecting boto3 to AWS: %s" % to_native(e), exception=traceback.format_exc())
+        client = module.client('lambda')
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to connect to AWS')
 
     invoke_params = {}
 

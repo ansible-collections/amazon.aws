@@ -137,7 +137,6 @@ except ImportError:
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
@@ -423,12 +422,10 @@ class ElastiCacheManager(object):
 
     def _get_elasticache_connection(self):
         """Get an elasticache connection"""
-        region, ec2_url, aws_connect_params = get_aws_connection_info(self.module, boto3=True)
-        if region:
-            return boto3_conn(self.module, conn_type='client', resource='elasticache',
-                              region=region, endpoint=ec2_url, **aws_connect_params)
-        else:
-            self.module.fail_json(msg="region must be specified")
+        try:
+            return self.module.client('elasticache')
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            self.module.fail_json_aws(e, msg='Failed to connect to AWS')
 
     def _get_port(self):
         """Get the port. Where this information is retrieved from is engine dependent."""
