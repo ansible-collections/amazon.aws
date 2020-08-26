@@ -77,8 +77,6 @@ except ImportError:
 from ansible.module_utils._text import to_native
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
@@ -112,21 +110,9 @@ def main():
         module.deprecate("The 'ec2_vpc_peering_facts' module has been renamed to 'ec2_vpc_peering_info'", date='2021-12-01', collection_name='community.aws')
 
     try:
-        region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
-    except NameError as e:
-        # Getting around the get_aws_connection_info boto reliance for region
-        if "global name 'boto' is not defined" in to_native(e):
-            module.params['region'] = botocore.session.get_session().get_config_variable('region')
-            if not module.params['region']:
-                module.fail_json(msg="Error - no region provided")
-        else:
-            module.fail_json(msg="Can't retrieve connection information - " + str(e))
-
-    try:
-        region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
-        ec2 = boto3_conn(module, conn_type='client', resource='ec2', region=region, endpoint=ec2_url, **aws_connect_kwargs)
-    except botocore.exceptions.NoCredentialsError as e:
-        module.fail_json(msg=str(e))
+        ec2 = module.client('ec2')
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to connect to AWS')
 
     # Turn the boto3 result in to ansible friendly_snaked_names
     results = [camel_dict_to_snake_dict(peer) for peer in get_vpc_peers(ec2, module)]
