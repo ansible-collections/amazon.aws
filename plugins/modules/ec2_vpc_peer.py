@@ -225,8 +225,6 @@ import distutils.version
 import traceback
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
@@ -414,12 +412,11 @@ def main():
     peering_id = module.params.get('peering_id')
     vpc_id = module.params.get('vpc_id')
     peer_vpc_id = module.params.get('peer_vpc_id')
+
     try:
-        region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
-        client = boto3_conn(module, conn_type='client', resource='ec2',
-                            region=region, endpoint=ec2_url, **aws_connect_kwargs)
-    except botocore.exceptions.NoCredentialsError as e:
-        module.fail_json(msg="Can't authorize connection - " + str(e))
+        client = module.client('ec2')
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to connect to AWS')
 
     if state == 'present':
         (changed, results) = create_peer_connection(client, module)
