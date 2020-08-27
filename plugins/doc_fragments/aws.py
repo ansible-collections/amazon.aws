@@ -82,11 +82,11 @@ notes:
   - If parameters are not set within the module, the following
     environment variables can be used in decreasing order of precedence
     C(AWS_URL) or C(EC2_URL),
+    C(AWS_PROFILE) or C(AWS_DEFAULT_PROFILE),
     C(AWS_ACCESS_KEY_ID) or C(AWS_ACCESS_KEY) or C(EC2_ACCESS_KEY),
     C(AWS_SECRET_ACCESS_KEY) or C(AWS_SECRET_KEY) or C(EC2_SECRET_KEY),
     C(AWS_SECURITY_TOKEN) or C(EC2_SECURITY_TOKEN),
     C(AWS_REGION) or C(EC2_REGION),
-    C(AWS_PROFILE) or C(AWS_DEFAULT_PROFILE),
     C(AWS_CA_BUNDLE)
   - Ansible uses the boto configuration file (typically ~/.boto) if no
     credentials are provided. See https://boto.readthedocs.io/en/latest/boto_config_tut.html
