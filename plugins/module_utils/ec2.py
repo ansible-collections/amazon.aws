@@ -258,6 +258,20 @@ def get_aws_connection_info(module, boto3=False):
     ca_bundle = module.params.get('aws_ca_bundle')
     config = module.params.get('aws_config')
 
+    # Only read the profile environment variables if we've *not* been passed
+    # any credentials as parameters.
+    if not profile_name and not access_key and not secret_key:
+        if os.environ.get('AWS_PROFILE'):
+            profile_name = os.environ.get('AWS_PROFILE')
+        if os.environ.get('AWS_DEFAULT_PROFILE'):
+            profile_name = os.environ.get('AWS_DEFAULT_PROFILE')
+
+    if profile_name and (access_key or secret_key or security_token):
+        module.deprecate("Passing both a profile and access tokens has been deprecated."
+                         "  Only the profile will be used."
+                         "  In later versions of Ansible the options will be mutually exclusive",
+                         date='2022-06-01', collection_name='amazon.aws')
+
     if not ec2_url:
         if 'AWS_URL' in os.environ:
             ec2_url = os.environ['AWS_URL']
@@ -312,12 +326,6 @@ def get_aws_connection_info(module, boto3=False):
     if not ca_bundle:
         if os.environ.get('AWS_CA_BUNDLE'):
             ca_bundle = os.environ.get('AWS_CA_BUNDLE')
-
-    if not profile_name:
-        if os.environ.get('AWS_PROFILE'):
-            profile_name = os.environ.get('AWS_PROFILE')
-        if os.environ.get('AWS_DEFAULT_PROFILE'):
-            profile_name = os.environ.get('AWS_DEFAULT_PROFILE')
 
     if HAS_BOTO3 and boto3:
         boto_params = dict(aws_access_key_id=access_key,
