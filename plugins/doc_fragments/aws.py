@@ -29,16 +29,22 @@ options:
   aws_secret_key:
     description:
       - AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.
+      - If I(profile) is set this parameter is ignored.
+      - Passing the I(aws_secret_key) and I(profile) options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.
     type: str
     aliases: [ ec2_secret_key, secret_key ]
   aws_access_key:
     description:
       - AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.
+      - If I(profile) is set this parameter is ignored.
+      - Passing the I(aws_access_key) and I(profile) options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.
     type: str
     aliases: [ ec2_access_key, access_key ]
   security_token:
     description:
       - AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.
+      - If I(profile) is set this parameter is ignored.
+      - Passing the I(security_token) and I(profile) options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.
     type: str
     aliases: [ aws_security_token, access_token ]
   aws_ca_bundle:
@@ -55,6 +61,8 @@ options:
   profile:
     description:
       - Uses a boto profile. Only works with boto >= 2.24.0.
+      - Using I(profile) will override I(aws_access_key), I(aws_secret_key) and I(security_token) and support for passing them at the same time as I(profile) has been deprecated.
+      - I(aws_access_key), I(aws_secret_key) and I(security_token) will be made mutually exclusive with I(profile) after 2022-06-01.
     type: str
     aliases: [ aws_profile ]
   aws_config:
