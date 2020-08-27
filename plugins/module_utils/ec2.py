@@ -272,7 +272,6 @@ def get_aws_connection_info(module, boto3=False):
                          "  In later versions of Ansible the options will be mutually exclusive",
                          date='2022-06-01', collection_name='amazon.aws')
 
-
     if not ec2_url:
         if 'AWS_URL' in os.environ:
             ec2_url = os.environ['AWS_URL']
