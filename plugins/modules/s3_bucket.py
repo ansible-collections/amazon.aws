@@ -584,10 +584,11 @@ def wait_tags_are_applied(module, s3_client, bucket_name, expected_tags_dict):
 def get_current_bucket_tags_dict(s3_client, bucket_name):
     try:
         current_tags = s3_client.get_bucket_tagging(Bucket=bucket_name).get('TagSet')
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchTagSet':
-            return {}
-        raise e
+    except is_boto3_error_code('NoSuchTagSet'):
+        return {}
+    # The Ceph S3 API returns a different error code to AWS
+    except is_boto3_error_code('NoSuchTagSetError'):  # pylint: disable=duplicate-except
+        return {}
 
     return boto3_tag_list_to_ansible_dict(current_tags)
 
