@@ -40,7 +40,7 @@ matrix:
     - env: T=aws/3.7/2 A_REV=stable-2.9
     - env: T=aws/2.7/2 A_REV=stable-2.10
     - env: T=aws/3.7/2 A_REV=stable-2.10
- 
+
     - env: T=aws/2.7/3 A_REV=devel
     - env: T=aws/3.7/3 A_REV=devel
     - env: T=aws/2.7/3 A_REV=stable-2.9
