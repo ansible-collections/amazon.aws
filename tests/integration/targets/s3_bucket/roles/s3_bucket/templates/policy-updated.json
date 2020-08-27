@@ -4,7 +4,7 @@
     {
       "Sid":"AddPerm",
       "Effect":"Deny",
-      "Principal": "*",
+      "Principal": {"AWS": "*"},
       "Action":["s3:GetObject"],
       "Resource":["arn:aws:s3:::{{bucket_name}}/*"]
     }
