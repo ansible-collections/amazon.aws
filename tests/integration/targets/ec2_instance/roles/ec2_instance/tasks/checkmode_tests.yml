@@ -10,6 +10,7 @@
       wait: false
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
+        TestTag: "Some Value"
     register: basic_instance
 
   - name: "Make basic instance (check mode)"
@@ -22,6 +23,7 @@
       vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
+        TestTag: "Some Value"
     check_mode: yes
 
   - name: "fact presented ec2 instance"
@@ -49,6 +51,7 @@
       vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
+        TestTag: "Some Value"
     check_mode: yes
 
   - name: "fact ec2 instance"
@@ -69,6 +72,7 @@
       vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
+        TestTag: "Some Value"
     register: instance_stop
     until: not instance_stop.failed
     retries: 10
@@ -91,6 +95,7 @@
       vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
+        TestTag: "Some Value"
     check_mode: yes
 
   - name: "fact ec2 instance"
@@ -111,6 +116,7 @@
       vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
+        TestTag: "Some Value"
 
   - name: "fact ec2 instance."
     ec2_instance_info:
@@ -123,6 +129,27 @@
       that:
         - '"{{ confirm_runninginstance_fact.instances[0].state.name }}" == "running"'
 
+  - name: "Tag instance."
+    ec2_instance:
+      state: running
+      name: "{{ resource_prefix }}-checkmode-comparison"
+      vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+        TestTag: "Some Other Value"
+    check_mode: yes
+
+  - name: "fact ec2 instance."
+    ec2_instance_info:
+      filters:
+        "tag:Name": "{{ resource_prefix }}-checkmode-comparison"
+    register: confirm_not_tagged
+
+  - name: "Verify that it hasn't been re-tagged."
+    assert:
+      that:
+        - '"{{ confirm_not_tagged.instances[0].tags.TestTag }}" == "Some Value"'
+
   - name: "Terminate instance in check mode."
     ec2_instance:
       state: absent
@@ -130,6 +157,7 @@
       vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
+        TestTag: "Some Value"
     check_mode: yes
 
   - name: "fact ec2 instance"
@@ -150,6 +178,7 @@
       vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
+        TestTag: "Some Value"
 
   - name: "fact ec2 instance"
     ec2_instance_info:
