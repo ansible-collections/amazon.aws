@@ -1,2 +1,0 @@
-bugfixes:
-  - iam - Fix false positive warning regarding use of ``no_log`` on ``update_password``

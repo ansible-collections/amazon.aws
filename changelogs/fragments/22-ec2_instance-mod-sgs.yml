@@ -1,2 +1,0 @@
-bugfixes:
-- ec2_instance - fixes issue where security groups were not changed if the instance already existed.  https://github.com/ansible-collections/community.aws/pull/22

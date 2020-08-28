@@ -1,2 +1,0 @@
-bugfixes:
-- aws_codecommit - fixes issue where module execution would fail if an existing repository has empty description (https://github.com/ansible-collections/community.aws/pull/195)

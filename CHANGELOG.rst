@@ -5,6 +5,24 @@ community.aws Release Notes
 .. contents:: Topics
 
 
+v1.2.0
+======
+
+Minor Changes
+-------------
+
+- Add retries for aws_api_gateway when AWS throws `TooManyRequestsException`
+- Migrate the remaning boto3 based modules to the module based helpers for creating AWS connections.
+
+Bugfixes
+--------
+
+- aws_codecommit - fixes issue where module execution would fail if an existing repository has empty description (https://github.com/ansible-collections/community.aws/pull/195)
+- aws_kms_info - fixes issue where module execution fails because certain AWS KMS keys (e.g. aws/acm) do not permit the calling the API kms:GetKeyRotationStatus (example - https://forums.aws.amazon.com/thread.jspa?threadID=312992) (https://github.com/ansible-collections/community.aws/pull/199)
+- ec2_instance - Fix a bug where tags were updated in check_mode.
+- ec2_instance - fixes issue where security groups were not changed if the instance already existed.  https://github.com/ansible-collections/community.aws/pull/22
+- iam - Fix false positive warning regarding use of ``no_log`` on ``update_password``
+
 v1.1.0
 ======
 
@@ -19,14 +37,14 @@ Deprecated Features
 
 - data_pipeline - the ``version`` option has been deprecated and will be removed in a later release. It has always been ignored by the module.
 - ec2_eip - the ``wait_timeout`` option has been deprecated and will be removed in a later release. It has had no effect since Ansible 2.3.
-- ec2_lc - the ``associate_public_ip_address`` option has been deprecated and will be removed in a later release. It has always been ignored by the module.
+- ec2_lc - the ``associate_public_ip_address`` option has been deprecated and will be removed after a later release. It has always been ignored by the module.
 - elb_network_lb - in a later release, the default behaviour for the ``state`` option will change from ``absent`` to ``present``.  To maintain the existing behavior explicitly set state to ``absent``.
-- iam_managed_policy - the ``fail_on_delete`` option has been deprecated and will be removed in a later release.  It has always been ignored by the module.
+- iam_managed_policy - the ``fail_on_delete`` option has been deprecated and will be removed after a later release.  It has always been ignored by the module.
 - iam_policy - in a later release, the default value for the ``skip_duplicates`` option will change from ``true`` to ``false``.  To maintain the existing behavior explicitly set it to ``true``.
-- iam_policy - the ``policy_document`` option has been deprecated and will be removed in a later release. To maintain the existing behavior use the ``policy_json`` option and read the file with the ``lookup`` plugin.
+- iam_policy - the ``policy_document`` option has been deprecated and will be removed after a later release. To maintain the existing behavior use the ``policy_json`` option and read the file with the ``lookup`` plugin.
 - iam_role - in a later release, the ``purge_policies`` option (also know as ``purge_policy``) default value will change from ``true`` to ``false``
-- s3_lifecycle - the ``requester_pays`` option has been deprecated and will be removed in a later release. It has always been ignored by the module.
-- s3_sync - the ``retries`` option has been deprecated and will be removed in a later release. It has always been ignored by the module.
+- s3_lifecycle - the ``requester_pays`` option has been deprecated and will be removed after a later release. It has always been ignored by the module.
+- s3_sync - the ``retries`` option has been deprecated and will be removed after 2022-06-01. It has always been ignored by the module.
 
 v1.0.0
 ======
@@ -39,10 +57,10 @@ Minor Changes
 - aws_acm - Update automatic retries to stabilize the integration tests.
 - aws_codecommit - Support updating the description
 - aws_kms - Adds the ``enable_key_rotation`` option to enable or disable automatically key rotation.
-- aws_kms: code refactor, some error messages updated
+- aws_kms - code refactor, some error messages updated
 - aws_kms_info - Adds the ``enable_key_rotation`` info to the return value.
-- ec2_asg - Add the ability to use mixed_instance_policy in launch template driven autoscaling groups
 - ec2_asg - Add support for Max Instance Lifetime
+- ec2_asg - Add the ability to use mixed_instance_policy in launch template driven autoscaling groups
 - ec2_asg - Migrated to AnsibleAWSModule
 - ec2_placement_group - make ``name`` a required field.
 - ecs_task_definition - Add network_mode=default to support Windows ECS tasks.
@@ -74,7 +92,7 @@ Deprecated Features
 - ec2_key - The ``wait_timeout`` option had no effect and will be removed after 2022-06-01
 - ec2_key - The ``wait`` option had no effect and will be removed after 2022-06-01
 - ec2_lc - The ``associate_public_ip_address`` option had no effect and will be removed after 2022-06-01
-- elb_network_lb: The current default value of the ``state`` option has been deprecated and will change from absent to present after 2022-06-01
+- elb_network_lb - The current default value of the ``state`` option has been deprecated and will change from absent to present after 2022-06-01
 - iam_managed_policy - The ``fail_on_delete`` option had no effect and will be removed after 2022-06-01
 - iam_policy - The ``policy_document`` will be removed after 2022-06-01.  To maintain the existing behavior use the ``policy_json`` option and read the file with the ``lookup`` plugin.
 - iam_policy - The default value of ``skip_duplicates`` will change after 2022-06-01 from ``true`` to ``false``.
@@ -96,7 +114,7 @@ Bugfixes
 - cloudfront_distribution - Always add field_level_encryption_id to cache behaviour to match AWS requirements
 - cloudwatchlogs_log_group - Fix a KeyError when updating a log group that does not have a retention period (https://github.com/ansible/ansible/issues/47945)
 - cloudwatchlogs_log_group_info - remove limitation of max 50 results
-- ec2_asg: Ensure "wait" is honored during replace operations
+- ec2_asg - Ensure "wait" is honored during replace operations
 - ec2_launch_template - Update output to include latest_version and default_version, matching the documentation
 - ec2_transit_gateway - Use AWSRetry before ClientError is handled when describing transit gateways
 - ec2_transit_gateway - fixed issue where auto_attach set to yes was not being honored (https://github.com/ansible/ansible/issues/61907)

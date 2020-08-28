@@ -1,2 +1,0 @@
-minor_changes:
-- Migrate the remaning boto3 based modules to the module based helpers for creating AWS connections.

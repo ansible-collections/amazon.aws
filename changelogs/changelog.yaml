@@ -77,11 +77,11 @@ releases:
       - aws_codecommit - Support updating the description
       - aws_kms - Adds the ``enable_key_rotation`` option to enable or disable automatically
         key rotation.
-      - aws_kms - code refactor, some error messages updated'
+      - aws_kms - code refactor, some error messages updated
       - aws_kms_info - Adds the ``enable_key_rotation`` info to the return value.
+      - ec2_asg - Add support for Max Instance Lifetime
       - ec2_asg - Add the ability to use mixed_instance_policy in launch template
         driven autoscaling groups
-      - ec2_asg - Add support for Max Instance Lifetime
       - ec2_asg - Migrated to AnsibleAWSModule
       - ec2_placement_group - make ``name`` a required field.
       - ecs_task_definition - Add network_mode=default to support Windows ECS tasks.
@@ -683,7 +683,8 @@ releases:
         option will change from ``absent`` to ``present``.  To maintain the existing
         behavior explicitly set state to ``absent``.
       - iam_managed_policy - the ``fail_on_delete`` option has been deprecated and
-        will be removed after a later release.  It has always been ignored by the module.
+        will be removed after a later release.  It has always been ignored by the
+        module.
       - iam_policy - in a later release, the default value for the ``skip_duplicates``
         option will change from ``true`` to ``false``.  To maintain the existing behavior
         explicitly set it to ``true``.
@@ -704,3 +705,28 @@ releases:
     - porting-guide.yml
     - sanity_fix_future_boilerplate.yml
     release_date: '2020-08-13'
+  1.2.0:
+    changes:
+      bugfixes:
+      - aws_codecommit - fixes issue where module execution would fail if an existing
+        repository has empty description (https://github.com/ansible-collections/community.aws/pull/195)
+      - aws_kms_info - fixes issue where module execution fails because certain AWS
+        KMS keys (e.g. aws/acm) do not permit the calling the API kms:GetKeyRotationStatus
+        (example - https://forums.aws.amazon.com/thread.jspa?threadID=312992) (https://github.com/ansible-collections/community.aws/pull/199)
+      - ec2_instance - Fix a bug where tags were updated in check_mode.
+      - ec2_instance - fixes issue where security groups were not changed if the instance
+        already existed.  https://github.com/ansible-collections/community.aws/pull/22
+      - iam - Fix false positive warning regarding use of ``no_log`` on ``update_password``
+      minor_changes:
+      - Add retries for aws_api_gateway when AWS throws `TooManyRequestsException`
+      - Migrate the remaning boto3 based modules to the module based helpers for creating
+        AWS connections.
+    fragments:
+    - 161-retries.yml
+    - 188-boto3_conn.yml
+    - 189-ec2_instance-check_mode-tags.yml
+    - 195-aws_codecommit-empty-description.yaml
+    - 199-aws_kms_info-key-rotation-status.yaml
+    - 22-ec2_instance-mod-sgs.yml
+    - iam_no_log.yml
+    release_date: '2020-08-28'

@@ -1,2 +1,0 @@
-minor_changes:
-- Add retries for aws_api_gateway when AWS throws `TooManyRequestsException`

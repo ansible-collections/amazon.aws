@@ -37,7 +37,7 @@ Parameters
 .. raw:: html
 
     <table  border=0 cellpadding=0 class="documentation-table">
-    <tr>
+        <tr>
             <th colspan="2">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
             <th width="100%">Comments</th>
@@ -49,7 +49,8 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">dictionary</span>
- / <span style="color: red">required</span>                    </div>
+                         / <span style="color: red">required</span>
+                    </div>
                 </td>
                 <td>
                 </td>
@@ -103,6 +104,8 @@ Parameters
                 </td>
                 <td>
                         <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
+                        <div>If <em>profile</em> is set this parameter is ignored.</div>
+                        <div>Passing the <em>aws_access_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                 </td>
             </tr>
@@ -153,6 +156,8 @@ Parameters
                 </td>
                 <td>
                         <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
+                        <div>If <em>profile</em> is set this parameter is ignored.</div>
+                        <div>Passing the <em>aws_secret_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                 </td>
             </tr>
@@ -198,7 +203,8 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
- / <span style="color: red">required</span>                    </div>
+                         / <span style="color: red">required</span>
+                    </div>
                 </td>
                 <td>
                 </td>
@@ -219,6 +225,8 @@ Parameters
                 </td>
                 <td>
                         <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
+                        <div>Using <em>profile</em> will override <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> and support for passing them at the same time as <em>profile</em> has been deprecated.</div>
+                        <div><em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> will be made mutually exclusive with <em>profile</em> after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_profile</div>
                 </td>
             </tr>
@@ -245,7 +253,8 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
- / <span style="color: red">required</span>                    </div>
+                         / <span style="color: red">required</span>
+                    </div>
                 </td>
                 <td>
                 </td>
@@ -266,6 +275,8 @@ Parameters
                 </td>
                 <td>
                         <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
+                        <div>If <em>profile</em> is set this parameter is ignored.</div>
+                        <div>Passing the <em>security_token</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_security_token, access_token</div>
                 </td>
             </tr>
@@ -276,7 +287,9 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">list</span>
- / <span style="color: purple">elements=dictionary</span> / <span style="color: red">required</span>                    </div>
+                         / <span style="color: purple">elements=dictionary</span>
+                         / <span style="color: red">required</span>
+                    </div>
                 </td>
                 <td>
                 </td>
@@ -292,7 +305,8 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">list</span>
- / <span style="color: purple">elements=dictionary</span>                    </div>
+                         / <span style="color: purple">elements=dictionary</span>
+                    </div>
                 </td>
                 <td>
                 </td>
@@ -381,7 +395,7 @@ Notes
 
 .. note::
    - for details of the parameters and returns see http://boto3.readthedocs.io/en/latest/reference/services/codepipeline.html
-   - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_CA_BUNDLE``
+   - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
    - Ansible uses the boto configuration file (typically ~/.boto) if no credentials are provided. See https://boto.readthedocs.io/en/latest/boto_config_tut.html
    - ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be configured in the boto config file
 
