@@ -315,25 +315,25 @@ def ensure_api_in_correct_state(module, client, api_id, api_data):
     return configure_response, deploy_response
 
 
-retry_params = {"tries": 10, "delay": 5, "backoff": 1.2}
+retry_params = {"retries": 10, "delay": 10, "catch_extra_error_codes": ['TooManyRequestsException']}
 
 
-@AWSRetry.backoff(**retry_params)
+@AWSRetry.jittered_backoff(**retry_params)
 def create_api(client, name=None, description=None, endpoint_type=None):
     return client.create_rest_api(name="ansible-temp-api", description=description, endpointConfiguration={'types': [endpoint_type]})
 
 
-@AWSRetry.backoff(**retry_params)
+@AWSRetry.jittered_backoff(**retry_params)
 def delete_api(client, api_id):
     return client.delete_rest_api(restApiId=api_id)
 
 
-@AWSRetry.backoff(**retry_params)
+@AWSRetry.jittered_backoff(**retry_params)
 def configure_api(client, api_id, api_data=None, mode="overwrite"):
     return client.put_rest_api(restApiId=api_id, mode=mode, body=api_data)
 
 
-@AWSRetry.backoff(**retry_params)
+@AWSRetry.jittered_backoff(**retry_params)
 def create_deployment(client, rest_api_id, **params):
     canary_settings = params.get('stage_canary_settings')
 
