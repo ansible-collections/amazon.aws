@@ -35,22 +35,21 @@ releases:
         be removed after 2022-06-01
       - ec2_ami - The ``virtual_name`` alias ``VirtualName`` has been deprecated and
         will be removed after 2022-06-01
-      - ec2_eip - The ``wait_timeout`` option had no effect and will be removed
-        after 2022-06-01
-      - ec2_key - The ``wait_timeout`` option had no effect and will be removed
-        after 2022-06-01
-      - ec2_key - The ``wait`` option had no effect and will be removed after
+      - ec2_eip - The ``wait_timeout`` option had no effect and will be removed after
         2022-06-01
+      - ec2_key - The ``wait_timeout`` option had no effect and will be removed after
+        2022-06-01
+      - ec2_key - The ``wait`` option had no effect and will be removed after 2022-06-01
       - ec2_key - the ``wait_timeout`` option has been deprecated and will be removed
         in a later release. It has had no effect since Ansible 2.5.
       - ec2_key - the ``wait`` option has been deprecated and will be removed in a
         later release. It has had no effect since Ansible 2.5.
       - ec2_lc - The ``associate_public_ip_address`` option had no effect and will
         be removed after 2022-06-01
+      - ec2_tag - deprecate the ``list`` option in favor of ec2_tag_info
       - ec2_tag - support for ``list`` as a state has been deprecated and will be
         removed in a later release.  The ``ec2_tag_info`` can be used to fetch the
         tags on an EC2 resource.
-      - ec2_tag - deprecate the `list` option in favor of ec2_tag_info
       major_changes:
       - ec2 module_utils - The ``AWSRetry`` decorator no longer catches ``NotFound``
         exceptions by default.  ``NotFound`` exceptions need to be explicitly added
@@ -74,9 +73,9 @@ releases:
       - ec2 - deprecate allowing both group and group_id - currently we ignore group_id
         if both are passed.
       - ec2_ami_info - allow integer and bool values for filtering images (https://github.com/ansible/ansible/issues/43570).
+      - ec2_asg - Add support for Max Instance Lifetime
       - ec2_asg - Add the ability to use mixed_instance_policy in launch template
         driven autoscaling groups
-      - ec2_asg - Add support for Max Instance Lifetime
       - ec2_asg - Migrated to AnsibleAWSModule
       - ec2_placement_group - make `name` a required field.
       - ec2_vol_info - Code cleanup and use of the AWSRetry decorator to improve stability
@@ -109,3 +108,25 @@ releases:
     - 99-awsmodule.yml
     - porting-guide.yml
     release_date: '2020-08-13'
+  1.2.0:
+    changes:
+      bugfixes:
+      - ec2 module_utils - Ensure boto3 verify parameter isn't overridden by setting
+        a profile (https://github.com/ansible-collections/amazon.aws/issues/129)
+      - 's3_bucket - Ceph compatibility: treat error code NoSuchTagSetError used by
+        Ceph synonymously to NoSuchTagSet used by AWS'
+      deprecated_features:
+      - All AWS Modules - ``aws_access_key``, ``aws_secret_key`` and ``security_token``
+        will be made mutually exclusive with ``profile`` after 2022-06-01.
+      minor_changes:
+      - ec2 module_utils - Update ``ec2_connect`` (boto2) behaviour so that ``ec2_url``
+        overrides ``region``.
+      - module_utils.core - Support passing arbitrary extra keys to fail_json_aws,
+        matching capabilities of fail_json.
+    fragments:
+    - 121-ec2_url-resolution-order.yaml
+    - 129-verify_overridden.yml
+    - 140-fail_json_aws_keys.yml
+    - 151-deprecate-profile-credential-combination.yml
+    - 71484-ceph-tag-set-compat.yaml
+    release_date: '2020-08-28'

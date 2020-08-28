@@ -1,2 +1,0 @@
-bugfixes:
-  - 's3_bucket - Ceph compatibility: treat error code NoSuchTagSetError used by Ceph synonymously to NoSuchTagSet used by AWS'
