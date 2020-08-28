@@ -894,6 +894,8 @@ def manage_tags(match, new_tags, purge_tags, ec2):
         old_tags, new_tags,
         purge_tags=purge_tags,
     )
+    if module.check_mode:
+        return bool(tags_to_delete or tags_to_set)
     if tags_to_set:
         ec2.create_tags(
             Resources=[match['InstanceId']],
