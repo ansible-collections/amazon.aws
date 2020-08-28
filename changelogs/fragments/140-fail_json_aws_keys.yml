@@ -1,2 +1,0 @@
-minor_changes:
-- module_utils.core - Support passing arbitrary extra keys to fail_json_aws, matching capabilities of fail_json.

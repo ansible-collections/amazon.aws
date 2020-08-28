@@ -1,2 +1,0 @@
-minor_changes:
-- ec2 module_utils - Update ``ec2_connect`` (boto2) behaviour so that ``ec2_url`` overrides ``region``.

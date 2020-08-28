@@ -5,6 +5,26 @@ community.aws Release Notes
 .. contents:: Topics
 
 
+v1.2.0
+======
+
+Minor Changes
+-------------
+
+- ec2 module_utils - Update ``ec2_connect`` (boto2) behaviour so that ``ec2_url`` overrides ``region``.
+- module_utils.core - Support passing arbitrary extra keys to fail_json_aws, matching capabilities of fail_json.
+
+Deprecated Features
+-------------------
+
+- All AWS Modules - ``aws_access_key``, ``aws_secret_key`` and ``security_token`` will be made mutually exclusive with ``profile`` after 2022-06-01.
+
+Bugfixes
+--------
+
+- ec2 module_utils - Ensure boto3 verify parameter isn't overridden by setting a profile (https://github.com/ansible-collections/amazon.aws/issues/129)
+- s3_bucket - Ceph compatibility: treat error code NoSuchTagSetError used by Ceph synonymously to NoSuchTagSet used by AWS
+
 v1.1.0
 ======
 
@@ -27,8 +47,8 @@ Minor Changes
 - cloudformation - Return change_set_id in the cloudformation output if a change set was created.
 - ec2 - deprecate allowing both group and group_id - currently we ignore group_id if both are passed.
 - ec2_ami_info - allow integer and bool values for filtering images (https://github.com/ansible/ansible/issues/43570).
-- ec2_asg - Add the ability to use mixed_instance_policy in launch template driven autoscaling groups
 - ec2_asg - Add support for Max Instance Lifetime
+- ec2_asg - Add the ability to use mixed_instance_policy in launch template driven autoscaling groups
 - ec2_asg - Migrated to AnsibleAWSModule
 - ec2_placement_group - make ``name`` a required field.
 - ec2_vol_info - Code cleanup and use of the AWSRetry decorator to improve stability
@@ -42,20 +62,20 @@ Breaking Changes / Porting Guide
 Deprecated Features
 -------------------
 
-- cloudformation - The ``template_format`` option had no effect since Ansible 2.3 and will be removed in after 2022-06-01
+- cloudformation - The ``template_format`` option had no effect since Ansible 2.3 and will be removed after 2022-06-01
 - cloudformation - the ``template_format`` option has been deprecated and will be removed in a later release. It has been ignored by the module since Ansible 2.3.
 - data_pipeline - The ``version`` option had no effect and will be removed in after 2022-06-01
 - ec2 - in a later release, the ``group`` and ``group_id`` options will become mutually exclusive.  Currently ``group_id`` is ignored if you pass both.
 - ec2_ami - The ``no_device`` alias ``NoDevice`` has been deprecated  and will be removed after 2022-06-01
 - ec2_ami - The ``virtual_name`` alias ``VirtualName`` has been deprecated and will be removed after 2022-06-01
-- ec2_eip - The ``wait_timeout`` option had no effect and will be removed in after 2022-06-01
-- ec2_key - The ``wait_timeout`` option had no effect and will be removed in after 2022-06-01
-- ec2_key - The ``wait`` option had no effect and will be removed in after 2022-06-01
+- ec2_eip - The ``wait_timeout`` option had no effect and will be removed after 2022-06-01
+- ec2_key - The ``wait_timeout`` option had no effect and will be removed after 2022-06-01
+- ec2_key - The ``wait`` option had no effect and will be removed after 2022-06-01
 - ec2_key - the ``wait_timeout`` option has been deprecated and will be removed in a later release. It has had no effect since Ansible 2.5.
 - ec2_key - the ``wait`` option has been deprecated and will be removed in a later release. It has had no effect since Ansible 2.5.
-- ec2_lc - The ``associate_public_ip_address`` option had no effect and will be removed in after 2022-06-01
+- ec2_lc - The ``associate_public_ip_address`` option had no effect and will be removed after 2022-06-01
+- ec2_tag - deprecate the ``list`` option in favor of ec2_tag_info
 - ec2_tag - support for ``list`` as a state has been deprecated and will be removed in a later release.  The ``ec2_tag_info`` can be used to fetch the tags on an EC2 resource.
-- ec2_vol - deprecate the ``list`` option in favor of ec2_vol_info
 
 Bugfixes
 --------
