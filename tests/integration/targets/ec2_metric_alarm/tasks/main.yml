@@ -46,6 +46,7 @@
         tags:
           TestId: "{{ resource_prefix }}"
         security_groups: "{{ sg.group_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
         instance_type: t2.micro
         wait: true
       register: ec2_instance_results
