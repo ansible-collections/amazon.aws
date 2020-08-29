@@ -318,7 +318,9 @@ def is_boto3_error_code(code, e=None):
     if e is None:
         import sys
         dummy, e, dummy = sys.exc_info()
-    if isinstance(e, ClientError) and e.response['Error']['Code'] == code:
+    if not isinstance(code, list):
+        code = [code]
+    if isinstance(e, ClientError) and e.response['Error']['Code'] in code:
         return ClientError
     return type('NeverEverRaisedException', (Exception,), {})
 
