@@ -9,6 +9,7 @@ try:
 except ImportError:
     pass
 
+from .core import is_boto3_error_code
 from .ec2 import AWSRetry
 
 
@@ -41,11 +42,8 @@ def _get_elb(connection, module, elb_name):
     try:
         load_balancer_paginator = connection.get_paginator('describe_load_balancers')
         return (load_balancer_paginator.paginate(Names=[elb_name]).build_full_result())['LoadBalancers'][0]
-    except (BotoCoreError, ClientError) as e:
-        if e.response['Error']['Code'] == 'LoadBalancerNotFound':
-            return None
-        else:
-            raise e
+    except is_boto3_error_code('LoadBalancerNotFound'):
+        return None
 
 
 def get_elb_listener(connection, module, elb_arn, listener_port):
