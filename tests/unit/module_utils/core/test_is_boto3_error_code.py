@@ -42,7 +42,7 @@ class Boto3ErrorTestCase(unittest.TestCase):
             raise botocore.exceptions.ClientError(self.EXAMPLE_EXCEPTION_DATA, "testCall")
         except is_boto3_error_code('InvalidParameterValue'):
             error_caught = 1
-        except botocore.exceptions.ClientError:
+        except botocore.exceptions.ClientError:  # pylint: disable=duplicate-except
             error_caught = 2
         except Exception:
             error_caught = 3
@@ -52,7 +52,7 @@ class Boto3ErrorTestCase(unittest.TestCase):
             raise botocore.exceptions.ClientError(self.EXAMPLE_EXCEPTION_DATA, "testCall")
         except is_boto3_error_code('SomeError'):
             error_caught = 4
-        except botocore.exceptions.ClientError:
+        except botocore.exceptions.ClientError:  # pylint: disable=duplicate-except
             error_caught = 5
         except Exception:
             error_caught = 6
@@ -64,7 +64,7 @@ class Boto3ErrorTestCase(unittest.TestCase):
             raise botocore.exceptions.ClientError(self.EXAMPLE_EXCEPTION_DATA, "testCall")
         except is_boto3_error_code(['SomeError', 'InvalidParameterValue']):
             error_caught = 1
-        except botocore.exceptions.ClientError:
+        except botocore.exceptions.ClientError:  # pylint: disable=duplicate-except
             error_caught = 2
         except Exception:
             error_caught = 3
@@ -74,7 +74,7 @@ class Boto3ErrorTestCase(unittest.TestCase):
             raise botocore.exceptions.ClientError(self.EXAMPLE_EXCEPTION_DATA, "testCall")
         except is_boto3_error_code(['InvalidParameterValue', 'SomeError']):
             error_caught = 4
-        except botocore.exceptions.ClientError:
+        except botocore.exceptions.ClientError:  # pylint: disable=duplicate-except
             error_caught = 5
         except Exception:
             error_caught = 6
@@ -84,7 +84,7 @@ class Boto3ErrorTestCase(unittest.TestCase):
             raise botocore.exceptions.ClientError(self.EXAMPLE_EXCEPTION_DATA, "testCall")
         except is_boto3_error_code(['SomeError', 'AnotherError']):
             error_caught = 7
-        except botocore.exceptions.ClientError:
+        except botocore.exceptions.ClientError:  # pylint: disable=duplicate-except
             error_caught = 8
         except Exception:
             error_caught = 9
@@ -94,7 +94,7 @@ class Boto3ErrorTestCase(unittest.TestCase):
             raise botocore.exceptions.ClientError(self.EXAMPLE_EXCEPTION_DATA, "testCall")
         except is_boto3_error_code(['AnotherError', 'SomeError']):
             error_caught = 10
-        except botocore.exceptions.ClientError:
+        except botocore.exceptions.ClientError:  # pylint: disable=duplicate-except
             error_caught = 11
         except Exception:
             error_caught = 12

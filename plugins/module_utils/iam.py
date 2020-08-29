@@ -37,7 +37,7 @@ def get_aws_account_id(module):
             except_msg = to_native(e)
             # don't match on `arn:aws:` because of China region `arn:aws-cn` and similar
             account_id = except_msg.search(r"arn:\w+:iam::([0-9]{12,32}):\w+/").group(1)
-        except (LookupError, botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        except (LookupError, botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
             account_id = None
 
     if not account_id:
