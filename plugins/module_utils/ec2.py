@@ -633,11 +633,12 @@ def _hashable_policy(policy, policy_list):
         sorted_keys = list(policy.keys())
         sorted_keys.sort()
         for key in sorted_keys:
+            element = policy[key]
             # Special case defined in
             # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html
             if key in ["NotPrincipal", "Principal"] and policy[key] == "*":
-                policy[key] = { "AWS": "*" }
-            tupleified = _hashable_policy(policy[key], [])
+                element = {"AWS": "*"}
+            tupleified = _hashable_policy(element, [])
             if isinstance(tupleified, list):
                 tupleified = tuple(tupleified)
             policy_list.append((key, tupleified))
