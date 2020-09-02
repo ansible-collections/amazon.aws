@@ -20,6 +20,21 @@ requirements:
 - The control machine must have the aws session manager plugin installed.
 - The remote EC2 linux instance must have the curl installed.
 options:
+  access_key_id:
+    description: The STS access key to use when connecting via session-manager.
+    vars:
+    - name: ansible_aws_ssm_access_key_id
+    version_added: 1.3.0
+  secret_access_key:
+    description: The STS secret key to use when connecting via session-manager.
+    vars:
+    - name: ansible_aws_ssm_secret_access_key
+    version_added: 1.3.0
+  session_token:
+    description: The STS session token to use when connecting via session-manager.
+    vars:
+    - name: ansible_aws_ssm_session_token
+    version_added: 1.3.0
   instance_id:
     description: The EC2 instance ID.
     vars:
@@ -289,8 +304,7 @@ class Connection(ConnectionBase):
         profile_name = ''
         region_name = self.get_option('region')
         ssm_parameters = dict()
-
-        client = boto3.client('ssm', region_name=region_name)
+        client = self._get_boto_client('ssm', region_name=region_name)
         self._client = client
         response = client.start_session(Target=self.instance_id, Parameters=ssm_parameters)
         self._session_id = response['SessionId']
@@ -483,8 +497,26 @@ class Connection(ConnectionBase):
 
     def _get_url(self, client_method, bucket_name, out_path, http_method):
         ''' Generate URL for get_object / put_object '''
-        client = boto3.client('s3')
+        client = self._get_boto_client('s3')
         return client.generate_presigned_url(client_method, Params={'Bucket': bucket_name, 'Key': out_path}, ExpiresIn=3600, HttpMethod=http_method)
+
+    def _get_boto_client(self, service, region_name=None):
+        ''' Gets a boto3 client based on the STS token '''
+
+        aws_access_key_id = self.get_option('access_key_id')
+        aws_secret_access_key = self.get_option('secret_access_key')
+        aws_session_token = self.get_option('session_token')
+        if aws_access_key_id is None or aws_secret_access_key is None or aws_session_token is None:
+            aws_access_key_id = os.environ.get("AWS_ACCESS_KEY_ID", None)
+            aws_secret_access_key = os.environ.get("AWS_SECRET_ACCESS_KEY", None)
+            aws_session_token = os.environ.get("AWS_SESSION_TOKEN", None)
+        client = boto3.client(
+            service,
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
+            aws_session_token=aws_session_token,
+            region_name=region_name)
+        return client
 
     @_ssm_retry
     def _file_transport_command(self, in_path, out_path, ssm_action):
@@ -504,7 +536,7 @@ class Connection(ConnectionBase):
             get_command = "curl '%s' -o '%s'" % (
                 self._get_url('get_object', self.get_option('bucket_name'), s3_path, 'GET'), out_path)
 
-        client = boto3.client('s3')
+        client = self._get_boto_client('s3')
         if ssm_action == 'get':
             (returncode, stdout, stderr) = self.exec_command(put_command, in_data=None, sudoable=False)
             with open(to_bytes(out_path, errors='surrogate_or_strict'), 'wb') as data:
