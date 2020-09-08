@@ -18,14 +18,6 @@
 
 """This module adds shared support for generic Amazon AWS modules
 
-**This code is not yet ready for use in user modules.  As of 2017**
-**and through to 2018, the interface is likely to change**
-**aggressively as the exact correct interface for ansible AWS modules**
-**is identified.  In particular, until this notice goes away or is**
-**changed, methods may disappear from the interface.  Please don't**
-**publish modules using this except directly to the main Ansible**
-**development repository.**
-
 In order to use this module, include it as part of a custom
 module as shown below.
 
