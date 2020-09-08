@@ -204,6 +204,7 @@ from ansible.module_utils.common.network import to_subnet
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.core import is_boto3_error_message
 from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
@@ -241,11 +242,8 @@ def vpc_exists(module, vpc, name, cidr_block, multi):
 def get_classic_link_with_backoff(connection, vpc_id):
     try:
         return connection.describe_vpc_classic_link(VpcIds=[vpc_id])['Vpcs'][0].get('ClassicLinkEnabled')
-    except botocore.exceptions.ClientError as e:
-        if e.response["Error"]["Message"] == "The functionality you requested is not available in this region.":
-            return False
-        else:
-            raise
+    except is_boto3_error_message('The functionality you requested is not available in this region.'):
+        return False
 
 
 def get_vpc(module, connection, vpc_id):
@@ -307,7 +305,7 @@ def update_dhcp_opts(connection, module, vpc_obj, dhcp_id):
                 filters = [{'Name': 'dhcp-options-id', 'Values': [dhcp_id]}]
                 connection.get_waiter('vpc_available').wait(VpcIds=[vpc_obj['VpcId']], Filters=filters)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json(msg="Failed to wait for DhcpOptionsId to be updated")
+                module.fail_json_aws(e, msg="Failed to wait for DhcpOptionsId to be updated")
 
         return True
     else:
