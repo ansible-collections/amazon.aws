@@ -166,15 +166,12 @@ stack_change_sets:
 '''
 
 import json
-import traceback
-from functools import partial
 
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ..module_utils.core import AnsibleAWSModule
