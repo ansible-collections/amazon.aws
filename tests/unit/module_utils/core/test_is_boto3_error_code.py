@@ -7,143 +7,257 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import boto3
+import pytest
 import botocore
 
 from ansible_collections.amazon.aws.tests.unit.compat import unittest
+
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
+
+if not HAS_BOTO3:
+    pytestmark = pytest.mark.skip("test_iam.py requires the python modules 'boto3' and 'botocore'")
 
 
-class Boto3ErrorTestCase(unittest.TestCase):
+class Boto3ErrorCodeTestSuite(unittest.TestCase):
+
+    def _make_denied_exception(self):
+        return botocore.exceptions.ClientError(
+            {
+                "Error": {
+                    "Code": "AccessDenied",
+                    "Message": "User: arn:aws:iam::123456789012:user/ExampleUser "
+                               + "is not authorized to perform: iam:GetUser on resource: user ExampleUser"
+                },
+                "ResponseMetadata": {
+                    "RequestId": "01234567-89ab-cdef-0123-456789abcdef"
+                }
+            }, 'getUser')
+
+    def _make_unexpected_exception(self):
+        return botocore.exceptions.ClientError(
+           {
+                "Error": {
+                    "Code": "SomeThingWentWrong",
+                    "Message": "Boom!"
+                },
+                "ResponseMetadata": {
+                    "RequestId": "01234567-89ab-cdef-0123-456789abcdef"
+                }
+            }, 'someCall')
+
+    def _make_encoded_exception(self):
+        return botocore.exceptions.ClientError(
+           {
+                "Error": {
+                    "Code": "PermissionDenied",
+                    "Message": "You are not authorized to perform this operation. Encoded authorization failure message: fEwXX6llx3cClm9J4pURgz1XPnJPrYexEbrJcLhFkwygMdOgx_-aEsj0LqRM6Kxt2HVI6prUhDwbJqBo9U2V7iRKZT6ZdJvHH02cXmD0Jwl5vrTsf0PhBcWYlH5wl2qME7xTfdolEUr4CzumCiti7ETiO-RDdHqWlasBOW5bWsZ4GSpPdU06YAX0TfwVBs48uU5RpCHfz1uhSzez-3elbtp9CmTOHLt5pzJodiovccO55BQKYLPtmJcs6S9YLEEogmpI4Cb1D26fYahDh51jEmaohPnW5pb1nQe2yPEtuIhtRzNjhFCOOMwY5DBzNsymK-Gj6eJLm7FSGHee4AHLU_XmZMe_6bcLAiOx6Zdl65Kdd0hLcpwVxyZMi27HnYjAdqRlV3wuCW2PkhAW14qZQLfiuHZDEwnPe2PBGSlFcCmkQvJvX-YLoA7Uyc2wfNX5RJm38STwfiJSkQaNDhHKTWKiLOsgY4Gze6uZoG7zOcFXFRyaA4cbMmI76uyBO7j-9uQUCtBYqYto8x_9CUJcxIVC5SPG_C1mk-WoDMew01f0qy-bNaCgmJ9TOQGd08FyuT1SaMpCC0gX6mHuOnEgkFw3veBIowMpp9XcM-yc42fmIOpFOdvQO6uE9p55Qc-uXvsDTTvT3A7EeFU8a_YoAIt9UgNYM6VTvoprLz7dBI_P6C-bdPPZCY2amm-dJNVZelT6TbJBH_Vxh0fzeiSUBersy_QzB0moc-vPWgnB-IkgnYLV-4L3K0L2"
+                },
+                "ResponseMetadata": {
+                    "RequestId": "01234567-89ab-cdef-0123-456789abcdef"
+                }
+            }, 'someCall')
+
+    def _make_botocore_exception(self):
+        return botocore.exceptions.EndpointConnectionError(endpoint_url='junk.endpoint')
+
 
     def setUp(self):
-        # Basic information that ClientError needs to spawn off an error
-        self.EXAMPLE_EXCEPTION_DATA = {
-            "Error": {
-                "Code": "InvalidParameterValue",
-                "Message": "The filter 'exampleFilter' is invalid"
-            },
-            "ResponseMetadata": {
-                "RequestId": "01234567-89ab-cdef-0123-456789abcdef",
-                "HTTPStatusCode": 400,
-                "HTTPHeaders": {
-                    "transfer-encoding": "chunked",
-                    "date": "Fri, 13 Nov 2020 00:00:00 GMT",
-                    "connection": "close",
-                    "server": "AmazonEC2"
-                },
-                "RetryAttempts": 0
-            }
-        }
+        pass
 
-    def test_client_error_match_single(self):
-        error_caught = 0
+    def test_is_boto3_error_code_single__raise__client(self):
+        thrown_exception = self._make_denied_exception()
+        caught_exception = None
         try:
-            raise botocore.exceptions.ClientError(self.EXAMPLE_EXCEPTION_DATA, "testCall")
-        except is_boto3_error_code('InvalidParameterValue'):
-            error_caught = 1
-        except botocore.exceptions.ClientError:  # pylint: disable=duplicate-except
-            error_caught = 2
-        except Exception:
-            error_caught = 3
-        assert error_caught == 1
+            raise thrown_exception
+        except is_boto3_error_code('AccessDenied') as e:
+            caught_exception = e
+            caught = 'Code'
+        except botocore.exceptions.ClientError as e:
+            caught_exception = e
+            caught = 'ClientError'
+        except botocore.exceptions.BotoCoreError as e:
+            caught_exception = e
+            caught = 'BotoCoreError'
+        except Exception as e:
+            caught_exception = e
+            caught = 'Exception'
+        self.assertEqual(caught_exception, thrown_exception)
+        self.assertEqual(caught, 'Code')
 
+    def test_is_boto3_error_code_single__raise__unexpected(self):
+        thrown_exception = self._make_unexpected_exception()
+        caught_exception = None
         try:
-            raise botocore.exceptions.ClientError(self.EXAMPLE_EXCEPTION_DATA, "testCall")
-        except is_boto3_error_code('SomeError'):
-            error_caught = 4
-        except botocore.exceptions.ClientError:  # pylint: disable=duplicate-except
-            error_caught = 5
-        except Exception:
-            error_caught = 6
-        assert error_caught == 5
+            raise thrown_exception
+        except is_boto3_error_code('AccessDenied') as e:
+            caught_exception = e
+            caught = 'Code'
+        except botocore.exceptions.ClientError as e:
+            caught_exception = e
+            caught = 'ClientError'
+        except botocore.exceptions.BotoCoreError as e:
+            caught_exception = e
+            caught = 'BotoCoreError'
+        except Exception as e:
+            caught_exception = e
+            caught = 'Exception'
+        self.assertEqual(caught_exception, thrown_exception)
+        self.assertEqual(caught, 'ClientError')
 
-    def test_client_error_match_list(self):
-        error_caught = 0
+    def test_is_boto3_error_code_single__raise__botocore(self):
+        thrown_exception = self._make_botocore_exception()
+        caught_exception = None
         try:
-            raise botocore.exceptions.ClientError(self.EXAMPLE_EXCEPTION_DATA, "testCall")
-        except is_boto3_error_code(['SomeError', 'InvalidParameterValue']):
-            error_caught = 1
-        except botocore.exceptions.ClientError:  # pylint: disable=duplicate-except
-            error_caught = 2
-        except Exception:
-            error_caught = 3
-        assert error_caught == 1
+            raise thrown_exception
+        except is_boto3_error_code('AccessDenied') as e:
+            caught_exception = e
+            caught = 'Code'
+        except botocore.exceptions.ClientError as e:
+            caught_exception = e
+            caught = 'ClientError'
+        except botocore.exceptions.BotoCoreError as e:
+            caught_exception = e
+            caught = 'BotoCoreError'
+        except Exception as e:
+            caught_exception = e
+            caught = 'Exception'
+        self.assertEqual(caught_exception, thrown_exception)
+        self.assertEqual(caught, 'BotoCoreError')
 
+    def test_is_boto3_error_code_multiple__raise__client(self):
+        thrown_exception = self._make_denied_exception()
+        caught_exception = None
         try:
-            raise botocore.exceptions.ClientError(self.EXAMPLE_EXCEPTION_DATA, "testCall")
-        except is_boto3_error_code(['InvalidParameterValue', 'SomeError']):
-            error_caught = 4
-        except botocore.exceptions.ClientError:  # pylint: disable=duplicate-except
-            error_caught = 5
-        except Exception:
-            error_caught = 6
-        assert error_caught == 4
-
+            raise thrown_exception
+        except is_boto3_error_code(['NotAccessDenied', 'AccessDenied']) as e:
+            caught_exception = e
+            caught = 'Code'
+        except botocore.exceptions.ClientError as e:
+            caught_exception = e
+            caught = 'ClientError'
+        except botocore.exceptions.BotoCoreError as e:
+            caught_exception = e
+            caught = 'BotoCoreError'
+        except Exception as e:
+            caught_exception = e
+            caught = 'Exception'
+        self.assertEqual(caught_exception, thrown_exception)
+        self.assertEqual(caught, 'Code')
+        caught_exception = None
         try:
-            raise botocore.exceptions.ClientError(self.EXAMPLE_EXCEPTION_DATA, "testCall")
-        except is_boto3_error_code(['SomeError', 'AnotherError']):
-            error_caught = 7
-        except botocore.exceptions.ClientError:  # pylint: disable=duplicate-except
-            error_caught = 8
-        except Exception:
-            error_caught = 9
-        assert error_caught == 8
+            raise thrown_exception
+        except is_boto3_error_code(['AccessDenied', 'NotAccessDenied']) as e:
+            caught_exception = e
+            caught = 'Code'
+        except botocore.exceptions.ClientError as e:
+            caught_exception = e
+            caught = 'ClientError'
+        except botocore.exceptions.BotoCoreError as e:
+            caught_exception = e
+            caught = 'BotoCoreError'
+        except Exception as e:
+            caught_exception = e
+            caught = 'Exception'
+        self.assertEqual(caught_exception, thrown_exception)
+        self.assertEqual(caught, 'Code')
 
+    def test_is_boto3_error_code_multiple__raise__unexpected(self):
+        thrown_exception = self._make_unexpected_exception()
+        caught_exception = None
         try:
-            raise botocore.exceptions.ClientError(self.EXAMPLE_EXCEPTION_DATA, "testCall")
-        except is_boto3_error_code(['AnotherError', 'SomeError']):
-            error_caught = 10
-        except botocore.exceptions.ClientError:  # pylint: disable=duplicate-except
-            error_caught = 11
-        except Exception:
-            error_caught = 12
-        assert error_caught == 11
+            raise thrown_exception
+        except is_boto3_error_code(['NotAccessDenied', 'AccessDenied']) as e:
+            caught_exception = e
+            caught = 'Code'
+        except botocore.exceptions.ClientError as e:
+            caught_exception = e
+            caught = 'ClientError'
+        except botocore.exceptions.BotoCoreError as e:
+            caught_exception = e
+            caught = 'BotoCoreError'
+        except Exception as e:
+            caught_exception = e
+            caught = 'Exception'
+        self.assertEqual(caught_exception, thrown_exception)
+        self.assertEqual(caught, 'ClientError')
 
-    def test_botocore_error(self):
-        # Tests that we cope with a non-ClientError and don't match
-        error_caught = 0
+    def test_is_boto3_error_code_multiple__raise__botocore(self):
+        thrown_exception = self._make_botocore_exception()
+        caught_exception = None
         try:
-            raise botocore.exceptions.BotoCoreError()
-        except is_boto3_error_code('InvalidParameterValue'):
-            error_caught = 1
-        except botocore.exceptions.BotoCoreError:
-            error_caught = 2
-        except Exception:
-            error_caught = 3
-        assert error_caught == 2
+            raise thrown_exception
+        except is_boto3_error_code(['NotAccessDenied', 'AccessDenied']) as e:
+            caught_exception = e
+            caught = 'Code'
+        except botocore.exceptions.ClientError as e:
+            caught_exception = e
+            caught = 'ClientError'
+        except botocore.exceptions.BotoCoreError as e:
+            caught_exception = e
+            caught = 'BotoCoreError'
+        except Exception as e:
+            caught_exception = e
+            caught = 'Exception'
+        self.assertEqual(caught_exception, thrown_exception)
+        self.assertEqual(caught, 'BotoCoreError')
 
-        try:
-            raise botocore.exceptions.BotoCoreError()
-        # This is the error *Message*, but we shouldn't catch it.
-        except is_boto3_error_code('An unspecified error occurred'):
-            error_caught = 4
-        except botocore.exceptions.BotoCoreError:
-            error_caught = 5
-        except Exception:
-            error_caught = 6
-        assert error_caught == 5
+    def test_is_boto3_error_code_single__pass__client(self):
+        passed_exception = self._make_denied_exception()
+        returned_exception = is_boto3_error_code('AccessDenied', e=passed_exception)
+        self.assertTrue(isinstance(passed_exception, returned_exception))
+        self.assertTrue(issubclass(returned_exception, botocore.exceptions.ClientError))
+        self.assertFalse(issubclass(returned_exception, botocore.exceptions.BotoCoreError))
+        self.assertTrue(issubclass(returned_exception, Exception))
+        self.assertNotEqual(returned_exception.__name__, "NeverEverRaisedException")
 
-    def test_botocore_error_list(self):
-        error_caught = 0
+    def test_is_boto3_error_code_single__pass__unexpected(self):
+        passed_exception = self._make_unexpected_exception()
+        returned_exception = is_boto3_error_code('AccessDenied', e=passed_exception)
+        self.assertFalse(isinstance(passed_exception, returned_exception))
+        self.assertFalse(issubclass(returned_exception, botocore.exceptions.ClientError))
+        self.assertFalse(issubclass(returned_exception, botocore.exceptions.BotoCoreError))
+        self.assertTrue(issubclass(returned_exception, Exception))
+        self.assertEqual(returned_exception.__name__, "NeverEverRaisedException")
 
-        try:
-            raise botocore.exceptions.BotoCoreError()
-        except is_boto3_error_code(['An unspecified error occurred', 'InvalidParameterValue']):
-            error_caught = 1
-        except botocore.exceptions.BotoCoreError:
-            error_caught = 2
-        except Exception:
-            error_caught = 3
-        assert error_caught == 2
+    def test_is_boto3_error_code_single__pass__botocore(self):
+        passed_exception = self._make_botocore_exception()
+        returned_exception = is_boto3_error_code('AccessDenied', e=passed_exception)
+        self.assertFalse(isinstance(passed_exception, returned_exception))
+        self.assertFalse(issubclass(returned_exception, botocore.exceptions.ClientError))
+        self.assertFalse(issubclass(returned_exception, botocore.exceptions.BotoCoreError))
+        self.assertTrue(issubclass(returned_exception, Exception))
+        self.assertEqual(returned_exception.__name__, "NeverEverRaisedException")
 
-        try:
-            raise botocore.exceptions.BotoCoreError()
-        # This is the error *Message*, but we shouldn't catch it.
-        except is_boto3_error_code(['InvalidParameterValue', 'An unspecified error occurred']):
-            error_caught = 4
-        except botocore.exceptions.BotoCoreError:
-            error_caught = 5
-        except Exception:
-            error_caught = 6
-        assert error_caught == 5
+    def test_is_boto3_error_code_multiple__pass__client(self):
+        passed_exception = self._make_denied_exception()
+        returned_exception = is_boto3_error_code(['NotAccessDenied', 'AccessDenied'], e=passed_exception)
+        self.assertTrue(isinstance(passed_exception, returned_exception))
+        self.assertTrue(issubclass(returned_exception, botocore.exceptions.ClientError))
+        self.assertFalse(issubclass(returned_exception, botocore.exceptions.BotoCoreError))
+        self.assertTrue(issubclass(returned_exception, Exception))
+        self.assertNotEqual(returned_exception.__name__, "NeverEverRaisedException")
+        returned_exception = is_boto3_error_code(['AccessDenied', 'NotAccessDenied'], e=passed_exception)
+        self.assertTrue(isinstance(passed_exception, returned_exception))
+        self.assertTrue(issubclass(returned_exception, botocore.exceptions.ClientError))
+        self.assertFalse(issubclass(returned_exception, botocore.exceptions.BotoCoreError))
+        self.assertTrue(issubclass(returned_exception, Exception))
+        self.assertNotEqual(returned_exception.__name__, "NeverEverRaisedException")
+
+    def test_is_boto3_error_code_multiple__pass__unexpected(self):
+        passed_exception = self._make_unexpected_exception()
+        returned_exception = is_boto3_error_code(['NotAccessDenied', 'AccessDenied'], e=passed_exception)
+        self.assertFalse(isinstance(passed_exception, returned_exception))
+        self.assertFalse(issubclass(returned_exception, botocore.exceptions.ClientError))
+        self.assertFalse(issubclass(returned_exception, botocore.exceptions.BotoCoreError))
+        self.assertTrue(issubclass(returned_exception, Exception))
+        self.assertEqual(returned_exception.__name__, "NeverEverRaisedException")
+
+    def test_is_boto3_error_code_multiple__pass__botocore(self):
+        passed_exception = self._make_botocore_exception()
+        returned_exception = is_boto3_error_code(['NotAccessDenied', 'AccessDenied'], e=passed_exception)
+        self.assertFalse(isinstance(passed_exception, returned_exception))
+        self.assertFalse(issubclass(returned_exception, botocore.exceptions.ClientError))
+        self.assertFalse(issubclass(returned_exception, botocore.exceptions.BotoCoreError))
+        self.assertTrue(issubclass(returned_exception, Exception))
+        self.assertEqual(returned_exception.__name__, "NeverEverRaisedException")
