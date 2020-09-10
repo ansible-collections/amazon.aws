@@ -1,8 +1,11 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
@@ -66,10 +69,18 @@ subnet_group:
     type: complex
     contains:
         name:
+            description: The name of the DB subnet group (maintained for backward compatibility)
+            returned: I(state=present)
+            type: str
+        db_subnet_group_name:
             description: The name of the DB subnet group
             returned: I(state=present)
             type: str
         description:
+            description: The description of the DB subnet group (maintained for backward compatibility)
+            returned: I(state=present)
+            type: str
+        db_subnet_group_description:
             description: The description of the DB subnet group
             returned: I(state=present)
             type: str
@@ -81,32 +92,32 @@ subnet_group:
             description: Contains a list of Subnet IDs
             returned: I(state=present)
             type: list
+        subnets:
+            description: Contains a list of Subnet elements (@see https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/rds.html#RDS.Client.describe_db_subnet_groups) # noqa
+            returned: I(state=present)
+            type: list
         status:
+            description: The status of the DB subnet group (maintained for backward compatibility)
+            returned: I(state=present)
+            type: str
+        subnet_group_status:
             description: The status of the DB subnet group
+            returned: I(state=present)
+            type: str
+        db_subnet_group_arn:
+            description: The ARN of the DB subnet group
             returned: I(state=present)
             type: str
 '''
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule, is_boto3_error_code
+
+
 try:
-    import boto.rds
-    from boto.exception import BotoServerError
+    import botocore
 except ImportError:
-    pass  # Handled by HAS_BOTO
-
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
-
-
-def get_subnet_group_info(subnet_group):
-    return dict(
-        name=subnet_group.name,
-        description=subnet_group.description,
-        vpc_id=subnet_group.vpc_id,
-        subnet_ids=subnet_group.subnet_ids,
-        status=subnet_group.status
-    )
+    pass  # Handled by AnsibleAWSModule
 
 
 def create_result(changed, subnet_group=None):
@@ -114,11 +125,34 @@ def create_result(changed, subnet_group=None):
         return dict(
             changed=changed
         )
-    else:
-        return dict(
-            changed=changed,
-            subnet_group=get_subnet_group_info(subnet_group)
-        )
+    result_subnet_group = dict(camel_dict_to_snake_dict(subnet_group))
+    result_subnet_group['name'] = result_subnet_group.get(
+        'db_subnet_group_name')
+    result_subnet_group['description'] = result_subnet_group.get(
+        'db_subnet_group_description')
+    result_subnet_group['status'] = result_subnet_group.get(
+        'subnet_group_status')
+    result_subnet_group['subnet_ids'] = create_subnet_list(
+        subnet_group.get('Subnets'))
+    return dict(
+        changed=changed,
+        subnet_group=result_subnet_group
+    )
+
+
+def create_subnet_list(subnets):
+    '''
+    Construct a list of subnet ids from a list of subnets dicts returned by boto.
+    Parameters:
+        subnets (list): A list of subnets definitions.
+        @see https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/rds.html#RDS.Client.describe_db_subnet_groups
+    Returns:
+        (list): List of subnet ids (str)
+    '''
+    subnets_ids = []
+    for subnet in subnets:
+        subnets_ids.append(subnet.get('SubnetIdentifier'))
+    return subnets_ids
 
 
 def main():
@@ -128,70 +162,63 @@ def main():
         description=dict(required=False),
         subnets=dict(required=False, type='list', elements='str'),
     )
-    module = AnsibleAWSModule(argument_spec=argument_spec)
-
-    if not HAS_BOTO:
-        module.fail_json(msg='boto required for this module')
-
+    required_if = [('state', 'present', ['description', 'subnets'])]
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec, required_if=required_if)
     state = module.params.get('state')
     group_name = module.params.get('name').lower()
     group_description = module.params.get('description')
-    group_subnets = module.params.get('subnets') or {}
-
-    if state == 'present':
-        for required in ['description', 'subnets']:
-            if not module.params.get(required):
-                module.fail_json(msg=str("Parameter %s required for state='present'" % required))
-    else:
-        for not_allowed in ['description', 'subnets']:
-            if module.params.get(not_allowed):
-                module.fail_json(msg=str("Parameter %s not allowed for state='absent'" % not_allowed))
-
-    # Retrieve any AWS settings from the environment.
-    region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module)
-
-    if not region:
-        module.fail_json(msg=str("Either region or AWS_REGION or EC2_REGION environment variable or boto config aws_region or ec2_region must be set."))
+    group_subnets = module.params.get('subnets') or []
 
     try:
-        conn = connect_to_aws(boto.rds, region, **aws_connect_kwargs)
-    except BotoServerError as e:
-        module.fail_json(msg=e.error_message)
+        conn = module.client('rds')
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        module.fail_json_aws(e, 'Failed to instantiate AWS connection')
+    # Default.
+    result = create_result(False)
 
     try:
-        exists = False
-        result = create_result(False)
-
+        matching_groups = conn.describe_db_subnet_groups(
+            DBSubnetGroupName=group_name, MaxRecords=100).get('DBSubnetGroups')
+    except is_boto3_error_code('DBSubnetGroupNotFoundFault'):
+        # No existing subnet, create it if needed, else we can just exit.
+        if state == 'present':
+            try:
+                new_group = conn.create_db_subnet_group(
+                    DBSubnetGroupName=group_name, DBSubnetGroupDescription=group_description, SubnetIds=group_subnets)
+                result = create_result(True, new_group.get('DBSubnetGroup'))
+            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                module.fail_json_aws(e, 'Failed to create a new subnet group')
+        module.exit_json(**result)
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, 'Failed to get subnet groups description')
+        # We have one or more subnets at this point.
+    if state == 'absent':
         try:
-            matching_groups = conn.get_all_db_subnet_groups(group_name, max_records=100)
-            exists = len(matching_groups) > 0
-        except BotoServerError as e:
-            if e.error_code != 'DBSubnetGroupNotFoundFault':
-                module.fail_json(msg=e.error_message)
+            conn.delete_db_subnet_group(DBSubnetGroupName=group_name)
+            result = create_result(True)
+            module.exit_json(**result)
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            module.fail_json_aws(e, 'Failed to delete a subnet group')
 
-        if state == 'absent':
-            if exists:
-                conn.delete_db_subnet_group(group_name)
-                result = create_result(True)
-        else:
-            if not exists:
-                new_group = conn.create_db_subnet_group(group_name, desc=group_description, subnet_ids=group_subnets)
-                result = create_result(True, new_group)
-            else:
-                # Sort the subnet groups before we compare them
-                matching_groups[0].subnet_ids.sort()
-                group_subnets.sort()
-                if (matching_groups[0].name != group_name or
-                        matching_groups[0].description != group_description or
-                        matching_groups[0].subnet_ids != group_subnets):
-                    changed_group = conn.modify_db_subnet_group(group_name, description=group_description, subnet_ids=group_subnets)
-                    result = create_result(True, changed_group)
-                else:
-                    result = create_result(False, matching_groups[0])
-    except BotoServerError as e:
-        module.fail_json(msg=e.error_message)
-
-    module.exit_json(**result)
+    # Sort the subnet groups before we compare them
+    existing_subnets = create_subnet_list(matching_groups[0].get('Subnets'))
+    existing_subnets.sort()
+    group_subnets.sort()
+    # See if anything changed.
+    if (matching_groups[0].get('DBSubnetGroupName') == group_name and
+        matching_groups[0].get('DBSubnetGroupDescription') == group_description and
+            existing_subnets == group_subnets):
+        result = create_result(False, matching_groups[0])
+        module.exit_json(**result)
+    # Modify existing group.
+    try:
+        changed_group = conn.modify_db_subnet_group(
+            DBSubnetGroupName=group_name, DBSubnetGroupDescription=group_description, SubnetIds=group_subnets)
+        result = create_result(True, changed_group.get('DBSubnetGroup'))
+        module.exit_json(**result)
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        module.fail_json_aws(e, 'Failed to update a subnet group')
 
 
 if __name__ == '__main__':
