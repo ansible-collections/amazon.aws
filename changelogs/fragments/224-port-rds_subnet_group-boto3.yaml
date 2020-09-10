@@ -1,0 +1,2 @@
+minor_changes:
+  - rds_subnet_group module - Add Boto3 support and remove Boto support.
