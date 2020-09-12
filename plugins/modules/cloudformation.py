@@ -79,6 +79,7 @@ options:
     description:
       - the body of the cloudformation stack policy only applied during this update.
     type: str
+    version_added: 1.3.0
   tags:
     description:
       - Dictionary of tags to associate with stack and its resources during stack creation.
