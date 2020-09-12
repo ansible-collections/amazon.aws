@@ -477,7 +477,7 @@ def update_stack(module, stack_params, cfn, events_limit):
         stack_params['UsePreviousTemplate'] = True
 
     if module.params['stack_policy_on_update_body'] is not None:
-         stack_params['StackPolicyDuringUpdateBody'] = module.params['stack_policy_on_update_body']
+        stack_params['StackPolicyDuringUpdateBody'] = module.params['stack_policy_on_update_body']
 
     # if the state is present and the stack already exists, we try to update it.
     # AWS will tell us if the stack template and parameters are the same and
