@@ -65,7 +65,7 @@
     - name: create a cloudformation stack (check mode)
       cloudformation:
         stack_name: "{{ stack_name }}"
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('template','cf_template.json') }}"
         template_parameters:
           InstanceType: "t3.nano"
           ImageId: "{{ ec2_ami_image }}"
@@ -85,7 +85,7 @@
     - name: create a cloudformation stack
       cloudformation:
         stack_name: "{{ stack_name }}"
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('template','cf_template.json') }}"
         template_parameters:
           InstanceType: "t3.nano"
           ImageId: "{{ ec2_ami_image }}"
@@ -107,7 +107,7 @@
     - name: create a cloudformation stack (check mode) (idempotent)
       cloudformation:
         stack_name: "{{ stack_name }}"
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('template','cf_template.json') }}"
         template_parameters:
           InstanceType: "t3.nano"
           ImageId: "{{ ec2_ami_image }}"
@@ -126,7 +126,7 @@
     - name: create a cloudformation stack (idempotent)
       cloudformation:
         stack_name: "{{ stack_name }}"
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('template','cf_template.json') }}"
         template_parameters:
           InstanceType: "t3.nano"
           ImageId: "{{ ec2_ami_image }}"
@@ -218,7 +218,7 @@
         stack_name: "{{ stack_name }}"
         create_changeset: yes
         changeset_name: "test-changeset"
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('template','cf_template.json') }}"
         template_parameters:
           InstanceType: "t3.micro"
           ImageId: "{{ ec2_ami_image }}"
@@ -263,7 +263,7 @@
       cloudformation:
         stack_name: "{{ stack_name }}"
         create_changeset: yes
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('template','cf_template.json') }}"
         template_parameters:
           InstanceType: "t3.nano"
           ImageId: "{{ ec2_ami_image }}"
@@ -285,7 +285,7 @@
       cloudformation:
         stack_name: "{{ stack_name }}"
         termination_protection: yes
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('template','cf_template.json') }}"
         template_parameters:
           InstanceType: "t3.nano"
           ImageId: "{{ ec2_ami_image }}"
@@ -326,7 +326,7 @@
       cloudformation:
         stack_name: "{{ stack_name }}"
         termination_protection: no
-        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_body: "{{ lookup('template','cf_template.json') }}"
         template_parameters:
           InstanceType: "t3.nano"
           ImageId: "{{ ec2_ami_image }}"
