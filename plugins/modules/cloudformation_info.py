@@ -175,6 +175,7 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.core import is_boto3_error_message
 from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
@@ -198,10 +199,9 @@ class CloudFormationServiceManager:
             if response is not None:
                 return response
             self.module.fail_json(msg="Error describing stack(s) - an empty response was returned")
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            if 'does not exist' in e.response['Error']['Message']:
-                # missing stack, don't bail.
-                return {}
+        except is_boto3_error_message('does not exist'):
+            return {}
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
             self.module.fail_json_aws(e, msg="Error describing stack " + stack_name)
 
     @AWSRetry.exponential_backoff(retries=5, delay=5)
