@@ -1,0 +1,3 @@
+scaling_policy_lc_name: "{{ resource_prefix }}_lc"
+scaling_policy_asg_name: "{{ resource_prefix }}_asg"
+ec2_ami_name: 'amzn2-ami-hvm-2.*-x86_64-gp2'
