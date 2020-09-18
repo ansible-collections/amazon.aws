@@ -175,7 +175,6 @@ data_encryption_key_id:
 '''
 
 try:
-    import boto3
     from botocore.exceptions import ClientError
 except ImportError:
     pass  # Handled by AnsibleAWSModule

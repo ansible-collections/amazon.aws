@@ -208,7 +208,6 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 

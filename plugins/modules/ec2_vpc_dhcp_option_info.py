@@ -78,8 +78,6 @@ changed:
     returned: always
 '''
 
-import traceback
-
 try:
     import botocore
 except ImportError:

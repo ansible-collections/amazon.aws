@@ -148,8 +148,6 @@ vpcs:
                             type: str
 '''
 
-import traceback
-
 try:
     import botocore
 except ImportError:

@@ -325,7 +325,6 @@ import uuid
 from hashlib import sha1
 
 try:
-    import boto3
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule

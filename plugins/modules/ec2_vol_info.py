@@ -112,8 +112,6 @@ volumes:
             sample: "us-east-1b"
 '''
 
-import traceback
-
 try:
     from botocore.exceptions import ClientError
 except ImportError:
