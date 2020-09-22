@@ -59,7 +59,7 @@ options:
     type: integer
     vars:
     - name: ansible_aws_ssm_retries
-  timeout:
+  ssm_timeout:
     description: Connection timeout seconds.
     default: 60
     type: integer
@@ -373,7 +373,7 @@ class Connection(ConnectionBase):
         stdout = ''
         win_line = ''
         begin = False
-        stop_time = int(round(time.time())) + self.get_option('timeout')
+        stop_time = int(round(time.time())) + self.get_option('ssm_timeout')
         while session.poll() is None:
             remaining = stop_time - int(round(time.time()))
             if remaining < 1:
