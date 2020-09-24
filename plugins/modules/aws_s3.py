@@ -288,6 +288,7 @@ from ansible.module_utils.six.moves.urllib.parse import urlparse
 
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.core import is_boto3_error_code
+from ..module_utils.core import is_boto3_error_message
 from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import boto3_conn
 from ..module_utils.ec2 import get_aws_connection_info
@@ -312,7 +313,7 @@ def key_check(module, s3, bucket, obj, version=None, validate=True):
     except is_boto3_error_code('403') as e:
         if validate is True:
             module.fail_json_aws(e, msg="Failed while looking up object (during key check) %s." % obj)
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.BotoCoreError) as e:
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed while looking up object (during key check) %s." % obj)
 
     return True
@@ -538,11 +539,11 @@ def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
         # AccessDenied errors may be triggered if 1) file does not exist or 2) file exists but
         # user does not have the s3:GetObject permission. 404 errors are handled by download_file().
         module.fail_json_aws(e, msg="Could not find the key %s." % obj)
-    except is_boto3_error_code('InvalidArgument') as e:
-        if 'require AWS Signature Version 4' in to_text(e):
-            raise Sigv4Required()
+    except is_boto3_error_message('require AWS Signature Version 4'):
+        raise Sigv4Required()
+    except is_boto3_error_code('InvalidArgument') as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Could not find the key %s." % obj)
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Could not find the key %s." % obj)
 
     optional_kwargs = {'ExtraArgs': {'VersionId': version}} if version else {}
@@ -571,11 +572,11 @@ def download_s3str(module, s3, bucket, obj, version=None, validate=True):
         else:
             contents = to_native(s3.get_object(Bucket=bucket, Key=obj)["Body"].read())
         module.exit_json(msg="GET operation complete", contents=contents, changed=True)
-    except is_boto3_error_code('InvalidArgument') as e:
-        if 'require AWS Signature Version 4' in to_text(e):
-            raise Sigv4Required()
+    except is_boto3_error_message('require AWS Signature Version 4'):
+        raise Sigv4Required()
+    except is_boto3_error_code('InvalidArgument') as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed while getting contents of object %s as a string." % obj)
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed while getting contents of object %s as a string." % obj)
 
 
