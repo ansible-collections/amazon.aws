@@ -1078,7 +1078,7 @@ def main():
     arg_spec = dict(
         state=dict(choices=['present', 'absent', 'terminated', 'running', 'started', 'stopped', 'rebooted', 'restarted'], default='present'),
         creation_source=dict(choices=['snapshot', 's3', 'instance']),
-        force_update_password=dict(type='bool', default=False),
+        force_update_password=dict(type='bool', default=False, no_log=False),
         purge_cloudwatch_logs_exports=dict(type='bool', default=True),
         purge_tags=dict(type='bool', default=True),
         read_replica=dict(type='bool'),
