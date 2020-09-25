@@ -39,6 +39,9 @@
           db_instance_class: "{{ db_instance_class }}"
           allocated_storage: "{{ allocated_storage }}"
           region: "{{ region_src }}"
+          tags:
+            Name: "{{ instance_id }}"
+            Created_by: Ansible rds_instance tests
           <<: *aws_connection_info
         register: source_db
 
@@ -59,8 +62,19 @@
           db_instance_class: "{{ db_instance_class }}"
           allocated_storage: "{{ allocated_storage }}"
           region: "{{ region_dest }}"
+          tags:
+            Name: "{{ instance_id }}"
+            Created_by: Ansible rds_instance tests
           <<: *aws_connection_info
         register: result
+
+      - assert:
+        that:
+          - result.changed
+          - "result.db_instance_identifier == '{{ instance_id }}-replica'"
+          - "result.tags | length == 2"
+          - "result.tags.Name == '{{ instance_id }}'"
+          - "result.tags.Created_by == 'Ansible rds_instance tests'"
 
       - name: Test idempotence with a read replica
         rds_instance:
@@ -73,6 +87,9 @@
           db_instance_class: "{{ db_instance_class }}"
           allocated_storage: "{{ allocated_storage }}"
           region: "{{ region_dest }}"
+          tags:
+            Name: "{{ instance_id }}"
+            Created_by: Ansible rds_instance tests
           <<: *aws_connection_info
         register: result
 
@@ -92,6 +109,9 @@
           db_instance_class: "{{ db_instance_class }}"
           allocated_storage: "{{ allocated_storage }}"
           region: "{{ region_dest }}"
+          tags:
+            Name: "{{ instance_id }}"
+            Created_by: Ansible rds_instance tests
           <<: *aws_connection_info
         register: result
 
