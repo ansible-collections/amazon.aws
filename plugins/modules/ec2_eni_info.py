@@ -17,10 +17,17 @@ description:
 author: "Rob White (@wimnat)"
 requirements: [ boto3 ]
 options:
+  eni_id:
+    description:
+      - The ID of the ENI.
+      - This option is mutually exclusive of I(filters).
+    type: str
+    version_added: 1.3.0
   filters:
     description:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value.
         See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeNetworkInterfaces.html) for possible filters.
+      - This option is mutually exclusive of I(eni_id).
     type: dict
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -49,7 +56,7 @@ network_interfaces:
   contains:
     association:
       description: Info of associated elastic IP (EIP)
-      returned: always, empty dict if no association exists
+      returned: When an ENI is associated with an EIP
       type: dict
       sample: {
           allocation_id: "eipalloc-5sdf123",
@@ -60,7 +67,7 @@ network_interfaces:
         }
     attachment:
       description: Info about attached ec2 instance
-      returned: always, empty dict if ENI is not attached
+      returned: When an ENI is attached to an ec2 instance
       type: dict
       sample: {
         attach_time: "2017-08-05T15:25:47+00:00",
@@ -111,6 +118,11 @@ network_interfaces:
       returned: always
       type: str
       sample: "0a:f8:10:2f:ab:a1"
+    name:
+      description: The Name tag of the ENI, often displayed in the AWS UIs as Name
+      returned: When a Name tag has been set
+      type: str
+      version_added: 1.3.0
     network_interface_id:
       description: The id of the ENI
       returned: always
@@ -161,6 +173,12 @@ network_interfaces:
       returned: always
       type: str
       sample: "subnet-7bbf01234"
+    tags:
+      description: Dictionary of tags added to the ENI
+      returned: always
+      type: dict
+      sample: {}
+      version_added: 1.3.0
     tag_set:
       description: Dictionary of tags added to the ENI
       returned: always
@@ -183,18 +201,23 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
 def list_eni(connection, module):
 
-    if module.params.get("filters") is None:
-        filters = []
+    # Options are mutually exclusive
+    if module.params.get("eni_id"):
+        filters = {'network-interface-id': module.params.get("eni_id")}
+    elif module.params.get("filters"):
+        filters = module.params.get("filters")
     else:
-        filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
+        filters = {}
+    filters = ansible_dict_to_boto3_filter_list(filters)
 
     try:
-        network_interfaces_result = connection.describe_network_interfaces(Filters=filters)['NetworkInterfaces']
+        network_interfaces_result = connection.describe_network_interfaces(Filters=filters, aws_retry=True)['NetworkInterfaces']
     except (ClientError, NoCredentialsError) as e:
         module.fail_json_aws(e)
 
@@ -202,9 +225,12 @@ def list_eni(connection, module):
     camel_network_interfaces = []
     for network_interface in network_interfaces_result:
         network_interface['TagSet'] = boto3_tag_list_to_ansible_dict(network_interface['TagSet'])
+        network_interface['Tags'] = network_interface['TagSet']
+        if 'Name' in network_interface['Tags']:
+            network_interface['Name'] = network_interface['Tags']['Name']
         # Added id to interface info to be compatible with return values of ec2_eni module:
         network_interface['Id'] = network_interface['NetworkInterfaceId']
-        camel_network_interfaces.append(camel_dict_to_snake_dict(network_interface))
+        camel_network_interfaces.append(camel_dict_to_snake_dict(network_interface, ignore_list=['Tags', 'TagSet']))
 
     module.exit_json(network_interfaces=camel_network_interfaces)
 
@@ -249,14 +275,18 @@ def get_eni_info(interface):
 
 def main():
     argument_spec = dict(
+        eni_id=dict(type='str'),
         filters=dict(default=None, type='dict')
     )
+    mutually_exclusive = [
+        ['eni_id', 'filters']
+    ]
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
     if module._name == 'ec2_eni_facts':
         module.deprecate("The 'ec2_eni_facts' module has been renamed to 'ec2_eni_info'", date='2021-12-01', collection_name='amazon.aws')
 
-    connection = module.client('ec2')
+    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
     list_eni(connection, module)
 
