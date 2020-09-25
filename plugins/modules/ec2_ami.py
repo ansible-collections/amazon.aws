@@ -368,6 +368,7 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.core import is_boto3_error_code
 from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import compare_aws_tags
@@ -570,10 +571,11 @@ def deregister_image(module, connection):
         try:
             for snapshot_id in snapshots:
                 connection.delete_snapshot(SnapshotId=snapshot_id)
-        except botocore.exceptions.ClientError as e:
-            # Don't error out if root volume snapshot was already deregistered as part of deregister_image
-            if e.response['Error']['Code'] == 'InvalidSnapshot.NotFound':
-                pass
+        # Don't error out if root volume snapshot was already deregistered as part of deregister_image
+        except is_boto3_error_code('InvalidSnapshot.NotFound'):
+            pass
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg='Failed to delete snapshot.')
         exit_params['snapshots_deleted'] = snapshots
 
     module.exit_json(**exit_params)
@@ -660,10 +662,9 @@ def get_image_by_id(module, connection, image_id):
             try:
                 result['LaunchPermissions'] = connection.describe_image_attribute(Attribute='launchPermission', ImageId=image_id)['LaunchPermissions']
                 result['ProductCodes'] = connection.describe_image_attribute(Attribute='productCodes', ImageId=image_id)['ProductCodes']
-            except botocore.exceptions.ClientError as e:
-                if e.response['Error']['Code'] != 'InvalidAMIID.Unavailable':
-                    module.fail_json_aws(e, msg="Error retrieving image attributes for image %s" % image_id)
-            except botocore.exceptions.BotoCoreError as e:
+            except is_boto3_error_code('InvalidAMIID.Unavailable'):
+                pass
+            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                 module.fail_json_aws(e, msg="Error retrieving image attributes for image %s" % image_id)
             return result
         module.fail_json(msg="Invalid number of instances (%s) found for image_id: %s." % (str(len(images)), image_id))

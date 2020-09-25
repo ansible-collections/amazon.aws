@@ -127,13 +127,14 @@ key:
 import uuid
 
 try:
-    from botocore.exceptions import ClientError
+    import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
 from ansible.module_utils._text import to_bytes
 
 from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.core import is_boto3_error_code
 
 
 def extract_key_data(key):
@@ -170,9 +171,9 @@ def find_key_pair(module, ec2_client, name):
 
     try:
         key = ec2_client.describe_key_pairs(KeyNames=[name])['KeyPairs'][0]
-    except ClientError as err:
-        if err.response['Error']['Code'] == "InvalidKeyPair.NotFound":
-            return None
+    except is_boto3_error_code('InvalidKeyPair.NotFound'):
+        return None
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err:
         module.fail_json_aws(err, msg="error finding keypair")
     except IndexError:
         key = None
@@ -205,7 +206,7 @@ def create_key_pair(module, ec2_client, name, key_material, force):
             else:
                 try:
                     key = ec2_client.create_key_pair(KeyName=name)
-                except ClientError as err:
+                except botocore.exceptions.ClientError as err:
                     module.fail_json_aws(err, msg="error creating key")
             key_data = extract_key_data(key)
         module.exit_json(changed=True, key=key_data, msg="key pair created")
@@ -215,7 +216,7 @@ def import_key_pair(module, ec2_client, name, key_material):
 
     try:
         key = ec2_client.import_key_pair(KeyName=name, PublicKeyMaterial=to_bytes(key_material))
-    except ClientError as err:
+    except botocore.exceptions.ClientError as err:
         module.fail_json_aws(err, msg="error importing key")
     return key
 
@@ -227,7 +228,7 @@ def delete_key_pair(module, ec2_client, name, finish_task=True):
         if not module.check_mode:
             try:
                 ec2_client.delete_key_pair(KeyName=name)
-            except ClientError as err:
+            except botocore.exceptions.ClientError as err:
                 module.fail_json_aws(err, msg="error deleting key")
         if not finish_task:
             return

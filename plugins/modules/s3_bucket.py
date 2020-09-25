@@ -59,7 +59,6 @@ options:
       - With Requester Pays buckets, the requester instead of the bucket owner pays the cost
         of the request and the data download from the bucket.
     type: bool
-    default: False
   state:
     description:
       - Create or remove the s3 bucket
@@ -212,11 +211,11 @@ def create_or_update_bucket(s3_client, module, location):
     # Versioning
     try:
         versioning_status = get_bucket_versioning(s3_client, name)
-    except BotoCoreError as exp:
-        module.fail_json_aws(exp, msg="Failed to get bucket versioning")
-    except ClientError as exp:
-        if exp.response['Error']['Code'] != 'NotImplemented' or versioning is not None:
+    except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as exp:
+        if versioning is not None:
             module.fail_json_aws(exp, msg="Failed to get bucket versioning")
+    except (BotoCoreError, ClientError) as exp:
+        module.fail_json_aws(exp, msg="Failed to get bucket versioning")
     else:
         if versioning is not None:
             required_versioning = None
@@ -243,13 +242,13 @@ def create_or_update_bucket(s3_client, module, location):
     # Requester pays
     try:
         requester_pays_status = get_bucket_request_payment(s3_client, name)
-    except BotoCoreError as exp:
-        module.fail_json_aws(exp, msg="Failed to get bucket request payment")
-    except ClientError as exp:
-        if exp.response['Error']['Code'] not in ('NotImplemented', 'XNotImplemented') or requester_pays:
+    except is_boto3_error_code(['NotImplemented', 'XNotImplemented']):
+        if requester_pays is not None:
             module.fail_json_aws(exp, msg="Failed to get bucket request payment")
+    except (BotoCoreError, ClientError) as exp:
+        module.fail_json_aws(exp, msg="Failed to get bucket request payment")
     else:
-        if requester_pays:
+        if requester_pays is not None:
             payer = 'Requester' if requester_pays else 'BucketOwner'
             if requester_pays_status != payer:
                 put_bucket_request_payment(s3_client, name, payer)
@@ -266,11 +265,11 @@ def create_or_update_bucket(s3_client, module, location):
     # Policy
     try:
         current_policy = get_bucket_policy(s3_client, name)
-    except BotoCoreError as exp:
-        module.fail_json_aws(exp, msg="Failed to get bucket policy")
-    except ClientError as exp:
-        if exp.response['Error']['Code'] != 'NotImplemented' or policy is not None:
+    except is_boto3_error_code(['NotImplemented', 'XNotImplemented']):
+        if policy is not None:
             module.fail_json_aws(exp, msg="Failed to get bucket policy")
+    except (BotoCoreError, ClientError) as exp:
+        module.fail_json_aws(exp, msg="Failed to get bucket policy")
     else:
         if policy is not None:
             if isinstance(policy, string_types):
@@ -301,11 +300,11 @@ def create_or_update_bucket(s3_client, module, location):
     # Tags
     try:
         current_tags_dict = get_current_bucket_tags_dict(s3_client, name)
-    except BotoCoreError as exp:
-        module.fail_json_aws(exp, msg="Failed to get bucket tags")
-    except ClientError as exp:
-        if exp.response['Error']['Code'] not in ('NotImplemented', 'XNotImplemented') or tags is not None:
+    except is_boto3_error_code(['NotImplemented', 'XNotImplemented']):
+        if tags is not None:
             module.fail_json_aws(exp, msg="Failed to get bucket tags")
+    except (ClientError, BotoCoreError) as exp:
+        module.fail_json_aws(exp, msg="Failed to get bucket tags")
     else:
         if tags is not None:
             # Tags are always returned as text
@@ -378,14 +377,10 @@ def create_bucket(s3_client, bucket_name, location):
         else:
             s3_client.create_bucket(Bucket=bucket_name)
         return True
-    except ClientError as e:
-        error_code = e.response['Error']['Code']
-        if error_code == 'BucketAlreadyOwnedByYou':
-            # We should never get there since we check the bucket presence before calling the create_or_update_bucket
-            # method. However, the AWS Api sometimes fails to report bucket presence, so we catch this exception
-            return False
-        else:
-            raise e
+    except is_boto3_error_code('BucketAlreadyOwnedByYou'):
+        # We should never get here since we check the bucket presence before calling the create_or_update_bucket
+        # method. However, the AWS Api sometimes fails to report bucket presence, so we catch this exception
+        return False
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
@@ -407,11 +402,9 @@ def delete_bucket_policy(s3_client, bucket_name):
 def get_bucket_policy(s3_client, bucket_name):
     try:
         current_policy = json.loads(s3_client.get_bucket_policy(Bucket=bucket_name).get('Policy'))
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchBucketPolicy':
-            current_policy = None
-        else:
-            raise e
+    except is_boto3_error_code('NoSuchBucketPolicy'):
+        return None
+
     return current_policy
 
 
@@ -443,11 +436,8 @@ def get_bucket_encryption(s3_client, bucket_name):
     try:
         result = s3_client.get_bucket_encryption(Bucket=bucket_name)
         return result.get('ServerSideEncryptionConfiguration', {}).get('Rules', [])[0].get('ApplyServerSideEncryptionByDefault')
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'ServerSideEncryptionConfigurationNotFoundError':
-            return None
-        else:
-            raise e
+    except is_boto3_error_code('ServerSideEncryptionConfigurationNotFoundError'):
+        return None
     except (IndexError, KeyError):
         return None
 
@@ -491,13 +481,10 @@ def delete_bucket_encryption(s3_client, bucket_name):
 def delete_bucket(s3_client, bucket_name):
     try:
         s3_client.delete_bucket(Bucket=bucket_name)
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchBucket':
-            # This means bucket should have been in a deleting state when we checked it existence
-            # We just ignore the error
-            pass
-        else:
-            raise e
+    except is_boto3_error_code('NoSuchBucket'):
+        # This means bucket should have been in a deleting state when we checked it existence
+        # We just ignore the error
+        pass
 
 
 def wait_policy_is_applied(module, s3_client, bucket_name, expected_policy, should_fail=True):
@@ -696,7 +683,7 @@ def main():
         force=dict(default=False, type='bool'),
         policy=dict(type='json'),
         name=dict(required=True),
-        requester_pays=dict(default=False, type='bool'),
+        requester_pays=dict(type='bool'),
         s3_url=dict(aliases=['S3_URL']),
         state=dict(default='present', choices=['present', 'absent']),
         tags=dict(type='dict'),

@@ -288,6 +288,7 @@ from ansible.module_utils.six.moves.urllib.parse import urlparse
 
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.core import is_boto3_error_code
+from ..module_utils.core import is_boto3_error_message
 from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import boto3_conn
 from ..module_utils.ec2 import get_aws_connection_info
@@ -302,25 +303,20 @@ class Sigv4Required(Exception):
 
 
 def key_check(module, s3, bucket, obj, version=None, validate=True):
-    exists = True
     try:
         if version:
             s3.head_object(Bucket=bucket, Key=obj, VersionId=version)
         else:
             s3.head_object(Bucket=bucket, Key=obj)
-    except botocore.exceptions.ClientError as e:
-        # if a client error is thrown, check if it's a 404 error
-        # if it's a 404 error, then the object does not exist
-        error_code = int(e.response['Error']['Code'])
-        if error_code == 404:
-            exists = False
-        elif error_code == 403 and validate is False:
-            pass
-        else:
+    except is_boto3_error_code('404'):
+        return False
+    except is_boto3_error_code('403') as e:
+        if validate is True:
             module.fail_json_aws(e, msg="Failed while looking up object (during key check) %s." % obj)
-    except botocore.exceptions.BotoCoreError as e:
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed while looking up object (during key check) %s." % obj)
-    return exists
+
+    return True
 
 
 def etag_compare(module, local_file, s3, bucket, obj, version=None):
@@ -344,19 +340,14 @@ def bucket_check(module, s3, bucket, validate=True):
     exists = True
     try:
         s3.head_bucket(Bucket=bucket)
-    except botocore.exceptions.ClientError as e:
-        # If a client error is thrown, then check that it was a 404 error.
-        # If it was a 404 error, then the bucket does not exist.
-        error_code = int(e.response['Error']['Code'])
-        if error_code == 404:
-            exists = False
-        elif error_code == 403 and validate is False:
-            pass
-        else:
+    except is_boto3_error_code('404'):
+        return False
+    except is_boto3_error_code('403') as e:
+        if validate is True:
             module.fail_json_aws(e, msg="Failed while looking up bucket (during bucket_check) %s." % bucket)
     except botocore.exceptions.EndpointConnectionError as e:
         module.fail_json_aws(e, msg="Invalid endpoint provided")
-    except botocore.exceptions.BotoCoreError as e:
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed while looking up bucket (during bucket_check) %s." % bucket)
     return exists
 
@@ -379,12 +370,9 @@ def create_bucket(module, s3, bucket, location=None):
             AWSRetry.jittered_backoff(
                 max_delay=120, catch_extra_error_codes=['NoSuchBucket']
             )(s3.put_bucket_acl)(ACL=acl, Bucket=bucket)
-    except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] in IGNORE_S3_DROP_IN_EXCEPTIONS:
-            module.warn("PutBucketAcl is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning")
-        else:
-            module.fail_json_aws(e, msg="Failed while creating bucket or setting acl (check that you have CreateBucket and PutBucketAcl permission).")
-    except botocore.exceptions.BotoCoreError as e:
+    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
+        module.warn("PutBucketAcl is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning")
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed while creating bucket or setting acl (check that you have CreateBucket and PutBucketAcl permission).")
 
     if bucket:
@@ -404,10 +392,9 @@ def paginated_versioned_list_with_fallback(s3, **pagination_params):
             delete_markers = [{'Key': data['Key'], 'VersionId': data['VersionId']} for data in page.get('DeleteMarkers', [])]
             current_objects = [{'Key': data['Key'], 'VersionId': data['VersionId']} for data in page.get('Versions', [])]
             yield delete_markers + current_objects
-    except botocore.exceptions.ClientError as e:
-        if to_text(e.response['Error']['Code']) in IGNORE_S3_DROP_IN_EXCEPTIONS + ['AccessDenied']:
-            for page in paginated_list(s3, **pagination_params):
-                yield [{'Key': data['Key']} for data in page]
+    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS + ['AccessDenied']):
+        for page in paginated_list(s3, **pagination_params):
+            yield [{'Key': data['Key']} for data in page]
 
 
 def list_keys(module, s3, bucket, prefix, marker, max_keys):
@@ -463,12 +450,9 @@ def create_dirkey(module, s3, bucket, obj, encrypt):
         s3.put_object(**params)
         for acl in module.params.get('permission'):
             s3.put_object_acl(ACL=acl, Bucket=bucket, Key=obj)
-    except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] in IGNORE_S3_DROP_IN_EXCEPTIONS:
-            module.warn("PutObjectAcl is not implemented by your storage provider. Set the permissions parameters to the empty list to avoid this warning")
-        else:
-            module.fail_json_aws(e, msg="Failed while creating object %s." % obj)
-    except botocore.exceptions.BotoCoreError as e:
+    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
+        module.warn("PutObjectAcl is not implemented by your storage provider. Set the permissions parameters to the empty list to avoid this warning")
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed while creating object %s." % obj)
     module.exit_json(msg="Virtual directory %s created in bucket %s" % (obj, bucket), changed=True)
 
@@ -528,12 +512,9 @@ def upload_s3file(module, s3, bucket, obj, src, expiry, metadata, encrypt, heade
     try:
         for acl in module.params.get('permission'):
             s3.put_object_acl(ACL=acl, Bucket=bucket, Key=obj)
-    except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] in IGNORE_S3_DROP_IN_EXCEPTIONS:
-            module.warn("PutObjectAcl is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning")
-        else:
-            module.fail_json_aws(e, msg="Unable to set object ACL")
-    except botocore.exceptions.BotoCoreError as e:
+    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
+        module.warn("PutObjectAcl is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning")
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Unable to set object ACL")
     try:
         url = s3.generate_presigned_url(ClientMethod='put_object',
@@ -554,14 +535,15 @@ def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
             key = s3.get_object(Bucket=bucket, Key=obj, VersionId=version)
         else:
             key = s3.get_object(Bucket=bucket, Key=obj)
-    except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == 'InvalidArgument' and 'require AWS Signature Version 4' in to_text(e):
-            raise Sigv4Required()
-        elif e.response['Error']['Code'] not in ("403", "404"):
-            # AccessDenied errors may be triggered if 1) file does not exist or 2) file exists but
-            # user does not have the s3:GetObject permission. 404 errors are handled by download_file().
-            module.fail_json_aws(e, msg="Could not find the key %s." % obj)
-    except botocore.exceptions.BotoCoreError as e:
+    except is_boto3_error_code(['404', '403']) as e:
+        # AccessDenied errors may be triggered if 1) file does not exist or 2) file exists but
+        # user does not have the s3:GetObject permission. 404 errors are handled by download_file().
+        module.fail_json_aws(e, msg="Could not find the key %s." % obj)
+    except is_boto3_error_message('require AWS Signature Version 4'):
+        raise Sigv4Required()
+    except is_boto3_error_code('InvalidArgument') as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Could not find the key %s." % obj)
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Could not find the key %s." % obj)
 
     optional_kwargs = {'ExtraArgs': {'VersionId': version}} if version else {}
@@ -590,12 +572,11 @@ def download_s3str(module, s3, bucket, obj, version=None, validate=True):
         else:
             contents = to_native(s3.get_object(Bucket=bucket, Key=obj)["Body"].read())
         module.exit_json(msg="GET operation complete", contents=contents, changed=True)
-    except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == 'InvalidArgument' and 'require AWS Signature Version 4' in to_text(e):
-            raise Sigv4Required()
-        else:
-            module.fail_json_aws(e, msg="Failed while getting contents of object %s as a string." % obj)
-    except botocore.exceptions.BotoCoreError as e:
+    except is_boto3_error_message('require AWS Signature Version 4'):
+        raise Sigv4Required()
+    except is_boto3_error_code('InvalidArgument') as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed while getting contents of object %s as a string." % obj)
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed while getting contents of object %s as a string." % obj)
 
 
