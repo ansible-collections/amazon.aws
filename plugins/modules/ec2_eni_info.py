@@ -22,7 +22,7 @@ options:
       - The ID of the ENI.
       - This option is mutually exclusive of I(filters).
     type: str
-    version_added: 1.2.0
+    version_added: 1.3.0
   filters:
     description:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value.
@@ -122,7 +122,7 @@ network_interfaces:
       description: The Name tag of the ENI, often displayed in the AWS UIs as Name
       returned: When a Name tag has been set
       type: str
-      version_added: 1.2.0
+      version_added: 1.3.0
     network_interface_id:
       description: The id of the ENI
       returned: always
@@ -178,7 +178,7 @@ network_interfaces:
       returned: always
       type: dict
       sample: {}
-      version_added: 1.2.0
+      version_added: 1.3.0
     tag_set:
       description: Dictionary of tags added to the ENI
       returned: always

@@ -123,7 +123,7 @@ options:
       - To prevent removing any tags set I(purge_tags) to false.
     type: dict
     required: false
-    version_added: 1.2.0
+    version_added: 1.3.0
   purge_tags:
     description:
       - Indicates whether to remove tags not specified in I(tags) or I(name). This means you have to specify all
@@ -131,7 +131,7 @@ options:
       - If I(tags) is omitted or None this option is disregarded.
     default: true
     type: bool
-    version_added: 1.2.0
+    version_added: 1.3.0
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
