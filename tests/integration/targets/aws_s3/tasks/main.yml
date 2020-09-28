@@ -533,7 +533,6 @@
         mode: put
         content: >-
           test content
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -548,7 +547,6 @@
         overwrite: different
         content: >-
           test content
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -560,7 +558,6 @@
         bucket: "{{ bucket_name }}"
         mode: getstr
         object: put-content.txt
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -576,7 +573,6 @@
         object: put-template.txt
         mode: put
         content: "{{ lookup('template', 'templates/put-template.txt.j2') }}"
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -588,7 +584,6 @@
         bucket: "{{ bucket_name }}"
         mode: getstr
         object: put-template.txt
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -606,7 +601,6 @@
         object: put-binary.bin
         mode: put
         content_base64: "{{ put_binary.content }}"
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -619,7 +613,6 @@
         mode: get
         dest: "{{ tmpdir.path }}/download_binary.bin"
         object: put-binary.bin
-        <<: *aws_connection_info
       register: result
 
     - name: stat the files so we can compare the checksums
@@ -667,5 +660,4 @@
       aws_s3:
         bucket: "{{ bucket_name + '.bucket' }}"
         mode: delete
-        <<: *aws_connection_info
       ignore_errors: yes
