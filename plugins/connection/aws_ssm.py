@@ -522,7 +522,8 @@ class Connection(ConnectionBase):
     def _file_transport_command(self, in_path, out_path, ssm_action):
         ''' transfer a file from using an intermediate S3 bucket '''
 
-        s3_path = out_path.replace('\\', '/')
+        path_unescaped = "{0}/{1}".format(self.instance_id, out_path)
+        s3_path = path_unescaped.replace('\\', '/')
         bucket_url = 's3://%s/%s' % (self.get_option('bucket_name'), s3_path)
 
         if self.is_windows:
@@ -545,6 +546,9 @@ class Connection(ConnectionBase):
             with open(to_bytes(in_path, errors='surrogate_or_strict'), 'rb') as data:
                 client.upload_fileobj(data, self.get_option('bucket_name'), s3_path)
             (returncode, stdout, stderr) = self.exec_command(get_command, in_data=None, sudoable=False)
+
+        # Remove the files from the bucket after they've been transferred
+        client.delete_object(Bucket=self.get_option('bucket_name'), Key=s3_path)
 
         # Check the return code
         if returncode == 0:
