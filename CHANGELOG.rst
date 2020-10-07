@@ -5,6 +5,17 @@ community.aws Release Notes
 .. contents:: Topics
 
 
+v1.2.1
+======
+
+Minor Changes
+-------------
+
+- ec2_eni - Add support for tagging.
+- ec2_eni - Port ec2_eni module to boto3 and add an integration test suite.
+- ec2_eni_info - Add retries on transient AWS failures.
+- ec2_eni_info - Add support for providing an ENI ID.
+
 v1.2.0
 ======
 
@@ -31,14 +42,14 @@ v1.1.0
 Major Changes
 -------------
 
-- ec2 module_utils - The ``AWSRetry`` decorator no longer catches ``NotFound`` exceptions by default.  ``NotFound`` exceptions need to be explicitly added using ``catch_extra_error_codes``.  Some AWS modules may see an increase in transient failures due to AWS's eventual consistency model.
+- ec2 module_utils - The ``AWSRetry`` decorator no longer catches ``NotFound`` exceptions by default.  ``NotFound`` exceptions need to be explicitly added using ``catch_extra_error_codes``.  Some AWS modules may see an increase in transient failures due to AWS''s eventual consistency model.
 
 Minor Changes
 -------------
 
-- Add ``aws_security_token``, ``aws_endpoint_url`` and ``endpoint_url`` aliases to improve AWS module parameter naming consistency.
-- Add support for ``aws_ca_bundle`` to boto3 based AWS modules
-- Add support for configuring boto3 profiles using ``AWS_PROFILE`` and ``AWS_DEFAULT_PROFILE``
+- Add `aws_security_token`, `aws_endpoint_url` and `endpoint_url` aliases to improve AWS module parameter naming consistency.
+- Add support for `aws_ca_bundle` to boto3 based AWS modules
+- Add support for configuring boto3 profiles using `AWS_PROFILE` and `AWS_DEFAULT_PROFILE`
 - Added check_mode support to aws_az_info
 - Added check_mode support to ec2_eni_info
 - Added check_mode support to ec2_snapshot_info
@@ -50,7 +61,7 @@ Minor Changes
 - ec2_asg - Add support for Max Instance Lifetime
 - ec2_asg - Add the ability to use mixed_instance_policy in launch template driven autoscaling groups
 - ec2_asg - Migrated to AnsibleAWSModule
-- ec2_placement_group - make ``name`` a required field.
+- ec2_placement_group - make `name` a required field.
 - ec2_vol_info - Code cleanup and use of the AWSRetry decorator to improve stability
 - ec2_vpc_net - Enable IPv6 CIDR assignment
 
