@@ -110,6 +110,7 @@ options:
         description: Sets RestrictPublicAcls value
         type: bool
         default: False
+    type: dict
   delete_public_access:
     description:
       - Delete public access block configuration from bucket
