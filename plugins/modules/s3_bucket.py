@@ -92,15 +92,24 @@ options:
   public_access:
     description:
       - Configure public access block for S3 bucket
-      - Suboptions [
-          "block_public_acls",
-          "block_public_policy",
-          "ignore_public_acls",
-          "restrict_public_buckets" ]
-      - Allowed values 'true/false'
-      - Keys that are not explicitely defined defaults to 'false'
       - This option cannot be used together with 'delete_public_access'
-    type: dict
+    suboptions:
+      block_public_acls:
+        description: Sets BlockPublicAcls value
+        type: bool
+        default: False
+      block_public_policy:
+        description: Sets BlockPublicPolicy value
+        type: bool
+        default: False
+      ignore_public_acls:
+        description: Sets IgnorePublicAcls value
+        type: bool
+        default: False
+      restrict_public_buckets:
+        description: Sets RestrictPublicAcls value
+        type: bool
+        default: False
   delete_public_access:
     description:
       - Delete public access block configuration from bucket
@@ -791,7 +800,7 @@ def main():
             block_public_policy=dict(type='bool', default=False),
             restrict_public_buckets=dict(type='bool', default=False))),
         delete_public_access=dict(type='bool', default=False)
-        )
+    )
 
     required_by = dict(
         encryption_key_id=('encryption',),
