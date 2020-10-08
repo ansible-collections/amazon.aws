@@ -1,2 +1,0 @@
-bugfixes:
-  - rds_instance - fixed tag type conversion issue for creating read replicas.

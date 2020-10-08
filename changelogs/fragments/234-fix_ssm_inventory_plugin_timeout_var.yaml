@@ -1,2 +1,0 @@
-minor_changes:
-  - aws_ssm connection plugin - Change the (internal) variable name from timeout to plugin_timeout to avoid conflicts with ansible/ansible default timeout (#69284, #71722). Developers subclassing this plugin will need to update accordingly.

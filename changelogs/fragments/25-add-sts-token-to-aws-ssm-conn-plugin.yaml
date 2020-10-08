@@ -1,2 +1,0 @@
-minor_changes:
-  - aws_ssm connection plugin - add STS token options to aws_ssm connection plugin.

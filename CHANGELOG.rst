@@ -5,6 +5,24 @@ community.aws Release Notes
 .. contents:: Topics
 
 
+v1.2.1
+======
+
+Minor Changes
+-------------
+
+- aws_ssm connection plugin - Change the (internal) variable name from timeout to plugin_timeout to avoid conflicts with ansible/ansible default timeout (#69284,
+- aws_ssm connection plugin - add STS token options to aws_ssm connection plugin.
+- ec2_scaling_policy - Add support for step_adjustments
+- ec2_scaling_policy - Migrate from boto to boto3
+- rds_subnet_group module - Add Boto3 support and remove Boto support.
+
+Bugfixes
+--------
+
+- aws_ssm connection plugin - namespace file uploads to S3 into unique folders per host, to prevent name collisions. Also deletes files from S3 to ensure temp files are not left behind. (https://github.com/ansible-collections/community.aws/issues/221, https://github.com/ansible-collections/community.aws/issues/222)
+- rds_instance - fixed tag type conversion issue for creating read replicas.
+
 v1.2.0
 ======
 
