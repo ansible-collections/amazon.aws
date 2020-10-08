@@ -1,0 +1,262 @@
+---
+# Run through the different ways we can enable/change encryption
+# Enable (check_mode)
+# Enable
+# Idempotency - compared to ID (idempotency)
+# Idempotency - compared to ID
+# Idempotency - compared to Alias (idempotency)
+# Idempotency - compared to Alias
+# Idempotency - compared to ARN (idempotency)
+# Idempotency - compared to ARN
+# Disable (check_mode)
+# Disable
+#
+- name: 'Enable encryption using {{ key_type }} (CHECK_MODE)'
+  check_mode: yes
+  kinesis_stream:
+    name: '{{ kinesis_stream_name }}'
+    encryption_state: 'enabled'
+    encryption_type: 'KMS'
+    key_id: '{{ kinesis_key }}'
+- name: 'Assert state is changed when enabling encryption (CHECK_MODE)'
+  assert:
+    that:
+    - result is success
+    - result is changed
+
+- name: 'Enable encryption using {{ key_type }}'
+  kinesis_stream:
+    name: '{{ kinesis_stream_name }}'
+    encryption_state: 'enabled'
+    encryption_type: 'KMS'
+    key_id: '{{ kinesis_key }}'
+- name: 'Assert that state is changed when enabling encryption'
+  assert:
+    that:
+    - result is success
+    - result is changed
+# Merge this into the main assertion when the main return keys are
+# snake_cased
+- name: 'Assert expected return values'
+  assert:
+    that:
+    - result.encryption_type == 'KMS'
+    - result.key_id in kms_cmk_1
+    - result.open_shards_count == 1
+    - result.retention_period_hours == 48
+    - result.stream_arn == kinesis_stream_arn
+    - result.stream_name == kinesis_stream_name
+    - result.stream_status == 'ACTIVE'
+    #- result.tags == kinesis_stream_tags_2
+  # XXX BUG (Enc_snake)
+  ignore_errors: yes
+# Merge this into the main assertion when the tag keys are no longer
+# snake_cased
+- name: 'Assert tags return as expected (tags2)'
+  assert:
+    that:
+    - result.tags == kinesis_stream_tags_2
+  # XXX BUG (Tag_snake)
+  ignore_errors: yes
+
+- name: 'Test encryption idempotency comparing {{ key_type }} and ID (CHECK_MODE)'
+  check_mode: yes
+  kinesis_stream:
+    name: '{{ kinesis_stream_name }}'
+    encryption_state: 'enabled'
+    encryption_type: 'KMS'
+    key_id: '{{ kinesis_key_id }}'
+- name: 'Assert state is changed when enabling encryption (CHECK_MODE)'
+  assert:
+    that:
+    - result is success
+    - result is not changed
+  # XXX BUG (Enc_Idemp)
+  ignore_errors: yes
+
+- name: 'Test encryption idempotency comparing {{ key_type }} and ID'
+  kinesis_stream:
+    name: '{{ kinesis_stream_name }}'
+    encryption_state: 'enabled'
+    encryption_type: 'KMS'
+    key_id: '{{ kinesis_key_id }}'
+- name: 'Assert that state is changed when enabling encryption'
+  assert:
+    that:
+    - result is success
+    - result is not changed
+  # XXX BUG (Enc_Idemp)
+  ignore_errors: yes
+# Merge this into the main assertion when the main return keys are
+# snake_cased
+- name: 'Assert expected return values'
+  assert:
+    that:
+    - result.encryption_type == 'KMS'
+    - result.key_id in kms_cmk_1
+    - result.open_shards_count == 1
+    - result.retention_period_hours == 48
+    - result.stream_arn == kinesis_stream_arn
+    - result.stream_name == kinesis_stream_name
+    - result.stream_status == 'ACTIVE'
+    #- result.tags == kinesis_stream_tags_2
+  # XXX BUG (Enc_snake)
+  ignore_errors: yes
+# Merge this into the main assertion when the tag keys are no longer
+# snake_cased
+- name: 'Assert tags return as expected (tags2)'
+  assert:
+    that:
+    - result.tags == kinesis_stream_tags_2
+  # XXX BUG (Tag_snake)
+  ignore_errors: yes
+
+
+- name: 'Test encryption idempotency comparing {{ key_type }} and Alias (CHECK_MODE)'
+  check_mode: yes
+  kinesis_stream:
+    name: '{{ kinesis_stream_name }}'
+    encryption_state: 'enabled'
+    encryption_type: 'KMS'
+    key_id: '{{ kinesis_key_alias }}'
+- name: 'Assert state is changed when enabling encryption (CHECK_MODE)'
+  assert:
+    that:
+    - result is success
+    - result is not changed
+  # XXX BUG (Enc_Idemp)
+  ignore_errors: yes
+
+- name: 'Test encryption idempotency comparing {{ key_type }} and Alias'
+  kinesis_stream:
+    name: '{{ kinesis_stream_name }}'
+    encryption_state: 'enabled'
+    encryption_type: 'KMS'
+    key_id: '{{ kinesis_key_alias }}'
+- name: 'Assert that state is changed when enabling encryption'
+  assert:
+    that:
+    - result is success
+    - result is not changed
+  # XXX BUG (Enc_Idemp)
+  ignore_errors: yes
+# Merge this into the main assertion when the main return keys are
+# snake_cased
+- name: 'Assert expected return values'
+  assert:
+    that:
+    - result.encryption_type == 'KMS'
+    - result.key_id in kms_cmk_1
+    - result.open_shards_count == 1
+    - result.retention_period_hours == 48
+    - result.stream_arn == kinesis_stream_arn
+    - result.stream_name == kinesis_stream_name
+    - result.stream_status == 'ACTIVE'
+    #- result.tags == kinesis_stream_tags_2
+  # XXX BUG (Enc_snake)
+  ignore_errors: yes
+# Merge this into the main assertion when the tag keys are no longer
+# snake_cased
+- name: 'Assert tags return as expected (tags2)'
+  assert:
+    that:
+    - result.tags == kinesis_stream_tags_2
+  # XXX BUG (Tag_snake)
+  ignore_errors: yes
+
+- name: 'Test encryption idempotency comparing {{ key_type }} and ARN (CHECK_MODE)'
+  check_mode: yes
+  kinesis_stream:
+    name: '{{ kinesis_stream_name }}'
+    encryption_state: 'enabled'
+    encryption_type: 'KMS'
+    key_id: '{{ kinesis_key_arn }}'
+- name: 'Assert state is changed when enabling encryption (CHECK_MODE)'
+  assert:
+    that:
+    - result is success
+    - result is not changed
+  # XXX BUG (Enc_Idemp)
+  ignore_errors: yes
+
+- name: 'Test encryption idempotency comparing {{ key_type }} and ARN'
+  kinesis_stream:
+    name: '{{ kinesis_stream_name }}'
+    encryption_state: 'enabled'
+    encryption_type: 'KMS'
+    key_id: '{{ kinesis_key_arn }}'
+- name: 'Assert that state is changed when enabling encryption'
+  assert:
+    that:
+    - result is success
+    - result is not changed
+  # XXX BUG (Enc_Idemp)
+  ignore_errors: yes
+# Merge this into the main assertion when the main return keys are
+# snake_cased
+- name: 'Assert expected return values'
+  assert:
+    that:
+    - result.encryption_type == 'KMS'
+    - result.key_id in kms_cmk_1
+    - result.open_shards_count == 1
+    - result.retention_period_hours == 48
+    - result.stream_arn == kinesis_stream_arn
+    - result.stream_name == kinesis_stream_name
+    - result.stream_status == 'ACTIVE'
+    #- result.tags == kinesis_stream_tags_2
+  # XXX BUG (Enc_snake)
+  ignore_errors: yes
+# Merge this into the main assertion when the tag keys are no longer
+# snake_cased
+- name: 'Assert tags return as expected (tags2)'
+  assert:
+    that:
+    - result.tags == kinesis_stream_tags_2
+  # XXX BUG (Tag_snake)
+  ignore_errors: yes
+
+- name: 'Disable encryption (CHECK_MODE)'
+  kinesis_stream:
+    name: '{{ kinesis_stream_name }}'
+    encryption_state: 'disabled'
+    # XXX BUG (Enc_Disable)
+    encryption_type: 'KMS'
+    # XXX Oddity of Kinesis - This needs to match the existing setting
+    key_id: '{{ kinesis_key_arn }}'
+- name: 'Assert state is changed when disabling encryption (CHECK_MODE)'
+  # XXX BUG (CM)
+  ignore_errors: yes
+  assert:
+    that:
+    - result is success
+    - result is changed
+
+- name: 'Disable encryption'
+  kinesis_stream:
+    name: '{{ kinesis_stream_name }}'
+    encryption_state: 'disabled'
+    # XXX BUG (Enc_Disable)
+    encryption_type: 'KMS'
+    # XXX Oddity of Kinesis - This needs to match the existing setting
+    key_id: '{{ kinesis_key_arn }}'
+- name: 'Assert state is not changed when disabling encryption (CHECK_MODE)'
+  assert:
+    that:
+    - result is success
+    - result is changed
+    - result.encryption_type == 'NONE'
+    - result.open_shards_count == 1
+    - result.retention_period_hours == 48
+    - result.stream_arn == kinesis_stream_arn
+    - result.stream_name == kinesis_stream_name
+    - result.stream_status == 'ACTIVE'
+    #- result.tags == kinesis_stream_tags_2
+# Merge this into the main assertion when the tag keys are no longer
+# snake_cased
+- name: 'Assert tags return as expected (tags2)'
+  assert:
+    that:
+    - result.tags == kinesis_stream_tags_2
+  # XXX BUG (Tag_snake)
+  ignore_errors: yes

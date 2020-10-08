@@ -1,0 +1,18 @@
+---
+kinesis_stream_name: '{{ resource_prefix }}'
+
+kms_cmk_alias_1: '{{ resource_prefix }}-1'
+kms_cmk_alias_2: '{{ resource_prefix }}-2'
+
+# A variety of camelCase and PascalCase to test things don't get re-cased
+# underneath us
+kinesis_stream_tags_1:
+    tag: value
+    AnExample: AValue
+    somethingElse: Another Value
+    Bleep: bloop
+# Adds 2 values, Deletes 2 and keeps a value
+kinesis_stream_tags_2:
+    tag: value
+    foo: Bar
+    Baz: quuX
