@@ -287,6 +287,23 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>name</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Name for the ENI. This will create a tag called &quot;Name&quot; with the value assigned here.</div>
+                        <div>This can be used in conjunction with <em>subnet_id</em> as another means of identifiying a network interface.</div>
+                        <div>AWS does not enforce unique Name tags, so duplicate names are possible if you configure it that way. If that is the case, you will need to provide other identifying information such as <em>private_ip_address</em> or <em>eni_id</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>private_ip_address</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -335,6 +352,27 @@ Parameters
                 <td>
                         <div>To be used with <em>secondary_private_ip_addresses</em> to determine whether or not to remove any secondary IP addresses other than those specified.</div>
                         <div>Set <em>secondary_private_ip_addresses=[]</em> to purge all secondary addresses.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>purge_tags</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Indicates whether to remove tags not specified in <em>tags</em> or <em>name</em>. This means you have to specify all the desired tags on each task affecting a network interface.</div>
+                        <div>If <em>tags</em> is omitted or None this option is disregarded.</div>
                 </td>
             </tr>
             <tr>
@@ -475,6 +513,24 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>tags</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>A hash/dictionary of tags to add to the new ENI or to add/remove from an existing one. Please note that the name field sets the &quot;Name&quot; tag.</div>
+                        <div>To clear all tags, set this option to an empty dictionary to use in conjunction with <em>purge_tags</em>. If you provide <em>name</em>, that tag will not be removed.</div>
+                        <div>To prevent removing any tags set <em>purge_tags</em> to false.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>validate_certs</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -558,6 +614,13 @@ Examples
     # Update an ENI
     - amazon.aws.ec2_eni:
         eni_id: eni-xxxxxxx
+        description: "My new description"
+        state: present
+
+    # Update an ENI using name and subnet_id
+    - amazon.aws.ec2_eni:
+        name: eni-20
+        subnet_id: subnet-xxxxxxx
         description: "My new description"
         state: present
 
@@ -694,6 +757,24 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>name</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td></td>
+                <td>
+                            <div>The name of the ENI</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">my-eni-20</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>owner_id</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
@@ -803,6 +884,24 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>tags</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td></td>
+                <td>
+                            <div>The dictionary of tags associated with the ENI</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;Name&#x27;: &#x27;my-eni&#x27;, &#x27;group&#x27;: &#x27;Finance&#x27;}</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>vpc_id</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
@@ -830,3 +929,4 @@ Authors
 ~~~~~~~
 
 - Rob White (@wimnat)
+- Mike Healey (@healem)
