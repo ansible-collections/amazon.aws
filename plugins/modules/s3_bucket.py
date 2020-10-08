@@ -520,6 +520,7 @@ def delete_bucket(s3_client, bucket_name):
         # We just ignore the error
         pass
 
+
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
 def put_bucket_public_access(s3_client, bucket_name, public_acces):
     '''
