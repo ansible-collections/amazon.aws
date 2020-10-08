@@ -89,6 +89,13 @@ options:
     description: KMS master key ID to use for the default encryption. This parameter is allowed if encryption is aws:kms. If
                  not specified then it will default to the AWS provided KMS key.
     type: str
+  public_access:
+    description:
+      - Configure public access block for S3 bucket
+      - supported keys [ 'BlockPublicAcls', 'IgnorePublicAcls', 'BlockPublicPolicy', 'RestrictPublicBuckets' ]
+      - allowed values 'true/false'
+      - keys that are not explicitely defined defaults to 'false'
+    type: dict
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -153,6 +160,17 @@ EXAMPLES = '''
     name: mys3bucket
     state: present
     encryption: "aws:kms"
+
+# Create a bucket with custom public policy block configuration
+- amazon.aws.s3_bucket:
+    name: mys3bucket
+    state: present
+    public_access:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        ## keys == 'false' can be ommited, undefined keys defaults to 'false'
+        # BlockPublicPolicy: false
+        # RestrictPublicBuckets: false
 '''
 
 import json
@@ -188,6 +206,7 @@ def create_or_update_bucket(s3_client, module, location):
     versioning = module.params.get("versioning")
     encryption = module.params.get("encryption")
     encryption_key_id = module.params.get("encryption_key_id")
+    public_access = sanitize_public_access_parameter(module.params.get("public_access"))
     changed = False
     result = {}
 
@@ -356,6 +375,21 @@ def create_or_update_bucket(s3_client, module, location):
 
         result['encryption'] = current_encryption
 
+    # Public access configuration
+    try:
+        current_public_access = get_bucket_public_access(s3_client, name)
+    except (ClientError, BotoCoreError) as err_public_access:
+        module.fail_json_aws(err_public_access, msg="Failed to get bucket public access configuration")
+
+    if public_access is not None:
+        if current_public_access == public_access:
+            result['public_access_block'] = current_public_access
+        else:
+            put_bucket_public_access(s3_client, name, public_access)
+            changed = True
+            result['public_access_block'] = public_access
+
+    # Module exit
     module.exit_json(changed=changed, name=name, **result)
 
 
@@ -486,6 +520,13 @@ def delete_bucket(s3_client, bucket_name):
         # We just ignore the error
         pass
 
+@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
+def put_bucket_public_access(s3_client, bucket_name, public_acces):
+    '''
+    Put new public access block to S3 bucket
+    '''
+    s3_client.put_public_access_block(Bucket=bucket_name, PublicAccessBlockConfiguration=public_acces)
+
 
 def wait_policy_is_applied(module, s3_client, bucket_name, expected_policy, should_fail=True):
     for dummy in range(0, 12):
@@ -578,6 +619,36 @@ def get_current_bucket_tags_dict(s3_client, bucket_name):
         return {}
 
     return boto3_tag_list_to_ansible_dict(current_tags)
+
+
+def get_bucket_public_access(s3_client, bucket_name):
+    '''
+    Get current bucket public access block
+    '''
+    try:
+        current_public_access = s3_client.get_public_access_block(Bucket=bucket_name)
+        return current_public_access['PublicAccessBlockConfiguration']
+    except is_boto3_error_code('NoSuchPublicAccessBlockConfiguration'):
+        return {}
+
+
+def sanitize_public_access_parameter(public_access_block):
+    '''
+    Sanitize public access block - make sure that only supported keys are defined with proper values
+    '''
+    sanitized_block = {'BlockPublicAcls': False, 'IgnorePublicAcls': False, 'BlockPublicPolicy': False, 'RestrictPublicBuckets': False}
+
+    if public_access_block is not None:
+        for key in public_access_block:
+            if str(key) in sanitized_block:
+                val = str(public_access_block[key]).lower()
+                if val == 'true':
+                    sanitized_block[key] = True
+                else:
+                    sanitized_block[key] = False
+        return sanitized_block
+    else:
+        return(None)
 
 
 def paginated_list(s3_client, **pagination_params):
@@ -691,7 +762,8 @@ def main():
         versioning=dict(type='bool'),
         ceph=dict(default=False, type='bool'),
         encryption=dict(choices=['none', 'AES256', 'aws:kms']),
-        encryption_key_id=dict()
+        encryption_key_id=dict(),
+        public_access=dict(type='dict')
     )
 
     required_by = dict(
