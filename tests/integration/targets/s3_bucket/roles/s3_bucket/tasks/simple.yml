@@ -16,6 +16,7 @@
           - output is changed
           - output.name == '{{ bucket_name }}'
           - not output.requester_pays
+          - output.public_access is undefined
 
     # ============================================================
     - name: 'Try to update the simple bucket with the same values'
@@ -44,7 +45,7 @@
           - output is changed
 
     # ============================================================
-    - name: 'Re-delete the simple s3_bucket (idemoptency)'
+    - name: 'Re-delete the simple s3_bucket (idempotency)'
       s3_bucket:
         name: '{{ bucket_name }}'
         state: absent
