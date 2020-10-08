@@ -14,9 +14,6 @@
 # along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import (absolute_import, division, print_function)
-import boto3
-
-import botocore
 __metaclass__ = type
 
 
