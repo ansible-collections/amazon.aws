@@ -58,12 +58,12 @@ options:
         type: str
     lifecycle_policy:
         description:
-            - JSON or dict that represents the new lifecycle policy
+            - JSON or dict that represents the new lifecycle policy.
         required: false
         type: json
     purge_lifecycle_policy:
         description:
-            - if yes, remove the lifecycle policy from the repository
+            - if yes, remove the lifecycle policy from the repository.
         required: false
         default: false
         type: bool
@@ -74,6 +74,14 @@ options:
         choices: [present, absent]
         default: 'present'
         type: str
+    scan_on_push:
+        description:
+            - if yes, images are scanned for known vulnerabilities after being pushed to the repository.
+            - I(scan_on_push) requires botocore >= 1.13.3
+        required: false
+        default: false
+        type: bool
+        version_added: 1.3.0
 author:
  - David M. Lee (@leedm777)
 extends_documentation_fragment:
@@ -132,6 +140,7 @@ EXAMPLES = '''
 - name: set-lifecycle-policy
   community.aws.ecs_ecr:
     name: needs-lifecycle-policy
+    scan_on_push: yes
     lifecycle_policy:
       rules:
         - rulePriority: 1
@@ -355,6 +364,25 @@ class EcsEcr:
                 return policy
             return None
 
+    def put_image_scanning_configuration(self, registry_id, name, scan_on_push):
+        if not self.check_mode:
+            if registry_id:
+                scan = self.ecr.put_image_scanning_configuration(
+                    registryId=registry_id,
+                    repositoryName=name,
+                    imageScanningConfiguration={'scanOnPush': scan_on_push}
+                )
+            else:
+                scan = self.ecr.put_image_scanning_configuration(
+                    repositoryName=name,
+                    imageScanningConfiguration={'scanOnPush': scan_on_push}
+                )
+            self.changed = True
+            return scan
+        else:
+            self.skipped = True
+            return None
+
 
 def sort_lists_of_strings(policy):
     for statement_index in range(0, len(policy.get('Statement', []))):
@@ -378,6 +406,7 @@ def run(ecr, params):
         image_tag_mutability = params['image_tag_mutability'].upper()
         lifecycle_policy_text = params['lifecycle_policy']
         purge_lifecycle_policy = params['purge_lifecycle_policy']
+        scan_on_push = params['scan_on_push']
 
         # Parse policies, if they are given
         try:
@@ -474,6 +503,13 @@ def run(ecr, params):
                     result['policy'] = policy_text
                     raise
 
+            original_scan_on_push = ecr.get_repository(registry_id, name)
+            if original_scan_on_push is not None:
+                if scan_on_push != original_scan_on_push['imageScanningConfiguration']['scanOnPush']:
+                    result['changed'] = True
+                    result['repository']['imageScanningConfiguration']['scanOnPush'] = scan_on_push
+                    response = ecr.put_image_scanning_configuration(registry_id, name, scan_on_push)
+
         elif state == 'absent':
             result['name'] = name
             if repo:
@@ -510,7 +546,8 @@ def main():
         purge_policy=dict(required=False, type='bool', aliases=['delete_policy'],
                           deprecated_aliases=[dict(name='delete_policy', date='2022-06-01', collection_name='community.aws')]),
         lifecycle_policy=dict(required=False, type='json'),
-        purge_lifecycle_policy=dict(required=False, type='bool')
+        purge_lifecycle_policy=dict(required=False, type='bool'),
+        scan_on_push=(dict(required=False, type='bool', default=False))
     )
     mutually_exclusive = [
         ['policy', 'purge_policy'],

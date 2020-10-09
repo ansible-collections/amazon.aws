@@ -1,22 +1,18 @@
 ---
-- set_fact:
-    ecr_name: '{{ resource_prefix }}-ecr'
+- module_defaults:
+    group/aws:
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        security_token: "{{ security_token | default(omit) }}"
 
-- block:
-
-    - name: set connection information for all tasks
-      set_fact:
-        aws_connection_info: &aws_connection_info
-          aws_access_key: "{{ aws_access_key }}"
-          aws_secret_key: "{{ aws_secret_key }}"
-          security_token: "{{ security_token }}"
-          region: "{{ aws_region }}"
-      no_log: yes
+  block:
+    - set_fact:
+        ecr_name: '{{ resource_prefix }}-ecr'
 
     - name: When creating with check mode
       ecs_ecr:
         name: '{{ ecr_name }}'
-        <<: *aws_connection_info
       register: result
       check_mode: yes
 
@@ -32,7 +28,6 @@
       ecs_ecr:
         registry_id: 999999999999
         name: '{{ ecr_name }}'
-        <<: *aws_connection_info
       register: result
       ignore_errors: true
 
@@ -46,7 +41,6 @@
     - name: When creating a repository
       ecs_ecr:
         name: '{{ ecr_name }}'
-        <<: *aws_connection_info
       register: result
 
     - name: it should change and create
@@ -64,7 +58,6 @@
     - name: When creating a repository that already exists in check mode
       ecs_ecr:
         name: '{{ ecr_name }}'
-        <<: *aws_connection_info
       register: result
       check_mode: yes
 
@@ -78,7 +71,6 @@
     - name: When creating a repository that already exists
       ecs_ecr:
         name: '{{ ecr_name }}'
-        <<: *aws_connection_info
       register: result
 
     - name: it should not change
@@ -91,7 +83,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         purge_policy: yes
-        <<: *aws_connection_info
       register: result
       check_mode: yes
 
@@ -106,7 +97,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         policy: '{{ policy }}'
-        <<: *aws_connection_info
       register: result
       check_mode: yes
 
@@ -122,7 +112,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         policy: '{{ policy }}'
-        <<: *aws_connection_info
       register: result
 
     - name: it should change and not create
@@ -136,7 +125,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         delete_policy: yes
-        <<: *aws_connection_info
       register: result
       check_mode: yes
 
@@ -153,7 +141,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         purge_policy: yes
-        <<: *aws_connection_info
       register: result
       check_mode: yes
 
@@ -170,7 +157,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         purge_policy: yes
-        <<: *aws_connection_info
       register: result
 
     - name: it should change and not create
@@ -184,7 +170,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         policy: '{{ policy | to_json }}'
-        <<: *aws_connection_info
       register: result
 
     - name: it should change and not create
@@ -198,7 +183,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         policy: '{{ policy }}'
-        <<: *aws_connection_info
       register: result
 
     - name: it should not change
@@ -209,7 +193,6 @@
     - name: When omitting policy on a repository that has a policy
       ecs_ecr:
         name: '{{ ecr_name }}'
-        <<: *aws_connection_info
       register: result
 
     - name: it should not change
@@ -222,7 +205,6 @@
         name: '{{ ecr_name }}'
         policy: '{{ policy }}'
         purge_policy: yes
-        <<: *aws_connection_info
       register: result
       ignore_errors: true
 
@@ -236,7 +218,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         policy: "Ceci n'est pas une JSON"
-        <<: *aws_connection_info
       register: result
       ignore_errors: true
 
@@ -250,7 +231,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         purge_lifecycle_policy: yes
-        <<: *aws_connection_info
       register: result
       check_mode: yes
 
@@ -265,7 +245,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         lifecycle_policy: '{{ lifecycle_policy }}'
-        <<: *aws_connection_info
       register: result
       check_mode: yes
 
@@ -281,7 +260,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         lifecycle_policy: '{{ lifecycle_policy }}'
-        <<: *aws_connection_info
       register: result
 
     - name: it should change and not create
@@ -297,7 +275,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         purge_lifecycle_policy: yes
-        <<: *aws_connection_info
       register: result
       check_mode: yes
 
@@ -313,7 +290,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         purge_lifecycle_policy: yes
-        <<: *aws_connection_info
       register: result
 
     - name: it should change and not create
@@ -327,7 +303,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         lifecycle_policy: '{{ lifecycle_policy | to_json }}'
-        <<: *aws_connection_info
       register: result
 
     - name: it should change and not create
@@ -341,7 +316,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         lifecycle_policy: '{{ lifecycle_policy }}'
-        <<: *aws_connection_info
       register: result
 
     - name: it should not change
@@ -353,7 +327,6 @@
     - name: When omitting lifecycle policy on a repository that has a policy
       ecs_ecr:
         name: '{{ ecr_name }}'
-        <<: *aws_connection_info
       register: result
 
     - name: it should not change
@@ -367,7 +340,6 @@
         name: '{{ ecr_name }}'
         lifecycle_policy: '{{ lifecycle_policy }}'
         purge_lifecycle_policy: yes
-        <<: *aws_connection_info
       register: result
       ignore_errors: true
 
@@ -381,7 +353,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         lifecycle_policy: "Ceci n'est pas une JSON"
-        <<: *aws_connection_info
       register: result
       ignore_errors: true
 
@@ -397,7 +368,6 @@
         lifecycle_policy:
           rules:
             - invalid: "Ceci n'est pas une rule"
-        <<: *aws_connection_info
       register: result
       ignore_errors: true
 
@@ -411,7 +381,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         state: absent
-        <<: *aws_connection_info
       register: result
       check_mode: yes
 
@@ -427,7 +396,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         state: absent
-        <<: *aws_connection_info
       register: result
 
     - name: it should change
@@ -440,7 +408,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         state: absent
-        <<: *aws_connection_info
       register: result
       check_mode: yes
 
@@ -455,7 +422,6 @@
       ecs_ecr:
         name: '{{ ecr_name }}'
         state: absent
-        <<: *aws_connection_info
       register: result
 
     - name: it should not change
@@ -466,10 +432,6 @@
     - name: When creating an immutable repository
       ecs_ecr:
         name: '{{ ecr_name }}'
-        region: '{{ ec2_region }}'
-        ec2_access_key: '{{ec2_access_key}}'
-        ec2_secret_key: '{{ec2_secret_key}}'
-        security_token: '{{security_token}}'
         image_tag_mutability: immutable
       register: result
 
@@ -488,10 +450,6 @@
     - name: When configuring an existing immutable repository to be mutable in check mode
       ecs_ecr:
         name: '{{ ecr_name }}'
-        region: '{{ ec2_region }}'
-        ec2_access_key: '{{ec2_access_key}}'
-        ec2_secret_key: '{{ec2_secret_key}}'
-        security_token: '{{security_token}}'
         image_tag_mutability: mutable
       register: result
       check_mode: yes
@@ -506,10 +464,6 @@
     - name: When configuring an existing immutable repository to be mutable
       ecs_ecr:
         name: '{{ ecr_name }}'
-        region: '{{ ec2_region }}'
-        ec2_access_key: '{{ec2_access_key}}'
-        ec2_secret_key: '{{ec2_secret_key}}'
-        security_token: '{{security_token}}'
         image_tag_mutability: mutable
       register: result
 
@@ -522,10 +476,6 @@
     - name: When configuring an already mutable repository to be mutable
       ecs_ecr:
         name: '{{ ecr_name }}'
-        region: '{{ ec2_region }}'
-        ec2_access_key: '{{ec2_access_key}}'
-        ec2_secret_key: '{{ec2_secret_key}}'
-        security_token: '{{security_token}}'
         image_tag_mutability: mutable
       register: result
 
@@ -534,10 +484,58 @@
         that:
           - result is not changed
 
+    - name: enable scan on push in check mode
+      ecs_ecr:
+        name: '{{ ecr_name }}'
+        scan_on_push: yes
+      check_mode: yes
+      register: result
+
+    - name: it should change
+      assert:
+        that:
+          - result is skipped
+          - result is changed
+
+    - name: enable scan on push
+      ecs_ecr:
+        name: '{{ ecr_name }}'
+        scan_on_push: yes
+      register: result
+
+    - name: it should change
+      assert:
+        that:
+          - result is changed
+          - result.repository.imageScanningConfiguration.scanOnPush
+
+    - name: verify enable scan on push
+      ecs_ecr:
+        name: '{{ ecr_name }}'
+        scan_on_push: yes
+      register: result
+
+    - name: it should not change
+      assert:
+        that:
+          - result is not changed
+          - result.repository.imageScanningConfiguration.scanOnPush
+
+    - name: disable scan on push
+      ecs_ecr:
+        name: '{{ ecr_name }}'
+        scan_on_push: no
+      register: result
+
+    - name: it should change
+      assert:
+        that:
+          - result is changed
+          - not result.repository.imageScanningConfiguration.scanOnPush
+
   always:
 
     - name: Delete lingering ECR repository
       ecs_ecr:
         name: '{{ ecr_name }}'
         state: absent
-        <<: *aws_connection_info
