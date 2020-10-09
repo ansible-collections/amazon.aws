@@ -1,4 +1,5 @@
 # netaddr is needed for ansible.netcommon.ipv6
 netaddr
 virtualenv
-botocore >= 1.13.3 ; python_version >= '2.7' # adds support for ECR image scanning
+boto3 
+botocore
