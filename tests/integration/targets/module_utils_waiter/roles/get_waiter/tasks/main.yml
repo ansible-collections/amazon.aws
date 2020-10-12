@@ -1,0 +1,36 @@
+---
+- module_defaults:
+    example_module:
+      region: '{{ aws_region }}'
+      access_key: '{{ aws_access_key }}'
+      secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+  block:
+  - name: 'Attempt to get a waiter (no retry decorator)'
+    example_module:
+      client: 'ec2'
+      waiter_name: 'internet_gateway_exists'
+    register: test_no_decorator
+
+  - assert:
+      that:
+      - test_no_decorator is succeeded
+      # Standard methods on a boto3 wrapper
+      - '"wait" in test_no_decorator.waiter_attributes'
+      - '"name" in test_no_decorator.waiter_attributes'
+      - '"config" in test_no_decorator.waiter_attributes'
+
+  - name: 'Attempt to get a waiter (with decorator)'
+    example_module:
+      client: 'ec2'
+      waiter_name: 'internet_gateway_exists'
+      with_decorator: True
+    register: test_with_decorator
+
+  - assert:
+      that:
+      - test_with_decorator is succeeded
+      # Standard methods on a boto3 wrapper
+      - '"wait" in test_with_decorator.waiter_attributes'
+      - '"name" in test_with_decorator.waiter_attributes'
+      - '"config" in test_with_decorator.waiter_attributes'
