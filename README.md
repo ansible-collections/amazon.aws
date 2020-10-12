@@ -4,6 +4,8 @@
 
 The Ansible Amazon AWS collection includes a variety of Ansible content to help automate the management of AWS instances. This collection is maintained by the Ansible cloud team.
 
+Modules and plugins supported by the Ansible community team are in [community.aws](https://github.com/ansible-collections/community.aws/) repository.
+
 <!--start requires_ansible-->
 ## Ansible version compatibility
 
