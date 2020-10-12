@@ -407,14 +407,15 @@ def create_or_update_bucket(s3_client, module, location):
 
     # Public access clock configuration
     current_public_access = {}
-    try:
-        current_public_access = get_bucket_public_access(s3_client, name)
-    except (ClientError, BotoCoreError) as err_public_access:
-        module.fail_json_aws(err_public_access, msg="Failed to get bucket public access configuration")
 
     # -- Create / Update public access block
     if public_access is not None:
+        try:
+            current_public_access = get_bucket_public_access(s3_client, name)
+        except (ClientError, BotoCoreError) as err_public_access:
+            module.fail_json_aws(err_public_access, msg="Failed to get bucket public access configuration")
         camel_public_block = snake_dict_to_camel_dict(public_access, capitalize_first=True)
+
         if current_public_access == camel_public_block:
             result['public_access_block'] = current_public_access
         else:
@@ -424,6 +425,11 @@ def create_or_update_bucket(s3_client, module, location):
 
     # -- Delete public access block
     if delete_public_access:
+        try:
+            current_public_access = get_bucket_public_access(s3_client, name)
+        except (ClientError, BotoCoreError) as err_public_access:
+            module.fail_json_aws(err_public_access, msg="Failed to get bucket public access configuration")
+
         if current_public_access == {}:
             result['public_access_block'] = current_public_access
         else:
