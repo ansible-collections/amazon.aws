@@ -633,7 +633,12 @@ def _hashable_policy(policy, policy_list):
         sorted_keys = list(policy.keys())
         sorted_keys.sort()
         for key in sorted_keys:
-            tupleified = _hashable_policy(policy[key], [])
+            element = policy[key]
+            # Special case defined in
+            # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html
+            if key in ["NotPrincipal", "Principal"] and policy[key] == "*":
+                element = {"AWS": "*"}
+            tupleified = _hashable_policy(element, [])
             if isinstance(tupleified, list):
                 tupleified = tuple(tupleified)
             policy_list.append((key, tupleified))
@@ -675,6 +680,7 @@ def compare_policies(current_policy, new_policy, default_version="2008-10-17"):
     """ Compares the existing policy and the updated policy
         Returns True if there is a difference between policies.
     """
+    # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_version.html
     if default_version:
         if isinstance(current_policy, dict):
             current_policy = current_policy.copy()
