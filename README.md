@@ -4,6 +4,8 @@
 
 The Ansible Community AWS collection includes a variety of Ansible content to help automate the management of AWS instances. This collection is maintained by the Ansible community.
 
+AWS related modules and plugins supported by the Ansible Cloud team are in the [amazon.aws](https://github.com/ansible-collections/amazon.aws) collection.
+
 <!--start requires_ansible-->
 ## Ansible version compatibility
 
@@ -283,5 +285,3 @@ See the [Ansible Community Guide](https://docs.ansible.com/ansible/latest/commun
 GNU General Public License v3.0 or later.
 
 See [LICENSE](https://www.gnu.org/licenses/gpl-3.0.txt) to see the full text.
-
-
