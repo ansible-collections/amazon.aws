@@ -222,9 +222,8 @@ transit_gateway:
 
 try:
     from botocore.exceptions import BotoCoreError, ClientError
-except Exception:
-    pass
-    # handled by imported AnsibleAWSModule
+except ImportError:
+    pass  # handled by imported AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from time import sleep, time
