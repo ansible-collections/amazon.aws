@@ -97,7 +97,7 @@ rules:
 
 try:
     from botocore.exceptions import ClientError, BotoCoreError
-except Exception:
+except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
