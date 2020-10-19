@@ -380,17 +380,18 @@ except ImportError:
     pass  # caught by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (camel_dict_to_snake_dict,
-                                                                     boto3_tag_list_to_ansible_dict,
-                                                                     compare_aws_tags,
-                                                                     ansible_dict_to_boto3_tag_list,
-                                                                     )
-from distutils.version import LooseVersion
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 
 
 def get_tg_attributes(connection, module, tg_arn):
     try:
-        tg_attributes = boto3_tag_list_to_ansible_dict(connection.describe_target_group_attributes(TargetGroupArn=tg_arn)['Attributes'])
+        _attributes = connection.describe_target_group_attributes(TargetGroupArn=tg_arn, aws_retry=True)
+        tg_attributes = boto3_tag_list_to_ansible_dict(_attributes['Attributes'])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't get target group attributes")
 
@@ -400,20 +401,24 @@ def get_tg_attributes(connection, module, tg_arn):
 
 def get_target_group_tags(connection, module, target_group_arn):
     try:
-        return connection.describe_tags(ResourceArns=[target_group_arn])['TagDescriptions'][0]['Tags']
+        _tags = connection.describe_tags(ResourceArns=[target_group_arn], aws_retry=True)
+        return _tags['TagDescriptions'][0]['Tags']
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't get target group tags")
 
 
-def get_target_group(connection, module):
+def get_target_group(connection, module, retry_missing=False):
+    extra_codes = ['TargetGroupNotFound'] if retry_missing else []
     try:
-        target_group_paginator = connection.get_paginator('describe_target_groups')
-        return (target_group_paginator.paginate(Names=[module.params.get("name")]).build_full_result())['TargetGroups'][0]
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        if e.response['Error']['Code'] == 'TargetGroupNotFound':
-            return None
-        else:
-            module.fail_json_aws(e, msg="Couldn't get target group")
+        target_group_paginator = connection.get_paginator('describe_target_groups').paginate(Names=[module.params.get("name")])
+        jittered_retry = AWSRetry.jittered_backoff(retries=10, catch_extra_error_codes=extra_codes)
+        result = jittered_retry(target_group_paginator.build_full_result)()
+    except is_boto3_error_code('TargetGroupNotFound'):
+        return None
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Couldn't get target group")
+
+    return result['TargetGroups'][0]
 
 
 def wait_for_status(connection, module, target_group_arn, targets, status):
@@ -423,7 +428,7 @@ def wait_for_status(connection, module, target_group_arn, targets, status):
 
     for x in range(0, max_retries):
         try:
-            response = connection.describe_target_health(TargetGroupArn=target_group_arn, Targets=targets)
+            response = connection.describe_target_health(TargetGroupArn=target_group_arn, Targets=targets, aws_retry=True)
             if response['TargetHealthDescriptions'][0]['TargetHealth']['State'] == status:
                 status_achieved = True
                 break
@@ -437,7 +442,7 @@ def wait_for_status(connection, module, target_group_arn, targets, status):
 
 
 def fail_if_ip_target_type_not_supported(module):
-    if LooseVersion(botocore.__version__) < LooseVersion('1.7.2'):
+    if not module.botocore_at_least('1.7.2'):
         module.fail_json(msg="target_type ip requires botocore version 1.7.2 or later. Version %s is installed" %
                          botocore.__version__)
 
@@ -559,7 +564,7 @@ def create_or_update_target_group(connection, module):
 
             try:
                 if health_check_params:
-                    connection.modify_target_group(TargetGroupArn=tg['TargetGroupArn'], **health_check_params)
+                    connection.modify_target_group(TargetGroupArn=tg['TargetGroupArn'], aws_retry=True, **health_check_params)
                     changed = True
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Couldn't update target group")
@@ -570,7 +575,7 @@ def create_or_update_target_group(connection, module):
             # describe_target_health seems to be the only way to get them
             try:
                 current_targets = connection.describe_target_health(
-                    TargetGroupArn=tg['TargetGroupArn'])
+                    TargetGroupArn=tg['TargetGroupArn'], aws_retry=True)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Couldn't get target group health")
 
@@ -602,7 +607,7 @@ def create_or_update_target_group(connection, module):
 
                         changed = True
                         try:
-                            connection.register_targets(TargetGroupArn=tg['TargetGroupArn'], Targets=instances_to_add)
+                            connection.register_targets(TargetGroupArn=tg['TargetGroupArn'], Targets=instances_to_add, aws_retry=True)
                         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                             module.fail_json_aws(e, msg="Couldn't register targets")
 
@@ -621,7 +626,7 @@ def create_or_update_target_group(connection, module):
 
                         changed = True
                         try:
-                            connection.deregister_targets(TargetGroupArn=tg['TargetGroupArn'], Targets=instances_to_remove)
+                            connection.deregister_targets(TargetGroupArn=tg['TargetGroupArn'], Targets=instances_to_remove, aws_retry=True)
                         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                             module.fail_json_aws(e, msg="Couldn't remove targets")
 
@@ -651,7 +656,8 @@ def create_or_update_target_group(connection, module):
                                         {
                                             "Id": target['Id']
                                         }
-                                    ]
+                                    ],
+                                    aws_retry=True
                                 )
 
                     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -669,7 +675,7 @@ def create_or_update_target_group(connection, module):
 
                         changed = True
                         try:
-                            connection.deregister_targets(TargetGroupArn=tg['TargetGroupArn'], Targets=instances_to_remove)
+                            connection.deregister_targets(TargetGroupArn=tg['TargetGroupArn'], Targets=instances_to_remove, aws_retry=True)
                         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                             module.fail_json_aws(e, msg="Couldn't remove targets")
 
@@ -687,22 +693,22 @@ def create_or_update_target_group(connection, module):
                         target_to_remove = current_targets["TargetHealthDescriptions"][0]["Target"]["Id"]
                     if changed:
                         connection.deregister_targets(
-                            TargetGroupArn=tg['TargetGroupArn'], Targets=[{"Id": target_to_remove}])
+                            TargetGroupArn=tg['TargetGroupArn'], Targets=[{"Id": target_to_remove}], aws_retry=True)
     else:
         try:
-            connection.create_target_group(**params)
+            connection.create_target_group(aws_retry=True, **params)
             changed = True
             new_target_group = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't create target group")
 
-        tg = get_target_group(connection, module)
+        tg = get_target_group(connection, module, retry_missing=True)
 
         if module.params.get("targets"):
             if target_type != "lambda":
                 params['Targets'] = module.params.get("targets")
                 try:
-                    connection.register_targets(TargetGroupArn=tg['TargetGroupArn'], Targets=params['Targets'])
+                    connection.register_targets(TargetGroupArn=tg['TargetGroupArn'], Targets=params['Targets'], aws_retry=True)
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     module.fail_json_aws(e, msg="Couldn't register targets")
 
@@ -720,7 +726,8 @@ def create_or_update_target_group(connection, module):
                             {
                                 "Id": target["Id"]
                             }
-                        ]
+                        ],
+                        aws_retry=True
                     )
                     changed = True
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -748,12 +755,12 @@ def create_or_update_target_group(connection, module):
 
     if update_attributes:
         try:
-            connection.modify_target_group_attributes(TargetGroupArn=tg['TargetGroupArn'], Attributes=update_attributes)
+            connection.modify_target_group_attributes(TargetGroupArn=tg['TargetGroupArn'], Attributes=update_attributes, aws_retry=True)
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             # Something went wrong setting attributes. If this target group was created during this task, delete it to leave a consistent state
             if new_target_group:
-                connection.delete_target_group(TargetGroupArn=tg['TargetGroupArn'])
+                connection.delete_target_group(TargetGroupArn=tg['TargetGroupArn'], aws_retry=True)
             module.fail_json_aws(e, msg="Couldn't delete target group")
 
     # Tags - only need to play with tags if tags parameter has been set to something
@@ -765,7 +772,7 @@ def create_or_update_target_group(connection, module):
         tags_need_modify, tags_to_delete = compare_aws_tags(boto3_tag_list_to_ansible_dict(current_tags), tags, purge_tags)
         if tags_to_delete:
             try:
-                connection.remove_tags(ResourceArns=[tg['TargetGroupArn']], TagKeys=tags_to_delete)
+                connection.remove_tags(ResourceArns=[tg['TargetGroupArn']], TagKeys=tags_to_delete, aws_retry=True)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Couldn't delete tags from target group")
             changed = True
@@ -773,7 +780,7 @@ def create_or_update_target_group(connection, module):
         # Add/update tags
         if tags_need_modify:
             try:
-                connection.add_tags(ResourceArns=[tg['TargetGroupArn']], Tags=ansible_dict_to_boto3_tag_list(tags_need_modify))
+                connection.add_tags(ResourceArns=[tg['TargetGroupArn']], Tags=ansible_dict_to_boto3_tag_list(tags_need_modify), aws_retry=True)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Couldn't add tags to target group")
             changed = True
@@ -798,7 +805,7 @@ def delete_target_group(connection, module):
 
     if tg:
         try:
-            connection.delete_target_group(TargetGroupArn=tg['TargetGroupArn'])
+            connection.delete_target_group(TargetGroupArn=tg['TargetGroupArn'], aws_retry=True)
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't delete target group")
@@ -846,7 +853,7 @@ def main():
     if module.params.get('target_type') is None:
         module.params['target_type'] = 'instance'
 
-    connection = module.client('elbv2')
+    connection = module.client('elbv2', retry_decorator=AWSRetry.jittered_backoff(retries=10))
 
     if module.params.get('state') == 'present':
         create_or_update_target_group(connection, module)
