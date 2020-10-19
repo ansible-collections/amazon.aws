@@ -116,7 +116,7 @@ removed_tags:
 
 try:
     from botocore.exceptions import BotoCoreError, ClientError
-except Exception:
+except ImportError:
     pass    # Handled by AnsibleAWSModule
 
 from ..module_utils.core import AnsibleAWSModule

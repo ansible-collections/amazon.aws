@@ -64,7 +64,7 @@ try:
     import boto3
     import botocore
     HAS_BOTO3 = True
-except Exception:
+except ImportError:
     BOTO3_IMP_ERR = traceback.format_exc()
     HAS_BOTO3 = False
 
