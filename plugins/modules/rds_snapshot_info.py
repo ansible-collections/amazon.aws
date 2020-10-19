@@ -298,7 +298,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry, bo
 
 try:
     import botocore
-except Exception:
+except ImportError:
     pass  # caught by AnsibleAWSModule
 
 

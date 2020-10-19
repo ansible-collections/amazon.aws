@@ -139,7 +139,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSM
 
 try:
     from botocore.exceptions import ClientError
-except Exception:
+except ImportError:
     pass  # caught by AnsibleAWSModule
 
 
