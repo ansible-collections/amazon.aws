@@ -1,0 +1,2 @@
+minor_changes:
+  - s3_lifecycle - Add support for intelligent tiering and deep archive storage classes (https://github.com/ansible-collections/community.aws/issues/270)
