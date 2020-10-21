@@ -1,2 +1,3 @@
-boto3 >= 1.9.250  # minimum version that supports botocore 1.13.3
-botocore >= 1.13.3  # adds support for ECR image scanning
+boto3 >= 1.9.250, <= 1.15.18  # minimum version that supports botocore 1.13.3, max that will work with ansible 2.9's other constraints
+botocore<1.19.0,>=1.13.3  # adds support for ECR image scanning
+
