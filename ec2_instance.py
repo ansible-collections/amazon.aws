@@ -810,17 +810,17 @@ except ImportError:
 
 from ansible.module_utils.six import string_types
 from ansible.module_utils.six.moves.urllib import parse as urlparse
+from ansible.module_utils._text import to_bytes
 from ansible.module_utils._text import to_native
-import ansible_collections.amazon.aws.plugins.module_utils.ec2 as ec2_utils
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (AWSRetry,
-                                                                     ansible_dict_to_boto3_filter_list,
-                                                                     compare_aws_tags,
-                                                                     boto3_tag_list_to_ansible_dict,
-                                                                     ansible_dict_to_boto3_tag_list,
-                                                                     camel_dict_to_snake_dict,
-                                                                     )
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict
 
 module = None
 
@@ -917,7 +917,7 @@ def build_volume_spec(params):
             for int_value in ['volume_size', 'iops']:
                 if int_value in volume['ebs']:
                     volume['ebs'][int_value] = int(volume['ebs'][int_value])
-    return [ec2_utils.snake_dict_to_camel_dict(v, capitalize_first=True) for v in volumes]
+    return [snake_dict_to_camel_dict(v, capitalize_first=True) for v in volumes]
 
 
 def add_or_update_instance_profile(instance, desired_profile_name):
