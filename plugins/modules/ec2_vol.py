@@ -228,6 +228,8 @@ volume:
     }
 '''
 
+import time
+
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.ec2 import camel_dict_to_snake_dict
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
@@ -427,8 +429,19 @@ def modify_dot_attribute(module, ec2_conn, instance_dict, device_name):
     delete_on_termination = module.params.get('delete_on_termination')
     changed = False
 
-    instance_dict = get_instance(module, ec2_conn=ec2_conn, instance_id=instance_dict['instance_id'])
-    mapped_block_device = get_mapped_block_device(instance_dict=instance_dict, device_name=device_name)
+    # volume_in_use can return *shortly* before it appears on the instance
+    # description
+    mapped_block_device = None
+    _attempt = 0
+    while mapped_block_device is None:
+        _attempt += 1
+        instance_dict = get_instance(module, ec2_conn=ec2_conn, instance_id=instance_dict['instance_id'])
+        mapped_block_device = get_mapped_block_device(instance_dict=instance_dict, device_name=device_name)
+        if mapped_block_device is None:
+            if _attempt > 2:
+                module.fail_json(msg='Unable to find device on instance',
+                                 device=device_name, instance=instance_dict)
+            time.sleep(1)
 
     if delete_on_termination != mapped_block_device['ebs'].get('delete_on_termination'):
         try:
