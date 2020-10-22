@@ -810,7 +810,7 @@ def create_block_device(module, ec2, volume):
         if 'iops' in volume:
             snapshot = ec2.get_all_snapshots(snapshot_ids=[volume['snapshot']])[0]
             size = volume.get('volume_size', snapshot.volume_size)
-            if int(volume['iops']) > MAX_IOPS_TO_SIZE_RATIO * size:
+            if int(volume['iops']) > MAX_IOPS_TO_SIZE_RATIO * int(size):
                 module.fail_json(msg='IOPS must be at most %d times greater than size' % MAX_IOPS_TO_SIZE_RATIO)
     if 'ephemeral' in volume:
         if 'snapshot' in volume:
