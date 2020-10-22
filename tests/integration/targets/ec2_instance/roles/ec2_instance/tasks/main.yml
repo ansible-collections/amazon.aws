@@ -24,6 +24,11 @@
       aws_secret_key: "{{ aws_secret_key }}"
       security_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
+      aws_config:
+        retries:
+          # Unfortunately AWSRetry doesn't support paginators and boto3's paginators
+          # don't support any configuration of the delay between retries.
+          max_attempts: 20
   collections:
     - amazon.aws
   block:
