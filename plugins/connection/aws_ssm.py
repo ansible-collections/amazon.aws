@@ -53,6 +53,11 @@ options:
     vars:
     - name: ansible_aws_ssm_plugin
     default: '/usr/local/bin/session-manager-plugin'
+  profile:
+    description: Sets AWS profile to use.
+    vars:
+    - name: ansible_aws_ssm_profile
+    default: ''
   retries:
     description: Number of attempts to connect.
     default: 3
@@ -304,10 +309,10 @@ class Connection(ConnectionBase):
             raise AnsibleError("failed to find the executable specified %s."
                                " Please verify if the executable exists and re-try." % executable)
 
-        profile_name = ''
+        profile_name = self.get_option('profile')
         region_name = self.get_option('region')
         ssm_parameters = dict()
-        client = self._get_boto_client('ssm', region_name=region_name)
+        client = self._get_boto_client('ssm', region_name=region_name, profile_name=profile_name)
         self._client = client
         response = client.start_session(Target=self.instance_id, Parameters=ssm_parameters)
         self._session_id = response['SessionId']
@@ -504,7 +509,7 @@ class Connection(ConnectionBase):
         client = self._get_boto_client('s3', region_name)
         return client.generate_presigned_url(client_method, Params={'Bucket': bucket_name, 'Key': out_path}, ExpiresIn=3600, HttpMethod=http_method)
 
-    def _get_boto_client(self, service, region_name=None):
+    def _get_boto_client(self, service, region_name=None, profile_name=None):
         ''' Gets a boto3 client based on the STS token '''
 
         aws_access_key_id = self.get_option('access_key_id')
@@ -518,12 +523,15 @@ class Connection(ConnectionBase):
         if aws_session_token is None:
             aws_session_token = os.environ.get("AWS_SESSION_TOKEN", None)
 
-        client = boto3.client(
-            service,
+        session = boto3.session.Session(
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,
             aws_session_token=aws_session_token,
             region_name=region_name,
+            profile_name=profile_name
+        )
+        client = session.client(
+            service,
             config=Config(signature_version="s3v4")
         )
         return client
