@@ -829,7 +829,10 @@ def main():
         ])
     )
 
-    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+    retry_decorator = AWSRetry.jittered_backoff(
+        catch_extra_error_codes=['IncorrectState'],
+    )
+    connection = module.client('ec2', retry_decorator=retry_decorator)
     state = module.params.get("state")
 
     if state == 'present':
