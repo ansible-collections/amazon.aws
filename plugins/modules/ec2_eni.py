@@ -368,15 +368,22 @@ def correct_ips(connection, ip_list, module, eni_id):
         for ip in eni["PrivateIpAddresses"]:
             private_addresses.add(ip["PrivateIpAddress"])
 
-    for ip in ip_list:
-        if ip not in private_addresses:
-            all_there = False
-            break
+    ip_set = set(ip_list)
 
-    if all_there:
-        return True
-    else:
-        return False
+    return ip_set.issubset(private_addresses)
+
+
+def absent_ips(connection, ip_list, module, eni_id):
+    all_there = True
+    eni = describe_eni(connection, module, eni_id)
+    private_addresses = set()
+    if "PrivateIpAddresses" in eni:
+        for ip in eni["PrivateIpAddresses"]:
+            private_addresses.add(ip["PrivateIpAddress"])
+
+    ip_set = set(ip_list)
+
+    return not ip_set.union(private_addresses)
 
 
 def correct_ip_count(connection, ip_count, module, eni_id):
@@ -458,6 +465,7 @@ def create_eni(connection, vpc_id, module):
                     NetworkInterfaceId=eni["NetworkInterfaceId"],
                     SecondaryPrivateIpAddressCount=secondary_private_ip_address_count
                 )
+                wait_for(correct_ip_count, connection, secondary_private_ip_address_count, module, eni_id)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
                 connection.delete_network_interface(aws_retry=True, NetworkInterfaceId=eni_id)
                 raise
@@ -468,6 +476,7 @@ def create_eni(connection, vpc_id, module):
                     NetworkInterfaceId=eni["NetworkInterfaceId"],
                     PrivateIpAddresses=secondary_private_ip_addresses
                 )
+                wait_for(correct_ips, connection, secondary_private_ip_addresses, module, eni_id)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
                 connection.delete_network_interface(aws_retry=True, NetworkInterfaceId=eni_id)
                 raise
@@ -557,6 +566,7 @@ def modify_eni(connection, module, eni):
                     NetworkInterfaceId=eni_id,
                     PrivateIpAddresses=list(set(current_secondary_addresses) - set(secondary_private_ip_addresses)),
                 )
+                wait_for(absent_ips, connection, secondary_addresses_to_remove, module, eni_id)
                 changed = True
             secondary_addresses_to_add = list(set(secondary_private_ip_addresses) - set(current_secondary_addresses))
             if secondary_addresses_to_add:
