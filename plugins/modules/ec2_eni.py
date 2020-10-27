@@ -445,6 +445,8 @@ def create_eni(connection, vpc_id, module):
         eni = eni_dict["NetworkInterface"]
         # Once we have an ID make sure we're always modifying the same object
         eni_id = eni["NetworkInterfaceId"]
+        get_waiter(connection.client, 'network_interface_available').wait(NetworkInterfaceIds=[eni_id])
+
         if attached and instance_id is not None:
             try:
                 connection.attach_network_interface(
