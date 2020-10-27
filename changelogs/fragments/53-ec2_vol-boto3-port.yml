@@ -1,2 +1,2 @@
 minor_changes:
-    - ec2_vol - ported ec2_vol to use boto3
+    - ec2_vol - ported ec2_vol to use boto3 (https://github.com/ansible-collections/amazon.aws/pull/53).
