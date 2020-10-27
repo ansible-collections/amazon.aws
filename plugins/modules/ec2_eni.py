@@ -449,7 +449,6 @@ def create_eni(connection, vpc_id, module):
                 raise
             # Wait to allow creation / attachment to finish
             get_waiter(connection.client, 'network_interface_attached').wait(NetworkInterfaceIds=[eni["NetworkInterfaceId"]])
-            eni = uniquely_find_eni(connection, module, eni)
 
         if secondary_private_ip_address_count is not None:
             try:
@@ -458,7 +457,6 @@ def create_eni(connection, vpc_id, module):
                     NetworkInterfaceId=eni["NetworkInterfaceId"],
                     SecondaryPrivateIpAddressCount=secondary_private_ip_address_count
                 )
-                eni = uniquely_find_eni(connection, module, eni)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
                 connection.delete_network_interface(aws_retry=True, NetworkInterfaceId=eni["NetworkInterfaceId"])
                 raise
@@ -469,7 +467,6 @@ def create_eni(connection, vpc_id, module):
                     NetworkInterfaceId=eni["NetworkInterfaceId"],
                     PrivateIpAddresses=secondary_private_ip_addresses
                 )
-                eni = uniquely_find_eni(connection, module, eni)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
                 connection.delete_network_interface(aws_retry=True, NetworkInterfaceId=eni["NetworkInterfaceId"])
                 raise
