@@ -676,6 +676,17 @@ def detach_eni(connection, eni, module):
         module.exit_json(changed=False, interface=get_eni_info(eni))
 
 
+def describe_eni(connection, module, eni_id):
+    try:
+        eni_result = connection.describe_network_interfaces(aws_retry=True, NetworkInterfaceIds=[eni_id])
+        if eni_result["NetworkInterfaces"]:
+            return eni_result["NetworkInterfaces"][0]
+        else:
+            return None
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, "Failed to describe eni with id: {0}".format(eni_id))
+
+
 def uniquely_find_eni(connection, module, eni=None):
 
     if eni:
