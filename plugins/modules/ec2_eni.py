@@ -445,7 +445,7 @@ def create_eni(connection, vpc_id, module):
         eni = eni_dict["NetworkInterface"]
         # Once we have an ID make sure we're always modifying the same object
         eni_id = eni["NetworkInterfaceId"]
-        get_waiter(connection.client, 'network_interface_available').wait(NetworkInterfaceIds=[eni_id])
+        get_waiter(connection, 'network_interface_available').wait(NetworkInterfaceIds=[eni_id])
 
         if attached and instance_id is not None:
             try:
@@ -458,7 +458,7 @@ def create_eni(connection, vpc_id, module):
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
                 connection.delete_network_interface(aws_retry=True, NetworkInterfaceId=eni_id)
                 raise
-            get_waiter(connection.client, 'network_interface_attached').wait(NetworkInterfaceIds=[eni_id])
+            get_waiter(connection, 'network_interface_attached').wait(NetworkInterfaceIds=[eni_id])
 
         if secondary_private_ip_address_count is not None:
             try:
@@ -559,7 +559,7 @@ def modify_eni(connection, module, eni):
                     waiter = "network_interface_delete_on_terminate"
                 else:
                     waiter = "network_interface_no_delete_on_terminate"
-                get_waiter(connection.client, waiter).wait(NetworkInterfaceIds=[eni_id])
+                get_waiter(connection, waiter).wait(NetworkInterfaceIds=[eni_id])
 
         current_secondary_addresses = []
         if "PrivateIpAddresses" in eni:
@@ -617,7 +617,7 @@ def modify_eni(connection, module, eni):
                     DeviceIndex=device_index,
                     NetworkInterfaceId=eni_id,
                 )
-                get_waiter(connection.client, 'network_interface_attached').wait(NetworkInterfaceIds=[eni_id])
+                get_waiter(connection, 'network_interface_attached').wait(NetworkInterfaceIds=[eni_id])
                 changed = True
             if "Attachment" not in eni:
                 connection.attach_network_interface(
@@ -626,12 +626,12 @@ def modify_eni(connection, module, eni):
                     DeviceIndex=device_index,
                     NetworkInterfaceId=eni_id,
                 )
-                get_waiter(connection.client, 'network_interface_attached').wait(NetworkInterfaceIds=[eni_id])
+                get_waiter(connection, 'network_interface_attached').wait(NetworkInterfaceIds=[eni_id])
                 changed = True
 
         elif attached is False:
             changed |= detach_eni(connection, eni, module)
-            get_waiter(connection.client, 'network_interface_available').wait(NetworkInterfaceIds=[eni_id])
+            get_waiter(connection, 'network_interface_available').wait(NetworkInterfaceIds=[eni_id])
 
         changed |= manage_tags(eni, name, tags, purge_tags, connection)
 
@@ -660,7 +660,7 @@ def delete_eni(connection, module):
                     Force=True
                 )
                 # Wait to allow detachment to finish
-                get_waiter(connection.client, 'network_interface_available').wait(NetworkInterfaceIds=[eni_id])
+                get_waiter(connection, 'network_interface_available').wait(NetworkInterfaceIds=[eni_id])
             connection.delete_network_interface(aws_retry=True, NetworkInterfaceId=eni_id)
             changed = True
         else:
@@ -686,7 +686,7 @@ def detach_eni(connection, eni, module):
             AttachmentId=eni["Attachment"]["AttachmentId"],
             Force=force_detach
         )
-        get_waiter(connection.client, 'network_interface_available').wait(NetworkInterfaceIds=[eni_id])
+        get_waiter(connection, 'network_interface_available').wait(NetworkInterfaceIds=[eni_id])
         return True
 
     return False
