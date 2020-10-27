@@ -553,6 +553,11 @@ def modify_eni(connection, module, eni):
                                 'DeleteOnTermination': delete_on_termination}
                 )
                 changed = True
+                if delete_on_termination:
+                    waiter = "network_interface_delete_on_terminate"
+                else:
+                    waiter = "network_interface_no_delete_on_terminate"
+                get_waiter(connection.client, waiter).wait(NetworkInterfaceIds=[eni_id])
 
         current_secondary_addresses = []
         if "PrivateIpAddresses" in eni:
