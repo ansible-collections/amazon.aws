@@ -295,7 +295,6 @@ interface:
 import time
 
 try:
-    import boto3
     import botocore.exceptions
 except ImportError:
     pass  # Handled by AnsibleAWSModule
