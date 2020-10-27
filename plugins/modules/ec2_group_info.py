@@ -119,7 +119,9 @@ def main():
     sanitized_filters = dict()
 
     for key in filters:
-        if not key.startswith("tag:"):
+        if key.startswith("tag:"):
+            sanitized_filters[key] = filters[key]
+        else:
             sanitized_filters[key.replace("_", "-")] = filters[key]
 
     try:
