@@ -53,6 +53,60 @@ ec2_data = {
                 },
             ]
         },
+        "NetworkInterfaceAvailable": {
+            "operation": "DescribeNetworkInterfaces",
+            "delay": 5,
+            "maxAttempts": 40,
+            "acceptors": [
+                {
+                    "expected": "available",
+                    "matcher": "pathAll",
+                    "state": "success",
+                    "argument": "NetworkInterfaces[].Status"
+                },
+                {
+                    "expected": "InvalidNetworkInterfaceID.NotFound",
+                    "matcher": "error",
+                    "state": "retry"
+                },
+            ]
+        },
+        "NetworkInterfaceDeleteOnTerminate": {
+            "operation": "DescribeNetworkInterfaces",
+            "delay": 5,
+            "maxAttempts": 10,
+            "acceptors": [
+                {
+                    "expected": True,
+                    "matcher": "pathAll",
+                    "state": "success",
+                    "argument": "NetworkInterfaces[].Attachment.DeleteOnTermination"
+                },
+                {
+                    "expected": "InvalidNetworkInterfaceID.NotFound",
+                    "matcher": "error",
+                    "state": "failure"
+                },
+            ]
+        },
+        "NetworkInterfaceNoDeleteOnTerminate": {
+            "operation": "DescribeNetworkInterfaces",
+            "delay": 5,
+            "maxAttempts": 10,
+            "acceptors": [
+                {
+                    "expected": False,
+                    "matcher": "pathAll",
+                    "state": "success",
+                    "argument": "NetworkInterfaces[].Attachment.DeleteOnTermination"
+                },
+                {
+                    "expected": "InvalidNetworkInterfaceID.NotFound",
+                    "matcher": "error",
+                    "state": "failure"
+                },
+            ]
+        },
         "RouteTableExists": {
             "delay": 5,
             "maxAttempts": 40,
@@ -348,6 +402,24 @@ waiters_by_name = {
     ('EC2', 'network_interface_attached'): lambda ec2: core_waiter.Waiter(
         'network_interface_attached',
         ec2_model('NetworkInterfaceAttached'),
+        core_waiter.NormalizedOperationMethod(
+            ec2.describe_network_interfaces
+        )),
+    ('EC2', 'network_interface_available'): lambda ec2: core_waiter.Waiter(
+        'network_interface_available',
+        ec2_model('NetworkInterfaceAvailable'),
+        core_waiter.NormalizedOperationMethod(
+            ec2.describe_network_interfaces
+        )),
+    ('EC2', 'network_interface_delete_on_terminate'): lambda ec2: core_waiter.Waiter(
+        'network_interface_delete_on_terminate',
+        ec2_model('NetworkInterfaceDeleteOnTerminate'),
+        core_waiter.NormalizedOperationMethod(
+            ec2.describe_network_interfaces
+        )),
+    ('EC2', 'network_interface_no_delete_on_terminate'): lambda ec2: core_waiter.Waiter(
+        'network_interface_no_delete_on_terminate',
+        ec2_model('NetworkInterfaceNoDeleteOnTerminate'),
         core_waiter.NormalizedOperationMethod(
             ec2.describe_network_interfaces
         )),
