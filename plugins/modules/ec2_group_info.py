@@ -115,10 +115,12 @@ def main():
     connection = module.client('ec2')
 
     # Replace filter key underscores with dashes, for compatibility, except if we're dealing with tags
-    sanitized_filters = module.params.get("filters")
-    for key in list(sanitized_filters):
+    filters = module.params.get("filters")
+    sanitized_filters = dict()
+
+    for key in filters:
         if not key.startswith("tag:"):
-            sanitized_filters[key.replace("_", "-")] = sanitized_filters.pop(key)
+            sanitized_filters[key.replace("_", "-")] = filters[key]
 
     try:
         security_groups = connection.describe_security_groups(
