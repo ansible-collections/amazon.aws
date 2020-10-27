@@ -630,7 +630,8 @@ def modify_eni(connection, module, eni):
                 changed = True
 
         elif attached is False:
-            detach_eni(connection, eni, module)
+            changed |= detach_eni(connection, eni, module)
+            get_waiter(connection.client, 'network_interface_available').wait(NetworkInterfaceIds=[eni_id])
 
         changed |= manage_tags(eni, name, tags, purge_tags, connection)
 
@@ -686,12 +687,9 @@ def detach_eni(connection, eni, module):
             Force=force_detach
         )
         get_waiter(connection.client, 'network_interface_available').wait(NetworkInterfaceIds=[eni_id])
-        if attached:
-            return
-        eni = uniquely_find_eni(connection, module)
-        module.exit_json(changed=True, interface=get_eni_info(eni))
-    else:
-        module.exit_json(changed=False, interface=get_eni_info(eni))
+        return True
+
+    return False
 
 
 def describe_eni(connection, module, eni_id):
