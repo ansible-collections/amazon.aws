@@ -54,6 +54,7 @@ options:
     - name: ansible_aws_ssm_plugin
     default: '/usr/local/bin/session-manager-plugin'
   profile:
+    description: Sets AWS profile to use.
     vars:
     - name: ansible_aws_ssm_profile
     version_added: 1.5.0
