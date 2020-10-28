@@ -16,7 +16,7 @@
             cidr_ip: 10.2.2.2/32
         tags:
           - test: '{{ resource_prefix }}_ec2_group_info_module'
-        register: group_info_test_setup
+      register: group_info_test_setup
 
     - name: Create another group for testing group info retrieval below
       ec2_group:
