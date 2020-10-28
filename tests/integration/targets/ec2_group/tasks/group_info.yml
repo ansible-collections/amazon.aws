@@ -15,7 +15,7 @@
               - 90
             cidr_ip: 10.2.2.2/32
         tags:
-          - test: '{{ test_prefix }}_ec2_group_info_module'
+          - test: '{{ resource_prefix }}_ec2_group_info_module'
         register: group_info_test_setup
 
     - name: Create another group for testing group info retrieval below
@@ -59,7 +59,7 @@
     - name: Retrieve security group info based on SG tags
       ec2_group_info:
         filters:
-          "tag:test": "{{ test_prefix }}_ec2_group_info_module"
+          "tag:test": "{{ resource_prefix }}_ec2_group_info_module"
       register: result_3
 
     - name: Assert results found
@@ -81,4 +81,3 @@
         name: '{{ ec2_group_name }}-info-2'
         state: absent
       ignore_errors: yes
-
