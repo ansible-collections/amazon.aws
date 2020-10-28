@@ -34,7 +34,7 @@
     - name: Retrieve security group info based on SG name
       ec2_group_info:
         filters:
-          name: '{{ ec2_group_name }}-info-2'
+          group-name: '{{ ec2_group_name }}-info-2'
       register: result_1
 
     - name: Assert results found
@@ -67,6 +67,19 @@
         that:
           - result_3.security_groups is defined
           - (result_3.security_groups|first).group_id == group_info_test_setup.group_id
+
+    - name: Retrieve security group info based on SG ID
+      ec2_group_info:
+        filters:
+          group-id: '{{ group_info_test_setup.group_id }}'
+      register: result_4
+
+    - name: Assert correct result found
+      assert:
+        that:
+          - result_4.security_groups is defined
+          - (result_4.security_groups|first).group_id == group_info_test_setup.group_id
+          - (result_4.security_groups|length) == 1
 
   always:
     # ========================= Cleanup =================================
