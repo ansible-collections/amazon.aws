@@ -1,4 +1,7 @@
-from plugins.module_utils.core import scrub_none_parameters
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import scrub_none_parameters
 import pytest
 
 scrub_none_test_data = [
@@ -7,6 +10,9 @@ scrub_none_test_data = [
      ),
     (dict(param1='something'),
      dict(param1='something')
+     ),
+    (dict(param1=False),
+     dict(param1=False)
      ),
     (dict(param1='something', param2='something_else'),
      dict(param1='something', param2='something_else')
@@ -32,6 +38,9 @@ scrub_none_test_data = [
     (dict(param1=dict(sub_param1='something', sub_param2=dict()), param2=None, param3=None, param4='something_else'),
      dict(param1=dict(sub_param1='something', sub_param2=dict()), param4='something_else')
      ),
+    (dict(param1=dict(sub_param1='something', sub_param2=False), param2=None, param3=None, param4='something_else'),
+     dict(param1=dict(sub_param1='something', sub_param2=False), param4='something_else')
+     ),     
     (dict(param1=None, param2=None),
      dict()
      ),
