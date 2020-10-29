@@ -374,9 +374,7 @@ def scrub_none_parameters(parameters):
 
     for k, v in parameters.items():
         if isinstance(v, dict):
-            nested = scrub_none_parameters(v)
-            if len(nested.keys()) > 0:
-                clean_parameters[k] = nested
+            clean_parameters[k] = scrub_none_parameters(v)
         elif v is not None:
             clean_parameters[k] = v
 
