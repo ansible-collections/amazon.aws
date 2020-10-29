@@ -1,0 +1,4 @@
+---
+minor_changes:
+  - module_utils/core - Add helper function scrub_none_parameters to remove params set to None. Enabler
+    to fix issue (https://github.com/ansible-collections/community.aws/issues/251)
