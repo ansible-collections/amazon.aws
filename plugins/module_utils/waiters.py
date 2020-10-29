@@ -4,6 +4,8 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
+import copy
+
 try:
     import botocore.waiter as core_waiter
 except ImportError:
@@ -297,23 +299,42 @@ rds_data = {
 }
 
 
+def _inject_limit_retries(model):
+
+    extra_retries = [
+        'RequestLimitExceeded', 'Unavailable', 'ServiceUnavailable',
+        'InternalFailure', 'InternalError', 'TooManyRequestsException',
+        'Throttling']
+
+    acceptors = []
+    for error in extra_retries:
+        acceptors.append({"state": "success", "matcher": "error", "expected": error})
+
+    _model = copy.deepcopy(model)
+
+    for waiter in model["waiters"]:
+        _model["waiters"][waiter]["acceptors"].extend(acceptors)
+
+    return _model
+
+
 def ec2_model(name):
-    ec2_models = core_waiter.WaiterModel(waiter_config=ec2_data)
+    ec2_models = core_waiter.WaiterModel(waiter_config=_inject_limit_retries(ec2_data))
     return ec2_models.get_waiter(name)
 
 
 def waf_model(name):
-    waf_models = core_waiter.WaiterModel(waiter_config=waf_data)
+    waf_models = core_waiter.WaiterModel(waiter_config=_inject_limit_retries(waf_data))
     return waf_models.get_waiter(name)
 
 
 def eks_model(name):
-    eks_models = core_waiter.WaiterModel(waiter_config=eks_data)
+    eks_models = core_waiter.WaiterModel(waiter_config=_inject_limit_retries(eks_data))
     return eks_models.get_waiter(name)
 
 
 def rds_model(name):
-    rds_models = core_waiter.WaiterModel(waiter_config=rds_data)
+    rds_models = core_waiter.WaiterModel(waiter_config=_inject_limit_retries(rds_data))
     return rds_models.get_waiter(name)
 
 
