@@ -724,6 +724,11 @@ class ELBListenerRules(object):
                         current_condition['SourceIpConfig']['Values'][0] == condition['SourceIpConfig']['Values'][0]):
                     condition_found = True
                     break
+            elif current_condition.get('HttpRequestMethodConfig'):
+                if (current_condition['Field'] == condition['Field'] and
+                        sorted(current_condition['HttpRequestMethodConfig']['Values']) == sorted(condition['HttpRequestMethodConfig']['Values'])):
+                    condition_found = True
+                    break
             elif current_condition['Field'] == condition['Field'] and sorted(current_condition['Values']) == sorted(condition['Values']):
                 condition_found = True
                 break
