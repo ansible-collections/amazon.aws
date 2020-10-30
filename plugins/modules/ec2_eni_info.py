@@ -200,6 +200,7 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.core import is_boto3_error_code
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
@@ -207,17 +208,19 @@ from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 def list_eni(connection, module):
 
+    params = {}
     # Options are mutually exclusive
     if module.params.get("eni_id"):
-        filters = {'network-interface-id': module.params.get("eni_id")}
+        params['NetworkInterfaceIds'] = [module.params.get("eni_id")]
     elif module.params.get("filters"):
-        filters = module.params.get("filters")
+        params['Filters'] = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
     else:
-        filters = {}
-    filters = ansible_dict_to_boto3_filter_list(filters)
+        params['Filters'] = []
 
     try:
-        network_interfaces_result = connection.describe_network_interfaces(Filters=filters, aws_retry=True)['NetworkInterfaces']
+        network_interfaces_result = connection.describe_network_interfaces(aws_retry=True, **params)['NetworkInterfaces']
+    except is_boto3_error_code('InvalidNetworkInterfaceID.NotFound'):
+        module.exit_json(network_interfaces=[])
     except (ClientError, NoCredentialsError) as e:
         module.fail_json_aws(e)
 
