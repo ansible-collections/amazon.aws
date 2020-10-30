@@ -40,7 +40,7 @@ scrub_none_test_data = [
      ),
     (dict(param1=dict(sub_param1='something', sub_param2=False), param2=None, param3=None, param4='something_else'),
      dict(param1=dict(sub_param1='something', sub_param2=False), param4='something_else')
-     ),     
+     ),
     (dict(param1=None, param2=None),
      dict()
      ),
