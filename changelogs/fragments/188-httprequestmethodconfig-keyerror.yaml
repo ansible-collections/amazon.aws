@@ -1,0 +1,4 @@
+---
+bugfixes:
+  - module_utils/elbv2 - add logic to compare_rules to suit Values list nested within HttpRequestMethodConfig dict. 
+    Fixes issue (https://github.com/ansible-collections/amazon.aws/issues/187)
