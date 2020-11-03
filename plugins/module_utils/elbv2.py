@@ -719,9 +719,15 @@ class ELBListenerRules(object):
         condition_found = False
 
         for current_condition in current_conditions:
-            if current_condition.get('SourceIpConfig'):
+            if current_condition.get('HostHeaderConfig'):
                 if (current_condition['Field'] == condition['Field'] and
-                        current_condition['SourceIpConfig']['Values'][0] == condition['SourceIpConfig']['Values'][0]):
+                        sorted(current_condition['HostHeaderConfig']['Values']) == sorted(condition['HostHeaderConfig']['Values'])):
+                    condition_found = True
+                    break
+            elif current_condition.get('HttpHeaderConfig'):
+                if (current_condition['Field'] == condition['Field'] and
+                        sorted(current_condition['HttpHeaderConfig']['Values']) == sorted(condition['HttpHeaderConfig']['Values']) and
+                        current_condition['HttpHeaderConfig']['HttpHeaderName'] == condition['HttpHeaderConfig']['HttpHeaderName']):
                     condition_found = True
                     break
             elif current_condition.get('HttpRequestMethodConfig'):
@@ -729,6 +735,24 @@ class ELBListenerRules(object):
                         sorted(current_condition['HttpRequestMethodConfig']['Values']) == sorted(condition['HttpRequestMethodConfig']['Values'])):
                     condition_found = True
                     break
+            elif current_condition.get('PathPatternConfig'):
+                if (current_condition['Field'] == condition['Field'] and
+                        sorted(current_condition['PathPatternConfig']['Values']) == sorted(condition['PathPatternConfig']['Values'])):
+                    condition_found = True
+                    break
+            elif current_condition.get('QueryStringConfig'):
+                # QueryString Values is not sorted as it is the only list of dicts (not strings).
+                if (current_condition['Field'] == condition['Field'] and
+                        current_condition['QueryStringConfig']['Values']) == condition['QueryStringConfig']['Values'])):
+                    condition_found = True
+                    break
+            elif current_condition.get('SourceIpConfig'):
+                if (current_condition['Field'] == condition['Field'] and
+                        sorted(current_condition['SourceIpConfig']['Values']) == sorted(condition['SourceIpConfig']['Values'])):
+                    condition_found = True
+                    break
+            # Not all fields are required to have Values list nested within a *Config dict
+            # e.g. fields host-header/path-pattern can directly list Values
             elif current_condition['Field'] == condition['Field'] and sorted(current_condition['Values']) == sorted(condition['Values']):
                 condition_found = True
                 break
