@@ -743,7 +743,7 @@ class ELBListenerRules(object):
             elif current_condition.get('QueryStringConfig'):
                 # QueryString Values is not sorted as it is the only list of dicts (not strings).
                 if (current_condition['Field'] == condition['Field'] and
-                        current_condition['QueryStringConfig']['Values']) == condition['QueryStringConfig']['Values'])):
+                        current_condition['QueryStringConfig']['Values'] == condition['QueryStringConfig']['Values']):
                     condition_found = True
                     break
             elif current_condition.get('SourceIpConfig'):
