@@ -237,7 +237,10 @@ except ImportError:
 
 try:
     import botocore
+    from boto3.s3.transfer import TransferConfig
+    DEFAULT_CHUNK_SIZE = TransferConfig().multipart_chunksize
 except ImportError:
+    DEFAULT_CHUNK_SIZE = 5 * 1024 * 1024
     pass  # Handled by AnsibleAWSModule
 
 from ansible.module_utils._text import to_text
@@ -270,10 +273,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto_excepti
 #
 # You should have received a copy of the GNU General Public License
 # along with calculate_multipart_etag.  If not, see <http://www.gnu.org/licenses/>.
-
-DEFAULT_CHUNK_SIZE = 5 * 1024 * 1024
-
-
 def calculate_multipart_etag(source_path, chunk_size=DEFAULT_CHUNK_SIZE):
     """
     calculates a multipart upload etag for amazon s3

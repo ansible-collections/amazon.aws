@@ -1,0 +1,108 @@
+---
+- name: S3 bucket creation
+  collections:
+    - amazon.aws
+    - community.general
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
+    # ============================================================
+    - name: Create simple s3_bucket
+      s3_bucket:
+        name: "{{ resource_prefix }}-testbucket-ansible"
+        state: present
+      register: output
+
+    - assert:
+        that:
+          - output.changed
+          - output.name == '{{ resource_prefix }}-testbucket-ansible'
+          - not output.requester_pays
+    # ============================================================
+    - name: Prepare fixtures folder
+      file:
+        path: "{{ output_dir }}/s3_sync"
+        state: directory
+        mode: '0755'
+
+    - name: Prepare files to sync
+      copy:
+        src: "{{ item }}"
+        dest: "{{ output_dir }}/s3_sync/{{ item }}"
+        mode: preserve
+      with_items:
+      - test1.txt
+      - test2.yml
+      - test3.json
+
+    - name: Prepare file with size bigger than chunk size
+      shell: |
+        dd if=/dev/zero of=test4.txt bs=1M count=10
+      args:
+        chdir: "{{ output_dir }}/s3_sync"
+
+    - name: Sync files with remote bucket
+      s3_sync:
+        bucket: "{{ resource_prefix }}-testbucket-ansible"
+        file_root: "{{ output_dir }}/s3_sync"
+      register: output
+    - assert:
+        that:
+          - output is changed
+
+    # ============================================================
+    - name: Sync files already present
+      s3_sync:
+        bucket: "{{ resource_prefix }}-testbucket-ansible"
+        file_root: "{{ output_dir }}/s3_sync"
+      register: output
+    - assert:
+        that:
+          - output is not changed
+
+    # ============================================================
+    - name: Sync files with etag calculation
+      s3_sync:
+        bucket: "{{ resource_prefix }}-testbucket-ansible"
+        file_root: "{{ output_dir }}/s3_sync"
+        file_change_strategy: checksum
+      register: output
+    - assert:
+        that:
+          - output is not changed
+
+    # ============================================================
+    # DOCUMENTATION EXAMPLES
+    # ============================================================
+    - name: all the options
+      s3_sync:
+        bucket: "{{ resource_prefix }}-testbucket-ansible"
+        file_root: "{{ output_dir }}/s3_sync"
+        mime_map:
+          .yml: application/text
+          .json: application/text
+        key_prefix: config_files/web
+        file_change_strategy: force
+        permission: public-read
+        cache_control: "public, max-age=31536000"
+        include: "*"
+        exclude: "*.txt,.*"
+      register: output
+
+    - assert:
+        that:
+          - output is changed
+
+  always:
+    - name: Ensure all buckets are deleted
+      s3_bucket:
+        name: "{{item}}"
+        state: absent
+        force: true
+      ignore_errors: yes
+      with_items:
+        - "{{ resource_prefix }}-testbucket-ansible"
