@@ -719,7 +719,10 @@ class ELBListenerRules(object):
         condition_found = False
 
         for current_condition in current_conditions:
-            if current_condition.get('HostHeaderConfig'):
+            # host-header: current_condition includes both HostHeaderConfig AND Values while
+            # condition can be defined with either HostHeaderConfig OR Values. Only use
+            # HostHeaderConfig['Values'] comparison if both conditions includes HostHeaderConfig.
+            if current_condition.get('HostHeaderConfig') and condition.get('HostHeaderConfig'):
                 if (current_condition['Field'] == condition['Field'] and
                         sorted(current_condition['HostHeaderConfig']['Values']) == sorted(condition['HostHeaderConfig']['Values'])):
                     condition_found = True
@@ -735,7 +738,10 @@ class ELBListenerRules(object):
                         sorted(current_condition['HttpRequestMethodConfig']['Values']) == sorted(condition['HttpRequestMethodConfig']['Values'])):
                     condition_found = True
                     break
-            elif current_condition.get('PathPatternConfig'):
+            # path-pattern: current_condition includes both PathPatternConfig AND Values while
+            # condition can be defined with either PathPatternConfig OR Values. Only use
+            # PathPatternConfig['Values'] comparison if both conditions includes PathPatternConfig.
+            elif current_condition.get('PathPatternConfig') and condition.get('PathPatternConfig'):
                 if (current_condition['Field'] == condition['Field'] and
                         sorted(current_condition['PathPatternConfig']['Values']) == sorted(condition['PathPatternConfig']['Values'])):
                     condition_found = True
