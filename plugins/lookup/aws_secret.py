@@ -25,6 +25,10 @@ options:
   _terms:
     description: Name of the secret to look up in AWS Secrets Manager.
     required: True
+  bypath:
+    description: A boolean to indicate whether the parameter is provided as a hierarchy.
+    default: false
+    type: boolean
   version_id:
     description: Version of the secret(s).
     required: False
@@ -35,6 +39,7 @@ options:
     description:
         - Join two or more entries to form an extended secret.
         - This is useful for overcoming the 4096 character limit imposed by AWS.
+        - No effect when used with `bypath`
     type: boolean
     default: false
   on_missing:
@@ -58,6 +63,9 @@ options:
 '''
 
 EXAMPLES = r"""
+ - name: lookup secretsmanager secret in the current region
+   debug: msg="{{ lookup('aws_secret', '/path/to/secrets', bypath=true) }}"
+
  - name: Create RDS instance with aws_secret lookup for password param
    rds:
      command: create
@@ -96,6 +104,8 @@ from ansible.plugins.lookup import LookupBase
 from ansible.module_utils._text import to_native
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
+from ..module_utils.ec2 import HAS_BOTO3
+
 
 def _boto3_conn(region, credentials):
     boto_profile = credentials.pop('aws_profile', None)
@@ -114,24 +124,26 @@ def _boto3_conn(region, credentials):
 
 
 class LookupModule(LookupBase):
-    def _get_credentials(self):
-        credentials = {}
-        credentials['aws_profile'] = self.get_option('aws_profile')
-        credentials['aws_secret_access_key'] = self.get_option('aws_secret_key')
-        credentials['aws_access_key_id'] = self.get_option('aws_access_key')
-        credentials['aws_session_token'] = self.get_option('aws_security_token')
+    def run(self, terms, variables=None, boto_profile=None, aws_profile=None,
+            aws_secret_key=None, aws_access_key=None, aws_security_token=None, region=None,
+            bypath=False, join=False,version_stage=None, version_id=None, on_missing=None,
+            on_denied=None):
+        '''
+           :arg terms: a list of lookups to run.
+               e.g. ['parameter_name', 'parameter_name_too' ]
+           :kwarg variables: ansible variables active at the time of the lookup
+           :kwarg aws_secret_key: identity of the AWS key to use
+           :kwarg aws_access_key: AWS secret key (matching identity)
+           :kwarg aws_security_token: AWS session key if using STS
+           :kwarg decrypt: Set to True to get decrypted parameters
+           :kwarg region: AWS region in which to do the lookup
+           :kwarg bypath: Set to True to do a lookup of variables under a path
+           :kwarg recursive: Set to True to recurse below the path (requires bypath=True)
+           :returns: A list of parameter values or a list of dictionaries if bypath=True.
+       '''
 
-        # fallback to IAM role credentials
-        if not credentials['aws_profile'] and not (credentials['aws_access_key_id'] and credentials['aws_secret_access_key']):
-            session = botocore.session.get_session()
-            if session.get_credentials() is not None:
-                credentials['aws_access_key_id'] = session.get_credentials().access_key
-                credentials['aws_secret_access_key'] = session.get_credentials().secret_key
-                credentials['aws_session_token'] = session.get_credentials().token
-
-        return credentials
-
-    def run(self, terms, variables, **kwargs):
+        if not HAS_BOTO3:
+            raise AnsibleError('botocore and boto3 are required for aws_ssm lookup.')
 
         missing = kwargs.get('on_missing', 'error').lower()
         if not isinstance(missing, string_types) or missing not in ['error', 'warn', 'skip']:
@@ -141,21 +153,67 @@ class LookupModule(LookupBase):
         if not isinstance(denied, string_types) or denied not in ['error', 'warn', 'skip']:
             raise AnsibleError('"on_denied" must be a string and one of "error", "warn" or "skip", not %s' % denied)
 
-        self.set_options(var_options=variables, direct=kwargs)
-        boto_credentials = self._get_credentials()
+        credentials = {}
+        if aws_profile:
+            credentials['aws_profile'] = aws_profile
+        else:
+            credentials['aws_profile'] = boto_profile
+        credentials['aws_secret_access_key'] = aws_secret_key
+        credentials['aws_access_key_id'] = aws_access_key
+        credentials['aws_session_token'] = aws_security_token
 
-        region = self.get_option('region')
-        client = _boto3_conn(region, boto_credentials)
+        # fallback to IAM role credentials
+        if not credentials['aws_profile'] and not (
+                credentials['aws_access_key_id'] and credentials['aws_secret_access_key']):
+            session = botocore.session.get_session()
+            if session.get_credentials() is not None:
+                credentials['aws_access_key_id'] = session.get_credentials().access_key
+                credentials['aws_secret_access_key'] = session.get_credentials().secret_key
+                credentials['aws_session_token'] = session.get_credentials().token
 
-        secrets = []
-        for term in terms:
-            params = {}
-            params['SecretId'] = term
-            if kwargs.get('version_id'):
-                params['VersionId'] = kwargs.get('version_id')
-            if kwargs.get('version_stage'):
-                params['VersionStage'] = kwargs.get('version_stage')
+        client = _boto3_conn(region, credentials)
 
+        if bypath:
+            secrets = {}
+            for term in terms:
+                try:
+                    response = client.list_secrets(Filters=[{'Key': 'name','Values': [term]}])
+
+                    if 'SecretList' in response:
+                        for secret in response['SecretList']:
+                            secrets.update({secret['Name'] : self.get_secret_value(secret['Name'], client)})
+                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                    raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
+            secrets = [secrets]
+        else:
+            secrets = []
+            for term in terms:
+                value = self.get_secret_value(term, client, version_stage=version_stage, version_id=version_id)
+                if value:
+                    secrets.append(value)
+            if join:
+                joined_secret = []
+                joined_secret.append(''.join(secrets))
+                return joined_secret
+
+        return secrets
+
+    def get_secret_value(self, term, client, version_stage=None, version_id=None):
+        params = {}
+        params['SecretId'] = term
+        if version_id:
+            params['VersionId'] = version_id
+        if version_stage:
+            params['VersionStage'] = version_stage
+
+        try:
+            response = client.get_secret_value(**params)
+            if 'SecretBinary' in response:
+                return response['SecretBinary']
+            if 'SecretString' in response:
+                return response['SecretString']
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
             try:
                 response = client.get_secret_value(**params)
                 if 'SecretBinary' in response:
@@ -175,9 +233,4 @@ class LookupModule(LookupBase):
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
                 raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
 
-        if kwargs.get('join'):
-            joined_secret = []
-            joined_secret.append(''.join(secrets))
-            return joined_secret
-        else:
-            return secrets
+        return None

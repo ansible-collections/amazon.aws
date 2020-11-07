@@ -26,6 +26,8 @@ from copy import copy
 from ansible.errors import AnsibleError
 from ansible.plugins.loader import lookup_loader
 
+from ansible_collections.amazon.aws.plugins.lookup import aws_secret
+
 try:
     import boto3
     from botocore.exceptions import ClientError
@@ -43,31 +45,30 @@ def dummy_credentials():
     dummy_credentials['region'] = 'eu-west-1'
     return dummy_credentials
 
+simple_variable_success_response = {
+    'Name': 'secret',
+    'VersionId': 'cafe8168-e6ce-4e59-8830-5b143faf6c52',
+    'SecretString': '{"secret":"simplesecret"}',
+    'VersionStages': ['AWSCURRENT'],
+    'ResponseMetadata': {
+        'RequestId': '21099462-597c-490a-800f-8b7a41e5151c',
+        'HTTPStatusCode': 200,
+        'HTTPHeaders': {
+            'date': 'Thu, 04 Apr 2019 10:43:12 GMT',
+            'content-type': 'application/x-amz-json-1.1',
+            'content-length': '252',
+            'connection': 'keep-alive',
+            'x-amzn-requestid': '21099462-597c-490a-800f-8b7a41e5151c'
+        },
+        'RetryAttempts': 0
+    }
+}
 
 def test_lookup_variable(mocker, dummy_credentials):
     dateutil_tz = pytest.importorskip("dateutil.tz")
-    simple_variable_success_response = {
-        'Name': 'secret',
-        'VersionId': 'cafe8168-e6ce-4e59-8830-5b143faf6c52',
-        'SecretString': '{"secret":"simplesecret"}',
-        'VersionStages': ['AWSCURRENT'],
-        'CreatedDate': datetime.datetime(2019, 4, 4, 11, 41, 0, 878000, tzinfo=dateutil_tz.tzlocal()),
-        'ResponseMetadata': {
-            'RequestId': '21099462-597c-490a-800f-8b7a41e5151c',
-            'HTTPStatusCode': 200,
-            'HTTPHeaders': {
-                'date': 'Thu, 04 Apr 2019 10:43:12 GMT',
-                'content-type': 'application/x-amz-json-1.1',
-                'content-length': '252',
-                'connection': 'keep-alive',
-                'x-amzn-requestid': '21099462-597c-490a-800f-8b7a41e5151c'
-            },
-            'RetryAttempts': 0
-        }
-    }
     lookup = lookup_loader.get('amazon.aws.aws_secret')
     boto3_double = mocker.MagicMock()
-    boto3_double.Session.return_value.client.return_value.get_secret_value.return_value = simple_variable_success_response
+    boto3_double.Session.return_value.client.return_value.get_secret_value.return_value = copy(simple_variable_success_response)
     boto3_client_double = boto3_double.Session.return_value.client
 
     mocker.patch.object(boto3, 'session', boto3_double)
@@ -122,3 +123,59 @@ def test_on_denied_option(mocker, dummy_credentials):
     args["on_denied"] = 'warn'
     retval = lookup_loader.get('amazon.aws.aws_secret').run(["denied_secret"], None, **args)
     assert(retval == [])
+
+
+def test_path_lookup_variable(mocker, dummy_credentials):
+    lookup = aws_secret.LookupModule()
+    lookup._load_name = "aws_secret"
+
+    path_list_secrets_success_response = {
+        'SecretList': [
+            {
+                'Name' : '/testpath/too',
+            },
+            {
+                'Name': '/testpath/won',
+            }
+        ],
+        'ResponseMetadata': {
+            'RequestId': '21099462-597c-490a-800f-8b7a41e5151c',
+            'HTTPStatusCode': 200,
+            'HTTPHeaders': {
+                'date': 'Thu, 04 Apr 2019 10:43:12 GMT',
+                'content-type': 'application/x-amz-json-1.1',
+                'content-length': '252',
+                'connection': 'keep-alive',
+                'x-amzn-requestid': '21099462-597c-490a-800f-8b7a41e5151c'
+            },
+            'RetryAttempts': 0
+        }
+    }
+
+    boto3_double = mocker.MagicMock()
+    list_secrets_fn = boto3_double.Session.return_value.client.return_value.list_secrets
+    list_secrets_fn.return_value = path_list_secrets_success_response
+
+    get_secret_value_fn = boto3_double.Session.return_value.client.return_value.get_secret_value
+    first_path = copy(simple_variable_success_response)
+    first_path['SecretString'] = 'simple_value_too'
+    second_path = copy(simple_variable_success_response)
+    second_path['SecretString'] = 'simple_value_won'
+    get_secret_value_fn.side_effect = [
+        first_path,
+        second_path
+    ]
+
+    boto3_client_double = boto3_double.Session.return_value.client
+
+    mocker.patch.object(boto3, 'session', boto3_double)
+    dummy_credentials["bypath"] = 'true'
+    dummy_credentials["boto_profile"] = 'test'
+    dummy_credentials["aws_profile"] = 'test'
+    retval = lookup.run(["/testpath"], {}, **dummy_credentials)
+    print(retval[0])
+    assert(retval[0]["/testpath/won"] == "simple_value_won")
+    assert(retval[0]["/testpath/too"] == "simple_value_too")
+    boto3_client_double.assert_called_with('secretsmanager', 'eu-west-1', aws_access_key_id='notakey',
+                                           aws_secret_access_key="notasecret", aws_session_token=None)
+    list_secrets_fn.assert_called_with(Filters=[{'Key': 'name','Values': ['/testpath']}])
