@@ -126,22 +126,25 @@ def _boto3_conn(region, credentials):
 class LookupModule(LookupBase):
     def run(self, terms, variables=None, boto_profile=None, aws_profile=None,
             aws_secret_key=None, aws_access_key=None, aws_security_token=None, region=None,
-            bypath=False, join=False,version_stage=None, version_id=None, on_missing=None,
+            bypath=False, join=False, version_stage=None, version_id=None, on_missing=None,
             on_denied=None):
         '''
-           :arg terms: a list of lookups to run.
-               e.g. ['parameter_name', 'parameter_name_too' ]
-           :kwarg variables: ansible variables active at the time of the lookup
-           :kwarg aws_secret_key: identity of the AWS key to use
-           :kwarg aws_access_key: AWS secret key (matching identity)
-           :kwarg aws_security_token: AWS session key if using STS
-           :kwarg decrypt: Set to True to get decrypted parameters
-           :kwarg region: AWS region in which to do the lookup
-           :kwarg bypath: Set to True to do a lookup of variables under a path
-           :kwarg recursive: Set to True to recurse below the path (requires bypath=True)
-           :returns: A list of parameter values or a list of dictionaries if bypath=True.
-       '''
-
+                   :arg terms: a list of lookups to run.
+                       e.g. ['parameter_name', 'parameter_name_too' ]
+                   :kwarg variables: ansible variables active at the time of the lookup
+                   :kwarg aws_secret_key: identity of the AWS key to use
+                   :kwarg aws_access_key: AWS secret key (matching identity)
+                   :kwarg aws_security_token: AWS session key if using STS
+                   :kwarg decrypt: Set to True to get decrypted parameters
+                   :kwarg region: AWS region in which to do the lookup
+                   :kwarg bypath: Set to True to do a lookup of variables under a path
+                   :kwarg join: Join two or more entries to form an extended secret
+                   :kwarg version_stage: Stage of the secret version
+                   :kwarg version_id: Version of the secret(s)
+                   :kwarg on_missing: Action to take if the secret is missing
+                   :kwarg on_denied: Action to take if access to the secret is denied
+                   :returns: A list of parameter values or a list of dictionaries if bypath=True.
+               '''
         if not HAS_BOTO3:
             raise AnsibleError('botocore and boto3 are required for aws_ssm lookup.')
 
@@ -177,18 +180,22 @@ class LookupModule(LookupBase):
             secrets = {}
             for term in terms:
                 try:
-                    response = client.list_secrets(Filters=[{'Key': 'name','Values': [term]}])
+                    response = client.list_secrets(Filters=[{'Key': 'name', 'Values': [term]}])
 
                     if 'SecretList' in response:
                         for secret in response['SecretList']:
-                            secrets.update({secret['Name'] : self.get_secret_value(secret['Name'], client)})
+                            secrets.update({secret['Name']: self.get_secret_value(secret['Name'], client,
+                                                                                  on_missing=on_missing,
+                                                                                  on_denied=on_denied)})
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
             secrets = [secrets]
         else:
             secrets = []
             for term in terms:
-                value = self.get_secret_value(term, client, version_stage=version_stage, version_id=version_id)
+                value = self.get_secret_value(term, client,
+                                              version_stage=version_stage, version_id=version_id,
+                                              on_missing=on_missing, on_denied=on_denied)
                 if value:
                     secrets.append(value)
             if join:
@@ -198,7 +205,7 @@ class LookupModule(LookupBase):
 
         return secrets
 
-    def get_secret_value(self, term, client, version_stage=None, version_id=None):
+    def get_secret_value(self, term, client, version_stage=None, version_id=None, on_missing=None, on_denied=None):
         params = {}
         params['SecretId'] = term
         if version_id:

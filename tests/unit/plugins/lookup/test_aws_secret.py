@@ -17,6 +17,7 @@
 
 # Make coding more python3-ish
 from __future__ import (absolute_import, division, print_function)
+
 __metaclass__ = type
 
 import pytest
@@ -45,6 +46,7 @@ def dummy_credentials():
     dummy_credentials['region'] = 'eu-west-1'
     return dummy_credentials
 
+
 simple_variable_success_response = {
     'Name': 'secret',
     'VersionId': 'cafe8168-e6ce-4e59-8830-5b143faf6c52',
@@ -64,16 +66,18 @@ simple_variable_success_response = {
     }
 }
 
+
 def test_lookup_variable(mocker, dummy_credentials):
     dateutil_tz = pytest.importorskip("dateutil.tz")
     lookup = lookup_loader.get('amazon.aws.aws_secret')
     boto3_double = mocker.MagicMock()
-    boto3_double.Session.return_value.client.return_value.get_secret_value.return_value = copy(simple_variable_success_response)
+    boto3_double.Session.return_value.client.return_value.get_secret_value.return_value = copy(
+        simple_variable_success_response)
     boto3_client_double = boto3_double.Session.return_value.client
 
     mocker.patch.object(boto3, 'session', boto3_double)
     retval = lookup.run(["simple_variable"], None, **dummy_credentials)
-    assert(retval[0] == '{"secret":"simplesecret"}')
+    assert (retval[0] == '{"secret":"simplesecret"}')
     boto3_client_double.assert_called_with('secretsmanager', 'eu-west-1', aws_access_key_id='notakey',
                                            aws_secret_access_key="notasecret", aws_session_token=None)
 
@@ -132,7 +136,7 @@ def test_path_lookup_variable(mocker, dummy_credentials):
     path_list_secrets_success_response = {
         'SecretList': [
             {
-                'Name' : '/testpath/too',
+                'Name': '/testpath/too',
             },
             {
                 'Name': '/testpath/won',
@@ -173,9 +177,8 @@ def test_path_lookup_variable(mocker, dummy_credentials):
     dummy_credentials["boto_profile"] = 'test'
     dummy_credentials["aws_profile"] = 'test'
     retval = lookup.run(["/testpath"], {}, **dummy_credentials)
-    print(retval[0])
-    assert(retval[0]["/testpath/won"] == "simple_value_won")
-    assert(retval[0]["/testpath/too"] == "simple_value_too")
+    assert (retval[0]["/testpath/won"] == "simple_value_won")
+    assert (retval[0]["/testpath/too"] == "simple_value_too")
     boto3_client_double.assert_called_with('secretsmanager', 'eu-west-1', aws_access_key_id='notakey',
                                            aws_secret_access_key="notasecret", aws_session_token=None)
-    list_secrets_fn.assert_called_with(Filters=[{'Key': 'name','Values': ['/testpath']}])
+    list_secrets_fn.assert_called_with(Filters=[{'Key': 'name', 'Values': ['/testpath']}])
