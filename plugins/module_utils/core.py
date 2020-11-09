@@ -357,3 +357,25 @@ def get_boto3_client_method_parameters(client, method_name, required=False):
     else:
         parameters = list(input_shape.members.keys())
     return parameters
+
+
+def scrub_none_parameters(parameters):
+    """
+    Iterate over a dictionary removing any keys that have a None value
+
+    Reference: https://github.com/ansible-collections/community.aws/issues/251
+    Credit: https://medium.com/better-programming/how-to-remove-null-none-values-from-a-dictionary-in-python-1bedf1aab5e4
+
+    :param parameters: parameter dict
+    :return: parameter dict with all keys = None removed
+    """
+
+    clean_parameters = {}
+
+    for k, v in parameters.items():
+        if isinstance(v, dict):
+            clean_parameters[k] = scrub_none_parameters(v)
+        elif v is not None:
+            clean_parameters[k] = v
+
+    return clean_parameters
