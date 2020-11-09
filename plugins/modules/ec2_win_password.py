@@ -187,13 +187,13 @@ def ec2_win_password(module):
         decrypted = None
 
     if decrypted is None:
-        module.exit_json(win_password='', changed=False)
+        module.fail_json(msg="unable to decrypt password", win_password='', changed=False)
     else:
         if wait:
             elapsed = datetime.datetime.now() - start
-            module.exit_json(win_password=decrypted, changed=True, elapsed=elapsed.seconds)
+            module.exit_json(win_password=decrypted, changed=False, elapsed=elapsed.seconds)
         else:
-            module.exit_json(win_password=decrypted, changed=True)
+            module.exit_json(win_password=decrypted, changed=False)
 
 
 def main():
