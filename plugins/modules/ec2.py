@@ -1413,6 +1413,8 @@ def startstop_instances(module, ec2, instance_ids, state, instance_tags):
         for key, value in instance_tags.items():
             filters["tag:" + key] = value
 
+    filters['instance-state-name'] = ["!terminated", "!shutting-down"]
+
     if module.params.get('id'):
         filters['client-token'] = module.params['id']
     # Check that our instances are not in the state we want to take
