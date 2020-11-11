@@ -244,7 +244,7 @@ ansible_facts:
             type: str
             sample: ""
         ansible_ec2_instance_life_cycle:
-            description: The life cycle of the instance.
+            description: The purchasing option of the instance.
             type: str
             sample: "on-demand"
         ansible_ec2_instance_type:
