@@ -243,8 +243,12 @@ ansible_facts:
             description: Data that can be used by other parties to verify its origin and authenticity.
             type: str
             sample: ""
+        ansible_ec2_instance_life_cycle:
+            description: The purchasing option of the instance.
+            type: str
+            sample: "on-demand"
         ansible_ec2_instance_type:
-            description: The type of instance.
+            description: The type of the instance.
             type: str
             sample: "m4.large"
         ansible_ec2_local_hostname:
