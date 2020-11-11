@@ -1,0 +1,96 @@
+---
+
+# file for testing the ec2_group_info module
+
+- block:
+    # ======================== Setup =====================================
+    - name: Create a group for testing group info retrieval below
+      ec2_group:
+        name: '{{ ec2_group_name }}-info-1'
+        vpc_id: '{{ vpc_result.vpc.id }}'
+        description: '{{ ec2_group_description }}'
+        rules:
+          - proto: tcp
+            ports:
+              - 90
+            cidr_ip: 10.2.2.2/32
+        tags:
+          test: '{{ resource_prefix }}_ec2_group_info_module'
+      register: group_info_test_setup
+
+    - name: Create another group for testing group info retrieval below
+      ec2_group:
+        name: '{{ ec2_group_name }}-info-2'
+        vpc_id: '{{ vpc_result.vpc.id }}'
+        description: '{{ ec2_group_description }}'
+        rules:
+          - proto: tcp
+            ports:
+              - 91
+            cidr_ip: 10.2.2.2/32
+
+    # ========================= ec2_group_info tests ====================
+
+    - name: Retrieve security group info based on SG name
+      ec2_group_info:
+        filters:
+          group-name: '{{ ec2_group_name }}-info-2'
+      register: result_1
+
+    - name: Assert results found
+      assert:
+        that:
+          - result_1.security_groups is defined
+          - (result_1.security_groups|first).group_name == '{{ ec2_group_name }}-info-2'
+
+    - name: Retrieve security group info based on SG VPC
+      ec2_group_info:
+        filters:
+          vpc-id: '{{ vpc_result.vpc.id }}'
+      register: result_2
+
+    - name: Assert results found
+      assert:
+        that:
+          - result_2.security_groups is defined
+          - (result_2.security_groups|first).vpc_id == vpc_result.vpc.id
+          - (result_2.security_groups|length) > 2
+
+    - name: Retrieve security group info based on SG tags
+      ec2_group_info:
+        filters:
+          "tag:test": "{{ resource_prefix }}_ec2_group_info_module"
+      register: result_3
+
+    - name: Assert results found
+      assert:
+        that:
+          - result_3.security_groups is defined
+          - (result_3.security_groups|first).group_id == group_info_test_setup.group_id
+
+    - name: Retrieve security group info based on SG ID
+      ec2_group_info:
+        filters:
+          group-id: '{{ group_info_test_setup.group_id }}'
+      register: result_4
+
+    - name: Assert correct result found
+      assert:
+        that:
+          - result_4.security_groups is defined
+          - (result_4.security_groups|first).group_id == group_info_test_setup.group_id
+          - (result_4.security_groups|length) == 1
+
+  always:
+    # ========================= Cleanup =================================
+    - name: tidy up test security group 1
+      ec2_group:
+        name: '{{ ec2_group_name }}-info-1'
+        state: absent
+      ignore_errors: yes
+
+    - name: tidy up test security group 2
+      ec2_group:
+        name: '{{ ec2_group_name }}-info-2'
+        state: absent
+      ignore_errors: yes

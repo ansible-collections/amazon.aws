@@ -1,0 +1,3 @@
+---
+bugfixes:
+  - ec2_group_info - Code fix so module works with Python 3.8 (make dict immutable in loop) (https://github.com/ansible-collections/amazon.aws/pull/181)

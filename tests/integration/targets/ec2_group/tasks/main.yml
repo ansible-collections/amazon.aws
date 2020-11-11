@@ -66,6 +66,7 @@
     - include: ./egress_tests.yml
     - include: ./data_validation.yml
     - include: ./multi_nested_target.yml
+    - include: ./group_info.yml
 
     # ============================================================
     - name: test state=absent (CHECK MODE)
