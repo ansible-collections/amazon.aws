@@ -209,6 +209,7 @@ action_groups:
   - s3_bucket_notification
   - s3_lifecycle
   - s3_logging
+  - s3_metrics_configuration
   - s3_sync
   - s3_website
   - sns

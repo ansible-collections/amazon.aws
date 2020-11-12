@@ -1,0 +1,16 @@
+---
+# Utility tasks to list bucket metrics configurations
+# TODO: Update this when an s3_metrics_configuration_info module exists
+- name: List s3 bucket metrics configurations
+  command: >
+    aws s3api list-bucket-metrics-configurations
+      --bucket {{ test_bucket }}
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ aws_access_key | default(omit) }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key | default(omit) }}"
+    AWS_SESSION_TOKEN: "{{ security_token | default(omit) }}"
+    AWS_DEFAULT_REGION: "{{ aws_region | default(omit) }}"
+  register: list_comand_result
+
+- set_fact:
+    metrics_info: "{{ (list_comand_result.stdout | from_json)['MetricsConfigurationList'] | default([]) }}"

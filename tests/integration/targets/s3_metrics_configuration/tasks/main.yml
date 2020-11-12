@@ -1,0 +1,243 @@
+---
+# Integration tests for s3_metrics_configuration
+#
+# Notes:
+# - The module only outputs 'changed' since its very simple
+#
+- module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key | default(omit) }}'
+      aws_secret_key: '{{ aws_secret_key | default(omit) }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region | default(omit) }}'
+  collections:
+    - amazon.aws
+  block:
+
+  # TODO: Until there's a module to get info s3 metrics configuration, awscli is needed
+  - name: Install awscli
+    pip:
+      state: present
+      name: awscli
+
+  # ============================================================
+  - name: Try to create metrics configuration for non-existing bucket
+    s3_metrics_configuration:
+      bucket_name: '{{ test_bucket }}'
+      id: 'EntireBucket'
+      state: present
+    register: result
+    ignore_errors: yes
+
+  - assert:
+      that:
+      - result is failed
+
+  # ============================================================
+  - name: Create simple s3_bucket to act upon it
+    s3_bucket:
+      name: '{{ test_bucket }}'
+      state: present
+    register: output
+
+  - assert:
+      that:
+      - output is changed
+      - output.name == test_bucket
+
+  # ============================================================
+  - name: Create a metrics configuration under check mode
+    s3_metrics_configuration:
+      bucket_name: '{{ test_bucket }}'
+      id: 'EntireBucket'
+      state: present
+    check_mode: yes
+    register: result
+
+  - include_tasks: './s3_metrics_info.yml'
+
+  - assert:
+      that:
+      - result is changed
+      - metrics_info | selectattr('Id', 'search', 'EntireBucket') | list | length == 0
+
+  # ============================================================
+  - name: Create a metrics configuration that enables metrics for an entire bucket
+    s3_metrics_configuration:
+      bucket_name: '{{ test_bucket }}'
+      id: 'EntireBucket'
+      state: present
+    register: result
+
+  - include_tasks: './s3_metrics_info.yml'
+
+  - assert:
+      that:
+      - result is changed
+      - metrics_info | selectattr('Id', 'search', 'EntireBucket') | list | length == 1
+
+  # ============================================================
+  - name: Create a metrics configuration idempotency under check mode
+    s3_metrics_configuration:
+      bucket_name: '{{ test_bucket }}'
+      id: 'EntireBucket'
+      state: present
+    check_mode: yes
+    register: result
+
+  - assert:
+      that:
+      - result is not changed
+
+  # ============================================================
+  - name: Create a metrics configuration idempotency
+    s3_metrics_configuration:
+      bucket_name: '{{ test_bucket }}'
+      id: 'EntireBucket'
+      state: present
+    register: result
+
+  - assert:
+      that:
+      - result is not changed
+
+  # ============================================================
+  - name: Put a metrics configuration that enables metrics for objects starting with a prefix
+    s3_metrics_configuration:
+      bucket_name: "{{ test_bucket }}"
+      id: Assets
+      filter_prefix: assets
+      state: present
+    register: result
+
+  - include_tasks: './s3_metrics_info.yml'
+
+  - assert:
+      that:
+      - result is changed
+      - (metrics_info | selectattr('Id', 'search', 'Assets') | list | first).Filter.Prefix == 'assets'
+
+  # ============================================================
+  - name: Update existing metrics configuration under check mode
+    s3_metrics_configuration:
+      bucket_name: "{{ test_bucket }}"
+      id: Assets
+      filter_tag:
+        kind: Asset
+      state: present
+    check_mode: yes
+    register: result
+
+  - include_tasks: './s3_metrics_info.yml'
+
+  - assert:
+      that:
+      - result is changed
+      - (metrics_info | selectattr('Id', 'search', 'Assets') | list | first).Filter.Prefix == 'assets'
+      - (metrics_info | selectattr('Id', 'search', 'Assets') | list | first).Filter.Tag is not defined
+
+  # ============================================================
+  - name: Update existing metrics configuration and enable metrics for objects with specific tag
+    s3_metrics_configuration:
+      bucket_name: "{{ test_bucket }}"
+      id: Assets
+      filter_tag:
+        kind: Asset
+      state: present
+    register: result
+
+  - include_tasks: './s3_metrics_info.yml'
+
+  - assert:
+      that:
+      - result is changed
+      - (metrics_info | selectattr('Id', 'search', 'Assets') | list | first).Filter.Prefix is not defined
+      - (metrics_info | selectattr('Id', 'search', 'Assets') | list | first).Filter.Tag.Key == 'kind'
+      - (metrics_info | selectattr('Id', 'search', 'Assets') | list | first).Filter.Tag.Value == 'Asset'
+
+  # ============================================================
+  - name: Put a metrics configuration that enables metrics for objects that start with a particular prefix and have specific tags applied
+    s3_metrics_configuration:
+      bucket_name: "{{ test_bucket }}"
+      id: ImportantBlueDocuments
+      filter_prefix: documents
+      filter_tags:
+        priority: High
+        class: Blue
+      state: present
+    register: result
+
+  - include_tasks: './s3_metrics_info.yml'
+
+  - assert:
+      that:
+      - result is changed
+      - (metrics_info | selectattr('Id', 'search', 'ImportantBlueDocuments') | list | first).Filter.And.Prefix == 'documents'
+      - (metrics_info | selectattr('Id', 'search', 'ImportantBlueDocuments') | list | first).Filter.And.Tags[0].Key == 'priority'
+      - (metrics_info | selectattr('Id', 'search', 'ImportantBlueDocuments') | list | first).Filter.And.Tags[0].Value == 'High'
+      - (metrics_info | selectattr('Id', 'search', 'ImportantBlueDocuments') | list | first).Filter.And.Tags[1].Key == 'class'
+      - (metrics_info | selectattr('Id', 'search', 'ImportantBlueDocuments') | list | first).Filter.And.Tags[1].Value == 'Blue'
+
+  # ============================================================
+  - name: Delete metrics configuration in check mode
+    s3_metrics_configuration:
+      bucket_name: '{{ test_bucket }}'
+      id: 'EntireBucket'
+      state: absent
+    check_mode: yes
+    register: result
+
+  - include_tasks: './s3_metrics_info.yml'
+
+  - assert:
+      that:
+      - result is changed
+      - metrics_info | selectattr('Id', 'search', 'EntireBucket') | list | length == 1 # still present
+
+  # ============================================================
+  - name: Delete metrics configuration
+    s3_metrics_configuration:
+      bucket_name: '{{ test_bucket }}'
+      id: 'EntireBucket'
+      state: absent
+    register: result
+
+  - include_tasks: './s3_metrics_info.yml'
+
+  - assert:
+      that:
+      - result is changed
+      - metrics_info | selectattr('Id', 'search', 'EntireBucket') | list | length == 0
+
+  # ============================================================
+  - name: Try to delete non-existing metrics configuration
+    s3_metrics_configuration:
+      bucket_name: '{{ test_bucket }}'
+      id: 'EntireBucket'
+      state: absent
+    register: result
+
+  - assert:
+      that:
+      - result is not changed
+
+  # ============================================================
+  - name: Try to delete metrics configuration for non-existing bucket
+    s3_metrics_configuration:
+      bucket_name: '{{ test_bucket }}-non-existing'
+      id: 'EntireBucket'
+      state: absent
+    register: result
+    ignore_errors: yes
+
+  - assert:
+      that:
+      - result is failed
+
+  # ============================================================
+  always:
+  - name: Delete test bucket
+    s3_bucket:
+      name: '{{ test_bucket }}'
+      state: absent
+    ignore_errors: yes
