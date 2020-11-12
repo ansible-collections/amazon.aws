@@ -17,12 +17,12 @@ description:
      - Allows for the management of API Gateway APIs
      - Normally you should give the api_id since there is no other
        stable guaranteed unique identifier for the API.  If you do
-       not give api_id then a new API will be create each time
+       not give api_id then a new API will be created each time
        this is run.
      - Beware that there are very hard limits on the rate that
        you can call API Gateway's REST API.  You may need to patch
        your boto.  See U(https://github.com/boto/boto3/issues/876)
-       and discuss with your AWS rep.
+       and discuss it with your AWS rep.
      - swagger_file and swagger_text are passed directly on to AWS
        transparently whilst swagger_dict is an ansible dict which is
        converted to JSON before the API definitions are uploaded.
@@ -97,7 +97,7 @@ options:
     description:
       - Type of endpoint configuration, use C(EDGE) for an edge optimized API endpoint,
       - C(REGIONAL) for just a regional deploy or PRIVATE for a private API.
-      - This will flag will only be used when creating a new API Gateway setup, not for updates.
+      - This flag will only be used when creating a new API Gateway setup, not for updates.
     choices: ['EDGE', 'REGIONAL', 'PRIVATE']
     type: str
     default: EDGE
@@ -109,7 +109,7 @@ extends_documentation_fragment:
 
 notes:
    - A future version of this module will probably use tags or another
-     ID so that an API can be create only once.
+     ID so that an API can be created only once.
    - As an early work around an intermediate version will probably do
      the same using a tag embedded in the API name.
 
