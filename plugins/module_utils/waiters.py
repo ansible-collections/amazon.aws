@@ -17,6 +17,25 @@ import ansible_collections.amazon.aws.plugins.module_utils.core as aws_core
 ec2_data = {
     "version": 2,
     "waiters": {
+        "ImageAvailable": {
+            "operation": "DescribeImages",
+            "maxAttempts": 80,
+            "delay": 15,
+            "acceptors": [
+                {
+                    "state": "success",
+                    "matcher": "pathAll",
+                    "argument": "Images[].State",
+                    "expected": "available"
+                },
+                {
+                    "state": "failure",
+                    "matcher": "pathAny",
+                    "argument": "Images[].State",
+                    "expected": "failed"
+                }
+            ]
+        },
         "InternetGatewayExists": {
             "delay": 5,
             "maxAttempts": 40,
@@ -339,6 +358,12 @@ def rds_model(name):
 
 
 waiters_by_name = {
+    ('EC2', 'image_available'): lambda ec2: core_waiter.Waiter(
+        'image_available',
+        ec2_model('ImageAvailable'),
+        core_waiter.NormalizedOperationMethod(
+            ec2.describe_images
+        )),
     ('EC2', 'internet_gateway_exists'): lambda ec2: core_waiter.Waiter(
         'internet_gateway_exists',
         ec2_model('InternetGatewayExists'),

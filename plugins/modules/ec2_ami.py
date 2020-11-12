@@ -375,6 +375,7 @@ from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import compare_aws_tags
+from ..module_utils.waiters import get_waiter
 
 
 def get_block_device_mapping(image):
@@ -504,7 +505,7 @@ def create_image(module, connection):
         module.fail_json_aws(e, msg="Error registering image")
 
     if wait:
-        waiter = connection.get_waiter('image_available')
+        waiter = get_waiter(connection, 'image_available')
         delay = wait_timeout // 30
         max_attempts = 30
         waiter.wait(ImageIds=[image_id], WaiterConfig=dict(Delay=delay, MaxAttempts=max_attempts))
