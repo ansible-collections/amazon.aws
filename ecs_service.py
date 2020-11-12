@@ -52,7 +52,7 @@ options:
           - The list of ELBs defined for this service.
         required: false
         type: list
-        elements: str
+        elements: dict
     desired_count:
         description:
           - The count of how many instances of the service.
@@ -648,7 +648,7 @@ def main():
         name=dict(required=True, type='str'),
         cluster=dict(required=False, type='str'),
         task_definition=dict(required=False, type='str'),
-        load_balancers=dict(required=False, default=[], type='list', elements='str'),
+        load_balancers=dict(required=False, default=[], type='list', elements='dict'),
         desired_count=dict(required=False, type='int'),
         client_token=dict(required=False, default='', type='str'),
         role=dict(required=False, default='', type='str'),
