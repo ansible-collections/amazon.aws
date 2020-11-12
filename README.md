@@ -261,9 +261,12 @@ You can also join us on:
 
 - Freenode IRC - ``#ansible-aws`` Freenode channel
 
-See the [Collection Developer Guide](https://docs.ansible.com/ansible/devel/dev_guide/developing_collections.html) for details on contributing to this repository.
+### More information about contributing
 
-See the [Ansible Community Guide](https://docs.ansible.com/ansible/latest/community/index.html) for details on contributing to Ansible more generally.
+- [Ansible Community Guide](https://docs.ansible.com/ansible/latest/community/index.html) - Details on contributing to Ansible
+- [Contributing to Collections](https://docs.ansible.com/ansible/devel/dev_guide/developing_collections.html#contributing-to-collections) - How to check out collection git repositories correctly
+- [Guidelines for Ansible Amazon AWS module development](https://docs.ansible.com/ansible/latest/dev_guide/platforms/aws_guidelines.html)
+- [Getting Started With AWS Ansible Module Development and Community Contribution](https://www.ansible.com/blog/getting-started-with-aws-ansible-module-development)
 
 ## Release notes
 <!--Add a link to a changelog.rst file or an external docsite to cover this information. -->
