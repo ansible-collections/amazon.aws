@@ -1,0 +1,2 @@
+bugfixes:
+  - ecs_taskdefinition - fixes elements type for ``containers`` parameter (https://github.com/ansible-collections/community.aws/issues/264).
