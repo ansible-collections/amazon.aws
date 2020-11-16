@@ -1,0 +1,114 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+
+    # ============================================================
+
+    - name: 'Create a simple bucket with public access block configuration'
+      s3_bucket:
+        name: '{{ bucket_name }}'
+        state: present
+        public_access:
+          block_public_acls: true
+          block_public_policy: true
+          ignore_public_acls: true
+          restrict_public_buckets: true
+      register: output
+
+    - assert:
+        that:
+          - output.changed
+          - output.public_access_block
+          - output.public_access_block.BlockPublicAcls
+          - output.public_access_block.BlockPublicPolicy
+          - output.public_access_block.IgnorePublicAcls
+          - output.public_access_block.RestrictPublicBuckets
+
+    - name: 'Re-configure public access block configuration'
+      s3_bucket:
+        name: '{{ bucket_name }}'
+        state: present
+        public_access:
+          block_public_acls: true
+          block_public_policy: false
+          ignore_public_acls: true
+          restrict_public_buckets: false
+      register: output
+
+    - assert:
+        that:
+          - output.changed
+          - output.public_access_block
+          - output.public_access_block.BlockPublicAcls
+          - not output.public_access_block.BlockPublicPolicy
+          - output.public_access_block.IgnorePublicAcls
+          - not output.public_access_block.RestrictPublicBuckets
+
+    - name: 'Re-configure public access block configuration (idempotency)'
+      s3_bucket:
+        name: '{{ bucket_name }}'
+        state: present
+        public_access:
+          block_public_acls: true
+          block_public_policy: false
+          ignore_public_acls: true
+          restrict_public_buckets: false
+      register: output
+
+    - assert:
+        that:
+          - output is not changed
+          - output.public_access_block
+          - output.public_access_block.BlockPublicAcls
+          - not output.public_access_block.BlockPublicPolicy
+          - output.public_access_block.IgnorePublicAcls
+          - not output.public_access_block.RestrictPublicBuckets
+
+    - name: 'Delete public access block configuration'
+      s3_bucket:
+        name: '{{ bucket_name }}'
+        state: present
+        delete_public_access: true
+      register: output
+
+    - assert:
+        that:
+          - output is changed
+          - not output.public_access_block|bool
+
+    - name: 'Delete public access block configuration (idempotency)'
+      s3_bucket:
+        name: '{{ bucket_name }}'
+        state: present
+        delete_public_access: true
+      register: output
+
+    - assert:
+        that:
+          - output is not changed
+          - not output.public_access_block|bool
+
+    # ============================================================
+
+    - name: Delete testing s3 bucket
+      s3_bucket:
+        name: '{{ bucket_name }}'
+        state: absent
+      register: output
+
+    - assert:
+        that:
+          - output.changed
+
+  # ============================================================
+  always:
+    - name: Ensure all buckets are deleted
+      s3_bucket:
+        name: '{{ bucket_name }}'
+        state: absent
+      ignore_errors: yes

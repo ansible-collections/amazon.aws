@@ -6,6 +6,7 @@ dotted
 tags
 encryption_kms
 encryption_sse
+public_access
 
 [all:vars]
 ansible_connection=local

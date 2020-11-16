@@ -89,6 +89,37 @@ options:
     description: KMS master key ID to use for the default encryption. This parameter is allowed if encryption is aws:kms. If
                  not specified then it will default to the AWS provided KMS key.
     type: str
+  public_access:
+    description:
+      - Configure public access block for S3 bucket
+      - This option cannot be used together with 'delete_public_access'
+    suboptions:
+      block_public_acls:
+        description: Sets BlockPublicAcls value
+        type: bool
+        default: False
+      block_public_policy:
+        description: Sets BlockPublicPolicy value
+        type: bool
+        default: False
+      ignore_public_acls:
+        description: Sets IgnorePublicAcls value
+        type: bool
+        default: False
+      restrict_public_buckets:
+        description: Sets RestrictPublicAcls value
+        type: bool
+        default: False
+    type: dict
+    version_added: 1.3.0
+  delete_public_access:
+    description:
+      - Delete public access block configuration from bucket
+      - This option cannot be used together with 'public_access' definition
+    default: false
+    type: bool
+    version_added: 1.3.0
+
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -153,6 +184,23 @@ EXAMPLES = '''
     name: mys3bucket
     state: present
     encryption: "aws:kms"
+
+# Create a bucket with public policy block configuration
+- amazon.aws.s3_bucket:
+    name: mys3bucket
+    state: present
+    public_access:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        ## keys == 'false' can be ommited, undefined keys defaults to 'false'
+        # BlockPublicPolicy: false
+        # RestrictPublicBuckets: false
+
+# Delete public policy block from bucket
+- amazon.aws.s3_bucket:
+    name: mys3bucket
+    state: present
+    delete_public_access: true
 '''
 
 import json
@@ -176,6 +224,7 @@ from ..module_utils.ec2 import boto3_conn
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import compare_policies
 from ..module_utils.ec2 import get_aws_connection_info
+from ..module_utils.ec2 import snake_dict_to_camel_dict
 
 
 def create_or_update_bucket(s3_client, module, location):
@@ -188,6 +237,8 @@ def create_or_update_bucket(s3_client, module, location):
     versioning = module.params.get("versioning")
     encryption = module.params.get("encryption")
     encryption_key_id = module.params.get("encryption_key_id")
+    public_access = module.params.get("public_access")
+    delete_public_access = module.params.get("delete_public_access")
     changed = False
     result = {}
 
@@ -356,6 +407,39 @@ def create_or_update_bucket(s3_client, module, location):
 
         result['encryption'] = current_encryption
 
+    # Public access clock configuration
+    current_public_access = {}
+
+    # -- Create / Update public access block
+    if public_access is not None:
+        try:
+            current_public_access = get_bucket_public_access(s3_client, name)
+        except (ClientError, BotoCoreError) as err_public_access:
+            module.fail_json_aws(err_public_access, msg="Failed to get bucket public access configuration")
+        camel_public_block = snake_dict_to_camel_dict(public_access, capitalize_first=True)
+
+        if current_public_access == camel_public_block:
+            result['public_access_block'] = current_public_access
+        else:
+            put_bucket_public_access(s3_client, name, camel_public_block)
+            changed = True
+            result['public_access_block'] = camel_public_block
+
+    # -- Delete public access block
+    if delete_public_access:
+        try:
+            current_public_access = get_bucket_public_access(s3_client, name)
+        except (ClientError, BotoCoreError) as err_public_access:
+            module.fail_json_aws(err_public_access, msg="Failed to get bucket public access configuration")
+
+        if current_public_access == {}:
+            result['public_access_block'] = current_public_access
+        else:
+            delete_bucket_public_access(s3_client, name)
+            changed = True
+            result['public_access_block'] = {}
+
+    # Module exit
     module.exit_json(changed=changed, name=name, **result)
 
 
@@ -487,6 +571,22 @@ def delete_bucket(s3_client, bucket_name):
         pass
 
 
+@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
+def put_bucket_public_access(s3_client, bucket_name, public_acces):
+    '''
+    Put new public access block to S3 bucket
+    '''
+    s3_client.put_public_access_block(Bucket=bucket_name, PublicAccessBlockConfiguration=public_acces)
+
+
+@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
+def delete_bucket_public_access(s3_client, bucket_name):
+    '''
+    Delete public access block from S3 bucket
+    '''
+    s3_client.delete_public_access_block(Bucket=bucket_name)
+
+
 def wait_policy_is_applied(module, s3_client, bucket_name, expected_policy, should_fail=True):
     for dummy in range(0, 12):
         try:
@@ -578,6 +678,17 @@ def get_current_bucket_tags_dict(s3_client, bucket_name):
         return {}
 
     return boto3_tag_list_to_ansible_dict(current_tags)
+
+
+def get_bucket_public_access(s3_client, bucket_name):
+    '''
+    Get current bucket public access block
+    '''
+    try:
+        bucket_public_access_block = s3_client.get_public_access_block(Bucket=bucket_name)
+        return bucket_public_access_block['PublicAccessBlockConfiguration']
+    except is_boto3_error_code('NoSuchPublicAccessBlockConfiguration'):
+        return {}
 
 
 def paginated_list(s3_client, **pagination_params):
@@ -691,15 +802,25 @@ def main():
         versioning=dict(type='bool'),
         ceph=dict(default=False, type='bool'),
         encryption=dict(choices=['none', 'AES256', 'aws:kms']),
-        encryption_key_id=dict()
+        encryption_key_id=dict(),
+        public_access=dict(type='dict', options=dict(
+            block_public_acls=dict(type='bool', default=False),
+            ignore_public_acls=dict(type='bool', default=False),
+            block_public_policy=dict(type='bool', default=False),
+            restrict_public_buckets=dict(type='bool', default=False))),
+        delete_public_access=dict(type='bool', default=False)
     )
 
     required_by = dict(
         encryption_key_id=('encryption',),
     )
 
+    mutually_exclusive = [
+        ['public_access', 'delete_public_access']
+    ]
+
     module = AnsibleAWSModule(
-        argument_spec=argument_spec, required_by=required_by
+        argument_spec=argument_spec, required_by=required_by, mutually_exclusive=mutually_exclusive
     )
 
     region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
