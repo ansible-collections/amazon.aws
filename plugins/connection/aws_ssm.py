@@ -309,7 +309,7 @@ class Connection(ConnectionBase):
             raise AnsibleError("failed to find the executable specified %s."
                                " Please verify if the executable exists and re-try." % executable)
 
-        profile_name = self.get_option('profile')
+        profile_name = self.get_option('profile') or ''
         region_name = self.get_option('region')
         ssm_parameters = dict()
         client = self._get_boto_client('ssm', region_name=region_name, profile_name=profile_name)
