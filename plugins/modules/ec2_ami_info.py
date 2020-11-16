@@ -207,6 +207,8 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.core import is_boto3_error_code
+from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
@@ -240,7 +242,8 @@ def list_ec2_images(ec2_client, module):
     filters = ansible_dict_to_boto3_filter_list(filters)
 
     try:
-        images = ec2_client.describe_images(ImageIds=image_ids, Filters=filters, Owners=owner_param, ExecutableUsers=executable_users)
+        images = ec2_client.describe_images(aws_retry=True, ImageIds=image_ids, Filters=filters, Owners=owner_param,
+                                            ExecutableUsers=executable_users)
         images = [camel_dict_to_snake_dict(image) for image in images["Images"]]
     except (ClientError, BotoCoreError) as err:
         module.fail_json_aws(err, msg="error describing images")
@@ -248,11 +251,14 @@ def list_ec2_images(ec2_client, module):
         try:
             image['tags'] = boto3_tag_list_to_ansible_dict(image.get('tags', []))
             if module.params.get("describe_image_attributes"):
-                launch_permissions = ec2_client.describe_image_attribute(Attribute='launchPermission', ImageId=image['image_id'])['LaunchPermissions']
+                launch_permissions = ec2_client.describe_image_attribute(aws_retry=True, Attribute='launchPermission',
+                                                                         ImageId=image['image_id'])['LaunchPermissions']
                 image['launch_permissions'] = [camel_dict_to_snake_dict(perm) for perm in launch_permissions]
-        except (ClientError, BotoCoreError) as err:
+        except is_boto3_error_code('AuthFailure'):
             # describing launch permissions of images owned by others is not permitted, but shouldn't cause failures
             pass
+        except (ClientError, BotoCoreError) as err:
+            module.fail_json_aws(err, 'Failed to describe AMI')
 
     images.sort(key=lambda e: e.get('creation_date', ''))  # it may be possible that creation_date does not always exist
     module.exit_json(images=images)
@@ -272,7 +278,7 @@ def main():
     if module._module._name == 'ec2_ami_facts':
         module._module.deprecate("The 'ec2_ami_facts' module has been renamed to 'ec2_ami_info'", date='2021-12-01', collection_name='amazon.aws')
 
-    ec2_client = module.client('ec2')
+    ec2_client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
     list_ec2_images(ec2_client, module)
 

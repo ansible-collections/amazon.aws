@@ -80,6 +80,8 @@ options:
           type: str
           description:
           - The device name. For example C(/dev/sda).
+          required: yes
+          aliases: ['DeviceName']
         virtual_name:
           type: str
           description:
@@ -369,9 +371,11 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.core import is_boto3_error_code
+from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import compare_aws_tags
+from ..module_utils.waiters import get_waiter
 
 
 def get_block_device_mapping(image):
@@ -476,7 +480,7 @@ def create_image(module, connection):
         if instance_id:
             params['InstanceId'] = instance_id
             params['NoReboot'] = no_reboot
-            image_id = connection.create_image(**params).get('ImageId')
+            image_id = connection.create_image(aws_retry=True, **params).get('ImageId')
         else:
             if architecture:
                 params['Architecture'] = architecture
@@ -496,19 +500,19 @@ def create_image(module, connection):
                 params['KernelId'] = kernel_id
             if root_device_name:
                 params['RootDeviceName'] = root_device_name
-            image_id = connection.register_image(**params).get('ImageId')
+            image_id = connection.register_image(aws_retry=True, **params).get('ImageId')
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Error registering image")
 
     if wait:
-        waiter = connection.get_waiter('image_available')
+        waiter = get_waiter(connection, 'image_available')
         delay = wait_timeout // 30
         max_attempts = 30
         waiter.wait(ImageIds=[image_id], WaiterConfig=dict(Delay=delay, MaxAttempts=max_attempts))
 
     if tags:
         try:
-            connection.create_tags(Resources=[image_id], Tags=ansible_dict_to_boto3_tag_list(tags))
+            connection.create_tags(aws_retry=True, Resources=[image_id], Tags=ansible_dict_to_boto3_tag_list(tags))
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Error tagging image")
 
@@ -520,7 +524,7 @@ def create_image(module, connection):
             for user_id in launch_permissions.get('user_ids', []):
                 params['LaunchPermission']['Add'].append(dict(UserId=str(user_id)))
             if params['LaunchPermission']['Add']:
-                connection.modify_image_attribute(**params)
+                connection.modify_image_attribute(aws_retry=True, **params)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Error setting launch permissions for image %s" % image_id)
 
@@ -549,7 +553,7 @@ def deregister_image(module, connection):
     # When trying to re-deregister an already deregistered image it doesn't raise an exception, it just returns an object without image attributes.
     if 'ImageId' in image:
         try:
-            connection.deregister_image(ImageId=image_id)
+            connection.deregister_image(aws_retry=True, ImageId=image_id)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Error deregistering image")
     else:
@@ -568,14 +572,14 @@ def deregister_image(module, connection):
     exit_params = {'msg': "AMI deregister operation complete.", 'changed': True}
 
     if delete_snapshot:
-        try:
-            for snapshot_id in snapshots:
-                connection.delete_snapshot(SnapshotId=snapshot_id)
-        # Don't error out if root volume snapshot was already deregistered as part of deregister_image
-        except is_boto3_error_code('InvalidSnapshot.NotFound'):
-            pass
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Failed to delete snapshot.')
+        for snapshot_id in snapshots:
+            try:
+                connection.delete_snapshot(aws_retry=True, SnapshotId=snapshot_id)
+            # Don't error out if root volume snapshot was already deregistered as part of deregister_image
+            except is_boto3_error_code('InvalidSnapshot.NotFound'):
+                pass
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                module.fail_json_aws(e, msg='Failed to delete snapshot.')
         exit_params['snapshots_deleted'] = snapshots
 
     module.exit_json(**exit_params)
@@ -606,7 +610,8 @@ def update_image(module, connection, image_id):
 
         if to_add or to_remove:
             try:
-                connection.modify_image_attribute(ImageId=image_id, Attribute='launchPermission',
+                connection.modify_image_attribute(aws_retry=True,
+                                                  ImageId=image_id, Attribute='launchPermission',
                                                   LaunchPermission=dict(Add=to_add, Remove=to_remove))
                 changed = True
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -619,14 +624,14 @@ def update_image(module, connection, image_id):
 
         if tags_to_remove:
             try:
-                connection.delete_tags(Resources=[image_id], Tags=[dict(Key=tagkey) for tagkey in tags_to_remove])
+                connection.delete_tags(aws_retry=True, Resources=[image_id], Tags=[dict(Key=tagkey) for tagkey in tags_to_remove])
                 changed = True
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                 module.fail_json_aws(e, msg="Error updating tags")
 
         if tags_to_add:
             try:
-                connection.create_tags(Resources=[image_id], Tags=ansible_dict_to_boto3_tag_list(tags_to_add))
+                connection.create_tags(aws_retry=True, Resources=[image_id], Tags=ansible_dict_to_boto3_tag_list(tags_to_add))
                 changed = True
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                 module.fail_json_aws(e, msg="Error updating tags")
@@ -634,7 +639,7 @@ def update_image(module, connection, image_id):
     description = module.params.get('description')
     if description and description != image['Description']:
         try:
-            connection.modify_image_attribute(Attribute='Description ', ImageId=image_id, Description=dict(Value=description))
+            connection.modify_image_attribute(aws_retry=True, Attribute='Description ', ImageId=image_id, Description=dict(Value=description))
             changed = True
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Error setting description for image %s" % image_id)
@@ -650,7 +655,7 @@ def update_image(module, connection, image_id):
 def get_image_by_id(module, connection, image_id):
     try:
         try:
-            images_response = connection.describe_images(ImageIds=[image_id])
+            images_response = connection.describe_images(aws_retry=True, ImageIds=[image_id])
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Error retrieving image %s" % image_id)
         images = images_response.get('Images')
@@ -660,8 +665,10 @@ def get_image_by_id(module, connection, image_id):
         if no_images == 1:
             result = images[0]
             try:
-                result['LaunchPermissions'] = connection.describe_image_attribute(Attribute='launchPermission', ImageId=image_id)['LaunchPermissions']
-                result['ProductCodes'] = connection.describe_image_attribute(Attribute='productCodes', ImageId=image_id)['ProductCodes']
+                result['LaunchPermissions'] = connection.describe_image_attribute(aws_retry=True, Attribute='launchPermission',
+                                                                                  ImageId=image_id)['LaunchPermissions']
+                result['ProductCodes'] = connection.describe_image_attribute(aws_retry=True, Attribute='productCodes',
+                                                                             ImageId=image_id)['ProductCodes']
             except is_boto3_error_code('InvalidAMIID.Unavailable'):
                 pass
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -687,7 +694,7 @@ def rename_item_if_exists(dict_object, attribute, new_attribute, child_node=None
 
 def main():
     mapping_options = dict(
-        device_name=dict(type='str'),
+        device_name=dict(type='str', aliases=['DeviceName'], required=True),
         virtual_name=dict(
             type='str', aliases=['VirtualName'],
             deprecated_aliases=[dict(name='VirtualName', date='2022-06-01', collection_name='amazon.aws')]),
@@ -738,7 +745,7 @@ def main():
     if not any([module.params['image_id'], module.params['name']]):
         module.fail_json(msg="one of the following is required: name, image_id")
 
-    connection = module.client('ec2')
+    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
     if module.params.get('state') == 'absent':
         deregister_image(module, connection)
