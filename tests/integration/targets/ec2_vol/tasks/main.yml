@@ -8,7 +8,7 @@
       region: '{{ aws_region | default(omit) }}'
 
   collections:
-    - community.aws
+    - amazon.aws
 
   block:
 
@@ -71,10 +71,12 @@
           - "'volume_id' in volume1"
           - "'volume_type' in volume1"
           - "'device' in volume1"
-          - "volume1.volume.status == 'available'"
-          - "volume1.volume_type == 'standard'"
-          - "'attachment_set' in volume1.volume and 'instance_id' in volume1.volume.attachment_set and not volume1.volume.attachment_set.instance_id"
-          - "not volume1.volume.encrypted"
+          - volume1.volume.status == 'available'
+          - volume1.volume_type == 'standard'
+          - "'attachment_set' in volume1.volume"
+          - "'instance_id' in volume1.volume.attachment_set"
+          - not volume1.volume.attachment_set.instance_id
+          - not volume1.volume.encrypted
 
     # no idempotency check needed here
 
@@ -98,11 +100,11 @@
           - "'volume_id' in volume2"
           - "'volume_type' in volume2"
           - "'device' in volume2"
-          - "volume2.volume.status == 'available'"
-          - "volume2.volume_type == 'io1'"
-          - "volume2.volume.iops == 101"
-          - "volume2.volume.size == 4"
-          - "volume2.volume.encrypted"
+          - volume2.volume.status == 'available'
+          - volume2.volume_type == 'io1'
+          - volume2.volume.iops == 101
+          - volume2.volume.size == 4
+          - volume2.volume.encrypted
 
     - name: create another volume (override module defaults) (idempotent)
       ec2_vol:
@@ -177,12 +179,12 @@
     - name: check task return attributes
       assert:
         that:
-          - "vol_attach_result.changed"
+          - vol_attach_result.changed
           - "'device' in vol_attach_result and vol_attach_result.device == '/dev/sdg'"
           - "'volume' in vol_attach_result"
-          - "vol_attach_result.volume.attachment_set.status == 'attached'"
-          - "vol_attach_result.volume.attachment_set.instance_id == test_instance.instance_ids[0]"
-          - "vol_attach_result.volume.attachment_set.device == '/dev/sdg'"
+          - vol_attach_result.volume.attachment_set.status in ['attached', 'attaching']
+          - vol_attach_result.volume.attachment_set.instance_id == test_instance.instance_ids[0]
+          - vol_attach_result.volume.attachment_set.device == '/dev/sdg'
 
 #          Failing
 #          - "vol_attach_result.volume.attachment_set.deleteOnTermination"
@@ -199,6 +201,7 @@
       assert:
         that:
           - "not vol_attach_result.changed"
+          - "vol_attach_result.volume.attachment_set.status == 'attached'"
 
     - name: attach a new volume to an instance
       ec2_vol:
@@ -213,12 +216,12 @@
     - name: check task return attributes
       assert:
         that:
-          - "new_vol_attach_result.changed"
+          - new_vol_attach_result.changed
           - "'device' in new_vol_attach_result and new_vol_attach_result.device == '/dev/sdh'"
           - "'volume' in new_vol_attach_result"
-          - "new_vol_attach_result.volume.attachment_set.status == 'attached'"
-          - "new_vol_attach_result.volume.attachment_set.instance_id == test_instance.instance_ids[0]"
-          - "new_vol_attach_result.volume.attachment_set.device == '/dev/sdh'"
+          - new_vol_attach_result.volume.attachment_set.status in ['attached', 'attaching']
+          - new_vol_attach_result.volume.attachment_set.instance_id == test_instance.instance_ids[0]
+          - new_vol_attach_result.volume.attachment_set.device == '/dev/sdh'
 
     - name: attach a new volume to an instance (idempotent)
       ec2_vol:
@@ -229,6 +232,7 @@
         tags:
           ResourcePrefix: "{{ resource_prefix }}"
       register: new_vol_attach_result_idem
+      ignore_errors: true
 
     - name: check task return attributes
       assert:
@@ -248,11 +252,11 @@
     - name: check task return attributes
       assert:
         that:
-          - "attach_new_vol_from_snapshot_result.changed"
+          - attach_new_vol_from_snapshot_result.changed
           - "'device' in attach_new_vol_from_snapshot_result and attach_new_vol_from_snapshot_result.device == '/dev/sdi'"
           - "'volume' in attach_new_vol_from_snapshot_result"
-          - "attach_new_vol_from_snapshot_result.volume.attachment_set.status == 'attached'"
-          - "attach_new_vol_from_snapshot_result.volume.attachment_set.instance_id == test_instance.instance_ids[0]"
+          - attach_new_vol_from_snapshot_result.volume.attachment_set.status in ['attached', 'attaching']
+          - attach_new_vol_from_snapshot_result.volume.attachment_set.instance_id == test_instance.instance_ids[0]
 
     - name: list volumes attached to instance
       ec2_vol:
@@ -263,9 +267,9 @@
     - name: check task return attributes
       assert:
         that:
-          - "not inst_vols.changed"
+          - not inst_vols.changed
           - "'volumes' in inst_vols"
-          - "inst_vols.volumes | length == 4"
+          - inst_vols.volumes | length == 4
 
     - name: get info on ebs volumes
       ec2_vol_info:
@@ -274,7 +278,7 @@
     - name: check task return attributes
       assert:
         that:
-          - "not ec2_vol_info.failed"
+          - not ec2_vol_info.failed
 
     - name: get info on ebs volumes
       ec2_vol_info:
@@ -285,7 +289,7 @@
     - name: check task return attributes
       assert:
         that:
-          - "{{ ec2_vol_info.volumes | length == 4 }}"
+          - ec2_vol_info.volumes | length == 4
 
     - name: detach volume from the instance
       ec2_vol:
@@ -296,8 +300,8 @@
     - name: check task return attributes
       assert:
         that:
-          - "new_vol_attach_result.changed"
-          - "new_vol_attach_result.volume.status == 'available'"
+          - new_vol_attach_result.changed
+          - new_vol_attach_result.volume.status == 'available'
 
     - name: detach volume from the instance (idempotent)
       ec2_vol:
@@ -308,7 +312,7 @@
     - name: check task return attributes
       assert:
         that:
-          - "not new_vol_attach_result_idem.changed"
+          - not new_vol_attach_result_idem.changed
 
     - name: delete volume
       ec2_vol:
@@ -330,11 +334,30 @@
     - name: check task return attributes
       assert:
         that:
-          - "not delete_volume_result_idem.changed"
+          - not delete_volume_result_idem.changed
+          - '"Volume {{ volume2.volume_id }} does not exist" in delete_volume_result_idem.msg'
 
     # ==== Cleanup ============================================================
 
   always:
+    - name: Describe the volume before we delete it
+      ec2_vol_info:
+        id: "{{ item.volume_id }}"
+      ignore_errors: yes
+      register: pre_delete
+
+    - debug:
+        var: pre_delete
+
+    - name: Describe the instance before we delete it
+      ec2_instance_info:
+        instance_ids:
+          - "{{ test_instance.instance_ids[0] }}"
+      ignore_errors: yes
+      register: pre_delete
+
+    - debug:
+        var: pre_delete
 
     - name: delete test instance
       ec2_instance:
