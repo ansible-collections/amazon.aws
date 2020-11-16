@@ -111,12 +111,14 @@ options:
         type: bool
         default: False
     type: dict
+    version_added: 1.3.0
   delete_public_access:
     description:
       - Delete public access block configuration from bucket
       - This option cannot be used together with 'public_access' definition
     default: false
     type: bool
+    version_added: 1.3.0
 
 extends_documentation_fragment:
 - amazon.aws.aws
