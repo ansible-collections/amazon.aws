@@ -134,14 +134,14 @@ options:
       - The parameter value will be treated as a string and converted to UTF-8 before sending it to S3.
         To send binary data, use the I(content_base64) parameter instead.
       - Either I(content), I(content_base64) or I(src) must be specified for a PUT operation. Ignored otherwise.
-    version_added: "1.1.0"
+    version_added: "1.3.0"
     type: str
   content_base64:
     description:
       - The base64-encoded binary data to PUT into an object.
       - Use this if you need to put raw binary data, and don't forget to encode in base64.
       - Either I(content), I(content_base64) or I(src) must be specified for a PUT operation. Ignored otherwise.
-    version_added: "1.1.0"
+    version_added: "1.3.0"
     type: str
   ignore_nonexistent_bucket:
     description:
