@@ -526,6 +526,108 @@
               - result is not changed
       when: ansible_system == 'Linux' or ansible_distribution == 'MacOSX'
 
+    - name: create an object from static content
+      aws_s3:
+        bucket: "{{ bucket_name }}"
+        object: put-content.txt
+        mode: put
+        content: >-
+          test content
+      register: result
+
+    - assert:
+        that:
+          - result is changed
+
+    - name: ensure idempotency on static content
+      aws_s3:
+        bucket: "{{ bucket_name }}"
+        object: put-content.txt
+        mode: put
+        overwrite: different
+        content: >-
+          test content
+      register: result
+
+    - assert:
+        that:
+          - result is not changed
+
+    - name: fetch test content
+      aws_s3:
+        bucket: "{{ bucket_name }}"
+        mode: getstr
+        object: put-content.txt
+      register: result
+
+    - assert:
+        that:
+          - result.contents == "test content"
+
+    - set_fact:
+        put_template_text: test template
+
+    - name: create an object from a template
+      aws_s3:
+        bucket: "{{ bucket_name }}"
+        object: put-template.txt
+        mode: put
+        content: "{{ lookup('template', 'templates/put-template.txt.j2') }}"
+      register: result
+
+    - assert:
+        that:
+          - result is changed
+
+    - name: fetch template content
+      aws_s3:
+        bucket: "{{ bucket_name }}"
+        mode: getstr
+        object: put-template.txt
+      register: result
+
+    - assert:
+        that:
+          - result.contents == "{{ lookup('template', 'templates/put-template.txt.j2') }}"
+
+    # at present, there is no lookup that can process binary data, so we use slurp instead
+    - slurp:
+        src: "{{ role_path }}/files/test.png"
+      register: put_binary
+
+    - name: create an object from binary data
+      aws_s3:
+        bucket: "{{ bucket_name }}"
+        object: put-binary.bin
+        mode: put
+        content_base64: "{{ put_binary.content }}"
+      register: result
+
+    - assert:
+        that:
+          - result is changed
+
+    - name: fetch binary content
+      aws_s3:
+        bucket: "{{ bucket_name }}"
+        mode: get
+        dest: "{{ tmpdir.path }}/download_binary.bin"
+        object: put-binary.bin
+      register: result
+
+    - name: stat the files so we can compare the checksums
+      stat:
+        path: "{{ item }}"
+        get_checksum: yes
+      loop:
+      - "{{ role_path }}/files/test.png"
+      - "{{ tmpdir.path }}/download_binary.bin"
+      register: binary_files
+
+    - assert:
+        that:
+          - binary_files.results[0].stat.checksum == binary_files.results[1].stat.checksum
+
   always:
     - name: remove uploaded files
       aws_s3:
@@ -537,6 +639,9 @@
         - delete.txt
         - delete_encrypt.txt
         - delete_encrypt_kms.txt
+        - put-content.txt
+        - put-template.txt
+        - put-binary.txt
       ignore_errors: yes
 
     - name: delete temporary files
@@ -548,5 +653,11 @@
     - name: delete the bucket
       aws_s3:
         bucket: "{{ bucket_name }}"
+        mode: delete
+      ignore_errors: yes
+
+    - name: delete the dot bucket
+      aws_s3:
+        bucket: "{{ bucket_name + '.bucket' }}"
         mode: delete
       ignore_errors: yes
