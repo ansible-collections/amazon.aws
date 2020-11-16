@@ -503,10 +503,10 @@ class Connection(ConnectionBase):
 
         return stderr
 
-    def _get_url(self, client_method, bucket_name, out_path, http_method):
+    def _get_url(self, client_method, bucket_name, out_path, http_method, profile_name):
         ''' Generate URL for get_object / put_object '''
         region_name = self.get_option('region') or 'us-east-1'
-        client = self._get_boto_client('s3', region_name)
+        client = self._get_boto_client('s3', region_name=region_name, profile_name=profile_name)
         return client.generate_presigned_url(client_method, Params={'Bucket': bucket_name, 'Key': out_path}, ExpiresIn=3600, HttpMethod=http_method)
 
     def _get_boto_client(self, service, region_name=None, profile_name=None):
@@ -544,18 +544,20 @@ class Connection(ConnectionBase):
         s3_path = path_unescaped.replace('\\', '/')
         bucket_url = 's3://%s/%s' % (self.get_option('bucket_name'), s3_path)
 
+        profile_name = self.get_option('profile')
+
         if self.is_windows:
             put_command = "Invoke-WebRequest -Method PUT -InFile '%s' -Uri '%s' -UseBasicParsing" % (
-                in_path, self._get_url('put_object', self.get_option('bucket_name'), s3_path, 'PUT'))
+                in_path, self._get_url('put_object', self.get_option('bucket_name'), s3_path, 'PUT', profile_name))
             get_command = "Invoke-WebRequest '%s' -OutFile '%s'" % (
-                self._get_url('get_object', self.get_option('bucket_name'), s3_path, 'GET'), out_path)
+                self._get_url('get_object', self.get_option('bucket_name'), s3_path, 'GET', profile_name), out_path)
         else:
             put_command = "curl --request PUT --upload-file '%s' '%s'" % (
-                in_path, self._get_url('put_object', self.get_option('bucket_name'), s3_path, 'PUT'))
+                in_path, self._get_url('put_object', self.get_option('bucket_name'), s3_path, 'PUT', profile_name))
             get_command = "curl '%s' -o '%s'" % (
-                self._get_url('get_object', self.get_option('bucket_name'), s3_path, 'GET'), out_path)
+                self._get_url('get_object', self.get_option('bucket_name'), s3_path, 'GET', profile_name), out_path)
 
-        client = self._get_boto_client('s3')
+        client = self._get_boto_client('s3', profile_name=profile_name)
         if ssm_action == 'get':
             (returncode, stdout, stderr) = self.exec_command(put_command, in_data=None, sudoable=False)
             with open(to_bytes(out_path, errors='surrogate_or_strict'), 'wb') as data:
