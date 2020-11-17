@@ -96,7 +96,7 @@ files:
   $modules/aws_eks_cluster.py:
     authors: willthames
   $modules/aws_elasticbeanstalk_app.py:
-    authors: hsingh viper233
+    authors: viper233
   $modules/aws_inspector_target.py:
     authors: dennisconrad
   $modules/aws_kms.py:
