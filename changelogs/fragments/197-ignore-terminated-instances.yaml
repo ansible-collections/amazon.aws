@@ -1,0 +1,2 @@
+bugfixes:
+  - ec2 - ignore terminated instances and instances that are shutting down when starting and stopping (https://github.com/ansible-collections/amazon.aws/issues/146).

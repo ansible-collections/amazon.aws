@@ -8,6 +8,14 @@
   block:
 
     # SETUP: vpc, ec2 key pair, subnet, security group, ec2 instance
+    - name: list available AZs
+      aws_az_info:
+      register: region_azs
+
+    - name: pick an AZ for testing
+      set_fact:
+        availability_zone: "{{ region_azs.availability_zones[0].zone_name }}"
+
     - name: create a VPC to work in
       ec2_vpc_net:
         cidr_block: '{{ vpc_cidr }}'
@@ -25,7 +33,7 @@
 
     - name: create a subnet to use for creating an ec2 instance
       ec2_vpc_subnet:
-        az: '{{ ec2_region }}a'
+        az: '{{ availability_zone }}'
         tags: '{{ resource_prefix }}_setup'
         vpc_id: '{{ setup_vpc.vpc.id }}'
         cidr: '{{ subnet_cidr }}'
@@ -42,29 +50,56 @@
         vpc_id: '{{ setup_vpc.vpc.id }}'
       register: setup_sg
 
+    - name: Find AMI to use
+      ec2_ami_info:
+        owners: 'amazon'
+        filters:
+          name: '{{ ec2_ami_name }}'
+      register: ec2_amis
+
+    - name: Set fact with latest AMI
+      vars:
+        latest_ami: '{{ ec2_amis.images | sort(attribute="creation_date") | last }}'
+      set_fact:
+        ec2_ami_image: '{{ latest_ami.image_id }}'
+
     # ============================================================
 
-    - name: test instance is started
+    - name: test first instance is started
       ec2:
         instance_type: t2.micro
         key_name: '{{ setup_key.key.name }}'
         state: present
-        image: '{{ ec2_ami_name }}'
+        image: '{{ ec2_ami_image }}'
         wait: yes
         instance_tags:
           ResourcePrefix: '{{ resource_prefix }}-integration_tests'
         group_id: '{{ setup_sg.group_id }}'
         vpc_subnet_id: '{{ setup_subnet.subnet.id }}'
-      register: test_instance
+      register: test_instance_1
 
-    - name: assert instance started
+    - name: test second instance is started
+      ec2:
+        instance_type: t2.micro
+        key_name: '{{ setup_key.key.name }}'
+        state: present
+        image: '{{ ec2_ami_image }}'
+        wait: yes
+        instance_tags:
+          ResourcePrefix: '{{ resource_prefix }}-another_tag'
+        group_id: '{{ setup_sg.group_id }}'
+        vpc_subnet_id: '{{ setup_subnet.subnet.id }}'
+      register: test_instance_2
+
+    - name: assert instances started
       assert:
         that:
-          - "test_instance.instances[0].state == 'running'"
+          - "test_instance_1.instances[0].state == 'running'"
+          - "test_instance_2.instances[0].state == 'running'"
 
-    - name: test instance is terminated
+    - name: test first instance is terminated
       ec2:
-        instance_ids: "{{ test_instance.instance_ids }}"
+        instance_ids: "{{ test_instance_1.instance_ids }}"
         state: absent
         wait: yes
       register: result
@@ -87,6 +122,11 @@
         that:
           - "result.changed == False"
 
+    - name: assert second instance still running
+      assert:
+        that:
+          - "test_instance_2.instances[0].state == 'running'"
+
     # ========================================================
 
   always:
@@ -99,9 +139,12 @@
       debug:
         msg: "***** TESTING COMPLETE. COMMENCE TEARDOWN *****"
 
-    - name: delete test instance
+    - name: delete test instances
       ec2:
-        instance_ids: '{{ test_instance.instance_ids }}'
+        instance_ids:
+          - "{{ test_instance_1.instance_ids[0] }}"
+          - "{{ test_instance_2.instance_ids[0] }}"
+
         state: absent
         wait: yes
       ignore_errors: yes
