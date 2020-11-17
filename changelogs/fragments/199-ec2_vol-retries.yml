@@ -1,0 +1,2 @@
+minor_changes:
+- ec2_vol - Add automatic retries on AWS rate limit errors (https://github.com/ansible-collections/amazon.aws/pull/199).
