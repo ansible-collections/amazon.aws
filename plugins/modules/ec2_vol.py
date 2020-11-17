@@ -252,7 +252,7 @@ def get_instance(module, ec2_conn, instance_id=None):
         return instance
 
     try:
-        reservation_response = ec2_conn.describe_instances(InstanceIds=[instance_id])
+        reservation_response = ec2_conn.describe_instances(aws_retry=True, InstanceIds=[instance_id])
         instance = camel_dict_to_snake_dict(reservation_response['Reservations'][0]['Instances'][0])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Error while getting instance_id with id {0}'.format(instance))
@@ -318,7 +318,7 @@ def get_volumes(module, ec2_conn):
 
     vols = []
     try:
-        vols_response = ec2_conn.describe_volumes(**find_params)
+        vols_response = ec2_conn.describe_volumes(aws_retry=True, **find_params)
         vols = [camel_dict_to_snake_dict(vol) for vol in vols_response.get('Volumes', [])]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Error while getting EBS volumes')
@@ -329,7 +329,7 @@ def delete_volume(module, ec2_conn, volume_id=None):
     changed = False
     if volume_id:
         try:
-            ec2_conn.delete_volume(VolumeId=volume_id)
+            ec2_conn.delete_volume(aws_retry=True, VolumeId=volume_id)
             changed = True
         except is_boto3_error_code('InvalidVolume.NotFound'):
             module.exit_json(changed=False)
@@ -371,6 +371,7 @@ def create_volume(module, ec2_conn, zone):
                 additional_params['Iops'] = int(iops)
 
             create_vol_response = ec2_conn.create_volume(
+                aws_retry=True,
                 AvailabilityZone=zone,
                 Encrypted=encrypted,
                 VolumeType=volume_type,
@@ -406,7 +407,7 @@ def attach_volume(module, ec2_conn, volume_dict, instance_dict, device_name):
             return volume_dict, changed
 
     try:
-        attach_response = ec2_conn.attach_volume(Device=device_name,
+        attach_response = ec2_conn.attach_volume(aws_retry=True, Device=device_name,
                                                  InstanceId=instance_dict['instance_id'],
                                                  VolumeId=volume_dict['volume_id'])
 
@@ -446,6 +447,7 @@ def modify_dot_attribute(module, ec2_conn, instance_dict, device_name):
     if delete_on_termination != mapped_block_device['ebs'].get('delete_on_termination'):
         try:
             ec2_conn.modify_instance_attribute(
+                aws_retry=True,
                 InstanceId=instance_dict['instance_id'],
                 BlockDeviceMappings={
                     "DeviceName": device_name,
@@ -485,7 +487,7 @@ def detach_volume(module, ec2_conn, volume_dict):
 
     attachment_data = get_attachment_data(volume_dict, wanted_state='attached')
     if attachment_data:
-        ec2_conn.detach_volume(VolumeId=volume_dict['volume_id'])
+        ec2_conn.detach_volume(aws_retry=True, VolumeId=volume_dict['volume_id'])
         waiter = ec2_conn.get_waiter('volume_available')
         waiter.wait(
             VolumeIds=[volume_dict['volume_id']],
@@ -542,7 +544,7 @@ def ensure_tags(module, connection, res_id, res_type, tags, add_only):
     filters = ansible_dict_to_boto3_filter_list({'resource-id': res_id, 'resource-type': res_type})
     cur_tags = None
     try:
-        cur_tags = connection.describe_tags(Filters=filters)
+        cur_tags = connection.describe_tags(aws_retry=True, Filters=filters)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't describe tags")
 
@@ -556,7 +558,8 @@ def ensure_tags(module, connection, res_id, res_type, tags, add_only):
                 # update tags
                 final_tags.update(to_update)
             else:
-                AWSRetry.exponential_backoff()(connection.create_tags)(
+                connection.create_tags(
+                    aws_retry=True,
                     Resources=[res_id],
                     Tags=ansible_dict_to_boto3_tag_list(to_update)
                 )
@@ -576,7 +579,7 @@ def ensure_tags(module, connection, res_id, res_type, tags, add_only):
                 for key in to_delete:
                     tags_list.append({'Key': key})
 
-                AWSRetry.exponential_backoff()(connection.delete_tags)(Resources=[res_id], Tags=tags_list)
+                connection.delete_tags(aws_retry=True, Resources=[res_id], Tags=tags_list)
 
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -584,7 +587,7 @@ def ensure_tags(module, connection, res_id, res_type, tags, add_only):
 
     if not module.check_mode and (to_update or to_delete):
         try:
-            response = connection.describe_tags(Filters=filters)
+            response = connection.describe_tags(aws_retry=True, Filters=filters)
             final_tags = boto3_tag_list_to_ansible_dict(response.get('Tags'))
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't describe tags")
@@ -640,7 +643,7 @@ def main():
     # Set changed flag
     changed = False
 
-    ec2_conn = module.client('ec2')
+    ec2_conn = module.client('ec2', AWSRetry.jittered_backoff())
 
     if state == 'list':
         returned_volumes = []
