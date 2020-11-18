@@ -281,10 +281,9 @@
     - name: assert info matches expected output
       assert:
         that:
-          - (vpc_subnet_info_no_tags.subnets[0].tags|length) == 1
-          - '"Name" not in vpc_subnet_info_no_tags.subnets[0].tags'
-          - '"Description" not in vpc_subnet_info_no_tags.subnets[0].tags'
-          - '"AnotherTag" in vvpc_subnet_info_no_tags.subnets[0].tags and vpc_subnet_info_no_tags.subnets[0].tags["AnotherTag"] == "SomeValue"'
+          - '"Name" not in vpc_subnet_info_removed_tags.subnets[0].tags'
+          - '"Description" not in vpc_subnet_info_removed_tags.subnets[0].tags'
+          - '"AnotherTag" in vpc_subnet_info_removed_tags.subnets[0].tags and vpc_subnet_info_removed_tags.subnets[0].tags["AnotherTag"] == "SomeValue"'
 
 
     # ============================================================
