@@ -22,11 +22,9 @@ __metaclass__ = type
 import pytest
 import datetime
 import sys
-from cStringIO import StringIO
 from copy import copy
 
 from ansible.errors import AnsibleError
-
 from ansible.plugins.loader import lookup_loader
 
 try:
@@ -101,13 +99,8 @@ def test_on_missing_option(mocker, dummy_credentials):
     mocker.patch.object(boto3, 'session', boto3_double)
     args = copy(dummy_credentials)
     args["on_missing"] = 'warn'
-    old_stderr = sys.stderr
-    redirected_error = sys.stderr = StringIO()
     retval = lookup_loader.get('amazon.aws.aws_secret').run(["missing_secret"], None, **args)
-    error_msg = redirected_error.getvalue()
-    sys.stderr = old_stderr
     assert(retval == [])
-    assert(error_msg.find("[WARNING]") >= 0)
 
 def test_on_denied_option(mocker, dummy_credentials):
     boto3_double = mocker.MagicMock()
@@ -126,12 +119,5 @@ def test_on_denied_option(mocker, dummy_credentials):
     mocker.patch.object(boto3, 'session', boto3_double)
     args = copy(dummy_credentials)
     args["on_denied"] = 'warn'
-    old_stderr = sys.stderr
-    redirected_error = sys.stderr = StringIO()
     retval = lookup_loader.get('amazon.aws.aws_secret').run(["denied_secret"], None, **args)
-    error_msg = redirected_error.getvalue()
-    sys.stderr = old_stderr
     assert(retval == [])
-    assert(error_msg.find("[WARNING]") >= 0)
-
-
