@@ -82,6 +82,7 @@ error_response_missing = {'Error': {'Code': 'ResourceNotFoundException', 'Messag
 error_response_denied = {'Error': {'Code': 'AccessDeniedException', 'Message': 'Fake Denied Error'}}
 operation_name = 'FakeOperation'
 
+
 def test_on_missing_option(mocker, dummy_credentials):
     boto3_double = mocker.MagicMock()
     boto3_double.Session.return_value.client.return_value.get_secret_value.side_effect = ClientError(error_response_missing, operation_name)
@@ -101,6 +102,7 @@ def test_on_missing_option(mocker, dummy_credentials):
     args["on_missing"] = 'warn'
     retval = lookup_loader.get('amazon.aws.aws_secret').run(["missing_secret"], None, **args)
     assert(retval == [])
+
 
 def test_on_denied_option(mocker, dummy_credentials):
     boto3_double = mocker.MagicMock()
