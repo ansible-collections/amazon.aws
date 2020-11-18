@@ -21,6 +21,9 @@ __metaclass__ = type
 
 import pytest
 import datetime
+import sys
+from cStringIO import StringIO
+from copy import copy
 
 from ansible.errors import AnsibleError
 
@@ -77,14 +80,58 @@ def test_lookup_variable(mocker, dummy_credentials):
                                            aws_secret_access_key="notasecret", aws_session_token=None)
 
 
-error_response = {'Error': {'Code': 'ResourceNotFoundException', 'Message': 'Fake Testing Error'}}
+error_response_missing = {'Error': {'Code': 'ResourceNotFoundException', 'Message': 'Fake Not Found Error'}}
+error_response_denied = {'Error': {'Code': 'AccessDeniedException', 'Message': 'Fake Denied Error'}}
 operation_name = 'FakeOperation'
 
-
-def test_warn_denied_variable(mocker, dummy_credentials):
+def test_on_missing_option(mocker, dummy_credentials):
     boto3_double = mocker.MagicMock()
-    boto3_double.Session.return_value.client.return_value.get_secret_value.side_effect = ClientError(error_response, operation_name)
+    boto3_double.Session.return_value.client.return_value.get_secret_value.side_effect = ClientError(error_response_missing, operation_name)
 
-    with pytest.raises(AnsibleError):
+    with pytest.raises(AnsibleError, match="ResourceNotFoundException"):
         mocker.patch.object(boto3, 'session', boto3_double)
-        lookup_loader.get('amazon.aws.aws_secret').run(["denied_variable"], None, **dummy_credentials)
+        lookup_loader.get('amazon.aws.aws_secret').run(["missing_secret"], None, **dummy_credentials)
+
+    mocker.patch.object(boto3, 'session', boto3_double)
+    args = copy(dummy_credentials)
+    args["on_missing"] = 'skip'
+    retval = lookup_loader.get('amazon.aws.aws_secret').run(["missing_secret"], None, **args)
+    assert(retval == [])
+
+    mocker.patch.object(boto3, 'session', boto3_double)
+    args = copy(dummy_credentials)
+    args["on_missing"] = 'warn'
+    old_stderr = sys.stderr
+    redirected_error = sys.stderr = StringIO()
+    retval = lookup_loader.get('amazon.aws.aws_secret').run(["missing_secret"], None, **args)
+    error_msg = redirected_error.getvalue()
+    sys.stderr = old_stderr
+    assert(retval == [])
+    assert(error_msg.find("[WARNING]") >= 0)
+
+def test_on_denied_option(mocker, dummy_credentials):
+    boto3_double = mocker.MagicMock()
+    boto3_double.Session.return_value.client.return_value.get_secret_value.side_effect = ClientError(error_response_denied, operation_name)
+
+    with pytest.raises(AnsibleError, match="AccessDeniedException"):
+        mocker.patch.object(boto3, 'session', boto3_double)
+        lookup_loader.get('amazon.aws.aws_secret').run(["denied_secret"], None, **dummy_credentials)
+
+    mocker.patch.object(boto3, 'session', boto3_double)
+    args = copy(dummy_credentials)
+    args["on_denied"] = 'skip'
+    retval = lookup_loader.get('amazon.aws.aws_secret').run(["denied_secret"], None, **args)
+    assert(retval == [])
+
+    mocker.patch.object(boto3, 'session', boto3_double)
+    args = copy(dummy_credentials)
+    args["on_denied"] = 'warn'
+    old_stderr = sys.stderr
+    redirected_error = sys.stderr = StringIO()
+    retval = lookup_loader.get('amazon.aws.aws_secret').run(["denied_secret"], None, **args)
+    error_msg = redirected_error.getvalue()
+    sys.stderr = old_stderr
+    assert(retval == [])
+    assert(error_msg.find("[WARNING]") >= 0)
+
+
