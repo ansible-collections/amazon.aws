@@ -337,6 +337,69 @@
           - not delete_volume_result_idem.changed
           - '"Volume {{ volume2.volume_id }} does not exist" in delete_volume_result_idem.msg'
 
+    # Originally from ec2_vol_info
+
+    - name: Create test volume with Destroy on Terminate
+      ec2_vol:
+        instance: "{{ test_instance.instance_ids[0] }}"
+        volume_size: 4
+        name: "{{ resource_prefix }}_delete_on_terminate"
+        device_name: /dev/sdj
+        iops: 100
+        tags:
+            Tag Name with Space-and-dash: Tag Value with Space-and-dash
+        delete_on_termination: yes
+      register: dot_volume
+
+    - name: Gather volume info without any filters
+      ec2_vol_info:
+      register: volume_info_wo_filters
+      check_mode: no
+
+    - name: Check if info are returned without filters
+      assert:
+        that:
+          - "volume_info_wo_filters.volumes is defined"
+
+    - name: Gather volume info
+      ec2_vol_info:
+          filters:
+            "tag:Name": "{{ resource_prefix }}_delete_on_terminate"
+      register: volume_info
+      check_mode: no
+
+    - name: Format check
+      assert:
+        that:
+            - "volume_info.volumes|length == 1"
+            - "v.attachment_set.attach_time is defined"
+            - "v.attachment_set.device      is defined and v.attachment_set.device      == dot_volume.device"
+            - "v.attachment_set.instance_id is defined and v.attachment_set.instance_id == test_instance.instance_ids[0]"
+            - "v.attachment_set.status      is defined and v.attachment_set.status      == 'attached'"
+            - "v.create_time                is defined"
+            - "v.encrypted                  is defined and v.encrypted                  == false"
+            - "v.id                         is defined and v.id                         == dot_volume.volume_id"
+            - "v.iops                       is defined and v.iops                       == 100"
+            - "v.region                     is defined and v.region                     == aws_region"
+            - "v.size                       is defined and v.size                       == 4"
+            - "v.snapshot_id                is defined and v.snapshot_id                == ''"
+            - "v.status                     is defined and v.status                     == 'in-use'"
+            - "v.tags.Name                  is defined and v.tags.Name                  == resource_prefix + '_delete_on_terminate'"
+            - "v.tags['Tag Name with Space-and-dash']                                   == 'Tag Value with Space-and-dash'"
+            - "v.type                       is defined and v.type                       == 'io1'"
+            - "v.zone                       is defined and v.zone                       == test_instance.instances[0].placement.availability_zone"
+      vars:
+          v: "{{ volume_info.volumes[0] }}"
+
+    - name: New format check
+      assert:
+        that:
+            - "v.attachment_set.delete_on_termination is defined"
+      vars:
+          v: "{{ volume_info.volumes[0] }}"
+      when: ansible_version.full is version('2.7', '>=')
+
+
     # ==== Cleanup ============================================================
 
   always:
@@ -377,6 +440,7 @@
         - "{{ volume3 }}"
         - "{{ new_vol_attach_result }}"
         - "{{ attach_new_vol_from_snapshot_result }}"
+        - "{{ dot_volume }}"
 
     - name: delete snapshot
       ec2_snapshot:

@@ -449,12 +449,12 @@ def modify_dot_attribute(module, ec2_conn, instance_dict, device_name):
             ec2_conn.modify_instance_attribute(
                 aws_retry=True,
                 InstanceId=instance_dict['instance_id'],
-                BlockDeviceMappings={
+                BlockDeviceMappings=[{
                     "DeviceName": device_name,
                     "Ebs": {
                         "DeleteOnTermination": delete_on_termination
                     }
-                }
+                }]
             )
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
