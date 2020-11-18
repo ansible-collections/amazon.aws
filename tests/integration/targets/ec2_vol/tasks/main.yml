@@ -9,7 +9,6 @@
 
   collections:
     - amazon.aws
-    - community.aws
 
   block:
 
