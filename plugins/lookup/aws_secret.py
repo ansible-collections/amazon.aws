@@ -97,6 +97,7 @@ from ansible.plugins.lookup import LookupBase
 from ansible.module_utils._text import to_native
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
+
 def _boto3_conn(region, credentials):
     boto_profile = credentials.pop('aws_profile', None)
 
