@@ -95,7 +95,7 @@ except ImportError:
 from ansible.plugins import AnsiblePlugin
 from ansible.plugins.lookup import LookupBase
 from ansible.module_utils._text import to_native
-
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 def _boto3_conn(region, credentials):
     boto_profile = credentials.pop('aws_profile', None)
@@ -162,15 +162,18 @@ class LookupModule(LookupBase):
                     secrets.append(response['SecretBinary'])
                 if 'SecretString' in response:
                     secrets.append(response['SecretString'])
+            except is_boto3_error_code('ResourceNotFoundException'):
+                if missing == 'error':
+                    raise AnsibleError("Failed to find secret %s (ResourceNotFound)" % term)
+                elif missing == 'warn':
+                    self._display.warning('Skipping, did not find secret %s' % term)
+            except is_boto3_error_code('AccessDeniedException'):
+                if denied == 'error':
+                    raise AnsibleError("Failed to access secret %s (AccessDenied)" % term)
+                elif denied == 'warn':
+                    self._display.warning('Skipping, access denied for secret %s' % term)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                if e.response['Error']['Code'] == 'ResourceNotFoundException' and missing in ['warn', 'skip']:
-                    if missing == 'warn':
-                        self._display.warning('Skipping, did not find secret %s' % term)
-                elif e.response['Error']['Code'] == 'AccessDeniedException' and denied in ['warn', 'skip']:
-                    if denied == 'warn':
-                        self._display.warning('Skipping, access denied for secret %s' % term)
-                else:
-                    raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
+                raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
 
         if kwargs.get('join'):
             joined_secret = []

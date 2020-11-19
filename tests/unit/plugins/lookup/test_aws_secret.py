@@ -87,7 +87,7 @@ def test_on_missing_option(mocker, dummy_credentials):
     boto3_double = mocker.MagicMock()
     boto3_double.Session.return_value.client.return_value.get_secret_value.side_effect = ClientError(error_response_missing, operation_name)
 
-    with pytest.raises(AnsibleError, match="ResourceNotFoundException"):
+    with pytest.raises(AnsibleError, match="ResourceNotFound"):
         mocker.patch.object(boto3, 'session', boto3_double)
         lookup_loader.get('amazon.aws.aws_secret').run(["missing_secret"], None, **dummy_credentials)
 
@@ -108,7 +108,7 @@ def test_on_denied_option(mocker, dummy_credentials):
     boto3_double = mocker.MagicMock()
     boto3_double.Session.return_value.client.return_value.get_secret_value.side_effect = ClientError(error_response_denied, operation_name)
 
-    with pytest.raises(AnsibleError, match="AccessDeniedException"):
+    with pytest.raises(AnsibleError, match="AccessDenied"):
         mocker.patch.object(boto3, 'session', boto3_double)
         lookup_loader.get('amazon.aws.aws_secret').run(["denied_secret"], None, **dummy_credentials)
 
