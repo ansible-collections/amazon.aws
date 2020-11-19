@@ -48,10 +48,10 @@ options:
     choices: ['error', 'skip', 'warn']
   on_denied:
     description:
-        - action to take if access to secret is denied
-        - Error will raise a fatal error
-        - Skip will just ignore the term
-        - Warn will skip over it but issue a warning
+        - Action to take if access to the secret is denied.
+        - C(error) will raise a fatal error when access to the secret is denied.
+        - C(skip) will silently ignore the denied secret.
+        - C(warn) will skip over the denied secret but issue a warning.
     default: error
     type: string
     choices: ['error', 'skip', 'warn']
