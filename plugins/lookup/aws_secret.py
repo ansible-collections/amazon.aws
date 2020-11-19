@@ -42,7 +42,7 @@ options:
         - Action to take if the secret is missing.
         - C(error) will raise a fatal error when the secret is missing.
         - C(skip) will silently ignore the missing secret.
-        - Warn will skip over it but issue a warning
+        - C(warn) will skip over the missing secret but issue a warning.
     default: error
     type: string
     choices: ['error', 'skip', 'warn']
