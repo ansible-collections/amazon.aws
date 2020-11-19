@@ -41,7 +41,7 @@ options:
     description:
         - Action to take if the secret is missing.
         - C(error) will raise a fatal error when the secret is missing.
-        - Skip will just ignore the term
+        - C(skip) will silently ignore the missing secret.
         - Warn will skip over it but issue a warning
     default: error
     type: string
