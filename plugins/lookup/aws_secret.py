@@ -39,7 +39,7 @@ options:
     default: false
   on_missing:
     description:
-        - action to take if secret is missing
+        - Action to take if the secret is missing.
         - Error will raise a fatal error
         - Skip will just ignore the term
         - Warn will skip over it but issue a warning
