@@ -168,12 +168,12 @@ class LookupModule(LookupBase):
                     raise AnsibleError("Failed to find secret %s (ResourceNotFound)" % term)
                 elif missing == 'warn':
                     self._display.warning('Skipping, did not find secret %s' % term)
-            except is_boto3_error_code('AccessDeniedException'):
+            except is_boto3_error_code('AccessDeniedException'):  # pylint: disable=duplicate-except
                 if denied == 'error':
                     raise AnsibleError("Failed to access secret %s (AccessDenied)" % term)
                 elif denied == 'warn':
                     self._display.warning('Skipping, access denied for secret %s' % term)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
                 raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
 
         if kwargs.get('join'):
