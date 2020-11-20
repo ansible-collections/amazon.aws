@@ -48,7 +48,7 @@ options:
   wait_timeout:
     description:
       - How long before wait gives up, in seconds.
-    default: 900
+    default: 1200
     type: int
   state:
     description:
@@ -505,9 +505,9 @@ def create_image(module, connection):
         module.fail_json_aws(e, msg="Error registering image")
 
     if wait:
+        delay = 15
+        max_attempts = wait_timeout // delay
         waiter = get_waiter(connection, 'image_available')
-        delay = wait_timeout // 30
-        max_attempts = 30
         waiter.wait(ImageIds=[image_id], WaiterConfig=dict(Delay=delay, MaxAttempts=max_attempts))
 
     if tags:
@@ -718,7 +718,7 @@ def main():
         delete_snapshot=dict(default=False, type='bool'),
         name=dict(),
         wait=dict(type='bool', default=False),
-        wait_timeout=dict(default=900, type='int'),
+        wait_timeout=dict(default=1200, type='int'),
         description=dict(default=''),
         no_reboot=dict(default=False, type='bool'),
         state=dict(default='present', choices=['present', 'absent']),
