@@ -507,7 +507,7 @@ def create_image(module, connection):
     if wait:
         delay = 15
         max_attempts = wait_timeout // delay
-        waiter = connection.get_waiter('image_available')
+        waiter = get_waiter(connection, 'image_available')
         waiter.wait(ImageIds=[image_id], WaiterConfig=dict(Delay=delay, MaxAttempts=max_attempts))
 
     if tags:
