@@ -134,7 +134,7 @@
       assert:
         that:
           - (result.instances|length) == 1
-          - "{{ result.instances[0] }}.state.name == 'running'"
+          - "result.instances[0].state.name == 'running'"
 
     # ========================================================
 
