@@ -1,3 +1,4 @@
 ---
 minor_changes:
-  - ec2_ami - fixed and streamlined max_attempts logic when waiting for AMIs to finish and increased wait_timeout to 1200 for a more reliably module run.
+  - ec2_ami - fixed and streamlined ``max_attempts`` logic when waiting for AMI creation to finish (https://github.com/ansible-collections/amazon.aws/pull/194).
+  - ec2_ami - increased default ``wait_timeout`` to 1200 seconds (https://github.com/ansible-collections/amazon.aws/pull/194).
