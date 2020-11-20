@@ -5,6 +5,9 @@
       aws_access_key: '{{ aws_access_key | default(omit) }}'
       aws_secret_key: '{{ aws_secret_key | default(omit) }}'
       security_token: '{{ security_token | default(omit) }}'
+  collections:
+    - community.aws
+
   block:
 
     # SETUP: vpc, ec2 key pair, subnet, security group, ec2 instance
@@ -123,15 +126,15 @@
           - "result.changed == False"
 
     - name: test second instance not terminated
-      community.aws.ec2_instance_info:
+      ec2_instance_info:
         instance_ids: "{{ test_instance_2.instance_ids }}"
-      register: instances
+      register: result
 
     - name: assert second instance still running
       assert:
         that:
-          - "{{ instances|length }}" == 1
-          - "{{ instances[0] }}.state.name == 'running'"
+          - (result.instances|length) == 1
+          - "{{ result.instances[0] }}.state.name == 'running'"
 
     # ========================================================
 
@@ -146,14 +149,14 @@
         msg: "***** TESTING COMPLETE. COMMENCE TEARDOWN *****"
 
     - name: get list of test instances
-      community.aws.ec2_instance_info:
+      ec2_instance_info:
         filters:
           "tag:ResourcePrefix": "{{ resource_prefix }}-*"
       register: test_instances
 
     - name: delete test instances
       ec2:
-        instance_ids: "{{ test_instances|map('instance_id') }}"
+        instance_ids: "{{ test_instances.instances|map(attribute='instance_id') }}"
         state: absent
         wait: yes
       ignore_errors: yes
