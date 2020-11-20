@@ -37,6 +37,24 @@ options:
         - This is useful for overcoming the 4096 character limit imposed by AWS.
     type: boolean
     default: false
+  on_missing:
+    description:
+        - Action to take if the secret is missing.
+        - C(error) will raise a fatal error when the secret is missing.
+        - C(skip) will silently ignore the missing secret.
+        - C(warn) will skip over the missing secret but issue a warning.
+    default: error
+    type: string
+    choices: ['error', 'skip', 'warn']
+  on_denied:
+    description:
+        - Action to take if access to the secret is denied.
+        - C(error) will raise a fatal error when access to the secret is denied.
+        - C(skip) will silently ignore the denied secret.
+        - C(warn) will skip over the denied secret but issue a warning.
+    default: error
+    type: string
+    choices: ['error', 'skip', 'warn']
 '''
 
 EXAMPLES = r"""
@@ -51,6 +69,12 @@ EXAMPLES = r"""
      password: "{{ lookup('aws_secret', 'DbSecret') }}"
      tags:
        Environment: staging
+
+ - name: skip if secret does not exist
+   debug: msg="{{ lookup('aws_secret', 'secret-not-exist', on_missing='skip')}}"
+
+ - name: warn if access to the secret is denied
+   debug: msg="{{ lookup('aws_secret', 'secret-denied', on_denied='warn')}}"
 """
 
 RETURN = r"""
@@ -60,6 +84,7 @@ _raw:
 """
 
 from ansible.errors import AnsibleError
+from ansible.module_utils.six import string_types
 
 try:
     import boto3
@@ -70,6 +95,7 @@ except ImportError:
 from ansible.plugins import AnsiblePlugin
 from ansible.plugins.lookup import LookupBase
 from ansible.module_utils._text import to_native
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
 def _boto3_conn(region, credentials):
@@ -108,6 +134,14 @@ class LookupModule(LookupBase):
 
     def run(self, terms, variables, **kwargs):
 
+        missing = kwargs.get('on_missing', 'error').lower()
+        if not isinstance(missing, string_types) or missing not in ['error', 'warn', 'skip']:
+            raise AnsibleError('"on_missing" must be a string and one of "error", "warn" or "skip", not %s' % missing)
+
+        denied = kwargs.get('on_denied', 'error').lower()
+        if not isinstance(denied, string_types) or denied not in ['error', 'warn', 'skip']:
+            raise AnsibleError('"on_denied" must be a string and one of "error", "warn" or "skip", not %s' % denied)
+
         self.set_options(var_options=variables, direct=kwargs)
         boto_credentials = self._get_credentials()
 
@@ -129,7 +163,17 @@ class LookupModule(LookupBase):
                     secrets.append(response['SecretBinary'])
                 if 'SecretString' in response:
                     secrets.append(response['SecretString'])
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            except is_boto3_error_code('ResourceNotFoundException'):
+                if missing == 'error':
+                    raise AnsibleError("Failed to find secret %s (ResourceNotFound)" % term)
+                elif missing == 'warn':
+                    self._display.warning('Skipping, did not find secret %s' % term)
+            except is_boto3_error_code('AccessDeniedException'):  # pylint: disable=duplicate-except
+                if denied == 'error':
+                    raise AnsibleError("Failed to access secret %s (AccessDenied)" % term)
+                elif denied == 'warn':
+                    self._display.warning('Skipping, access denied for secret %s' % term)
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
                 raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
 
         if kwargs.get('join'):
