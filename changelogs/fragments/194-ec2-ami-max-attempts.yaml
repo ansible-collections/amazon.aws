@@ -1,0 +1,3 @@
+---
+minor_changes:
+  - ec2_ami - fixed and streamlined max_attempts logic when waiting for AMIs to finish and increased wait_timeout to 1200 for a more reliably module run.
