@@ -8,50 +8,19 @@
   collections:
     - community.general
   block:
-  - name: test with no parameters
-    lambda:
-    register: result
-    ignore_errors: true
-  - name: assert failure when called with no parameters
-    assert:
-      that:
-      - result.failed
-      - 'result.msg.startswith("missing required arguments: name")'
-  - name: test with no parameters except state absent
-    lambda:
-      state: absent
-    register: result
-    ignore_errors: true
-  - name: assert failure when called with no parameters
-    assert:
-      that:
-      - result.failed
-      - 'result.msg.startswith("missing required arguments: name")'
-  - name: test with no role or handler
-    lambda:
-      name: ansible-testing-fake-should-not-be-created
-      runtime: python2.7
-    register: result
-    ignore_errors: true
-  - name: assert failure when called with no parameters
-    assert:
-      that:
-      - result.failed
-      - 'result.msg.startswith("state is present but all of the following are missing: handler")'
-  - name: test with all module required variables but no region
-    lambda:
-      name: ansible-testing-fake-should-not-be-created
-      runtime: python2.7
-      handler: no-handler
-      role: arn:fake-role-doesnt-exist
-      region: '{{ omit }}'
-    register: result
-    ignore_errors: true
-  - name: assert failure when called with only 'name'
-    assert:
-      that:
-      - result.failed
-      - '"requires a region and none was found" in result.msg'
+  # Preparation
+  - name: create minimal lambda role
+    iam_role:
+      name: '{{ lambda_role_name }}'
+      assume_role_policy_document: '{{ lookup("file", "minimal_trust_policy.json") }}'
+      create_instance_profile: false
+      managed_policies:
+      - 'arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess'
+    register: iam_role
+  - name: wait 10 seconds for role to become available
+    pause:
+      seconds: 10
+    when: iam_role.changed
   - name: move lambda into place for archive module
     copy:
       src: mini_lambda.py
@@ -63,12 +32,71 @@
       format: zip
       path: '{{ output_dir }}/mini_lambda.py'
       dest: '{{ output_dir }}/mini_lambda.zip'
+
+  # Parameter tests
+  - name: test with no parameters
+    lambda:
+    register: result
+    ignore_errors: true
+  - name: assert failure when called with no parameters
+    assert:
+      that:
+      - result.failed
+      - 'result.msg.startswith("missing required arguments: name")'
+
+  - name: test with no parameters except state absent
+    lambda:
+      state: absent
+    register: result
+    ignore_errors: true
+  - name: assert failure when called with no parameters
+    assert:
+      that:
+      - result.failed
+      - 'result.msg.startswith("missing required arguments: name")'
+
+  - name: test with no role or handler
+    lambda:
+      name: ansible-testing-fake-should-not-be-created
+      runtime: python2.7
+    register: result
+    ignore_errors: true
+  - name: assert failure when called with no parameters
+    assert:
+      that:
+      - result.failed
+      - 'result.msg.startswith("state is present but all of the following are missing: handler")'
+
+  - name: test state=present with security group but no vpc
+    lambda:
+      name: '{{ lambda_function_name }}'
+      runtime: 'python2.7'
+      role: '{{ lambda_role_name }}'
+      zip_file: '{{ zip_res.dest }}'
+      handler: '{{ omit }}'
+      description: '{{ omit }}'
+      vpc_subnet_ids: '{{ omit }}'
+      vpc_security_group_ids: 'sg-FA6E'
+      environment_variables: '{{ omit }}'
+      dead_letter_arn: '{{ omit }}'
+    register: result
+    ignore_errors: true
+  - name: assert lambda fails with proper message
+    assert:
+      that:
+      - result is failed
+      - result.msg != "MODULE FAILURE"
+      - result.changed == False
+      - '"parameters are required together" in result.msg'
+
+  # Prepare minimal Lambda
+
   - name: test state=present - upload the lambda
     lambda:
       name: '{{ lambda_function_name }}'
       runtime: python2.7
       handler: mini_lambda.handler
-      role: ansible_lambda_role
+      role: '{{ lambda_role_name }}'
       zip_file: '{{ zip_res.dest }}'
     register: result
   - name: assert lambda upload succeeded
@@ -76,6 +104,8 @@
       that:
       - result is not failed
       - result.configuration.tracing_config.mode == "PassThrough"
+
+  # Test basic operation of Uploaded lambda
   - name: test lambda works
     execute_lambda:
       name: '{{lambda_function_name}}'
@@ -87,13 +117,15 @@
       that:
       - result is not failed
       - result.result.output.message == "hello Mr Ansible Tests"
+
+  # Test updating Lambda
   - name: test lambda config updates
     lambda:
       name: '{{lambda_function_name}}'
       runtime: nodejs10.x
       tracing_mode: Active
       handler: mini_lambda.handler
-      role: ansible_lambda_role
+      role: '{{ lambda_role_name }}'
     register: update_result
   - name: assert that update succeeded
     assert:
@@ -102,13 +134,14 @@
       - update_result.changed == True
       - update_result.configuration.runtime == 'nodejs10.x'
       - update_result.configuration.tracing_config.mode == 'Active'
-  - name: test no changes are made with the same parameters
+
+  - name: test no changes are made with the same parameters repeated
     lambda:
       name: '{{lambda_function_name}}'
       runtime: nodejs10.x
       tracing_mode: Active
       handler: mini_lambda.handler
-      role: ansible_lambda_role
+      role: '{{ lambda_role_name }}'
     register: update_result
   - name: assert that update succeeded
     assert:
@@ -117,13 +150,14 @@
       - update_result.changed == False
       - update_result.configuration.runtime == 'nodejs10.x'
       - update_result.configuration.tracing_config.mode == 'Active'
+
   - name: reset config updates for the following tests
     lambda:
       name: '{{lambda_function_name}}'
       runtime: python2.7
       tracing_mode: PassThrough
       handler: mini_lambda.handler
-      role: ansible_lambda_role
+      role: '{{ lambda_role_name }}'
     register: result
   - name: assert that reset succeeded
     assert:
@@ -132,6 +166,8 @@
       - result.changed == True
       - result.configuration.runtime == 'python2.7'
       - result.configuration.tracing_config.mode == 'PassThrough'
+
+  # Query the Lambda
   - name: lambda_info | Gather all infos for given lambda function
     lambda_info:
       name: '{{ lambda_function_name }}'
@@ -150,6 +186,7 @@
       - lambda_infos_all.function[lambda_function_name].description == ""
       - lambda_infos_all.function[lambda_function_name].function_arn is defined
       - lambda_infos_all.function[lambda_function_name].handler == "mini_lambda.handler"
+
   - name: lambda_info | Gather version infos for given lambda function
     lambda_info:
       name: '{{ lambda_function_name }}'
@@ -161,6 +198,7 @@
       - lambda_infos_versions is not failed
       - lambda_infos_versions.function[lambda_function_name].versions|length > 0
       - lambda_infos_versions.function[lambda_function_name].function_name is undefined
+
   - name: lambda_info | Gather config infos for given lambda function
     lambda_info:
       name: '{{ lambda_function_name }}'
@@ -173,6 +211,7 @@
       - lambda_infos_config.function[lambda_function_name].function_name == lambda_function_name
       - lambda_infos_config.function[lambda_function_name].description is defined
       - lambda_infos_config.function[lambda_function_name].versions is undefined
+
   - name: lambda_info | Gather policy infos for given lambda function
     lambda_info:
       name: '{{ lambda_function_name }}'
@@ -184,6 +223,7 @@
       - lambda_infos_policy is not failed
       - lambda_infos_policy.function[lambda_function_name].policy is defined
       - lambda_infos_policy.function[lambda_function_name].versions is undefined
+
   - name: lambda_info | Gather aliases infos for given lambda function
     lambda_info:
       name: '{{ lambda_function_name }}'
@@ -194,6 +234,7 @@
       that:
       - lambda_infos_aliases is not failed
       - lambda_infos_aliases.function[lambda_function_name].aliases is defined
+
   - name: lambda_info | Gather mappings infos for given lambda function
     lambda_info:
       name: '{{ lambda_function_name }}'
@@ -204,32 +245,13 @@
       that:
       - lambda_infos_mappings is not failed
       - lambda_infos_mappings.function[lambda_function_name].mappings is defined
-  - name: test state=present with security group but no vpc
-    lambda:
-      name: '{{lambda_function_name}}'
-      runtime: python2.7
-      role: ansible_lambda_role
-      zip_file: '{{zip_res.dest}}'
-      handler: '{{ omit }}'
-      description: '{{ omit }}'
-      vpc_subnet_ids: '{{ omit }}'
-      vpc_security_group_ids: sg-FA6E
-      environment_variables: '{{ omit }}'
-      dead_letter_arn: '{{ omit }}'
-    register: result
-    ignore_errors: true
-  - name: assert lambda fails with proper message
-    assert:
-      that:
-      - result is failed
-      - result.msg != "MODULE FAILURE"
-      - result.changed == False
-      - '"parameters are required together" in result.msg'
+
+  # More Lambda update tests
   - name: test state=present with all nullable variables explicitly set to null
     lambda:
       name: '{{lambda_function_name}}'
       runtime: python2.7
-      role: ansible_lambda_role
+      role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'
       handler: mini_lambda.handler
       description: null
@@ -243,12 +265,13 @@
       that:
       - result is not failed
       - result.changed == False
+
   - name: test putting an environment variable changes lambda
     lambda:
       name: '{{lambda_function_name}}'
       runtime: python2.7
       handler: mini_lambda.handler
-      role: ansible_lambda_role
+      role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'
       environment_variables:
         EXTRA_MESSAGE: I think you are great!!
@@ -263,47 +286,45 @@
       name: '{{lambda_function_name}}'
       payload:
         name: Mr Ansible Tests
-      security_token: '{{security_token}}'
     register: result
   - name: assert lambda manages to respond as expected
     assert:
       that:
       - result is not failed
       - result.result.output.message == "hello Mr Ansible Tests. I think you are great!!"
-  - name: test state=present triggering a network exception due to bad url
-    lambda:
-      name: '{{lambda_function_name}}'
-      runtime: python2.7
-      role: ansible_lambda_role
-      ec2_url: https://noexist.example.com
-      ec2_region: '{{ec2_region}}'
-      ec2_access_key: iamnotreallyanaccesskey
-      ec2_secret_key: thisisabadsecretkey
-      security_token: andthisisabadsecuritytoken
-      zip_file: '{{zip_res.dest}}'
-    register: result
-    ignore_errors: true
-  - name: assert lambda manages to respond as expected
-    assert:
-      that:
-      - result is failed
-      - result.changed == False
-  - name: test state=absent (expect changed=False)
+
+  # Deletion behavious
+  - name: test state=absent (expect changed=True)
     lambda:
       name: '{{lambda_function_name}}'
       state: absent
     register: result
+
   - name: assert state=absent
     assert:
       that:
       - result is not failed
-      - result.changed == True
+      - result is changed
+
+  - name: test state=absent (expect changed=False) when already deleted
+    lambda:
+      name: '{{lambda_function_name}}'
+      state: absent
+    register: result
+
+  - name: assert state=absent
+    assert:
+      that:
+      - result is not failed
+      - result is not changed
+
+  # Parallel creations and deletions
   - name: parallel lambda creation 1/4
     lambda:
       name: '{{lambda_function_name}}_1'
       runtime: python2.7
       handler: mini_lambda.handler
-      role: ansible_lambda_role
+      role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'
     async: 1000
     register: async_1
@@ -312,7 +333,7 @@
       name: '{{lambda_function_name}}_2'
       runtime: python2.7
       handler: mini_lambda.handler
-      role: ansible_lambda_role
+      role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'
     async: 1000
     register: async_2
@@ -321,7 +342,7 @@
       name: '{{lambda_function_name}}_3'
       runtime: python2.7
       handler: mini_lambda.handler
-      role: ansible_lambda_role
+      role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'
     async: 1000
     register: async_3
@@ -330,7 +351,7 @@
       name: '{{lambda_function_name}}_4'
       runtime: python2.7
       handler: mini_lambda.handler
-      role: ansible_lambda_role
+      role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'
     register: result
   - name: assert lambda manages to respond as expected
@@ -398,9 +419,15 @@
     register: job_result
     until: job_result is finished
     retries: 30
+
   always:
   - name: ensure function is absent at end of test
     lambda:
       name: '{{lambda_function_name}}'
+      state: absent
+    ignore_errors: true
+  - name: ensure role has been removed at end of test
+    iam_role:
+      name: '{{ lambda_role_name }}'
       state: absent
     ignore_errors: true

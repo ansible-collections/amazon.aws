@@ -6,3 +6,10 @@ sns_topic_third_party_topic_arn: "arn:aws:sns:us-east-1:806199016981:AmazonIpSpa
 sns_topic_third_party_region: "{{ sns_topic_third_party_topic_arn.split(':')[3] }}"
 sns_topic_lambda_function: "sns_topic_lambda"
 sns_topic_lambda_name: "{{ resource_prefix }}-{{ sns_topic_lambda_function }}"
+# IAM role names have to be less than 64 characters
+# The 8 digit identifier at the end of resource_prefix helps determine during
+# which test something was created and allows tests to be run in parallel
+# Shippable resource_prefixes are in the format shippable-123456-123, so in those cases
+# we need both sets of digits to keep the resource name unique
+unique_id: "{{ resource_prefix | regex_search('(\\d+-?)(\\d+)$') }}"
+sns_topic_lambda_role: "ansible-test-{{ unique_id }}-sns-lambda"

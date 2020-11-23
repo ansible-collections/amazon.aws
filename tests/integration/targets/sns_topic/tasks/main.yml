@@ -9,26 +9,17 @@
   block:
   - name: create minimal lambda role
     iam_role:
-      name: ansible_lambda_role
-      assume_role_policy_document: '{{ lookup(''file'', ''lambda-trust-policy.json'', convert_data=False) }}'
+      name: '{{ sns_topic_lambda_role }}'
+      assume_role_policy_document: '{{ lookup("file", "lambda-trust-policy.json") }}'
       create_instance_profile: false
+      managed_policies:
+      - 'arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess'
     register: iam_role
   - name: pause if role was created
     pause:
       seconds: 10
     when: iam_role is changed
-  - name: ensure lambda role policy exists
-    iam_policy:
-      policy_name: ansible_lambda_role_policy
-      iam_name: ansible_lambda_role
-      iam_type: role
-      policy_json: '{{ lookup(''file'', ''lambda-policy.json'') }}'
-      state: present
-    register: iam_policy
-  - name: pause if policy was created
-    pause:
-      seconds: 10
-    when: iam_policy is changed
+
   - name: create topic
     sns_topic:
       name: '{{ sns_topic_topic_name }}'
@@ -178,7 +169,7 @@
       state: present
       zip_file: '{{ tempdir.path }}/{{ sns_topic_lambda_function }}.zip'
       runtime: python2.7
-      role: ansible_lambda_role
+      role: '{{ sns_topic_lambda_role }}'
       handler: '{{ sns_topic_lambda_function }}.handler'
     register: lambda_result
   - set_fact:
@@ -304,4 +295,9 @@
       path: '{{ tempdir.path }}'
       state: absent
     when: tempdir is defined
+    ignore_errors: true
+  - name: remove iam role
+    iam_role:
+      name: '{{ sns_topic_lambda_role }}'
+      state: absent
     ignore_errors: true

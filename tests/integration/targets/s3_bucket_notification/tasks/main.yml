@@ -1,16 +1,26 @@
-- name: set up aws connection info
-  set_fact:
-    aws_connection_info:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
-  no_log: true
 - name: test add s3 bucket notification
   collections:
     - amazon.aws
     - community.general
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
   block:
+  - name: create minimal lambda role
+    iam_role:
+      name: '{{ lambda_role_name }}'
+      assume_role_policy_document: '{{ lookup("file", "lambda-trust-policy.json") }}'
+      create_instance_profile: false
+      managed_policies:
+      - 'arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess'
+    register: iam_role
+  - name: pause if role was created
+    pause:
+      seconds: 10
+    when: iam_role is changed
   - name: move lambda into place for archive module
     copy:
       src: mini_lambda.py
@@ -24,22 +34,14 @@
       dest: '{{ output_dir }}/mini_lambda.zip'
   - name: register bucket
     s3_bucket:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       name: '{{resource_prefix}}-bucket'
       state: present
     register: bucket_info
   - name: register lambda
     lambda:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       name: '{{resource_prefix}}-lambda'
       state: present
-      role: ansible_lambda_role
+      role: '{{ lambda_role_name }}'
       runtime: python3.7
       zip_file: '{{function_res.dest}}'
       handler: lambda_function.lambda_handler
@@ -48,10 +50,6 @@
     register: lambda_info
   - name: register notification without invoke permissions
     s3_bucket_notification:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       state: present
       event_name: '{{resource_prefix}}-on_file_add_or_remove'
       bucket_name: '{{resource_prefix}}-bucket'
@@ -70,10 +68,6 @@
       - result.msg != 'MODULE FAILURE'
   - name: Add invocation permission of Lambda function on AWS
     lambda_policy:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       function_name: '{{ lambda_info.configuration.function_arn }}'
       statement_id: allow_lambda_invoke
       action: lambda:InvokeFunction
@@ -81,10 +75,6 @@
       source_arn: arn:aws:s3:::{{bucket_info.name}}
   - name: register s3 bucket notification
     s3_bucket_notification:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       state: present
       event_name: '{{resource_prefix}}-on_file_add_or_remove'
       bucket_name: '{{resource_prefix}}-bucket'
@@ -101,10 +91,6 @@
       - result.changed == True
   - name: test check_mode without change
     s3_bucket_notification:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       state: present
       event_name: '{{resource_prefix}}-on_file_add_or_remove'
       bucket_name: '{{resource_prefix}}-bucket'
@@ -122,10 +108,6 @@
       - result.changed == False
   - name: test check_mode change events
     s3_bucket_notification:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       state: present
       event_name: '{{resource_prefix}}-on_file_add_or_remove'
       bucket_name: '{{resource_prefix}}-bucket'
@@ -142,10 +124,6 @@
       - result.changed == True
   - name: test that check_mode didn't change events
     s3_bucket_notification:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       state: present
       event_name: '{{resource_prefix}}-on_file_add_or_remove'
       bucket_name: '{{resource_prefix}}-bucket'
@@ -162,10 +140,6 @@
       - result.changed == False
   - name: test mutually exclusive parameters
     s3_bucket_notification:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       state: present
       event_name: '{{resource_prefix}}-on_file_add_or_remove'
       bucket_name: '{{resource_prefix}}-bucket'
@@ -185,10 +159,6 @@
       - 'result.msg == ''parameters are mutually exclusive: lambda_alias|lambda_version'''
   - name: test configuration change on suffix
     s3_bucket_notification:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       state: present
       event_name: '{{resource_prefix}}-on_file_add_or_remove'
       bucket_name: '{{resource_prefix}}-bucket'
@@ -205,10 +175,6 @@
       - result.changed == True
   - name: test configuration change on prefix
     s3_bucket_notification:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       state: present
       event_name: '{{resource_prefix}}-on_file_add_or_remove'
       bucket_name: '{{resource_prefix}}-bucket'
@@ -225,10 +191,6 @@
       - result.changed == True
   - name: test configuration change on new events added
     s3_bucket_notification:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       state: present
       event_name: '{{resource_prefix}}-on_file_add_or_remove'
       bucket_name: '{{resource_prefix}}-bucket'
@@ -246,10 +208,6 @@
       - result.changed == True
   - name: test configuration change on events removed
     s3_bucket_notification:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       state: present
       event_name: '{{resource_prefix}}-on_file_add_or_remove'
       bucket_name: '{{resource_prefix}}-bucket'
@@ -265,10 +223,6 @@
       - result.changed == True
   - name: change events
     s3_bucket_notification:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       state: present
       event_name: '{{resource_prefix}}-on_file_add_or_remove'
       bucket_name: '{{resource_prefix}}-bucket'
@@ -282,10 +236,6 @@
     register: result
   - name: test that event order does not matter
     s3_bucket_notification:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       state: present
       event_name: '{{resource_prefix}}-on_file_add_or_remove'
       bucket_name: '{{resource_prefix}}-bucket'
@@ -303,10 +253,6 @@
       - result.changed == False
   - name: test that configuration is the same as previous task
     s3_bucket_notification:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       state: present
       event_name: '{{resource_prefix}}-on_file_add_or_remove'
       bucket_name: '{{resource_prefix}}-bucket'
@@ -324,10 +270,6 @@
       - result.changed == False
   - name: test remove notification
     s3_bucket_notification:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       state: absent
       event_name: '{{resource_prefix}}-on_file_add_or_remove'
       bucket_name: '{{resource_prefix}}-bucket'
@@ -338,10 +280,6 @@
       - result.changed == True
   - name: test that events is already removed
     s3_bucket_notification:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       state: absent
       event_name: '{{resource_prefix}}-on_file_add_or_remove'
       bucket_name: '{{resource_prefix}}-bucket'
@@ -353,21 +291,20 @@
   always:
   - name: clean-up bucket
     s3_bucket:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       name: '{{resource_prefix}}-bucket'
       state: absent
+    ignore_errors: true
   - name: clean-up lambda
     lambda:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       name: '{{resource_prefix}}-lambda'
       state: absent
-- null
+    ignore_errors: true
+  - name: cleam-up role
+    iam_role:
+      name: '{{ lambda_role_name }}'
+      state: absent
+    ignore_errors: true
+
 - block:
   - name: test with no parameters except state absent
     s3_bucket_notification: state=absent

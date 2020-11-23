@@ -16,9 +16,9 @@
   - name: create or update service-role for lambda
     iam_role:
       name: '{{ lambda_role_name }}'
-      assume_role_policy_document: '{{ lookup(''file'', role_path + ''/files/assume-role.json'') }}'
+      assume_role_policy_document: '{{ lookup("file", role_path + "/files/assume-role.json") }}'
       managed_policy:
-      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      - 'arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess'
     register: ROLE_ARN
   - name: when it is too fast, the role is not usable.
     pause:
