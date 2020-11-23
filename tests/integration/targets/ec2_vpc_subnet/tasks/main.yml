@@ -89,9 +89,29 @@
     - name: Assert info result matches create result
       assert:
         that:
-          - 'vpc_subnet_info.subnets[0].id == vpc_subnet_create.subnet.id'
-          - 'vpc_subnet_info.subnets[0].tags["Description"] == ec2_vpc_subnet_description'
-          - 'vpc_subnet_info.subnets[0].tags["Name"] == vpc_subnet_create.subnet.tags["Name"]'
+          - 'vpc_subnet_info.subnets | length == 1'
+          - '"assign_ipv6_address_on_creation" in subnet_info'
+          - 'subnet_info.assign_ipv6_address_on_creation == False'
+          - '"availability_zone" in subnet_info'
+          - 'subnet_info.availability_zone == subnet_az'
+          - '"available_ip_address_count" in subnet_info'
+          - '"cidr_block" in subnet_info'
+          - 'subnet_info.cidr_block == subnet_cidr'
+          - '"default_for_az" in subnet_info'
+          - '"id" in subnet_info'
+          - 'subnet_info.id == vpc_subnet_create.subnet.id'
+          - '"map_public_ip_on_launch" in subnet_info'
+          - 'subnet_info.map_public_ip_on_launch == False'
+          - '"state" in subnet_info'
+          - '"subnet_id" in subnet_info'
+          - 'subnet_info.subnet_id == vpc_subnet_create.subnet.id'
+          - '"tags" in subnet_info'
+          - 'subnet_info.tags["Description"] == ec2_vpc_subnet_description'
+          - 'subnet_info.tags["Name"] == vpc_subnet_create.subnet.tags["Name"]'
+          - '"vpc_id" in subnet_info'
+          - 'subnet_info.vpc_id == vpc_result.vpc.id'
+      vars:
+        subnet_info: '{{ vpc_subnet_info.subnets[0] }}'
 
     # ============================================================
     - name: recreate subnet (expected changed=false) (CHECK MODE)
