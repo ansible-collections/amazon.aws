@@ -34,6 +34,17 @@
         subnet_ipv6_cidr: "{{ vpc_ipv6_cidr | regex_replace('::/.*', '::/64') }}"
 
     # ============================================================
+    - name: check subnet does not exist
+      ec2_vpc_subnet_info:
+        filters:
+          "tag:Name": '{{ec2_vpc_subnet_name}}'
+      register: vpc_subnet_info
+
+    - name: Assert info result is zero
+      assert:
+        that:
+          - (vpc_subnet_info.subnets|length) == 0
+
     - name: create subnet (expected changed=true) (CHECK MODE)
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
@@ -69,6 +80,39 @@
            - 'vpc_subnet_create.subnet.id.startswith("subnet-")'
            - '"Name" in vpc_subnet_create.subnet.tags and vpc_subnet_create.subnet.tags["Name"] == ec2_vpc_subnet_name'
            - '"Description" in vpc_subnet_create.subnet.tags and vpc_subnet_create.subnet.tags["Description"] == ec2_vpc_subnet_description'
+
+    - name: get info about the subnet
+      ec2_vpc_subnet_info:
+        subnet_ids: '{{ vpc_subnet_create.subnet.id }}'
+      register: vpc_subnet_info
+
+    - name: Assert info result matches create result
+      assert:
+        that:
+          - 'vpc_subnet_info.subnets | length == 1'
+          - '"assign_ipv6_address_on_creation" in subnet_info'
+          - 'subnet_info.assign_ipv6_address_on_creation == False'
+          - '"availability_zone" in subnet_info'
+          - 'subnet_info.availability_zone == subnet_az'
+          - '"available_ip_address_count" in subnet_info'
+          - '"cidr_block" in subnet_info'
+          - 'subnet_info.cidr_block == subnet_cidr'
+          - '"default_for_az" in subnet_info'
+          - '"id" in subnet_info'
+          - 'subnet_info.id == vpc_subnet_create.subnet.id'
+          - '"map_public_ip_on_launch" in subnet_info'
+          - 'subnet_info.map_public_ip_on_launch == False'
+          - '"state" in subnet_info'
+          - '"subnet_id" in subnet_info'
+          - 'subnet_info.subnet_id == vpc_subnet_create.subnet.id'
+          - '"tags" in subnet_info'
+          - 'subnet_info.tags["Description"] == ec2_vpc_subnet_description'
+          - 'subnet_info.tags["Name"] == vpc_subnet_create.subnet.tags["Name"]'
+          - '"vpc_id" in subnet_info'
+          - 'subnet_info.vpc_id == vpc_result.vpc.id'
+      vars:
+        subnet_info: '{{ vpc_subnet_info.subnets[0] }}'
+
     # ============================================================
     - name: recreate subnet (expected changed=false) (CHECK MODE)
       ec2_vpc_subnet:
@@ -200,6 +244,20 @@
            - '"Description" in vpc_subnet_add_a_tag.subnet.tags and vpc_subnet_add_a_tag.subnet.tags["Description"] == ec2_vpc_subnet_description'
            - '"AnotherTag" in vpc_subnet_add_a_tag.subnet.tags and vpc_subnet_add_a_tag.subnet.tags["AnotherTag"] == "SomeValue"'
 
+    - name: Get info by tag
+      ec2_vpc_subnet_info:
+        filters:
+          "tag:Name": '{{ec2_vpc_subnet_name}}'
+      register: vpc_subnet_info_by_tag
+
+    - name: assert info matches expected output
+      assert:
+        that:
+          - 'vpc_subnet_info_by_tag.subnets[0].id == vpc_subnet_add_a_tag.subnet.id'
+          - (vpc_subnet_info_by_tag.subnets[0].tags|length) == 3
+          - '"Description" in vpc_subnet_info_by_tag.subnets[0].tags and vpc_subnet_info_by_tag.subnets[0].tags["Description"] == ec2_vpc_subnet_description'
+          - '"AnotherTag" in vpc_subnet_info_by_tag.subnets[0].tags and vpc_subnet_info_by_tag.subnets[0].tags["AnotherTag"] == "SomeValue"'
+
     # ============================================================
     - name: remove tags with default purge_tags=true (expected changed=true) (CHECK MODE)
       ec2_vpc_subnet:
@@ -234,6 +292,19 @@
            - '"Name" not in vpc_subnet_remove_tags.subnet.tags'
            - '"Description" not in vpc_subnet_remove_tags.subnet.tags'
            - '"AnotherTag" in vpc_subnet_remove_tags.subnet.tags and vpc_subnet_remove_tags.subnet.tags["AnotherTag"] == "SomeValue"'
+
+    - name: Check tags by info
+      ec2_vpc_subnet_info:
+        subnet_id: '{{ vpc_subnet_remove_tags.subnet.id }}'
+      register: vpc_subnet_info_removed_tags
+
+    - name: assert info matches expected output
+      assert:
+        that:
+          - '"Name" not in vpc_subnet_info_removed_tags.subnets[0].tags'
+          - '"Description" not in vpc_subnet_info_removed_tags.subnets[0].tags'
+          - '"AnotherTag" in vpc_subnet_info_removed_tags.subnets[0].tags and vpc_subnet_info_removed_tags.subnets[0].tags["AnotherTag"] == "SomeValue"'
+
 
     # ============================================================
     - name: change tags with purge_tags=false (expected changed=true) (CHECK MODE)
