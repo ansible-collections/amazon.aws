@@ -1,0 +1,4 @@
+---
+vpc_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/16'
+subnet_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.1.0/24'
+ec2_ami_name: 'amzn2-ami-hvm-2.*-x86_64-gp2'

@@ -1,0 +1,196 @@
+---
+- module_defaults:
+    group/aws:
+      aws_region: '{{ aws_region }}'
+      aws_access_key: '{{ aws_access_key | default(omit) }}'
+      aws_secret_key: '{{ aws_secret_key | default(omit) }}'
+      security_token: '{{ security_token | default(omit) }}'
+  collections:
+    - community.aws
+
+  block:
+
+    # SETUP: vpc, ec2 key pair, subnet, security group, ec2 instance
+    - name: list available AZs
+      aws_az_info:
+      register: region_azs
+
+    - name: pick an AZ for testing
+      set_fact:
+        availability_zone: "{{ region_azs.availability_zones[0].zone_name }}"
+
+    - name: create a VPC to work in
+      ec2_vpc_net:
+        cidr_block: '{{ vpc_cidr }}'
+        state: present
+        name: '{{ resource_prefix }}_setup'
+        resource_tags:
+          Name: '{{ resource_prefix }}_setup'
+      register: setup_vpc
+
+    - name: create a key pair to use for creating an ec2 instance
+      ec2_key:
+        name: '{{ resource_prefix }}_setup'
+        state: present
+      register: setup_key
+
+    - name: create a subnet to use for creating an ec2 instance
+      ec2_vpc_subnet:
+        az: '{{ availability_zone }}'
+        tags: '{{ resource_prefix }}_setup'
+        vpc_id: '{{ setup_vpc.vpc.id }}'
+        cidr: '{{ subnet_cidr }}'
+        state: present
+        resource_tags:
+          Name: '{{ resource_prefix }}_setup'
+      register: setup_subnet
+
+    - name: create a security group to use for creating an ec2 instance
+      ec2_group:
+        name: '{{ resource_prefix }}_setup'
+        description: 'created by Ansible integration tests'
+        state: present
+        vpc_id: '{{ setup_vpc.vpc.id }}'
+      register: setup_sg
+
+    - name: Find AMI to use
+      ec2_ami_info:
+        owners: 'amazon'
+        filters:
+          name: '{{ ec2_ami_name }}'
+      register: ec2_amis
+
+    - name: Set fact with latest AMI
+      vars:
+        latest_ami: '{{ ec2_amis.images | sort(attribute="creation_date") | last }}'
+      set_fact:
+        ec2_ami_image: '{{ latest_ami.image_id }}'
+
+    # ============================================================
+
+    - name: test first instance is started
+      ec2:
+        instance_type: t2.micro
+        key_name: '{{ setup_key.key.name }}'
+        state: present
+        image: '{{ ec2_ami_image }}'
+        wait: yes
+        instance_tags:
+          ResourcePrefix: '{{ resource_prefix }}-integration_tests'
+        group_id: '{{ setup_sg.group_id }}'
+        vpc_subnet_id: '{{ setup_subnet.subnet.id }}'
+      register: test_instance_1
+
+    - name: test second instance is started
+      ec2:
+        instance_type: t2.micro
+        key_name: '{{ setup_key.key.name }}'
+        state: present
+        image: '{{ ec2_ami_image }}'
+        wait: yes
+        instance_tags:
+          ResourcePrefix: '{{ resource_prefix }}-another_tag'
+        group_id: '{{ setup_sg.group_id }}'
+        vpc_subnet_id: '{{ setup_subnet.subnet.id }}'
+      register: test_instance_2
+
+    - name: assert instances started
+      assert:
+        that:
+          - "test_instance_1.instances[0].state == 'running'"
+          - "test_instance_2.instances[0].state == 'running'"
+
+    - name: test first instance is terminated
+      ec2:
+        instance_ids: "{{ test_instance_1.instance_ids }}"
+        state: absent
+        wait: yes
+      register: result
+
+    - name: assert instance terminated
+      assert:
+        that:
+          - "result.instances[0].state == 'terminated'"
+
+    - name: test terminated instance is ignored when stopping
+      ec2:
+        instance_tags:
+          ResourcePrefix: '{{ resource_prefix }}-integration_tests'
+        state: stopped
+        wait: yes
+      register: result
+
+    - name: assert resource not changed
+      assert:
+        that:
+          - "result.changed == False"
+
+    - name: test second instance not terminated
+      ec2_instance_info:
+        instance_ids: "{{ test_instance_2.instance_ids }}"
+      register: result
+
+    - name: assert second instance still running
+      assert:
+        that:
+          - (result.instances|length) == 1
+          - "result.instances[0].state.name == 'running'"
+
+    # ========================================================
+
+  always:
+
+    # ============================================================
+
+
+    # TEAR DOWN: ec2 instance, ec2 key pair, security group, vpc
+    - name: Announce teardown start
+      debug:
+        msg: "***** TESTING COMPLETE. COMMENCE TEARDOWN *****"
+
+    - name: get list of test instances
+      ec2_instance_info:
+        filters:
+          "tag:ResourcePrefix": "{{ resource_prefix }}-*"
+      register: test_instances
+
+    - name: delete test instances
+      ec2:
+        instance_ids: "{{ test_instances.instances|map(attribute='instance_id') }}"
+        state: absent
+        wait: yes
+      ignore_errors: yes
+
+    - name: remove setup keypair
+      ec2_key:
+        name: '{{resource_prefix}}_setup'
+        state: absent
+      ignore_errors: yes
+
+    - name: remove setup security group
+      ec2_group:
+        name: '{{ resource_prefix }}_setup'
+        description: 'created by Ansible integration tests'
+        state: absent
+        vpc_id: '{{ setup_vpc.vpc.id }}'
+      ignore_errors: yes
+
+    - name: remove setup subnet
+      ec2_vpc_subnet:
+        az: '{{ ec2_region }}a'
+        tags: '{{resource_prefix}}_setup'
+        vpc_id: '{{ setup_vpc.vpc.id }}'
+        cidr: '{{ subnet_cidr }}'
+        state: absent
+        resource_tags:
+          Name: '{{ resource_prefix }}_setup'
+      ignore_errors: yes
+
+    - name: remove setup VPC
+      ec2_vpc_net:
+        cidr_block: '{{ vpc_cidr }}'
+        state: absent
+        name: '{{ resource_prefix }}_setup'
+        resource_tags:
+          Name: '{{ resource_prefix }}_setup'
+      ignore_errors: yes
