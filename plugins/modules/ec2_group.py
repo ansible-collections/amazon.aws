@@ -904,9 +904,8 @@ def update_tags(client, module, group_id, current_tags, tags, purge_tags):
     return bool(tags_need_modify or tags_to_delete)
 
 
-def update_rule_descriptions(module, group_id, present_ingress, named_tuple_ingress_list, present_egress, named_tuple_egress_list):
+def update_rule_descriptions(module, client, group_id, present_ingress, named_tuple_ingress_list, present_egress, named_tuple_egress_list):
     changed = False
-    client = module.client('ec2')
     ingress_needs_desc_update = []
     egress_needs_desc_update = []
 
@@ -955,7 +954,7 @@ def create_security_group(client, module, name, description, vpc_id):
     return None
 
 
-def wait_for_rule_propagation(module, group, desired_ingress, desired_egress, purge_ingress, purge_egress):
+def wait_for_rule_propagation(module, client, group, desired_ingress, desired_egress, purge_ingress, purge_egress):
     group_id = group['GroupId']
     tries = 6
 
@@ -976,11 +975,11 @@ def wait_for_rule_propagation(module, group, desired_ingress, desired_egress, pu
             elif current_rules.issuperset(desired_rules) and not purge:
                 return group
             sleep(10)
-            group = get_security_groups_with_backoff(module.client('ec2'), GroupIds=[group_id])['SecurityGroups'][0]
+            group = get_security_groups_with_backoff(client, GroupIds=[group_id])['SecurityGroups'][0]
         module.warn("Ran out of time waiting for {0} {1}. Current: {2}, Desired: {3}".format(group_id, rule_key, current_rules, desired_rules))
         return group
 
-    group = get_security_groups_with_backoff(module.client('ec2'), GroupIds=[group_id])['SecurityGroups'][0]
+    group = get_security_groups_with_backoff(client, GroupIds=[group_id])['SecurityGroups'][0]
     if 'VpcId' in group and module.params.get('rules_egress') is not None:
         group = await_rules(group, desired_egress, purge_egress, 'IpPermissionsEgress')
     return await_rules(group, desired_ingress, purge_ingress, 'IpPermissions')
@@ -1329,7 +1328,7 @@ def main():
         desired_ingress = deepcopy(named_tuple_ingress_list)
         desired_egress = deepcopy(named_tuple_egress_list)
 
-        changed |= update_rule_descriptions(module, group['GroupId'], present_ingress, named_tuple_ingress_list, present_egress, named_tuple_egress_list)
+        changed |= update_rule_descriptions(module, client, group['GroupId'], present_ingress, named_tuple_ingress_list, present_egress, named_tuple_egress_list)
 
         # Revoke old rules
         changed |= remove_old_permissions(client, module, revoke_ingress, revoke_egress, group['GroupId'])
@@ -1347,7 +1346,7 @@ def main():
             security_group = get_security_groups_with_backoff(client, GroupIds=[group['GroupId']])['SecurityGroups'][0]
         elif changed and not module.check_mode:
             # keep pulling until current security group rules match the desired ingress and egress rules
-            security_group = wait_for_rule_propagation(module, group, desired_ingress, desired_egress, purge_rules, purge_rules_egress)
+            security_group = wait_for_rule_propagation(module, client, group, desired_ingress, desired_egress, purge_rules, purge_rules_egress)
         else:
             security_group = get_security_groups_with_backoff(client, GroupIds=[group['GroupId']])['SecurityGroups'][0]
         security_group = camel_dict_to_snake_dict(security_group, ignore_list=['Tags'])
