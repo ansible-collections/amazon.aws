@@ -67,8 +67,9 @@ plugin_routing:
         removal_date: 2021-12-01
         warning_text: >-
             cloudformation_facts has been deprecated and will be removed.
-            Please update your tasks to use cloudformation_info.
-            See the module documentation for more information.
+            The cloudformation_info module returns the same information, but
+            not as ansible_facts.  See the module documentation for more
+            information.
     ec2_ami_facts:
       deprecation:
         removal_date: 2021-12-01
