@@ -1025,7 +1025,7 @@ def verify_rules_with_descriptions_permitted(client, module, rules, rules_egress
 def get_diff_final_resource(client, module, security_group):
     def get_account_id(security_group, module):
         try:
-            owner_id = security_group.get('owner_id', module.client('sts').get_caller_identity()['Account'])
+            owner_id = security_group.get('owner_id', current_account_id)
         except (BotoCoreError, ClientError) as e:
             owner_id = "Unable to determine owner_id: {0}".format(to_text(e))
         return owner_id
