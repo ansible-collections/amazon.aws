@@ -559,9 +559,10 @@ def rule_from_group_permission(perm):
             )
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0, catch_extra_error_codes=['InvalidGroup.NotFound'])
-def get_security_groups_with_backoff(connection, **kwargs):
-    return connection.describe_security_groups(**kwargs)
+# Wrap just this method so we can retry on missing groups
+@AWSRetry.jittered_backoff(retries=5, delay=5, catch_extra_error_codes=['InvalidGroup.NotFound'])
+def get_security_groups_with_backoff(client, **kwargs):
+    return client.describe_security_groups(**kwargs)
 
 
 def sg_exists_with_backoff(client, **kwargs):
