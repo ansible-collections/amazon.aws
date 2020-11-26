@@ -680,7 +680,7 @@ def get_target_from_rule(module, client, rule, name, group, groups, vpc_id):
                 if vpc_id:
                     params['VpcId'] = vpc_id
                 try:
-                    auto_group = client.create_security_group(**params)
+                    auto_group = client.create_security_group(aws_retry=True, **params)
                     get_waiter(
                         client, 'security_group_exists',
                     ).wait(
@@ -796,9 +796,11 @@ def update_rules_description(module, client, rule_type, group_id, ip_permissions
         return
     try:
         if rule_type == "in":
-            client.update_security_group_rule_descriptions_ingress(GroupId=group_id, IpPermissions=ip_permissions)
+            client.update_security_group_rule_descriptions_ingress(
+                aws_retry=True, GroupId=group_id, IpPermissions=ip_permissions)
         if rule_type == "out":
-            client.update_security_group_rule_descriptions_egress(GroupId=group_id, IpPermissions=ip_permissions)
+            client.update_security_group_rule_descriptions_egress(
+                aws_retry=True, GroupId=group_id, IpPermissions=ip_permissions)
     except (ClientError, BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to update rule description for group %s" % group_id)
 
@@ -828,9 +830,12 @@ def revoke(client, module, ip_permissions, group_id, rule_type):
     if not module.check_mode:
         try:
             if rule_type == 'in':
-                client.revoke_security_group_ingress(GroupId=group_id, IpPermissions=ip_permissions)
+                client.revoke_security_group_ingress(
+                    aws_retry=True, GroupId=group_id, IpPermissions=ip_permissions)
             elif rule_type == 'out':
-                client.revoke_security_group_egress(GroupId=group_id, IpPermissions=ip_permissions)
+                client.revoke_security_group_egress(
+                    aws_retry=True,
+                    GroupId=group_id, IpPermissions=ip_permissions)
         except (BotoCoreError, ClientError) as e:
             rules = 'ingress rules' if rule_type == 'in' else 'egress rules'
             module.fail_json_aws(e, "Unable to revoke {0}: {1}".format(rules, ip_permissions))
@@ -848,9 +853,13 @@ def authorize(client, module, ip_permissions, group_id, rule_type):
     if not module.check_mode:
         try:
             if rule_type == 'in':
-                client.authorize_security_group_ingress(GroupId=group_id, IpPermissions=ip_permissions)
+                client.authorize_security_group_ingress(
+                    aws_retry=True,
+                    GroupId=group_id, IpPermissions=ip_permissions)
             elif rule_type == 'out':
-                client.authorize_security_group_egress(GroupId=group_id, IpPermissions=ip_permissions)
+                client.authorize_security_group_egress(
+                    aws_retry=True,
+                    GroupId=group_id, IpPermissions=ip_permissions)
         except (BotoCoreError, ClientError) as e:
             rules = 'ingress rules' if rule_type == 'in' else 'egress rules'
             module.fail_json_aws(e, "Unable to authorize {0}: {1}".format(rules, ip_permissions))
@@ -890,14 +899,14 @@ def update_tags(client, module, group_id, current_tags, tags, purge_tags):
     if not module.check_mode:
         if tags_to_delete:
             try:
-                client.delete_tags(Resources=[group_id], Tags=[{'Key': tag} for tag in tags_to_delete])
+                client.delete_tags(aws_retry=True, Resources=[group_id], Tags=[{'Key': tag} for tag in tags_to_delete])
             except (BotoCoreError, ClientError) as e:
                 module.fail_json_aws(e, msg="Unable to delete tags {0}".format(tags_to_delete))
 
         # Add/update tags
         if tags_need_modify:
             try:
-                client.create_tags(Resources=[group_id], Tags=ansible_dict_to_boto3_tag_list(tags_need_modify))
+                client.create_tags(aws_retry=True, Resources=[group_id], Tags=ansible_dict_to_boto3_tag_list(tags_need_modify))
             except (BotoCoreError, ClientError) as e:
                 module.fail_json(e, msg="Unable to add tags {0}".format(tags_need_modify))
 
@@ -935,7 +944,7 @@ def create_security_group(client, module, name, description, vpc_id):
         if vpc_id:
             params['VpcId'] = vpc_id
         try:
-            group = client.create_security_group(**params)
+            group = client.create_security_group(aws_retry=True, **params)
         except (BotoCoreError, ClientError) as e:
             module.fail_json_aws(e, msg="Unable to create security group")
         # When a group is created, an egress_rule ALLOW ALL
@@ -1198,7 +1207,7 @@ def main():
         module.fail_json(msg='Must provide description when state is present.')
 
     changed = False
-    client = module.client('ec2')
+    client = module.client('ec2', AWSRetry.jittered_backoff())
 
     verify_rules_with_descriptions_permitted(client, module, rules, rules_egress)
     group, groups = group_exists(client, module, vpc_id, group_id, name)
@@ -1218,7 +1227,7 @@ def main():
             before['tags'] = boto3_tag_list_to_ansible_dict(before.get('tags', []))
             try:
                 if not module.check_mode:
-                    client.delete_security_group(GroupId=group['GroupId'])
+                    client.delete_security_group(aws_retry=True,GroupId=group['GroupId'])
             except (BotoCoreError, ClientError) as e:
                 module.fail_json_aws(e, msg="Unable to delete security group '%s'" % group)
             else:
