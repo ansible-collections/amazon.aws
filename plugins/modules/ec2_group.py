@@ -1227,7 +1227,7 @@ def main():
             before['tags'] = boto3_tag_list_to_ansible_dict(before.get('tags', []))
             try:
                 if not module.check_mode:
-                    client.delete_security_group(aws_retry=True,GroupId=group['GroupId'])
+                    client.delete_security_group(aws_retry=True, GroupId=group['GroupId'])
             except (BotoCoreError, ClientError) as e:
                 module.fail_json_aws(e, msg="Unable to delete security group '%s'" % group)
             else:
@@ -1337,7 +1337,8 @@ def main():
         desired_ingress = deepcopy(named_tuple_ingress_list)
         desired_egress = deepcopy(named_tuple_egress_list)
 
-        changed |= update_rule_descriptions(module, client, group['GroupId'], present_ingress, named_tuple_ingress_list, present_egress, named_tuple_egress_list)
+        changed |= update_rule_descriptions(module, client, group['GroupId'], present_ingress,
+                                            named_tuple_ingress_list, present_egress, named_tuple_egress_list)
 
         # Revoke old rules
         changed |= remove_old_permissions(client, module, revoke_ingress, revoke_egress, group['GroupId'])
