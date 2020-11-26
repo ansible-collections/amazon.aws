@@ -68,6 +68,7 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.ec2 import AWSRetry
 
 
 def main():
@@ -78,21 +79,21 @@ def main():
     if module._name == 'aws_caller_facts':
         module.deprecate("The 'aws_caller_facts' module has been renamed to 'aws_caller_info'", date='2021-12-01', collection_name='amazon.aws')
 
-    client = module.client('sts')
+    client = module.client('sts', retry_decorator=AWSRetry.jittered_backoff())
 
     try:
-        caller_info = client.get_caller_identity()
+        caller_info = client.get_caller_identity(aws_retry=True)
         caller_info.pop('ResponseMetadata', None)
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(e, msg='Failed to retrieve caller identity')
 
-    iam_client = module.client('iam')
+    iam_client = module.client('iam', retry_decorator=AWSRetry.jittered_backoff())
 
     try:
         # Although a list is returned by list_account_aliases AWS supports maximum one alias per account.
         # If an alias is defined it will be returned otherwise a blank string is filled in as account_alias.
         # see https://docs.aws.amazon.com/cli/latest/reference/iam/list-account-aliases.html#output
-        response = iam_client.list_account_aliases()
+        response = iam_client.list_account_aliases(aws_retry=True)
         if response and response['AccountAliases']:
             caller_info['account_alias'] = response['AccountAliases'][0]
         else:

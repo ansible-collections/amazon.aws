@@ -86,6 +86,7 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
@@ -107,7 +108,7 @@ def list_dhcp_options(client, module):
         params['DhcpOptionsIds'] = module.params.get("dhcp_options_ids")
 
     try:
-        all_dhcp_options = client.describe_dhcp_options(**params)
+        all_dhcp_options = client.describe_dhcp_options(aws_retry=True, **params)
     except botocore.exceptions.ClientError as e:
         module.fail_json_aws(e)
 
@@ -130,10 +131,10 @@ def main():
         module.deprecate("The 'ec2_vpc_dhcp_option_facts' module has been renamed to 'ec2_vpc_dhcp_option_info'",
                          date='2021-12-01', collection_name='amazon.aws')
 
-    connection = module.client('ec2')
+    client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
     # call your function here
-    results = list_dhcp_options(connection, module)
+    results = list_dhcp_options(client, module)
 
     module.exit_json(dhcp_options=results)
 
