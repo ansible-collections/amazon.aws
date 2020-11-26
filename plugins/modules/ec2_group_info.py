@@ -99,6 +99,7 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
@@ -112,7 +113,7 @@ def main():
     if module._name == 'ec2_group_facts':
         module.deprecate("The 'ec2_group_facts' module has been renamed to 'ec2_group_info'", date='2021-12-01', collection_name='amazon.aws')
 
-    connection = module.client('ec2')
+    connection = module.client('ec2', AWSRetry.jittered_backoff())
 
     # Replace filter key underscores with dashes, for compatibility, except if we're dealing with tags
     filters = module.params.get("filters")
@@ -126,6 +127,7 @@ def main():
 
     try:
         security_groups = connection.describe_security_groups(
+            aws_retry=True,
             Filters=ansible_dict_to_boto3_filter_list(sanitized_filters)
         )
     except (BotoCoreError, ClientError) as e:
