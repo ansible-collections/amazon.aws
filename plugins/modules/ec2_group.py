@@ -564,10 +564,9 @@ def get_security_groups_with_backoff(connection, **kwargs):
     return connection.describe_security_groups(**kwargs)
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
-def sg_exists_with_backoff(connection, **kwargs):
+def sg_exists_with_backoff(client, **kwargs):
     try:
-        return connection.describe_security_groups(**kwargs)
+        return client.describe_security_groups(aws_retry=True, **kwargs)
     except is_boto3_error_code('InvalidGroup.NotFound'):
         return {'SecurityGroups': []}
 
