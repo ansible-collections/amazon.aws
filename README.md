@@ -84,6 +84,16 @@ You can also include it in a `requirements.yml` file and install it with `ansibl
 collections:
   - name: amazon.aws
 ```
+
+The python module dependencies are not installed by `ansible-galaxy`.  They can
+be manually installed using pip:
+
+    pip install requirements.txt
+
+or:
+
+    pip install boto boto3 botocore
+
 ## Using this collection
 
 
