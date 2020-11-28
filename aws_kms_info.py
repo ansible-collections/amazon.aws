@@ -373,7 +373,11 @@ def get_key_details(connection, module, key_id, tokens=None):
                          exception=traceback.format_exc(),
                          **camel_dict_to_snake_dict(e.response))
     result['aliases'] = aliases.get(result['KeyId'], [])
-    result['enable_key_rotation'] = get_enable_key_rotation_with_backoff(connection, key_id)
+
+    if result['Origin'] == 'AWS_KMS':
+        result['enable_key_rotation'] = get_enable_key_rotation_with_backoff(connection, key_id)
+    else:
+        result['enable_key_rotation'] = None
 
     if module.params.get('pending_deletion'):
         return camel_dict_to_snake_dict(result)
