@@ -183,6 +183,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.core import is_boto3_error_code
+from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
@@ -195,7 +196,10 @@ def list_ec2_snapshots(connection, module):
     filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
 
     try:
-        snapshots = connection.describe_snapshots(SnapshotIds=snapshot_ids, OwnerIds=owner_ids, RestorableByUserIds=restorable_by_user_ids, Filters=filters)
+        snapshots = connection.describe_snapshots(
+            aws_retry=True,
+            SnapshotIds=snapshot_ids, OwnerIds=owner_ids,
+            RestorableByUserIds=restorable_by_user_ids, Filters=filters)
     except is_boto3_error_code('InvalidSnapshot.NotFound') as e:
         if len(snapshot_ids) > 1:
             module.warn("Some of your snapshots may exist, but %s" % str(e))
@@ -235,7 +239,7 @@ def main():
     if module._name == 'ec2_snapshot_facts':
         module.deprecate("The 'ec2_snapshot_facts' module has been renamed to 'ec2_snapshot_info'", date='2021-12-01', collection_name='amazon.aws')
 
-    connection = module.client('ec2')
+    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
     list_ec2_snapshots(connection, module)
 
