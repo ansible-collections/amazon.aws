@@ -223,160 +223,258 @@ plugin_routing:
     aws_acm_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          aws_acm_facts was renamed in Ansible 2.9 to aws_acm_info.
+          Please update your tasks.
     aws_kms_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          aws_kms_facts was renamed in Ansible 2.9 to aws_kms_info.
+          Please update your tasks.
     aws_region_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          aws_region_facts was renamed in Ansible 2.9 to aws_region_info.
+          Please update your tasks.
     aws_s3_bucket_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          aws_s3_bucket_facts has been deprecated and will be removed.
+          The aws_s3_bucket_info module returns the same information, but not
+          as ansible_facts.  See the module documentation for more information.
+          Please update your tasks.
     aws_sgw_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          aws_sgw_facts was renamed in Ansible 2.9 to aws_sgw_info.
+          Please update your tasks.
     aws_waf_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          aws_waf_facts was renamed in Ansible 2.9 to aws_waf_info.
+          Please update your tasks.
     cloudfront_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          cloudfront_facts has been deprecated and will be removed.
+          The cloudfront_info module returns the same information, but not as
+          ansible_facts.  See the module documentation for more information.
     cloudwatchlogs_log_group_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          cloudwatchlogs_log_group_facts was renamed in Ansible 2.9 to
+          cloudwatchlogs_log_group_info.
+          Please update your tasks.
     ec2_asg_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          ec2_asg_facts was renamed in Ansible 2.9 to ec2_asg_info.
+          Please update your tasks.
     ec2_customer_gateway_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          ec2_customer_gateway_facts was renamed in Ansible 2.9 to
+          ec2_customer_gateway_info.
+          Please update your tasks.
     ec2_instance_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          ec2_instance_facts was renamed in Ansible 2.9 to ec2_instance_info.
+          Please update your tasks.
     ec2_eip_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          ec2_eip_facts was renamed in Ansible 2.9 to ec2_eip_info.
+          Please update your tasks.
     ec2_elb_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          ec2_elb_facts was renamed in Ansible 2.9 to ec2_elb_info.
+          Please update your tasks.
     ec2_lc_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          ec2_lc_facts was renamed in Ansible 2.9 to ec2_lc_info.
+          Please update your tasks.
     ec2_placement_group_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          ec2_placement_group_facts was renamed in Ansible 2.9 to
+          ec2_placement_group_info.
+          Please update your tasks.
     ec2_vpc_endpoint_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          ec2_vpc_endpoint_facts was renamed in Ansible 2.9 to
+          ec2_vpc_endpoint_info.
+          Please update your tasks.
     ec2_vpc_igw_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          ec2_vpc_igw_facts was renamed in Ansible 2.9 to ec2_vpc_igw_info.
+          Please update your tasks.
     ec2_vpc_nacl_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          ec2_vpc_nacl_facts was renamed in Ansible 2.9 to ec2_vpc_nacl_info.
+          Please update your tasks.
     ec2_vpc_nat_gateway_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          ec2_vpc_nat_gateway_facts was renamed in Ansible 2.9 to
+          ec2_vpc_nat_gateway_info.
+          Please update your tasks.
     ec2_vpc_peering_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          ec2_vpc_peering_facts was renamed in Ansible 2.9 to
+          ec2_vpc_peering_info.
+          Please update your tasks.
     ec2_vpc_route_table_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          ec2_vpc_route_table_facts was renamed in Ansible 2.9 to
+          ec2_vpc_route_table_info.
+          Please update your tasks.
     ec2_vpc_vgw_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          ec2_vpc_vgw_facts was renamed in Ansible 2.9 to ec2_vpc_vgw_info.
+          Please update your tasks.
     ec2_vpc_vpn_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          ec2_vpc_vpn_facts was renamed in Ansible 2.9 to ec2_vpc_vpn_info.
+          Please update your tasks.
     ecs_service_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          ecs_service_facts has been deprecated and will be removed.
+          The ecs_service_info module returns the same information, but not as
+          ansible_facts.  See the module documentation for more information.
     ecs_taskdefinition_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          ecs_taskdefinition_facts was renamed in Ansible 2.9 to
+          ecs_taskdefinition_info.
+          Please update your tasks.
     efs_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          efs_facts has been deprecated and will be removed.
+          The efs_info module returns the same information, but not as
+          ansible_facts.  See the module documentation for more information.
     elasticache_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          elasticache_facts was renamed in Ansible 2.9 to elasticache_info.
+          Please update your tasks.
     elb_application_lb_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          elb_application_lb_facts was renamed in Ansible 2.9 to
+          elb_application_lb_info.
+          Please update your tasks.
     elb_classic_lb_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          elb_classic_lb_facts was renamed in Ansible 2.9 to
+          elb_classic_lb_info.
+          Please update your tasks.
     elb_target_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          elb_target_facts was renamed in Ansible 2.9 to elb_target_info.
+          Please update your tasks.
     elb_target_group_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          elb_target_group_facts was renamed in Ansible 2.9 to
+          elb_target_group_info.
+          Please update your tasks.
     iam_cert_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          iam_cert_facts was renamed in Ansible 2.9 to iam_cert_info.
+          Please update your tasks.
     iam_mfa_device_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          iam_mfa_device_facts was renamed in Ansible 2.9 to iam_mfa_device_info.
+          Please update your tasks.
     iam_role_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          iam_role_facts was renamed in Ansible 2.9 to iam_role_info.
+          Please update your tasks.
     iam_server_certificate_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          iam_server_certificate_facts was renamed in Ansible 2.9 to
+          iam_server_certificate_info.
+          Please update your tasks.
     lambda_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          lambda_facts has been deprecated and will be removed.
+          The lambda_info module returns the same information, but not as
+          ansible_facts.  See the module documentation for more information.
     rds_instance_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          rds_instance_facts was renamed in Ansible 2.9 to rds_instance_info.
+          Please update your tasks.
     rds_snapshot_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          rds_snapshot_facts was renamed in Ansible 2.9 to rds_snapshot_info.
+          Please update your tasks.
     redshift_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          redshift_facts was renamed in Ansible 2.9 to redshift_info.
+          Please update your tasks.
     route53_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+          route53_facts was renamed in Ansible 2.9 to route53_info.
+          Please update your tasks.
