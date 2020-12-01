@@ -53,44 +53,68 @@ plugin_routing:
     aws_az_facts:
       deprecation:
         removal_date: 2022-06-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+            aws_az_facts was renamed in Ansible 2.9 to aws_az_info.
+            Please update your tasks.
     aws_caller_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+            aws_caller_facts was renamed in Ansible 2.9 to aws_caller_info.
+            Please update your tasks.
     cloudformation_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+            cloudformation_facts has been deprecated and will be removed.
+            The cloudformation_info module returns the same information, but
+            not as ansible_facts.  See the module documentation for more
+            information.
     ec2_ami_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+            ec2_ami_facts was renamed in Ansible 2.9 to ec2_ami_info.
+            Please update your tasks.
     ec2_eni_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+            ec2_eni_facts was renamed in Ansible 2.9 to ec2_eni_info.
+            Please update your tasks.
     ec2_group_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+            ec2_group_facts was renamed in Ansible 2.9 to ec2_group_info.
+            Please update your tasks.
     ec2_snapshot_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+            ec2_snapshot_facts was renamed in Ansible 2.9 to ec2_snapshot_info.
+            Please update your tasks.
     ec2_vol_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+            ec2_vol_facts was renamed in Ansible 2.9 to ec2_vol_info.
+            Please update your tasks.
     ec2_vpc_dhcp_option_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+            ec2_vpc_dhcp_option_facts was renamed in Ansible 2.9 to
+            ec2_vpc_dhcp_option_info.  Please update your tasks.
     ec2_vpc_net_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+            ec2_vpc_net_facts was renamed in Ansible 2.9 to ec2_vpc_net_info.
+            Please update your tasks.
     ec2_vpc_subnet_facts:
       deprecation:
         removal_date: 2021-12-01
-        warning_text: see plugin documentation for details
+        warning_text: >-
+            ec2_vpc_subnet_facts was renamed in Ansible 2.9 to
+            ec2_vpc_subnet_info.  Please update your tasks.
