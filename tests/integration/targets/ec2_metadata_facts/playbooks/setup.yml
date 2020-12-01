@@ -136,4 +136,3 @@
     template:
       src: ../templates/inventory.j2
       dest: ../inventory
-
