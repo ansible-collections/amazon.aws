@@ -559,15 +559,15 @@ def rule_from_group_permission(perm):
             )
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0, catch_extra_error_codes=['InvalidGroup.NotFound'])
-def get_security_groups_with_backoff(connection, **kwargs):
-    return connection.describe_security_groups(**kwargs)
+# Wrap just this method so we can retry on missing groups
+@AWSRetry.jittered_backoff(retries=5, delay=5, catch_extra_error_codes=['InvalidGroup.NotFound'])
+def get_security_groups_with_backoff(client, **kwargs):
+    return client.describe_security_groups(**kwargs)
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
-def sg_exists_with_backoff(connection, **kwargs):
+def sg_exists_with_backoff(client, **kwargs):
     try:
-        return connection.describe_security_groups(**kwargs)
+        return client.describe_security_groups(aws_retry=True, **kwargs)
     except is_boto3_error_code('InvalidGroup.NotFound'):
         return {'SecurityGroups': []}
 
@@ -680,7 +680,7 @@ def get_target_from_rule(module, client, rule, name, group, groups, vpc_id):
                 if vpc_id:
                     params['VpcId'] = vpc_id
                 try:
-                    auto_group = client.create_security_group(**params)
+                    auto_group = client.create_security_group(aws_retry=True, **params)
                     get_waiter(
                         client, 'security_group_exists',
                     ).wait(
@@ -796,9 +796,11 @@ def update_rules_description(module, client, rule_type, group_id, ip_permissions
         return
     try:
         if rule_type == "in":
-            client.update_security_group_rule_descriptions_ingress(GroupId=group_id, IpPermissions=ip_permissions)
+            client.update_security_group_rule_descriptions_ingress(
+                aws_retry=True, GroupId=group_id, IpPermissions=ip_permissions)
         if rule_type == "out":
-            client.update_security_group_rule_descriptions_egress(GroupId=group_id, IpPermissions=ip_permissions)
+            client.update_security_group_rule_descriptions_egress(
+                aws_retry=True, GroupId=group_id, IpPermissions=ip_permissions)
     except (ClientError, BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to update rule description for group %s" % group_id)
 
@@ -828,9 +830,12 @@ def revoke(client, module, ip_permissions, group_id, rule_type):
     if not module.check_mode:
         try:
             if rule_type == 'in':
-                client.revoke_security_group_ingress(GroupId=group_id, IpPermissions=ip_permissions)
+                client.revoke_security_group_ingress(
+                    aws_retry=True, GroupId=group_id, IpPermissions=ip_permissions)
             elif rule_type == 'out':
-                client.revoke_security_group_egress(GroupId=group_id, IpPermissions=ip_permissions)
+                client.revoke_security_group_egress(
+                    aws_retry=True,
+                    GroupId=group_id, IpPermissions=ip_permissions)
         except (BotoCoreError, ClientError) as e:
             rules = 'ingress rules' if rule_type == 'in' else 'egress rules'
             module.fail_json_aws(e, "Unable to revoke {0}: {1}".format(rules, ip_permissions))
@@ -848,9 +853,13 @@ def authorize(client, module, ip_permissions, group_id, rule_type):
     if not module.check_mode:
         try:
             if rule_type == 'in':
-                client.authorize_security_group_ingress(GroupId=group_id, IpPermissions=ip_permissions)
+                client.authorize_security_group_ingress(
+                    aws_retry=True,
+                    GroupId=group_id, IpPermissions=ip_permissions)
             elif rule_type == 'out':
-                client.authorize_security_group_egress(GroupId=group_id, IpPermissions=ip_permissions)
+                client.authorize_security_group_egress(
+                    aws_retry=True,
+                    GroupId=group_id, IpPermissions=ip_permissions)
         except (BotoCoreError, ClientError) as e:
             rules = 'ingress rules' if rule_type == 'in' else 'egress rules'
             module.fail_json_aws(e, "Unable to authorize {0}: {1}".format(rules, ip_permissions))
@@ -890,23 +899,22 @@ def update_tags(client, module, group_id, current_tags, tags, purge_tags):
     if not module.check_mode:
         if tags_to_delete:
             try:
-                client.delete_tags(Resources=[group_id], Tags=[{'Key': tag} for tag in tags_to_delete])
+                client.delete_tags(aws_retry=True, Resources=[group_id], Tags=[{'Key': tag} for tag in tags_to_delete])
             except (BotoCoreError, ClientError) as e:
                 module.fail_json_aws(e, msg="Unable to delete tags {0}".format(tags_to_delete))
 
         # Add/update tags
         if tags_need_modify:
             try:
-                client.create_tags(Resources=[group_id], Tags=ansible_dict_to_boto3_tag_list(tags_need_modify))
+                client.create_tags(aws_retry=True, Resources=[group_id], Tags=ansible_dict_to_boto3_tag_list(tags_need_modify))
             except (BotoCoreError, ClientError) as e:
                 module.fail_json_aws(e, msg="Unable to add tags {0}".format(tags_need_modify))
 
     return bool(tags_need_modify or tags_to_delete)
 
 
-def update_rule_descriptions(module, group_id, present_ingress, named_tuple_ingress_list, present_egress, named_tuple_egress_list):
+def update_rule_descriptions(module, client, group_id, present_ingress, named_tuple_ingress_list, present_egress, named_tuple_egress_list):
     changed = False
-    client = module.client('ec2')
     ingress_needs_desc_update = []
     egress_needs_desc_update = []
 
@@ -936,7 +944,7 @@ def create_security_group(client, module, name, description, vpc_id):
         if vpc_id:
             params['VpcId'] = vpc_id
         try:
-            group = client.create_security_group(**params)
+            group = client.create_security_group(aws_retry=True, **params)
         except (BotoCoreError, ClientError) as e:
             module.fail_json_aws(e, msg="Unable to create security group")
         # When a group is created, an egress_rule ALLOW ALL
@@ -955,7 +963,7 @@ def create_security_group(client, module, name, description, vpc_id):
     return None
 
 
-def wait_for_rule_propagation(module, group, desired_ingress, desired_egress, purge_ingress, purge_egress):
+def wait_for_rule_propagation(module, client, group, desired_ingress, desired_egress, purge_ingress, purge_egress):
     group_id = group['GroupId']
     tries = 6
 
@@ -976,11 +984,11 @@ def wait_for_rule_propagation(module, group, desired_ingress, desired_egress, pu
             elif current_rules.issuperset(desired_rules) and not purge:
                 return group
             sleep(10)
-            group = get_security_groups_with_backoff(module.client('ec2'), GroupIds=[group_id])['SecurityGroups'][0]
+            group = get_security_groups_with_backoff(client, GroupIds=[group_id])['SecurityGroups'][0]
         module.warn("Ran out of time waiting for {0} {1}. Current: {2}, Desired: {3}".format(group_id, rule_key, current_rules, desired_rules))
         return group
 
-    group = get_security_groups_with_backoff(module.client('ec2'), GroupIds=[group_id])['SecurityGroups'][0]
+    group = get_security_groups_with_backoff(client, GroupIds=[group_id])['SecurityGroups'][0]
     if 'VpcId' in group and module.params.get('rules_egress') is not None:
         group = await_rules(group, desired_egress, purge_egress, 'IpPermissionsEgress')
     return await_rules(group, desired_ingress, purge_ingress, 'IpPermissions')
@@ -1025,7 +1033,7 @@ def verify_rules_with_descriptions_permitted(client, module, rules, rules_egress
 def get_diff_final_resource(client, module, security_group):
     def get_account_id(security_group, module):
         try:
-            owner_id = security_group.get('owner_id', module.client('sts').get_caller_identity()['Account'])
+            owner_id = security_group.get('owner_id', current_account_id)
         except (BotoCoreError, ClientError) as e:
             owner_id = "Unable to determine owner_id: {0}".format(to_text(e))
         return owner_id
@@ -1199,7 +1207,7 @@ def main():
         module.fail_json(msg='Must provide description when state is present.')
 
     changed = False
-    client = module.client('ec2')
+    client = module.client('ec2', AWSRetry.jittered_backoff())
 
     verify_rules_with_descriptions_permitted(client, module, rules, rules_egress)
     group, groups = group_exists(client, module, vpc_id, group_id, name)
@@ -1219,7 +1227,7 @@ def main():
             before['tags'] = boto3_tag_list_to_ansible_dict(before.get('tags', []))
             try:
                 if not module.check_mode:
-                    client.delete_security_group(GroupId=group['GroupId'])
+                    client.delete_security_group(aws_retry=True, GroupId=group['GroupId'])
             except (BotoCoreError, ClientError) as e:
                 module.fail_json_aws(e, msg="Unable to delete security group '%s'" % group)
             else:
@@ -1329,7 +1337,8 @@ def main():
         desired_ingress = deepcopy(named_tuple_ingress_list)
         desired_egress = deepcopy(named_tuple_egress_list)
 
-        changed |= update_rule_descriptions(module, group['GroupId'], present_ingress, named_tuple_ingress_list, present_egress, named_tuple_egress_list)
+        changed |= update_rule_descriptions(module, client, group['GroupId'], present_ingress,
+                                            named_tuple_ingress_list, present_egress, named_tuple_egress_list)
 
         # Revoke old rules
         changed |= remove_old_permissions(client, module, revoke_ingress, revoke_egress, group['GroupId'])
@@ -1347,7 +1356,7 @@ def main():
             security_group = get_security_groups_with_backoff(client, GroupIds=[group['GroupId']])['SecurityGroups'][0]
         elif changed and not module.check_mode:
             # keep pulling until current security group rules match the desired ingress and egress rules
-            security_group = wait_for_rule_propagation(module, group, desired_ingress, desired_egress, purge_rules, purge_rules_egress)
+            security_group = wait_for_rule_propagation(module, client, group, desired_ingress, desired_egress, purge_rules, purge_rules_egress)
         else:
             security_group = get_security_groups_with_backoff(client, GroupIds=[group['GroupId']])['SecurityGroups'][0]
         security_group = camel_dict_to_snake_dict(security_group, ignore_list=['Tags'])
