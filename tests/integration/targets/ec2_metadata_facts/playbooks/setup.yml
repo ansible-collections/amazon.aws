@@ -22,7 +22,7 @@
   tasks:
 
   - name: Create an ssh key
-    shell: echo 'y' | ssh-keygen -P '' -f {{ sshkey_file }}
+    shell: echo 'y' | ssh-keygen -P '' -f ../{{ sshkey_file }}
 
   - name: Get available AZs
     aws_az_info:
@@ -94,7 +94,7 @@
   - name: Create a key
     ec2_key:
       name: '{{ resource_prefix }}'
-      key_material: "{{ lookup('file', sshkey_file ~ '.pub') }}"
+      key_material: "{{ lookup('file', '../' ~ sshkey_file ~ '.pub') }}"
       state: present
     register: ec2_key_result
 

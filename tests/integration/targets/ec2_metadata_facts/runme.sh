@@ -17,5 +17,7 @@ trap "cleanup" EXIT
 ansible-playbook playbooks/setup.yml -c local "$@"
 
 # test ec2_instance_metadata
-ansible-playbook playbooks/test_metadata.yml -i inventory "$@"
-
+ansible-playbook playbooks/test_metadata.yml -i inventory \
+    -e local_tmp=/tmp/ansible-local \
+    -e remote_tmp=/tmp/ansible-remote \
+    "$@"
