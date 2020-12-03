@@ -135,6 +135,7 @@ from ansible.module_utils._text import to_bytes
 
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.core import is_boto3_error_code
+from ..module_utils.ec2 import AWSRetry
 
 
 def extract_key_data(key):
@@ -170,7 +171,7 @@ def get_key_fingerprint(module, ec2_client, key_material):
 def find_key_pair(module, ec2_client, name):
 
     try:
-        key = ec2_client.describe_key_pairs(KeyNames=[name])['KeyPairs'][0]
+        key = ec2_client.describe_key_pairs(aws_retry=True, KeyNames=[name])['KeyPairs'][0]
     except is_boto3_error_code('InvalidKeyPair.NotFound'):
         return None
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err:
@@ -205,7 +206,7 @@ def create_key_pair(module, ec2_client, name, key_material, force):
                 key = import_key_pair(module, ec2_client, name, key_material)
             else:
                 try:
-                    key = ec2_client.create_key_pair(KeyName=name)
+                    key = ec2_client.create_key_pair(aws_retry=True, KeyName=name)
                 except botocore.exceptions.ClientError as err:
                     module.fail_json_aws(err, msg="error creating key")
             key_data = extract_key_data(key)
@@ -215,7 +216,7 @@ def create_key_pair(module, ec2_client, name, key_material, force):
 def import_key_pair(module, ec2_client, name, key_material):
 
     try:
-        key = ec2_client.import_key_pair(KeyName=name, PublicKeyMaterial=to_bytes(key_material))
+        key = ec2_client.import_key_pair(aws_retry=True, KeyName=name, PublicKeyMaterial=to_bytes(key_material))
     except botocore.exceptions.ClientError as err:
         module.fail_json_aws(err, msg="error importing key")
     return key
@@ -227,7 +228,7 @@ def delete_key_pair(module, ec2_client, name, finish_task=True):
     if key:
         if not module.check_mode:
             try:
-                ec2_client.delete_key_pair(KeyName=name)
+                ec2_client.delete_key_pair(aws_retry=True, KeyName=name)
             except botocore.exceptions.ClientError as err:
                 module.fail_json_aws(err, msg="error deleting key")
         if not finish_task:
@@ -249,7 +250,7 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    ec2_client = module.client('ec2')
+    ec2_client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
     name = module.params['name']
     state = module.params.get('state')
