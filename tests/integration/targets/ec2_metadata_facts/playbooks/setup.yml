@@ -126,7 +126,7 @@
       network:
         assign_public_ip: true
       wait: true
-      wait_timeout: 180
+      wait_timeout: 300
     register: ec2_instance
 
   - set_fact:
