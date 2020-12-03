@@ -8,7 +8,6 @@ CMD_ARGS=("$@")
 
 # Destroy Environment
 cleanup() {
-    # teardown
     ansible-playbook playbooks/teardown.yml -i inventory -c local "${CMD_ARGS[@]}"
 }
 trap "cleanup" EXIT

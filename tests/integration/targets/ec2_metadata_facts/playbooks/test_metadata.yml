@@ -1,6 +1,10 @@
 ---
 - hosts: testhost
   tasks:
+
+  - name: Wait for EC2 to be available
+    wait_for_connection:
+
   - amazon.aws.ec2_metadata_facts:
   
   - name: Assert initial metadata for the instance
