@@ -1,0 +1,16 @@
+---
+- hosts: testhost
+  tasks:
+
+  - name: Wait for EC2 to be available
+    wait_for_connection:
+
+  - amazon.aws.ec2_metadata_facts:
+  
+  - name: Assert initial metadata for the instance
+    assert:
+      that:
+        - ansible_ec2_ami_id == image_id
+        - ansible_ec2_placement_availability_zone == "{{ availability_zone }}"
+        - ansible_ec2_security_groups == "{{ resource_prefix }}-sg"
+        - ansible_ec2_user_data == "None"

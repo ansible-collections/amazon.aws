@@ -1,0 +1,70 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  hosts: localhost
+
+  collections:
+  - community.aws
+
+  tasks:
+  # ============================================================
+
+  - name: terminate the instance
+    ec2_instance:
+      state: absent
+      instance_ids:
+        - "{{ ec2_instance_id }}"
+      wait: True
+    ignore_errors: true
+    retries: 5
+
+  - name: remove ssh key
+    ec2_key:
+      name: "{{ ec2_key_name }}"
+      state: absent
+    ignore_errors: true
+
+  - name: remove the security group
+    ec2_group:
+      group_id: "{{ vpc_sg_id }}"
+      state: absent
+    ignore_errors: true
+    retries: 5
+
+  - name: remove the public route table
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc_id }}"
+      route_table_id: "{{ vpc_route_table_id }}"
+      lookup: id
+      state: absent
+    ignore_errors: true
+    retries: 5
+
+  - name: remove the subnet
+    ec2_vpc_subnet:
+      cidr: "{{ vpc_cidr }}"
+      az: "{{ availability_zone }}"
+      vpc_id: "{{ vpc_id }}"
+      state: absent
+    ignore_errors: true
+    retries: 5
+
+  - name: remove the internet gateway
+    ec2_vpc_igw:
+      vpc_id: "{{ vpc_id }}"
+      state: absent
+    ignore_errors: true
+    retries: 5
+
+  - name: remove the VPC
+    ec2_vpc_net:
+      name: "{{ resource_prefix }}-vpc"
+      cidr_block: "{{ vpc_cidr }}"
+      state: absent
+    ignore_errors: true
+    retries: 5

@@ -1,0 +1,20 @@
+[testhost]
+"{{ ec2_instance.instances[0].public_ip_address }}"
+
+[testhost:vars]
+ansible_user=ec2-user
+ansible_ssh_private_key_file="{{ sshkey_file }}"
+ansible_python_interpreter=/usr/bin/env python
+
+[all:vars]
+# Template vars that will need to be used in used in tests and teardown
+vpc_id="{{ vpc_id }}"
+vpc_subnet_id="{{ vpc_subnet_id }}"
+vpc_sg_id="{{ vpc_sg_id }}"
+vpc_cidr="{{ vpc_cidr }}"
+vpc_igw="{{ vpc_igw_id }}"
+vpc_route_table_id="{{ vpc_route_table_id }}"
+ec2_key_name="{{ ec2_key_name }}"
+availability_zone="{{ availability_zone }}"
+image_id="{{ image_id }}"
+ec2_instance_id="{{ ec2_instance_id }}"

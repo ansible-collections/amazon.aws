@@ -1,0 +1,141 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  hosts: localhost
+
+  collections:
+  - community.aws
+
+  vars:
+    vpc_name: '{{ resource_prefix }}-vpc'
+    vpc_seed: '{{ resource_prefix }}'
+    vpc_cidr: '10.{{ 256 | random(seed=vpc_seed) }}.0.0/16'
+    subnet_cidr: '10.{{ 256 | random(seed=vpc_seed) }}.32.0/24'
+    ec2_ami_name: 'amzn2-ami-hvm-2.*-x86_64-gp2'
+    sshkey_file: '{{ resource_prefix }}_key'
+
+  tasks:
+
+  - name: Create an ssh key
+    shell: echo 'y' | ssh-keygen -P '' -f ../{{ sshkey_file }}
+
+  - name: Get available AZs
+    aws_az_info:
+      filters:
+        region-name: "{{ aws_region }}"
+    register: az_info
+
+  - name: Pick an AZ
+    set_fact:
+      availability_zone: "{{ az_info['availability_zones'][0]['zone_name'] }}"
+
+  # ============================================================
+  - name: create a VPC
+    ec2_vpc_net:
+      name: "{{ resource_prefix }}-vpc"
+      state: present
+      cidr_block: "{{ vpc_cidr }}"
+      tags:
+        Name: "{{ resource_prefix }}-vpc"
+        Description: "Created by ansible-test"
+    register: vpc_result
+
+  - set_fact:
+      vpc_id: "{{ vpc_result.vpc.id }}"
+
+  - name: create an internet gateway
+    ec2_vpc_igw:
+      vpc_id: "{{ vpc_id }}"
+      state: present
+      tags:
+        "Name": "{{ resource_prefix }}"
+    register: igw_result
+
+  - name: create a subnet
+    ec2_vpc_subnet:
+      cidr: "{{ vpc_cidr }}"
+      az: "{{ availability_zone }}"
+      vpc_id: "{{ vpc_id }}"
+      tags:
+        Name: "{{ resource_prefix }}-vpc"
+        Description: "Created by ansible-test"
+      state: present
+    register: vpc_subnet_result
+
+  - name: create a public route table
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc_id }}"
+      tags:
+        "Name": "{{ resource_prefix }}"
+      subnets:
+        - "{{ vpc_subnet_result.subnet.id }}"
+      routes:
+        - dest: 0.0.0.0/0
+          gateway_id: "{{ igw_result.gateway_id }}"
+    register: public_route_table
+
+  - name: create a security group
+    ec2_group:
+      name: "{{ resource_prefix }}-sg"
+      description: "Created by {{ resource_prefix }}"
+      rules:
+        - proto: tcp
+          ports: 22
+          cidr_ip: 0.0.0.0/0
+        - proto: icmp
+          from_port: -1
+          to_port: -1
+      state: present
+      vpc_id: "{{ vpc_result.vpc.id }}"
+    register: vpc_sg_result
+
+  - name: Create a key
+    ec2_key:
+      name: '{{ resource_prefix }}'
+      key_material: "{{ lookup('file', '../' ~ sshkey_file ~ '.pub') }}"
+      state: present
+    register: ec2_key_result
+
+  - name: Get a list of images
+    ec2_ami_info:
+      filters:
+        owner-alias: amazon
+        name: "amzn2-ami-minimal-hvm-*"
+        description: "Amazon Linux 2 AMI *"
+    register: images_info
+
+  - name: Set facts to simplify use of extra resources
+    set_fact:
+      vpc_subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+      vpc_sg_id: "{{ vpc_sg_result.group_id }}"
+      vpc_igw_id: "{{ igw_result.gateway_id }}"
+      vpc_route_table_id: "{{ public_route_table.route_table.id }}"
+      image_id: "{{ images_info.images | sort(attribute='creation_date') | reverse | first | json_query('image_id') }}"
+      ec2_key_name: "{{ ec2_key_result.key.name }}"
+
+  - name: Create an instance to test with
+    ec2_instance:
+      name: "{{ resource_prefix }}-ec2-metadata-facts"
+      image_id: "{{ image_id }}"
+      vpc_subnet_id: "{{ vpc_subnet_id }}"
+      security_group: "{{ vpc_sg_id }}"
+      instance_type: t2.micro
+      key_name: "{{ ec2_key_name }}"
+      network:
+        assign_public_ip: true
+      wait: true
+      wait_timeout: 300
+    register: ec2_instance
+
+  - set_fact:
+      ec2_instance_id: "{{ ec2_instance.instances[0].instance_id }}"
+
+  - name: Create inventory file
+    template:
+      src: ../templates/inventory.j2
+      dest: ../inventory
