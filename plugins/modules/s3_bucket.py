@@ -23,19 +23,19 @@ module: s3_bucket
 version_added: 1.0.0
 short_description: Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID
 description:
-    - Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID
+    - Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID.
 requirements: [ boto3 ]
 author: "Rob White (@wimnat)"
 options:
   force:
     description:
       - When trying to delete a bucket, delete all keys (including versions and delete markers)
-        in the bucket first (an s3 bucket must be empty for a successful deletion)
+        in the bucket first (an S3 bucket must be empty for a successful deletion).
     type: bool
     default: 'no'
   name:
     description:
-      - Name of the s3 bucket
+      - Name of the S3 bucket.
     required: true
     type: str
   policy:
@@ -44,7 +44,7 @@ options:
     type: json
   s3_url:
     description:
-      - S3 URL endpoint for usage with DigitalOcean, Ceph, Eucalyptus and fakes3 etc.
+      - S3 URL endpoint for usage with DigitalOcean, Ceph, Eucalyptus and FakeS3 etc.
       - Assumes AWS if not specified.
       - For Walrus, use FQDN of the endpoint without scheme nor path.
     aliases: [ S3_URL ]
@@ -62,23 +62,23 @@ options:
     type: bool
   state:
     description:
-      - Create or remove the s3 bucket
+      - Create or remove the S3 bucket.
     required: false
     default: present
     choices: [ 'present', 'absent' ]
     type: str
   tags:
     description:
-      - tags dict to apply to bucket
+      - Tags dict to apply to bucket.
     type: dict
   purge_tags:
     description:
-      - whether to remove tags that aren't present in the C(tags) parameter
+      - Whether to remove tags that aren't present in the I(tags) parameter.
     type: bool
     default: True
   versioning:
     description:
-      - Whether versioning is enabled or disabled (note that once versioning is enabled, it can only be suspended)
+      - Whether versioning is enabled or disabled (note that once versioning is enabled, it can only be suspended).
     type: bool
   encryption:
     description:
@@ -87,36 +87,36 @@ options:
     choices: [ 'none', 'AES256', 'aws:kms' ]
     type: str
   encryption_key_id:
-    description: KMS master key ID to use for the default encryption. This parameter is allowed if encryption is aws:kms. If
+    description: KMS master key ID to use for the default encryption. This parameter is allowed if I(encryption) is C(aws:kms). If
                  not specified then it will default to the AWS provided KMS key.
     type: str
   public_access:
     description:
-      - Configure public access block for S3 bucket
-      - This option cannot be used together with 'delete_public_access'
+      - Configure public access block for S3 bucket.
+      - This option cannot be used together with I(delete_public_access).
     suboptions:
       block_public_acls:
-        description: Sets BlockPublicAcls value
+        description: Sets BlockPublicAcls value.
         type: bool
         default: False
       block_public_policy:
-        description: Sets BlockPublicPolicy value
+        description: Sets BlockPublicPolicy value.
         type: bool
         default: False
       ignore_public_acls:
-        description: Sets IgnorePublicAcls value
+        description: Sets IgnorePublicAcls value.
         type: bool
         default: False
       restrict_public_buckets:
-        description: Sets RestrictPublicAcls value
+        description: Sets RestrictPublicAcls value.
         type: bool
         default: False
     type: dict
     version_added: 1.3.0
   delete_public_access:
     description:
-      - Delete public access block configuration from bucket
-      - This option cannot be used together with 'public_access' definition
+      - Delete public access block configuration from bucket.
+      - This option cannot be used together with a I(public_access) definition.
     default: false
     type: bool
     version_added: 1.3.0
@@ -135,18 +135,18 @@ notes:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Create a simple s3 bucket
+# Create a simple S3 bucket
 - amazon.aws.s3_bucket:
     name: mys3bucket
     state: present
 
-# Create a simple s3 bucket on Ceph Rados Gateway
+# Create a simple S3 bucket on Ceph Rados Gateway
 - amazon.aws.s3_bucket:
     name: mys3bucket
     s3_url: http://your-ceph-rados-gateway-server.xxx
     ceph: true
 
-# Remove an s3 bucket and any keys it contains
+# Remove an S3 bucket and any keys it contains
 - amazon.aws.s3_bucket:
     name: mys3bucket
     state: absent

@@ -46,7 +46,7 @@ options:
     type: int
   headers:
     description:
-      - Custom headers for PUT operation, as a dictionary of 'key=value' and 'key=value,key=value'.
+      - Custom headers for PUT operation, as a dictionary of C(key=value) and C(key=value,key=value).
     type: dict
   marker:
     description:
@@ -59,12 +59,12 @@ options:
     type: int
   metadata:
     description:
-      - Metadata for PUT operation, as a dictionary of 'key=value' and 'key=value,key=value'.
+      - Metadata for PUT operation, as a dictionary of C(key=value) and C(key=value,key=value).
     type: dict
   mode:
     description:
-      - Switches the module behaviour between put (upload), get (download), geturl (return download url, Ansible 1.3+),
-        getstr (download object as string (1.3+)), list (list keys, Ansible 2.0+), create (bucket), delete (bucket),
+      - Switches the module behaviour between C(put) (upload), C(get) (download), C(geturl) (return download url, Ansible 1.3+),
+        C(getstr) (download object as string (1.3+)), C(list) (list keys, Ansible 2.0+), C(create) (bucket), C(delete) (bucket),
         and delobj (delete object, Ansible 2.0+).
     required: true
     choices: ['get', 'put', 'delete', 'create', 'geturl', 'getstr', 'delobj', 'list']
@@ -94,10 +94,12 @@ options:
   overwrite:
     description:
       - Force overwrite either locally on the filesystem or remotely with the object/key. Used with PUT and GET operations.
-        Boolean or one of [always, never, different], true is equal to 'always' and false is equal to 'never', new in 2.0.
-        When this is set to 'different', the md5 sum of the local file is compared with the 'ETag' of the object/key in S3.
+      - Must be a Boolean, C(always), C(never) or C(different).
+      - C(true) is the same as C(always).
+      - C(false) is equal to C(never)
+      - When this is set to C(different) the MD5 sum of the local file is compared with the 'ETag' of the object/key in S3.
         The ETag may or may not be an MD5 digest of the object data. See the ETag response header here
-        U(https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html)
+        U(https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html).
     default: 'always'
     aliases: ['force']
     type: str
@@ -152,7 +154,7 @@ options:
     default: false
   encryption_kms_key_id:
     description:
-      - KMS key id to use when encrypting objects using I(encrypting=aws:kms). Ignored if I(encryption) is not C(aws:kms)
+      - KMS key id to use when encrypting objects using I(encrypting=aws:kms). Ignored if I(encryption) is not C(aws:kms).
     type: str
 requirements: [ "boto3", "botocore" ]
 author:
