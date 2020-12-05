@@ -156,8 +156,8 @@ options:
   termination_protection:
     description:
       - Enable or Disable the Termination Protection.
+      - Defaults to C(False)
     type: bool
-    default: false
   instance_initiated_shutdown_behavior:
     description:
     - Set whether AWS will Stop or Terminate an instance on shutdown. This parameter is ignored when using instance-store.

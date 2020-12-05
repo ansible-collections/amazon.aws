@@ -149,6 +149,7 @@ options:
         GetObject permission but no other permissions. In this case using the option mode: get will fail without specifying
         I(ignore_nonexistent_bucket=true)."
     type: bool
+    default: false
   encryption_kms_key_id:
     description:
       - KMS key id to use when encrypting objects using I(encrypting=aws:kms). Ignored if I(encryption) is not C(aws:kms)

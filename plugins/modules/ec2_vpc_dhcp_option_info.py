@@ -34,6 +34,7 @@ options:
         Options.
     aliases: ['DryRun']
     type: bool
+    default: false
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2

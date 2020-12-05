@@ -54,6 +54,7 @@ options:
       - Enable API compatibility with Ceph. It takes into account the S3 API subset working
         with Ceph in order to provide the same module behaviour where possible.
     type: bool
+    default: false
   requester_pays:
     description:
       - With Requester Pays buckets, the requester instead of the bucket owner pays the cost

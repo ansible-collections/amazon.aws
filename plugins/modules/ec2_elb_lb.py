@@ -110,8 +110,8 @@ options:
   cross_az_load_balancing:
     description:
       - Distribute load across all configured Availability Zones
+      - Defaults to C(false).
     type: bool
-    default: no
   stickiness:
     description:
       - An associative array of stickiness policy settings. Policy will be applied to all listeners ( see example )
