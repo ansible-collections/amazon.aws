@@ -360,9 +360,10 @@ def update_volume(module, ec2_conn, volume):
             Iops=target_iops or original_iops
         )
 
-    volume['size'] = response.get('VolumeModification').get('TargetSize')
-    volume['volume_type'] = response.get('VolumeModification').get('TargetType')
-    volume['iops'] = response.get('VolumeModification').get('TargetIops')
+        volume['size'] = response.get('VolumeModification').get('TargetSize')
+        volume['volume_type'] = response.get('VolumeModification').get('TargetType')
+        volume['iops'] = response.get('VolumeModification').get('TargetIops')
+
     return volume, changed
 
 
