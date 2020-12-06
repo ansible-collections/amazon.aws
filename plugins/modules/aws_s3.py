@@ -96,7 +96,7 @@ options:
       - Force overwrite either locally on the filesystem or remotely with the object/key. Used with PUT and GET operations.
       - Must be a Boolean, C(always), C(never) or C(different).
       - C(true) is the same as C(always).
-      - C(false) is equal to C(never)
+      - C(false) is equal to C(never).
       - When this is set to C(different) the MD5 sum of the local file is compared with the 'ETag' of the object/key in S3.
         The ETag may or may not be an MD5 digest of the object data. See the ETag response header here
         U(https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html).

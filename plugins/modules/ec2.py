@@ -159,7 +159,7 @@ options:
   termination_protection:
     description:
       - Enable or Disable the Termination Protection.
-      - Defaults to C(False)
+      - Defaults to C(false).
     type: bool
   instance_initiated_shutdown_behavior:
     description:
