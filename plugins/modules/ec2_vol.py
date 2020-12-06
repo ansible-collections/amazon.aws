@@ -239,7 +239,6 @@ from ..module_utils.ec2 import compare_aws_tags
 from ..module_utils.ec2 import AWSRetry
 from ..module_utils.core import is_boto3_error_code
 
-
 try:
     import botocore
 except ImportError:
@@ -340,25 +339,34 @@ def delete_volume(module, ec2_conn, volume_id=None):
 
 def update_volume(module, ec2_conn, volume):
     changed = False
+    req_obj = {'VolumeId': volume['volume_id']}
 
-    target_iops = module.params.get('iops')
-    original_iops = volume['iops']
+    iops_changed = False
+    if volume['volume_type'] != 'standard':
+        target_iops = module.params.get('iops')
+        original_iops = volume['iops']
+        if target_iops != original_iops:
+            iops_changed = True
+            req_obj['iops'] = target_iops
 
     target_size = module.params.get('volume_size')
     original_size = volume['size']
+    size_changed = False
+    if target_size != original_size:
+        size_changed = True
+        req_obj['size'] = target_size
 
     target_type = module.params.get('volume_type')
     original_type = volume['volume_type']
+    type_changed = False
+    if target_type != original_type:
+        type_changed = True
+        req_obj['VolumeType'] = volume['volume_type']
 
-    changed = target_iops != original_iops or target_size != original_size or target_type != original_type
+    changed = iops_changed or size_changed or type_changed
 
     if changed:
-        response = ec2_conn.modify_volume(
-            VolumeId=volume['volume_id'],
-            Size=target_size or original_size,
-            VolumeType=target_type or original_type,
-            Iops=target_iops or original_iops
-        )
+        response = ec2_conn.modify_volume(**req_obj)
 
         volume['size'] = response.get('VolumeModification').get('TargetSize')
         volume['volume_type'] = response.get('VolumeModification').get('TargetType')
