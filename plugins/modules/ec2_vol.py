@@ -344,24 +344,27 @@ def update_volume(module, ec2_conn, volume):
     iops_changed = False
     if volume['volume_type'] != 'standard':
         target_iops = module.params.get('iops')
-        original_iops = volume['iops']
-        if target_iops != original_iops:
-            iops_changed = True
-            req_obj['iops'] = target_iops
+        if target_iops:
+            original_iops = volume['iops']
+            if target_iops != original_iops:
+                iops_changed = True
+                req_obj['iops'] = target_iops
 
     target_size = module.params.get('volume_size')
-    original_size = volume['size']
     size_changed = False
-    if target_size != original_size:
-        size_changed = True
-        req_obj['size'] = target_size
+    if target_size:
+        original_size = volume['size']
+        if target_size != original_size:
+            size_changed = True
+            req_obj['size'] = target_size
 
     target_type = module.params.get('volume_type')
-    original_type = volume['volume_type']
     type_changed = False
-    if target_type != original_type:
-        type_changed = True
-        req_obj['VolumeType'] = volume['volume_type']
+    if target_type:
+        original_type = volume['volume_type']
+        if target_type != original_type:
+            type_changed = True
+            req_obj['VolumeType'] = volume['volume_type']
 
     changed = iops_changed or size_changed or type_changed
 
