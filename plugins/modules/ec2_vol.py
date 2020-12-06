@@ -38,7 +38,7 @@ options:
       - Type of EBS volume; standard (magnetic), gp2 (SSD), gp3 (SSD), io1 (Provisioned IOPS), st1 (Throughput Optimized HDD), sc1 (Cold HDD).
         "Standard" is the old EBS default and continues to remain the Ansible default for backwards compatibility.
     default: standard
-    choices: ['standard', 'gp2', 'gp3', io1', 'st1', 'sc1']
+    choices: ['standard', 'gp2', 'io1', 'st1', 'sc1', 'gp3']
     type: str
   iops:
     description:
@@ -337,20 +337,21 @@ def delete_volume(module, ec2_conn, volume_id=None):
             module.fail_json_aws(e, msg='Error while deleting volume')
     return changed
 
+
 def update_volume(module, ec2_conn, volume):
     changed = False
 
     target_iops = module.params.get('iops')
     original_iops = volume['iops']
 
-    target_size = module.params.get('volume_size') 
+    target_size = module.params.get('volume_size')
     original_size = volume['size']
 
     target_type = module.params.get('volume_type')
     original_type = volume['volume_type']
 
     changed = target_iops != original_iops or target_size != original_size or target_type != original_type
-    
+
     if changed:
         response = ec2_conn.modify_volume(
             VolumeId=volume['volume_id'],
@@ -363,6 +364,7 @@ def update_volume(module, ec2_conn, volume):
     volume['volume_type'] = response.get('VolumeModification').get('TargetType')
     volume['iops'] = response.get('VolumeModification').get('TargetIops')
     return volume, changed
+
 
 def create_volume(module, ec2_conn, zone):
     changed = False
@@ -627,7 +629,7 @@ def main():
         id=dict(),
         name=dict(),
         volume_size=dict(type='int'),
-        volume_type=dict(choices=['standard', 'gp2', 'gp3', 'io1', 'st1', 'sc1'], default='standard'),
+        volume_type=dict(choices=['standard', 'gp2', 'io1', 'st1', 'sc1', 'gp3'], default='standard'),
         iops=dict(type='int'),
         encrypted=dict(type='bool', default=False),
         kms_key_id=dict(),
@@ -730,7 +732,7 @@ def main():
                     )
 
         attach_state_changed = False
-        
+
         if volume:
             volume, changed = update_volume(module, ec2_conn, volume)
         else:
