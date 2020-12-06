@@ -111,7 +111,7 @@ options:
     type: int
   monitoring:
     description:
-      - Enable detailed monitoring (CloudWatch for instance).
+      - Enable detailed monitoring (CloudWatch) for the instance.
     type: bool
     default: false
   user_data:
