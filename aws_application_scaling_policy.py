@@ -15,14 +15,14 @@ notes:
     - for details of the parameters and returns see
       U(http://boto3.readthedocs.io/en/latest/reference/services/application-autoscaling.html#ApplicationAutoScaling.Client.put_scaling_policy)
 description:
-    - Creates, updates or removes a Scaling Policy
+    - Creates, updates or removes a Scaling Policy.
 author:
     - Gustavo Maia (@gurumaia)
     - Chen Leibovich (@chenl87)
 requirements: [ json, botocore, boto3 ]
 options:
     state:
-        description: Whether a policy should be present or absent
+        description: Whether a policy should be C(present) or C(absent).
         required: yes
         choices: ['absent', 'present']
         type: str
@@ -57,12 +57,12 @@ options:
         choices: ['StepScaling', 'TargetTrackingScaling']
         type: str
     step_scaling_policy_configuration:
-        description: A step scaling policy. This parameter is required if you are creating a policy and the policy type is StepScaling.
+        description: A step scaling policy. This parameter is required if you are creating a policy and I(policy_type=StepScaling).
         required: no
         type: dict
     target_tracking_scaling_policy_configuration:
         description:
-            - A target tracking policy. This parameter is required if you are creating a new policy and the policy type is TargetTrackingScaling.
+            - A target tracking policy. This parameter is required if you are creating a new policy and I(policy_type=TargetTrackingScaling).
             - 'Full documentation of the suboptions can be found in the API documentation:'
             - 'U(https://docs.aws.amazon.com/autoscaling/application/APIReference/API_TargetTrackingScalingPolicyConfiguration.html)'
         required: no
@@ -84,7 +84,7 @@ options:
                 description: The time (in seconds) to wait after scaling-out before another scaling action can occur.
                 type: int
             TargetValue:
-                description: The target value for the metric
+                description: The target value for the metric.
                 type: float
     minimum_tasks:
         description: The minimum value to scale to in response to a scale in event.
@@ -97,9 +97,10 @@ options:
         required: no
         type: int
     override_task_capacity:
-        description: Whether or not to override values of minimum and/or maximum tasks if it's already set.
+        description:
+        - Whether or not to override values of minimum and/or maximum tasks if it's already set.
+        - Defaults to C(false).
         required: no
-        default: no
         type: bool
 extends_documentation_fragment:
 - amazon.aws.aws

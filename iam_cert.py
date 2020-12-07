@@ -33,17 +33,17 @@ options:
     type: str
   new_name:
     description:
-      - When state is present, this will update the name of the cert.
-      - The cert, key and cert_chain parameters will be ignored if this is defined.
+      - When I(state=present), this will update the name of the cert.
+      - The I(cert), I(key) and I(cert_chain) parameters will be ignored if this is defined.
     type: str
   new_path:
     description:
-      - When state is present, this will update the path of the cert.
+      - When I(state=present), this will update the path of the cert.
       - The I(cert), I(key) and I(cert_chain) parameters will be ignored if this is defined.
     type: str
   state:
     description:
-      - Whether to create(or update) or delete the certificate.
+      - Whether to create (or update) or delete the certificate.
       - If I(new_path) or I(new_name) is defined, specifying present will attempt to make an update these.
     required: true
     choices: [ "present", "absent" ]
@@ -72,7 +72,7 @@ options:
     description:
       - By default the module will not upload a certificate that is already uploaded into AWS.
       - If I(dup_ok=True), it will upload the certificate as long as the name is unique.
-    default: False
+      - Defaults to C(false).
     type: bool
 
 requirements: [ "boto" ]

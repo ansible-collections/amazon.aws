@@ -22,7 +22,7 @@ DOCUMENTATION = r'''
 ---
 module: elb_application_lb
 version_added: 1.0.0
-short_description: Manage an Application load balancer
+short_description: Manage an Application Load Balancer
 description:
     - Manage an AWS Application Elastic Load Balancer. See U(https://aws.amazon.com/blogs/aws/new-aws-application-load-balancer/) for details.
 requirements: [ boto3 ]
@@ -50,12 +50,12 @@ options:
   deletion_protection:
     description:
       - Indicates whether deletion protection for the ELB is enabled.
-    default: no
+      - Defaults to C(false).
     type: bool
   http2:
     description:
       - Indicates whether to enable HTTP2 routing.
-    default: no
+      - Defaults to C(false).
     type: bool
   idle_timeout:
     description:
@@ -124,14 +124,14 @@ options:
     type: str
   purge_listeners:
     description:
-      - If yes, existing listeners will be purged from the ELB to match exactly what is defined by I(listeners) parameter. If the I(listeners) parameter is
-        not set then listeners will not be modified
+      - If C(yes), existing listeners will be purged from the ELB to match exactly what is defined by I(listeners) parameter.
+      - If the I(listeners) parameter is not set then listeners will not be modified.
     default: yes
     type: bool
   purge_tags:
     description:
-      - If yes, existing tags will be purged from the resource to match exactly what is defined by I(tags) parameter. If the I(tags) parameter is not set then
-        tags will not be modified.
+      - If yes, existing tags will be purged from the resource to match exactly what is defined by I(tags) parameter.
+      - If the I(tags) parameter is not set then tags will not be modified.
     default: yes
     type: bool
   subnets:
@@ -176,7 +176,7 @@ options:
     type: int
   purge_rules:
     description:
-      - When set to no, keep the existing load balancer rules in place. Will modify and add, but will not delete.
+      - When set to C(no), keep the existing load balancer rules in place. Will modify and add, but will not delete.
     default: yes
     type: bool
 extends_documentation_fragment:

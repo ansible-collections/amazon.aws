@@ -66,7 +66,7 @@ options:
     tags:
       description:
         - Should be input as a dict of key-value pairs.
-        - Note that numeric keys or values must be wrapped in quotes. e.g. "Priority:" '1'
+        - "Note that numeric keys or values must be wrapped in quotes. e.g. C(Priority: '1')"
       type: dict
 
     purge_tags:
@@ -87,7 +87,7 @@ options:
 
     aliases:
       description:
-        - A list) of domain name aliases (CNAMEs) as strings to be used for the distribution.
+        - A list of domain name aliases (CNAMEs) as strings to be used for the distribution.
         - Each alias must be unique across all distribution for the AWS account.
       type: list
       elements: str
@@ -141,7 +141,7 @@ options:
           description:
             - Custom headers you wish to add to the request before passing it to the origin.
             - For more information see the CloudFront documentation
-              at U(https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/forward-custom-headers.html)
+              at U(https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/forward-custom-headers.html).
           type: list
           elements: dict
           suboptions:
@@ -191,7 +191,7 @@ options:
       description:
         - A dict specifying the default cache behavior of the distribution.
         - If not specified, the I(target_origin_id) is defined as the I(target_origin_id) of the first valid
-          I(cache_behavior) in I(cache_behaviors) with defaults.
+          cache_behavior in I(cache_behaviors) with defaults.
       suboptions:
         target_origin_id:
           description:
@@ -492,7 +492,7 @@ options:
     enabled:
       description:
         - A boolean value that specifies whether the distribution is enabled or disabled.
-      default: false
+        - Defaults to C(false).
       type: bool
 
     viewer_certificate:
@@ -504,18 +504,18 @@ options:
           type: bool
           description:
             - If you're using the CloudFront domain name for your distribution, such as C(123456789abcde.cloudfront.net)
-              you should set I(cloudfront_default_certificate=true)
+              you should set I(cloudfront_default_certificate=true).
             - If I(cloudfront_default_certificate=true) do not set I(ssl_support_method).
         iam_certificate_id:
           type: str
           description:
             - The ID of a certificate stored in IAM to use for HTTPS connections.
-            - If I(iam_certificate_id) is set then you must also specify I(ssl_support_method)
+            - If I(iam_certificate_id) is set then you must also specify I(ssl_support_method).
         acm_certificate_arn:
           type: str
           description:
             - The ID of a certificate stored in ACM to use for HTTPS connections.
-            - If I(acm_certificate_id) is set then you must also specify I(ssl_support_method)
+            - If I(acm_certificate_id) is set then you must also specify I(ssl_support_method).
         ssl_support_method:
           type: str
           description:
@@ -541,12 +541,12 @@ options:
               type: str
               description:
               - The method that you want to use to restrict distribution of your content by country.
-              - Valid values are C(none), C(whitelist), C(blacklist)
+              - Valid values are C(none), C(whitelist), C(blacklist).
             items:
               description:
               - A list of ISO 3166-1 two letter (Alpha 2) country codes that the
                 restriction should apply to.
-              - 'See the ISO website for a full list of codes U(https://www.iso.org/obp/ui/#search/code/)'
+              - 'See the ISO website for a full list of codes U(https://www.iso.org/obp/ui/#search/code/).'
               type: list
 
     web_acl_id:
@@ -558,14 +558,14 @@ options:
       description:
         - The version of the http protocol to use for the distribution.
         - AWS defaults this to C(http2).
-        - Valid values are C(http1.1) and C(http2)
+        - Valid values are C(http1.1) and C(http2).
       type: str
 
     ipv6_enabled:
       description:
         - Determines whether IPv6 support is enabled or not.
+        - Defaults to C(false).
       type: bool
-      default: false
 
     wait:
       description:

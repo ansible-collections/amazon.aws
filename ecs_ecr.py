@@ -45,8 +45,8 @@ options:
         description:
             - If yes, remove the policy from the repository.
             - Alias C(delete_policy) has been deprecated and will be removed after 2022-06-01.
+            - Defaults to C(false).
         required: false
-        default: false
         type: bool
         aliases: [ delete_policy ]
     image_tag_mutability:
@@ -63,9 +63,9 @@ options:
         type: json
     purge_lifecycle_policy:
         description:
-            - if yes, remove the lifecycle policy from the repository.
+            - if C(true), remove the lifecycle policy from the repository.
+            - Defaults to C(false).
         required: false
-        default: false
         type: bool
     state:
         description:
@@ -76,7 +76,7 @@ options:
         type: str
     scan_on_push:
         description:
-            - if yes, images are scanned for known vulnerabilities after being pushed to the repository.
+            - if C(true), images are scanned for known vulnerabilities after being pushed to the repository.
             - I(scan_on_push) requires botocore >= 1.13.3
         required: false
         default: false

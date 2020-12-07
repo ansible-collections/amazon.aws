@@ -19,62 +19,62 @@ author:
 options:
   state:
     description:
-      - Create or destroy the ELB
+      - Create or destroy the ELB.
     choices: ["present", "absent"]
     required: true
     type: str
   name:
     description:
-      - The name of the ELB
+      - The name of the ELB.
     required: true
     type: str
   listeners:
     description:
-      - List of ports/protocols for this ELB to listen on (see example)
+      - List of ports/protocols for this ELB to listen on (see example).
     type: list
     elements: dict
   purge_listeners:
     description:
-      - Purge existing listeners on ELB that are not found in listeners
+      - Purge existing listeners on ELB that are not found in listeners.
     type: bool
-    default: 'yes'
+    default: true
   instance_ids:
     description:
-      - List of instance ids to attach to this ELB
+      - List of instance ids to attach to this ELB.
     type: list
     elements: str
   purge_instance_ids:
     description:
-      - Purge existing instance ids on ELB that are not found in instance_ids
+      - Purge existing instance ids on ELB that are not found in I(instance_ids).
     type: bool
-    default: 'no'
+    default: false
   zones:
     description:
-      - List of availability zones to enable on this ELB
+      - List of availability zones to enable on this ELB.
     type: list
     elements: str
   purge_zones:
     description:
-      - Purge existing availability zones on ELB that are not found in zones
+      - Purge existing availability zones on ELB that are not found in zones.
     type: bool
-    default: 'no'
+    default: false
   security_group_ids:
     description:
-      - A list of security groups to apply to the elb
+      - A list of security groups to apply to the ELB.
     type: list
     elements: str
   security_group_names:
     description:
-      - A list of security group names to apply to the elb
+      - A list of security group names to apply to the ELB.
     type: list
     elements: str
   health_check:
     description:
-      - An associative array of health check configuration settings (see example)
+      - An associative array of health check configuration settings (see example).
     type: dict
   access_logs:
     description:
-      - An associative array of access logs configuration settings (see example)
+      - An associative array of access logs configuration settings (see example).
     type: dict
   subnets:
     description:
@@ -83,49 +83,50 @@ options:
     elements: str
   purge_subnets:
     description:
-      - Purge existing subnet on ELB that are not found in subnets
+      - Purge existing subnets on ELB that are not found in subnets.
     type: bool
-    default: 'no'
+    default: false
   scheme:
     description:
-      - The scheme to use when creating the ELB. For a private VPC-visible ELB use 'internal'.
-        If you choose to update your scheme with a different value the ELB will be destroyed and
-        recreated. To update scheme you must use the option wait.
+      - The scheme to use when creating the ELB.
+      - For a private VPC-visible ELB use C(internal).
+      - If you choose to update your scheme with a different value the ELB will be destroyed and
+        recreated. To update scheme you must set I(wait=true).
     choices: ["internal", "internet-facing"]
     default: 'internet-facing'
     type: str
   validate_certs:
     description:
-      - When set to C(no), SSL certificates will not be validated for boto versions >= 2.6.0.
+      - When set to C(false), SSL certificates will not be validated for boto versions >= 2.6.0.
     type: bool
-    default: 'yes'
+    default: true
   connection_draining_timeout:
     description:
-      - Wait a specified timeout allowing connections to drain before terminating an instance
+      - Wait a specified timeout allowing connections to drain before terminating an instance.
     type: int
   idle_timeout:
     description:
-      - ELB connections from clients and to servers are timed out after this amount of time
+      - ELB connections from clients and to servers are timed out after this amount of time.
     type: int
   cross_az_load_balancing:
     description:
-      - Distribute load across all configured Availability Zones
+      - Distribute load across all configured Availability Zones.
+      - Defaults to C(false).
     type: bool
-    default: 'no'
   stickiness:
     description:
-      - An associative array of stickiness policy settings. Policy will be applied to all listeners ( see example )
+      - An associative array of stickiness policy settings. Policy will be applied to all listeners (see example).
     type: dict
   wait:
     description:
       - When specified, Ansible will check the status of the load balancer to ensure it has been successfully
         removed from AWS.
     type: bool
-    default: 'no'
+    default: false
   wait_timeout:
     description:
-      - Used in conjunction with wait. Number of seconds to wait for the elb to be terminated.
-        A maximum of 600 seconds (10 minutes) is allowed.
+      - Used in conjunction with wait. Number of seconds to wait for the ELB to be terminated.
+        A maximum of C(600) seconds (10 minutes) is allowed.
     default: 60
     type: int
   tags:

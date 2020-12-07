@@ -10,7 +10,7 @@ DOCUMENTATION = '''
 ---
 module: sqs_queue
 version_added: 1.0.0
-short_description: Creates or deletes AWS SQS queues.
+short_description: Creates or deletes AWS SQS queues
 description:
   - Create or delete AWS SQS queues.
   - Update attributes on existing queues.
@@ -83,8 +83,9 @@ options:
     type: int
   content_based_deduplication:
     type: bool
-    description: Enables content-based deduplication. Used for FIFOs only.
-    default: false
+    description:
+      - Enables content-based deduplication. Used for FIFOs only.
+      - Defaults to C(false).
   tags:
     description:
       - Tag dict to apply to the queue (requires botocore 1.5.40 or above).

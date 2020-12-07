@@ -35,7 +35,7 @@ options:
   connection_type:
     description:
       - The type of VPN connection.
-      - At this time only 'ipsec.1' is supported.
+      - At this time only C(ipsec.1) is supported.
     default: ipsec.1
     type: str
   vpn_gateway_id:
@@ -63,8 +63,8 @@ options:
     required: no
   tunnel_options:
     description:
-      - An optional list object containing no more than two dict members, each of which may contain 'TunnelInsideCidr'
-        and/or 'PreSharedKey' keys with appropriate string values.  AWS defaults will apply in absence of either of
+      - An optional list object containing no more than two dict members, each of which may contain I(TunnelInsideCidr)
+        and/or I(PreSharedKey) keys with appropriate string values.  AWS defaults will apply in absence of either of
         the aforementioned keys.
     required: no
     type: list
@@ -78,11 +78,11 @@ options:
             description: The pre-shared key (PSK) to establish initial authentication between the virtual private gateway and customer gateway.
   filters:
     description:
-      - An alternative to using vpn_connection_id. If multiple matches are found, vpn_connection_id is required.
+      - An alternative to using I(vpn_connection_id). If multiple matches are found, vpn_connection_id is required.
         If one of the following suboptions is a list of items to filter by, only one item needs to match to find the VPN
-        that correlates. e.g. if the filter 'cidr' is ['194.168.2.0/24', '192.168.2.0/24'] and the VPN route only has the
-        destination cidr block of '192.168.2.0/24' it will be found with this filter (assuming there are not multiple
-        VPNs that are matched). Another example, if the filter 'vpn' is equal to ['vpn-ccf7e7ad', 'vpn-cb0ae2a2'] and one
+        that correlates. e.g. if the filter I(cidr) is C(['194.168.2.0/24', '192.168.2.0/24']) and the VPN route only has the
+        destination cidr block of C(192.168.2.0/24) it will be found with this filter (assuming there are not multiple
+        VPNs that are matched). Another example, if the filter I(vpn) is equal to C(['vpn-ccf7e7ad', 'vpn-cb0ae2a2']) and one
         of of the VPNs has the state deleted (exists but is unmodifiable) and the other exists and is not deleted,
         it will be found via this filter. See examples.
     suboptions:
@@ -91,7 +91,7 @@ options:
           - The customer gateway configuration of the VPN as a string (in the format of the return value) or a list of those strings.
       static-routes-only:
         description:
-          - The type of routing; true or false.
+          - The type of routing; C(true) or C(false).
       cidr:
         description:
           - The destination cidr of the VPN's route as a string or a list of those strings.
@@ -127,15 +127,16 @@ options:
     description:
       - Whether or not to delete VPN connections routes that are not specified in the task.
     type: bool
+    default: false
   wait_timeout:
     description:
-      - How long before wait gives up, in seconds.
+      - How long, in seconds, before wait gives up.
     default: 600
     type: int
     required: false
   delay:
     description:
-      - The time to wait before checking operation again. in seconds.
+      - The time, in seconds, to wait before checking operation again.
     required: false
     type: int
     default: 15

@@ -64,9 +64,10 @@ options:
     type: str
   forced_update:
     description:
-      - To modify bandwidth or location the connection will need to be deleted and recreated.
-        By default this will not happen - this option must be set to True.
+      - To modify I(bandwidth) or I(location) the connection needs to be deleted and recreated.
+      - By default this will not happen.  This option must be explicitly set to C(true) to change I(bandwith) or I(location).
     type: bool
+    default: false
 '''
 
 EXAMPLES = """
@@ -93,7 +94,7 @@ EXAMPLES = """
     name: ansible-test-connection
     location: EqDC2
     bandwidth: 10Gbps
-    forced_update: True
+    forced_update: true
 
 # delete the connection
 - community.aws.aws_direct_connect_connection:

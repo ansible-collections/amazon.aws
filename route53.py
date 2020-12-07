@@ -12,14 +12,14 @@ DOCUMENTATION = r'''
 ---
 module: route53
 version_added: 1.0.0
-short_description: add or delete entries in Amazons Route53 DNS service
+short_description: add or delete entries in Amazons Route 53 DNS service
 description:
-     - Creates and deletes DNS records in Amazons Route53 service
+     - Creates and deletes DNS records in Amazons Route 53 service.
 options:
   state:
     description:
       - Specifies the state of the resource record. As of Ansible 2.4, the I(command) option has been changed
-        to I(state) as default and the choices 'present' and 'absent' have been added, but I(command) still works as well.
+        to I(state) as default and the choices C(present) and C(absent) have been added, but I(command) still works as well.
     required: true
     aliases: [ 'command' ]
     choices: [ 'present', 'absent', 'get', 'create', 'delete' ]
@@ -53,8 +53,8 @@ options:
   alias:
     description:
       - Indicates if this is an alias record.
+      - Defaults to C(false).
     type: bool
-    default: false
   alias_hosted_zone_id:
     description:
       - The hosted zone identifier.
@@ -67,7 +67,7 @@ options:
   value:
     description:
       - The new value when creating a DNS record.  YAML lists or multiple comma-spaced values are allowed for non-alias records.
-      - When deleting a record all values for the record must be specified or Route53 will not delete it.
+      - When deleting a record all values for the record must be specified or Route 53 will not delete it.
     type: list
     elements: str
   overwrite:
@@ -76,14 +76,14 @@ options:
     type: bool
   retry_interval:
     description:
-      - In the case that route53 is still servicing a prior request, this module will wait and try again after this many seconds.
-        If you have many domain names, the default of 500 seconds may be too long.
+      - In the case that Route 53 is still servicing a prior request, this module will wait and try again after this many seconds.
+        If you have many domain names, the default of C(500) seconds may be too long.
     default: 500
     type: int
   private_zone:
     description:
-      - If set to C(yes), the private zone matching the requested name within the domain will be used if there are both public and private zones.
-        The default is to use the public zone.
+      - If set to C(true), the private zone matching the requested name within the domain will be used if there are both public and private zones.
+      - The default is to use the public zone.
     type: bool
     default: false
   identifier:
