@@ -88,6 +88,7 @@ options:
           - Force deployment of service even if there are no changes.
         required: false
         type: bool
+        default: false
     deployment_configuration:
         description:
           - Optional parameters that control the deployment_configuration.
@@ -136,12 +137,12 @@ options:
         suboptions:
           subnets:
             description:
-              - A list of subnet IDs to associate with the task
+              - A list of subnet IDs to associate with the task.
             type: list
             elements: str
           security_groups:
             description:
-              - A list of security group names or group IDs to associate with the task
+              - A list of security group names or group IDs to associate with the task.
             type: list
             elements: str
           assign_public_ip:
@@ -170,19 +171,20 @@ options:
         suboptions:
             container_name:
                 description:
-                  - container name for service discovery registration
+                  - Container name for service discovery registration.
                 type: str
             container_port:
                 description:
-                  - container port for service discovery registration
+                  - Container port for service discovery registration.
                 type: int
             arn:
                 description:
-                  - Service discovery registry ARN
+                  - Service discovery registry ARN.
                 type: str
     scheduling_strategy:
         description:
-          - The scheduling strategy, defaults to "REPLICA" if not given to preserve previous behavior
+          - The scheduling strategy.
+          - Defaults to C(REPLICA) if not given to preserve previous behavior.
         required: false
         choices: ["DAEMON", "REPLICA"]
         type: str

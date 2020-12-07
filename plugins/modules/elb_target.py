@@ -12,27 +12,30 @@ module: elb_target
 version_added: 1.0.0
 short_description: Manage a target in a target group
 description:
-    - Used to register or deregister a target in a target group
+    - Used to register or deregister a target in a target group.
 author: "Rob White (@wimnat)"
 options:
   deregister_unused:
     description:
-      - The default behaviour for targets that are unused is to leave them registered. If instead you would like to remove them
-        set I(deregister_unused) to yes.
+      - The default behaviour for targets that are unused is to leave them registered.
+      - If instead you would like to remove them set I(deregister_unused=true).
+    default: false
     type: bool
   target_az:
     description:
-      - An Availability Zone or all. This determines whether the target receives traffic from the load balancer nodes in the specified
+      - An Availability Zone or C(all). This determines whether the target receives traffic from the load balancer nodes in the specified
         Availability Zone or from all enabled Availability Zones for the load balancer. This parameter is not supported if the target
         type of the target group is instance.
     type: str
   target_group_arn:
     description:
-      - The Amazon Resource Name (ARN) of the target group. Mutually exclusive of I(target_group_name).
+      - The Amazon Resource Name (ARN) of the target group.
+      - Mutually exclusive of I(target_group_name).
     type: str
   target_group_name:
     description:
-      - The name of the target group. Mutually exclusive of I(target_group_arn).
+      - The name of the target group.
+      - Mutually exclusive of I(target_group_arn).
     type: str
   target_id:
     description:
@@ -55,7 +58,7 @@ options:
     type: str
   target_status_timeout:
     description:
-      - Maximum time in seconds to wait for target_status change
+      - Maximum time in seconds to wait for I(target_status) change.
     required: false
     default: 60
     type: int

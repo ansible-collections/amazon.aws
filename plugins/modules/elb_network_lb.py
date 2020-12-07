@@ -21,12 +21,12 @@ options:
   cross_zone_load_balancing:
     description:
       - Indicates whether cross-zone load balancing is enabled.
-    default: false
+      - Defaults to C(false).
     type: bool
   deletion_protection:
     description:
       - Indicates whether deletion protection for the ELB is enabled.
-    default: false
+      - Defaults to C(false).
     type: bool
   listeners:
     description:

@@ -27,7 +27,7 @@ options:
     type: str
   name:
     description:
-      - The name of the new AMI to copy. (As of 2.3 the default is 'default', in prior versions it was 'null'.)
+      - The name of the new AMI to copy. (As of 2.3 the default is C(default), in prior versions it was C(null).)
     default: "default"
     type: str
   description:
@@ -38,20 +38,22 @@ options:
     description:
       - Whether or not the destination snapshots of the copied AMI should be encrypted.
     type: bool
+    default: false
   kms_key_id:
     description:
       - KMS key id used to encrypt the image. If not specified, uses default EBS Customer Master Key (CMK) for your account.
     type: str
   wait:
     description:
-      - Wait for the copied AMI to be in state 'available' before returning.
+      - Wait for the copied AMI to be in state C(available) before returning.
     type: bool
     default: 'no'
   wait_timeout:
     description:
-      - How long before wait gives up, in seconds. Prior to 2.3 the default was 1200.
+      - How long before wait gives up, in seconds.
+      - Prior to 2.3 the default was C(1200).
       - From 2.3-2.5 this option was deprecated in favor of boto3 waiter defaults.
-        This was reenabled in 2.6 to allow timeouts greater than 10 minutes.
+      - This was reenabled in 2.6 to allow timeouts greater than 10 minutes.
     default: 600
     type: int
   tags:
