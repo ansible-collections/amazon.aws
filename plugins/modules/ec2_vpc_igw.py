@@ -22,9 +22,16 @@ options:
     type: str
   tags:
     description:
-      - "A dict of tags to apply to the internet gateway. Any tags currently applied to the internet gateway and not present here will be removed."
+      - A dict of tags to apply to the internet gateway.
+      - To remove all tags set I(tags={}) and I(purge_tags=true).
     aliases: [ 'resource_tags' ]
     type: dict
+  purge_tags:
+    description:
+      - Remove tags not listed in I(tags).
+    type: bool
+    default: true
+    version_added: 1.3.0
   state:
     description:
       - Create or terminate the IGW
@@ -85,17 +92,16 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
+from ansible.module_utils.six import string_types
+
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
-    AWSRetry,
-    camel_dict_to_snake_dict,
-    boto3_tag_list_to_ansible_dict,
-    ansible_dict_to_boto3_filter_list,
-    ansible_dict_to_boto3_tag_list,
-    compare_aws_tags
-)
-from ansible.module_utils.six import string_types
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
 
 
 class AnsibleEc2Igw(object):
@@ -103,16 +109,17 @@ class AnsibleEc2Igw(object):
     def __init__(self, module, results):
         self._module = module
         self._results = results
-        self._connection = self._module.client('ec2')
+        self._connection = self._module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
         self._check_mode = self._module.check_mode
 
     def process(self):
         vpc_id = self._module.params.get('vpc_id')
         state = self._module.params.get('state', 'present')
         tags = self._module.params.get('tags')
+        purge_tags = self._module.params.get('purge_tags')
 
         if state == 'present':
-            self.ensure_igw_present(vpc_id, tags)
+            self.ensure_igw_present(vpc_id, tags, purge_tags)
         elif state == 'absent':
             self.ensure_igw_absent(vpc_id)
 
@@ -120,7 +127,7 @@ class AnsibleEc2Igw(object):
         filters = ansible_dict_to_boto3_filter_list({'attachment.vpc-id': vpc_id})
         igws = []
         try:
-            response = self._connection.describe_internet_gateways(Filters=filters)
+            response = self._connection.describe_internet_gateways(aws_retry=True, Filters=filters)
             igws = response.get('InternetGateways', [])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self._module.fail_json_aws(e)
@@ -135,21 +142,25 @@ class AnsibleEc2Igw(object):
         return igw
 
     def check_input_tags(self, tags):
+        if tags is None:
+            return
         nonstring_tags = [k for k, v in tags.items() if not isinstance(v, string_types)]
         if nonstring_tags:
             self._module.fail_json(msg='One or more tags contain non-string values: {0}'.format(nonstring_tags))
 
-    def ensure_tags(self, igw_id, tags, add_only):
+    def ensure_tags(self, igw_id, tags, purge_tags):
         final_tags = []
 
         filters = ansible_dict_to_boto3_filter_list({'resource-id': igw_id, 'resource-type': 'internet-gateway'})
         cur_tags = None
         try:
-            cur_tags = self._connection.describe_tags(Filters=filters)
+            cur_tags = self._connection.describe_tags(aws_retry=True, Filters=filters)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self._module.fail_json_aws(e, msg="Couldn't describe tags")
 
-        purge_tags = bool(not add_only)
+        if tags is None:
+            return boto3_tag_list_to_ansible_dict(cur_tags.get('Tags'))
+
         to_update, to_delete = compare_aws_tags(boto3_tag_list_to_ansible_dict(cur_tags.get('Tags')), tags, purge_tags)
         final_tags = boto3_tag_list_to_ansible_dict(cur_tags.get('Tags'))
 
@@ -159,7 +170,8 @@ class AnsibleEc2Igw(object):
                     # update tags
                     final_tags.update(to_update)
                 else:
-                    AWSRetry.exponential_backoff()(self._connection.create_tags)(
+                    self._connection.create_tags(
+                        aws_retry=True,
                         Resources=[igw_id],
                         Tags=ansible_dict_to_boto3_tag_list(to_update)
                     )
@@ -179,7 +191,7 @@ class AnsibleEc2Igw(object):
                     for key in to_delete:
                         tags_list.append({'Key': key})
 
-                    AWSRetry.exponential_backoff()(self._connection.delete_tags)(Resources=[igw_id], Tags=tags_list)
+                    self._connection.delete_tags(aws_retry=True, Resources=[igw_id], Tags=tags_list)
 
                 self._results['changed'] = True
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -187,7 +199,7 @@ class AnsibleEc2Igw(object):
 
         if not self._check_mode and (to_update or to_delete):
             try:
-                response = self._connection.describe_tags(Filters=filters)
+                response = self._connection.describe_tags(aws_retry=True, Filters=filters)
                 final_tags = boto3_tag_list_to_ansible_dict(response.get('Tags'))
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 self._module.fail_json_aws(e, msg="Couldn't describe tags")
@@ -213,14 +225,14 @@ class AnsibleEc2Igw(object):
 
         try:
             self._results['changed'] = True
-            self._connection.detach_internet_gateway(InternetGatewayId=igw['internet_gateway_id'], VpcId=vpc_id)
-            self._connection.delete_internet_gateway(InternetGatewayId=igw['internet_gateway_id'])
+            self._connection.detach_internet_gateway(aws_retry=True, InternetGatewayId=igw['internet_gateway_id'], VpcId=vpc_id)
+            self._connection.delete_internet_gateway(aws_retry=True, InternetGatewayId=igw['internet_gateway_id'])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self._module.fail_json_aws(e, msg="Unable to delete Internet Gateway")
 
         return self._results
 
-    def ensure_igw_present(self, vpc_id, tags):
+    def ensure_igw_present(self, vpc_id, tags, purge_tags):
         self.check_input_tags(tags)
 
         igw = self.get_matching_igw(vpc_id)
@@ -232,21 +244,21 @@ class AnsibleEc2Igw(object):
                 return self._results
 
             try:
-                response = self._connection.create_internet_gateway()
+                response = self._connection.create_internet_gateway(aws_retry=True)
 
                 # Ensure the gateway exists before trying to attach it or add tags
                 waiter = get_waiter(self._connection, 'internet_gateway_exists')
                 waiter.wait(InternetGatewayIds=[response['InternetGateway']['InternetGatewayId']])
 
                 igw = camel_dict_to_snake_dict(response['InternetGateway'])
-                self._connection.attach_internet_gateway(InternetGatewayId=igw['internet_gateway_id'], VpcId=vpc_id)
+                self._connection.attach_internet_gateway(aws_retry=True, InternetGatewayId=igw['internet_gateway_id'], VpcId=vpc_id)
                 self._results['changed'] = True
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 self._module.fail_json_aws(e, msg='Unable to create Internet Gateway')
 
         igw['vpc_id'] = vpc_id
 
-        igw['tags'] = self.ensure_tags(igw_id=igw['internet_gateway_id'], tags=tags, add_only=False)
+        igw['tags'] = self.ensure_tags(igw_id=igw['internet_gateway_id'], tags=tags, purge_tags=purge_tags)
 
         igw_info = self.get_igw_info(igw)
         self._results.update(igw_info)
@@ -258,7 +270,8 @@ def main():
     argument_spec = dict(
         vpc_id=dict(required=True),
         state=dict(default='present', choices=['present', 'absent']),
-        tags=dict(default=dict(), required=False, type='dict', aliases=['resource_tags'])
+        tags=dict(required=False, type='dict', aliases=['resource_tags']),
+        purge_tags=dict(default=True, type='bool'),
     )
 
     module = AnsibleAWSModule(
