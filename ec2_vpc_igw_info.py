@@ -27,6 +27,12 @@ options:
       - Get details of specific Internet Gateway ID. Provide this value as a list.
     type: list
     elements: str
+  convert_tags:
+    description:
+      - Convert tags from boto3 format (list of dictionaries) to the standard dictionary format.
+      - This currently defaults to C(False).  The default will be changed to C(True) after 2022-06-22.
+    type: bool
+    version_added: 1.3.0
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -94,31 +100,45 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
-def get_internet_gateway_info(internet_gateway):
+def get_internet_gateway_info(internet_gateway, convert_tags):
+    if convert_tags:
+        tags = boto3_tag_list_to_ansible_dict(internet_gateway['Tags'])
+        ignore_list = ["Tags"]
+    else:
+        tags = internet_gateway['Tags']
+        ignore_list = []
     internet_gateway_info = {'InternetGatewayId': internet_gateway['InternetGatewayId'],
                              'Attachments': internet_gateway['Attachments'],
-                             'Tags': internet_gateway['Tags']}
+                             'Tags': tags}
+
+    internet_gateway_info = camel_dict_to_snake_dict(internet_gateway_info, ignore_list=ignore_list)
     return internet_gateway_info
 
 
-def list_internet_gateways(client, module):
+def list_internet_gateways(connection, module):
     params = dict()
 
     params['Filters'] = ansible_dict_to_boto3_filter_list(module.params.get('filters'))
+    convert_tags = module.params.get('convert_tags')
 
     if module.params.get("internet_gateway_ids"):
         params['InternetGatewayIds'] = module.params.get("internet_gateway_ids")
 
     try:
-        all_internet_gateways = client.describe_internet_gateways(**params)
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg=str(e))
+        all_internet_gateways = connection.describe_internet_gateways(aws_retry=True, **params)
+    except is_boto3_error_code('InvalidInternetGatewayID.NotFound'):
+        module.fail_json('InternetGateway not found')
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, 'Unable to describe internet gateways')
 
-    return [camel_dict_to_snake_dict(get_internet_gateway_info(igw))
+    return [get_internet_gateway_info(igw, convert_tags)
             for igw in all_internet_gateways['InternetGateways']]
 
 
@@ -126,15 +146,22 @@ def main():
     argument_spec = dict(
         filters=dict(type='dict', default=dict()),
         internet_gateway_ids=dict(type='list', default=None, elements='str'),
+        convert_tags=dict(type='bool'),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
     if module._name == 'ec2_vpc_igw_facts':
         module.deprecate("The 'ec2_vpc_igw_facts' module has been renamed to 'ec2_vpc_igw_info'", date='2021-12-01', collection_name='community.aws')
 
+    if module.params.get('convert_tags') is None:
+        module.deprecate('This module currently returns boto3 style tags by default.  '
+                         'This default has been deprecated and the module will return a simple dictionary in future.  '
+                         'This behaviour can be controlled through the convert_tags parameter.',
+                         date='2021-12-01', collection_name='community.aws')
+
     # Validate Requirements
     try:
-        connection = module.client('ec2')
+        connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to connect to AWS')
 
