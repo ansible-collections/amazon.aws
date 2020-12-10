@@ -13,6 +13,11 @@
   block:
 
     # ==== Env setup ==========================================================
+    - name: install boto3 > 1.16.33
+      pip:
+        name:
+          - 'boto3>=1.16.33'
+
     - name: list available AZs
       aws_az_info:
       register: region_azs
@@ -461,23 +466,39 @@
         volume_size: 1
         volume_type: gp3
         zone: "{{ availability_zone }}"
+        throughput: 130
         tags:
           ResourcePrefix: "{{ resource_prefix }}"
       register: gp3_volume
+
+    - name: check that volume_type is gp3
+      assert:
+        that:
+          - gp3_volume.volume_type == 'gp3'
+          - gp3_volume.changed
+          - gp3_volume.volume.throughput == 130
+
+    - name: increase throughput
+      ec2_vol:
+        volume_size: 1
+        volume_type: gp3
+        zone: "{{ availability_zone }}"
+        throughput: 131
+        tags:
+          ResourcePrefix: "{{ resource_prefix }}"
+      register: gp3_volume
+
+    - name: check that throughput has changed
+      assert:
+        that:
+          - gp3_volume.volume_type == 'gp3'
+          - gp3_volume.changed
+          - gp3_volume.volume.throughput == 131
 
 
     # ==== Cleanup ============================================================
 
   always:
-    - name: Describe the volume before we delete it
-      ec2_vol_info:
-        id: "{{ item.volume_id }}"
-      ignore_errors: yes
-      register: pre_delete
-
-    - debug:
-        var: pre_delete
-
     - name: Describe the instance before we delete it
       ec2_instance_info:
         instance_ids:

@@ -35,10 +35,11 @@ options:
     type: int
   volume_type:
     description:
-      - Type of EBS volume; standard (magnetic), gp2 (SSD), gp3 (SSD), io1 (Provisioned IOPS), st1 (Throughput Optimized HDD), sc1 (Cold HDD).
+      - Type of EBS volume; standard (magnetic), gp2 (SSD), gp3 (SSD), io1 (Provisioned IOPS), io2 (Provisioned IOPS),
+        st1 (Throughput Optimized HDD), sc1 (Cold HDD).
         "Standard" is the old EBS default and continues to remain the Ansible default for backwards compatibility.
     default: standard
-    choices: ['standard', 'gp2', 'io1', 'st1', 'sc1', 'gp3']
+    choices: ['standard', 'gp2', 'io1', 'st1', 'sc1', 'gp3', 'io2']
     type: str
   iops:
     description:
@@ -97,11 +98,19 @@ options:
     type: bool
     default: false
     version_added: 1.3.0
+  throughput:
+    description:
+      - Volume throughput in MB/s.
+      - This parameter is only valid for gp3 volumes.
+      - Valid range is from 125 to 1000.
+    type: int
+    version_added: 1.3.0
 author: "Lester Wade (@lwade)"
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 
+requirements: [ boto3>=1.16.33 ]
 '''
 
 EXAMPLES = '''
@@ -366,6 +375,7 @@ def update_volume(module, ec2_conn, volume):
                 req_obj['size'] = target_size
 
         target_type = module.params.get('volume_type')
+        original_type = None
         type_changed = False
         if target_type:
             original_type = volume['volume_type']
@@ -373,13 +383,24 @@ def update_volume(module, ec2_conn, volume):
                 type_changed = True
                 req_obj['VolumeType'] = target_type
 
-        changed = iops_changed or size_changed or type_changed
+        target_throughput = module.params.get('throughput')
+        throughput_changed = False
+        if 'gp3' in [target_type, original_type]:
+            if target_throughput:
+                original_throughput = volume.get('throughput')
+                if target_throughput != original_throughput:
+                    throughput_changed = True
+                    req_obj['Throughput'] = target_throughput
+
+        changed = iops_changed or size_changed or type_changed or throughput_changed
 
         if changed:
             response = ec2_conn.modify_volume(**req_obj)
+
             volume['size'] = response.get('VolumeModification').get('TargetSize')
             volume['volume_type'] = response.get('VolumeModification').get('TargetVolumeType')
             volume['iops'] = response.get('VolumeModification').get('TargetIops')
+            volume['throughput'] = response.get('VolumeModification').get('TargetThroughput')
 
     return volume, changed
 
@@ -392,6 +413,7 @@ def create_volume(module, ec2_conn, zone):
     volume_size = module.params.get('volume_size')
     volume_type = module.params.get('volume_type')
     snapshot = module.params.get('snapshot')
+    throughput = module.params.get('throughput')
     # If custom iops is defined we use volume_type "io1" rather than the default of "standard"
     if iops:
         volume_type = 'io1'
@@ -415,6 +437,9 @@ def create_volume(module, ec2_conn, zone):
 
             if iops:
                 additional_params['Iops'] = int(iops)
+
+            if throughput:
+                additional_params['Throughput'] = int(throughput)
 
             create_vol_response = ec2_conn.create_volume(
                 aws_retry=True,
@@ -556,6 +581,7 @@ def get_volume_info(volume):
         'status': volume.get('state'),
         'type': volume.get('volume_type'),
         'zone': volume.get('availability_zone'),
+        'throughput': volume.get('throughput'),
         'attachment_set': {
             'attach_time': attachment_data.get('attach_time', None),
             'device': attachment_data.get('device', None),
@@ -647,7 +673,7 @@ def main():
         id=dict(),
         name=dict(),
         volume_size=dict(type='int'),
-        volume_type=dict(default='standard', choices=['standard', 'gp2', 'io1', 'st1', 'sc1', 'gp3']),
+        volume_type=dict(default='standard', choices=['standard', 'gp2', 'io1', 'st1', 'sc1', 'gp3', 'io2']),
         iops=dict(type='int'),
         encrypted=dict(default=False, type='bool'),
         kms_key_id=dict(),
@@ -657,7 +683,8 @@ def main():
         snapshot=dict(),
         state=dict(default='present', choices=['absent', 'present', 'list']),
         tags=dict(default={}, type='dict'),
-        modify_volume=dict(default=False, type='bool')
+        modify_volume=dict(default=False, type='bool'),
+        throughput=dict(type='int')
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec)
