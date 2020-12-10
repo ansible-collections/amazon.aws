@@ -378,7 +378,6 @@ def update_volume(module, ec2_conn, volume):
         if changed:
             response = ec2_conn.modify_volume(**req_obj)
             volume['size'] = response.get('VolumeModification').get('TargetSize')
-            volume['type'] = response.get('VolumeModification').get('TargetType')
             volume['volume_type'] = response.get('VolumeModification').get('TargetVolumeType')
             volume['iops'] = response.get('VolumeModification').get('TargetIops')
 
