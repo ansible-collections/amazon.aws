@@ -91,6 +91,12 @@ options:
       - tag:value pairs to add to the volume after creation.
     default: {}
     type: dict
+  modify_volume:
+    description:
+      - Ony when set to C(true), the volume will be modified.
+    type: bool
+    default: false
+    version_added: 1.3.0
 author: "Lester Wade (@lwade)"
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -341,39 +347,40 @@ def update_volume(module, ec2_conn, volume):
     changed = False
     req_obj = {'VolumeId': volume['volume_id']}
 
-    iops_changed = False
-    if volume['volume_type'] != 'standard':
-        target_iops = module.params.get('iops')
-        if target_iops:
-            original_iops = volume['iops']
-            if target_iops != original_iops:
-                iops_changed = True
-                req_obj['iops'] = target_iops
+    if module.params.get('modify_volume'):
+        iops_changed = False
+        if volume['volume_type'] != 'standard':
+            target_iops = module.params.get('iops')
+            if target_iops:
+                original_iops = volume['iops']
+                if target_iops != original_iops:
+                    iops_changed = True
+                    req_obj['iops'] = target_iops
 
-    target_size = module.params.get('volume_size')
-    size_changed = False
-    if target_size:
-        original_size = volume['size']
-        if target_size != original_size:
-            size_changed = True
-            req_obj['size'] = target_size
+        target_size = module.params.get('volume_size')
+        size_changed = False
+        if target_size:
+            original_size = volume['size']
+            if target_size != original_size:
+                size_changed = True
+                req_obj['size'] = target_size
 
-    target_type = module.params.get('volume_type')
-    type_changed = False
-    if target_type:
-        original_type = volume['volume_type']
-        if target_type != original_type:
-            type_changed = True
-            req_obj['VolumeType'] = volume['volume_type']
+        target_type = module.params.get('volume_type')
+        type_changed = False
+        if target_type:
+            original_type = volume['volume_type']
+            if target_type != original_type:
+                type_changed = True
+                req_obj['VolumeType'] = volume['volume_type']
 
-    changed = iops_changed or size_changed or type_changed
+        changed = iops_changed or size_changed or type_changed
 
-    if changed:
-        response = ec2_conn.modify_volume(**req_obj)
+        if changed:
+            response = ec2_conn.modify_volume(**req_obj)
 
-        volume['size'] = response.get('VolumeModification').get('TargetSize')
-        volume['volume_type'] = response.get('VolumeModification').get('TargetType')
-        volume['iops'] = response.get('VolumeModification').get('TargetIops')
+            volume['size'] = response.get('VolumeModification').get('TargetSize')
+            volume['volume_type'] = response.get('VolumeModification').get('TargetType')
+            volume['iops'] = response.get('VolumeModification').get('TargetIops')
 
     return volume, changed
 
@@ -641,16 +648,17 @@ def main():
         id=dict(),
         name=dict(),
         volume_size=dict(type='int'),
-        volume_type=dict(choices=['standard', 'gp2', 'io1', 'st1', 'sc1', 'gp3'], default='standard'),
+        volume_type=dict(default='standard', choices=['standard', 'gp2', 'io1', 'st1', 'sc1', 'gp3']),
         iops=dict(type='int'),
-        encrypted=dict(type='bool', default=False),
+        encrypted=dict(default=False, type='bool'),
         kms_key_id=dict(),
         device_name=dict(),
-        delete_on_termination=dict(type='bool', default=False),
+        delete_on_termination=dict(default=False, type='bool'),
         zone=dict(aliases=['availability_zone', 'aws_zone', 'ec2_zone']),
         snapshot=dict(),
-        state=dict(choices=['absent', 'present', 'list'], default='present'),
-        tags=dict(type='dict', default={})
+        state=dict(default='present', choices=['absent', 'present', 'list']),
+        tags=dict(default={}, type='dict'),
+        modify_volume=dict(default=False, type='bool')
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec)
