@@ -53,7 +53,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>An associative array of access logs configuration settings (see example)</div>
+                        <div>An associative array of access logs configuration settings (see examples).</div>
                 </td>
             </tr>
             <tr>
@@ -138,7 +138,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Wait a specified timeout allowing connections to drain before terminating an instance</div>
+                        <div>Wait a specified timeout allowing connections to drain before terminating an instance.</div>
                 </td>
             </tr>
             <tr>
@@ -152,12 +152,13 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>no</li>
                                     <li>yes</li>
                         </ul>
                 </td>
                 <td>
-                        <div>Distribute load across all configured Availability Zones</div>
+                        <div>Distribute load across all configured Availability Zones.</div>
+                        <div>Defaults to <code>false</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -207,7 +208,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>An associative array of health check configuration settings (see example)</div>
+                        <div>An associative array of health check configuration settings (see examples).</div>
                 </td>
             </tr>
             <tr>
@@ -222,7 +223,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>ELB connections from clients and to servers are timed out after this amount of time</div>
+                        <div>ELB connections from clients and to servers are timed out after this amount of time.</div>
                 </td>
             </tr>
             <tr>
@@ -238,7 +239,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>List of instance ids to attach to this ELB</div>
+                        <div>List of instance ids to attach to this ELB.</div>
                 </td>
             </tr>
             <tr>
@@ -254,7 +255,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>List of ports/protocols for this ELB to listen on (see example)</div>
+                        <div>List of ports/protocols for this ELB to listen on (see examples).</div>
                 </td>
             </tr>
             <tr>
@@ -270,7 +271,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The name of the ELB</div>
+                        <div>The name of the ELB.</div>
                 </td>
             </tr>
             <tr>
@@ -307,7 +308,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Purge existing instance ids on ELB that are not found in instance_ids</div>
+                        <div>Purge existing instance ids on ELB that are not found in instance_ids.</div>
                 </td>
             </tr>
             <tr>
@@ -326,7 +327,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Purge existing listeners on ELB that are not found in listeners</div>
+                        <div>Purge existing listeners on ELB that are not found in listeners.</div>
                 </td>
             </tr>
             <tr>
@@ -345,7 +346,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Purge existing subnet on ELB that are not found in subnets</div>
+                        <div>Purge existing subnet on ELB that are not found in subnets.</div>
                 </td>
             </tr>
             <tr>
@@ -364,7 +365,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Purge existing availability zones on ELB that are not found in zones</div>
+                        <div>Purge existing availability zones on ELB that are not found in zones.</div>
                 </td>
             </tr>
             <tr>
@@ -399,7 +400,8 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>The scheme to use when creating the ELB. For a private VPC-visible ELB use &#x27;internal&#x27;. If you choose to update your scheme with a different value the ELB will be destroyed and recreated. To update scheme you must use the option wait.</div>
+                        <div>The scheme to use when creating the ELB. For a private VPC-visible ELB use <code>internal</code>.</div>
+                        <div>If you choose to update your scheme with a different value the ELB will be destroyed and recreated. To update scheme you must use the option <em>wait</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -415,7 +417,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A list of security groups to apply to the elb</div>
+                        <div>A list of security groups to apply to the ELB.</div>
                 </td>
             </tr>
             <tr>
@@ -431,7 +433,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A list of security group names to apply to the elb</div>
+                        <div>A list of security group names to apply to the ELB.</div>
                 </td>
             </tr>
             <tr>
@@ -469,7 +471,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Create or destroy the ELB</div>
+                        <div>Create or destroy the ELB.</div>
                 </td>
             </tr>
             <tr>
@@ -484,7 +486,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>An associative array of stickiness policy settings. Policy will be applied to all listeners ( see example )</div>
+                        <div>An associative array of stickiness policy settings. Policy will be applied to all listeners (see examples).</div>
                 </td>
             </tr>
             <tr>
@@ -515,7 +517,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>An associative array of tags. To delete all tags, supply an empty dict.</div>
+                        <div>An associative array of tags. To delete all tags, supply an empty dict (<code>{}</code>).</div>
                 </td>
             </tr>
             <tr>
@@ -569,7 +571,8 @@ Parameters
                         <b>Default:</b><br/><div style="color: blue">60</div>
                 </td>
                 <td>
-                        <div>Used in conjunction with wait. Number of seconds to wait for the elb to be terminated. A maximum of 600 seconds (10 minutes) is allowed.</div>
+                        <div>Used in conjunction with wait. Number of seconds to wait for the ELB to be terminated.</div>
+                        <div>A maximum of 600 seconds (10 minutes) is allowed.</div>
                 </td>
             </tr>
             <tr>
@@ -585,7 +588,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>List of availability zones to enable on this ELB</div>
+                        <div>List of availability zones to enable on this ELB.</div>
                 </td>
             </tr>
     </table>
@@ -605,7 +608,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Note: None of these examples set aws_access_key, aws_secret_key, or region.
     # It is assumed that their matching environment variables are set.

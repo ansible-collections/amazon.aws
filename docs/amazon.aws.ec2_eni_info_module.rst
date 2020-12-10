@@ -268,7 +268,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Note: These examples do not set authentication details, see the AWS Guide for details.
 
@@ -478,8 +478,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
                     </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0</div>
-                </td>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0</div>                </td>
                 <td>When a Name tag has been set</td>
                 <td>
                             <div>The Name tag of the ENI, often displayed in the AWS UIs as Name</div>
@@ -685,8 +684,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <div style="font-size: small">
                       <span style="color: purple">dictionary</span>
                     </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0</div>
-                </td>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0</div>                </td>
                 <td>always</td>
                 <td>
                             <div>Dictionary of tags added to the ENI</div>

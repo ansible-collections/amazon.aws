@@ -131,6 +131,42 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>content</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The content to PUT into an object.</div>
+                        <div>The parameter value will be treated as a string and converted to UTF-8 before sending it to S3. To send binary data, use the <em>content_base64</em> parameter instead.</div>
+                        <div>Either <em>content</em>, <em>content_base64</em> or <em>src</em> must be specified for a PUT operation. Ignored otherwise.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>content_base64</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The base64-encoded binary data to PUT into an object.</div>
+                        <div>Use this if you need to put raw binary data, and don&#x27;t forget to encode in base64.</div>
+                        <div>Either <em>content</em>, <em>content_base64</em> or <em>src</em> must be specified for a PUT operation. Ignored otherwise.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>debug_botocore_endpoint_logs</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -229,7 +265,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>KMS key id to use when encrypting objects using <em>encrypting=aws:kms</em>. Ignored if <em>encryption</em> is not <code>aws:kms</code></div>
+                        <div>KMS key id to use when encrypting objects using <em>encrypting=aws:kms</em>. Ignored if <em>encryption</em> is not <code>aws:kms</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -280,7 +316,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Custom headers for PUT operation, as a dictionary of &#x27;key=value&#x27; and &#x27;key=value,key=value&#x27;.</div>
+                        <div>Custom headers for PUT operation, as a dictionary of <code>key=value</code> and <code>key=value,key=value</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -294,7 +330,7 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
+                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
                                     <li>yes</li>
                         </ul>
                 </td>
@@ -345,7 +381,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Metadata for PUT operation, as a dictionary of &#x27;key=value&#x27; and &#x27;key=value,key=value&#x27;.</div>
+                        <div>Metadata for PUT operation, as a dictionary of <code>key=value</code> and <code>key=value,key=value</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -371,7 +407,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Switches the module behaviour between put (upload), get (download), geturl (return download url, Ansible 1.3+), getstr (download object as string (1.3+)), list (list keys, Ansible 2.0+), create (bucket), delete (bucket), and delobj (delete object, Ansible 2.0+).</div>
+                        <div>Switches the module behaviour between <code>put</code> (upload), <code>get</code> (download), <code>geturl</code> (return download url, Ansible 1.3+), <code>getstr</code> (download object as string (1.3+)), <code>list</code> (list keys, Ansible 2.0+), <code>create</code> (bucket), <code>delete</code> (bucket), and delobj (delete object, Ansible 2.0+).</div>
                 </td>
             </tr>
             <tr>
@@ -402,7 +438,11 @@ Parameters
                         <b>Default:</b><br/><div style="color: blue">"always"</div>
                 </td>
                 <td>
-                        <div>Force overwrite either locally on the filesystem or remotely with the object/key. Used with PUT and GET operations. Boolean or one of [always, never, different], true is equal to &#x27;always&#x27; and false is equal to &#x27;never&#x27;, new in 2.0. When this is set to &#x27;different&#x27;, the md5 sum of the local file is compared with the &#x27;ETag&#x27; of the object/key in S3. The ETag may or may not be an MD5 digest of the object data. See the ETag response header here <a href='https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html'>https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html</a></div>
+                        <div>Force overwrite either locally on the filesystem or remotely with the object/key. Used with PUT and GET operations.</div>
+                        <div>Must be a Boolean, <code>always</code>, <code>never</code> or <code>different</code>.</div>
+                        <div><code>true</code> is the same as <code>always</code>.</div>
+                        <div><code>false</code> is equal to <code>never</code>.</div>
+                        <div>When this is set to <code>different</code> the MD5 sum of the local file is compared with the &#x27;ETag&#x27; of the object/key in S3. The ETag may or may not be an MD5 digest of the object data. See the ETag response header here <a href='https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html'>https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html</a>.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: force</div>
                 </td>
             </tr>
@@ -549,13 +589,14 @@ Parameters
                     <b>src</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">string</span>
+                        <span style="color: purple">path</span>
                     </div>
                 </td>
                 <td>
                 </td>
                 <td>
                         <div>The source file path when performing a PUT operation.</div>
+                        <div>Either <em>content</em>, <em>content_base64</em> or <em>src</em> must be specified for a PUT operation. Ignored otherwise.</div>
                 </td>
             </tr>
             <tr>
@@ -609,13 +650,20 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Simple PUT operation
       amazon.aws.aws_s3:
         bucket: mybucket
         object: /my/desired/key.txt
         src: /usr/local/myfile.txt
+        mode: put
+
+    - name: PUT operation from a rendered template
+      aws_s3:
+        bucket: mybucket
+        object: /object.yaml
+        content: "{{ lookup('template', 'templates/object.yaml.j2') }}"
         mode: put
 
     - name: Simple PUT operation in Ceph RGW S3

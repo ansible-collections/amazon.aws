@@ -124,7 +124,7 @@ Parameters
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # lookup sample:
     - name: lookup ssm parameter store in the current region

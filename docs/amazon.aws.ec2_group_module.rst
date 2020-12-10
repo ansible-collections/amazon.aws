@@ -759,7 +759,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: example using security group rule descriptions
       amazon.aws.ec2_group:

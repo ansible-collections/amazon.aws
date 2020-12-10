@@ -164,6 +164,56 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>on_denied</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>error</b>&nbsp;&larr;</div></li>
+                                    <li>skip</li>
+                                    <li>warn</li>
+                        </ul>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>Action to take if access to the secret is denied.</div>
+                        <div><code>error</code> will raise a fatal error when access to the secret is denied.</div>
+                        <div><code>skip</code> will silently ignore the denied secret.</div>
+                        <div><code>warn</code> will skip over the denied secret but issue a warning.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>on_missing</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>error</b>&nbsp;&larr;</div></li>
+                                    <li>skip</li>
+                                    <li>warn</li>
+                        </ul>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>Action to take if the secret is missing.</div>
+                        <div><code>error</code> will raise a fatal error when the secret is missing.</div>
+                        <div><code>skip</code> will silently ignore the missing secret.</div>
+                        <div><code>warn</code> will skip over the missing secret but issue a warning.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>region</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -223,7 +273,7 @@ Parameters
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Create RDS instance with aws_secret lookup for password param
        rds:
@@ -236,6 +286,12 @@ Examples
          password: "{{ lookup('aws_secret', 'DbSecret') }}"
          tags:
            Environment: staging
+
+     - name: skip if secret does not exist
+       debug: msg="{{ lookup('aws_secret', 'secret-not-exist', on_missing='skip')}}"
+
+     - name: warn if access to the secret is denied
+       debug: msg="{{ lookup('aws_secret', 'secret-denied', on_denied='warn')}}"
 
 
 

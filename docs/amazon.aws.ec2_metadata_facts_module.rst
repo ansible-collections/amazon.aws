@@ -35,7 +35,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Gather EC2 metadata facts
     - amazon.aws.ec2_metadata_facts:
@@ -52,7 +52,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
 .. raw:: html
 
     <table border=0 cellpadding=0 class="documentation-table">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <tr>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <tr>
             <th colspan="2">Fact</th>
             <th>Returned</th>
             <th width="100%">Description</th>
@@ -890,6 +890,24 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>ansible_ec2_instance_life_cycle</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td></td>
+                <td>
+                            <div>The purchasing option of the instance.
+                            </div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">on-demand</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>ansible_ec2_instance_type</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
@@ -898,7 +916,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
                 </td>
                 <td></td>
                 <td>
-                            <div>The type of instance.
+                            <div>The type of the instance.
                             </div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
