@@ -52,8 +52,6 @@ _raw:
     (or all attributes if one is not specified).
 """
 
-import os
-
 from ansible.errors import AnsibleError
 
 try:
@@ -63,12 +61,7 @@ except ImportError:
     raise AnsibleError("The lookup aws_account_attribute requires boto3 and botocore.")
 
 from ansible.module_utils._text import to_native
-from ansible.module_utils.six import string_types
-from ansible.plugins import AnsiblePlugin
 from ansible.plugins.lookup import LookupBase
-
-from ..module_utils.ec2 import boto3_conn
-from ..module_utils.ec2 import get_aws_connection_info
 
 
 def _boto3_conn(region, credentials):

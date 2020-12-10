@@ -9,11 +9,6 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-try:
-    from botocore.exceptions import BotoCoreError, ClientError
-except ImportError:
-    pass  # Handled by AnsibleAWSModule
-
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter

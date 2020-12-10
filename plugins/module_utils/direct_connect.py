@@ -39,8 +39,6 @@ try:
 except ImportError:
     pass
 
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-
 from .ec2 import AWSRetry
 
 

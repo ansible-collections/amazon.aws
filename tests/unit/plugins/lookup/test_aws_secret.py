@@ -21,7 +21,6 @@ __metaclass__ = type
 
 import pytest
 import datetime
-import sys
 from copy import copy
 
 from ansible.errors import AnsibleError

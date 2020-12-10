@@ -9,7 +9,9 @@ __metaclass__ = type
 
 import pytest
 
-from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify, maybe_sleep
+# Magic...
+from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import maybe_sleep, placeboify  # pylint: disable=unused-import
+
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto_exception
 from ansible_collections.amazon.aws.plugins.modules import cloudformation as cfn_module
 
