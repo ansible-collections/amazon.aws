@@ -371,15 +371,15 @@ def update_volume(module, ec2_conn, volume):
             original_type = volume['volume_type']
             if target_type != original_type:
                 type_changed = True
-                req_obj['VolumeType'] = volume['volume_type']
+                req_obj['VolumeType'] = target_type
 
         changed = iops_changed or size_changed or type_changed
 
         if changed:
             response = ec2_conn.modify_volume(**req_obj)
-
             volume['size'] = response.get('VolumeModification').get('TargetSize')
-            volume['volume_type'] = response.get('VolumeModification').get('TargetType')
+            volume['type'] = response.get('VolumeModification').get('TargetType')
+            volume['volume_type'] = response.get('VolumeModification').get('TargetVolumeType')
             volume['iops'] = response.get('VolumeModification').get('TargetIops')
 
     return volume, changed
@@ -712,9 +712,6 @@ def main():
     # without needing to pass an unused volume_size
     if not volume_size and not (param_id or name or snapshot):
         module.fail_json(msg="You must specify volume_size or identify an existing volume by id, name, or snapshot")
-
-    if volume_size and param_id:
-        module.fail_json(msg="Cannot specify volume_size together with id")
 
     # Try getting volume
     volume = get_volume(module, ec2_conn, fail_on_not_found=False)

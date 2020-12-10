@@ -314,6 +314,63 @@
         that:
           - not new_vol_attach_result_idem.changed
 
+    - name: must not change because of missing parameter modify_volume
+      ec2_vol:
+        id: "{{ new_vol_attach_result.volume_id }}"
+        zone: "{{ availability_zone }}"
+        volume_type: gp3
+      register: changed_gp3_volume
+
+    - name: volume must not changed
+      assert:
+        that:
+          - not changed_gp3_volume.changed
+
+    - name: change existing volume to gp3
+      ec2_vol:
+        id: "{{ new_vol_attach_result.volume_id }}"
+        zone: "{{ availability_zone }}"
+        volume_type: gp3
+        modify_volume: yes
+      register: changed_gp3_volume
+
+    - name: check that volume_type has changed
+      assert:
+        that:
+          - changed_gp3_volume.volume_type == 'gp3'
+          - changed_gp3_volume.changed
+
+    - name: volume must be from type gp3 (idempotent)
+      ec2_vol:
+        id: "{{ new_vol_attach_result.volume_id }}"
+        zone: "{{ availability_zone }}"
+        volume_type: gp3
+        modify_volume: yes
+      register: changed_gp3_volume
+      retries: 3
+      delay: 3
+      until: not changed_gp3_volume.failed
+      # retry because ebs change is to slow
+
+    - name: must not changed (idempotent)
+      assert:
+        that:
+          - changed_gp3_volume.volume_type == 'gp3'
+          - not changed_gp3_volume.changed
+
+    - name: re-read volume information to validate new volume_type
+      ec2_vol_info:
+        filters:
+          volume-id: "{{ changed_gp3_volume.id }}"
+      register: verify_gp3_change
+
+    - name: volume type must be gp3
+      assert:
+        that:
+          - v.type == 'gp3'
+      vars:
+        v: "{{ verify_gp3_change.volumes[0] }}"
+
     - name: delete volume
       ec2_vol:
         id: "{{ volume2.volume_id }}"
@@ -399,6 +456,15 @@
           v: "{{ volume_info.volumes[0] }}"
       when: ansible_version.full is version('2.7', '>=')
 
+    - name: test create a new gp3 volume
+      ec2_vol:
+        volume_size: 1
+        volume_type: gp3
+        zone: "{{ availability_zone }}"
+        tags:
+          ResourcePrefix: "{{ resource_prefix }}"
+      register: gp3_volume
+
 
     # ==== Cleanup ============================================================
 
@@ -441,6 +507,7 @@
         - "{{ new_vol_attach_result }}"
         - "{{ attach_new_vol_from_snapshot_result }}"
         - "{{ dot_volume }}"
+        - "{{ gp3_volume }}"
 
     - name: delete snapshot
       ec2_snapshot:
