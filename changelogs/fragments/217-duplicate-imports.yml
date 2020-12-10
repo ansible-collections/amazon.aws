@@ -1,0 +1,2 @@
+minor_changes:
+- various AWS plugins and module_utils - Cleanup unused imports (https://github.com/ansible-collections/amazon.aws/pull/217).
