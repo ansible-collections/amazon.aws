@@ -361,7 +361,7 @@
     - name: re-read volume information to validate new volume_type
       ec2_vol_info:
         filters:
-          volume-id: "{{ changed_gp3_volume.id }}"
+          volume-id: "{{ changed_gp3_volume.volume_id }}"
       register: verify_gp3_change
 
     - name: volume type must be gp3
