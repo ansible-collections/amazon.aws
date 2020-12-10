@@ -311,7 +311,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Ensure tags are present on a resource
       amazon.aws.ec2_tag:

@@ -394,7 +394,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Simple snapshot of volume using volume_id
     - amazon.aws.ec2_snapshot:

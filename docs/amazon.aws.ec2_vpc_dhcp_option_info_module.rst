@@ -17,7 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Gather information about dhcp options sets in AWS
+- Gather information about dhcp options sets in AWS.
 - This module was called ``ec2_vpc_dhcp_option_facts`` before Ansible 2.9. The usage did not change.
 
 
@@ -159,7 +159,7 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
+                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
                                     <li>yes</li>
                         </ul>
                 </td>
@@ -287,7 +287,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # # Note: These examples do not set authentication details, see the AWS Guide for details.
 

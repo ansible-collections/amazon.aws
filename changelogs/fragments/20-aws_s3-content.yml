@@ -1,2 +1,0 @@
-minor_changes:
-- aws_s3 - Add support for uploading templated content (https://github.com/ansible-collections/amazon.aws/pull/20).

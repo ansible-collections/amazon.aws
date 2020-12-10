@@ -414,7 +414,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Completely overrides the VPC DHCP options associated with VPC vpc-123456 and deletes any existing
     # DHCP option set that may have been attached to that VPC.

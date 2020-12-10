@@ -239,12 +239,14 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
                 </td>
                 <td>
                         <div>The device name. For example <code>/dev/sda</code>.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: DeviceName</div>
                 </td>
             </tr>
             <tr>
@@ -733,7 +735,7 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <b>Default:</b><br/><div style="color: blue">900</div>
+                        <b>Default:</b><br/><div style="color: blue">1200</div>
                 </td>
                 <td>
                         <div>How long before wait gives up, in seconds.</div>
@@ -756,7 +758,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Note: These examples do not set authentication details, see the AWS Guide for details.
 

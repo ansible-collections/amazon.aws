@@ -469,13 +469,14 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Simple attachment action
     - amazon.aws.ec2_vol:
         instance: XXXXXX
         volume_size: 5
         device_name: sdd
+        region: us-west-2
 
     # Example using custom iops params
     - amazon.aws.ec2_vol:
@@ -483,6 +484,7 @@ Examples
         volume_size: 5
         iops: 100
         device_name: sdd
+        region: us-west-2
 
     # Example using snapshot id
     - amazon.aws.ec2_vol:
@@ -532,11 +534,13 @@ Examples
     - amazon.aws.ec2_vol:
         id: vol-XXXXXXXX
         instance: None
+        region: us-west-2
 
     # List volumes for an instance
     - amazon.aws.ec2_vol:
         instance: i-XXXXXX
         state: list
+        region: us-west-2
 
     # Create new volume using SSD storage
     - amazon.aws.ec2_vol:

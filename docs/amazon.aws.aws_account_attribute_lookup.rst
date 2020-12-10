@@ -176,7 +176,7 @@ Parameters
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     vars:
       has_ec2_classic: "{{ lookup('aws_account_attribute', attribute='has-ec2-classic') }}"

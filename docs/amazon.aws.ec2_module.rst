@@ -159,7 +159,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Used with <em>exact_count</em> to determine how many nodes based on a specific tag criteria should be running. This can be expressed in multiple ways and is shown in the EXAMPLES section.  For instance, one can request 25 servers that are tagged with &quot;class=webserver&quot;. The specified tag must already exist or be passed in as the <em>instance_tags</em> option.</div>
+                        <div>Used with <em>exact_count</em> to determine how many nodes based on a specific tag criteria should be running. This can be expressed in multiple ways and is shown in the EXAMPLES section.  For instance, one can request 25 servers that are tagged with <code>class=webserver</code>. The specified tag must already exist or be passed in as the <em>instance_tags</em> option.</div>
                 </td>
             </tr>
             <tr>
@@ -360,7 +360,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A hash/dictionary of tags to add to the new instance or for starting/stopping instance by tag; &#x27;{&quot;key&quot;:&quot;value&quot;}&#x27; and &#x27;{&quot;key&quot;:&quot;value&quot;,&quot;key&quot;:&quot;value&quot;}&#x27;.</div>
+                        <div>A hash/dictionary of tags to add to the new instance or for instances to start/stop by tag.  For example <code>{&quot;key&quot;:&quot;value&quot;}</code> or <code>{&quot;key&quot;:&quot;value&quot;,&quot;key2&quot;:&quot;value2&quot;}</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -429,7 +429,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Enable detailed monitoring (CloudWatch) for instance.</div>
+                        <div>Enable detailed monitoring (CloudWatch) for the instance.</div>
                 </td>
             </tr>
             <tr>
@@ -688,12 +688,13 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>no</li>
                                     <li>yes</li>
                         </ul>
                 </td>
                 <td>
                         <div>Enable or Disable the Termination Protection.</div>
+                        <div>Defaults to <code>false</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -901,7 +902,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>the subnet ID in which to launch the instance (VPC).</div>
+                        <div>The subnet ID in which to launch the instance (VPC).</div>
                 </td>
             </tr>
             <tr>
@@ -973,7 +974,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Note: These examples do not set authentication details, see the AWS Guide for details.
 
