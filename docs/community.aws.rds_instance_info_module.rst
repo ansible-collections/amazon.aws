@@ -267,7 +267,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Get information about an instance
       community.aws.rds_instance_info:
