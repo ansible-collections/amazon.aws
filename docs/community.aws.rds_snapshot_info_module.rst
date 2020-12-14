@@ -323,7 +323,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Get information about an snapshot
       community.aws.rds_snapshot_info:

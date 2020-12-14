@@ -355,7 +355,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Create snapshot
       community.aws.rds_snapshot:
