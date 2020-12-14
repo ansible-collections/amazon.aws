@@ -286,7 +286,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Create my_target Assessment Target
       community.aws.aws_inspector_target:

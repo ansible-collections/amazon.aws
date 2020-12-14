@@ -311,7 +311,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Note: None of these examples set aws_access_key, aws_secret_key, or region.
     # It is assumed that their matching environment variables are set.

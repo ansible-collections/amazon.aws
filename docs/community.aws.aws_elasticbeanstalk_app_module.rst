@@ -302,7 +302,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Create or update an application
     - community.aws.aws_elasticbeanstalk_app:

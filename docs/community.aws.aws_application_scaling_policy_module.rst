@@ -17,7 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Creates, updates or removes a Scaling Policy
+- Creates, updates or removes a Scaling Policy.
 
 
 
@@ -189,12 +189,13 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>no</li>
                                     <li>yes</li>
                         </ul>
                 </td>
                 <td>
                         <div>Whether or not to override values of minimum and/or maximum tasks if it&#x27;s already set.</div>
+                        <div>Defaults to <code>false</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -367,7 +368,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Whether a policy should be present or absent</div>
+                        <div>Whether a policy should be <code>present</code> or <code>absent</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -382,7 +383,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A step scaling policy. This parameter is required if you are creating a policy and the policy type is StepScaling.</div>
+                        <div>A step scaling policy. This parameter is required if you are creating a policy and <em>policy_type=StepScaling</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -397,7 +398,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A target tracking policy. This parameter is required if you are creating a new policy and the policy type is TargetTrackingScaling.</div>
+                        <div>A target tracking policy. This parameter is required if you are creating a new policy and <em>policy_type=TargetTrackingScaling</em>.</div>
                         <div>Full documentation of the suboptions can be found in the API documentation:</div>
                         <div><a href='https://docs.aws.amazon.com/autoscaling/application/APIReference/API_TargetTrackingScalingPolicyConfiguration.html'>https://docs.aws.amazon.com/autoscaling/application/APIReference/API_TargetTrackingScalingPolicyConfiguration.html</a></div>
                 </td>
@@ -499,7 +500,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The target value for the metric</div>
+                        <div>The target value for the metric.</div>
                 </td>
             </tr>
 
@@ -540,7 +541,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Note: These examples do not set authentication details, see the AWS Guide for details.
 

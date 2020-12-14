@@ -335,7 +335,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Create a new direct connect gateway attached to virtual private gateway
       community.aws.aws_direct_connect_gateway:

@@ -411,7 +411,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Note: These examples do not set authentication details, see the AWS Guide for details.
 
@@ -461,6 +461,7 @@ Examples
       community.aws.kinesis_stream:
         name: test-stream
         state: present
+        shards: 1
         encryption_state: enabled
         encryption_type: KMS
         key_id: alias/aws/kinesis
@@ -473,6 +474,7 @@ Examples
       community.aws.kinesis_stream:
         name: test-stream
         state: present
+        shards: 1
         encryption_state: disabled
         encryption_type: KMS
         key_id: alias/aws/kinesis

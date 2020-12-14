@@ -270,7 +270,7 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
+                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
                                     <li>yes</li>
                         </ul>
                 </td>
@@ -320,7 +320,7 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>
+                         / <span style="color: purple">elements=dictionary</span>
                     </div>
                 </td>
                 <td>
@@ -396,7 +396,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A list of security group names or group IDs to associate with the task</div>
+                        <div>A list of security group names or group IDs to associate with the task.</div>
                 </td>
             </tr>
             <tr>
@@ -413,7 +413,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A list of subnet IDs to associate with the task</div>
+                        <div>A list of subnet IDs to associate with the task.</div>
                 </td>
             </tr>
 
@@ -598,7 +598,8 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>The scheduling strategy, defaults to &quot;REPLICA&quot; if not given to preserve previous behavior</div>
+                        <div>The scheduling strategy.</div>
+                        <div>Defaults to <code>REPLICA</code> if not given to preserve previous behavior.</div>
                 </td>
             </tr>
             <tr>
@@ -648,7 +649,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Service discovery registry ARN</div>
+                        <div>Service discovery registry ARN.</div>
                 </td>
             </tr>
             <tr>
@@ -664,7 +665,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>container name for service discovery registration</div>
+                        <div>Container name for service discovery registration.</div>
                 </td>
             </tr>
             <tr>
@@ -680,7 +681,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>container port for service discovery registration</div>
+                        <div>Container port for service discovery registration.</div>
                 </td>
             </tr>
 
@@ -760,7 +761,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Note: These examples do not set authentication details, see the AWS Guide for details.
 

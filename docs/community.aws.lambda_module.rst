@@ -529,7 +529,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Create Lambda functions
     - name: looped creation

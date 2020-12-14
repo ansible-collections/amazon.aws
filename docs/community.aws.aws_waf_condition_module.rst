@@ -594,7 +594,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: create WAF byte condition
         community.aws.aws_waf_condition:

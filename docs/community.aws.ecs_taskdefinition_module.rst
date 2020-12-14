@@ -135,7 +135,7 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>
+                         / <span style="color: purple">elements=dictionary</span>
                     </div>
                 </td>
                 <td>
@@ -236,7 +236,7 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
+                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
                                     <li>yes</li>
                         </ul>
                 </td>
@@ -276,7 +276,7 @@ Parameters
                 </td>
                 <td>
                         <div>The amount (in MiB) of memory used by the task. If using the EC2 launch type, this field is optional and any value can be used.</div>
-                        <div>If using the Fargate launch type, this field is required and is limited by the cpu.</div>
+                        <div>If using the Fargate launch type, this field is required and is limited by the CPU.</div>
                 </td>
             </tr>
             <tr>
@@ -476,7 +476,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Create task definition
       community.aws.ecs_taskdefinition:

@@ -17,9 +17,9 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Allows for the management of API Gateway APIs
-- Normally you should give the api_id since there is no other stable guaranteed unique identifier for the API.  If you do not give api_id then a new API will be create each time this is run.
-- Beware that there are very hard limits on the rate that you can call API Gateway's REST API.  You may need to patch your boto.  See https://github.com/boto/boto3/issues/876 and discuss with your AWS rep.
+- Allows for the management of API Gateway APIs.
+- Normally you should give the api_id since there is no other stable guaranteed unique identifier for the API.  If you do not give api_id then a new API will be created each time this is run.
+- Beware that there are very hard limits on the rate that you can call API Gateway's REST API.  You may need to patch your boto.  See https://github.com/boto/boto3/issues/876 and discuss it with your AWS rep.
 - swagger_file and swagger_text are passed directly on to AWS transparently whilst swagger_dict is an ansible dict which is converted to JSON before the API definitions are uploaded.
 
 
@@ -145,7 +145,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Enable API GW caching of backend responses. Defaults to false.</div>
+                        <div>Enable API GW caching of backend responses.</div>
                 </td>
             </tr>
             <tr>
@@ -205,7 +205,8 @@ Parameters
                         <b>Default:</b><br/><div style="color: blue">"Automatic deployment by Ansible."</div>
                 </td>
                 <td>
-                        <div>Description of the deployment - recorded and visible in the AWS console.</div>
+                        <div>Description of the deployment.</div>
+                        <div>Recorded and visible in the AWS console.</div>
                 </td>
             </tr>
             <tr>
@@ -241,9 +242,9 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Type of endpoint configuration, use <code>EDGE</code> for an edge optimized API endpoint,</div>
-                        <div><code>REGIONAL</code> for just a regional deploy or PRIVATE for a private API.</div>
-                        <div>This will flag will only be used when creating a new API Gateway setup, not for updates.</div>
+                        <div>Type of endpoint configuration.</div>
+                        <div>Use <code>EDGE</code> for an edge optimized API endpoint, <code>REGIONAL</code> for just a regional deploy or <code>PRIVATE</code> for a private API.</div>
+                        <div>This flag will only be used when creating a new API Gateway setup, not for updates.</div>
                 </td>
             </tr>
             <tr>
@@ -327,10 +328,10 @@ Parameters
                 <td>
                         <div>Canary settings for the deployment of the stage.</div>
                         <div>Dict with following settings:</div>
-                        <div>percentTraffic: The percent (0-100) of traffic diverted to a canary deployment.</div>
-                        <div>deploymentId: The ID of the canary deployment.</div>
-                        <div>stageVariableOverrides: Stage variables overridden for a canary release deployment.</div>
-                        <div>useStageCache: A Boolean flag to indicate whether the canary deployment uses the stage cache or not.</div>
+                        <div><code>percentTraffic</code>: The percent (0-100) of traffic diverted to a canary deployment.</div>
+                        <div><code>deploymentId</code>: The ID of the canary deployment.</div>
+                        <div><code>stageVariableOverrides</code>: Stage variables overridden for a canary release deployment.</div>
+                        <div><code>useStageCache</code>: A Boolean flag to indicate whether the canary deployment uses the stage cache or not.</div>
                         <div>See docs <a href='https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/apigateway.html#APIGateway.Client.create_stage'>https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/apigateway.html#APIGateway.Client.create_stage</a></div>
                 </td>
             </tr>
@@ -395,7 +396,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>JSON or YAML file containing swagger definitions for API. Exactly one of swagger_file, swagger_text or swagger_dict must be present.</div>
+                        <div>JSON or YAML file containing swagger definitions for API. Exactly one of <em>swagger_file</em>, <em>swagger_text</em> or <em>swagger_dict</em> must be present.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: src, api_file</div>
                 </td>
             </tr>
@@ -425,7 +426,7 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
+                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
                                     <li>yes</li>
                         </ul>
                 </td>
@@ -460,7 +461,7 @@ Notes
 -----
 
 .. note::
-   - A future version of this module will probably use tags or another ID so that an API can be create only once.
+   - A future version of this module will probably use tags or another ID so that an API can be created only once.
    - As an early work around an intermediate version will probably do the same using a tag embedded in the API name.
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
    - Ansible uses the boto configuration file (typically ~/.boto) if no credentials are provided. See https://boto.readthedocs.io/en/latest/boto_config_tut.html
@@ -471,7 +472,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Setup AWS API Gateway setup on AWS and deploy API definition
       community.aws.aws_api_gateway:

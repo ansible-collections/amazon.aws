@@ -357,7 +357,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Create Configuration Recorder for AWS Config
       community.aws.aws_config_recorder:

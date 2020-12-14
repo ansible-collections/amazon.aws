@@ -381,7 +381,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: upload a self-signed certificate
       community.aws.aws_acm:

@@ -385,7 +385,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Create alarm SNS topic
       community.aws.sns_topic:

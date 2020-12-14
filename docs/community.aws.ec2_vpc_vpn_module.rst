@@ -126,7 +126,7 @@ Parameters
                 </td>
                 <td>
                         <div>The type of VPN connection.</div>
-                        <div>At this time only &#x27;ipsec.1&#x27; is supported.</div>
+                        <div>At this time only <code>ipsec.1</code> is supported.</div>
                 </td>
             </tr>
             <tr>
@@ -176,7 +176,7 @@ Parameters
                         <b>Default:</b><br/><div style="color: blue">15</div>
                 </td>
                 <td>
-                        <div>The time to wait before checking operation again. in seconds.</div>
+                        <div>The time, in seconds, to wait before checking operation again.</div>
                 </td>
             </tr>
             <tr>
@@ -207,7 +207,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>An alternative to using vpn_connection_id. If multiple matches are found, vpn_connection_id is required. If one of the following suboptions is a list of items to filter by, only one item needs to match to find the VPN that correlates. e.g. if the filter &#x27;cidr&#x27; is [&#x27;194.168.2.0/24&#x27;, &#x27;192.168.2.0/24&#x27;] and the VPN route only has the destination cidr block of &#x27;192.168.2.0/24&#x27; it will be found with this filter (assuming there are not multiple VPNs that are matched). Another example, if the filter &#x27;vpn&#x27; is equal to [&#x27;vpn-ccf7e7ad&#x27;, &#x27;vpn-cb0ae2a2&#x27;] and one of of the VPNs has the state deleted (exists but is unmodifiable) and the other exists and is not deleted, it will be found via this filter. See examples.</div>
+                        <div>An alternative to using <em>vpn_connection_id</em>. If multiple matches are found, vpn_connection_id is required. If one of the following suboptions is a list of items to filter by, only one item needs to match to find the VPN that correlates. e.g. if the filter <em>cidr</em> is <code>[&#x27;194.168.2.0/24&#x27;, &#x27;192.168.2.0/24&#x27;]</code> and the VPN route only has the destination cidr block of <code>192.168.2.0/24</code> it will be found with this filter (assuming there are not multiple VPNs that are matched). Another example, if the filter <em>vpn</em> is equal to <code>[&#x27;vpn-ccf7e7ad&#x27;, &#x27;vpn-cb0ae2a2&#x27;]</code> and one of of the VPNs has the state deleted (exists but is unmodifiable) and the other exists and is not deleted, it will be found via this filter. See examples.</div>
                 </td>
             </tr>
                                 <tr>
@@ -287,7 +287,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The type of routing; true or false.</div>
+                        <div>The type of routing; <code>true</code> or <code>false</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -400,7 +400,7 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
+                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
                                     <li>yes</li>
                         </ul>
                 </td>
@@ -543,7 +543,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>An optional list object containing no more than two dict members, each of which may contain &#x27;TunnelInsideCidr&#x27; and/or &#x27;PreSharedKey&#x27; keys with appropriate string values.  AWS defaults will apply in absence of either of the aforementioned keys.</div>
+                        <div>An optional list object containing no more than two dict members, each of which may contain <em>TunnelInsideCidr</em> and/or <em>PreSharedKey</em> keys with appropriate string values.  AWS defaults will apply in absence of either of the aforementioned keys.</div>
                 </td>
             </tr>
                                 <tr>
@@ -641,7 +641,7 @@ Parameters
                         <b>Default:</b><br/><div style="color: blue">600</div>
                 </td>
                 <td>
-                        <div>How long before wait gives up, in seconds.</div>
+                        <div>How long, in seconds, before wait gives up.</div>
                 </td>
             </tr>
     </table>
@@ -661,7 +661,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Note: None of these examples set aws_access_key, aws_secret_key, or region.
     # It is assumed that their matching environment variables are set.

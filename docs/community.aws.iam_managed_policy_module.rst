@@ -358,7 +358,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Create Policy ex nihilo
     - name: Create IAM Managed Policy

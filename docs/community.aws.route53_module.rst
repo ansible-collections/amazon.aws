@@ -5,7 +5,7 @@
 community.aws.route53
 *********************
 
-**add or delete entries in Amazons Route53 DNS service**
+**add or delete entries in Amazons Route 53 DNS service**
 
 
 Version added: 1.0.0
@@ -17,7 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Creates and deletes DNS records in Amazons Route53 service
+- Creates and deletes DNS records in Amazons Route 53 service.
 
 
 
@@ -51,12 +51,13 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>no</li>
                                     <li>yes</li>
                         </ul>
                 </td>
                 <td>
                         <div>Indicates if this is an alias record.</div>
+                        <div>Defaults to <code>false</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -298,7 +299,8 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>If set to <code>yes</code>, the private zone matching the requested name within the domain will be used if there are both public and private zones. The default is to use the public zone.</div>
+                        <div>If set to <code>true</code>, the private zone matching the requested name within the domain will be used if there are both public and private zones.</div>
+                        <div>The default is to use the public zone.</div>
                 </td>
             </tr>
             <tr>
@@ -363,7 +365,7 @@ Parameters
                         <b>Default:</b><br/><div style="color: blue">500</div>
                 </td>
                 <td>
-                        <div>In the case that route53 is still servicing a prior request, this module will wait and try again after this many seconds. If you have many domain names, the default of 500 seconds may be too long.</div>
+                        <div>In the case that Route 53 is still servicing a prior request, this module will wait and try again after this many seconds. If you have many domain names, the default of <code>500</code> seconds may be too long.</div>
                 </td>
             </tr>
             <tr>
@@ -404,7 +406,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Specifies the state of the resource record. As of Ansible 2.4, the <em>command</em> option has been changed to <em>state</em> as default and the choices &#x27;present&#x27; and &#x27;absent&#x27; have been added, but <em>command</em> still works as well.</div>
+                        <div>Specifies the state of the resource record. As of Ansible 2.4, the <em>command</em> option has been changed to <em>state</em> as default and the choices <code>present</code> and <code>absent</code> have been added, but <em>command</em> still works as well.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: command</div>
                 </td>
             </tr>
@@ -486,7 +488,7 @@ Parameters
                 </td>
                 <td>
                         <div>The new value when creating a DNS record.  YAML lists or multiple comma-spaced values are allowed for non-alias records.</div>
-                        <div>When deleting a record all values for the record must be specified or Route53 will not delete it.</div>
+                        <div>When deleting a record all values for the record must be specified or Route 53 will not delete it.</div>
                 </td>
             </tr>
             <tr>
@@ -588,7 +590,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Add new.foo.com as an A record with 3 IPs and wait until the changes have been replicated
       community.aws.route53:

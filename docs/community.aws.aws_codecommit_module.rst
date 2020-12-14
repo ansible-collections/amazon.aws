@@ -288,7 +288,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Create a new repository
     - community.aws.aws_codecommit:

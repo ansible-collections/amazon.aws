@@ -481,7 +481,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Basic user creation example
     - name: Create two new IAM users with API keys

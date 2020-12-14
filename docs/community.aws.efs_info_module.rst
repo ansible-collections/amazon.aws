@@ -298,7 +298,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Find all existing efs
       community.aws.efs_info:

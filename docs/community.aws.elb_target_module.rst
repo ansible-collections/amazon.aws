@@ -17,7 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Used to register or deregister a target in a target group
+- Used to register or deregister a target in a target group.
 
 
 
@@ -140,12 +140,13 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
+                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
                                     <li>yes</li>
                         </ul>
                 </td>
                 <td>
-                        <div>The default behaviour for targets that are unused is to leave them registered. If instead you would like to remove them set <em>deregister_unused</em> to yes.</div>
+                        <div>The default behaviour for targets that are unused is to leave them registered.</div>
+                        <div>If instead you would like to remove them set <em>deregister_unused=true</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -248,7 +249,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>An Availability Zone or all. This determines whether the target receives traffic from the load balancer nodes in the specified Availability Zone or from all enabled Availability Zones for the load balancer. This parameter is not supported if the target type of the target group is instance.</div>
+                        <div>An Availability Zone or <code>all</code>. This determines whether the target receives traffic from the load balancer nodes in the specified Availability Zone or from all enabled Availability Zones for the load balancer. This parameter is not supported if the target type of the target group is instance.</div>
                 </td>
             </tr>
             <tr>
@@ -263,7 +264,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The Amazon Resource Name (ARN) of the target group. Mutually exclusive of <em>target_group_name</em>.</div>
+                        <div>The Amazon Resource Name (ARN) of the target group.</div>
+                        <div>Mutually exclusive of <em>target_group_name</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -278,7 +280,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The name of the target group. Mutually exclusive of <em>target_group_arn</em>.</div>
+                        <div>The name of the target group.</div>
+                        <div>Mutually exclusive of <em>target_group_arn</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -349,7 +352,7 @@ Parameters
                         <b>Default:</b><br/><div style="color: blue">60</div>
                 </td>
                 <td>
-                        <div>Maximum time in seconds to wait for target_status change</div>
+                        <div>Maximum time in seconds to wait for <em>target_status</em> change.</div>
                 </td>
             </tr>
             <tr>
@@ -389,7 +392,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Note: These examples do not set authentication details, see the AWS Guide for details.
 

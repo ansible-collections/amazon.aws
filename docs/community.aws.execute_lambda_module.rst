@@ -354,7 +354,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - community.aws.execute_lambda:
         name: test-function

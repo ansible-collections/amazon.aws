@@ -271,7 +271,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # practical use case - dynamically de-registering and re-registering nodes
 

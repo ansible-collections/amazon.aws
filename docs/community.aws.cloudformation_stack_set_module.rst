@@ -606,7 +606,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Create a stack set with instances in two accounts
       community.aws.cloudformation_stack_set:

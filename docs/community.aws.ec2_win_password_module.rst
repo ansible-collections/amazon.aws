@@ -334,7 +334,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Example of getting a password
     - name: get the Administrator password

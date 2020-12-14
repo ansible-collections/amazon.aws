@@ -461,7 +461,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     ---
     - name: create an association between a LAG and connection

@@ -440,7 +440,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Send default notification message via SNS
       community.aws.sns:

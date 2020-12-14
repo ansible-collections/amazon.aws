@@ -539,7 +539,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: create alarm
         community.aws.ec2_metric_alarm:

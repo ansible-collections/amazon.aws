@@ -171,7 +171,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A list of cache security group names to associate with this cache cluster. Must be an empty list if inside a vpc.</div>
+                        <div>A list of cache security group names to associate with this cache cluster. Must be an empty list if inside a VPC.</div>
                 </td>
             </tr>
             <tr>
@@ -186,8 +186,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The subnet group name to associate with. Only use if inside a vpc.</div>
-                        <div>Required if inside a vpc</div>
+                        <div>The subnet group name to associate with. Only use if inside a VPC.</div>
+                        <div>Required if inside a VPC.</div>
                 </td>
             </tr>
             <tr>
@@ -253,12 +253,13 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>no</li>
                                     <li>yes</li>
                         </ul>
                 </td>
                 <td>
                         <div>Whether to destroy and recreate an existing cache cluster if necessary in order to modify its state.</div>
+                        <div>Defaults to <code>false</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -357,7 +358,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A list of vpc security group IDs to associate with this cache cluster. Only use if inside a vpc.</div>
+                        <div>A list of VPC security group IDs to associate with this cache cluster. Only use if inside a VPC.</div>
                 </td>
             </tr>
             <tr>
@@ -470,7 +471,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Note: None of these examples set aws_access_key, aws_secret_key, or region.
     # It is assumed that their matching environment variables are set.

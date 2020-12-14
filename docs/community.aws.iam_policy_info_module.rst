@@ -285,7 +285,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Describe all inline IAM policies on an IAM User
       community.aws.iam_policy_info:

@@ -394,7 +394,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     ---
     # Example that creates a lambda event notification for a bucket

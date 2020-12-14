@@ -844,7 +844,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Basic mysql provisioning example
       community.aws.rds:

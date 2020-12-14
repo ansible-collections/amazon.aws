@@ -170,13 +170,14 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>no</li>
                                     <li>yes</li>
                         </ul>
                 </td>
                 <td>
                         <div>By default the module will not upload a certificate that is already uploaded into AWS.</div>
                         <div>If <em>dup_ok=True</em>, it will upload the certificate as long as the name is unique.</div>
+                        <div>Defaults to <code>false</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -238,8 +239,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>When state is present, this will update the name of the cert.</div>
-                        <div>The cert, key and cert_chain parameters will be ignored if this is defined.</div>
+                        <div>When <em>state=present</em>, this will update the name of the cert.</div>
+                        <div>The <em>cert</em>, <em>key</em> and <em>cert_chain</em> parameters will be ignored if this is defined.</div>
                 </td>
             </tr>
             <tr>
@@ -254,7 +255,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>When state is present, this will update the path of the cert.</div>
+                        <div>When <em>state=present</em>, this will update the path of the cert.</div>
                         <div>The <em>cert</em>, <em>key</em> and <em>cert_chain</em> parameters will be ignored if this is defined.</div>
                 </td>
             </tr>
@@ -343,7 +344,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Whether to create(or update) or delete the certificate.</div>
+                        <div>Whether to create (or update) or delete the certificate.</div>
                         <div>If <em>new_path</em> or <em>new_name</em> is defined, specifying present will attempt to make an update these.</div>
                 </td>
             </tr>
@@ -383,7 +384,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Basic server certificate upload from local file
       community.aws.iam_cert:

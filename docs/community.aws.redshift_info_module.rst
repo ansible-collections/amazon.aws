@@ -267,7 +267,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Note: These examples do net set authentication details, see the AWS guide for details.
 

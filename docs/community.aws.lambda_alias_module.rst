@@ -317,7 +317,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     ---
     # Simple example to create a lambda function and publish a version

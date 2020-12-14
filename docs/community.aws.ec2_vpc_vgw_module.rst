@@ -367,7 +367,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Create a new vgw attached to a specific VPC
       community.aws.ec2_vpc_vgw:

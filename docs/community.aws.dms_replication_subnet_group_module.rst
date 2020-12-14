@@ -301,7 +301,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - community.aws.dms_replication_subnet_group:
         state: present

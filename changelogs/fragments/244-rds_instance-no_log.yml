@@ -1,2 +1,0 @@
-minor_changes:
-- rds_instance - set ``no_log=False`` on ``force_update_password`` to clear warning (https://github.com/ansible-collections/community.aws/issues/241).

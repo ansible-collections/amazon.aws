@@ -346,7 +346,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Ensure tags are present on a resource
       community.aws.ecs_tag:

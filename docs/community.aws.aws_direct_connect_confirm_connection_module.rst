@@ -268,7 +268,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # confirm a Direct Connect by name
     - name: confirm the connection id

@@ -377,7 +377,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Create or update key/value pair in aws parameter store
       community.aws.aws_ssm_parameter_store:

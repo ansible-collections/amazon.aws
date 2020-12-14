@@ -342,7 +342,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # basic pre_task and post_task example
     pre_tasks:

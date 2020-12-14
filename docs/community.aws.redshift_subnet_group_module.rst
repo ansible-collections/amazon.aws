@@ -303,7 +303,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Create a Redshift subnet group
       community.aws.redshift_subnet_group:

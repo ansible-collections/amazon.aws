@@ -390,7 +390,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Create / Update lifecycle hook
       community.aws.ec2_asg_lifecycle_hook:

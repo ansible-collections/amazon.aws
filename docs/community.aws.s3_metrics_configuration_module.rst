@@ -1,14 +1,14 @@
-.. _community.aws.ec2_vpc_igw_info_module:
+.. _community.aws.s3_metrics_configuration_module:
 
 
-******************************
-community.aws.ec2_vpc_igw_info
-******************************
+**************************************
+community.aws.s3_metrics_configuration
+**************************************
 
-**Gather information about internet gateways in AWS**
+**Manage s3 bucket metrics configuration in AWS**
 
 
-Version added: 1.0.0
+Version added: 1.3.0
 
 .. contents::
    :local:
@@ -17,8 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Gather information about internet gateways in AWS.
-- This module was called ``ec2_vpc_igw_facts`` before Ansible 2.9. The usage did not change.
+- Manage s3 bucket metrics configuration in AWS which allows to get the CloudWatch request metrics for the objects in a bucket
 
 
 
@@ -26,9 +25,8 @@ Requirements
 ------------
 The below requirements are needed on the host that executes this module.
 
-- boto
-- boto3
 - python >= 2.6
+- boto
 
 
 Parameters
@@ -115,22 +113,17 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>convert_tags</b>
+                    <b>bucket_name</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
+                        <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
                     </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0</div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
-                                    <li>yes</li>
-                        </ul>
                 </td>
                 <td>
-                        <div>Convert tags from boto3 format (list of dictionaries) to the standard dictionary format.</div>
-                        <div>This currently defaults to <code>False</code>.  The default will be changed to <code>True</code> after 2022-06-22.</div>
+                        <div>Name of the s3 bucket</div>
                 </td>
             </tr>
             <tr>
@@ -171,7 +164,22 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>filters</b>
+                    <b>filter_prefix</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>A prefix used when evaluating a metrics filter</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>filter_tags</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">dictionary</span>
@@ -180,23 +188,24 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A dict of filters to apply. Each dict item consists of a filter key and a filter value. See <a href='https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInternetGateways.html'>https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInternetGateways.html</a> for possible filters.</div>
+                        <div>A dictionary of one or more tags used when evaluating a metrics filter</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: filter_tag</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>internet_gateway_ids</b>
+                    <b>id</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>
+                        <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
                 </td>
                 <td>
-                        <div>Get details of specific Internet Gateway ID. Provide this value as a list.</div>
+                        <div>The ID used to identify the metrics configuration</div>
                 </td>
             </tr>
             <tr>
@@ -254,6 +263,25 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>state</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>present</b>&nbsp;&larr;</div></li>
+                                    <li>absent</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Create or delete metrics configuration</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>validate_certs</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -278,6 +306,9 @@ Notes
 -----
 
 .. note::
+   - This modules manages single metrics configuration, the s3 bucket might have up to 1,000 metrics configurations
+   - To request metrics for the entire bucket, create a metrics configuration without a filter
+   - Metrics configurations are necessary only to enable request metric, bucket-level daily storage metrics are always turned on
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
    - Ansible uses the boto configuration file (typically ~/.boto) if no credentials are provided. See https://boto.readthedocs.io/en/latest/boto_config_tut.html
    - ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be configured in the boto config file
@@ -289,79 +320,46 @@ Examples
 
 .. code-block:: yaml
 
-    # # Note: These examples do not set authentication details, see the AWS Guide for details.
+    # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-    - name: Gather information about all Internet Gateways for an account or profile
-      community.aws.ec2_vpc_igw_info:
-        region: ap-southeast-2
-        profile: production
-      register: igw_info
+    - name: Create a metrics configuration that enables metrics for an entire bucket
+      community.aws.s3_metrics_configuration:
+        bucket_name: my-bucket
+        id: EntireBucket
+        state: present
 
-    - name: Gather information about a filtered list of Internet Gateways
-      community.aws.ec2_vpc_igw_info:
-        region: ap-southeast-2
-        profile: production
-        filters:
-            "tag:Name": "igw-123"
-      register: igw_info
+    - name: Put a metrics configuration that enables metrics for objects starting with a prefix
+      community.aws.s3_metrics_configuration:
+        bucket_name: my-bucket
+        id: Assets
+        filter_prefix: assets
+        state: present
 
-    - name: Gather information about a specific internet gateway by InternetGatewayId
-      community.aws.ec2_vpc_igw_info:
-        region: ap-southeast-2
-        profile: production
-        internet_gateway_ids: igw-c1231234
-      register: igw_info
+    - name: Put a metrics configuration that enables metrics for objects with specific tag
+      community.aws.s3_metrics_configuration:
+        bucket_name: my-bucket
+        id: Assets
+        filter_tag:
+          kind: asset
+        state: present
+
+    - name: Put a metrics configuration that enables metrics for objects that start with a particular prefix and have specific tags applied
+      community.aws.s3_metrics_configuration:
+        bucket_name: my-bucket
+        id: ImportantBlueDocuments
+        filter_prefix: documents
+        filter_tags:
+          priority: high
+          class: blue
+        state: present
+
+    - name: Delete metrics configuration
+      community.aws.s3_metrics_configuration:
+        bucket_name: my-bucket
+        id: EntireBucket
+        state: absent
 
 
-
-Return Values
--------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
-
-.. raw:: html
-
-    <table border=0 cellpadding=0 class="documentation-table">
-        <tr>
-            <th colspan="1">Key</th>
-            <th>Returned</th>
-            <th width="100%">Description</th>
-        </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>changed</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">boolean</span>
-                    </div>
-                </td>
-                <td>always</td>
-                <td>
-                            <div>True if listing the internet gateways succeeds.</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">false</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>internet_gateways</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                    </div>
-                </td>
-                <td>always</td>
-                <td>
-                            <div>The internet gateways for the account.</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[{&#x27;attachments&#x27;: [{&#x27;state&#x27;: &#x27;available&#x27;, &#x27;vpc_id&#x27;: &#x27;vpc-02123b67&#x27;}], &#x27;internet_gateway_id&#x27;: &#x27;igw-2123634d&#x27;, &#x27;tags&#x27;: [{&#x27;key&#x27;: &#x27;Name&#x27;, &#x27;value&#x27;: &#x27;test-vpc-20-igw&#x27;}]}]</div>
-                </td>
-            </tr>
-    </table>
-    <br/><br/>
 
 
 Status
@@ -371,4 +369,4 @@ Status
 Authors
 ~~~~~~~
 
-- Nick Aslanidis (@naslanidis)
+- Dmytro Vorotyntsev (@vorotech)

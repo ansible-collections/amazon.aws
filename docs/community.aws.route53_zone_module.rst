@@ -347,7 +347,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: create a public zone
       community.aws.route53_zone:

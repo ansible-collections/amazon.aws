@@ -69,7 +69,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A list) of domain name aliases (CNAMEs) as strings to be used for the distribution.</div>
+                        <div>A list of domain name aliases (CNAMEs) as strings to be used for the distribution.</div>
                         <div>Each alias must be unique across all distribution for the AWS account.</div>
                 </td>
             </tr>
@@ -770,7 +770,7 @@ Parameters
                 </td>
                 <td>
                         <div>A dict specifying the default cache behavior of the distribution.</div>
-                        <div>If not specified, the <em>target_origin_id</em> is defined as the <em>target_origin_id</em> of the first valid <em>cache_behavior</em> in <em>cache_behaviors</em> with defaults.</div>
+                        <div>If not specified, the <em>target_origin_id</em> is defined as the <em>target_origin_id</em> of the first valid cache_behavior in <em>cache_behaviors</em> with defaults.</div>
                 </td>
             </tr>
                                 <tr>
@@ -1329,12 +1329,13 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>no</li>
                                     <li>yes</li>
                         </ul>
                 </td>
                 <td>
                         <div>A boolean value that specifies whether the distribution is enabled or disabled.</div>
+                        <div>Defaults to <code>false</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -1351,7 +1352,7 @@ Parameters
                 <td>
                         <div>The version of the http protocol to use for the distribution.</div>
                         <div>AWS defaults this to <code>http2</code>.</div>
-                        <div>Valid values are <code>http1.1</code> and <code>http2</code></div>
+                        <div>Valid values are <code>http1.1</code> and <code>http2</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -1365,12 +1366,13 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>no</li>
                                     <li>yes</li>
                         </ul>
                 </td>
                 <td>
                         <div>Determines whether IPv6 support is enabled or not.</div>
+                        <div>Defaults to <code>false</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -1492,7 +1494,7 @@ Parameters
                 </td>
                 <td>
                         <div>Custom headers you wish to add to the request before passing it to the origin.</div>
-                        <div>For more information see the CloudFront documentation at <a href='https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/forward-custom-headers.html'>https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/forward-custom-headers.html</a></div>
+                        <div>For more information see the CloudFront documentation at <a href='https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/forward-custom-headers.html'>https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/forward-custom-headers.html</a>.</div>
                 </td>
             </tr>
                                 <tr>
@@ -1921,7 +1923,7 @@ Parameters
                 </td>
                 <td>
                         <div>A list of ISO 3166-1 two letter (Alpha 2) country codes that the restriction should apply to.</div>
-                        <div>See the ISO website for a full list of codes <a href='https://www.iso.org/obp/ui/#search/code/'>https://www.iso.org/obp/ui/#search/code/</a></div>
+                        <div>See the ISO website for a full list of codes <a href='https://www.iso.org/obp/ui/#search/code/'>https://www.iso.org/obp/ui/#search/code/</a>.</div>
                 </td>
             </tr>
             <tr>
@@ -1939,7 +1941,7 @@ Parameters
                 </td>
                 <td>
                         <div>The method that you want to use to restrict distribution of your content by country.</div>
-                        <div>Valid values are <code>none</code>, <code>whitelist</code>, <code>blacklist</code></div>
+                        <div>Valid values are <code>none</code>, <code>whitelist</code>, <code>blacklist</code>.</div>
                 </td>
             </tr>
 
@@ -1996,7 +1998,7 @@ Parameters
                 </td>
                 <td>
                         <div>Should be input as a dict of key-value pairs.</div>
-                        <div>Note that numeric keys or values must be wrapped in quotes. e.g. &quot;Priority:&quot; &#x27;1&#x27;</div>
+                        <div>Note that numeric keys or values must be wrapped in quotes. e.g. <code>Priority: &#x27;1&#x27;</code></div>
                 </td>
             </tr>
             <tr>
@@ -2047,7 +2049,7 @@ Parameters
                 </td>
                 <td>
                         <div>The ID of a certificate stored in ACM to use for HTTPS connections.</div>
-                        <div>If <em>acm_certificate_id</em> is set then you must also specify <em>ssl_support_method</em></div>
+                        <div>If <em>acm_certificate_id</em> is set then you must also specify <em>ssl_support_method</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -2067,7 +2069,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>If you&#x27;re using the CloudFront domain name for your distribution, such as <code>123456789abcde.cloudfront.net</code> you should set <em>cloudfront_default_certificate=true</em></div>
+                        <div>If you&#x27;re using the CloudFront domain name for your distribution, such as <code>123456789abcde.cloudfront.net</code> you should set <em>cloudfront_default_certificate=true</em>.</div>
                         <div>If <em>cloudfront_default_certificate=true</em> do not set <em>ssl_support_method</em>.</div>
                 </td>
             </tr>
@@ -2085,7 +2087,7 @@ Parameters
                 </td>
                 <td>
                         <div>The ID of a certificate stored in IAM to use for HTTPS connections.</div>
-                        <div>If <em>iam_certificate_id</em> is set then you must also specify <em>ssl_support_method</em></div>
+                        <div>If <em>iam_certificate_id</em> is set then you must also specify <em>ssl_support_method</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -2190,7 +2192,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: create a basic distribution with defaults and tags
       community.aws.cloudfront_distribution:

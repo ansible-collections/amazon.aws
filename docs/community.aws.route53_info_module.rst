@@ -474,7 +474,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Simple example of listing all hosted zones
     - name: List all hosted zones

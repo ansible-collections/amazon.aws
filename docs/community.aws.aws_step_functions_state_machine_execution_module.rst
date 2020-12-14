@@ -345,7 +345,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Start an execution of a state machine
       community.aws.aws_step_functions_state_machine_execution:

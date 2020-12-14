@@ -249,7 +249,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: obtain all ElastiCache information
       community.aws.elasticache_info:

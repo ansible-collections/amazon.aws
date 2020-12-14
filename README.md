@@ -145,7 +145,7 @@ Name | Description
 [community.aws.elasticache_parameter_group](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elasticache_parameter_group_module.rst)|Manage cache parameter groups in Amazon ElastiCache.
 [community.aws.elasticache_snapshot](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elasticache_snapshot_module.rst)|Manage cache snapshots in Amazon ElastiCache
 [community.aws.elasticache_subnet_group](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elasticache_subnet_group_module.rst)|manage ElastiCache subnet groups
-[community.aws.elb_application_lb](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elb_application_lb_module.rst)|Manage an Application load balancer
+[community.aws.elb_application_lb](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elb_application_lb_module.rst)|Manage an Application Load Balancer
 [community.aws.elb_application_lb_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elb_application_lb_info_module.rst)|Gather information about application ELBs in AWS
 [community.aws.elb_classic_lb](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elb_classic_lb_module.rst)|Creates or destroys Amazon ELB.
 [community.aws.elb_classic_lb_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elb_classic_lb_info_module.rst)|Gather information about EC2 Elastic Load Balancers in AWS
@@ -189,18 +189,19 @@ Name | Description
 [community.aws.redshift_cross_region_snapshots](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.redshift_cross_region_snapshots_module.rst)|Manage Redshift Cross Region Snapshots
 [community.aws.redshift_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.redshift_info_module.rst)|Gather information about Redshift cluster(s)
 [community.aws.redshift_subnet_group](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.redshift_subnet_group_module.rst)|manage Redshift cluster subnet groups
-[community.aws.route53](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.route53_module.rst)|add or delete entries in Amazons Route53 DNS service
+[community.aws.route53](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.route53_module.rst)|add or delete entries in Amazons Route 53 DNS service
 [community.aws.route53_health_check](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.route53_health_check_module.rst)|Add or delete health-checks in Amazons Route53 DNS service
 [community.aws.route53_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.route53_info_module.rst)|Retrieves route53 details using AWS methods
 [community.aws.route53_zone](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.route53_zone_module.rst)|add or delete Route53 zones
 [community.aws.s3_bucket_notification](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.s3_bucket_notification_module.rst)|Creates, updates or deletes S3 Bucket notification for lambda
 [community.aws.s3_lifecycle](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.s3_lifecycle_module.rst)|Manage s3 bucket lifecycle rules in AWS
 [community.aws.s3_logging](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.s3_logging_module.rst)|Manage logging facility of an s3 bucket in AWS
+[community.aws.s3_metrics_configuration](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.s3_metrics_configuration_module.rst)|Manage s3 bucket metrics configuration in AWS
 [community.aws.s3_sync](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.s3_sync_module.rst)|Efficiently upload multiple files to S3
 [community.aws.s3_website](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.s3_website_module.rst)|Configure an s3 bucket as a website
 [community.aws.sns](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.sns_module.rst)|Send Amazon Simple Notification Service messages
 [community.aws.sns_topic](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.sns_topic_module.rst)|Manages AWS SNS topics and subscriptions
-[community.aws.sqs_queue](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.sqs_queue_module.rst)|Creates or deletes AWS SQS queues.
+[community.aws.sqs_queue](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.sqs_queue_module.rst)|Creates or deletes AWS SQS queues
 [community.aws.sts_assume_role](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.sts_assume_role_module.rst)|Assume a role using AWS Security Token Service and obtain temporary credentials
 [community.aws.sts_session_token](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.sts_session_token_module.rst)|Obtain a session token from the AWS Security Token Service
 

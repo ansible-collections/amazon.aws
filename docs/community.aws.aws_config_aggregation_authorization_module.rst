@@ -286,7 +286,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Get current account ID
       community.aws.aws_caller_info:

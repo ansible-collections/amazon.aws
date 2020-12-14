@@ -412,7 +412,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Create cross-account aggregator
       community.aws.aws_config_aggregator:

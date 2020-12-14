@@ -754,3 +754,51 @@ releases:
     - 234-fix_ssm_inventory_plugin_timeout_var.yaml
     - 25-add-sts-token-to-aws-ssm-conn-plugin.yaml
     release_date: '2020-10-07'
+  1.3.0:
+    changes:
+      bugfixes:
+      - aws_kms_info - fixed incompatibility with external and custom key-store keys.
+        The module was attempting to call `GetKeyRotationStatus`, which raises `UnsupportedOperationException`
+        for these key types (https://github.com/ansible-collections/community.aws/pull/311).
+      - ec2_win_password - on success return state as not changed (https://github.com/ansible-collections/community.aws/issues/145)
+      - ec2_win_password - return failed if unable to decode the password (https://github.com/ansible-collections/community.aws/issues/142)
+      - ecs_service - fix element type for ``load_balancers`` parameter (https://github.com/ansible-collections/community.aws/issues/265).
+      - ecs_taskdefinition - fixes elements type for ``containers`` parameter (https://github.com/ansible-collections/community.aws/issues/264).
+      - iam_policy - Added jittered_backoff to handle AWS rate limiting (https://github.com/ansible-collections/community.aws/pull/324).
+      - iam_policy_info - Added jittered_backoff to handle AWS rate limiting (https://github.com/ansible-collections/community.aws/pull/324).
+      - kinesis_stream - fixes issue where kinesis streams with > 100 shards get stuck
+        in an infinite loop (https://github.com/ansible-collections/community.aws/pull/93)
+      - s3_sync - fix chunk_size calculation (https://github.com/ansible-collections/community.aws/issues/272)
+      deprecated_features:
+      - ec2_vpc_igw_info - After 2022-06-22 the ``convert_tags`` parameter default
+        value will change from ``False`` to ``True`` to match the collection standard
+        behavior (https://github.com/ansible-collections/community.aws/pull/318).
+      minor_changes:
+      - ec2_vpc_igw - Add AWSRetry decorators to improve reliability (https://github.com/ansible-collections/community.aws/pull/318).
+      - ec2_vpc_igw - Add ``purge_tags`` parameter so that tags can be added without
+        purging existing tags to match the collection standard tagging behaviour (https://github.com/ansible-collections/community.aws/pull/318).
+      - ec2_vpc_igw_info - Add AWSRetry decorators to improve reliability (https://github.com/ansible-collections/community.aws/pull/318).
+      - ec2_vpc_igw_info - Add ``convert_tags`` parameter so that tags can be returned
+        in standard dict format rather than the both list of dict format (https://github.com/ansible-collections/community.aws/pull/318).
+      - rds_instance - set ``no_log=False`` on ``force_update_password`` to clear
+        warning (https://github.com/ansible-collections/community.aws/issues/241).
+      - redshift - add support for setting tags.
+      - s3_lifecycle - Add support for intelligent tiering and deep archive storage
+        classes (https://github.com/ansible-collections/community.aws/issues/270)
+    fragments:
+    - 244-rds_instance-no_log.yml
+    - 264-fix-elemt-type-for-containers-in-ecs_taskdefinition.yml
+    - 265-fix-element-type-ecs_service.yml
+    - 270_add_additional_storage_classes_to_S3_lifecycle_transition_list.yml
+    - 273-fix-s3sync-etag-calculation.yaml
+    - 283-fixed-ec2_win_password-return-state.yaml
+    - 311-fix-aws_kms_info-external-keys.yaml
+    - 318-cleanup-vpc_igw.yml
+    - 324-add-jittered-backoff-to-iam_policy-modules.yaml
+    - 34-redshift-tags.yml
+    - 93-kinesis_stream-get-more-shards-resolve.yml
+    modules:
+    - description: Manage s3 bucket metrics configuration in AWS
+      name: s3_metrics_configuration
+      namespace: ''
+    release_date: '2020-12-10'

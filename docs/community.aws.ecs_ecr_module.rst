@@ -196,7 +196,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>JSON or dict that represents the new lifecycle policy</div>
+                        <div>JSON or dict that represents the new lifecycle policy.</div>
                 </td>
             </tr>
             <tr>
@@ -259,12 +259,13 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>no</li>
                                     <li>yes</li>
                         </ul>
                 </td>
                 <td>
-                        <div>if yes, remove the lifecycle policy from the repository</div>
+                        <div>if <code>true</code>, remove the lifecycle policy from the repository.</div>
+                        <div>Defaults to <code>false</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -278,13 +279,14 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>no</li>
                                     <li>yes</li>
                         </ul>
                 </td>
                 <td>
                         <div>If yes, remove the policy from the repository.</div>
                         <div>Alias <code>delete_policy</code> has been deprecated and will be removed after 2022-06-01.</div>
+                        <div>Defaults to <code>false</code>.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: delete_policy</div>
                 </td>
             </tr>
@@ -318,6 +320,27 @@ Parameters
                 <td>
                         <div>AWS account id associated with the registry.</div>
                         <div>If not specified, the default registry is assumed.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>scan_on_push</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>if <code>true</code>, images are scanned for known vulnerabilities after being pushed to the repository.</div>
+                        <div><em>scan_on_push</em> requires botocore &gt;= 1.13.3</div>
                 </td>
             </tr>
             <tr>
@@ -393,7 +416,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # If the repository does not exist, it is created. If it does exist, would not
     # affect any policies already on it.
@@ -444,6 +467,7 @@ Examples
     - name: set-lifecycle-policy
       community.aws.ecs_ecr:
         name: needs-lifecycle-policy
+        scan_on_push: yes
         lifecycle_policy:
           rules:
             - rulePriority: 1

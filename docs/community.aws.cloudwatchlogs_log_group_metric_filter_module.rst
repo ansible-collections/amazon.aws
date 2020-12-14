@@ -383,7 +383,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: set metric filter on log group /fluentd/testcase
       community.aws.cloudwatchlogs_log_group_metric_filter:

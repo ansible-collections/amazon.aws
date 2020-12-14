@@ -467,7 +467,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Create a new transit gateway using defaults
       community.aws.ec2_transit_gateway:

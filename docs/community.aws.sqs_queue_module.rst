@@ -5,7 +5,7 @@
 community.aws.sqs_queue
 ***********************
 
-**Creates or deletes AWS SQS queues.**
+**Creates or deletes AWS SQS queues**
 
 
 Version added: 1.0.0
@@ -123,12 +123,13 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>no</li>
                                     <li>yes</li>
                         </ul>
                 </td>
                 <td>
                         <div>Enables content-based deduplication. Used for FIFOs only.</div>
+                        <div>Defaults to <code>false</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -483,7 +484,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Create SQS queue with redrive policy
       community.aws.sqs_queue:

@@ -400,7 +400,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Lambda S3 event notification
       community.aws.lambda_policy:

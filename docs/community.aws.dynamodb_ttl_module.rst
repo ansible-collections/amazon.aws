@@ -288,7 +288,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: enable TTL on my cowfacts table
       community.aws.dynamodb_ttl:

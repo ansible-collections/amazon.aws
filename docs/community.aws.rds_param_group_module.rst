@@ -373,7 +373,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Add or change a parameter group, in this case setting auto_increment_increment to 42 * 1024
       community.aws.rds_param_group:

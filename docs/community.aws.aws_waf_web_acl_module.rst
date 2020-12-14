@@ -432,7 +432,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: create web ACL
         community.aws.aws_waf_web_acl:

@@ -286,7 +286,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Simple example of listing all support AWS services for VPC endpoints
     - name: List supported AWS endpoint services

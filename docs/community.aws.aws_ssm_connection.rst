@@ -219,7 +219,7 @@ Parameters
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Stop Spooler Process on Windows Instances
     - name: Stop Spooler Service on Windows Instances

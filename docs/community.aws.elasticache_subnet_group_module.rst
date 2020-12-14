@@ -300,7 +300,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Add or change a subnet group
       community.aws.elasticache_subnet_group:

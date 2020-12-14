@@ -269,7 +269,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: obtain all WAF information
       community.aws.aws_waf_info:

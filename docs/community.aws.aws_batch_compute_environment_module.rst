@@ -538,7 +538,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: My Batch Compute Environment
       community.aws.aws_batch_compute_environment:

@@ -347,7 +347,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Complete example to create and accept a local peering connection.
     - name: Create local account VPC peering Connection

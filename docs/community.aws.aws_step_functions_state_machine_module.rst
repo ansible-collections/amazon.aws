@@ -335,7 +335,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Create a new AWS Step Functions state machine
     - name: Setup HelloWorld state machine

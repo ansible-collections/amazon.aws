@@ -400,7 +400,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Create a health-check for host1.example.com and use it in record
       community.aws.route53_health_check:

@@ -404,7 +404,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: create WAF rule
         community.aws.aws_waf_rule:

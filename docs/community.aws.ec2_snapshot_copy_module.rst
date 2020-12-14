@@ -365,7 +365,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Basic Snapshot Copy
       community.aws.ec2_snapshot_copy:

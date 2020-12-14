@@ -609,7 +609,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Managing the KMS IAM Policy via policy_mode and policy_grant_types is fragile
     # and has been deprecated in favour of the policy option.

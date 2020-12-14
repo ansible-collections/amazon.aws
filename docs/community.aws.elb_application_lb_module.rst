@@ -5,7 +5,7 @@
 community.aws.elb_application_lb
 ********************************
 
-**Manage an Application load balancer**
+**Manage an Application Load Balancer**
 
 
 Version added: 1.0.0
@@ -196,12 +196,13 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>no</li>
                                     <li>yes</li>
                         </ul>
                 </td>
                 <td>
                         <div>Indicates whether deletion protection for the ELB is enabled.</div>
+                        <div>Defaults to <code>false</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -231,12 +232,13 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>no</li>
                                     <li>yes</li>
                         </ul>
                 </td>
                 <td>
                         <div>Indicates whether to enable HTTP2 routing.</div>
+                        <div>Defaults to <code>false</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -530,7 +532,8 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>If yes, existing listeners will be purged from the ELB to match exactly what is defined by <em>listeners</em> parameter. If the <em>listeners</em> parameter is not set then listeners will not be modified</div>
+                        <div>If <code>yes</code>, existing listeners will be purged from the ELB to match exactly what is defined by <em>listeners</em> parameter.</div>
+                        <div>If the <em>listeners</em> parameter is not set then listeners will not be modified.</div>
                 </td>
             </tr>
             <tr>
@@ -549,7 +552,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>When set to no, keep the existing load balancer rules in place. Will modify and add, but will not delete.</div>
+                        <div>When set to <code>no</code>, keep the existing load balancer rules in place. Will modify and add, but will not delete.</div>
                 </td>
             </tr>
             <tr>
@@ -568,7 +571,8 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>If yes, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter. If the <em>tags</em> parameter is not set then tags will not be modified.</div>
+                        <div>If yes, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter.</div>
+                        <div>If the <em>tags</em> parameter is not set then tags will not be modified.</div>
                 </td>
             </tr>
             <tr>
@@ -765,7 +769,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Note: These examples do not set authentication details, see the AWS Guide for details.
 

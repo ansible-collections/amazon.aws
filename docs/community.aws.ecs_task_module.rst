@@ -447,7 +447,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Simple example of run task
     - name: Run task

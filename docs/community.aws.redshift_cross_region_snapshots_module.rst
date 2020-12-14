@@ -324,7 +324,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: configure cross-region snapshot on cluster `johniscool`
       community.aws.redshift_cross_region_snapshots:

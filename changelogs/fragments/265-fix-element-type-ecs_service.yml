@@ -1,2 +1,0 @@
-bugfixes:
-  - ecs_service - fix element type for ``load_balancers`` parameter (https://github.com/ansible-collections/community.aws/issues/265).

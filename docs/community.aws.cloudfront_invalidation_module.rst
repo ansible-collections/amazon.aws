@@ -299,7 +299,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: create a batch of invalidations using a distribution_id for a reference
       community.aws.cloudfront_invalidation:

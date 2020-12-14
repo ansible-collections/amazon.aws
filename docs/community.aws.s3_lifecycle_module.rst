@@ -221,6 +221,8 @@ Parameters
                                     <li><div style="color: blue"><b>glacier</b>&nbsp;&larr;</div></li>
                                     <li>onezone_ia</li>
                                     <li>standard_ia</li>
+                                    <li>intelligent_tiering</li>
+                                    <li>deep_archive</li>
                         </ul>
                 </td>
                 <td>
@@ -432,10 +434,12 @@ Parameters
                                     <li><div style="color: blue"><b>glacier</b>&nbsp;&larr;</div></li>
                                     <li>onezone_ia</li>
                                     <li>standard_ia</li>
+                                    <li>intelligent_tiering</li>
+                                    <li>deep_archive</li>
                         </ul>
                 </td>
                 <td>
-                        <div>The storage class to transition to. Currently there are two supported values - &#x27;glacier&#x27;,  &#x27;onezone_ia&#x27;, or &#x27;standard_ia&#x27;.</div>
+                        <div>The storage class to transition to.</div>
                         <div>The &#x27;standard_ia&#x27; class is only being available from Ansible version 2.2.</div>
                 </td>
             </tr>
@@ -523,7 +527,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Note: These examples do not set authentication details, see the AWS Guide for details.
 

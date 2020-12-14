@@ -302,7 +302,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Add or change a subnet group
       community.aws.rds_subnet_group:

@@ -172,7 +172,7 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
+                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
                                     <li>yes</li>
                         </ul>
                 </td>
@@ -208,7 +208,7 @@ Parameters
                         <b>Default:</b><br/><div style="color: blue">"default"</div>
                 </td>
                 <td>
-                        <div>The name of the new AMI to copy. (As of 2.3 the default is &#x27;default&#x27;, in prior versions it was &#x27;null&#x27;.)</div>
+                        <div>The name of the new AMI to copy. (As of 2.3 the default is <code>default</code>, in prior versions it was <code>null</code>.)</div>
                 </td>
             </tr>
             <tr>
@@ -364,7 +364,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Wait for the copied AMI to be in state &#x27;available&#x27; before returning.</div>
+                        <div>Wait for the copied AMI to be in state <code>available</code> before returning.</div>
                 </td>
             </tr>
             <tr>
@@ -380,8 +380,10 @@ Parameters
                         <b>Default:</b><br/><div style="color: blue">600</div>
                 </td>
                 <td>
-                        <div>How long before wait gives up, in seconds. Prior to 2.3 the default was 1200.</div>
-                        <div>From 2.3-2.5 this option was deprecated in favor of boto3 waiter defaults. This was reenabled in 2.6 to allow timeouts greater than 10 minutes.</div>
+                        <div>How long before wait gives up, in seconds.</div>
+                        <div>Prior to 2.3 the default was <code>1200</code>.</div>
+                        <div>From 2.3-2.5 this option was deprecated in favor of boto3 waiter defaults.</div>
+                        <div>This was reenabled in 2.6 to allow timeouts greater than 10 minutes.</div>
                 </td>
             </tr>
     </table>
@@ -401,7 +403,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Basic AMI Copy
       community.aws.ec2_ami_copy:

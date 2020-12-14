@@ -360,7 +360,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Create a policy with the name of 'Admin' to the group 'administrators'
     - name: Assign a policy called Admin to the administrators group

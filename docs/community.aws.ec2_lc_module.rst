@@ -762,7 +762,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # create a launch configuration using an AMI image and instance type as a basis
 

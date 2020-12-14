@@ -268,7 +268,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: find all existing IAM roles
       community.aws.iam_role_info:

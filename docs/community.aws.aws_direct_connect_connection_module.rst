@@ -195,12 +195,13 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
+                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
                                     <li>yes</li>
                         </ul>
                 </td>
                 <td>
-                        <div>To modify bandwidth or location the connection will need to be deleted and recreated. By default this will not happen - this option must be set to True.</div>
+                        <div>To modify <em>bandwidth</em> or <em>location</em> the connection needs to be deleted and recreated.</div>
+                        <div>By default this will not happen.  This option must be explicitly set to <code>true</code> to change <em>bandwith</em> or <em>location</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -359,7 +360,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # create a Direct Connect connection
     - community.aws.aws_direct_connect_connection:
@@ -383,7 +384,7 @@ Examples
         name: ansible-test-connection
         location: EqDC2
         bandwidth: 10Gbps
-        forced_update: True
+        forced_update: true
 
     # delete the connection
     - community.aws.aws_direct_connect_connection:

@@ -251,7 +251,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     - name: Retrieve server certificate
       community.aws.iam_server_certificate_info:

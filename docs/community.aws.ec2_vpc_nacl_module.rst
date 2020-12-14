@@ -371,7 +371,7 @@ Notes
 Examples
 --------
 
-.. code-block:: yaml+jinja
+.. code-block:: yaml
 
     # Complete example to create and delete a network ACL
     # that allows SSH, HTTP and ICMP in, and all traffic out.
