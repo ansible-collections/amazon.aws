@@ -63,8 +63,10 @@
       name: '{{ resource_prefix }}-instance'
       image_id: '{{ ec2_amis.images[0].image_id }}'
       security_group: '{{ security_group.group_id }}'
+      vpc_subnet_id: '{{ vpc_subnet_create.subnet.id }}'
       wait: no  ## Don't delay the tests, we'll check again before we need it
-    register: ec2_instance_result
+    register: create_ec2_instance_result
+
   # =====================================================
   - name: Look for signs of concurrent EIP tests.  Pause if they are running or their prefix comes before ours.
     vars:
@@ -570,19 +572,23 @@
         - eip_info.addresses[0].allocation_id is defined
         - eip_info.addresses[0].instance_id == '{{ instance_info.instances[0].instance_id }}'
   # =====================================================
-  - name: Cleanup IGW
-    ec2_vpc_igw:
-      state: absent
-      vpc_id: '{{ vpc_result.vpc.id }}'
-    register: vpc_igw
   - name: Cleanup instance
     ec2_instance:
-      name: '{{ resource_prefix }}-instance'
+      instance_ids: '{{ create_ec2_instance_result.instance_ids }}'
       state: absent
   - name: Cleanup instance eip
     ec2_eip:
       state: absent
       public_ip: '{{ instance_eip.public_ip }}'
+    register: eip_cleanup
+    retries: 5
+    delay: 5
+    until: eip_cleanup is successful
+  - name: Cleanup IGW
+    ec2_vpc_igw:
+      state: absent
+      vpc_id: '{{ vpc_result.vpc.id }}'
+    register: vpc_igw
   - name: Cleanup security group
     ec2_group:
       state: absent
@@ -642,6 +648,18 @@
       cidr_block: '{{ vpc_cidr }}'
   # =====================================================
   always:
+  - name: Cleanup instance (by id)
+    ec2_instance:
+      instance_ids: '{{ create_ec2_instance_result.instance_ids }}'
+      state: absent
+      wait: true
+    ignore_errors: true
+  - name: Cleanup instance (by name)
+    ec2_instance:
+      name: '{{ resource_prefix }}-instance'
+      state: absent
+      wait: true
+    ignore_errors: true
   - name: Cleanup ENI A
     ec2_eni:
       state: absent
@@ -652,20 +670,19 @@
       state: absent
       eni_id: '{{ eni_create_b.interface.id }}'
     ignore_errors: true
+  - name: Cleanup instance eip
+    ec2_eip:
+      state: absent
+      public_ip: '{{ instance_eip.public_ip }}'
+    retries: 5
+    delay: 5
+    until: eip_cleanup is successful
+    ignore_errors: true
   - name: Cleanup IGW
     ec2_vpc_igw:
       state: absent
       vpc_id: '{{ vpc_result.vpc.id }}'
     register: vpc_igw
-  - name: Cleanup instance
-    ec2_instance:
-      name: '{{ resource_prefix }}-instance'
-      state: absent
-    ignore_errors: true
-  - name: Cleanup instance eip
-    ec2_eip:
-      state: absent
-      public_ip: '{{ instance_eip.public_ip }}'
     ignore_errors: true
   - name: Cleanup security group
     ec2_group:
