@@ -49,7 +49,7 @@
   - name: Make instance in the testing subnet created in the test VPC
     ec2_instance:
       name: "{{ resource_prefix }}-test-basic-vpc-create"
-      image_id: "{{ ec2_ami_image[aws_region] }}"
+      image_id: "{{ ec2_ami_image }}"
       user_data: |
         #cloud-config
         package_upgrade: true
@@ -71,7 +71,7 @@
   - name: Try to re-make the instance, hopefully this shows changed=False
     ec2_instance:
       name: "{{ resource_prefix }}-test-basic-vpc-create"
-      image_id: "{{ ec2_ami_image[aws_region] }}"
+      image_id: "{{ ec2_ami_image }}"
       user_data: |
         #cloud-config
         package_upgrade: true
@@ -96,7 +96,7 @@
   - name: Alter it by adding tags
     ec2_instance:
       name: "{{ resource_prefix }}-test-basic-vpc-create"
-      image_id: "{{ ec2_ami_image[aws_region] }}"
+      image_id: "{{ ec2_ami_image }}"
       tags:
         TestId: "{{ resource_prefix }}"
         Another: thing
@@ -113,11 +113,11 @@
       that:
         - check_tags.instances[0].tags.Another == 'thing'
         - check_tags.instances[0].tags.Something == 'else'
-  
+
   - name: Purge a tag
     ec2_instance:
       name: "{{ resource_prefix }}-test-basic-vpc-create"
-      image_id: "{{ ec2_ami_image[aws_region] }}"
+      image_id: "{{ ec2_ami_image }}"
       purge_tags: true
       tags:
         TestId: "{{ resource_prefix }}"

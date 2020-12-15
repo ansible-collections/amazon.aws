@@ -11,7 +11,7 @@
   - name: create c4.large instance with cpu_options
     ec2_launch_template:
       name: "{{ resource_prefix }}-c4large-1-threads-per-core"
-      image_id: "{{ ec2_ami_image[aws_region] }}"
+      image_id: "{{ ec2_ami_image }}"
       tags:
         TestId: "{{ resource_prefix }}"
       instance_type: c4.large
