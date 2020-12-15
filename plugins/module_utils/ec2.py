@@ -39,14 +39,15 @@ from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_release import __version__
 from ansible.module_utils.basic import env_fallback
 from ansible.module_utils.basic import missing_required_lib
-from ansible.module_utils.common.dict_transformations import _camel_to_snake
-from ansible.module_utils.common.dict_transformations import _snake_to_camel
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible.module_utils.six import binary_type
 from ansible.module_utils.six import string_types
 from ansible.module_utils.six import text_type
 from ansible.module_utils.six import integer_types
+# Used to live here, moved into ansible.module_utils.common.dict_transformations
+from ansible.module_utils.common.dict_transformations import _camel_to_snake  # pylint: disable=unused-import
+from ansible.module_utils.common.dict_transformations import _snake_to_camel  # pylint: disable=unused-import
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict  # pylint: disable=unused-import
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict  # pylint: disable=unused-import
 
 from .cloud import CloudRetry
 
@@ -581,7 +582,6 @@ def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id
 
     if len(unmatched) > 0:
         # If we have unmatched names that look like an ID, assume they are
-        import re
         sec_group_id_list[:] = [sg for sg in unmatched if re.match('sg-[a-fA-F0-9]+$', sg)]
         still_unmatched = [sg for sg in unmatched if not re.match('sg-[a-fA-F0-9]+$', sg)]
         if len(still_unmatched) > 0:

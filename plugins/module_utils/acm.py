@@ -29,10 +29,8 @@ __metaclass__ = type
 """
 Common Amazon Certificate Manager facts shared between modules
 """
-import traceback
 
 try:
-    import botocore
     from botocore.exceptions import BotoCoreError, ClientError
 except ImportError:
     pass

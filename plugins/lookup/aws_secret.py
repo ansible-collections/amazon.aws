@@ -92,7 +92,6 @@ try:
 except ImportError:
     raise AnsibleError("The lookup aws_secret requires boto3 and botocore.")
 
-from ansible.plugins import AnsiblePlugin
 from ansible.plugins.lookup import LookupBase
 from ansible.module_utils._text import to_native
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code

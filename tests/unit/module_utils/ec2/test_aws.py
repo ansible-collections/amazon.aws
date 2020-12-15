@@ -8,7 +8,9 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 try:
-    import boto3
+    # We explicitly want to know if boto3/botocore are available, they're used
+    # by the code we're testing even if we don't directly use them.
+    import boto3  # pylint: disable=unused-import
     import botocore
     HAS_BOTO3 = True
 except Exception:
