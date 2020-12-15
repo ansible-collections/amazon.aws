@@ -571,6 +571,22 @@
         - instance_eip is success
         - eip_info.addresses[0].allocation_id is defined
         - eip_info.addresses[0].instance_id == '{{ instance_info.instances[0].instance_id }}'
+  - name: Attach eip to an EC2 instance with private Ip specified
+    ec2_eip:
+      device_id: '{{ instance_info.instances[0].instance_id }}'
+      private_ip_address: '{{ instance_info.instances[0].private_ip_address }}'
+      state: present
+      release_on_disassociation: yes
+    register: instance_eip
+  - ec2_eip_info:
+      filters:
+        public-ip: '{{ instance_eip.public_ip }}'
+    register: eip_info
+  - assert:
+      that:
+        - instance_eip is success
+        - eip_info.addresses[0].allocation_id is defined
+        - eip_info.addresses[0].instance_id == '{{ instance_info.instances[0].instance_id }}'
   # =====================================================
   - name: Cleanup instance
     ec2_instance:
