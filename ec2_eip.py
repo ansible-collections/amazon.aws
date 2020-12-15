@@ -241,7 +241,7 @@ def associate_ip_and_device(ec2, module, address, private_ip_address, device_id,
                     AllowReassociation=allow_reassociation,
                 )
                 if private_ip_address:
-                    params['PrivateIPAddress'] = private_ip_address
+                    params['PrivateIpAddress'] = private_ip_address
                 if address['Domain'] == 'vpc':
                     params['AllocationId'] = address['AllocationId']
                 else:
