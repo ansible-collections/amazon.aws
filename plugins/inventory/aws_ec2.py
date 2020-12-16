@@ -514,9 +514,10 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 hostname = self._get_hostname(instance, [preference["name"]])
                 separator = preference.get("separator", "_")
                 if hostname and 'prefix' in preference:
-                    hostname = self._get_hostname(instance, [preference["prefix"]]) + separator + hostname
-            elif 'tag' in preference:
-                if not preference.startswith('tag:'):
+                    hostname_from_prefix = self._get_hostname(instance, [preference["prefix"]]) or ''
+                    hostname = hostname_from_prefix + separator + hostname
+            elif preference.startswith('tag:'):
+                if not re.match(r'^tag:\S+=\S+$', preference):
                     raise AnsibleError("To name a host by tags name_value, use 'tag:name=value'.")
                 hostname = self._get_tag_hostname(preference, instance)
             else:
