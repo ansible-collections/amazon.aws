@@ -65,7 +65,6 @@ current_status:
   - { "AttributeName": "deploy_timestamp", "Enabled": true }
 '''
 
-import distutils.version
 import traceback
 
 try:
@@ -126,8 +125,8 @@ def main():
         argument_spec=argument_spec,
     )
 
-    if distutils.version.StrictVersion(botocore.__version__) < distutils.version.StrictVersion('1.5.24'):
-        # TTL was added in this version.
+    if not module.botocore_at_least('1.5.24'):
+        # TTL was added in 1.5.24
         module.fail_json(msg='Found botocore in version {0}, but >= {1} is required for TTL support'.format(botocore.__version__, '1.5.24'))
 
     try:

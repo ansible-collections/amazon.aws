@@ -307,29 +307,26 @@ class EcsExecManager:
         return response['task']
 
     def ecs_api_handles_launch_type(self):
-        from distutils.version import LooseVersion
         # There doesn't seem to be a nice way to inspect botocore to look
         # for attributes (and networkConfiguration is not an explicit argument
         # to e.g. ecs.run_task, it's just passed as a keyword argument)
-        return LooseVersion(botocore.__version__) >= LooseVersion('1.8.4')
+        return self.module.botocore_at_least('1.8.4')
 
     def ecs_task_long_format_enabled(self):
         account_support = self.ecs.list_account_settings(name='taskLongArnFormat', effectiveSettings=True)
         return account_support['settings'][0]['value'] == 'enabled'
 
     def ecs_api_handles_tags(self):
-        from distutils.version import LooseVersion
         # There doesn't seem to be a nice way to inspect botocore to look
         # for attributes (and networkConfiguration is not an explicit argument
         # to e.g. ecs.run_task, it's just passed as a keyword argument)
-        return LooseVersion(botocore.__version__) >= LooseVersion('1.12.46')
+        return self.module.botocore_at_least('1.12.46')
 
     def ecs_api_handles_network_configuration(self):
-        from distutils.version import LooseVersion
         # There doesn't seem to be a nice way to inspect botocore to look
         # for attributes (and networkConfiguration is not an explicit argument
         # to e.g. ecs.run_task, it's just passed as a keyword argument)
-        return LooseVersion(botocore.__version__) >= LooseVersion('1.7.44')
+        return self.module.botocore_at_least('1.7.44')
 
 
 def main():
