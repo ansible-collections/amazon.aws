@@ -512,9 +512,9 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 if 'name' not in preference:
                     raise AnsibleError("A 'name' key must be defined in a hostnames dictionary.")
                 hostname = self._get_hostname(instance, [preference["name"]])
+                hostname_from_prefix = self._get_hostname(instance, [preference["prefix"]])
                 separator = preference.get("separator", "_")
-                if hostname and 'prefix' in preference:
-                    hostname_from_prefix = self._get_hostname(instance, [preference["prefix"]]) or ''
+                if hostname and hostname_from_prefix and 'prefix' in preference:
                     hostname = hostname_from_prefix + separator + hostname
             elif preference.startswith('tag:'):
                 if not re.match(r'^tag:\S+=\S+$', preference):
