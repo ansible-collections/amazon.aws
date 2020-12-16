@@ -57,7 +57,6 @@ DOCUMENTATION = '''
               - Spot instances may be persistent and instances may have associated events.
           type: bool
           default: False
-          version_added: '1.2.2'
         strict_permissions:
           description:
               - By default if a 403 (Forbidden) error code is encountered this plugin will fail.
@@ -77,7 +76,6 @@ DOCUMENTATION = '''
               which group names end up being used as.
           type: bool
           default: False
-          version_added: '1.2.2'
 '''
 
 EXAMPLES = '''
@@ -107,7 +105,7 @@ strict_permissions: False
 # Note: I(hostnames) sets the inventory_hostname. To modify ansible_host without modifying
 # inventory_hostname use compose (see example below).
 hostnames:
-  - tag:Name=Tag1,Name=Tag2         # Return specific hosts only
+  - tag:Name=Tag1,Name=Tag2  # Return specific hosts only
   - tag:CustomDNSName
   - dns-name
   - name: 'tag:Name=Tag1,Name=Tag2'
@@ -515,7 +513,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                     raise AnsibleError("A 'name' key must be defined in a hostnames dictionary.")
                 hostname = self._get_hostname(instance, [preference["name"]])
                 separator = preference.get("separator", "_")
-                if 'prefix' in preference:
+                if hostname and 'prefix' in preference:
                     hostname = self._get_hostname(instance, [preference["prefix"]]) + separator + hostname
             elif 'tag' in preference:
                 if not preference.startswith('tag:'):
