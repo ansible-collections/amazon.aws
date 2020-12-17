@@ -1,0 +1,2 @@
+minor_changes:
+- aws_ec2 - Add hostname options concatenation

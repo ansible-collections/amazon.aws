@@ -108,7 +108,10 @@ hostnames:
   - tag:Name=Tag1,Name=Tag2  # Return specific hosts only
   - tag:CustomDNSName
   - dns-name
-  - private-ip-address
+  - name: 'tag:Name=Tag1,Name=Tag2'
+  - name: 'private-ip-address'
+    separator: '_'
+    prefix: 'tag:Name'
 
 # Example using constructed features to create groups and set ansible_host
 plugin: aws_ec2
@@ -505,9 +508,15 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
         hostname = None
         for preference in hostnames:
-            if 'tag' in preference:
-                if not preference.startswith('tag:'):
-                    raise AnsibleError("To name a host by tags name_value, use 'tag:name=value'.")
+            if isinstance(preference, dict):
+                if 'name' not in preference:
+                    raise AnsibleError("A 'name' key must be defined in a hostnames dictionary.")
+                hostname = self._get_hostname(instance, [preference["name"]])
+                hostname_from_prefix = self._get_hostname(instance, [preference["prefix"]])
+                separator = preference.get("separator", "_")
+                if hostname and hostname_from_prefix and 'prefix' in preference:
+                    hostname = hostname_from_prefix + separator + hostname
+            elif preference.startswith('tag:'):
                 hostname = self._get_tag_hostname(preference, instance)
             else:
                 hostname = self._get_boto_attr_chain(preference, instance)
