@@ -517,8 +517,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 if hostname and hostname_from_prefix and 'prefix' in preference:
                     hostname = hostname_from_prefix + separator + hostname
             elif preference.startswith('tag:'):
-                if not re.match(r'^tag:\S+=\S+$', preference):
-                    raise AnsibleError("To name a host by tags name_value, use 'tag:name=value'.")
                 hostname = self._get_tag_hostname(preference, instance)
             else:
                 hostname = self._get_boto_attr_chain(preference, instance)
