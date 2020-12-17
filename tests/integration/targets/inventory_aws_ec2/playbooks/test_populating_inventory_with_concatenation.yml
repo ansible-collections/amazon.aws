@@ -36,12 +36,12 @@
 
         - name: register the current hostname
           set_fact:
-            hostname: "{{ resource_prefix | replace('-', '_') }}_value"
+            expected_hostname: "value_{{ resource_prefix }}"
 
-        - name: "assert the hostname  is properly formed, '{{ hostname }}' should equal '{{ inventory_hostname }}'"
+        - name: "Ensure we've got a hostvars entry for the new host"
           assert:
             that:
-              - hostname == inventory_hostname
+              - expected_hostname in hostvars
 
       always:
 
