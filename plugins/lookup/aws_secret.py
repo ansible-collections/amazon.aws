@@ -126,8 +126,8 @@ def _boto3_conn(region, credentials):
 class LookupModule(LookupBase):
     def run(self, terms, variables=None, boto_profile=None, aws_profile=None,
             aws_secret_key=None, aws_access_key=None, aws_security_token=None, region=None,
-            bypath=False, join=False, version_stage=None, version_id=None, on_missing=None,
-            on_denied=None):
+            bypath=False, join=False, version_stage=None, version_id=None, on_missing='error',
+            on_denied='error'):
         '''
                    :arg terms: a list of lookups to run.
                        e.g. ['parameter_name', 'parameter_name_too' ]
@@ -148,11 +148,11 @@ class LookupModule(LookupBase):
         if not HAS_BOTO3:
             raise AnsibleError('botocore and boto3 are required for aws_ssm lookup.')
 
-        missing = kwargs.get('on_missing', 'error').lower()
+        missing = on_missing.lower()
         if not isinstance(missing, string_types) or missing not in ['error', 'warn', 'skip']:
             raise AnsibleError('"on_missing" must be a string and one of "error", "warn" or "skip", not %s' % missing)
 
-        denied = kwargs.get('on_denied', 'error').lower()
+        denied = on_denied.lower()
         if not isinstance(denied, string_types) or denied not in ['error', 'warn', 'skip']:
             raise AnsibleError('"on_denied" must be a string and one of "error", "warn" or "skip", not %s' % denied)
 
@@ -185,8 +185,8 @@ class LookupModule(LookupBase):
                     if 'SecretList' in response:
                         for secret in response['SecretList']:
                             secrets.update({secret['Name']: self.get_secret_value(secret['Name'], client,
-                                                                                  on_missing=on_missing,
-                                                                                  on_denied=on_denied)})
+                                                                                  on_missing=missing,
+                                                                                  on_denied=denied)})
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
             secrets = [secrets]
@@ -195,7 +195,7 @@ class LookupModule(LookupBase):
             for term in terms:
                 value = self.get_secret_value(term, client,
                                               version_stage=version_stage, version_id=version_id,
-                                              on_missing=on_missing, on_denied=on_denied)
+                                              on_missing=missing, on_denied=denied)
                 if value:
                     secrets.append(value)
             if join:
@@ -219,25 +219,17 @@ class LookupModule(LookupBase):
                 return response['SecretBinary']
             if 'SecretString' in response:
                 return response['SecretString']
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        except is_boto3_error_code('ResourceNotFoundException'):
+            if on_missing == 'error':
+                raise AnsibleError("Failed to find secret %s (ResourceNotFound)" % term)
+            elif on_missing == 'warn':
+                self._display.warning('Skipping, did not find secret %s' % term)
+        except is_boto3_error_code('AccessDeniedException'):  # pylint: disable=duplicate-except
+            if on_denied == 'error':
+                raise AnsibleError("Failed to access secret %s (AccessDenied)" % term)
+            elif on_denied == 'warn':
+                self._display.warning('Skipping, access denied for secret %s' % term)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
             raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
-            try:
-                response = client.get_secret_value(**params)
-                if 'SecretBinary' in response:
-                    secrets.append(response['SecretBinary'])
-                if 'SecretString' in response:
-                    secrets.append(response['SecretString'])
-            except is_boto3_error_code('ResourceNotFoundException'):
-                if missing == 'error':
-                    raise AnsibleError("Failed to find secret %s (ResourceNotFound)" % term)
-                elif missing == 'warn':
-                    self._display.warning('Skipping, did not find secret %s' % term)
-            except is_boto3_error_code('AccessDeniedException'):  # pylint: disable=duplicate-except
-                if denied == 'error':
-                    raise AnsibleError("Failed to access secret %s (AccessDenied)" % term)
-                elif denied == 'warn':
-                    self._display.warning('Skipping, access denied for secret %s' % term)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-                raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
 
         return None
