@@ -19,8 +19,8 @@ short_description: Look up secrets stored in AWS Secrets Manager.
 description:
   - Look up secrets stored in AWS Secrets Manager provided the caller
     has the appropriate permissions to read the secret.
-  - Lookup is based on the secret's `Name` value.
-  - Optional parameters can be passed into this lookup; `version_id` and `version_stage`
+  - Lookup is based on the secret's I(Name) value.
+  - Optional parameters can be passed into this lookup; I(version_id) and I(version_stage)
 options:
   _terms:
     description: Name of the secret to look up in AWS Secrets Manager.
@@ -28,7 +28,7 @@ options:
   bypath:
     description: A boolean to indicate whether the parameter is provided as a hierarchy.
     default: false
-    type: boolean
+    type: bool
   version_id:
     description: Version of the secret(s).
     required: False
@@ -39,8 +39,8 @@ options:
     description:
         - Join two or more entries to form an extended secret.
         - This is useful for overcoming the 4096 character limit imposed by AWS.
-        - No effect when used with `bypath`
-    type: boolean
+        - No effect when used with I(bypath)
+    type: bool
     default: false
   on_missing:
     description:
@@ -103,8 +103,7 @@ except ImportError:
 from ansible.plugins.lookup import LookupBase
 from ansible.module_utils._text import to_native
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-
-from ..module_utils.ec2 import HAS_BOTO3
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 
 
 def _boto3_conn(region, credentials):
