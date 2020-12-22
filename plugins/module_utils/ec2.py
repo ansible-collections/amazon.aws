@@ -310,10 +310,10 @@ def get_aws_connection_info(module, boto3=False):
             secret_key = None
 
     if not security_token:
-        if os.environ.get('AWS_SECURITY_TOKEN'):
-            security_token = os.environ['AWS_SECURITY_TOKEN']
-        elif os.environ.get('AWS_SESSION_TOKEN'):
+        if os.environ.get('AWS_SESSION_TOKEN'):
             security_token = os.environ['AWS_SESSION_TOKEN']
+        elif os.environ.get('AWS_SECURITY_TOKEN'):
+            security_token = os.environ['AWS_SECURITY_TOKEN']
         elif os.environ.get('EC2_SECURITY_TOKEN'):
             security_token = os.environ['EC2_SECURITY_TOKEN']
         elif HAS_BOTO and boto.config.get('Credentials', 'aws_security_token'):
