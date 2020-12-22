@@ -40,6 +40,6 @@ options:
     type: str
     env:
       - name: EC2_SECURITY_TOKEN
-      - name: AWS_SESSION_TOKEN
       - name: AWS_SECURITY_TOKEN
+      - name: AWS_SESSION_TOKEN
 '''
