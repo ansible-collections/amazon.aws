@@ -128,7 +128,7 @@ vpc:
         "cidr_block_association_set": [
             {
                 "association_id": "vpc-cidr-assoc-97aeeefd",
-                "cidr_block": "20.0.0.0/24",
+                "cidr_block": "10.0.0.0/24",
                 "cidr_block_state": {
                     "state": "associated"
                 }
@@ -143,12 +143,12 @@ vpc:
       description: the id of the DHCP options associated with this VPC
       returned: always
       type: str
-      sample: dopt-0fb8bd6b
+      sample: dopt-12345678
     id:
       description: VPC resource id
       returned: always
       type: str
-      sample: vpc-c2e00da5
+      sample: vpc-12345678
     instance_tenancy:
       description: indicates whether VPC uses default or dedicated tenancy
       returned: always
@@ -188,6 +188,11 @@ vpc:
           returned: always
           type: str
           sample: pk_vpc4
+    owner_id:
+      description: The AWS account which owns the VPC
+      returned: always
+      type: str
+      sample: 123456789012
 '''
 
 from time import sleep
