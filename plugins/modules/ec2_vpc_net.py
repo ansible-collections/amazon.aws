@@ -189,7 +189,7 @@ vpc:
           type: str
           sample: pk_vpc4
     owner_id:
-      description: The AWS account which owns the VPC
+      description: The AWS account which owns the VPC.
       returned: always
       type: str
       sample: 123456789012

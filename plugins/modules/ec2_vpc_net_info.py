@@ -147,12 +147,12 @@ vpcs:
                             returned: always
                             type: str
         owner_id:
-            description: The AWS account which owns the VPC
+            description: The AWS account which owns the VPC.
             returned: always
             type: str
             sample: 123456789012
         dhcp_options_id:
-            description: the id of the DHCP options associated with this VPC
+            description: The ID of the DHCP options associated with this VPC.
             returned: always
             type: str
             sample: dopt-12345678
