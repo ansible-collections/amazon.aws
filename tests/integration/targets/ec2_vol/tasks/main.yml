@@ -13,10 +13,10 @@
   block:
 
     # ==== Env setup ==========================================================
-    - name: install boto3 > 1.16.33
+    - name: install latest boto3
       pip:
-        name:
-          - 'boto3>=1.16.33'
+        name: boto3
+        state: latest
 
     - name: list available AZs
       aws_az_info:
