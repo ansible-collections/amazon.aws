@@ -180,7 +180,7 @@ EXAMPLES = r'''
       period: 300
       evaluation_periods: 3
       unit: "Percent"
-      description: "This will alarm when a bamboo slave's cpu usage average is lower than 5% for 15 minutes "
+      description: "This will alarm when a instance's CPU usage average is lower than 5% for 15 minutes"
       dimensions: {'InstanceId':'i-XXX'}
       alarm_actions: ["action1","action2"]
 
@@ -203,12 +203,12 @@ EXAMPLES = r'''
 
 '''
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-
 try:
     from botocore.exceptions import ClientError
 except ImportError:
     pass  # protected by AnsibleAWSModule
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 
 
 def create_metric_alarm(connection, module):
