@@ -1,0 +1,3 @@
+---
+minor_changes:
+- "``aws_ec2`` inventory plugin accepts Jinja2 template in the authentication fields (https://github.com/ansible-collections/amazon.aws/pull/227)."
