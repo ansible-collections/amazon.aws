@@ -170,8 +170,6 @@
       delete_old: False
     register: dhcp_options
 
-  - debug: msg="{{ dhcp_options.new_options['netbios-node-type'] }}"
-
   - assert:
       that:
         - dhcp_options.changed
@@ -182,9 +180,8 @@
         # FIXME: module/aws randomly returns as a string or list
         - dhcp_options.new_options['netbios-node-type'] in ['2', ['2']]
         # found I think is false, because the options are different and no id is provided?
-        - dhcp_options.new_options['domain-name'] == "{{ aws_domain_name }}"
-        #- dhcp_options.new_options['domain-name'] == "{{ aws_domain_name }}" or dhcp_options.new_options['domain-name'] == ["{{ aws_domain_name }}"]
-        - dhcp_options.new_options['domain-name-servers'] == ['AmazonProvidedDNS']
+        - dhcp_options.new_options['domain-name'] in ["{{ aws_domain_name }}", ["{{ aws_domain_name }}"]]
+        - dhcp_options.new_options['domain-name-servers'] in ['AmazonProvidedDNS', ['AmazonProvidedDNS']]
         - original_dhcp_options_id != dhcp_options.dhcp_options_id
 
   - set_fact:
@@ -201,7 +198,7 @@
   - assert:
       that:
         - new_config.keys() | list | sort == ['domain-name', 'domain-name-servers', 'netbios-name-servers', 'netbios-node-type', 'ntp-servers']
-        - new_config['domain-name'][0]['value'] == '{{ aws_domain_name }}'
+        - new_config['domain-name'][0]['value'] == "{{ aws_domain_name }}"
         - new_config['domain-name-servers'][0]['value'] == 'AmazonProvidedDNS'
         - new_config['ntp-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.2', '10.0.1.2']
         - new_config['netbios-name-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.1', '10.0.1.1']
@@ -293,7 +290,7 @@
         - new_config.keys() | list | sort == ['netbios-name-servers', 'netbios-node-type', 'ntp-servers']
         - new_config['ntp-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.2', '10.0.1.2']
         - new_config['netbios-name-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.1', '10.0.1.1']
-        - new_config['netbios-node-type'][0]['value'] in ['2', ['2']]
+        - new_config['netbios-node-type'][0]['value'] == '2'
 
   - name: disassociate the new DHCP option set so it can be deleted
     ec2_vpc_dhcp_option:
@@ -375,7 +372,7 @@
         - new_config['domain-name'][0]['value'] in ["{{ aws_domain_name }}", ["{{ aws_domain_name }}"]]
         - new_config['ntp-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.2', '10.0.1.2']
         - new_config['netbios-name-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.1', '10.0.1.1']
-        - new_config['netbios-node-type'][0]['value'] in ['1', ['1']]
+        - new_config['netbios-node-type'][0]['value'] == '1'
 
   - name: verify the original set was deleted
     ec2_vpc_dhcp_option_info:
@@ -460,8 +457,8 @@
   - assert:
       that:
         - new_config.keys() | list | sort == ['domain-name', 'domain-name-servers']
-        - new_config['domain-name'][0]['value'] in ["{{ aws_domain_name }}", ["{{ aws_domain_name }}"]]
-        - new_config['domain-name-servers'][0]['value'] in ['AmazonProvidedDNS', ['AmazonProvidedDNS']]
+        - new_config['domain-name'][0]['value'] == "{{ aws_domain_name }}"
+        - new_config['domain-name-servers'][0]['value'] == 'AmazonProvidedDNS'
 
   - name: verify the original set was deleted
     ec2_vpc_dhcp_option_info:
@@ -606,7 +603,6 @@
         - dhcp_options_info.dhcp_options[0].tags['collection'] == 'amazon.aws'
         - dhcp_options_info.dhcp_options[0].tags['created_by'] == 'ansible-test'
 
-# FIXME: this doesn't make sense
   - name: test no changes without specifying tags (check mode)
     ec2_vpc_dhcp_option:
       state: present
