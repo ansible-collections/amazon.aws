@@ -90,7 +90,7 @@ plugin: aws_ec2
 # The values for profile, access key, secret key and token can be hardcoded like:
 boto_profile: aws_profile
 # or you could use Jinja as:
-# boto_profile: "{{ lookup('env', 'MY_PROJECT_AWS_PROFILE') | default('aws_profile', true) }}"
+# boto_profile: "{{ lookup('env', 'AWS_PROFILE') | default('aws_profile', true) }}"
 # Populate inventory with instances in these regions
 regions:
   - us-east-1
