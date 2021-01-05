@@ -1,0 +1,3 @@
+---
+minor_changes:
+- avoid an superfluous import of ansible.utils.display.Display in the ``aws_ec2`` inventory plugin
