@@ -161,7 +161,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable, Cacheable
 from ansible.utils.display import Display
-from ansible.template import Templar
 
 
 try:
@@ -587,12 +586,12 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             :param config_data: contents of the inventory config file
         '''
 
-        t = Templar(loader=loader)
         credentials = {}
 
         for credential_type in ['aws_profile', 'aws_access_key', 'aws_secret_key', 'aws_security_token', 'iam_role_arn']:
-            if t.is_template(self.get_option(credential_type)):
-                credentials[credential_type] = t.template(variable=self.get_option(credential_type), disable_lookups=False)
+            # This step won't be necessary with https://github.com/ansible/ansible/pull/58288
+            if self.templar.is_template(self.get_option(credential_type)):
+                credentials[credential_type] = self.templar.template(variable=self.get_option(credential_type), disable_lookups=False)
             else:
                 credentials[credential_type] = self.get_option(credential_type)
 
