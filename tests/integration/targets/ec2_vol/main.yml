@@ -1,0 +1,5 @@
+- hosts: localhost
+  connection: local
+  environment: "{{ ansible_test.environment }}"
+  tasks:
+    - include_tasks: 'tasks/main.yml'
