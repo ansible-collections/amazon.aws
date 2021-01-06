@@ -11,6 +11,8 @@
 - pip:
     name:
       - 'boto3>=1.16.33'
+      - 'botocore>=1.13.0'
+      - 'coverage<5'
     virtualenv: "{{ virtualenv }}"
     virtualenv_command: "{{ virtualenv_command }}"
     virtualenv_site_packages: no
