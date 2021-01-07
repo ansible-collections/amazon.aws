@@ -146,6 +146,16 @@ vpcs:
                             description: The CIDR block association state.
                             returned: always
                             type: str
+        owner_id:
+            description: The AWS account which owns the VPC.
+            returned: always
+            type: str
+            sample: 123456789012
+        dhcp_options_id:
+            description: The ID of the DHCP options associated with this VPC.
+            returned: always
+            type: str
+            sample: dopt-12345678
 '''
 
 try:
