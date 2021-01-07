@@ -581,7 +581,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             # Create groups based on variable values and add the corresponding hosts to it
             self._add_host_to_keyed_groups(self.get_option('keyed_groups'), host, hostname, strict=strict)
 
-    def _set_credentials(self, loader):
+    def _set_credentials(self):
         '''
             :param config_data: contents of the inventory config file
         '''
@@ -637,7 +637,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         if self.get_option('use_contrib_script_compatible_sanitization'):
             self._sanitize_group_name = self._legacy_script_compatible_group_sanitization
 
-        self._set_credentials(loader)
+        self._set_credentials()
 
         # get user specifications
         regions = self.get_option('regions')
