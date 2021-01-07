@@ -1,0 +1,251 @@
+---
+- name: MQ User test suite
+  hosts: dummy
+  gather_facts: false
+  vars:
+    broker_id: "{{ lookup('env', 'MQ_BROKER_ID') }}"
+    aws_access_key_id: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+    aws_secret_access_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+    aws_session_token: "{{ lookup('env', 'AWS_SESSION_TOKEN') }}"
+    aws_region: "{{ lookup('env', 'AWS_REGION') }}"
+    usernames:
+      - "test_user1"
+      - "test_user2"
+      - "test_user3"
+
+  tasks:
+    - name: show env
+      debug:
+        msg: "Will run tests against broker '{{ broker_id }}' in AWS region '{{ aws_region }}'"
+    - name: test1 - create user with default settings
+      # amazon.aws.mq_user:
+      mq_user:
+        broker_id: "{{ broker_id }}"
+        username: "{{ usernames[0] }}"
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: test1 - verify
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test1 failed
+        that:
+          - result.changed | bool
+          - result.user['Username'] == usernames[0]
+          - not (result.user['Pending']['ConsoleAccess'] | bool)
+          - result.user['Pending']['Groups'] | length == 0
+    - name: test2 - create user with console access and group list
+      # amazon.aws.mq_user:
+      mq_user:
+        state: present
+        broker_id: "{{ broker_id }}"
+        username: "{{ usernames[1] }}"
+        region: "{{ aws_region }}"
+        console_access: true
+        groups: [ "g1", "g2" ]
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: test2 - verify
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test2 failed
+        that:
+          - result.changed | bool
+          - result.user['Username'] == usernames[1]
+          - result.user['Pending']['ConsoleAccess'] | bool
+          - result.user['Pending']['Groups'] | length == 2
+    - name: test3 - create user with defined password
+      # amazon.aws.mq_user:
+      mq_user:
+        broker_id: "{{ broker_id }}"
+        username: "{{ usernames[2] }}"
+        region: "{{ aws_region }}"
+        password: "09234092jzxkjvjk23kn23qn5lk34"
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: test3 - verify
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test3 failed
+        that:
+          - result.changed | bool
+          - result.user['Username'] == usernames[2]
+          - not (result.user['Pending']['ConsoleAccess'] | bool)
+          - result.user['Pending']['Groups'] | length == 0
+    - name: test4 - update user password - ignore mode
+      # amazon.aws.mq_user:
+      mq_user:
+        broker_id: "{{ broker_id }}"
+        username: "{{ usernames[2] }}"
+        region: "{{ aws_region }}"
+        password: "new_password_ignored"
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: test4 - verify
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test4 failed
+        that:
+          - not (result.changed | bool)
+    - name: test5 - update user password - force mode
+      # amazon.aws.mq_user:
+      mq_user:
+        broker_id: "{{ broker_id }}"
+        username: "{{ usernames[2] }}"
+        region: "{{ aws_region }}"
+        password: "new_Password_Accepted0815%"
+        allow_pw_update: true
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: test5 - verify
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test5 failed
+        that:
+          - result.changed | bool
+    - name: test6 - update console access - same value
+      # amazon.aws.mq_user:
+      mq_user:
+        broker_id: "{{ broker_id }}"
+        username: "{{ usernames[2] }}"
+        region: "{{ aws_region }}"
+        console_access: false
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: test6 - verify
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test6 failed
+        that:
+          - not (result.changed | bool)
+    - name: test7 - update console access - new value
+      # amazon.aws.mq_user:
+      mq_user:
+        broker_id: "{{ broker_id }}"
+        username: "{{ usernames[1] }}"
+        region: "{{ aws_region }}"
+        console_access: false
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: test7 - verify
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test7 failed
+        that:
+          - result.changed | bool
+          - not( result.user['Pending']['ConsoleAccess'] | bool )
+          - result.user['Pending']['Groups'] | length == 2
+    - name: test8 - update group list - same list but different order
+      # amazon.aws.mq_user:
+      mq_user:
+        broker_id: "{{ broker_id }}"
+        username: "{{ usernames[1] }}"
+        region: "{{ aws_region }}"
+        groups: [ "g2", "g1" ]
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: test8 - verify
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test8 failed
+        that:
+          - not (result.changed | bool)
+    - name: test9 - update group list - add element
+      # amazon.aws.mq_user:
+      mq_user:
+        broker_id: "{{ broker_id }}"
+        username: "{{ usernames[1] }}"
+        region: "{{ aws_region }}"
+        groups: [ "g2", "g1", "g3" ]
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: test9 - verify
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test9 failed
+        that:
+          - result.changed | bool
+          - result.user['Pending']['Groups'] | length == 3
+    - name: test10 - update group list - remove element
+      # amazon.aws.mq_user:
+      mq_user:
+        broker_id: "{{ broker_id }}"
+        username: "{{ usernames[1] }}"
+        region: "{{ aws_region }}"
+        groups: [ "g2", "g3" ]
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: test10 - verify
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test10 failed
+        that:
+          - result.changed | bool
+          - result.user['Pending']['Groups'] | length == 2
+    - name: test11 - update group list - set to empty list
+      # amazon.aws.mq_user:
+      mq_user:
+        broker_id: "{{ broker_id }}"
+        username: "{{ usernames[1] }}"
+        region: "{{ aws_region }}"
+        groups: []
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: test11 - verify
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test11 failed
+        that:
+          - result.changed | bool
+          - result.user['Pending']['Groups'] | length == 0
+    - name: delete all users
+      # amazon.aws.mq_user:
+      mq_user:
+        state: absent
+        broker_id: "{{ broker_id }}"
+        username: "{{ item }}"
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      loop: "{{ usernames | flatten(levels=1) }}"
+    - name: test13 - delete deleted user
+      # amazon.aws.mq_user:
+      mq_user:
+        state: absent
+        broker_id: "{{ broker_id }}"
+        username: "{{ usernames[1] }}"
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: test13 - verify
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test13 failed
+        that:
+          - not(result.changed | bool)
+

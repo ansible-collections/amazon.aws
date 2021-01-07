@@ -1,0 +1,65 @@
+---
+- name: MQ User test suite
+  hosts: dummy
+  gather_facts: false
+  vars:
+    broker_id: "{{ lookup('env', 'MQ_BROKER_ID') }}"
+    aws_access_key_id: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+    aws_secret_access_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+    aws_session_token: "{{ lookup('env', 'AWS_SESSION_TOKEN') }}"
+    aws_region: "{{ lookup('env', 'AWS_REGION') }}"
+
+
+  tasks:
+    - name: show env
+      debug:
+        msg: "Will run tests against broker '{{ broker_id }}' in AWS region '{{ aws_region }}'"
+    - name: test1 - show broker details
+      # amazon.aws.mq_broker:
+      mq_broker:
+        broker_id: "{{ broker_id }}"
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+      register: result
+    - name: verify test1
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test1 failed
+        that:
+          - not (result.changed | bool)
+          - result.broker['BrokerId'] == broker_id
+    - name: test2 - show broker details - explicitly requesting info
+      # amazon.aws.mq_broker:
+      mq_broker:
+        broker_id: "{{ broker_id }}"
+        operation: "info"
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: verify test2
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test2 failed
+        that:
+          - not (result.changed | bool)
+          - result.broker['BrokerId'] == broker_id
+    - name: test3 - reboot broker
+      # amazon.aws.mq_broker:
+      mq_broker:
+        broker_id: "{{ broker_id }}"
+        operation: "reboot"
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: verify test3
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test3 failed
+        that:
+          - result.changed | bool
+          - result.broker['BrokerState'] == 'REBOOT_IN_PROGRESS'

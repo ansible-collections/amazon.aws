@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<broker schedulePeriodForDestinationPurge="10000" xmlns="http://activemq.apache.org/schema/core">
+  <!-- update 2 -->
+  <destinationPolicy>
+    <policyMap>
+      <policyEntries>
+        <policyEntry gcInactiveDestinations="true" inactiveTimoutBeforeGC="600000" topic="&gt;">
+          <pendingMessageLimitStrategy>
+            <constantPendingMessageLimitStrategy limit="1000"/>
+          </pendingMessageLimitStrategy>
+        </policyEntry>
+        <policyEntry gcInactiveDestinations="true" inactiveTimoutBeforeGC="600000" queue="&gt;"/>
+      </policyEntries>
+    </policyMap>
+  </destinationPolicy>
+  <plugins/>
+</broker>

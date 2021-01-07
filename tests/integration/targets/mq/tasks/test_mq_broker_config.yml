@@ -1,0 +1,72 @@
+---
+- name: MQ User test suite
+  hosts: dummy
+  gather_facts: false
+  vars:
+    broker_id: "{{ lookup('env', 'MQ_BROKER_ID') }}"
+    aws_access_key_id: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+    aws_secret_access_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+    aws_session_token: "{{ lookup('env', 'AWS_SESSION_TOKEN') }}"
+    aws_region: "{{ lookup('env', 'AWS_REGION') }}"
+
+
+  tasks:
+    - name: show env
+      debug:
+        msg: "Will run tests against broker '{{ broker_id }}' in AWS region '{{ aws_region }}'"
+    - name: test 1 - send update to broker config
+      # amazon.aws.mq_broker:
+      mq_broker_config:
+        broker_id: "{{ broker_id }}"
+        config_xml: "{{ lookup('file', '../files/broker_cfg.1.xml')}}"
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: verify test1
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test1 failed
+        that:
+          - result.changed | bool
+          - result.broker['BrokerId'] == broker_id
+          - result.configuration['id'] == result.broker['Configurations']['Pending']['Id']
+          - result.configuration['revision'] == result.broker['Configurations']['Pending']['Revision']
+    - name: test 2 - send (almost) same config again
+      # amazon.aws.mq_broker_info:
+      mq_broker_config:
+        broker_id: "{{ broker_id }}"
+        config_xml: "{{ lookup('file', '../files/broker_cfg.1a.xml')}}"
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: verify test2
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test2 failed
+        that:
+          - not (result.changed | bool )
+    - name: test 3 - send new config with custom description and request reboot
+      # amazon.aws.mq_broker_info:
+      mq_broker_config:
+        broker_id: "{{ broker_id }}"
+        config_xml: "{{ lookup('file', '../files/broker_cfg.2.xml')}}"
+        config_description: "test 3 used custom description"
+        reboot: true
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: verify test3
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test2 failed
+        that:
+          - result.changed | bool
+          - result.broker['BrokerState'] == 'REBOOT_IN_PROGRESS'
+
+

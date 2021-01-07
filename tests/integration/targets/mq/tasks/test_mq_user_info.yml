@@ -1,0 +1,123 @@
+---
+- name: MQ User test suite
+  hosts: dummy
+  gather_facts: false
+  vars:
+    broker_id: "{{ lookup('env', 'MQ_BROKER_ID') }}"
+    aws_access_key_id: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+    aws_secret_access_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+    aws_session_token: "{{ lookup('env', 'AWS_SESSION_TOKEN') }}"
+    aws_region: "{{ lookup('env', 'AWS_REGION') }}"
+    create_users:
+      - "info_user1"
+      - "info_user2"
+      - "info_user3"
+      - "info_user4"
+      - "info_user5"
+    delete_users:
+      - "info_user2"
+      - "info_user5"
+
+  tasks:
+    - name: show env
+      debug:
+        msg: "Will run tests against broker '{{ broker_id }}' in AWS region '{{ aws_region }}'"
+    - name: prepare tests - create users
+      # amazon.aws.mq_user:
+      mq_user:
+        state: present
+        broker_id: "{{ broker_id }}"
+        username: "{{ item }}"
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      loop: "{{ create_users | flatten(levels=1) }}"
+    - name: prepare tests - delete users
+      # amazon.aws.mq_user:
+      mq_user:
+        state: absent
+        broker_id: "{{ broker_id }}"
+        username: "{{ item }}"
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      loop: "{{ delete_users | flatten(levels=1) }}"
+    - name: test1 - list all users with custom limit
+      # amazon.aws.mq_user_info:
+      mq_user_info:
+        broker_id: "{{ broker_id }}"
+        region: "{{ aws_region }}"
+        max_results: 5
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: test1 - verify
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test1 failed
+        that:
+          - (result.users | length) == 5
+    - name: test2 - list all users as dict
+      # amazon.aws.mq_user_info:
+      mq_user_info:
+        broker_id: "{{ broker_id }}"
+        region: "{{ aws_region }}"
+        as_dict: true
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: test2 - verify
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test2 failed
+        that:
+          - result.users['info_user1']
+          - result.users['info_user2']
+          - result.users['info_user3']
+    - name: test3 - list only user currently being active until next broker reboot
+      # amazon.aws.mq_user_info:
+      mq_user_info:
+        broker_id: "{{ broker_id }}"
+        region: "{{ aws_region }}"
+        as_dict: true
+        skip_pending_create: true
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: test3 - verify
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test3 failed
+        that:
+          - not ('info_user1' in result.users)
+          - result.users['info_user2']
+          - not ('info_user3' in result.users)
+          - not ('info_user4' in result.users)
+          - result.users['info_user5']
+    - name: test4 - list only user that will be active after next broker reboot
+      # amazon.aws.mq_user_info:
+      mq_user_info:
+        broker_id: "{{ broker_id }}"
+        region: "{{ aws_region }}"
+        as_dict: true
+        skip_pending_delete: true
+        aws_access_key: "{{ aws_access_key_id }}"
+        aws_secret_key: "{{ aws_secret_access_key }}"
+        security_token: "{{ aws_session_token }}"
+      register: result
+    - name: test4 - verify
+      #ansible.builtin.assert:
+      assert:
+        fail_msg: test4 failed
+        that:
+          - result.users['info_user1']
+          - not ('info_user2' in result.users)
+          - result.users['info_user3']
+          - result.users['info_user4']
+          - not ('info_user5' in result.users)
+
