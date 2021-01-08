@@ -750,6 +750,43 @@
         - dhcp_options_info.dhcp_options[0].tags['collection'] == 'amazon.aws'
         - dhcp_options_info.dhcp_options[0].tags['ansible_test'] == 'integration'
 
+  - name: add tags with different cases
+    ec2_vpc_dhcp_option:
+      dhcp_options_id: "{{ dhcp_options.dhcp_options_id }}"
+      state: present
+      vpc_id: "{{ vpc_id }}"
+      inherit_existing: False
+      delete_old: True
+      ntp_servers:
+          - 10.0.0.2
+          - 10.0.1.2
+      netbios_name_servers:
+          - 10.0.0.1
+          - 10.0.1.1
+      tags:
+        "lowercase spaced": 'hello cruel world'
+        "Title Case": 'Hello Cruel World'
+        CamelCase: 'SimpleCamelCase'
+        snake_case: 'simple_snake_case'
+    register: dhcp_options
+
+  - name: check if the expected tags are associated
+    ec2_vpc_dhcp_option_info:
+      dhcp_options_ids: ["{{ dhcp_options.dhcp_options_id }}"]
+    register: dhcp_options_info
+
+  - assert:
+      that:
+        - dhcp_options.changed
+        - not dhcp_options.new_options
+        - new_dhcp_options_id == dhcp_options.dhcp_options_id
+        - dhcp_options_info.dhcp_options[0].tags is defined
+        - dhcp_options_info.dhcp_options[0].tags.keys() | length == 4
+        - dhcp_options_info.dhcp_options[0].tags['lowercase spaced'] == 'hello cruel world'
+        - dhcp_options_info.dhcp_options[0].tags['title _case'] == 'Hello Cruel World'
+        - dhcp_options_info.dhcp_options[0].tags['camel_case'] == 'SimpleCamelCase'
+        - dhcp_options_info.dhcp_options[0].tags['snake_case'] == 'simple_snake_case'
+
   # FIXME does nothing, but reports changed
   - name: test purging all tags
     ec2_vpc_dhcp_option:
