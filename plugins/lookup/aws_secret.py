@@ -28,7 +28,8 @@ options:
   bypath:
     description: A boolean to indicate whether the parameter is provided as a hierarchy.
     default: false
-    type: bool
+    type: boolean
+    version_added: 1.4.0
   version_id:
     description: Version of the secret(s).
     required: False
@@ -39,8 +40,8 @@ options:
     description:
         - Join two or more entries to form an extended secret.
         - This is useful for overcoming the 4096 character limit imposed by AWS.
-        - No effect when used with I(bypath)
-    type: bool
+        - No effect when used with I(bypath).
+    type: boolean
     default: false
   on_missing:
     description:
@@ -64,7 +65,7 @@ options:
 
 EXAMPLES = r"""
  - name: lookup secretsmanager secret in the current region
-   debug: msg="{{ lookup('aws_secret', '/path/to/secrets', bypath=true) }}"
+   debug: msg="{{ lookup('amazon.aws.aws_secret', '/path/to/secrets', bypath=true) }}"
 
  - name: Create RDS instance with aws_secret lookup for password param
    rds:
@@ -74,15 +75,15 @@ EXAMPLES = r"""
      size: 10
      instance_type: db.m1.small
      username: dbadmin
-     password: "{{ lookup('aws_secret', 'DbSecret') }}"
+     password: "{{ lookup('amazon.aws.aws_secret', 'DbSecret') }}"
      tags:
        Environment: staging
 
  - name: skip if secret does not exist
-   debug: msg="{{ lookup('aws_secret', 'secret-not-exist', on_missing='skip')}}"
+   debug: msg="{{ lookup('amazon.aws.aws_secret', 'secret-not-exist', on_missing='skip')}}"
 
  - name: warn if access to the secret is denied
-   debug: msg="{{ lookup('aws_secret', 'secret-denied', on_denied='warn')}}"
+   debug: msg="{{ lookup('amazon.aws.aws_secret', 'secret-denied', on_denied='warn')}}"
 """
 
 RETURN = r"""
