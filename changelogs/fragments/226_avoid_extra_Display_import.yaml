@@ -1,0 +1,3 @@
+---
+minor_changes:
+- aws_ec2 inventory plugin - avoid a superfluous import of ``ansible.utils.display.Display`` (https://github.com/ansible-collections/amazon.aws/pull/226).

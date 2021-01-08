@@ -157,15 +157,12 @@ from ansible.module_utils._text import to_native, to_text
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list, boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable, Cacheable
-from ansible.utils.display import Display
 
 try:
     import boto3
     import botocore
 except ImportError:
     raise AnsibleError('The ec2 dynamic inventory plugin requires boto3 and botocore.')
-
-display = Display()
 
 # The mappings give an array of keys to get from the filter name to the value
 # returned by boto3's EC2 describe_instances method.
@@ -612,7 +609,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         if super(InventoryModule, self).verify_file(path):
             if path.endswith(('aws_ec2.yml', 'aws_ec2.yaml')):
                 return True
-        display.debug("aws_ec2 inventory filename must end with 'aws_ec2.yml' or 'aws_ec2.yaml'")
+        self.display.debug("aws_ec2 inventory filename must end with 'aws_ec2.yml' or 'aws_ec2.yaml'")
         return False
 
     def parse(self, inventory, loader, path, cache=True):
