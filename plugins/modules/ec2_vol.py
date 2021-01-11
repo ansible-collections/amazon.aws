@@ -97,14 +97,14 @@ options:
       - Ony when set to C(true), the volume will be modified.
     type: bool
     default: false
-    version_added: 1.3.1
+    version_added: 1.4.0
   throughput:
     description:
       - Volume throughput in MB/s.
       - This parameter is only valid for gp3 volumes.
       - Valid range is from 125 to 1000.
     type: int
-    version_added: 1.3.1
+    version_added: 1.4.0
 author: "Lester Wade (@lwade)"
 extends_documentation_fragment:
 - amazon.aws.aws
