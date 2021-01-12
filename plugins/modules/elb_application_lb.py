@@ -589,6 +589,11 @@ def create_or_update_elb(elb_obj):
 def delete_elb(elb_obj):
 
     if elb_obj.elb:
+        listeners_obj = ELBListeners(elb_obj.connection, elb_obj.module, elb_obj.elb['LoadBalancerArn'])
+        for listener_to_delete in [i['ListenerArn'] for i in listeners_obj.current_listeners]:
+            listener_obj = ELBListener(elb_obj.connection, elb_obj.module, listener_to_delete, elb_obj.elb['LoadBalancerArn'])
+            listener_obj.delete()
+
         elb_obj.delete()
 
     elb_obj.module.exit_json(changed=elb_obj.changed)
