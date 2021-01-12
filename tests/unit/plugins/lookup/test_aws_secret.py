@@ -128,6 +128,7 @@ def test_on_denied_option(mocker, dummy_credentials):
     retval = lookup_loader.get('amazon.aws.aws_secret').run(["denied_secret"], None, **args)
     assert(retval == [])
 
+
 def test_nested_lookup_variable(mocker, dummy_credentials):
     dateutil_tz = pytest.importorskip("dateutil.tz")
     simple_variable_success_response = {
@@ -160,6 +161,7 @@ def test_nested_lookup_variable(mocker, dummy_credentials):
     assert(retval[0] == '1')
     boto3_client_double.assert_called_with('secretsmanager', 'eu-west-1', aws_access_key_id='notakey',
                                            aws_secret_access_key="notasecret", aws_session_token=None)
+
 
 def test_path_lookup_variable(mocker, dummy_credentials):
     lookup = aws_secret.LookupModule()

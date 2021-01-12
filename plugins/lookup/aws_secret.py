@@ -92,7 +92,8 @@ EXAMPLES = r"""
 
  - name: lookup secretsmanager secret in the current region using the nested feature
    debug: msg="{{ lookup('amazon.aws.aws_secret', 'secrets.environments.production.password', nested=true) }}"
-   # The secret can be queried using the following syntax: `aws_secret_object_name.key1.key2.key3`. If an object is of the form `{"key1":{"key2":{"key3":1}}}` the query would return the value `1`.
+   # The secret can be queried using the following syntax: `aws_secret_object_name.key1.key2.key3`.
+   # If an object is of the form `{"key1":{"key2":{"key3":1}}}` the query would return the value `1`.
 """
 
 RETURN = r"""
@@ -116,6 +117,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_er
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 
 import json
+
 
 def _boto3_conn(region, credentials):
     boto_profile = credentials.pop('aws_profile', None)
@@ -243,7 +245,7 @@ class LookupModule(LookupBase):
                         if key in ret_val:
                             ret_val = ret_val[key]
                         else:
-                            raise AnsibleError("Successfully retrieved secret but there exists no key {} in the secret".format(key))
+                            raise AnsibleError("Successfully retrieved secret but there exists no key {0} in the secret".format(key))
                     return str(ret_val)
                 else:
                     return response['SecretString']
