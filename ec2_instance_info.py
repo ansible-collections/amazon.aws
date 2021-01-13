@@ -33,6 +33,13 @@ options:
     required: false
     default: {}
     type: dict
+  minimum_uptime:
+    description:
+      - Minimum running uptime in minutes of instances.  For example if I(uptime) is C(60) return all instances that have run more than 60 minutes.
+    required: false
+    aliases: ['uptime']
+    type: int
+
 
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -65,6 +72,15 @@ EXAMPLES = r'''
   community.aws.ec2_instance_info:
     filters:
       instance-state-name: [ "shutting-down", "stopping", "stopped" ]
+
+- name: Gather information about any instance with Name beginning with RHEL and an uptime of at least 60 minutes
+  community.aws.ec2_instance_info:
+    region: "{{ ec2_region }}"
+    uptime: 60
+    filters:
+      "tag:Name": "RHEL-*"
+      instance-state-name: [ "running"]
+  register: ec2_node_info
 
 '''
 
@@ -492,6 +508,8 @@ instances:
 '''
 
 import traceback
+import datetime
+
 
 try:
     import boto3
@@ -509,6 +527,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_t
 def list_ec2_instances(connection, module):
 
     instance_ids = module.params.get("instance_ids")
+    uptime = module.params.get('minimum_uptime')
     filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
 
     try:
@@ -517,10 +536,17 @@ def list_ec2_instances(connection, module):
     except ClientError as e:
         module.fail_json_aws(e, msg="Failed to list ec2 instances")
 
-    # Get instances from reservations
     instances = []
-    for reservation in reservations['Reservations']:
-        instances = instances + reservation['Instances']
+
+    if uptime:
+        timedelta = int(uptime) if uptime else 0
+        oldest_launch_time = datetime.datetime.utcnow() - datetime.timedelta(minutes=timedelta)
+        # Get instances from reservations
+        for reservation in reservations['Reservations']:
+            instances += [instance for instance in reservation['Instances'] if instance['LaunchTime'].replace(tzinfo=None) < oldest_launch_time]
+    else:
+        for reservation in reservations['Reservations']:
+            instances = instances + reservation['Instances']
 
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_instances = [camel_dict_to_snake_dict(instance) for instance in instances]
@@ -535,6 +561,7 @@ def list_ec2_instances(connection, module):
 def main():
 
     argument_spec = dict(
+        minimum_uptime=dict(required=False, type='int', default=None, aliases=['uptime']),
         instance_ids=dict(default=[], type='list', elements='str'),
         filters=dict(default={}, type='dict')
     )
