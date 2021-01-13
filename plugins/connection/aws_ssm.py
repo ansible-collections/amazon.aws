@@ -162,7 +162,6 @@ EXAMPLES = r'''
 import os
 import getpass
 import json
-import os
 import pty
 import random
 import re
@@ -177,6 +176,7 @@ try:
 except ImportError as e:
     HAS_BOTO_3_ERROR = str(e)
     HAS_BOTO_3 = False
+from botocore.client import Config
 
 from functools import wraps
 from ansible import constants as C
@@ -497,7 +497,8 @@ class Connection(ConnectionBase):
 
     def _get_url(self, client_method, bucket_name, out_path, http_method):
         ''' Generate URL for get_object / put_object '''
-        client = self._get_boto_client('s3')
+        region_name = self.get_option('region') or 'us-east-1'
+        client = self._get_boto_client('s3', region_name)
         return client.generate_presigned_url(client_method, Params={'Bucket': bucket_name, 'Key': out_path}, ExpiresIn=3600, HttpMethod=http_method)
 
     def _get_boto_client(self, service, region_name=None):
@@ -515,7 +516,9 @@ class Connection(ConnectionBase):
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,
             aws_session_token=aws_session_token,
-            region_name=region_name)
+            region_name=region_name,
+            config=Config(signature_version="s3v4")
+        )
         return client
 
     @_ssm_retry
