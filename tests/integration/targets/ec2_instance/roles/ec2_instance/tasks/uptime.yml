@@ -1,0 +1,66 @@
+---
+- block:
+  - name: "create t3.nano instance"
+    ec2_instance:
+      name: "{{ resource_prefix }}-test-uptime"
+      region: "{{ ec2_region }}"
+      image_id: "{{ ec2_ami_image }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+      instance_type: t3.nano
+      wait: yes
+
+  - name: "check ec2 instance"
+    ec2_instance_info:
+      filters:
+        "tag:Name": "{{ resource_prefix }}-test-uptime"
+        instance-state-name: [ "running"]
+    register: instance_facts
+
+  - name: "Confirm existence of instance id."
+    assert:
+      that:
+        - "{{ instance_facts.instances | length }} == 1"
+
+  - name: "check using uptime 100 hours - should find nothing"
+    ec2_instance_info:
+      region: "{{ ec2_region }}"
+      uptime: 6000
+      filters:
+        instance-state-name: [ "running"]
+        "tag:Name": "{{ resource_prefix }}-test-uptime"
+    register: instance_facts
+
+  - name: "Confirm there is no running instance"
+    assert:
+      that:
+        - "{{ instance_facts.instances | length }} == 0"
+
+  - name: Sleep for 61 seconds and continue with play
+    wait_for:
+      timeout: 61
+    delegate_to: localhost
+
+  - name: "check using uptime 1 minute"
+    ec2_instance_info:
+      region: "{{ ec2_region }}"
+      uptime: 1
+      filters:
+        instance-state-name: [ "running"]
+        "tag:Name": "{{ resource_prefix }}-test-uptime"
+    register: instance_facts
+
+  - name: "Confirm there is one running instance"
+    assert:
+      that:
+        - "{{ instance_facts.instances | length }} == 1"
+
+  always:
+  - name: "Terminate instances"
+    ec2_instance:
+      state: absent
+      filters:
+        "tag:TestId": "{{ ec2_instance_tag_TestId }}"
+      wait: yes
+    ignore_errors: yes
