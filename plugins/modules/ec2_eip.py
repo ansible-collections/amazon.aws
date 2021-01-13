@@ -20,6 +20,7 @@ options:
   device_id:
     description:
       - The id of the device for the EIP. Can be an EC2 Instance id or Elastic Network Interface (ENI) id.
+      - The I(instance_id) alias has been deprecated and will be removed after 2022-12-01.
     required: false
     aliases: [ instance_id ]
     type: str
@@ -519,7 +520,10 @@ def generate_tag_dict(module, tag_name, tag_value):
 
 def main():
     argument_spec = dict(
-        device_id=dict(required=False, aliases=['instance_id']),
+        device_id=dict(required=False, aliases=['instance_id'],
+                       deprecated_aliases=[dict(name='instance_id',
+                                           date='2022-12-01',
+                                           collection_name='community.aws')]),
         public_ip=dict(required=False, aliases=['ip']),
         state=dict(required=False, default='present',
                    choices=['present', 'absent']),
@@ -560,7 +564,6 @@ def main():
     public_ipv4_pool = module.params.get('public_ipv4_pool')
 
     if instance_id:
-        warnings = ["instance_id is no longer used, please use device_id going forward"]
         is_instance = True
         device_id = instance_id
     else:
@@ -629,8 +632,6 @@ def main():
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(str(e))
 
-    if instance_id:
-        result['warnings'] = warnings
     module.exit_json(**result)
 
 
