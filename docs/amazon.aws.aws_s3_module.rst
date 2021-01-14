@@ -660,7 +660,7 @@ Examples
         mode: put
 
     - name: PUT operation from a rendered template
-      aws_s3:
+      amazon.aws.aws_s3:
         bucket: mybucket
         object: /object.yaml
         content: "{{ lookup('template', 'templates/object.yaml.j2') }}"
