@@ -783,8 +783,9 @@ def main():
         else:
             volume, changed = create_volume(module, ec2_conn, zone=zone)
 
-        tags['Name'] = name
-        final_tags, tags_changed = ensure_tags(module, ec2_conn, volume['volume_id'], 'volume', tags, False)
+        if name:
+            tags['Name'] = name
+        final_tags, tags_changed = ensure_tags(module, ec2_conn, volume['volume_id'], 'volume', tags, True)
 
         if detach_vol_flag:
             volume, changed = detach_volume(module, ec2_conn, volume_dict=volume)
