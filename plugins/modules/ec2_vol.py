@@ -94,7 +94,7 @@ options:
     type: dict
   modify_volume:
     description:
-      - Ony when set to C(true), the volume will be modified.
+      - The volume won't be modify unless this key is C(true).
     type: bool
     default: false
     version_added: 1.4.0
