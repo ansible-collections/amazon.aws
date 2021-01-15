@@ -35,10 +35,11 @@ options:
     type: int
   volume_type:
     description:
-      - Type of EBS volume; standard (magnetic), gp2 (SSD), io1 (Provisioned IOPS), st1 (Throughput Optimized HDD), sc1 (Cold HDD).
+      - Type of EBS volume; standard (magnetic), gp2 (SSD), gp3 (SSD), io1 (Provisioned IOPS), io2 (Provisioned IOPS),
+        st1 (Throughput Optimized HDD), sc1 (Cold HDD).
         "Standard" is the old EBS default and continues to remain the Ansible default for backwards compatibility.
     default: standard
-    choices: ['standard', 'gp2', 'io1', 'st1', 'sc1']
+    choices: ['standard', 'gp2', 'io1', 'st1', 'sc1', 'gp3', 'io2']
     type: str
   iops:
     description:
@@ -91,11 +92,25 @@ options:
       - tag:value pairs to add to the volume after creation.
     default: {}
     type: dict
+  modify_volume:
+    description:
+      - The volume won't be modify unless this key is C(true).
+    type: bool
+    default: false
+    version_added: 1.4.0
+  throughput:
+    description:
+      - Volume throughput in MB/s.
+      - This parameter is only valid for gp3 volumes.
+      - Valid range is from 125 to 1000.
+    type: int
+    version_added: 1.4.0
 author: "Lester Wade (@lwade)"
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 
+requirements: [ boto3>=1.16.33 ]
 '''
 
 EXAMPLES = '''
@@ -239,7 +254,6 @@ from ..module_utils.ec2 import compare_aws_tags
 from ..module_utils.ec2 import AWSRetry
 from ..module_utils.core import is_boto3_error_code
 
-
 try:
     import botocore
 except ImportError:
@@ -338,6 +352,59 @@ def delete_volume(module, ec2_conn, volume_id=None):
     return changed
 
 
+def update_volume(module, ec2_conn, volume):
+    changed = False
+    req_obj = {'VolumeId': volume['volume_id']}
+
+    if module.params.get('modify_volume'):
+        iops_changed = False
+        if volume['volume_type'] != 'standard':
+            target_iops = module.params.get('iops')
+            if target_iops:
+                original_iops = volume['iops']
+                if target_iops != original_iops:
+                    iops_changed = True
+                    req_obj['iops'] = target_iops
+
+        target_size = module.params.get('volume_size')
+        size_changed = False
+        if target_size:
+            original_size = volume['size']
+            if target_size != original_size:
+                size_changed = True
+                req_obj['size'] = target_size
+
+        target_type = module.params.get('volume_type')
+        original_type = None
+        type_changed = False
+        if target_type:
+            original_type = volume['volume_type']
+            if target_type != original_type:
+                type_changed = True
+                req_obj['VolumeType'] = target_type
+
+        target_throughput = module.params.get('throughput')
+        throughput_changed = False
+        if 'gp3' in [target_type, original_type]:
+            if target_throughput:
+                original_throughput = volume.get('throughput')
+                if target_throughput != original_throughput:
+                    throughput_changed = True
+                    req_obj['Throughput'] = target_throughput
+
+        changed = iops_changed or size_changed or type_changed or throughput_changed
+
+        if changed:
+            response = ec2_conn.modify_volume(**req_obj)
+
+            volume['size'] = response.get('VolumeModification').get('TargetSize')
+            volume['volume_type'] = response.get('VolumeModification').get('TargetVolumeType')
+            volume['iops'] = response.get('VolumeModification').get('TargetIops')
+            volume['throughput'] = response.get('VolumeModification').get('TargetThroughput')
+
+    return volume, changed
+
+
 def create_volume(module, ec2_conn, zone):
     changed = False
     iops = module.params.get('iops')
@@ -346,6 +413,7 @@ def create_volume(module, ec2_conn, zone):
     volume_size = module.params.get('volume_size')
     volume_type = module.params.get('volume_type')
     snapshot = module.params.get('snapshot')
+    throughput = module.params.get('throughput')
     # If custom iops is defined we use volume_type "io1" rather than the default of "standard"
     if iops:
         volume_type = 'io1'
@@ -369,6 +437,9 @@ def create_volume(module, ec2_conn, zone):
 
             if iops:
                 additional_params['Iops'] = int(iops)
+
+            if throughput:
+                additional_params['Throughput'] = int(throughput)
 
             create_vol_response = ec2_conn.create_volume(
                 aws_retry=True,
@@ -510,6 +581,7 @@ def get_volume_info(volume):
         'status': volume.get('state'),
         'type': volume.get('volume_type'),
         'zone': volume.get('availability_zone'),
+        'throughput': volume.get('throughput'),
         'attachment_set': {
             'attach_time': attachment_data.get('attach_time', None),
             'device': attachment_data.get('device', None),
@@ -601,16 +673,18 @@ def main():
         id=dict(),
         name=dict(),
         volume_size=dict(type='int'),
-        volume_type=dict(choices=['standard', 'gp2', 'io1', 'st1', 'sc1'], default='standard'),
+        volume_type=dict(default='standard', choices=['standard', 'gp2', 'io1', 'st1', 'sc1', 'gp3', 'io2']),
         iops=dict(type='int'),
-        encrypted=dict(type='bool', default=False),
+        encrypted=dict(default=False, type='bool'),
         kms_key_id=dict(),
         device_name=dict(),
-        delete_on_termination=dict(type='bool', default=False),
+        delete_on_termination=dict(default=False, type='bool'),
         zone=dict(aliases=['availability_zone', 'aws_zone', 'ec2_zone']),
         snapshot=dict(),
-        state=dict(choices=['absent', 'present', 'list'], default='present'),
-        tags=dict(type='dict', default={})
+        state=dict(default='present', choices=['absent', 'present', 'list']),
+        tags=dict(default={}, type='dict'),
+        modify_volume=dict(default=False, type='bool'),
+        throughput=dict(type='int')
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec)
@@ -665,9 +739,6 @@ def main():
     if not volume_size and not (param_id or name or snapshot):
         module.fail_json(msg="You must specify volume_size or identify an existing volume by id, name, or snapshot")
 
-    if volume_size and param_id:
-        module.fail_json(msg="Cannot specify volume_size together with id")
-
     # Try getting volume
     volume = get_volume(module, ec2_conn, fail_on_not_found=False)
     if state == 'present':
@@ -704,7 +775,12 @@ def main():
                     )
 
         attach_state_changed = False
-        volume, changed = create_volume(module, ec2_conn, zone=zone)
+
+        if volume:
+            volume, changed = update_volume(module, ec2_conn, volume)
+        else:
+            volume, changed = create_volume(module, ec2_conn, zone=zone)
+
         tags['Name'] = name
         final_tags, tags_changed = ensure_tags(module, ec2_conn, volume['volume_id'], 'volume', tags, False)
 
