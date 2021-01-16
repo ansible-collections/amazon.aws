@@ -80,7 +80,6 @@ upload_date:
 
 
 try:
-    import boto3
     import botocore
     import botocore.exceptions
 except ImportError:
