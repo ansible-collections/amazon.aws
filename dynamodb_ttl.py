@@ -65,8 +65,6 @@ current_status:
   - { "AttributeName": "deploy_timestamp", "Enabled": true }
 '''
 
-import traceback
-
 try:
     import botocore
 except ImportError:

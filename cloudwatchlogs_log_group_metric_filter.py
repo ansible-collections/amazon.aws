@@ -100,13 +100,10 @@ metric_filters:
     ]
 
 """
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule, is_boto3_error_code, get_boto3_client_method_parameters
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
-try:
-    from botocore.exceptions import ClientError, BotoCoreError, WaiterError
-except ImportError:
-    pass  # caught by AnsibleAWSModule
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 
 
 def metricTransformationHandler(metricTransformations, originMetricTransformations=None):

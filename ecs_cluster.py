@@ -103,10 +103,10 @@ status:
     type: str
     sample: ACTIVE
 '''
+
 import time
 
 try:
-    import boto3
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule

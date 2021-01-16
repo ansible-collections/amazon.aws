@@ -131,7 +131,6 @@ message_id:
 """
 
 import json
-import traceback
 
 try:
     from botocore.exceptions import BotoCoreError, ClientError
