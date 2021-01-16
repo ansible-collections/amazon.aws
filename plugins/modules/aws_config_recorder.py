@@ -82,12 +82,14 @@ RETURN = '''#'''
 
 try:
     import botocore
-    from botocore.exceptions import BotoCoreError, ClientError
 except ImportError:
     pass  # handled by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule, is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, AWSRetry
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 def resource_exists(client, module, params):

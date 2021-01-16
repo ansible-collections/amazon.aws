@@ -95,14 +95,14 @@ EXAMPLES = r'''
 '''
 
 try:
-    import boto3
-    import botocore
     from botocore.exceptions import ClientError, BotoCoreError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule, is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry, ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 
 
 def _create_metrics_configuration(mc_id, filter_prefix, filter_tags):
