@@ -75,6 +75,7 @@
           - "'instance_id' in volume1.volume.attachment_set"
           - not volume1.volume.attachment_set.instance_id
           - not volume1.volume.encrypted
+          - volume1.volume.tags.ResourcePrefix == "{{ resource_prefix }}"
 
     # no idempotency check needed here
 
@@ -103,6 +104,7 @@
           - volume2.volume.iops == 101
           - volume2.volume.size == 4
           - volume2.volume.encrypted
+          - volume2.volume.tags.ResourcePrefix == "{{ resource_prefix }}"
 
     - name: create another volume (override module defaults) (idempotent)
       ec2_vol:

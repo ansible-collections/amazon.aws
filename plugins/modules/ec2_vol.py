@@ -569,7 +569,9 @@ def detach_volume(module, ec2_conn, volume_dict):
     return volume_dict, changed
 
 
-def get_volume_info(volume):
+def get_volume_info(volume, tags=None):
+    if not tags:
+        tags = boto3_tag_list_to_ansible_dict(volume.get('tags'))
     attachment_data = get_attachment_data(volume)
     volume_info = {
         'create_time': volume.get('create_time'),
@@ -589,7 +591,7 @@ def get_volume_info(volume):
             'status': attachment_data.get('state', None),
             'deleteOnTermination': attachment_data.get('delete_on_termination', None)
         },
-        'tags': boto3_tag_list_to_ansible_dict(volume.get('tags'))
+        'tags': tags
     }
 
     return volume_info
@@ -790,7 +792,7 @@ def main():
             volume, changed = attach_volume(module, ec2_conn, volume_dict=volume, instance_dict=inst, device_name=device_name)
 
         # Add device, volume_id and volume_type parameters separately to maintain backward compatibility
-        volume_info = get_volume_info(volume)
+        volume_info = get_volume_info(volume, tags=final_tags)
 
         module.exit_json(changed=changed, volume=volume_info, device=volume_info['attachment_set']['device'],
                          volume_id=volume_info['id'], volume_type=volume_info['type'])
