@@ -21,6 +21,31 @@ from .elb_utils import get_elb
 from .elb_utils import get_elb_listener
 
 
+# ForwardConfig may be optional if we've got a single TargetGroupArn entry
+def _prune_ForwardConfig(action):
+    if "ForwardConfig" in action and action['Type'] == 'forward':
+        if action["ForwardConfig"] == {
+                'TargetGroupStickinessConfig': {'Enabled': False},
+                'TargetGroups': [{"TargetGroupArn": action["TargetGroupArn"], "Weight": 1}]}:
+            newAction = action.copy()
+            del(newAction["ForwardConfig"])
+            return newAction
+    return action
+
+
+# the AWS api won't return the client secret, so we'll have to remove it
+# or the module will always see the new and current actions as different
+# and try to apply the same config
+def _prune_secret(action):
+    if action['Type'] == 'authenticate-oidc':
+        action['AuthenticateOidcConfig'].pop('ClientSecret')
+    return action
+
+
+def _sort_actions(actions):
+    return sorted(actions, key=lambda x: x.get('Order', 0))
+
+
 class ElasticLoadBalancerV2(object):
 
     def __init__(self, connection, module):
@@ -565,31 +590,13 @@ class ELBListeners(object):
         # If the lengths of the actions are the same, we'll have to verify that the
         # contents of those actions are the same
         if len(current_listener['DefaultActions']) == len(new_listener['DefaultActions']):
-            # if actions have just one element, compare the contents and then update if
-            # they're different
-            if len(current_listener['DefaultActions']) == 1 and len(new_listener['DefaultActions']) == 1:
-                if current_listener['DefaultActions'] != new_listener['DefaultActions']:
-                    modified_listener['DefaultActions'] = new_listener['DefaultActions']
-            # if actions have multiple elements, we'll have to order them first before comparing.
-            # multiple actions will have an 'Order' key for this purpose
-            else:
-                current_actions_sorted = sorted(current_listener['DefaultActions'], key=lambda x: x['Order'])
-                new_actions_sorted = sorted(new_listener['DefaultActions'], key=lambda x: x['Order'])
+            current_actions_sorted = _sort_actions(current_listener['DefaultActions'])
+            new_actions_sorted = _sort_actions(new_listener['DefaultActions'])
 
-                # the AWS api won't return the client secret, so we'll have to remove it
-                # or the module will always see the new and current actions as different
-                # and try to apply the same config
-                new_actions_sorted_no_secret = []
-                for action in new_actions_sorted:
-                    # the secret is currently only defined in the oidc config
-                    if action['Type'] == 'authenticate-oidc':
-                        action['AuthenticateOidcConfig'].pop('ClientSecret')
-                        new_actions_sorted_no_secret.append(action)
-                    else:
-                        new_actions_sorted_no_secret.append(action)
+            new_actions_sorted_no_secret = [_prune_secret(i) for i in new_actions_sorted]
 
-                if current_actions_sorted != new_actions_sorted_no_secret:
-                    modified_listener['DefaultActions'] = new_listener['DefaultActions']
+            if [_prune_ForwardConfig(i) for i in current_actions_sorted] != [_prune_ForwardConfig(i) for i in new_actions_sorted_no_secret]:
+                modified_listener['DefaultActions'] = new_listener['DefaultActions']
         # If the action lengths are different, then replace with the new actions
         else:
             modified_listener['DefaultActions'] = new_listener['DefaultActions']
@@ -756,29 +763,13 @@ class ELBListenerRules(object):
         if len(current_rule['Actions']) == len(new_rule['Actions']):
             # if actions have just one element, compare the contents and then update if
             # they're different
-            if len(current_rule['Actions']) == 1 and len(new_rule['Actions']) == 1:
-                if current_rule['Actions'] != new_rule['Actions']:
-                    modified_rule['Actions'] = new_rule['Actions']
-            # if actions have multiple elements, we'll have to order them first before comparing.
-            # multiple actions will have an 'Order' key for this purpose
-            else:
-                current_actions_sorted = sorted(current_rule['Actions'], key=lambda x: x['Order'])
-                new_actions_sorted = sorted(new_rule['Actions'], key=lambda x: x['Order'])
+            current_actions_sorted = _sort_actions(current_rule['Actions'])
+            new_actions_sorted = _sort_actions(new_rule['Actions'])
 
-                # the AWS api won't return the client secret, so we'll have to remove it
-                # or the module will always see the new and current actions as different
-                # and try to apply the same config
-                new_actions_sorted_no_secret = []
-                for action in new_actions_sorted:
-                    # the secret is currently only defined in the oidc config
-                    if action['Type'] == 'authenticate-oidc':
-                        action['AuthenticateOidcConfig'].pop('ClientSecret')
-                        new_actions_sorted_no_secret.append(action)
-                    else:
-                        new_actions_sorted_no_secret.append(action)
+            new_actions_sorted_no_secret = [_prune_secret(i) for i in new_actions_sorted]
 
-                if current_actions_sorted != new_actions_sorted_no_secret:
-                    modified_rule['Actions'] = new_rule['Actions']
+            if [_prune_ForwardConfig(i) for i in current_actions_sorted] != [_prune_ForwardConfig(i) for i in new_actions_sorted_no_secret]:
+                modified_rule['Actions'] = new_rule['Actions']
         # If the action lengths are different, then replace with the new actions
         else:
             modified_rule['Actions'] = new_rule['Actions']
