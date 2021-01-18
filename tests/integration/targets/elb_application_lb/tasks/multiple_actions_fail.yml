@@ -117,40 +117,6 @@
       vpc_id: '{{ vpc.vpc.id }}'
       state: present
     register: tg
-  - name: create privatekey for testing
-    community.crypto.openssl_privatekey:
-      path: ./ansible_alb_test.pem
-      size: 2048
-  - name: create csr for cert
-    community.crypto.openssl_csr:
-      path: ./ansible_alb_test.csr
-      privatekey_path: ./ansible_alb_test.pem
-      C: US
-      ST: AnyPrincipality
-      L: AnyTown
-      O: AnsibleIntegrationTest
-      OU: Test
-      CN: ansible-alb-test.example.com
-  - name: create certificate
-    community.crypto.openssl_certificate:
-      path: ./ansible_alb_test.crt
-      privatekey_path: ./ansible_alb_test.pem
-      csr_path: ./ansible_alb_test.csr
-      provider: selfsigned
-  - name: upload server cert to iam
-    iam_cert:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
-      name: '{{ alb_name }}'
-      state: present
-      cert: ./ansible_alb_test.crt
-      key: ./ansible_alb_test.pem
-    register: cert_upload
-  - name: register certificate arn to acm_arn fact
-    set_fact:
-      cert_arn: '{{ cert_upload.arn }}'
   - include_tasks: test_multiple_actions_fail.yml
   always:
   - name: destroy ALB
@@ -182,20 +148,6 @@
     delay: 5
     until: remove_tg is success
     when: tg is defined
-    ignore_errors: true
-  - name: destroy acm certificate
-    iam_cert:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
-      name: '{{ alb_name }}'
-      state: absent
-    register: remove_cert
-    retries: 10
-    delay: 5
-    until: remove_cert is success
-    when: cert_arn is defined
     ignore_errors: true
   - name: destroy sec group
     ec2_group:

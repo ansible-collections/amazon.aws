@@ -81,14 +81,11 @@
       security_groups: "{{ sec_group.group_id }}"
       state: present
       listeners:
-        - Protocol: HTTPS
-          Port: 443
+        - Protocol: HTTP
+          Port: 80
           DefaultActions:
             - Type: redirect
               RedirectConfig: "{{ RedirectActionConfig }}"
-          Certificates:
-            - CertificateArn: "{{ cert_arn }}"
-          SslPolicy: ELBSecurityPolicy-2016-08
       <<: *aws_connection_info
     register: alb
 
@@ -106,14 +103,11 @@
       security_groups: "{{ sec_group.group_id }}"
       state: present
       listeners:
-        - Protocol: HTTPS
-          Port: 443
+        - Protocol: HTTP
+          Port: 80
           DefaultActions:
             - Type: redirect
               RedirectConfig: "{{ RedirectActionConfig }}"
-          Certificates:
-            - CertificateArn: "{{ cert_arn }}"
-          SslPolicy: ELBSecurityPolicy-2016-08
       <<: *aws_connection_info
     register: alb
 
@@ -131,14 +125,11 @@
       security_groups: "{{ sec_group.group_id }}"
       state: present
       listeners:
-        - Protocol: HTTPS
-          Port: 443
+        - Protocol: HTTP
+          Port: 80
           DefaultActions:
             - Type: fixed-response
               FixedResponseConfig: "{{ FixedResponseActionConfig }}"
-          Certificates:
-            - CertificateArn: "{{ cert_arn }}"
-          SslPolicy: ELBSecurityPolicy-2016-08
       <<: *aws_connection_info
     register: alb
 
@@ -156,14 +147,11 @@
       security_groups: "{{ sec_group.group_id }}"
       state: present
       listeners:
-        - Protocol: HTTPS
-          Port: 443
+        - Protocol: HTTP
+          Port: 80
           DefaultActions:
             - Type: fixed-response
               FixedResponseConfig: "{{ FixedResponseActionConfig }}"
-          Certificates:
-            - CertificateArn: "{{ cert_arn }}"
-          SslPolicy: ELBSecurityPolicy-2016-08
       <<: *aws_connection_info
     register: alb
 
@@ -181,14 +169,11 @@
       security_groups: "{{ sec_group.group_id }}"
       state: present
       listeners:
-        - Protocol: HTTPS
-          Port: 443
+        - Protocol: HTTP
+          Port: 80
           DefaultActions:
             - Type: fixed-response
               FixedResponseConfig: "{{ FixedResponseActionConfig }}"
-          Certificates:
-            - CertificateArn: "{{ cert_arn }}"
-          SslPolicy: ELBSecurityPolicy-2016-08
           Rules:
             - Conditions:
                 - Field: path-pattern
@@ -236,14 +221,11 @@
       security_groups: "{{ sec_group.group_id }}"
       state: present
       listeners:
-        - Protocol: HTTPS
-          Port: 443
+        - Protocol: HTTP
+          Port: 80
           DefaultActions:
             - Type: fixed-response
               FixedResponseConfig: "{{ FixedResponseActionConfig }}"
-          Certificates:
-            - CertificateArn: "{{ cert_arn }}"
-          SslPolicy: ELBSecurityPolicy-2016-08
           Rules:
             - Conditions:
                 - Field: path-pattern
@@ -292,8 +274,8 @@
 #      security_groups: "{{ sec_group.group_id }}"
 #      state: present
 #      listeners:
-#        - Protocol: HTTPS
-#          Port: 443
+#        - Protocol: HTTP
+#          Port: 80
 #          DefaultActions:
 #            - Type: forward
 #              TargetGroupName: "{{ tg_name }}"
@@ -301,9 +283,6 @@
 #            - Type: authenticate-oidc
 #              AuthenticateOidcConfig: "{{ AuthenticateOidcActionConfig }}"
 #              Order: 1
-#          Certificates:
-#            - CertificateArn: "{{ cert_arn }}"
-#          SslPolicy: ELBSecurityPolicy-2016-08
 #      <<: *aws_connection_info
 #    register: alb
 #
@@ -319,8 +298,8 @@
 #      security_groups: "{{ sec_group.group_id }}"
 #      state: present
 #      listeners:
-#        - Protocol: HTTPS
-#          Port: 443
+#        - Protocol: HTTP
+#          Port: 80
 #          DefaultActions:
 #            - Type: authenticate-oidc
 #              AuthenticateOidcConfig: "{{ AuthenticateOidcActionConfig }}"
@@ -328,9 +307,6 @@
 #            - Type: forward
 #              TargetGroupName: "{{ tg_name }}"
 #              Order: 2
-#          Certificates:
-#            - CertificateArn: "{{ cert_arn }}"
-#          SslPolicy: ELBSecurityPolicy-2016-08
 #      <<: *aws_connection_info
 #    register: alb
 #
@@ -347,8 +323,8 @@
 #      security_groups: "{{ sec_group.group_id }}"
 #      state: present
 #      listeners:
-#        - Protocol: HTTPS
-#          Port: 443
+#        - Protocol: HTTP
+#          Port: 80
 #          DefaultActions:
 #            - Type: authenticate-oidc
 #              AuthenticateOidcConfig: "{{ AuthenticateOidcActionConfig }}"
@@ -356,9 +332,6 @@
 #            - Type: forward
 #              TargetGroupName: "{{ tg_name }}"
 #              Order: 2
-#          Certificates:
-#            - CertificateArn: "{{ cert_arn }}"
-#          SslPolicy: ELBSecurityPolicy-2016-08
 #          Rules:
 #            - Conditions:
 #                - Field: path-pattern
@@ -389,8 +362,8 @@
 #      security_groups: "{{ sec_group.group_id }}"
 #      state: present
 #      listeners:
-#        - Protocol: HTTPS
-#          Port: 443
+#        - Protocol: HTTP
+#          Port: 80
 #          DefaultActions:
 #            - Type: authenticate-oidc
 #              AuthenticateOidcConfig: "{{ AuthenticateOidcActionConfig }}"
@@ -398,9 +371,6 @@
 #            - Type: forward
 #              TargetGroupName: "{{ tg_name }}"
 #              Order: 2
-#          Certificates:
-#            - CertificateArn: "{{ cert_arn }}"
-#          SslPolicy: ELBSecurityPolicy-2016-08
 #          Rules:
 #            - Conditions:
 #                - Field: path-pattern
@@ -431,8 +401,8 @@
 #      security_groups: "{{ sec_group.group_id }}"
 #      state: present
 #      listeners:
-#        - Protocol: HTTPS
-#          Port: 443
+#        - Protocol: HTTP
+#          Port: 80
 #          DefaultActions:
 #            - Type: authenticate-oidc
 #              AuthenticateOidcConfig: "{{ AuthenticateOidcActionConfig }}"
@@ -440,9 +410,6 @@
 #            - Type: forward
 #              TargetGroupName: "{{ tg_name }}"
 #              Order: 2
-#          Certificates:
-#            - CertificateArn: "{{ cert_arn }}"
-#          SslPolicy: ELBSecurityPolicy-2016-08
 #          Rules:
 #            - Conditions:
 #                - Field: path-pattern
