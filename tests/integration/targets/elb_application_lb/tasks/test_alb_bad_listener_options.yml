@@ -28,7 +28,6 @@
   - assert:
       that:
         - alb is failed
-        - alb.msg.startswith("'SslPolicy' is a required listener dict key when Protocol = HTTPS")
 
   - name: test creating an ALB without providing required listener options
     elb_application_lb:
