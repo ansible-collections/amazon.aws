@@ -532,7 +532,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                       <span style="color: purple">list</span>
                     </div>
                 </td>
-                <td>only if all_facts or stack_resourses is true and the stack exists</td>
+                <td>only if all_facts or stack_resources is true and the stack exists</td>
                 <td>
                             <div>Describes stack resources for the stack</div>
                     <br/>
@@ -547,7 +547,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                       <span style="color: purple">dictionary</span>
                     </div>
                 </td>
-                <td>only if all_facts or stack_resourses is true and the stack exists</td>
+                <td>only if all_facts or stack_resources is true and the stack exists</td>
                 <td>
                             <div>Dictionary of stack resources keyed by the value of each resource &#x27;LogicalResourceId&#x27; parameter and corresponding value of each resource &#x27;PhysicalResourceId&#x27; parameter</div>
                     <br/>
