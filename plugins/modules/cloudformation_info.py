@@ -147,12 +147,12 @@ stack_template:
     type: dict
 stack_resource_list:
     description: Describes stack resources for the stack
-    returned: only if all_facts or stack_resourses is true and the stack exists
+    returned: only if all_facts or stack_resources is true and the stack exists
     type: list
 stack_resources:
     description: Dictionary of stack resources keyed by the value of each resource 'LogicalResourceId' parameter and corresponding value of each
                  resource 'PhysicalResourceId' parameter
-    returned: only if all_facts or stack_resourses is true and the stack exists
+    returned: only if all_facts or stack_resources is true and the stack exists
     type: dict
     sample:
       AutoScalingGroup: "dev-someapp-AutoscalingGroup-1SKEXXBCAN0S7"
