@@ -211,6 +211,7 @@
         device_name: /dev/sdh
         volume_size: 1
         volume_type: gp2
+        name: '{{ resource_prefix }} - sdh'
         tags:
           "lowercase spaced": 'hello cruel world'
           "Title Case": 'Hello Cruel World'
