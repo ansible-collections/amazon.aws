@@ -232,6 +232,7 @@
           - new_vol_attach_result.volume.tags["Title Case"] == 'Hello Cruel World'
           - new_vol_attach_result.volume.tags["CamelCase"] == 'SimpleCamelCase'
           - new_vol_attach_result.volume.tags["snake_case"] == 'simple_snake_case'
+          - new_vol_attach_result.volume.tags["Name"] == '{{ resource_prefix }} - sdh'          
 
 
     - name: attach a new volume to an instance (idempotent)
