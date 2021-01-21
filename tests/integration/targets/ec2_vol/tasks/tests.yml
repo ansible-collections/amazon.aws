@@ -263,7 +263,6 @@
           "Title Case": 'Hello Cruel World ❤️'
           CamelCase: 'SimpleCamelCase ❤️'
           snake_case: 'simple_snake_case ❤️'
-          ResourcePrefix: "{{ resource_prefix }}"
       register: new_vol_attach_result
 
     - name: check task return attributes
