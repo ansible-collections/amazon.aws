@@ -136,6 +136,18 @@
           - (result.instances|length) == 1
           - "result.instances[0].state.name == 'running'"
 
+    - name: test second instance is stopped
+      ec2:
+        instance_ids: "{{ test_instance_2.instance_ids }}"
+        state: stopped
+        wait: yes
+      register: result
+
+    - name: assert second instance is stopped
+      assert:
+        that:
+          - "result.instances[0].state == 'stopped'"
+
     # ========================================================
 
   always:
