@@ -129,6 +129,40 @@ def test_on_denied_option(mocker, dummy_credentials):
     assert(retval == [])
 
 
+def test_nested_lookup_variable(mocker, dummy_credentials):
+    dateutil_tz = pytest.importorskip("dateutil.tz")
+    simple_variable_success_response = {
+        'Name': 'simple_variable',
+        'VersionId': 'cafe8168-e6ce-4e59-8830-5b143faf6c52',
+        'SecretString': '{"key1": {"key2": {"key3": 1 } } }',
+        'VersionStages': ['AWSCURRENT'],
+        'CreatedDate': datetime.datetime(2019, 4, 4, 11, 41, 0, 878000, tzinfo=dateutil_tz.tzlocal()),
+        'ResponseMetadata': {
+            'RequestId': '21099462-597c-490a-800f-8b7a41e5151c',
+            'HTTPStatusCode': 200,
+            'HTTPHeaders': {
+                'date': 'Thu, 04 Apr 2019 10:43:12 GMT',
+                'content-type': 'application/x-amz-json-1.1',
+                'content-length': '252',
+                'connection': 'keep-alive',
+                'x-amzn-requestid': '21099462-597c-490a-800f-8b7a41e5151c'
+            },
+            'RetryAttempts': 0
+        }
+    }
+    lookup = lookup_loader.get('amazon.aws.aws_secret')
+    boto3_double = mocker.MagicMock()
+    boto3_double.Session.return_value.client.return_value.get_secret_value.return_value = simple_variable_success_response
+    boto3_client_double = boto3_double.Session.return_value.client
+
+    mocker.patch.object(boto3, 'session', boto3_double)
+    dummy_credentials["nested"] = 'true'
+    retval = lookup.run(["simple_variable.key1.key2.key3"], None, **dummy_credentials)
+    assert(retval[0] == '1')
+    boto3_client_double.assert_called_with('secretsmanager', 'eu-west-1', aws_access_key_id='notakey',
+                                           aws_secret_access_key="notasecret", aws_session_token=None)
+
+
 def test_path_lookup_variable(mocker, dummy_credentials):
     lookup = aws_secret.LookupModule()
     lookup._load_name = "aws_secret"

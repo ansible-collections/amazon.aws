@@ -30,6 +30,11 @@ options:
     default: false
     type: boolean
     version_added: 1.4.0
+  nested:
+    description: A boolean to indicate the secret contains nested values.
+    type: boolean
+    default: false
+    version_added: 1.4.0
   version_id:
     description: Version of the secret(s).
     required: False
@@ -84,6 +89,11 @@ EXAMPLES = r"""
 
  - name: warn if access to the secret is denied
    debug: msg="{{ lookup('amazon.aws.aws_secret', 'secret-denied', on_denied='warn')}}"
+
+ - name: lookup secretsmanager secret in the current region using the nested feature
+   debug: msg="{{ lookup('amazon.aws.aws_secret', 'secrets.environments.production.password', nested=true) }}"
+   # The secret can be queried using the following syntax: `aws_secret_object_name.key1.key2.key3`.
+   # If an object is of the form `{"key1":{"key2":{"key3":1}}}` the query would return the value `1`.
 """
 
 RETURN = r"""
@@ -106,6 +116,8 @@ from ansible.module_utils._text import to_native
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 
+import json
+
 
 def _boto3_conn(region, credentials):
     boto_profile = credentials.pop('aws_profile', None)
@@ -126,7 +138,7 @@ def _boto3_conn(region, credentials):
 class LookupModule(LookupBase):
     def run(self, terms, variables=None, boto_profile=None, aws_profile=None,
             aws_secret_key=None, aws_access_key=None, aws_security_token=None, region=None,
-            bypath=False, join=False, version_stage=None, version_id=None, on_missing='error',
+            bypath=False, nested=False, join=False, version_stage=None, version_id=None, on_missing='error',
             on_denied='error'):
         '''
                    :arg terms: a list of lookups to run.
@@ -138,6 +150,7 @@ class LookupModule(LookupBase):
                    :kwarg decrypt: Set to True to get decrypted parameters
                    :kwarg region: AWS region in which to do the lookup
                    :kwarg bypath: Set to True to do a lookup of variables under a path
+                   :kwarg nested: Set to True to do a lookup of nested secrets
                    :kwarg join: Join two or more entries to form an extended secret
                    :kwarg version_stage: Stage of the secret version
                    :kwarg version_id: Version of the secret(s)
@@ -195,7 +208,7 @@ class LookupModule(LookupBase):
             for term in terms:
                 value = self.get_secret_value(term, client,
                                               version_stage=version_stage, version_id=version_id,
-                                              on_missing=missing, on_denied=denied)
+                                              on_missing=missing, on_denied=denied, nested=nested)
                 if value:
                     secrets.append(value)
             if join:
@@ -205,20 +218,37 @@ class LookupModule(LookupBase):
 
         return secrets
 
-    def get_secret_value(self, term, client, version_stage=None, version_id=None, on_missing=None, on_denied=None):
+    def get_secret_value(self, term, client, version_stage=None, version_id=None, on_missing=None, on_denied=None, nested=False):
         params = {}
         params['SecretId'] = term
         if version_id:
             params['VersionId'] = version_id
         if version_stage:
             params['VersionStage'] = version_stage
+        if nested:
+            if len(term.split('.')) < 2:
+                raise AnsibleError("Nested query must use the following syntax: `aws_secret_name.<key_name>.<key_name>")
+            secret_name = term.split('.')[0]
+            params['SecretId'] = secret_name
 
         try:
             response = client.get_secret_value(**params)
             if 'SecretBinary' in response:
                 return response['SecretBinary']
             if 'SecretString' in response:
-                return response['SecretString']
+                if nested:
+                    secrets = []
+                    query = term.split('.')[1:]
+                    secret_string = json.loads(response['SecretString'])
+                    ret_val = secret_string
+                    for key in query:
+                        if key in ret_val:
+                            ret_val = ret_val[key]
+                        else:
+                            raise AnsibleError("Successfully retrieved secret but there exists no key {0} in the secret".format(key))
+                    return str(ret_val)
+                else:
+                    return response['SecretString']
         except is_boto3_error_code('ResourceNotFoundException'):
             if on_missing == 'error':
                 raise AnsibleError("Failed to find secret %s (ResourceNotFound)" % term)
