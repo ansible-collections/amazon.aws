@@ -2,3 +2,4 @@
 bugfixes:
   - module_utils/elbv2 - add logic to compare_rules to suit Values list nested within dicts unique to each field type. 
     Fixes issue (https://github.com/ansible-collections/amazon.aws/issues/187)
+  - module_utils/elbv2 - Requires 1.16.57 as minimum boto3 version.
