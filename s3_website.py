@@ -163,7 +163,6 @@ import time
 
 try:
     import botocore
-    from botocore.exceptions import ClientError, ParamValidationError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
@@ -220,21 +219,21 @@ def enable_or_update_bucket_as_website(client_connection, resource_connection, m
 
     try:
         bucket_website = resource_connection.BucketWebsite(bucket_name)
-    except ClientError as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to get bucket")
 
     try:
         website_config = client_connection.get_bucket_website(Bucket=bucket_name)
     except is_boto3_error_code('NoSuchWebsiteConfiguration'):
         website_config = None
-    except ClientError as e:  # pylint: disable=duplicate-except
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get website configuration")
 
     if website_config is None:
         try:
             bucket_website.put(WebsiteConfiguration=_create_website_configuration(suffix, error_key, redirect_all_requests))
             changed = True
-        except (ClientError, ParamValidationError) as e:
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Failed to set bucket website configuration")
         except ValueError as e:
             module.fail_json(msg=str(e))
@@ -247,14 +246,14 @@ def enable_or_update_bucket_as_website(client_connection, resource_connection, m
                 try:
                     bucket_website.put(WebsiteConfiguration=_create_website_configuration(suffix, error_key, redirect_all_requests))
                     changed = True
-                except (ClientError, ParamValidationError) as e:
+                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     module.fail_json_aws(e, msg="Failed to update bucket website configuration")
         except KeyError as e:
             try:
                 bucket_website.put(WebsiteConfiguration=_create_website_configuration(suffix, error_key, redirect_all_requests))
                 changed = True
-            except (ClientError, ParamValidationError) as e:
-                module.fail_json(e, msg="Failed to update bucket website configuration")
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                module.fail_json_aws(e, msg="Failed to update bucket website configuration")
         except ValueError as e:
             module.fail_json(msg=str(e))
 
@@ -274,13 +273,13 @@ def disable_bucket_as_website(client_connection, module):
         client_connection.get_bucket_website(Bucket=bucket_name)
     except is_boto3_error_code('NoSuchWebsiteConfiguration'):
         module.exit_json(changed=changed)
-    except ClientError as e:  # pylint: disable=duplicate-except
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get bucket website")
 
     try:
         client_connection.delete_bucket_website(Bucket=bucket_name)
         changed = True
-    except ClientError as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to delete bucket website")
 
     module.exit_json(changed=changed)

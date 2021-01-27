@@ -128,17 +128,14 @@ log_groups:
             type: str
 '''
 
-import traceback
-
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils._text import to_native
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
 def create_log_group(client, log_group_name, kms_key_id, tags, retention, module):
@@ -150,12 +147,8 @@ def create_log_group(client, log_group_name, kms_key_id, tags, retention, module
 
     try:
         client.create_log_group(**request)
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="Unable to create log group: {0}".format(to_native(e)),
-                         exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
-    except botocore.exceptions.BotoCoreError as e:
-        module.fail_json(msg="Unable to create log group: {0}".format(to_native(e)),
-                         exception=traceback.format_exc())
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Unable to create log group")
 
     if retention:
         input_retention_policy(client=client,
@@ -183,23 +176,15 @@ def input_retention_policy(client, log_group_name, retention, module):
         else:
             delete_log_group(client=client, log_group_name=log_group_name, module=module)
             module.fail_json(msg="Invalid retention value. Valid values are: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653]")
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="Unable to put retention policy for log group {0}: {1}".format(log_group_name, to_native(e)),
-                         exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
-    except botocore.exceptions.BotoCoreError as e:
-        module.fail_json(msg="Unable to put retention policy for log group {0}: {1}".format(log_group_name, to_native(e)),
-                         exception=traceback.format_exc())
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Unable to put retention policy for log group {0}".format(log_group_name))
 
 
 def delete_retention_policy(client, log_group_name, module):
     try:
         client.delete_retention_policy(logGroupName=log_group_name)
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="Unable to delete retention policy for log group {0}: {1}".format(log_group_name, to_native(e)),
-                         exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
-    except botocore.exceptions.BotoCoreError as e:
-        module.fail_json(msg="Unable to delete retention policy for log group {0}: {1}".format(log_group_name, to_native(e)),
-                         exception=traceback.format_exc())
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Unable to delete retention policy for log group {0}".format(log_group_name))
 
 
 def delete_log_group(client, log_group_name, module):
@@ -213,24 +198,16 @@ def delete_log_group(client, log_group_name, module):
                 if log_group_name == i['logGroupName']:
                     client.delete_log_group(logGroupName=log_group_name)
 
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="Unable to delete log group {0}: {1}".format(log_group_name, to_native(e)),
-                         exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
-    except botocore.exceptions.BotoCoreError as e:
-        module.fail_json(msg="Unable to delete log group {0}: {1}".format(log_group_name, to_native(e)),
-                         exception=traceback.format_exc())
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Unable to delete log group {0}".format(log_group_name))
 
 
 def describe_log_group(client, log_group_name, module):
     try:
         desc_log_group = client.describe_log_groups(logGroupNamePrefix=log_group_name)
         return desc_log_group
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="Unable to describe log group {0}: {1}".format(log_group_name, to_native(e)),
-                         exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
-    except botocore.exceptions.BotoCoreError as e:
-        module.fail_json(msg="Unable to describe log group {0}: {1}".format(log_group_name, to_native(e)),
-                         exception=traceback.format_exc())
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Unable to describe log group {0}".format(log_group_name))
 
 
 def main():

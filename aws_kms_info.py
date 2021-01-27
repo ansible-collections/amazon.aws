@@ -215,17 +215,16 @@ keys:
 '''
 
 
-import traceback
-
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 # Caching lookup for aliases
@@ -309,9 +308,7 @@ def get_kms_tags(connection, module, key_id):
             tags.extend(tag_response['Tags'])
         except botocore.exceptions.ClientError as e:
             if e.response['Error']['Code'] != 'AccessDeniedException':
-                module.fail_json(msg="Failed to obtain key tags",
-                                 exception=traceback.format_exc(),
-                                 **camel_dict_to_snake_dict(e.response))
+                module.fail_json_aws(e, msg="Failed to obtain key tags")
             else:
                 tag_response = {}
         if tag_response.get('NextMarker'):
@@ -328,9 +325,7 @@ def get_kms_policies(connection, module, key_id):
                 policy in policies]
     except botocore.exceptions.ClientError as e:
         if e.response['Error']['Code'] != 'AccessDeniedException':
-            module.fail_json(msg="Failed to obtain key policies",
-                             exception=traceback.format_exc(),
-                             **camel_dict_to_snake_dict(e.response))
+            module.fail_json_aws(e, msg="Failed to obtain key policies")
         else:
             return []
 
@@ -360,18 +355,14 @@ def get_key_details(connection, module, key_id, tokens=None):
         tokens = []
     try:
         result = get_kms_metadata_with_backoff(connection, key_id)['KeyMetadata']
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="Failed to obtain key metadata",
-                         exception=traceback.format_exc(),
-                         **camel_dict_to_snake_dict(e.response))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to obtain key metadata")
     result['KeyArn'] = result.pop('Arn')
 
     try:
         aliases = get_kms_aliases_lookup(connection)
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="Failed to obtain aliases",
-                         exception=traceback.format_exc(),
-                         **camel_dict_to_snake_dict(e.response))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to obtain aliases")
     result['aliases'] = aliases.get(result['KeyId'], [])
 
     if result['Origin'] == 'AWS_KMS':
@@ -384,10 +375,8 @@ def get_key_details(connection, module, key_id, tokens=None):
 
     try:
         result['grants'] = get_kms_grants_with_backoff(connection, key_id, tokens=tokens)['Grants']
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="Failed to obtain key grants",
-                         exception=traceback.format_exc(),
-                         **camel_dict_to_snake_dict(e.response))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to obtain key grants")
     tags = get_kms_tags(connection, module, key_id)
 
     result = camel_dict_to_snake_dict(result)
@@ -399,10 +388,8 @@ def get_key_details(connection, module, key_id, tokens=None):
 def get_kms_info(connection, module):
     try:
         keys = get_kms_keys_with_backoff(connection)['Keys']
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="Failed to obtain keys",
-                         exception=traceback.format_exc(),
-                         **camel_dict_to_snake_dict(e.response))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to obtain keys")
 
     return [get_key_details(connection, module, key['KeyId']) for key in keys]
 

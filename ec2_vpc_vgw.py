@@ -112,14 +112,11 @@ result:
 '''
 
 import time
-import traceback
 
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
-
-from ansible.module_utils._text import to_native
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
@@ -162,8 +159,8 @@ def wait_for_status(client, module, vpn_gateway_id, status):
                 break
             else:
                 time.sleep(polling_increment_secs)
-        except botocore.exceptions.ClientError as e:
-            module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg='Failure while waiting for status update')
 
     result = response
     return status_achieved, result
@@ -181,8 +178,8 @@ def attach_vgw(client, module, vpn_gateway_id):
                                              catch_extra_error_codes=['InvalidParameterValue']
                                              )(client.attach_vpn_gateway)(VpnGatewayId=vpn_gateway_id,
                                                                           VpcId=params['VpcId'])
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to attach VPC')
 
     status_achieved, vgw = wait_for_status(client, module, [vpn_gateway_id], 'attached')
     if not status_achieved:
@@ -199,13 +196,13 @@ def detach_vgw(client, module, vpn_gateway_id, vpc_id=None):
     if vpc_id:
         try:
             response = client.detach_vpn_gateway(VpnGatewayId=vpn_gateway_id, VpcId=vpc_id)
-        except botocore.exceptions.ClientError as e:
-            module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg='Failed to detach gateway')
     else:
         try:
             response = client.detach_vpn_gateway(VpnGatewayId=vpn_gateway_id, VpcId=params['VpcId'])
-        except botocore.exceptions.ClientError as e:
-            module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg='Failed to detach gateway')
 
     status_achieved, vgw = wait_for_status(client, module, [vpn_gateway_id], 'detached')
     if not status_achieved:
@@ -229,12 +226,11 @@ def create_vgw(client, module):
             VpnGatewayIds=[response['VpnGateway']['VpnGatewayId']]
         )
     except botocore.exceptions.WaiterError as e:
-        module.fail_json(msg="Failed to wait for Vpn Gateway {0} to be available".format(response['VpnGateway']['VpnGatewayId']),
-                         exception=traceback.format_exc())
-    except is_boto3_error_code('VpnGatewayLimitExceeded'):
-        module.fail_json(msg="Too many VPN gateways exist in this account.", exception=traceback.format_exc())
-    except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
-        module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+        module.fail_json_aws(e, msg="Failed to wait for Vpn Gateway {0} to be available".format(response['VpnGateway']['VpnGatewayId']))
+    except is_boto3_error_code('VpnGatewayLimitExceeded') as e:
+        module.fail_json_aws(e, msg="Too many VPN gateways exist in this account.")
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg='Failed to create gateway')
 
     result = response
     return result
@@ -244,8 +240,8 @@ def delete_vgw(client, module, vpn_gateway_id):
 
     try:
         response = client.delete_vpn_gateway(VpnGatewayId=vpn_gateway_id)
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to delete gateway')
 
     # return the deleted VpnGatewayId as this is not included in the above response
     result = vpn_gateway_id
@@ -257,8 +253,8 @@ def create_tags(client, module, vpn_gateway_id):
 
     try:
         response = client.create_tags(Resources=[vpn_gateway_id], Tags=load_tags(module))
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to add tags")
 
     result = response
     return result
@@ -270,13 +266,13 @@ def delete_tags(client, module, vpn_gateway_id, tags_to_delete=None):
     if tags_to_delete:
         try:
             response = client.delete_tags(Resources=[vpn_gateway_id], Tags=tags_to_delete)
-        except botocore.exceptions.ClientError as e:
-            module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg='Failed to delete tags')
     else:
         try:
             response = client.delete_tags(Resources=[vpn_gateway_id])
-        except botocore.exceptions.ClientError as e:
-            module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg='Failed to delete all tags')
 
     result = response
     return result
@@ -301,8 +297,8 @@ def find_tags(client, module, resource_id=None):
             response = client.describe_tags(Filters=[
                 {'Name': 'resource-id', 'Values': [resource_id]}
             ])
-        except botocore.exceptions.ClientError as e:
-            module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg='Failed to describe tags searching by resource')
 
     result = response
     return result
@@ -348,8 +344,8 @@ def find_vpc(client, module):
     if params['vpc_id']:
         try:
             response = client.describe_vpcs(VpcIds=[params['vpc_id']])
-        except botocore.exceptions.ClientError as e:
-            module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg='Failed to describe VPC')
 
     result = response
     return result
@@ -368,8 +364,8 @@ def find_vgw(client, module, vpn_gateway_id=None):
             params['Filters'].append({'Name': 'state', 'Values': ['pending', 'available']})
     try:
         response = client.describe_vpn_gateways(**params)
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to describe gateway using filters')
 
     return sorted(response['VpnGateways'], key=lambda k: k['VpnGatewayId'])
 

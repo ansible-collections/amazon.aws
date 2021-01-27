@@ -192,9 +192,12 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto_exception, compare_policies, sort_json_policy_dict
 from ansible.module_utils.six import string_types
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto_exception
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import sort_json_policy_dict
 
 
 def build_kwargs(registry_id):

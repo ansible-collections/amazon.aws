@@ -186,11 +186,10 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible.module_utils.six import string_types
-from ansible.module_utils._text import to_native
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
 def date_handler(obj):
@@ -210,9 +209,8 @@ def wait_for_status(client, module, resource_id, status):
                 break
             else:
                 time.sleep(polling_increment_secs)
-        except botocore.exceptions.ClientError as e:
-            module.fail_json(msg=str(e), exception=traceback.format_exc(),
-                             **camel_dict_to_snake_dict(e.response))
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg='Failure while waiting for status')
 
     return status_achieved, resource
 
@@ -296,9 +294,8 @@ def create_vpc_endpoint(client, module):
         module.fail_json(msg="IdempotentParameterMismatch - updates of endpoints are not allowed by the API")
     except is_boto3_error_code('RouteAlreadyExists'):  # pylint: disable=duplicate-except
         module.fail_json(msg="RouteAlreadyExists for one of the route tables - update is not allowed by the API")
-    except Exception as e:
-        module.fail_json(msg=to_native(e), exception=traceback.format_exc(),
-                         **camel_dict_to_snake_dict(e.response))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to create VPC.")
 
     return changed, result
 
@@ -318,11 +315,8 @@ def setup_removal(client, module):
     except is_boto3_error_code('DryRunOperation'):
         changed = True
         result = 'Would have deleted VPC Endpoint if not in check mode'
-    except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, "Failed to delete VPC endpoint")
-    except Exception as e:
-        module.fail_json(msg=to_native(e), exception=traceback.format_exc(),
-                         **camel_dict_to_snake_dict(e.response))
     return changed, result
 
 

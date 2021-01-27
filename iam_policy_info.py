@@ -77,8 +77,6 @@ all_policy_names:
     type: list
 '''
 
-import json
-
 try:
     from botocore.exceptions import BotoCoreError, ClientError
 except ImportError:
@@ -86,7 +84,6 @@ except ImportError:
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible.module_utils.six import string_types
 
 
 class PolicyError(Exception):

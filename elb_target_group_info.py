@@ -207,15 +207,11 @@ target_groups:
             sample: vpc-0123456
 '''
 
-import traceback
-
 try:
     import botocore
-    from botocore.exceptions import ClientError, NoCredentialsError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
@@ -227,7 +223,7 @@ def get_target_group_attributes(connection, module, target_group_arn):
 
     try:
         target_group_attributes = boto3_tag_list_to_ansible_dict(connection.describe_target_group_attributes(TargetGroupArn=target_group_arn)['Attributes'])
-    except ClientError as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe target group attributes")
 
     # Replace '.' with '_' in attribute key names to make it more Ansibley
@@ -239,7 +235,7 @@ def get_target_group_tags(connection, module, target_group_arn):
 
     try:
         return boto3_tag_list_to_ansible_dict(connection.describe_tags(ResourceArns=[target_group_arn])['TagDescriptions'][0]['Tags'])
-    except ClientError as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe group tags")
 
 
@@ -247,7 +243,7 @@ def get_target_group_targets_health(connection, module, target_group_arn):
 
     try:
         return connection.describe_target_health(TargetGroupArn=target_group_arn)['TargetHealthDescriptions']
-    except ClientError as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to get target health")
 
 
@@ -270,10 +266,8 @@ def list_target_groups(connection, module):
             target_groups = target_group_paginator.paginate(Names=names).build_full_result()
     except is_boto3_error_code('TargetGroupNotFound'):
         module.exit_json(target_groups=[])
-    except ClientError as e:  # pylint: disable=duplicate-except
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to list target groups")
-    except NoCredentialsError as e:
-        module.fail_json(msg="AWS authentication problem. " + to_native(e), exception=traceback.format_exc())
 
     # Get the attributes and tags for each target group
     for target_group in target_groups['TargetGroups']:

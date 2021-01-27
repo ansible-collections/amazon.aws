@@ -755,7 +755,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import (
     get_rds_method_attribute,
     get_tags,
 )
-from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list, AWSRetry
 from ansible.module_utils.six import string_types
@@ -763,7 +762,7 @@ from ansible.module_utils.six import string_types
 from time import sleep
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError, WaiterError
+    import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
@@ -807,7 +806,7 @@ def get_instance(client, module, db_instance_id):
                 sleep(3)
         else:
             instance = {}
-    except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg='Failed to describe DB instances')
     return instance
 
@@ -820,7 +819,7 @@ def get_final_snapshot(client, module, snapshot_identifier):
         return {}
     except is_boto3_error_code('DBSnapshotNotFound') as e:  # May not be using wait: True
         return {}
-    except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg='Failed to retrieve information about the final snapshot')
 
 

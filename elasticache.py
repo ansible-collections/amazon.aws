@@ -127,17 +127,14 @@ EXAMPLES = r"""
 
 """
 from time import sleep
-from traceback import format_exc
 
 try:
-    import boto3
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
 class ElastiCacheManager(object):
@@ -225,7 +222,7 @@ class ElastiCacheManager(object):
         try:
             self.conn.create_cache_cluster(**kwargs)
 
-        except botocore.exceptions.ClientError as e:
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self.module.fail_json_aws(e, msg="Failed to create cache cluster")
 
         self._refresh_data()
@@ -252,7 +249,7 @@ class ElastiCacheManager(object):
 
         try:
             response = self.conn.delete_cache_cluster(CacheClusterId=self.name)
-        except botocore.exceptions.ClientError as e:
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self.module.fail_json_aws(e, msg="Failed to delete cache cluster")
 
         cache_cluster_data = response['CacheCluster']

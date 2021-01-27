@@ -97,17 +97,15 @@ result:
 '''
 
 import time
-import traceback
 
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils._text import to_native
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
 def dx_gateway_info(client, gateway_id, module):
@@ -115,7 +113,7 @@ def dx_gateway_info(client, gateway_id, module):
         resp = client.describe_direct_connect_gateways(
             directConnectGatewayId=gateway_id)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+        module.fail_json_aws(e, msg="Failed to fetch gateway information.")
     if resp['directConnectGateways']:
         return resp['directConnectGateways'][0]
 
@@ -142,7 +140,7 @@ def wait_for_status(client, module, gateway_id, virtual_gateway_id, status):
                 status_achieved = True
                 break
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+            module.fail_json_aws(e, msg="Failed while waiting for gateway association.")
 
     result = response
     return status_achieved, result
@@ -156,7 +154,7 @@ def associate_direct_connect_gateway(client, module, gateway_id):
             directConnectGatewayId=gateway_id,
             virtualGatewayId=params['virtual_gateway_id'])
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+        module.fail_json_aws(e, 'Failed to associate gateway')
 
     status_achieved, dxgw = wait_for_status(client, module, gateway_id, params['virtual_gateway_id'], 'associating')
     if not status_achieved:
@@ -172,7 +170,7 @@ def delete_association(client, module, gateway_id, virtual_gateway_id):
             directConnectGatewayId=gateway_id,
             virtualGatewayId=virtual_gateway_id)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+        module.fail_json_aws(e, msg="Failed to delete gateway association.")
 
     status_achieved, dxgw = wait_for_status(client, module, gateway_id, virtual_gateway_id, 'disassociating')
     if not status_achieved:
@@ -191,7 +189,7 @@ def create_dx_gateway(client, module):
             directConnectGatewayName=params['name'],
             amazonSideAsn=int(params['amazon_asn']))
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+        module.fail_json_aws(e, msg="Failed to create direct connect gateway.")
 
     result = response
     return result
@@ -206,7 +204,7 @@ def find_dx_gateway(client, module, gateway_id=None):
         try:
             resp = client.describe_direct_connect_gateways(**params)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+            module.fail_json_aws(e, msg="Failed to describe gateways")
         gateways.extend(resp['directConnectGateways'])
         if 'nextToken' in resp:
             params['nextToken'] = resp['nextToken']
@@ -233,7 +231,7 @@ def check_dxgw_association(client, module, gateway_id, virtual_gateway_id=None):
                 virtualGatewayId=virtual_gateway_id,
             )
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+        module.fail_json_aws(e, msg="Failed to check gateway association")
     return resp
 
 
@@ -330,7 +328,7 @@ def ensure_absent(client, module):
                 directConnectGatewayId=dx_gateway_id
             )
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json(msg=to_native(e), exception=traceback.format_exc())
+            module.fail_json_aws(e, msg="Failed to delete gateway")
         result = resp['directConnectGateway']
     return changed
 
