@@ -89,15 +89,15 @@ changed:
     type: bool
     sample: "false"
 '''
-import traceback
 
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 
 
@@ -121,8 +121,8 @@ def list_virtual_gateways(client, module):
 
     try:
         all_virtual_gateways = client.describe_vpn_gateways(**params)
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg=str(e), exception=traceback.format_exc())
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to list gateways")
 
     return [camel_dict_to_snake_dict(get_virtual_gateway_info(vgw))
             for vgw in all_virtual_gateways['VpnGateways']]
