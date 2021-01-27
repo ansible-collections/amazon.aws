@@ -144,7 +144,6 @@ name:
 import re
 
 try:
-    import boto3
     from botocore.exceptions import ClientError, ParamValidationError, MissingParametersError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
