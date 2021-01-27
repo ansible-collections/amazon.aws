@@ -227,7 +227,6 @@ import hashlib
 import mimetypes
 import os
 import stat as osstat  # os.stat constants
-import traceback
 
 try:
     from dateutil import tz
@@ -247,8 +246,6 @@ from ansible.module_utils._text import to_text
 
 # import module snippets
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto_exception
 
 
 # the following function, calculate_multipart_etag, is from tlastowka
@@ -406,8 +403,6 @@ def head_s3(s3, bucket, s3keys):
                 pass
             else:
                 raise Exception(err)
-            # error_msg = boto_exception(err)
-            # return {'error': error_msg}
         retkeys.append(retentry)
     return retkeys
 
@@ -546,9 +541,8 @@ def main():
             if result.get('uploads') or result.get('removed'):
                 result['changed'] = True
             # result.update(filelist=actionable_filelist)
-        except botocore.exceptions.ClientError as err:
-            error_msg = boto_exception(err)
-            module.fail_json(msg=error_msg, exception=traceback.format_exc(), **camel_dict_to_snake_dict(err.response))
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg="Failed to push file")
 
     module.exit_json(**result)
 

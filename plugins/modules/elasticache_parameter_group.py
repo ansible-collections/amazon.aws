@@ -105,8 +105,6 @@ changed:
     changed: true
 """
 
-import traceback
-
 try:
     import botocore
 except ImportError:
@@ -124,8 +122,8 @@ def create(module, conn, name, group_family, description):
     try:
         response = conn.create_cache_parameter_group(CacheParameterGroupName=name, CacheParameterGroupFamily=group_family, Description=description)
         changed = True
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="Unable to create cache parameter group.", exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Unable to create cache parameter group.")
     return response, changed
 
 
@@ -135,8 +133,8 @@ def delete(module, conn, name):
         conn.delete_cache_parameter_group(CacheParameterGroupName=name)
         response = {}
         changed = True
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="Unable to delete cache parameter group.", exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Unable to delete cache parameter group.")
     return response, changed
 
 
@@ -230,8 +228,8 @@ def modify(module, conn, name, values):
         format_parameters.append({'ParameterName': key, 'ParameterValue': value})
     try:
         response = conn.modify_cache_parameter_group(CacheParameterGroupName=name, ParameterNameValues=format_parameters)
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="Unable to modify cache parameter group.", exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Unable to modify cache parameter group.")
     return response
 
 
@@ -254,8 +252,8 @@ def reset(module, conn, name, values):
 
     try:
         response = conn.reset_cache_parameter_group(CacheParameterGroupName=name, ParameterNameValues=format_parameters, ResetAllParameters=all_parameters)
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="Unable to reset cache parameter group.", exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Unable to reset cache parameter group.")
 
     # determine changed
     new_parameters_dict = make_current_modifiable_param_dict(module, conn, name)

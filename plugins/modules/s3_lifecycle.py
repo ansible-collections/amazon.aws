@@ -196,12 +196,6 @@ from copy import deepcopy
 import datetime
 
 try:
-    import dateutil.parser
-    HAS_DATEUTIL = True
-except ImportError:
-    HAS_DATEUTIL = False
-
-try:
     from botocore.exceptions import BotoCoreError, ClientError
 except ImportError:
     pass  # handled by AnsibleAwsModule
@@ -468,9 +462,6 @@ def main():
                                   ['transition_date', 'transitions'],
                                   ['noncurrent_version_transition_days', 'noncurrent_version_transitions'],
                               ],)
-
-    if not HAS_DATEUTIL:
-        module.fail_json(msg='dateutil required for this module')
 
     client = module.client('s3')
 

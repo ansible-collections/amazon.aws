@@ -111,16 +111,14 @@ changed:
     changed: true
 """
 
-import traceback
-
 try:
-    import boto3
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
 def create(module, connection, replication_id, cluster_id, name):
@@ -135,7 +133,7 @@ def create(module, connection, replication_id, cluster_id, name):
             response = {}
             changed = False
         else:
-            module.fail_json(msg="Unable to create the snapshot.", exception=traceback.format_exc())
+            module.fail_json_aws(e, msg="Unable to create the snapshot.")
     return response, changed
 
 
@@ -146,8 +144,8 @@ def copy(module, connection, name, target, bucket):
                                             TargetSnapshotName=target,
                                             TargetBucket=bucket)
         changed = True
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="Unable to copy the snapshot.", exception=traceback.format_exc())
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Unable to copy the snapshot.")
     return response, changed
 
 
@@ -164,7 +162,7 @@ def delete(module, connection, name):
             module.fail_json(msg="Error: InvalidSnapshotState. The snapshot is not in an available state or failed state to allow deletion."
                              "You may need to wait a few minutes.")
         else:
-            module.fail_json(msg="Unable to delete the snapshot.", exception=traceback.format_exc())
+            module.fail_json_aws(e, msg="Unable to delete the snapshot.")
     return response, changed
 
 

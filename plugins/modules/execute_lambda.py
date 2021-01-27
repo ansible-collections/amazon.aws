@@ -129,14 +129,11 @@ status:
 
 import base64
 import json
-import traceback
 
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
-
-from ansible.module_utils._text import to_native
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 
@@ -211,18 +208,14 @@ def main():
         response = client.invoke(**invoke_params)
     except botocore.exceptions.ClientError as ce:
         if ce.response['Error']['Code'] == 'ResourceNotFoundException':
-            module.fail_json(msg="Could not find Lambda to execute. Make sure "
-                             "the ARN is correct and your profile has "
-                             "permissions to execute this function.",
-                             exception=traceback.format_exc())
-        module.fail_json(msg="Client-side error when invoking Lambda, check inputs and specific error",
-                         exception=traceback.format_exc())
+            module.fail_json_aws(ce, msg="Could not find Lambda to execute. Make sure "
+                                 "the ARN is correct and your profile has "
+                                 "permissions to execute this function.")
+        module.fail_json_aws(ce, msg="Client-side error when invoking Lambda, check inputs and specific error")
     except botocore.exceptions.ParamValidationError as ve:
-        module.fail_json(msg="Parameters to `invoke` failed to validate",
-                         exception=traceback.format_exc())
+        module.fail_json_aws(ve, msg="Parameters to `invoke` failed to validate")
     except Exception as e:
-        module.fail_json(msg="Unexpected failure while invoking Lambda function",
-                         exception=traceback.format_exc())
+        module.fail_json_aws(e, msg="Unexpected failure while invoking Lambda function")
 
     results = {
         'logs': '',
@@ -235,13 +228,13 @@ def main():
             # logs are base64 encoded in the API response
             results['logs'] = base64.b64decode(response.get('LogResult', ''))
         except Exception as e:
-            module.fail_json(msg="Failed while decoding logs", exception=traceback.format_exc())
+            module.fail_json_aws(e, msg="Failed while decoding logs")
 
     if invoke_params['InvocationType'] == 'RequestResponse':
         try:
             results['output'] = json.loads(response['Payload'].read().decode('utf8'))
         except Exception as e:
-            module.fail_json(msg="Failed while decoding function return value", exception=traceback.format_exc())
+            module.fail_json_aws(e, msg="Failed while decoding function return value")
 
         if isinstance(results.get('output'), dict) and any(
                 [results['output'].get('stackTrace'), results['output'].get('errorMessage')]):

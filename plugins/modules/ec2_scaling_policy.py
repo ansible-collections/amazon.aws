@@ -317,7 +317,7 @@ def create_scaling_policy(connection, module):
                                                     AutoScalingGroupName=asg_name,
                                                     PolicyNames=[policy_name])['ScalingPolicies']
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(msg="Failed to obtain autoscaling policy %s" % policy_name)
+            module.fail_json_aws(e, msg="Failed to obtain autoscaling policy %s" % policy_name)
 
     policy = camel_dict_to_snake_dict(policies[0])
     # Backward compatible return values

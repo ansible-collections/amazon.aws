@@ -58,13 +58,13 @@ EXAMPLES = '''
 
 RETURN = ''' # '''
 
-import traceback
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, AWSRetry
 try:
     import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 backoff_params = dict(tries=5, delay=1, backoff=1.5)
 
@@ -156,26 +156,16 @@ def create_replication_subnet_group(module, connection):
     try:
         params = create_module_params(module)
         return replication_subnet_group_create(connection, **params)
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="Failed to create DMS replication subnet group.",
-                         exception=traceback.format_exc(),
-                         **camel_dict_to_snake_dict(e.response))
-    except botocore.exceptions.BotoCoreError as e:
-        module.fail_json(msg="Failed to create DMS replication subnet group.",
-                         exception=traceback.format_exc())
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to create DMS replication subnet group.")
 
 
 def modify_replication_subnet_group(module, connection):
     try:
         modify_params = create_module_params(module)
         return replication_subnet_group_modify(connection, **modify_params)
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="Failed to Modify the DMS replication subnet group.",
-                         exception=traceback.format_exc(),
-                         **camel_dict_to_snake_dict(e.response))
-    except botocore.exceptions.BotoCoreError as e:
-        module.fail_json(msg="Failed to Modify the DMS replication subnet group.",
-                         exception=traceback.format_exc())
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to Modify the DMS replication subnet group.")
 
 
 def main():

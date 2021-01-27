@@ -456,11 +456,11 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible.module_utils._text import to_text
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_security_group_ids_from_names
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict
 
 
 def create_block_device_meta(module, volume):
@@ -555,8 +555,8 @@ def create_launch_config(connection, module):
 
     try:
         launch_configs = connection.describe_launch_configurations(LaunchConfigurationNames=[name]).get('LaunchConfigurations')
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="Failed to describe launch configuration by name", exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to describe launch configuration by name")
 
     changed = False
     result = {}
@@ -597,8 +597,8 @@ def create_launch_config(connection, module):
             changed = True
             if launch_configs:
                 launch_config = launch_configs[0]
-        except botocore.exceptions.ClientError as e:
-            module.fail_json(msg="Failed to create launch configuration", exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg="Failed to create launch configuration")
 
     result = (dict((k, v) for k, v in launch_config.items()
                    if k not in ['Connection', 'CreatedTime', 'InstanceMonitoring', 'BlockDeviceMappings']))
@@ -643,8 +643,8 @@ def delete_launch_config(connection, module):
             module.exit_json(changed=True)
         else:
             module.exit_json(changed=False)
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="Failed to delete launch configuration", exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to delete launch configuration")
 
 
 def main():
@@ -680,8 +680,8 @@ def main():
 
     try:
         connection = module.client('autoscaling')
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg="unable to establish connection - " + str(e), exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="unable to establish connection")
 
     state = module.params.get('state')
 

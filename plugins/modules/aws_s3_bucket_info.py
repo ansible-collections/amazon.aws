@@ -49,17 +49,14 @@ buckets:
   type: list
 '''
 
-import traceback
-
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils._text import to_native
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
 def get_bucket_list(module, connection):
@@ -71,8 +68,8 @@ def get_bucket_list(module, connection):
     """
     try:
         buckets = camel_dict_to_snake_dict(connection.list_buckets())['buckets']
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg=to_native(e), exception=traceback.format_exc(), **camel_dict_to_snake_dict(e.response))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to list buckets")
 
     return buckets
 

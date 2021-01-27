@@ -162,15 +162,11 @@ load_balancers:
             sample: vpc-0011223344
 '''
 
-import traceback
-
 try:
     import botocore
-    from botocore.exceptions import ClientError, NoCredentialsError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
@@ -182,7 +178,7 @@ def get_elb_listeners(connection, module, elb_arn):
 
     try:
         return connection.describe_listeners(LoadBalancerArn=elb_arn)['Listeners']
-    except ClientError as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe elb listeners")
 
 
@@ -190,7 +186,7 @@ def get_listener_rules(connection, module, listener_arn):
 
     try:
         return connection.describe_rules(ListenerArn=listener_arn)['Rules']
-    except ClientError as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe listener rules")
 
 
@@ -198,7 +194,7 @@ def get_load_balancer_attributes(connection, module, load_balancer_arn):
 
     try:
         load_balancer_attributes = boto3_tag_list_to_ansible_dict(connection.describe_load_balancer_attributes(LoadBalancerArn=load_balancer_arn)['Attributes'])
-    except ClientError as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe load balancer attributes")
 
     # Replace '.' with '_' in attribute key names to make it more Ansibley
@@ -213,7 +209,7 @@ def get_load_balancer_tags(connection, module, load_balancer_arn):
 
     try:
         return boto3_tag_list_to_ansible_dict(connection.describe_tags(ResourceArns=[load_balancer_arn])['TagDescriptions'][0]['Tags'])
-    except ClientError as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe load balancer tags")
 
 
@@ -232,10 +228,8 @@ def list_load_balancers(connection, module):
             load_balancers = load_balancer_paginator.paginate(Names=names).build_full_result()
     except is_boto3_error_code('LoadBalancerNotFound'):
         module.exit_json(load_balancers=[])
-    except ClientError as e:  # pylint: disable=duplicate-except
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to list load balancers")
-    except NoCredentialsError as e:
-        module.fail_json(msg="AWS authentication problem. " + to_native(e), exception=traceback.format_exc())
 
     for load_balancer in load_balancers['LoadBalancers']:
         # Get the attributes for each elb
