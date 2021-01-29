@@ -5,9 +5,16 @@ set -o pipefail -eux
 declare -a args
 IFS='/:' read -ra args <<< "$1"
 
-script="${args[0]}"
+ansible_version="${args[0]}"
+script="${args[1]}"
 
-test="$1"
+function join {
+    local IFS="$1";
+    shift;
+    echo "$*";
+}
+
+test="$(join / "${args[@]:1}")"
 
 docker images ansible/ansible
 docker images quay.io/ansible/*
@@ -26,11 +33,61 @@ fi
 command -v python
 python -V
 
+function retry
+{
+    # shellcheck disable=SC2034
+    for repetition in 1 2 3; do
+        set +e
+        "$@"
+        result=$?
+        set -e
+        if [ ${result} == 0 ]; then
+            return ${result}
+        fi
+        echo "@* -> ${result}"
+    done
+    echo "Command '@*' failed 3 times!"
+    exit 1
+}
+
 command -v pip
 pip --version
 pip list --disable-pip-version-check
+if [ "${ansible_version}" == "devel" ]; then
+    retry pip install https://github.com/ansible/ansible/archive/devel.tar.gz --disable-pip-version-check
+else
+    retry pip install "https://github.com/ansible/ansible/archive/stable-${ansible_version}.tar.gz" --disable-pip-version-check
+fi
 
-export PATH="${PWD}/bin:${PATH}"
+if [ "${SHIPPABLE_BUILD_ID:-}" ]; then
+    export ANSIBLE_COLLECTIONS_PATHS="${HOME}/.ansible"
+    SHIPPABLE_RESULT_DIR="$(pwd)/shippable"
+    TEST_DIR="${ANSIBLE_COLLECTIONS_PATHS}/ansible_collections/community/aws"
+    mkdir -p "${TEST_DIR}"
+    cp -aT "${SHIPPABLE_BUILD_DIR}" "${TEST_DIR}"
+    cd "${TEST_DIR}"
+else
+    export ANSIBLE_COLLECTIONS_PATHS="${PWD}/../../../"
+fi
+
+# Install amazon.aws directly from GitHub (rather than Galaxy) so we always run against the latest version
+mkdir -p "${ANSIBLE_COLLECTIONS_PATHS}/ansible_collections/amazon"
+git clone https://github.com/ansible-collections/amazon.aws "${ANSIBLE_COLLECTIONS_PATHS}/ansible_collections/amazon/aws"
+
+# To avoid accidently adding new dependencies, only install what's needed when it's needed
+if [ "${script}" != "sanity" ] || [ "${test}" == "sanity/extra" ]; then
+    # Nothing further should be added to this list.
+    # This is to prevent modules or plugins in this collection having a runtime dependency on other collections.
+    retry ansible-galaxy -vvv collection install community.internal_test_tools
+fi
+
+if [ "${script}" != "sanity" ] && [ "${script}" != "units" ]; then
+    # To prevent Python dependencies on other collections only install other collections for integration tests
+    retry ansible-galaxy -vvv collection install community.general
+    retry ansible-galaxy -vvv collection install ansible.netcommon
+    retry ansible-galaxy -vvv collection install community.crypto
+fi
+
 export PYTHONIOENCODING='utf-8'
 
 if [ "${JOB_TRIGGERED_BY_NAME:-}" == "nightly-trigger" ]; then
@@ -68,58 +125,45 @@ else
     export UNSTABLE=""
 fi
 
-virtualenv --python /usr/bin/python3.7 ~/ansible-venv
-set +ux
-. ~/ansible-venv/bin/activate
-set -ux
-
-pip install setuptools==44.1.0
-
-pip install https://github.com/ansible/ansible/archive/"${A_REV:-devel}".tar.gz --disable-pip-version-check
-
-#ansible-galaxy collection install community.general
-mkdir -p "${HOME}/.ansible/collections/ansible_collections/community"
-mkdir -p "${HOME}/.ansible/collections/ansible_collections/google"
-mkdir -p "${HOME}/.ansible/collections/ansible_collections/openstack"
-cwd=$(pwd)
-cd "${HOME}/.ansible/collections/ansible_collections/"
-git clone https://github.com/ansible-collections/community.general community/general
-# community.general requires a lot of things we need to manual pull in
-# once community.general is published this will be handled by galaxy cli
-git clone https://github.com/ansible-collections/ansible_collections_google google/cloud
-git clone https://opendev.org/openstack/ansible-collections-openstack openstack/cloud
-git clone https://github.com/ansible-collections/amazon.aws amazon/aws
-ansible-galaxy collection install ansible.netcommon
-ansible-galaxy collection install community.crypto
-cd "${cwd}"
-
-export ANSIBLE_COLLECTIONS_PATHS="${HOME}/.ansible/"
-SHIPPABLE_RESULT_DIR="$(pwd)/shippable"
-TEST_DIR="${HOME}/.ansible/collections/ansible_collections/community/aws/"
-mkdir -p "${TEST_DIR}"
-cp -aT "${SHIPPABLE_BUILD_DIR}" "${TEST_DIR}"
-cd "${TEST_DIR}"
+# remove empty core/extras module directories from PRs created prior to the repo-merge
+find plugins -type d -empty -print -delete
 
 function cleanup
 {
+    # for complete on-demand coverage generate a report for all files with no coverage on the "sanity/5" job so we only have one copy
+    if [ "${COVERAGE}" == "--coverage" ] && [ "${CHANGED}" == "" ] && [ "${test}" == "sanity/5" ]; then
+        stub="--stub"
+        # trigger coverage reporting for stubs even if no other coverage data exists
+        mkdir -p tests/output/coverage/
+    else
+        stub=""
+    fi
+
     if [ -d tests/output/coverage/ ]; then
         if find tests/output/coverage/ -mindepth 1 -name '.*' -prune -o -print -quit | grep -q .; then
-            # for complete on-demand coverage generate a report for all files with no coverage on the "other" job so we only have one copy
-            if [ "${COVERAGE}" == "--coverage" ] && [ "${CHANGED}" == "" ] && [ "${test}" == "sanity/1" ]; then
-                stub="--stub"
-            else
-                stub=""
-            fi
+            process_coverage='yes'  # process existing coverage files
+        elif [ "${stub}" ]; then
+            process_coverage='yes'  # process coverage when stubs are enabled
+        else
+            process_coverage=''
+        fi
+
+        if [ "${process_coverage}" ]; then
+            # use python 3.7 for coverage to avoid running out of memory during coverage xml processing
+            # only use it for coverage to avoid the additional overhead of setting up a virtual environment for a potential no-op job
+            virtualenv --python /usr/bin/python3.7 ~/ansible-venv
+            set +ux
+            . ~/ansible-venv/bin/activate
+            set -ux
 
             # shellcheck disable=SC2086
-            ansible-test coverage xml --color --requirements --group-by command --group-by version ${stub:+"$stub"}
+            ansible-test coverage xml --color -v --requirements --group-by command --group-by version ${stub:+"$stub"}
             cp -a tests/output/reports/coverage=*.xml "$SHIPPABLE_RESULT_DIR/codecoverage/"
 
-            # analyze and capture code coverage aggregated by integration test target if not on 2.9, defaults to devel if unset
-            if [ -z "${A_REV:-}" ] || [ "${A_REV:-}" != "stable-2.9" ]; then
+            if [ "${ansible_version}" != "2.9" ]; then
+                # analyze and capture code coverage aggregated by integration test target
                 ansible-test coverage analyze targets generate -v "$SHIPPABLE_RESULT_DIR/testresults/coverage-analyze-targets.json"
             fi
-
 
             # upload coverage report to codecov.io only when using complete on-demand coverage
             if [ "${COVERAGE}" == "--coverage" ] && [ "${CHANGED}" == "" ]; then

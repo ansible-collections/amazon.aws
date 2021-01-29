@@ -8,51 +8,51 @@ matrix:
   exclude:
     - env: T=none
   include:
-    - env: T=sanity/1 A_REV=devel
-    - env: T=sanity/1 A_REV=stable-2.9
-    - env: T=sanity/1 A_REV=stable-2.10
+    - env: T=devel/sanity/1
+    - env: T=2.9/sanity/1
+    - env: T=2.10/sanity/1
 
-    - env: T=units/2.7/1 A_REV=devel
-    - env: T=units/3.6/1 A_REV=devel
-    - env: T=units/3.7/1 A_REV=devel
-    - env: T=units/3.8/1 A_REV=devel
-    - env: T=units/3.9/1 A_REV=devel
-    - env: T=units/2.7/1 A_REV=stable-2.9
-    - env: T=units/3.6/1 A_REV=stable-2.9
-    - env: T=units/3.7/1 A_REV=stable-2.9
-    - env: T=units/3.8/1 A_REV=stable-2.9
-    - env: T=units/2.7/1 A_REV=stable-2.10
-    - env: T=units/3.6/1 A_REV=stable-2.10
-    - env: T=units/3.7/1 A_REV=stable-2.10
-    - env: T=units/3.8/1 A_REV=stable-2.10
-    - env: T=units/3.9/1 A_REV=stable-2.10
-    - env: T=aws/2.7/1 A_REV=devel
-    - env: T=aws/3.7/1 A_REV=devel
-    - env: T=aws/2.7/1 A_REV=stable-2.9
-    - env: T=aws/3.7/1 A_REV=stable-2.9
-    - env: T=aws/2.7/1 A_REV=stable-2.10
-    - env: T=aws/3.7/1 A_REV=stable-2.10
+    - env: T=devel/units/2.7/1
+    - env: T=devel/units/3.6/1
+    - env: T=devel/units/3.7/1
+    - env: T=devel/units/3.8/1
+    - env: T=devel/units/3.9/1
+    - env: T=2.9/units/2.7/1
+    - env: T=2.9/units/3.6/1
+    - env: T=2.9/units/3.7/1
+    - env: T=2.9/units/3.8/1
+    - env: T=2.10/units/2.7/1
+    - env: T=2.10/units/3.6/1
+    - env: T=2.10/units/3.7/1
+    - env: T=2.10/units/3.8/1
+    - env: T=2.10/units/3.9/1
+    - env: T=devel/aws/2.7/1
+    - env: T=devel/aws/3.7/1
+    - env: T=2.9/aws/2.7/1
+    - env: T=2.9/aws/3.7/1
+    - env: T=2.10/aws/2.7/1
+    - env: T=2.10/aws/3.7/1
 
-    - env: T=aws/2.7/2 A_REV=devel
-    - env: T=aws/3.7/2 A_REV=devel
-    - env: T=aws/2.7/2 A_REV=stable-2.9
-    - env: T=aws/3.7/2 A_REV=stable-2.9
-    - env: T=aws/2.7/2 A_REV=stable-2.10
-    - env: T=aws/3.7/2 A_REV=stable-2.10
+    - env: T=devel/aws/2.7/2
+    - env: T=devel/aws/3.7/2
+    - env: T=2.9/aws/2.7/2
+    - env: T=2.9/aws/3.7/2
+    - env: T=2.10/aws/2.7/2
+    - env: T=2.10/aws/3.7/2
 
-    - env: T=aws/2.7/3 A_REV=devel
-    - env: T=aws/3.7/3 A_REV=devel
-    - env: T=aws/2.7/3 A_REV=stable-2.9
-    - env: T=aws/3.7/3 A_REV=stable-2.9
-    - env: T=aws/2.7/3 A_REV=stable-2.10
-    - env: T=aws/3.7/3 A_REV=stable-2.10
+    - env: T=devel/aws/2.7/3
+    - env: T=devel/aws/3.7/3
+    - env: T=2.9/aws/2.7/3
+    - env: T=2.9/aws/3.7/3
+    - env: T=2.10/aws/2.7/3
+    - env: T=2.10/aws/3.7/3
 
-    - env: T=aws/2.7/4 A_REV=devel
-    - env: T=aws/3.7/4 A_REV=devel
-    - env: T=aws/2.7/4 A_REV=stable-2.9
-    - env: T=aws/3.7/4 A_REV=stable-2.9
-    - env: T=aws/2.7/4 A_REV=stable-2.10
-    - env: T=aws/3.7/4 A_REV=stable-2.10
+    - env: T=devel/aws/2.7/4
+    - env: T=devel/aws/3.7/4
+    - env: T=2.9/aws/2.7/4
+    - env: T=2.9/aws/3.7/4
+    - env: T=2.10/aws/2.7/4
+    - env: T=2.10/aws/3.7/4
 branches:
   except:
     - "*-patch-*"
