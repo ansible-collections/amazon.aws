@@ -72,13 +72,19 @@ options:
     type: str
   stack_policy:
     description:
-      - The path of the CloudFormation stack policy. A policy cannot be removed once placed, but it can be modified.
+      - The path of the file containing the CloudFormation stack policy. A policy cannot be removed once placed, but it can be modified.
         for instance, allow all updates U(https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/protect-stack-resources.html#d0e9051)
     type: str
+  stack_policy_body:
+    description:
+      - The CloudFormation stack policy in JSON. A policy cannot be removed once placed, but it can be modified.
+        for instance, allow all updates U(https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/protect-stack-resources.html#d0e9051)
+    type: json
+    version_added: 1.3.0
   stack_policy_on_update_body:
     description:
       - the body of the cloudformation stack policy only applied during this update.
-    type: str
+    type: json
     version_added: 1.3.0
   tags:
     description:
@@ -637,6 +643,7 @@ def main():
         template=dict(default=None, required=False, type='path'),
         notification_arns=dict(default=None, required=False),
         stack_policy=dict(default=None, required=False),
+        stack_policy_body=dict(default=None, required=False),
         stack_policy_on_update_body=dict(default=None, required=False),
         disable_rollback=dict(default=False, type='bool'),
         on_create_failure=dict(default=None, required=False, choices=['DO_NOTHING', 'ROLLBACK', 'DELETE']),
@@ -695,7 +702,9 @@ def main():
         stack_params['NotificationARNs'] = []
 
     # can't check the policy when verifying.
-    if module.params['stack_policy'] is not None and not module.check_mode and not module.params['create_changeset']:
+    if module.params['stack_policy_body'] is not None and not module.check_mode and not module.params['create_changeset']:
+        stack_params['StackPolicyBody'] = module.params['stack_policy_body']
+    elif module.params['stack_policy'] is not None and not module.check_mode and not module.params['create_changeset']:
         with open(module.params['stack_policy'], 'r') as stack_policy_fh:
             stack_params['StackPolicyBody'] = stack_policy_fh.read()
 
