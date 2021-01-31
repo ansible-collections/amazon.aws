@@ -365,43 +365,46 @@
 
     # ==== Cloudformation tests (update_policy) ======================
 
-    - name: setting an stack policy with json body
-      cloudformation:
-        stack_name: "{{ stack_name }}"
-        stack_policy_body: "{{ lookup('file','update_policy.json') }}"
-        template_body: "{{ lookup('file','cf_template.json') }}"
-        template_parameters:
-          InstanceType: "t3.nano"
-          ImageId: "{{ ec2_ami_image }}"
-          SubnetId: "{{ testing_subnet.subnet.id }}"
-        tags:
-          Stack: "{{ stack_name }}"
-          test: "{{ resource_prefix }}"
-      register: cf_stack
+    # Setting policy is not allowed in Shippable, commenting out these tests until further
+    # {"code": "AccessDenied", "message": "User: arn:aws:sts::966509639900:assumed-role/ansible-core-ci-test-prod/prod=shippable=ansible-collections=amazon.aws=1313.24 is not authorized to perform: cloudformation:SetStackPolicy on resource: arn:aws:cloudformation:us-east-1:966509639900:stack/shippable-1313-24/7e1cbd30-63c2-11eb-996f-126643f85ad9"
 
-    - name: get stack details
-      cloudformation_info:
-        stack_name: "{{ stack_name }}"
-      register: stack_info
-
-    - name: setting an stack policy on update
-      cloudformation:
-        stack_name: "{{ stack_name }}"
-        stack_policy_on_update_body: "{{ lookup('file','update_policy.json') }}"
-        template_body: "{{ lookup('file','cf_template.json') }}"
-        template_parameters:
-          InstanceType: "t3.nano"
-          ImageId: "{{ ec2_ami_image }}"
-          SubnetId: "{{ testing_subnet.subnet.id }}"
-        tags:
-          Stack: "{{ stack_name }}"
-          test: "{{ resource_prefix }}"
-      register: cf_stack
-
-    - name: get stack details
-      cloudformation_info:
-        stack_name: "{{ stack_name }}"
-      register: stack_info
+#    - name: setting an stack policy with json body
+#      cloudformation:
+#        stack_name: "{{ stack_name }}"
+#        stack_policy_body: "{{ lookup('file','update_policy.json') }}"
+#        template_body: "{{ lookup('file','cf_template.json') }}"
+#        template_parameters:
+#          InstanceType: "t3.nano"
+#          ImageId: "{{ ec2_ami_image }}"
+#          SubnetId: "{{ testing_subnet.subnet.id }}"
+#        tags:
+#          Stack: "{{ stack_name }}"
+#          test: "{{ resource_prefix }}"
+#      register: cf_stack
+#
+#    - name: get stack details
+#      cloudformation_info:
+#        stack_name: "{{ stack_name }}"
+#     register: stack_info
+#
+#    - name: setting an stack policy on update
+#      cloudformation:
+#        stack_name: "{{ stack_name }}"
+#        stack_policy_on_update_body: "{{ lookup('file','update_policy.json') }}"
+#        template_body: "{{ lookup('file','cf_template.json') }}"
+#        template_parameters:
+#          InstanceType: "t3.nano"
+#          ImageId: "{{ ec2_ami_image }}"
+#          SubnetId: "{{ testing_subnet.subnet.id }}"
+#        tags:
+#          Stack: "{{ stack_name }}"
+#          test: "{{ resource_prefix }}"
+#      register: cf_stack
+#
+#    - name: get stack details
+#      cloudformation_info:
+#        stack_name: "{{ stack_name }}"
+#      register: stack_info
 
     # ==== Cloudformation tests (delete stack tests) ==========================
 
