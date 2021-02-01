@@ -48,6 +48,19 @@ options:
     required: false
     default: false
     type: bool
+  tags:
+    description:
+      - A dict of tags to apply to the internet gateway.
+      - To remove all tags set I(tags={}) and I(purge_tags=true).
+    aliases: [ 'resource_tags' ]
+    type: dict
+    version_added: 1.4.0
+  purge_tags:
+    description:
+      - Remove tags not listed in I(tags).
+    type: bool
+    default: true
+    version_added: 1.4.0
   release_eip:
     description:
       - Deallocate the EIP from the VPC.
@@ -153,6 +166,17 @@ EXAMPLES = '''
     wait: yes
     wait_timeout: 300
     region: ap-southeast-2
+
+- name: Create new nat gateway using an allocation-id and tags.
+  community.aws.ec2_vpc_nat_gateway:
+    state: present
+    subnet_id: subnet-12345678
+    allocation_id: eipalloc-12345678
+    region: ap-southeast-2
+    tags:
+      Tag1: tag1
+      Tag2: tag2
+  register: new_nat_gateway
 '''
 
 RETURN = '''
@@ -176,6 +200,13 @@ state:
   returned: In all cases.
   type: str
   sample: "available"
+tags:
+  description: The tags associated the VPC NAT Gateway.
+  type: dict
+  returned: When tags are present.
+  sample:
+    tags:
+      "Ansible": "Test"
 vpc_id:
   description: id of the VPC.
   returned: In all cases.
@@ -204,11 +235,17 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils._text import to_native
+
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
+from ansible.module_utils.six import string_types
+from ansible.module_utils._text import to_native
 
 DRY_RUN_GATEWAYS = [
     {
@@ -451,6 +488,7 @@ def gateway_in_subnet_exists(client, subnet_id, allocation_id=None,
     allocation_id_exists = False
     gateways = []
     states = ['available', 'pending']
+
     gws_retrieved, err_msg, gws = (
         get_nat_gateways(
             client, subnet_id, states=states, check_mode=check_mode
@@ -609,7 +647,7 @@ def release_address(client, allocation_id, check_mode=False):
     return ip_released, err_msg
 
 
-def create(client, subnet_id, allocation_id, client_token=None,
+def create(client, module, subnet_id, allocation_id, tags, purge_tags, client_token=None,
            wait=False, wait_timeout=0, if_exist_do_not_create=False,
            check_mode=False):
     """Create an Amazon NAT Gateway.
@@ -680,7 +718,6 @@ def create(client, subnet_id, allocation_id, client_token=None,
             result['create_time'] = datetime.datetime.utcnow()
             result['nat_gateway_addresses'][0]['allocation_id'] = allocation_id
             result['subnet_id'] = subnet_id
-
         success = True
         changed = True
         create_time = result['create_time'].replace(tzinfo=None)
@@ -689,15 +726,18 @@ def create(client, subnet_id, allocation_id, client_token=None,
         elif wait:
             success, err_msg, result = (
                 wait_for_status(
-                    client, wait_timeout, result['nat_gateway_id'], 'available',
-                    check_mode=check_mode
+                    client, wait_timeout, result['nat_gateway_id'],
+                    'available', check_mode=check_mode
                 )
             )
             if success:
                 err_msg = (
                     'NAT gateway {0} created'.format(result['nat_gateway_id'])
                 )
-
+        result['tags'], tags_update_exists = ensure_tags(
+            client, module, nat_gw_id=result['nat_gateway_id'], tags=tags,
+            purge_tags=purge_tags, check_mode=check_mode
+        )
     except is_boto3_error_code('IdempotentParameterMismatch'):
         err_msg = (
             'NAT Gateway does not support update and token has already been provided: ' + err_msg
@@ -714,7 +754,7 @@ def create(client, subnet_id, allocation_id, client_token=None,
     return success, changed, err_msg, result
 
 
-def pre_create(client, subnet_id, allocation_id=None, eip_address=None,
+def pre_create(client, module, subnet_id, tags, purge_tags, allocation_id=None, eip_address=None,
                if_exist_do_not_create=False, wait=False, wait_timeout=0,
                client_token=None, check_mode=False):
     """Create an Amazon NAT Gateway.
@@ -772,14 +812,18 @@ def pre_create(client, subnet_id, allocation_id=None, eip_address=None,
     results = list()
 
     if not allocation_id and not eip_address:
-        existing_gateways, allocation_id_exists = (
-            gateway_in_subnet_exists(client, subnet_id, check_mode=check_mode)
-        )
-
+        existing_gateways, allocation_id_exists = (gateway_in_subnet_exists(client, subnet_id, check_mode=check_mode))
         if len(existing_gateways) > 0 and if_exist_do_not_create:
+            results = existing_gateways[0]
+            results['tags'], tags_update_exists = ensure_tags(client, module, results['nat_gateway_id'], tags, purge_tags, check_mode)
+
+            if tags_update_exists:
+                success = True
+                changed = True
+                return success, changed, err_msg, results
+
             success = True
             changed = False
-            results = existing_gateways[0]
             err_msg = (
                 'NAT Gateway {0} already exists in subnet_id {1}'
                 .format(
@@ -805,16 +849,22 @@ def pre_create(client, subnet_id, allocation_id=None, eip_address=None,
                 success = False
                 changed = False
                 return success, changed, err_msg, dict()
-
         existing_gateways, allocation_id_exists = (
             gateway_in_subnet_exists(
                 client, subnet_id, allocation_id, check_mode=check_mode
             )
         )
+
         if len(existing_gateways) > 0 and (allocation_id_exists or if_exist_do_not_create):
+            results = existing_gateways[0]
+            results['tags'], tags_update_exists = ensure_tags(client, module, results['nat_gateway_id'], tags, purge_tags, check_mode)
+            if tags_update_exists:
+                success = True
+                changed = True
+                return success, changed, err_msg, results
+
             success = True
             changed = False
-            results = existing_gateways[0]
             err_msg = (
                 'NAT Gateway {0} already exists in subnet_id {1}'
                 .format(
@@ -824,7 +874,7 @@ def pre_create(client, subnet_id, allocation_id=None, eip_address=None,
             return success, changed, err_msg, results
 
     success, changed, err_msg, results = create(
-        client, subnet_id, allocation_id, client_token,
+        client, module, subnet_id, allocation_id, tags, purge_tags, client_token,
         wait, wait_timeout, if_exist_do_not_create, check_mode=check_mode
     )
 
@@ -919,8 +969,7 @@ def remove(client, nat_gateway_id, wait=False, wait_timeout=0,
 
     if release_eip:
         eip_released, eip_err = (
-            release_address(client, allocation_id, check_mode)
-        )
+            release_address(client, allocation_id, check_mode))
         if not eip_released:
             err_msg = (
                 "{0}: Failed to release EIP {1}: {2}"
@@ -929,6 +978,64 @@ def remove(client, nat_gateway_id, wait=False, wait_timeout=0,
             success = False
 
     return success, changed, err_msg, results
+
+
+def ensure_tags(client, module, nat_gw_id, tags, purge_tags, check_mode):
+    final_tags = []
+    changed = False
+
+    filters = ansible_dict_to_boto3_filter_list({'resource-id': nat_gw_id, 'resource-type': 'natgateway'})
+    cur_tags = None
+    try:
+        cur_tags = client.describe_tags(aws_retry=True, Filters=filters)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, 'Couldnt describe tags')
+    if tags is None:
+        return boto3_tag_list_to_ansible_dict(cur_tags['Tags']), changed
+
+    to_update, to_delete = compare_aws_tags(boto3_tag_list_to_ansible_dict(cur_tags.get('Tags')), tags, purge_tags)
+    final_tags = boto3_tag_list_to_ansible_dict(cur_tags.get('Tags'))
+
+    if to_update:
+        try:
+            if check_mode:
+                # update tags
+                final_tags.update(to_update)
+            else:
+                client.create_tags(
+                    aws_retry=True,
+                    Resources=[nat_gw_id],
+                    Tags=ansible_dict_to_boto3_tag_list(to_update)
+                )
+
+            changed = True
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, "Couldn't create tags")
+
+    if to_delete:
+        try:
+            if check_mode:
+                # update tags
+                for key in to_delete:
+                    del final_tags[key]
+            else:
+                tags_list = []
+                for key in to_delete:
+                    tags_list.append({'Key': key})
+
+                client.delete_tags(aws_retry=True, Resources=[nat_gw_id], Tags=tags_list)
+
+            changed = True
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, "Couldn't delete tags")
+
+    if not check_mode and (to_update or to_delete):
+        try:
+            response = client.describe_tags(aws_retry=True, Filters=filters)
+            final_tags = boto3_tag_list_to_ansible_dict(response.get('Tags'))
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, "Couldn't describe tags")
+    return final_tags, changed
 
 
 def main():
@@ -943,6 +1050,8 @@ def main():
         release_eip=dict(type='bool', default=False),
         nat_gateway_id=dict(type='str'),
         client_token=dict(type='str'),
+        tags=dict(required=False, type='dict', aliases=['resource_tags']),
+        purge_tags=dict(default=True, type='bool'),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
@@ -965,9 +1074,11 @@ def main():
     release_eip = module.params.get('release_eip')
     client_token = module.params.get('client_token')
     if_exist_do_not_create = module.params.get('if_exist_do_not_create')
+    tags = module.params.get('tags')
+    purge_tags = module.params.get('purge_tags')
 
     try:
-        client = module.client('ec2')
+        client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to connect to AWS')
 
@@ -977,7 +1088,7 @@ def main():
     if state == 'present':
         success, changed, err_msg, results = (
             pre_create(
-                client, subnet_id, allocation_id, eip_address,
+                client, module, subnet_id, tags, purge_tags, allocation_id, eip_address,
                 if_exist_do_not_create, wait, wait_timeout,
                 client_token, check_mode=check_mode
             )
