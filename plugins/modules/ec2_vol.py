@@ -92,6 +92,11 @@ options:
       - tag:value pairs to add to the volume after creation.
     default: {}
     type: dict
+  purge_tags:
+    description: Whether to remove existing tags that aren't passed in the C(tags) parameter
+    default: false
+    type: bool
+    version_added: 1.4.0
   modify_volume:
     description:
       - The volume won't be modify unless this key is C(true).
@@ -612,7 +617,7 @@ def get_mapped_block_device(instance_dict=None, device_name=None):
     return mapped_block_device
 
 
-def ensure_tags(module, connection, res_id, res_type, tags, add_only):
+def ensure_tags(module, connection, res_id, res_type, tags, purge_tags):
     changed = False
 
     filters = ansible_dict_to_boto3_filter_list({'resource-id': res_id, 'resource-type': res_type})
@@ -622,7 +627,6 @@ def ensure_tags(module, connection, res_id, res_type, tags, add_only):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't describe tags")
 
-    purge_tags = bool(not add_only)
     to_update, to_delete = compare_aws_tags(boto3_tag_list_to_ansible_dict(cur_tags.get('Tags')), tags, purge_tags)
     final_tags = boto3_tag_list_to_ansible_dict(cur_tags.get('Tags'))
 
@@ -686,7 +690,8 @@ def main():
         state=dict(default='present', choices=['absent', 'present', 'list']),
         tags=dict(default={}, type='dict'),
         modify_volume=dict(default=False, type='bool'),
-        throughput=dict(type='int')
+        throughput=dict(type='int'),
+        purge_tags=dict(type='bool', default=False),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec)
@@ -785,7 +790,7 @@ def main():
 
         if name:
             tags['Name'] = name
-        final_tags, tags_changed = ensure_tags(module, ec2_conn, volume['volume_id'], 'volume', tags, True)
+        final_tags, tags_changed = ensure_tags(module, ec2_conn, volume['volume_id'], 'volume', tags, module.params.get('purge_tags'))
 
         if detach_vol_flag:
             volume, changed = detach_volume(module, ec2_conn, volume_dict=volume)
