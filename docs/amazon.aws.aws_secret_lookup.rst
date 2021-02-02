@@ -17,8 +17,8 @@ amazon.aws.aws_secret
 Synopsis
 --------
 - Look up secrets stored in AWS Secrets Manager provided the caller has the appropriate permissions to read the secret.
-- Lookup is based on the secret's `Name` value.
-- Optional parameters can be passed into this lookup; `version_id` and `version_stage`
+- Lookup is based on the secret's *Name* value.
+- Optional parameters can be passed into this lookup; *version_id* and *version_stage*
 
 
 
@@ -145,6 +145,25 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>bypath</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.4.0</div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">"no"</div>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>A boolean to indicate whether the parameter is provided as a hierarchy.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>join</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -159,6 +178,26 @@ Parameters
                 <td>
                         <div>Join two or more entries to form an extended secret.</div>
                         <div>This is useful for overcoming the 4096 character limit imposed by AWS.</div>
+                        <div>No effect when used with <em>bypath</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>nested</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.4.0</div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">"no"</div>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>A boolean to indicate the secret contains nested values.</div>
                 </td>
             </tr>
             <tr>
@@ -275,7 +314,10 @@ Examples
 
 .. code-block:: yaml
 
-    - name: Create RDS instance with aws_secret lookup for password param
+    - name: lookup secretsmanager secret in the current region
+       debug: msg="{{ lookup('amazon.aws.aws_secret', '/path/to/secrets', bypath=true) }}"
+
+     - name: Create RDS instance with aws_secret lookup for password param
        rds:
          command: create
          instance_name: app-db
@@ -283,15 +325,20 @@ Examples
          size: 10
          instance_type: db.m1.small
          username: dbadmin
-         password: "{{ lookup('aws_secret', 'DbSecret') }}"
+         password: "{{ lookup('amazon.aws.aws_secret', 'DbSecret') }}"
          tags:
            Environment: staging
 
      - name: skip if secret does not exist
-       debug: msg="{{ lookup('aws_secret', 'secret-not-exist', on_missing='skip')}}"
+       debug: msg="{{ lookup('amazon.aws.aws_secret', 'secret-not-exist', on_missing='skip')}}"
 
      - name: warn if access to the secret is denied
-       debug: msg="{{ lookup('aws_secret', 'secret-denied', on_denied='warn')}}"
+       debug: msg="{{ lookup('amazon.aws.aws_secret', 'secret-denied', on_denied='warn')}}"
+
+     - name: lookup secretsmanager secret in the current region using the nested feature
+       debug: msg="{{ lookup('amazon.aws.aws_secret', 'secrets.environments.production.password', nested=true) }}"
+       # The secret can be queried using the following syntax: `aws_secret_object_name.key1.key2.key3`.
+       # If an object is of the form `{"key1":{"key2":{"key3":1}}}` the query would return the value `1`.
 
 
 

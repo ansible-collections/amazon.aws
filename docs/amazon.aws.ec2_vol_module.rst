@@ -27,8 +27,9 @@ Requirements
 ------------
 The below requirements are needed on the host that executes this module.
 
-- python >= 2.6
 - boto
+- boto3>=1.16.33
+- python >= 2.6
 
 
 Parameters
@@ -264,6 +265,26 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>modify_volume</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.4.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>The volume won&#x27;t be modify unless this key is <code>true</code>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>name</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -383,6 +404,24 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>throughput</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.4.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Volume throughput in MB/s.</div>
+                        <div>This parameter is only valid for gp3 volumes.</div>
+                        <div>Valid range is from 125 to 1000.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>validate_certs</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -430,10 +469,12 @@ Parameters
                                     <li>io1</li>
                                     <li>st1</li>
                                     <li>sc1</li>
+                                    <li>gp3</li>
+                                    <li>io2</li>
                         </ul>
                 </td>
                 <td>
-                        <div>Type of EBS volume; standard (magnetic), gp2 (SSD), io1 (Provisioned IOPS), st1 (Throughput Optimized HDD), sc1 (Cold HDD). &quot;Standard&quot; is the old EBS default and continues to remain the Ansible default for backwards compatibility.</div>
+                        <div>Type of EBS volume; standard (magnetic), gp2 (SSD), gp3 (SSD), io1 (Provisioned IOPS), io2 (Provisioned IOPS), st1 (Throughput Optimized HDD), sc1 (Cold HDD). &quot;Standard&quot; is the old EBS default and continues to remain the Ansible default for backwards compatibility.</div>
                 </td>
             </tr>
             <tr>
