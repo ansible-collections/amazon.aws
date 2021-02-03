@@ -1,0 +1,2 @@
+minor_changes:
+- ec2_instance - add automatic retries on all paginated queries for temporary errors (https://github.com/ansible-collections/community.aws/pull/373).
