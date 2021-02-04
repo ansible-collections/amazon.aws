@@ -34,7 +34,7 @@
 - pip:
     name:
       - 'botocore>=1.12.60'
-      - boto3
+      - 'boto3>=1.16.57'
       - coverage<5
     virtualenv: "{{ virtualenv }}"
     virtualenv_command: "{{ virtualenv_command }}"

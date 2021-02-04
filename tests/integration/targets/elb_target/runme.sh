@@ -9,5 +9,5 @@ ansible-playbook -i ../../inventory -v playbooks/version_fail.yml "$@"
 
 # Run full test suite
 source virtualenv.sh
-pip install 'botocore>=1.8.0' boto3
+pip install 'botocore' 'boto3>=1.16.57'
 ansible-playbook -i ../../inventory -v playbooks/full_test.yml "$@"
