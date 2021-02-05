@@ -74,9 +74,6 @@ class ElasticLoadBalancerV2(object):
         else:
             self.elb_attributes = None
 
-        if not self.module.boto3_at_least('1.16.57'):
-            self.module.fail_json(msg="elbv2 requires boto3 >= 1.16.57")
-
     def wait_for_status(self, elb_arn):
         """
         Wait for load balancer to reach 'active' status
