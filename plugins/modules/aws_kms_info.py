@@ -290,7 +290,7 @@ def get_key_policy_with_backoff(connection, key_id, policy_name):
 def get_enable_key_rotation_with_backoff(connection, key_id):
     try:
         current_rotation_status = connection.get_key_rotation_status(KeyId=key_id)
-    except is_boto3_error_code('AccessDeniedException') as e:
+    except is_boto3_error_code('AccessDeniedException'):
         return None
 
     return current_rotation_status.get('KeyRotationEnabled')
@@ -306,11 +306,10 @@ def get_kms_tags(connection, module, key_id):
         try:
             tag_response = get_kms_tags_with_backoff(connection, key_id, **kwargs)
             tags.extend(tag_response['Tags'])
-        except botocore.exceptions.ClientError as e:
-            if e.response['Error']['Code'] != 'AccessDeniedException':
-                module.fail_json_aws(e, msg="Failed to obtain key tags")
-            else:
-                tag_response = {}
+        except is_boto3_error_code('AccessDeniedException'):
+            tag_response = {}
+        except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
+            module.fail_json_aws(e, msg="Failed to obtain key tags")
         if tag_response.get('NextMarker'):
             kwargs['Marker'] = tag_response['NextMarker']
         else:
@@ -323,11 +322,10 @@ def get_kms_policies(connection, module, key_id):
         policies = list_key_policies_with_backoff(connection, key_id)['PolicyNames']
         return [get_key_policy_with_backoff(connection, key_id, policy)['Policy'] for
                 policy in policies]
-    except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] != 'AccessDeniedException':
-            module.fail_json_aws(e, msg="Failed to obtain key policies")
-        else:
-            return []
+    except is_boto3_error_code('AccessDeniedException'):
+        return []
+    except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to obtain key policies")
 
 
 def key_matches_filter(key, filtr):

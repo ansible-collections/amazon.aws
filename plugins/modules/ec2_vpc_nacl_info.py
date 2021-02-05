@@ -105,16 +105,17 @@ nacls:
 '''
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError
+    import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (AWSRetry,
-                                                                     ansible_dict_to_boto3_filter_list,
-                                                                     camel_dict_to_snake_dict,
-                                                                     boto3_tag_list_to_ansible_dict,
-                                                                     )
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
 # VPC-supported IANA protocol numbers
@@ -132,11 +133,9 @@ def list_ec2_vpc_nacls(connection, module):
 
     try:
         nacls = connection.describe_network_acls(aws_retry=True, NetworkAclIds=nacl_ids, Filters=filters)
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'InvalidNetworkAclID.NotFound':
-            module.fail_json(msg='Unable to describe ACL.  NetworkAcl does not exist')
-        module.fail_json_aws(e, msg="Unable to describe network ACLs {0}".format(nacl_ids))
-    except BotoCoreError as e:
+    except is_boto3_error_code('InvalidNetworkAclID.NotFound'):
+        module.fail_json(msg='Unable to describe ACL.  NetworkAcl does not exist')
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to describe network ACLs {0}".format(nacl_ids))
 
     # Turn the boto3 result in to ansible_friendly_snaked_names

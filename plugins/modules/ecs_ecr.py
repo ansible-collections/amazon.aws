@@ -188,13 +188,14 @@ import json
 import traceback
 
 try:
-    from botocore.exceptions import ClientError
+    import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible.module_utils.six import string_types
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto_exception
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import sort_json_policy_dict
@@ -227,11 +228,8 @@ class EcsEcr:
                 repositoryNames=[name], **build_kwargs(registry_id))
             repos = res.get('repositories')
             return repos and repos[0]
-        except ClientError as err:
-            code = err.response['Error'].get('Code', 'Unknown')
-            if code == 'RepositoryNotFoundException':
-                return None
-            raise
+        except is_boto3_error_code('RepositoryNotFoundException'):
+            return None
 
     def get_repository_policy(self, registry_id, name):
         try:
@@ -239,11 +237,8 @@ class EcsEcr:
                 repositoryName=name, **build_kwargs(registry_id))
             text = res.get('policyText')
             return text and json.loads(text)
-        except ClientError as err:
-            code = err.response['Error'].get('Code', 'Unknown')
-            if code == 'RepositoryPolicyNotFoundException':
-                return None
-            raise
+        except is_boto3_error_code('RepositoryPolicyNotFoundException'):
+            return None
 
     def create_repository(self, registry_id, name, image_tag_mutability):
         if registry_id:
@@ -330,11 +325,8 @@ class EcsEcr:
                 repositoryName=name, **build_kwargs(registry_id))
             text = res.get('lifecyclePolicyText')
             return text and json.loads(text)
-        except ClientError as err:
-            code = err.response['Error'].get('Code', 'Unknown')
-            if code == 'LifecyclePolicyNotFoundException':
-                return None
-            raise
+        except is_boto3_error_code('LifecyclePolicyNotFoundException'):
+            return None
 
     def put_lifecycle_policy(self, registry_id, name, policy_text):
         if not self.check_mode:
@@ -521,7 +513,7 @@ def run(ecr, params):
 
     except Exception as err:
         msg = str(err)
-        if isinstance(err, ClientError):
+        if isinstance(err, botocore.exceptions.ClientError):
             msg = boto_exception(err)
         result['msg'] = msg
         result['exception'] = traceback.format_exc()

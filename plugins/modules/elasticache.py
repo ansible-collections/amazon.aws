@@ -134,6 +134,7 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
@@ -439,13 +440,12 @@ class ElastiCacheManager(object):
         if cache_cluster_data is None:
             try:
                 response = self.conn.describe_cache_clusters(CacheClusterId=self.name, ShowCacheNodeInfo=True)
-            except botocore.exceptions.ClientError as e:
-                if e.response['Error']['Code'] == 'CacheClusterNotFound':
-                    self.data = None
-                    self.status = 'gone'
-                    return
-                else:
-                    self.module.fail_json_aws(e, msg="Failed to describe cache clusters")
+            except is_boto3_error_code('CacheClusterNotFound'):
+                self.data = None
+                self.status = 'gone'
+                return
+            except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
+                self.module.fail_json_aws(e, msg="Failed to describe cache clusters")
             cache_cluster_data = response['CacheClusters'][0]
         self.data = cache_cluster_data
         self.status = self.data['CacheClusterStatus']

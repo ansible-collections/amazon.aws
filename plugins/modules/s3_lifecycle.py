@@ -17,8 +17,6 @@ author: "Rob White (@wimnat)"
 notes:
   - If specifying expiration time as days then transition time must also be specified in days
   - If specifying expiration time as a date then transition time must also be specified as a date
-requirements:
-  - python-dateutil
 options:
   name:
     description:
@@ -196,11 +194,12 @@ from copy import deepcopy
 import datetime
 
 try:
-    from botocore.exceptions import BotoCoreError, ClientError
+    import botocore
 except ImportError:
     pass  # handled by AnsibleAwsModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
 def create_lifecycle_rule(client, module):
@@ -226,12 +225,9 @@ def create_lifecycle_rule(client, module):
     try:
         current_lifecycle = client.get_bucket_lifecycle_configuration(Bucket=name)
         current_lifecycle_rules = current_lifecycle['Rules']
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchLifecycleConfiguration':
-            current_lifecycle_rules = []
-        else:
-            module.fail_json_aws(e)
-    except BotoCoreError as e:
+    except is_boto3_error_code('NoSuchLifecycleConfiguration'):
+        current_lifecycle_rules = []
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
 
     rule = dict(Filter=dict(Prefix=prefix), Status=status.title())
@@ -307,7 +303,7 @@ def create_lifecycle_rule(client, module):
     # Write lifecycle to bucket
     try:
         client.put_bucket_lifecycle_configuration(Bucket=name, LifecycleConfiguration=lifecycle_configuration)
-    except (BotoCoreError, ClientError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e)
 
     module.exit_json(changed=changed)
@@ -390,12 +386,9 @@ def destroy_lifecycle_rule(client, module):
     # Get the bucket's current lifecycle rules
     try:
         current_lifecycle_rules = client.get_bucket_lifecycle_configuration(Bucket=name)['Rules']
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchLifecycleConfiguration':
-            current_lifecycle_rules = []
-        else:
-            module.fail_json_aws(e)
-    except BotoCoreError as e:
+    except is_boto3_error_code('NoSuchLifecycleConfiguration'):
+        current_lifecycle_rules = []
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
 
     # Create lifecycle
@@ -425,7 +418,7 @@ def destroy_lifecycle_rule(client, module):
         elif current_lifecycle_rules:
             changed = True
             client.delete_bucket_lifecycle(Bucket=name)
-    except (ClientError, BotoCoreError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e)
     module.exit_json(changed=changed)
 
@@ -485,13 +478,13 @@ def main():
     if expiration_date is not None:
         try:
             datetime.datetime.strptime(expiration_date, "%Y-%m-%dT%H:%M:%S.000Z")
-        except ValueError as e:
+        except ValueError:
             module.fail_json(msg="expiration_date is not a valid ISO-8601 format. The time must be midnight and a timezone of GMT must be included")
 
     if transition_date is not None:
         try:
             datetime.datetime.strptime(transition_date, "%Y-%m-%dT%H:%M:%S.000Z")
-        except ValueError as e:
+        except ValueError:
             module.fail_json(msg="expiration_date is not a valid ISO-8601 format. The time must be midnight and a timezone of GMT must be included")
 
     if state == 'present':

@@ -111,10 +111,10 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
-from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
 def compare_attached_policies(current_attached_policies, new_attached_policies):
@@ -297,34 +297,30 @@ def get_user(connection, module, name):
 
     try:
         return connection.get_user(**params)
-    except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchEntity':
-            return None
-        else:
-            module.fail_json(msg="Unable to get user {0}: {1}".format(name, to_native(e)),
-                             **camel_dict_to_snake_dict(e.response))
+    except is_boto3_error_code('NoSuchEntity'):
+        return None
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Unable to get user {0}".format(name))
 
 
 def get_attached_policy_list(connection, module, name):
 
     try:
         return connection.list_attached_user_policies(UserName=name)['AttachedPolicies']
-    except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchEntity':
-            return None
-        else:
-            module.fail_json_aws(e, msg="Unable to get policies for user {0}".format(name))
+    except is_boto3_error_code('NoSuchEntity'):
+        return None
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Unable to get policies for user {0}".format(name))
 
 
 def delete_user_login_profile(connection, module, user_name):
 
     try:
         return connection.delete_login_profile(UserName=user_name)
-    except botocore.exceptions.ClientError as e:
-        if e.response["Error"]["Code"] == "NoSuchEntity":
-            return None
-        else:
-            module.fail_json_aws(e, msg="Unable to delete login profile for user {0}".format(user_name))
+    except is_boto3_error_code('NoSuchEntity'):
+        return None
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Unable to delete login profile for user {0}".format(user_name))
 
 
 def main():

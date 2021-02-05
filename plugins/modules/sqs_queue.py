@@ -220,18 +220,20 @@ EXAMPLES = '''
 '''
 
 import json
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (AWSRetry,
-                                                                     camel_dict_to_snake_dict,
-                                                                     compare_aws_tags,
-                                                                     snake_dict_to_camel_dict,
-                                                                     compare_policies,
-                                                                     )
 
 try:
-    from botocore.exceptions import BotoCoreError, ClientError, ParamValidationError
+    import botocore
 except ImportError:
     pass  # handled by AnsibleAWSModule
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
 
 
 def get_queue_name(module, is_fifo=False):
@@ -246,10 +248,8 @@ def get_queue_name(module, is_fifo=False):
 def get_queue_url(client, name):
     try:
         return client.get_queue_url(QueueName=name)['QueueUrl']
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'AWS.SimpleQueueService.NonExistentQueue':
-            return None
-        raise
+    except is_boto3_error_code('AWS.SimpleQueueService.NonExistentQueue'):
+        return None
 
 
 def describe_queue(client, queue_url):
@@ -418,7 +418,7 @@ def update_tags(client, queue_url, module):
 
     try:
         existing_tags = client.list_queue_tags(QueueUrl=queue_url, aws_retry=True)['Tags']
-    except (ClientError, KeyError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError, KeyError) as e:
         existing_tags = {}
 
     tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, new_tags, purge_tags=purge_tags)
@@ -465,7 +465,7 @@ def main():
             result = create_or_update_sqs_queue(client, module)
         elif state == 'absent':
             result = delete_sqs_queue(client, module)
-    except (BotoCoreError, ClientError, ParamValidationError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to control sqs queue')
     else:
         module.exit_json(**result)

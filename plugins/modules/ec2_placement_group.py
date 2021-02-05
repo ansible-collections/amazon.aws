@@ -87,12 +87,14 @@ placement_group:
 
 '''
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 try:
-    from botocore.exceptions import (BotoCoreError, ClientError)
+    import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 @AWSRetry.exponential_backoff()
@@ -104,7 +106,7 @@ def get_placement_group_details(connection, module):
                 "Name": "group-name",
                 "Values": [name]
             }])
-    except (BotoCoreError, ClientError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(
             e,
             msg="Couldn't find placement group named [%s]" % name)
@@ -128,13 +130,13 @@ def create_placement_group(connection, module):
     try:
         connection.create_placement_group(
             GroupName=name, Strategy=strategy, DryRun=module.check_mode)
-    except (BotoCoreError, ClientError) as e:
-        if e.response['Error']['Code'] == "DryRunOperation":
-            module.exit_json(changed=True, placement_group={
-                "name": name,
-                "state": 'DryRun',
-                "strategy": strategy,
-            })
+    except is_boto3_error_code('DryRunOperation'):
+        module.exit_json(changed=True, placement_group={
+            "name": name,
+            "state": 'DryRun',
+            "strategy": strategy,
+        })
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(
             e,
             msg="Couldn't create placement group [%s]" % name)
@@ -152,7 +154,7 @@ def delete_placement_group(connection, module):
     try:
         connection.delete_placement_group(
             GroupName=name, DryRun=module.check_mode)
-    except (BotoCoreError, ClientError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(
             e,
             msg="Couldn't delete placement group [%s]" % name)

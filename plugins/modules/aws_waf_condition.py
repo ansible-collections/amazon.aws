@@ -402,10 +402,17 @@ try:
 except ImportError:
     pass  # handled by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, AWSRetry, compare_policies
-from ansible_collections.amazon.aws.plugins.module_utils.waf import run_func_with_change_token_backoff, MATCH_LOOKUP
-from ansible_collections.amazon.aws.plugins.module_utils.waf import get_rule_with_backoff, list_rules_with_backoff, list_regional_rules_with_backoff
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
+from ansible_collections.amazon.aws.plugins.module_utils.waf import MATCH_LOOKUP
+from ansible_collections.amazon.aws.plugins.module_utils.waf import run_func_with_change_token_backoff
+from ansible_collections.amazon.aws.plugins.module_utils.waf import get_rule_with_backoff
+from ansible_collections.amazon.aws.plugins.module_utils.waf import list_regional_rules_with_backoff
+from ansible_collections.amazon.aws.plugins.module_utils.waf import list_rules_with_backoff
 
 
 class Condition(object):
@@ -540,9 +547,9 @@ class Condition(object):
             run_func_with_change_token_backoff(self.client, self.module,
                                                {'RegexPatternSetId': regex_pattern_set_id},
                                                self.client.delete_regex_pattern_set, wait=True)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            if e.response['Error']['Code'] == 'WAFNonexistentItemException':
-                return
+        except is_boto3_error_code('WAFNonexistentItemException'):
+            return
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
             self.module.fail_json_aws(e, msg='Could not delete regex pattern')
 
     def get_condition_by_name(self, name):

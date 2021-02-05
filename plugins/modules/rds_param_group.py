@@ -124,6 +124,7 @@ from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
@@ -230,11 +231,10 @@ def ensure_present(module, connection):
     errors = []
     try:
         response = connection.describe_db_parameter_groups(DBParameterGroupName=groupname)
-    except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == 'DBParameterGroupNotFound':
-            response = None
-        else:
-            module.fail_json_aws(e, msg="Couldn't access parameter group information")
+    except is_boto3_error_code('DBParameterGroupNotFound'):
+        response = None
+    except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Couldn't access parameter group information")
     if not response:
         params = dict(DBParameterGroupName=groupname,
                       DBParameterGroupFamily=module.params['engine'],
@@ -273,11 +273,10 @@ def ensure_absent(module, connection):
     group = module.params['name']
     try:
         response = connection.describe_db_parameter_groups(DBParameterGroupName=group)
-    except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == 'DBParameterGroupNotFound':
-            module.exit_json(changed=False)
-        else:
-            module.fail_json_aws(e, msg="Couldn't access parameter group information")
+    except is_boto3_error_code('DBParameterGroupNotFound'):
+        module.exit_json(changed=False)
+    except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Couldn't access parameter group information")
     try:
         response = connection.delete_db_parameter_group(DBParameterGroupName=group)
         module.exit_json(changed=True)

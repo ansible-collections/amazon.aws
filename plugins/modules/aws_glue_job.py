@@ -185,15 +185,17 @@ timeout:
     sample: 300
 '''
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-
 # Non-ansible imports
 import copy
 try:
-    from botocore.exceptions import BotoCoreError, ClientError
+    import botocore
 except ImportError:
-    pass
+    pass  # Handled by AnsibleAWSModule
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
 def _get_glue_job(connection, module, glue_job_name):
@@ -208,11 +210,10 @@ def _get_glue_job(connection, module, glue_job_name):
 
     try:
         return connection.get_job(JobName=glue_job_name)['Job']
-    except (BotoCoreError, ClientError) as e:
-        if e.response['Error']['Code'] == 'EntityNotFoundException':
-            return None
-        else:
-            module.fail_json_aws(e)
+    except is_boto3_error_code('EntityNotFoundException'):
+        return None
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e)
 
 
 def _compare_glue_job_params(user_params, current_params):
@@ -292,13 +293,13 @@ def create_or_update_glue_job(connection, module, glue_job):
                 del update_params['JobUpdate']['Name']
                 connection.update_job(**update_params)
                 changed = True
-            except (BotoCoreError, ClientError) as e:
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e)
     else:
         try:
             connection.create_job(**params)
             changed = True
-        except (BotoCoreError, ClientError) as e:
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e)
 
     # If changed, get the Glue job again
@@ -324,7 +325,7 @@ def delete_glue_job(connection, module, glue_job):
         try:
             connection.delete_job(JobName=glue_job['Name'])
             changed = True
-        except (BotoCoreError, ClientError) as e:
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e)
 
     module.exit_json(changed=changed)
