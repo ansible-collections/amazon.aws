@@ -136,6 +136,7 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
 def main():
@@ -206,13 +207,13 @@ def main():
 
     try:
         response = client.invoke(**invoke_params)
-    except botocore.exceptions.ClientError as ce:
-        if ce.response['Error']['Code'] == 'ResourceNotFoundException':
-            module.fail_json_aws(ce, msg="Could not find Lambda to execute. Make sure "
-                                 "the ARN is correct and your profile has "
-                                 "permissions to execute this function.")
+    except is_boto3_error_code('ResourceNotFoundException') as nfe:
+        module.fail_json_aws(nfe, msg="Could not find Lambda to execute. Make sure "
+                             "the ARN is correct and your profile has "
+                             "permissions to execute this function.")
+    except botocore.exceptions.ClientError as ce:  # pylint: disable=duplicate-except
         module.fail_json_aws(ce, msg="Client-side error when invoking Lambda, check inputs and specific error")
-    except botocore.exceptions.ParamValidationError as ve:
+    except botocore.exceptions.ParamValidationError as ve:  # pylint: disable=duplicate-except
         module.fail_json_aws(ve, msg="Parameters to `invoke` failed to validate")
     except Exception as e:
         module.fail_json_aws(e, msg="Unexpected failure while invoking Lambda function")

@@ -89,13 +89,15 @@ stop_date:
 '''
 
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-
 try:
-    from botocore.exceptions import ClientError, BotoCoreError
+    import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
 def start_execution(module, sfn_client):
@@ -123,10 +125,10 @@ def start_execution(module, sfn_client):
             name=name,
             input=execution_input
         )
-    except (ClientError, BotoCoreError) as e:
-        if e.response['Error']['Code'] == 'ExecutionAlreadyExists':
-            # this will never be executed anymore
-            module.exit_json(changed=False)
+    except is_boto3_error_code('ExecutionAlreadyExists'):
+        # this will never be executed anymore
+        module.exit_json(changed=False)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to start execution.")
 
     module.exit_json(changed=True, **camel_dict_to_snake_dict(res_execution))
@@ -151,7 +153,7 @@ def stop_execution(module, sfn_client):
             cause=cause,
             error=error
         )
-    except (ClientError, BotoCoreError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to stop execution.")
 
     module.exit_json(changed=True, **camel_dict_to_snake_dict(res))

@@ -745,26 +745,29 @@ vpc_security_groups:
       sample: sg-12345678
 '''
 
-from ansible.module_utils._text import to_text
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule, is_boto3_error_code, get_boto3_client_method_parameters
-from ansible_collections.amazon.aws.plugins.module_utils.rds import (
-    arg_spec_to_rds_params,
-    call_method,
-    ensure_tags,
-    get_final_identifier,
-    get_rds_method_attribute,
-    get_tags,
-)
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list, AWSRetry
-from ansible.module_utils.six import string_types
-
 from time import sleep
 
 try:
     import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
+
+from ansible.module_utils._text import to_text
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.six import string_types
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
+from ansible_collections.amazon.aws.plugins.module_utils.core import get_boto3_client_method_parameters
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.rds import arg_spec_to_rds_params
+from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
+from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
+from ansible_collections.amazon.aws.plugins.module_utils.rds import get_final_identifier
+from ansible_collections.amazon.aws.plugins.module_utils.rds import get_rds_method_attribute
+from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 
 
 def get_rds_method_attribute_name(instance, state, creation_source, read_replica):
@@ -1034,11 +1037,8 @@ def promote_replication_instance(client, module, instance, read_replica):
         try:
             call_method(client, module, method_name='promote_read_replica', parameters={'DBInstanceIdentifier': instance['DBInstanceIdentifier']})
             changed = True
-        except is_boto3_error_code('InvalidDBInstanceState') as e:
-            if 'DB Instance is not a read replica' in e.response['Error']['Message']:
-                pass
-            else:
-                raise e
+        except is_boto3_error_message('DB Instance is not a read replica'):
+            pass
     return changed
 
 

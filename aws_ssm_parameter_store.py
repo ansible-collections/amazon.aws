@@ -127,12 +127,13 @@ delete_parameter:
     type: dict
 '''
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-
 try:
-    from botocore.exceptions import ClientError
+    import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
 def update_parameter(client, module, args):
@@ -142,7 +143,7 @@ def update_parameter(client, module, args):
     try:
         response = client.put_parameter(**args)
         changed = True
-    except ClientError as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="setting parameter")
 
     return changed, response
@@ -195,7 +196,7 @@ def create_update_parameter(client, module):
                     describe_existing_parameter = describe_existing_parameter_paginator.paginate(
                         Filters=[{"Key": "Name", "Values": [args['Name']]}]).build_full_result()
 
-                except ClientError as e:
+                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     module.fail_json_aws(e, msg="getting description value")
 
                 if describe_existing_parameter['Parameters'][0]['Description'] != args['Description']:
@@ -213,9 +214,9 @@ def delete_parameter(client, module):
         response = client.delete_parameter(
             Name=module.params.get('name')
         )
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'ParameterNotFound':
-            return False, {}
+    except is_boto3_error_code('ParameterNotFound'):
+        return False, {}
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="deleting parameter")
 
     return True, response

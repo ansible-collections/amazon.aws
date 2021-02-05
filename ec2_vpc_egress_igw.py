@@ -57,14 +57,15 @@ vpc_id:
     sample: vpc-012345678
 '''
 
-
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-
 try:
     import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
 def delete_eigw(module, conn, eigw_id):
@@ -79,14 +80,9 @@ def delete_eigw(module, conn, eigw_id):
 
     try:
         response = conn.delete_egress_only_internet_gateway(DryRun=module.check_mode, EgressOnlyInternetGatewayId=eigw_id)
-    except botocore.exceptions.ClientError as e:
-        # When boto3 method is run with DryRun=True it returns an error on success
-        # We need to catch the error and return something valid
-        if e.response.get('Error', {}).get('Code') == "DryRunOperation":
-            changed = True
-        else:
-            module.fail_json_aws(e, msg="Could not delete Egress-Only Internet Gateway {0} from VPC {1}".format(eigw_id, module.vpc_id))
-    except botocore.exceptions.BotoCoreError as e:
+    except is_boto3_error_code('DryRunOperation'):
+        changed = True
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Could not delete Egress-Only Internet Gateway {0} from VPC {1}".format(eigw_id, module.vpc_id))
 
     if not module.check_mode:
@@ -108,16 +104,13 @@ def create_eigw(module, conn, vpc_id):
 
     try:
         response = conn.create_egress_only_internet_gateway(DryRun=module.check_mode, VpcId=vpc_id)
-    except botocore.exceptions.ClientError as e:
+    except is_boto3_error_code('DryRunOperation'):
         # When boto3 method is run with DryRun=True it returns an error on success
         # We need to catch the error and return something valid
-        if e.response.get('Error', {}).get('Code') == "DryRunOperation":
-            changed = True
-        elif e.response.get('Error', {}).get('Code') == "InvalidVpcID.NotFound":
-            module.fail_json_aws(e, msg="invalid vpc ID '{0}' provided".format(vpc_id))
-        else:
-            module.fail_json_aws(e, msg="Could not create Egress-Only Internet Gateway for vpc ID {0}".format(vpc_id))
-    except botocore.exceptions.BotoCoreError as e:
+        changed = True
+    except is_boto3_error_code('InvalidVpcID.NotFound') as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="invalid vpc ID '{0}' provided".format(vpc_id))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Could not create Egress-Only Internet Gateway for vpc ID {0}".format(vpc_id))
 
     if not module.check_mode:

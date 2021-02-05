@@ -144,13 +144,15 @@ name:
 import re
 
 try:
-    from botocore.exceptions import ClientError, ParamValidationError, MissingParametersError
+    import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 
 
@@ -182,12 +184,12 @@ class AWSConnection:
             if not self.region:
                 self.region = self.resource_client['lambda'].meta.region_name
 
-        except (ClientError, ParamValidationError, MissingParametersError) as e:
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             ansible_obj.fail_json(msg="Unable to connect, authorize or access resource: {0}".format(e))
 
         try:
             self.account_id = self.resource_client['iam'].get_user()['User']['Arn'].split(':')[4]
-        except (ClientError, ValueError, KeyError, IndexError):
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError, ValueError, KeyError, IndexError):
             self.account_id = ''
 
     def client(self, resource='lambda'):
@@ -269,12 +271,10 @@ def get_lambda_alias(module, aws):
     # check if alias exists and get facts
     try:
         results = client.get_alias(**api_params)
-
-    except (ClientError, ParamValidationError, MissingParametersError) as e:
-        if e.response['Error']['Code'] == 'ResourceNotFoundException':
-            results = None
-        else:
-            module.fail_json(msg='Error retrieving function alias: {0}'.format(e))
+    except is_boto3_error_code('ResourceNotFoundException'):
+        results = None
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg='Error retrieving function alias')
 
     return results
 
@@ -314,7 +314,7 @@ def lambda_alias(module, aws):
                 if not module.check_mode:
                     try:
                         results = client.update_alias(**api_params)
-                    except (ClientError, ParamValidationError, MissingParametersError) as e:
+                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                         module.fail_json(msg='Error updating function alias: {0}'.format(e))
 
         else:
@@ -325,7 +325,7 @@ def lambda_alias(module, aws):
                 if not module.check_mode:
                     results = client.create_alias(**api_params)
                 changed = True
-            except (ClientError, ParamValidationError, MissingParametersError) as e:
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json(msg='Error creating function alias: {0}'.format(e))
 
     else:  # state = 'absent'
@@ -337,7 +337,7 @@ def lambda_alias(module, aws):
                 if not module.check_mode:
                     results = client.delete_alias(**api_params)
                 changed = True
-            except (ClientError, ParamValidationError, MissingParametersError) as e:
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json(msg='Error deleting function alias: {0}'.format(e))
 
     return dict(changed=changed, **dict(results or facts))

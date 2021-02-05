@@ -119,6 +119,7 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
 def create(module, connection, replication_id, cluster_id, name):
@@ -128,12 +129,11 @@ def create(module, connection, replication_id, cluster_id, name):
                                               CacheClusterId=cluster_id,
                                               SnapshotName=name)
         changed = True
-    except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == "SnapshotAlreadyExistsFault":
-            response = {}
-            changed = False
-        else:
-            module.fail_json_aws(e, msg="Unable to create the snapshot.")
+    except is_boto3_error_code('SnapshotAlreadyExistsFault'):
+        response = {}
+        changed = False
+    except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Unable to create the snapshot.")
     return response, changed
 
 
@@ -154,15 +154,14 @@ def delete(module, connection, name):
     try:
         response = connection.delete_snapshot(SnapshotName=name)
         changed = True
-    except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == "SnapshotNotFoundFault":
-            response = {}
-            changed = False
-        elif e.response['Error']['Code'] == "InvalidSnapshotState":
-            module.fail_json(msg="Error: InvalidSnapshotState. The snapshot is not in an available state or failed state to allow deletion."
-                             "You may need to wait a few minutes.")
-        else:
-            module.fail_json_aws(e, msg="Unable to delete the snapshot.")
+    except is_boto3_error_code('SnapshotNotFoundFault'):
+        response = {}
+        changed = False
+    except is_boto3_error_code('InvalidSnapshotState'):  # pylint: disable=duplicate-except
+        module.fail_json(msg="Error: InvalidSnapshotState. The snapshot is not in an available state or failed state to allow deletion."
+                         "You may need to wait a few minutes.")
+    except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Unable to delete the snapshot.")
     return response, changed
 
 

@@ -78,16 +78,13 @@ all_policy_names:
 '''
 
 try:
-    from botocore.exceptions import BotoCoreError, ClientError
+    import botocore
 except ImportError:
     pass
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-
-
-class PolicyError(Exception):
-    pass
 
 
 class Policy:
@@ -202,12 +199,10 @@ def main():
             policy = GroupPolicy(**args)
 
         module.exit_json(**(policy.run()))
-    except (BotoCoreError, ClientError) as e:
-        if e.response['Error']['Code'] == 'NoSuchEntity':
-            module.exit_json(changed=False, msg=e.response['Error']['Message'])
+    except is_boto3_error_code('NoSuchEntity') as e:
+        module.exit_json(changed=False, msg=e.response['Error']['Message'])
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
-    except PolicyError as e:
-        module.fail_json(msg=str(e))
 
 
 if __name__ == '__main__':
