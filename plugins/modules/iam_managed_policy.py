@@ -140,6 +140,7 @@ from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
 
@@ -200,16 +201,14 @@ def get_or_create_policy_version(module, iam, policy, policy_document):
     try:
         version = iam.create_policy_version(PolicyArn=policy['Arn'], PolicyDocument=policy_document)['PolicyVersion']
         return version, True
-    except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == 'LimitExceeded':
-            delete_oldest_non_default_version(module, iam, policy)
-            try:
-                version = iam.create_policy_version(PolicyArn=policy['Arn'], PolicyDocument=policy_document)['PolicyVersion']
-                return version, True
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as second_e:
-                e = second_e
-        # Handle both when the exception isn't LimitExceeded or
-        # the second attempt still failed
+    except is_boto3_error_code('LimitExceeded'):
+        delete_oldest_non_default_version(module, iam, policy)
+        try:
+            version = iam.create_policy_version(PolicyArn=policy['Arn'], PolicyDocument=policy_document)['PolicyVersion']
+            return version, True
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as second_e:
+            module.fail_json_aws(second_e, msg="Couldn't create policy version")
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Couldn't create policy version")
 
 
