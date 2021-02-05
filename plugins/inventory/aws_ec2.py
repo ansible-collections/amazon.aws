@@ -28,7 +28,7 @@ DOCUMENTATION = '''
         plugin:
             description: Token that ensures this is a source file for the plugin.
             required: True
-            choices: ['aws_ec2']
+            choices: ['aws_ec2', 'amazon.aws.aws_ec2']
         iam_role_arn:
           description: The ARN of the IAM role to assume to perform the inventory lookup. You should still provide AWS
               credentials with enough privilege to perform the AssumeRole action.
