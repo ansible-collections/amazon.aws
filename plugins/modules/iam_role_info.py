@@ -152,8 +152,12 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict, camel_dict_to_snake_dict, AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
 @AWSRetry.exponential_backoff()
@@ -208,12 +212,9 @@ def describe_iam_roles(module, client):
     if name:
         try:
             roles = [client.get_role(RoleName=name)['Role']]
-        except botocore.exceptions.ClientError as e:
-            if e.response['Error']['Code'] == 'NoSuchEntity':
-                return []
-            else:
-                module.fail_json_aws(e, msg="Couldn't get IAM role %s" % name)
-        except botocore.exceptions.BotoCoreError as e:
+        except is_boto3_error_code('NoSuchEntity'):
+            return []
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Couldn't get IAM role %s" % name)
     else:
         params = dict()
