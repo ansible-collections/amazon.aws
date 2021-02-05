@@ -134,13 +134,15 @@ lambda_policy_action:
 
 import json
 import re
-from ansible.module_utils._text import to_native
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 
 try:
-    from botocore.exceptions import ClientError
+    import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
+
+from ansible.module_utils._text import to_native
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
 def pc(key):
@@ -285,14 +287,9 @@ def get_policy_statement(module, client):
     # check if function policy exists
     try:
         policy_results = client.get_policy(**api_params)
-    except ClientError as e:
-        try:
-            if e.response['Error']['Code'] == 'ResourceNotFoundException':
-                return {}
-        except AttributeError:  # catches ClientErrors without response, e.g. fail before connect
-            pass
-        module.fail_json_aws(e, msg="retrieving function policy")
-    except Exception as e:
+    except is_boto3_error_code('ResourceNotFoundException'):
+        return {}
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="retrieving function policy")
 
     # get_policy returns a JSON string so must convert to dict before reassigning to its key
@@ -328,7 +325,7 @@ def add_policy_permission(module, client):
     if not module.check_mode:
         try:
             client.add_permission(**api_params)
-        except Exception as e:
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="adding permission to policy")
         changed = True
 
@@ -356,7 +353,7 @@ def remove_policy_permission(module, client):
         if not module.check_mode:
             client.remove_permission(**api_params)
             changed = True
-    except Exception as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="removing permission from policy")
 
     return changed
