@@ -3,16 +3,25 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import pytest
-
-from ansible_collections.community.aws.tests.unit.compat.mock import MagicMock, patch
-from ansible_collections.community.aws.tests.unit.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
-
-from ansible_collections.community.aws.plugins.modules.s3_bucket_notification import AmazonBucket, Config
-from ansible_collections.community.aws.plugins.modules import s3_bucket_notification
 try:
     from botocore.exceptions import ClientError
 except ImportError:
     pass
+
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
+from ansible_collections.community.aws.tests.unit.compat.mock import MagicMock
+from ansible_collections.community.aws.tests.unit.compat.mock import patch
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import AnsibleExitJson
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import AnsibleFailJson
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import ModuleTestCase
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import set_module_args
+
+from ansible_collections.community.aws.plugins.modules.s3_bucket_notification import AmazonBucket
+from ansible_collections.community.aws.plugins.modules.s3_bucket_notification import Config
+from ansible_collections.community.aws.plugins.modules import s3_bucket_notification
+
+if not HAS_BOTO3:
+    pytestmark = pytest.mark.skip("s3_bucket_notification.py requires the `boto3` and `botocore` modules")
 
 
 class TestAmazonBucketOperations:

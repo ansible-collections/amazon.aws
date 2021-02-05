@@ -2,16 +2,25 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-from ansible_collections.community.aws.tests.unit.compat.mock import MagicMock, patch, call
-from ansible_collections.community.aws.tests.unit.modules.utils import (AnsibleExitJson,
-                                                                        AnsibleFailJson,
-                                                                        ModuleTestCase,
-                                                                        set_module_args)
-from ansible_collections.community.aws.plugins.modules import aws_direct_connect_confirm_connection
+import pytest
 try:
     from botocore.exceptions import ClientError
 except ImportError:
     pass
+
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
+from ansible_collections.community.aws.tests.unit.compat.mock import MagicMock
+from ansible_collections.community.aws.tests.unit.compat.mock import patch
+from ansible_collections.community.aws.tests.unit.compat.mock import call
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import AnsibleExitJson
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import AnsibleFailJson
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import ModuleTestCase
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import set_module_args
+
+from ansible_collections.community.aws.plugins.modules import aws_direct_connect_confirm_connection
+
+if not HAS_BOTO3:
+    pytestmark = pytest.mark.skip("test_aws_direct_connect_confirm_connection.py requires the `boto3` and `botocore` modules")
 
 
 @patch('ansible_collections.amazon.aws.plugins.module_utils.core.HAS_BOTO3', new=True)

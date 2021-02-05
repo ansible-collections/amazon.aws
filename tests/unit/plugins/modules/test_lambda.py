@@ -11,11 +11,18 @@ __metaclass__ = type
 import copy
 import pytest
 
-from ansible_collections.community.aws.tests.unit.compat.mock import MagicMock, Mock, patch
 from ansible.module_utils import basic
-from ansible_collections.community.aws.tests.unit.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
+from ansible_collections.community.aws.tests.unit.compat.mock import MagicMock
+from ansible_collections.community.aws.tests.unit.compat.mock import Mock
+from ansible_collections.community.aws.tests.unit.compat.mock import patch
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import AnsibleExitJson
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import AnsibleFailJson
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import ModuleTestCase
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import set_module_args
 
-boto3 = pytest.importorskip("boto3")
+if not HAS_BOTO3:
+    pytestmark = pytest.mark.skip("lambda.py requires the `boto3` and `botocore` modules")
 
 # lambda is a keyword so we have to hack this.
 _temp = __import__('ansible_collections.community.aws.plugins.modules.lambda')
@@ -46,7 +53,7 @@ base_module_args = {
     "region": "us-west-1",
     "name": "lambda_name",
     "state": "present",
-    "zip_file": "tests/unit/modules/fixtures/thezip.zip",
+    "zip_file": "tests/unit/plugins/modules/fixtures/thezip.zip",
     "runtime": 'python2.7',
     "role": 'arn:aws:iam::987654321012:role/lambda_basic_execution',
     "memory_size": 128,

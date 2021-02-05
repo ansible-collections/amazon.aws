@@ -17,12 +17,17 @@ base64_cipher = public_key.encrypt('Ansible_AWS_EC2_Win_Password', PKCS1v15())
 string_cipher = base64.b64encode(base64_cipher)
 '''
 
-from ansible.module_utils._text import to_bytes, to_text
-from ansible_collections.community.aws.plugins.modules.ec2_win_password import setup_module_object, ec2_win_password
+from ansible.module_utils._text import to_bytes
+from ansible.module_utils._text import to_text
 from ansible_collections.community.aws.tests.unit.compat.mock import patch
-from ansible_collections.community.aws.tests.unit.modules.utils import AnsibleExitJson, ModuleTestCase, set_module_args
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import AnsibleExitJson
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import ModuleTestCase
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import set_module_args
 
-fixture_prefix = 'tests/unit/modules/fixtures/certs'
+from ansible_collections.community.aws.plugins.modules.ec2_win_password import setup_module_object
+from ansible_collections.community.aws.plugins.modules.ec2_win_password import ec2_win_password
+
+fixture_prefix = 'tests/unit/plugins/modules/fixtures/certs'
 
 
 class TestEc2WinPasswordModule(ModuleTestCase):

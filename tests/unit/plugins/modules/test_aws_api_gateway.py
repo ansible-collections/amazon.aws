@@ -9,17 +9,16 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import sys
-
 import pytest
 
+from ansible_collections.amazon.aws.plugins.module_utils import core
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
-from ansible_collections.community.aws.tests.unit.modules.utils import set_module_args
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import set_module_args
+
+import ansible_collections.community.aws.plugins.modules.aws_api_gateway as agw
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_api_gateway.py requires the `boto3` and `botocore` modules")
-
-import ansible_collections.community.aws.plugins.modules.aws_api_gateway as agw
-from ansible_collections.amazon.aws.plugins.module_utils import core
 
 
 exit_return_dict = {}

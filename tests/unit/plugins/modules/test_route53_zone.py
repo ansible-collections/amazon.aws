@@ -6,8 +6,12 @@ import functools
 
 from ansible_collections.community.aws.plugins.modules import route53_zone
 from ansible_collections.community.aws.tests.unit.compat import unittest
-from ansible_collections.community.aws.tests.unit.compat.mock import patch, call
-from ansible_collections.community.aws.tests.unit.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
+from ansible_collections.community.aws.tests.unit.compat.mock import call
+from ansible_collections.community.aws.tests.unit.compat.mock import patch
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import AnsibleExitJson
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import AnsibleFailJson
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import ModuleTestCase
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import set_module_args
 
 
 def parameterized(params_list):

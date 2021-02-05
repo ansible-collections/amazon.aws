@@ -9,23 +9,21 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import copy
-
 import pytest
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import HAS_BOTO3
-from ansible_collections.community.aws.tests.unit.compat.mock import MagicMock
-from ansible_collections.community.aws.tests.unit.modules.utils import set_module_args
-
-if not HAS_BOTO3:
-    pytestmark = pytest.mark.skip("test_api_gateway.py requires the `boto3` and `botocore` modules")
-
-# these are here cause ... boto!
-from ansible_collections.community.aws.plugins.modules import lambda_policy
-from ansible_collections.community.aws.plugins.modules.lambda_policy import setup_module_object
 try:
     from botocore.exceptions import ClientError
 except ImportError:
     pass
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import HAS_BOTO3
+from ansible_collections.community.aws.tests.unit.compat.mock import MagicMock
+from ansible_collections.community.aws.tests.unit.plugins.modules.utils import set_module_args
+from ansible_collections.community.aws.plugins.modules import lambda_policy
+from ansible_collections.community.aws.plugins.modules.lambda_policy import setup_module_object
+
+if not HAS_BOTO3:
+    pytestmark = pytest.mark.skip("test_api_gateway.py requires the `boto3` and `botocore` modules")
 
 
 base_module_args = {
