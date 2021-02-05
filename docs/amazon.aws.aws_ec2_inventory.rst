@@ -412,6 +412,7 @@ Parameters
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
                                     <li>aws_ec2</li>
+                                    <li>amazon.aws.aws_ec2</li>
                         </ul>
                 </td>
                     <td>
