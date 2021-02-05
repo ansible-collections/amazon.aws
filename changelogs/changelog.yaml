@@ -214,8 +214,11 @@ releases:
         failures (https://github.com/ansible-collections/amazon.aws/pull/213).
       - ec2_vol - Add support for gp3 volumes and support for modifying existing volumes
         (https://github.com/ansible-collections/amazon.aws/issues/55).
+      - module_utils/elbv2 - add logic to compare_rules to suit Values list nested
+        within dicts unique to each field type. Fixes issue (https://github.com/ansible-collections/amazon.aws/issues/187)
       - various AWS plugins and module_utils - Cleanup unused imports (https://github.com/ansible-collections/amazon.aws/pull/217).
     fragments:
+    - 188-httprequestmethodconfig-keyerror.yaml
     - 192-aws_secret-bypath-option.yaml
     - 213-ec2_key-retries.yml
     - 215-gp3-and-change-support-for-ec2_vol.yaml
@@ -224,4 +227,4 @@ releases:
     - 237_replace_inverse_ec2_aws_filter.yaml
     - 241_ec2_vol-returns-an-up-to-date-tag-dict-of-the-volume.yaml
     - 25-aws_ec2-hostname-options-concatenation.yaml
-    release_date: '2021-02-02'
+    release_date: '2021-02-05'
