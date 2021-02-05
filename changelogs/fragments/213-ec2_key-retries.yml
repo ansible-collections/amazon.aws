@@ -1,2 +1,0 @@
-minor_changes:
-- ec2_key - add AWSRetry decorator to automatically retry on common temporary failures (https://github.com/ansible-collections/amazon.aws/pull/213).

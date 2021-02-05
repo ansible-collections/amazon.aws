@@ -516,7 +516,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                             <div>IPv4 CIDR blocks associated with the VPC</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;cidr_block_association_set&#x27;: [{&#x27;association_id&#x27;: &#x27;vpc-cidr-assoc-97aeeefd&#x27;, &#x27;cidr_block&#x27;: &#x27;20.0.0.0/24&#x27;, &#x27;cidr_block_state&#x27;: {&#x27;state&#x27;: &#x27;associated&#x27;}}]}</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;cidr_block_association_set&#x27;: [{&#x27;association_id&#x27;: &#x27;vpc-cidr-assoc-97aeeefd&#x27;, &#x27;cidr_block&#x27;: &#x27;10.0.0.0/24&#x27;, &#x27;cidr_block_state&#x27;: {&#x27;state&#x27;: &#x27;associated&#x27;}}]}</div>
                 </td>
             </tr>
             <tr>
@@ -550,7 +550,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                             <div>the id of the DHCP options associated with this VPC</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">dopt-0fb8bd6b</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">dopt-12345678</div>
                 </td>
             </tr>
             <tr>
@@ -568,7 +568,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                             <div>VPC resource id</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">vpc-c2e00da5</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">vpc-12345678</div>
                 </td>
             </tr>
             <tr>
@@ -621,6 +621,24 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 <td>
                             <div>indicates whether this is the default VPC</div>
                     <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>owner_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>The AWS account which owns the VPC.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">123456789012</div>
                 </td>
             </tr>
             <tr>

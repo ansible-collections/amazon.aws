@@ -197,3 +197,34 @@ releases:
     - 211-fix-error-handling-during-tagging-failure.yaml
     - 53-ec2_vol-boto3-port.yml
     release_date: '2020-12-10'
+  1.4.0:
+    changes:
+      bugfixes:
+      - ec2_vol - a creation or update now returns a structure with an up to date
+        list of tags (https://github.com/ansible-collections/amazon.aws/pull/241).
+      minor_changes:
+      - aws_ec2 - Add hostname options concatenation
+      - aws_ec2 inventory plugin - avoid a superfluous import of ``ansible.utils.display.Display``
+        (https://github.com/ansible-collections/amazon.aws/pull/226).
+      - aws_ec2 module - Replace inverse aws instance-state-name filters !terminated,
+        !shutting-down in favor of postive filters pending, running, stopping, stopped.
+        Issue 235. (https://github.com/ansible-collections/amazon.aws/pull/237)
+      - aws_secret - add ``bypath`` functionality (https://github.com/ansible-collections/amazon.aws/pull/192).
+      - ec2_key - add AWSRetry decorator to automatically retry on common temporary
+        failures (https://github.com/ansible-collections/amazon.aws/pull/213).
+      - ec2_vol - Add support for gp3 volumes and support for modifying existing volumes
+        (https://github.com/ansible-collections/amazon.aws/issues/55).
+      - module_utils/elbv2 - add logic to compare_rules to suit Values list nested
+        within dicts unique to each field type. Fixes issue (https://github.com/ansible-collections/amazon.aws/issues/187)
+      - various AWS plugins and module_utils - Cleanup unused imports (https://github.com/ansible-collections/amazon.aws/pull/217).
+    fragments:
+    - 188-httprequestmethodconfig-keyerror.yaml
+    - 192-aws_secret-bypath-option.yaml
+    - 213-ec2_key-retries.yml
+    - 215-gp3-and-change-support-for-ec2_vol.yaml
+    - 217-duplicate-imports.yml
+    - 226_avoid_extra_Display_import.yaml
+    - 237_replace_inverse_ec2_aws_filter.yaml
+    - 241_ec2_vol-returns-an-up-to-date-tag-dict-of-the-volume.yaml
+    - 25-aws_ec2-hostname-options-concatenation.yaml
+    release_date: '2021-02-05'

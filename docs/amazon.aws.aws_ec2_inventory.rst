@@ -412,6 +412,7 @@ Parameters
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
                                     <li>aws_ec2</li>
+                                    <li>amazon.aws.aws_ec2</li>
                         </ul>
                 </td>
                     <td>
@@ -578,7 +579,10 @@ Examples
       - tag:Name=Tag1,Name=Tag2  # Return specific hosts only
       - tag:CustomDNSName
       - dns-name
-      - private-ip-address
+      - name: 'tag:Name=Tag1,Name=Tag2'
+      - name: 'private-ip-address'
+        separator: '_'
+        prefix: 'tag:Name'
 
     # Example using constructed features to create groups and set ansible_host
     plugin: aws_ec2
