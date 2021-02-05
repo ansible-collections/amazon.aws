@@ -814,6 +814,8 @@ from ansible.module_utils.six import string_types
 from ansible.module_utils.six.moves.urllib import parse as urlparse
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
@@ -1119,15 +1121,13 @@ def discover_security_groups(group, groups, parent_vpc_id=None, subnet_id=None, 
     if subnet_id is not None:
         try:
             sub = ec2.describe_subnets(aws_retry=True, SubnetIds=[subnet_id])
-        except botocore.exceptions.ClientError as e:
-            if e.response['Error']['Code'] == 'InvalidGroup.NotFound':
-                module.fail_json(
-                    "Could not find subnet {0} to associate security groups. Please check the vpc_subnet_id and security_groups parameters.".format(
-                        subnet_id
-                    )
+        except is_boto3_error_code('InvalidGroup.NotFound'):
+            module.fail_json(
+                "Could not find subnet {0} to associate security groups. Please check the vpc_subnet_id and security_groups parameters.".format(
+                    subnet_id
                 )
-            module.fail_json_aws(e, msg="Error while searching for subnet {0} parent VPC.".format(subnet_id))
-        except botocore.exceptions.BotoCoreError as e:
+            )
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Error while searching for subnet {0} parent VPC.".format(subnet_id))
         parent_vpc_id = sub['Subnets'][0]['VpcId']
 
@@ -1615,9 +1615,9 @@ def determine_iam_role(name_or_arn):
     try:
         role = iam.get_instance_profile(InstanceProfileName=name_or_arn, aws_retry=True)
         return role['InstanceProfile']['Arn']
-    except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchEntity':
-            module.fail_json_aws(e, msg="Could not find instance_role {0}".format(name_or_arn))
+    except is_boto3_error_code('NoSuchEntity'):
+        module.fail_json_aws(e, msg="Could not find instance_role {0}".format(name_or_arn))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="An error occurred while searching for instance_role {0}. Please try supplying the full ARN.".format(name_or_arn))
 
 
@@ -1697,15 +1697,12 @@ def ensure_present(existing_matches, changed, ec2, state):
 
 def run_instances(ec2, **instance_spec):
     try:
-        return ec2.run_instances(aws_retry=True, **instance_spec)
-    except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == 'InvalidParameterValue' and "Invalid IAM Instance Profile ARN" in e.response['Error']['Message']:
-            # If the instance profile has just been created, it takes some time to be visible by ec2
-            # So we wait 10 second and retry the run_instances
-            time.sleep(10)
-            return ec2.run_instances(**instance_spec)
-        else:
-            raise e
+        return ec2.run_instances(**instance_spec)
+    except is_boto3_error_message('Invalid IAM Instance Profile ARN'):
+        # If the instance profile has just been created, it takes some time to be visible by ec2
+        # So we wait 10 second and retry the run_instances
+        time.sleep(10)
+        return ec2.run_instances(**instance_spec)
 
 
 def main():
