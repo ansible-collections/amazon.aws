@@ -217,7 +217,7 @@ def ensure_tags(client, module, dhcp_options_id, tags):
         changed = True
         if not module.check_mode:
             try:
-                client.delete_tags(aws_retry=True, Resources=[dhcp_options_id], Tags=ansible_dict_to_boto3_tag_list(tags_to_unset))
+                client.delete_tags(aws_retry=True, Resources=[dhcp_options_id], Tags=[dict(Key=tagkey) for tagkey in tags_to_unset])
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                 module.fail_json_aws(e, msg="Unable to delete tags {0}".format(tags_to_unset))
 
@@ -245,27 +245,29 @@ def fetch_dhcp_options_for_vpc(client, module, vpc_id):
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Unable to describe dhcp option {0}".format(vpcs[0]['DhcpOptionsId']))
 
-    if len(dhcp_options) != 1:
+    if len(dhcp_options['DhcpOptions']) != 1:
         return None
-    return dhcp_options['DhcpOptions'][0]
+    return dhcp_options['DhcpOptions'][0]['DhcpConfigurations'], dhcp_options['DhcpOptions'][0]['DhcpOptionsId']
 
 
 def remove_dhcp_options_by_id(client, module, dhcp_options_id):
     changed = False
+    # First, check if this dhcp option is associated to any other vpcs
     try:
-        option_exists = client.describe_dhcp_options(aws_retry=True, DhcpOptionsIds=[dhcp_options_id])['DhcpOptions']
-    except is_boto3_error_code('InvalidDhcpOptionID.NotFound'):
-        return False
+        associations = client.describe_vpcs(Filters=[{'Name': 'dhcp-options-id', 'Values': [dhcp_options_id]}])
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Unable to describe dhcp option {0}".format(dhcp_options_id))
+        module.fail_json_aws(e, msg="Unable to describe VPC associations for dhcp option id {0}".format(dhcp_options_id))
+    if len(associations['Vpcs']) > 0:
+        return changed
 
-    if len(option_exists['DhcpOptions']) > 0:
-        changed = True
-        if not module.check_mode:
-            try:
-                client.delete_dhcp_options(aws_retry=True, DhcpOptionsId=dhcp_options_id)
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                module.fail_json_aws(e, msg="Unable to delete dhcp option {0}".format(dhcp_options_id))
+    changed = True
+    if not module.check_mode:
+        try:
+            client.delete_dhcp_options(aws_retry=True, DhcpOptionsId=dhcp_options_id)
+        except is_boto3_error_code('InvalidDhcpOptionsID.NotFound'):
+            return False
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+            module.fail_json_aws(e, msg="Unable to delete dhcp option {0}".format(dhcp_options_id))
 
     return changed
 
@@ -331,28 +333,28 @@ def create_dhcp_config(module):
     return new_config
 
 
-def create_dhcp_option_set(client, module):
+def create_dhcp_option_set(client, module, new_config):
     changed = True
     """
-    A CreateDhcpOptions object looks different that the object we create in create_dhcp_config()
+    A CreateDhcpOptions object looks different than the object we create in create_dhcp_config()
     This is the only place we use it, so create it now
     https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateDhcpOptions.html
+    We have to do this after inheriting any existing_config, so we need to start with the object
+    that we made in create_dhcp_config().
+    normalize_config() gives us the nicest format to work with for this.
     """
-    new_config = []
-    if module.params['dns_servers'] is not None:
-        new_config.append({'Key': 'domain-name-servers', 'Values': module.params['dns_servers']})
-    if module.params['netbios_name_servers'] is not None:
-        new_config.append({'Key': 'netbios-name-servers', 'Values': module.params['netbios_name_servers']})
-    if module.params['ntp_servers'] is not None:
-        new_config.append({'Key': 'ntp-servers', 'Values': module.params['ntp_servers']})
-    if module.params['domain_name'] is not None:
-        new_config.append({'Key': 'domain-name', 'Values': [module.params['domain_name']]})
-    if module.params['netbios_node_type'] is not None:
-        new_config.append({'Key': 'netbios-node-type', 'Values': [str(module.params['netbios_node_type'])]})
+    desired_config = normalize_config(new_config)
+    create_config = []
+    for option in ['domain-name', 'domain-name-servers', 'ntp-servers', 'netbios-name-servers']:
+        if desired_config.get(option) is not None:
+            create_config.append({'Key': option, 'Values': desired_config[option]})
+    if desired_config.get('netbios-node-type') is not None:
+        # We need to listify this one
+        create_config.append({'Key': 'netbios-node-type', 'Values': [desired_config['netbios-node-type']]})
 
     try:
         if not module.check_mode:
-            dhcp_options = client.create_dhcp_options(aws_retry=True, DhcpConfigurations=new_config)
+            dhcp_options = client.create_dhcp_options(aws_retry=True, DhcpConfigurations=create_config)
             return changed, dhcp_options['DhcpOptions']['DhcpOptionsId']
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Unable to create dhcp option set")
@@ -366,21 +368,21 @@ def find_opt_index(config, option):
 
 
 def inherit_dhcp_config(existing_config, new_config):
-    # Compare two DhcpConfigurations lists and apply existing options to unset parameters
     """
-    If there's an existing option and the new option is not an empty list, and
-    both, the new option is not set or it's none
-    set new to existing
+    Compare two DhcpConfigurations lists and apply existing options to unset parameters
+
+    If there's an existing option config and the new option is not set or it's none,
+    inherit the existing config.
+    The configs are unordered lists of dicts with non-unique keys, so we have to find
+    the right list index for a given config option first.
     """
     changed = False
     for option in ['domain-name', 'domain-name-servers', 'ntp-servers',
                    'netbios-name-servers', 'netbios-node-type']:
         existing_index = find_opt_index(existing_config, option)
         new_index = find_opt_index(new_config, option)
-        # if existing_index and new_index:
-        #     if existing_config[existing_index]['Value'] != new_config[new_index]['Value']:
-        #         new_config[new_index]['Value'] = existing_config[existing_index]['Value']
-        if existing_config and not new_index:
+        # `if existing_index` evaluates to False on index 0, so be very specific and verbose
+        if existing_index is not None and new_index is None:
             new_config.append(existing_config[existing_index])
             changed = True
 
@@ -409,13 +411,16 @@ def normalize_config(option_config):
         },
     And all keys were historically returned by the module.
     """
-    config_data = {
-            "domain-name": None,
-            "domain-name-servers": None,
-            "netbios-name-servers": None,
-            "netbios-node-type": None,
-            "ntp-servers": None
-        }
+    config_data = {}
+        # TODO: always return all keys, or only ever return keys with values?
+        # the boto2 version of this module was inconsistent
+    # config_data = {
+        #     "domain-name": None,
+        #     "domain-name-servers": None,
+        #     "netbios-name-servers": None,
+        #     "netbios-node-type": None,
+        #     "ntp-servers": None
+        # }
 
     if len(option_config) == 0:
         # If there is no provided config, return the empty dictionary
@@ -426,7 +431,7 @@ def normalize_config(option_config):
         # if config_item['Key'] == 'domain-name':
         #     config_data[option] = (config_item['Values'][0], None)
         if config_item['Key'] == 'netbios-node-type':
-            config_data[option] = (config_item['Values'])
+            config_data['netbios-node-type'] = str((config_item['Values']))
         # Handle actual lists of values
         for option in ['domain-name', 'domain-name-servers', 'ntp-servers', 'netbios-name-servers']:
             if config_item['Key'] == option:
@@ -473,9 +478,11 @@ def main():
     state = module.params['state']
     dhcp_options_id = module.params['dhcp_options_id']
 
-    new_config = create_dhcp_config(module)
-    existing_options = None
     found = False
+    changed = False
+    new_config = create_dhcp_config(module)
+    existing_config = None
+    existing_id = None
 
     client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
@@ -489,16 +496,14 @@ def main():
     if not dhcp_options_id:
         # If we were given a vpc_id then we need to look at the configuration on that
         if vpc_id:
-            existing_options = fetch_dhcp_options_for_vpc(client, module, vpc_id)
-            q('exisintg is ', existing_options)
+            existing_config, existing_id = fetch_dhcp_options_for_vpc(client, module, vpc_id)
             # if we've been asked to inherit existing options, do that now
-            if inherit_existing and existing_options:
-                q('gonna inhereit')
-                changed, new_config = inherit_dhcp_config(existing_options['DhcpConfigurations'], new_config)
+            if inherit_existing and existing_config:
+                changed, new_config = inherit_dhcp_config(existing_config, new_config)
             # Do the vpc's dhcp options already match what we're asked for? if so we are done
-            if existing_options:
-                if new_config == existing_options['DhcpConfigurations']:
-                    dhcp_options_id = existing_options['DhcpOptionsId']
+            if existing_config:
+                if new_config == existing_config:
+                    dhcp_options_id = existing_id
                     # TODO: this needs more testing
                     return_config = normalize_config(new_config)
                     module.exit_json(changed=changed, new_options=return_config, dhcp_options_id=dhcp_options_id)
@@ -519,7 +524,7 @@ def main():
 
     if not found:
         # If we still don't have an options ID, create it
-        changed, dhcp_options_id = create_dhcp_option_set(client, module)
+        changed, dhcp_options_id = create_dhcp_option_set(client, module, new_config)
 
     if tags:
         changed = ensure_tags(client, module, dhcp_options_id, tags)
@@ -528,9 +533,10 @@ def main():
     if vpc_id:
         changed = associate_options(client, module, vpc_id, dhcp_options_id)
 
-    if delete_old and existing_options:
-        changed = remove_dhcp_options_by_id(client, module, dhcp_options_id)
+    if delete_old and existing_id:
+        remove_dhcp_options_by_id(client, module, existing_id)
 
+    # TODO: make very certain changed status is always correct
     return_config = normalize_config(new_config)
     module.exit_json(changed=changed, new_options=return_config, dhcp_options_id=dhcp_options_id)
 
