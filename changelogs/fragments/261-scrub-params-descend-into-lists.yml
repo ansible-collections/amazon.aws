@@ -1,0 +1,4 @@
+---
+minor_changes:
+  - module_utils/core - add parameter ``descend_into_lists`` to ``scrub_none_parameters`` helper function. Defaults to
+    True as the function has yet to be implemented anywhere.

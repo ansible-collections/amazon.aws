@@ -359,13 +359,14 @@ def get_boto3_client_method_parameters(client, method_name, required=False):
     return parameters
 
 
-def scrub_none_parameters(parameters):
+def scrub_none_parameters(parameters, descend_into_lists=True):
     """
     Iterate over a dictionary removing any keys that have a None value
 
     Reference: https://github.com/ansible-collections/community.aws/issues/251
     Credit: https://medium.com/better-programming/how-to-remove-null-none-values-from-a-dictionary-in-python-1bedf1aab5e4
 
+    :param descend_into_lists: whether or not to descend in to lists to continue to remove None values
     :param parameters: parameter dict
     :return: parameter dict with all keys = None removed
     """
@@ -375,6 +376,8 @@ def scrub_none_parameters(parameters):
     for k, v in parameters.items():
         if isinstance(v, dict):
             clean_parameters[k] = scrub_none_parameters(v)
+        elif descend_into_lists and isinstance(v, list):
+            clean_parameters[k] = [scrub_none_parameters(vv) if isinstance(vv, dict) else vv for vv in v]
         elif v is not None:
             clean_parameters[k] = v
 
