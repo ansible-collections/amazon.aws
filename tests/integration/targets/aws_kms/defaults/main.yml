@@ -1,0 +1,3 @@
+---
+kms_role_name: 'ansible-test-{{ resource_prefix }}-kms'
+kms_key_alias: '{{ resource_prefix }}-kms'

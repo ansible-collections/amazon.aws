@@ -21,21 +21,21 @@
     # to ensure it exists when we need it for updating the policies
     - name: create an IAM role that can do nothing
       iam_role:
-        name: "{{ resource_prefix }}-kms-role"
+        name: '{{ kms_role_name }}'
         state: present
         assume_role_policy_document: '{"Version": "2012-10-17", "Statement": {"Action": "sts:AssumeRole", "Principal": {"Service": "ec2.amazonaws.com"}, "Effect": "Deny"} }'
       register: iam_role_result
+
     # ============================================================
     #   TESTS
     - name: See whether key exists and its current state
       aws_kms_info:
-        filters:
-          alias: "{{ resource_prefix }}-kms"
+        alias: '{{ kms_key_alias }}'
 
     - name: create a key in check mode
       check_mode: yes
       aws_kms:
-        alias: "{{ resource_prefix }}-kms-check"
+        alias: '{{ kms_key_alias }}-check'
         tags:
           Hello: World
         state: present
@@ -44,8 +44,7 @@
 
     - name: find facts about the check mode key
       aws_kms_info:
-        filters:
-          alias: "{{ resource_prefix }}-kms-check"
+        alias: '{{ kms_key_alias }}-check'
       register: check_key
 
     - name: ensure that check mode worked as expected
@@ -56,7 +55,7 @@
 
     - name: create a key
       aws_kms:
-        alias: "{{ resource_prefix }}-kms"
+        alias: '{{ kms_key_alias }}'
         tags:
           Hello: World
         state: present
@@ -66,13 +65,24 @@
     - name: assert that state is enabled
       assert:
         that:
+          - '"key_id" in create_kms'
+          - create_kms.key_id | length >= 36
+          - not create_kms.key_id.startswith("arn:aws")
+          - '"key_arn" in create_kms'
+          - create_kms.key_arn.endswith(create_kms.key_id)
+          - create_kms.key_arn.startswith("arn:aws")
           - create_kms.key_state == "Enabled"
           - create_kms.tags['Hello'] == 'World'
           - create_kms.enable_key_rotation == false
 
+    - name: Save IDs for later
+      set_fact:
+        kms_key_id: '{{ create_kms.key_id }}'
+        kms_key_arn: '{{ create_kms.key_arn }}'
+
     - name: enable key rotation
       aws_kms:
-        alias: "{{ resource_prefix }}-kms"
+        alias: '{{ kms_key_alias }}'
         tags:
           Hello: World
         state: present
@@ -90,7 +100,7 @@
     - name: delete the key in check mode
       check_mode: yes
       aws_kms:
-        alias: "{{ resource_prefix }}-kms"
+        alias: '{{ kms_key_alias }}'
         state: absent
       register: delete_kms_check
 
@@ -98,10 +108,9 @@
         that:
           - delete_kms_check is changed
 
-    - name: find facts about the key
+    - name: find facts about the key (by ID)
       aws_kms_info:
-        filters:
-          alias: "{{ resource_prefix }}-kms"
+        key_id: '{{ kms_key_id }}'
       register: new_key
 
     - name: check that a key was found
@@ -109,11 +118,11 @@
         that:
           - new_key["keys"]|length == 1
           - new_key["keys"][0]["enable_key_rotation"] == true
-          - new_key["keys"][0]["key_state"] != PendingDeletion
+          - new_key["keys"][0]["key_state"] != "PendingDeletion"
 
     - name: Update Policy on key to match AWS Console generate policy
       aws_kms:
-        key_id: '{{ new_key["keys"][0]["key_id"] }}'
+        key_id: '{{ kms_key_id }}'
         policy: "{{ lookup('template', 'console-policy.j2') | to_json }}"
       register: kms_policy_changed
 
@@ -124,7 +133,7 @@
 
     - name: Attempt to re-assert the same policy
       aws_kms:
-        alias: "alias/{{ resource_prefix }}-kms"
+        alias: "alias/{{ kms_key_alias }}"
         policy: "{{ lookup('template', 'console-policy.j2') | to_json }}"
       register: kms_policy_changed
 
@@ -136,31 +145,29 @@
     - name: grant user-style access to production secrets
       aws_kms:
         mode: grant
-        alias: "alias/{{ resource_prefix }}-kms"
-        role_name: "{{ resource_prefix }}-kms-role"
+        alias: "alias/{{ kms_key_alias }}"
+        role_name: '{{ kms_role_name }}'
         grant_types: "role,role grant"
 
-    - name: find facts about the key
+    - name: find facts about the key (by ARN)
       aws_kms_info:
-        filters:
-          alias: "{{ resource_prefix }}-kms"
+        key_id: '{{ kms_key_arn }}'
       register: new_key
 
     - name: remove access to production secrets from role
       aws_kms:
         mode: deny
-        alias: "alias/{{ resource_prefix }}-kms"
+        alias: "alias/{{ kms_key_alias }}"
         role_arn: "{{ iam_role_result.iam_role.arn }}"
 
-    - name: find facts about the key
+    - name: find facts about the key (by alias)
       aws_kms_info:
-        filters:
-          alias: "{{ resource_prefix }}-kms"
+        alias: '{{ kms_key_alias }}'
       register: new_key
 
     - name: Allow the IAM role to use a specific Encryption Context
       aws_kms:
-        alias: "{{ resource_prefix }}-kms"
+        alias: '{{ kms_key_alias }}'
         state: present
         purge_grants: yes
         purge_tags: yes
@@ -185,7 +192,7 @@
 
     - name: Add a second grant
       aws_kms:
-        alias: "{{ resource_prefix }}-kms"
+        alias: '{{ kms_key_alias }}'
         state: present
         grants:
           - name: another_grant
@@ -208,7 +215,7 @@
 
     - name: Add a second grant again
       aws_kms:
-        alias: "{{ resource_prefix }}-kms"
+        alias: '{{ kms_key_alias }}'
         state: present
         grants:
           - name: another_grant
@@ -231,7 +238,7 @@
 
     - name: Update the grants with purge_grants set
       aws_kms:
-        alias: "{{ resource_prefix }}-kms"
+        alias: '{{ kms_key_alias }}'
         state: present
         purge_grants: yes
         grants:
@@ -255,7 +262,7 @@
 
     - name: update third grant to change encryption context equals to subset
       aws_kms:
-        alias: "{{ resource_prefix }}-kms"
+        alias: '{{ kms_key_alias }}'
         state: present
         grants:
           - name: third_grant
@@ -280,7 +287,7 @@
 
     - name: tag encryption key
       aws_kms:
-        alias: "{{ resource_prefix }}-kms"
+        alias: '{{ kms_key_alias }}'
         state: present
         tags:
           tag_one: tag_one
@@ -297,12 +304,12 @@
 
     - name: add, replace, remove tags
       aws_kms:
-        alias: "{{ resource_prefix }}-kms"
+        alias: '{{ kms_key_alias }}'
         state: present
         purge_tags: yes
         tags:
           tag_two: tag_two_updated
-          tag_three: tag_three
+          Tag Three: '{{ resource_prefix }}'
       register: tag_kms_update
 
     - name: assert tags correctly changed
@@ -312,12 +319,15 @@
           - "'tag_one' not in tag_kms_update.tags"
           - "'tag_two' in tag_kms_update.tags"
           - "tag_kms_update.tags.tag_two == 'tag_two_updated'"
-          - "'tag_three' in tag_kms_update.tags"
+          - "'Tag Three' in tag_kms_update.tags"
+          - "tag_kms_update.tags['Tag Three'] == resource_prefix"
 
     - name: make no real tag change
       aws_kms:
-        alias: "{{ resource_prefix }}-kms"
+        alias: '{{ kms_key_alias }}'
         state: present
+        tags:
+          Tag Three: '{{ resource_prefix }}'
       register: tag_kms_no_update
 
     - name: assert no change to tags
@@ -327,11 +337,12 @@
           - "'tag_one' not in tag_kms_no_update.tags"
           - "'tag_two' in tag_kms_no_update.tags"
           - "tag_kms_no_update.tags.tag_two == 'tag_two_updated'"
-          - "'tag_three' in tag_kms_no_update.tags"
+          - "'Tag Three' in tag_kms_update.tags"
+          - "tag_kms_update.tags['Tag Three'] == resource_prefix"
 
     - name: update the key's description and disable it
       aws_kms:
-        alias: "{{ resource_prefix }}-kms"
+        alias: '{{ kms_key_alias }}'
         state: present
         description: test key for testing
         enabled: no
@@ -346,35 +357,89 @@
 
     - name: update policy to remove access to key rotation status
       aws_kms:
-        alias: "alias/{{ resource_prefix }}-kms"
+        alias: 'alias/{{ kms_key_alias }}'
         policy: "{{ lookup('template', 'console-policy-no-key-rotation.j2') | to_json }}"
+      register: update_key
 
     - name: find facts about the key without key rotation status
       aws_kms_info:
-        filters:
-          alias: "{{ resource_prefix }}-kms"
-      register: update_key
+        alias: '{{ kms_key_alias }}'
+      register: updated_key
 
     - name: assert that key rotation status is set to None
       assert:
         that:
-          - update_key.enable_key_rotation is undefined
+          - update_key.enable_key_rotation is none
+
+    - name: Perform a search for key by tag
+      aws_kms_info:
+        filters:
+          "tag:Tag Three": "{{ resource_prefix }}"
+      register: info_tag_filtered
+
+    - name: Verify all expected attributes
+      vars:
+        tagged_key: '{{ info_tag_filtered["keys"][0] }}'
+      assert:
+        that:
+          - "'keys' in info_tag_filtered"
+          - info_tag_filtered["keys"] | length == 1
+          - "'aliases' in tagged_key"
+          - kms_key_alias in tagged_key.aliases
+          - "'aws_account_id' in tagged_key"
+          - tagged_key.aws_account_id == aws_caller_info.account
+          - "'creation_date' in tagged_key"
+          - "'customer_master_key_spec' in tagged_key"
+          - tagged_key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - "'description' in tagged_key"
+          - tagged_key.description == 'test key for testing'
+          - "'enable_key_rotation' in tagged_key"
+          - "'enabled' in tagged_key"
+          - tagged_key.enabled == True
+          - "'encryption_algorithms' in tagged_key"
+          - "'SYMMETRIC_DEFAULT' in tagged_key.encryption_algorithms"
+          - "'grants' in tagged_key"
+          - "'key_arn' in tagged_key"
+          - tagged_key.key_arn == kms_key_arn
+          - "'key_id' in tagged_key"
+          - tagged_key.key_id == kms_key_id
+          - "'key_manager' in tagged_key"
+          - tagged_key.key_manager == 'CUSTOMER'
+          - "'key_state' in tagged_key"
+          - tagged_key.key_state == 'Enabled'
+          - "'key_usage' in tagged_key"
+          - tagged_key.key_usage == 'ENCRYPT_DECRYPT'
+          - "'origin' in tagged_key"
+          - tagged_key.origin == "AWS_KMS"
+          - "'policies' in tagged_key"
+          - tagged_key.policies | length == 1
+          - "'tags' in tagged_key"
+          - "'Tag Three' in tagged_key.tags"
+          - tagged_key.tags['Tag Three'] == resource_prefix
+          - "'tag_two' in tagged_key.tags"
+          - tagged_key.tags['tag_two'] == 'tag_two_updated'
 
     - name: delete the key
       aws_kms:
-        alias: "{{ resource_prefix }}-kms"
+        alias: '{{ kms_key_alias }}'
         state: absent
       register: delete_kms
 
     - name: assert that state is pending deletion
+      vars:
+        now_time: '{{ lookup("pipe", "date -u +%Y-%m-%d\ %H:%M:%S") }}'
+        deletion_time: '{{ delete_kms.deletion_date[:19] | to_datetime("%Y-%m-%dT%H:%M:%S") }}'
       assert:
         that:
           - delete_kms.key_state == "PendingDeletion"
           - delete_kms.changed
+          # Times won't be perfect, allow a 24 hour window
+          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days <= 30
+          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days >= 29
 
     - name: re-delete the key
       aws_kms:
-        alias: "{{ resource_prefix }}-kms"
+        alias: '{{ kms_key_alias }}'
         state: absent
       register: delete_kms
 
@@ -386,7 +451,7 @@
 
     - name: undelete and enable the key
       aws_kms:
-        alias: "{{ resource_prefix }}-kms"
+        alias: '{{ kms_key_alias }}'
         state: present
         enabled: yes
       register: undelete_kms
@@ -408,17 +473,48 @@
         that:
           - delete_kms is not changed
 
+    - name: delete the key with a specific deletion window
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        state: absent
+        pending_window: 7
+      register: delete_kms
+
+    - name: assert that state is pending deletion
+      vars:
+        now_time: '{{ lookup("pipe", "date -u +%Y-%m-%d\ %H:%M:%S") }}'
+        deletion_time: '{{ delete_kms.deletion_date[:19] | to_datetime("%Y-%m-%dT%H:%M:%S") }}'
+      assert:
+        that:
+          - delete_kms.key_state == "PendingDeletion"
+          - delete_kms.changed
+          # Times won't be perfect, allow a 24 hour window
+          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days <= 7
+          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days >= 6
+
   always:
     # ============================================================
     #   CLEAN-UP
     - name: finish off by deleting key
       aws_kms:
         state: absent
-        alias: "{{ resource_prefix }}-kms"
+        alias: '{{ kms_key_alias }}'
+        pending_window: 7
       register: destroy_result
+      ignore_errors: True
+
+    # Should never exist, but just in case
+    - name: finish off by deleting key
+      aws_kms:
+        state: absent
+        alias: '{{ kms_key_alias }}-check'
+        pending_window: 7
+      register: destroy_result
+      ignore_errors: True
 
     - name: remove the IAM role
       iam_role:
-        name: "{{ resource_prefix }}-kms-role"
+        name: '{{ kms_role_name }}'
         state: absent
       register: iam_role_result
+      ignore_errors: True
