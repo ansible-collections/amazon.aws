@@ -1,14 +1,5 @@
 - block:
 
-  - name: set connection information for all tasks
-    set_fact:
-      aws_connection_info: &aws_connection_info
-        aws_access_key: "{{ aws_access_key }}"
-        aws_secret_key: "{{ aws_secret_key }}"
-        security_token: "{{ security_token }}"
-        region: "{{ aws_region }}"
-    no_log: yes
-
   - name: register dummy OIDC config
     set_fact:
       AuthenticateOidcActionConfig:
@@ -45,7 +36,6 @@
     elb_application_lb:
       name: "{{ alb_name }}"
       state: absent
-      <<: *aws_connection_info
       wait: yes
       wait_timeout: 600
 
@@ -58,7 +48,6 @@
       state: absent
       wait: yes
       wait_timeout: 600
-      <<: *aws_connection_info
     register: cleanup_tg
     retries: 5
     delay: 3
@@ -71,7 +60,6 @@
       port: 80
       vpc_id: "{{ vpc.vpc.id }}"
       state: present
-      <<: *aws_connection_info
     register: tg
 
   - name: create ALB with redirect DefaultAction
@@ -86,7 +74,6 @@
           DefaultActions:
             - Type: redirect
               RedirectConfig: "{{ RedirectActionConfig }}"
-      <<: *aws_connection_info
     register: alb
 
   - assert:
@@ -108,7 +95,6 @@
           DefaultActions:
             - Type: redirect
               RedirectConfig: "{{ RedirectActionConfig }}"
-      <<: *aws_connection_info
     register: alb
 
   - assert:
@@ -130,7 +116,6 @@
           DefaultActions:
             - Type: fixed-response
               FixedResponseConfig: "{{ FixedResponseActionConfig }}"
-      <<: *aws_connection_info
     register: alb
 
   - assert:
@@ -152,7 +137,6 @@
           DefaultActions:
             - Type: fixed-response
               FixedResponseConfig: "{{ FixedResponseActionConfig }}"
-      <<: *aws_connection_info
     register: alb
 
   - assert:
@@ -199,7 +183,6 @@
               Actions:
                 - Type: fixed-response
                   FixedResponseConfig: "{{ FixedResponseActionConfig }}"
-      <<: *aws_connection_info
     register: alb
 
   - assert:
@@ -251,7 +234,6 @@
               Actions:
                 - Type: fixed-response
                   FixedResponseConfig: "{{ FixedResponseActionConfig }}"
-      <<: *aws_connection_info
     register: alb
 
   - assert:
@@ -283,7 +265,6 @@
 #            - Type: authenticate-oidc
 #              AuthenticateOidcConfig: "{{ AuthenticateOidcActionConfig }}"
 #              Order: 1
-#      <<: *aws_connection_info
 #    register: alb
 #
 #  - assert:
@@ -307,7 +288,6 @@
 #            - Type: forward
 #              TargetGroupName: "{{ tg_name }}"
 #              Order: 2
-#      <<: *aws_connection_info
 #    register: alb
 #
 #  - assert:
@@ -345,7 +325,6 @@
 #                - Type: authenticate-oidc
 #                  AuthenticateOidcConfig: "{{ AuthenticateOidcActionConfig }}"
 #                  Order: 1
-#      <<: *aws_connection_info
 #    register: alb
 #
 #  - assert:
@@ -384,7 +363,6 @@
 #                - Type: authenticate-oidc
 #                  AuthenticateOidcConfig: "{{ AuthenticateOidcActionConfig }}"
 #                  Order: 1
-#      <<: *aws_connection_info
 #    register: alb
 #
 #  - assert:
@@ -423,7 +401,6 @@
 #                - Type: forward
 #                  TargetGroupName: "{{ tg_name }}"
 #                  Order: 2
-#      <<: *aws_connection_info
 #    register: alb
 #
 #  - assert:
