@@ -1,17 +1,14 @@
-- name: elb_network_lb tests
+---
+- name: 'elb_network_lb integration tests'
   collections:
     - amazon.aws
-
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
   block:
-
-  - name: set connection information for all tasks
-    set_fact:
-      aws_connection_info: &aws_connection_info
-        aws_access_key: "{{ aws_access_key }}"
-        aws_secret_key: "{{ aws_secret_key }}"
-        security_token: "{{ security_token }}"
-        region: "{{ aws_region }}"
-    no_log: yes
 
   - name: create certificate
     iam_cert:
@@ -19,7 +16,6 @@
       state: present
       cert: "{{ lookup('file', 'cert.pem') }}"
       key: "{{ lookup('file', 'key.pem') }}"
-      <<: *aws_connection_info
     register: cert
 
   - name: create VPC
@@ -27,7 +23,6 @@
       cidr_block: 10.228.228.0/22
       name: "{{ resource_prefix }}_vpc"
       state: present
-      <<: *aws_connection_info
     register: vpc
 
   - name: create internet gateway
@@ -36,7 +31,6 @@
       state: present
       tags:
         Name: "{{ resource_prefix }}"
-      <<: *aws_connection_info
     register: igw
 
   - name: create subnets
@@ -48,7 +42,6 @@
       tags:
         Created_By: "{{ resource_prefix }}"
         Public: "{{ item.public }}"
-      <<: *aws_connection_info
     with_items:
       - cidr: 10.228.228.0/24
         az: "a"
@@ -67,7 +60,6 @@
   - ec2_vpc_subnet_info:
       filters:
         vpc-id: "{{ vpc.vpc.id }}"
-      <<: *aws_connection_info
     register: vpc_subnets
 
   - name: create list of subnet ids
@@ -78,7 +70,6 @@
   - name: create a route table
     ec2_vpc_route_table:
       vpc_id: "{{ vpc.vpc.id }}"
-      <<: *aws_connection_info
       tags:
         Name: igw-route
         Created: "{{ resource_prefix }}"
@@ -101,7 +92,6 @@
         - proto: all
           ports: 80
           cidr_ip: 10.228.228.0/22
-      <<: *aws_connection_info
     register: sec_group
 
   - name: create a target group for testing
@@ -111,7 +101,6 @@
       port: 80
       vpc_id: "{{ vpc.vpc.id }}"
       state: present
-      <<: *aws_connection_info
     register: tg
 
   - name: create a target group for testing tcp_udp protocols
@@ -121,7 +110,6 @@
       port: 80
       vpc_id: "{{ vpc.vpc.id }}"
       state: present
-      <<: *aws_connection_info
     register: tg_tcpudp
 
   - include_tasks: test_nlb_bad_listener_options.yml
@@ -139,7 +127,6 @@
         state: absent
         wait: yes
         wait_timeout: 600
-        <<: *aws_connection_info
       ignore_errors: yes
 
     - name: destroy target group if it was created
@@ -151,7 +138,6 @@
         state: absent
         wait: yes
         wait_timeout: 600
-        <<: *aws_connection_info
       register: remove_tg
       retries: 5
       delay: 3
@@ -168,7 +154,6 @@
         state: absent
         wait: yes
         wait_timeout: 600
-        <<: *aws_connection_info
       register: remove_tg
       retries: 5
       delay: 3
@@ -182,7 +167,6 @@
         description: "security group for Ansible NLB integration tests"
         state: absent
         vpc_id: "{{ vpc.vpc.id }}"
-        <<: *aws_connection_info
       register: remove_sg
       retries: 10
       delay: 5
@@ -195,7 +179,6 @@
         route_table_id: "{{ route_table.route_table.route_table_id }}"
         lookup: id
         state: absent
-        <<: *aws_connection_info
       register: remove_rt
       retries: 10
       delay: 5
@@ -207,7 +190,6 @@
         cidr: "{{ item.cidr }}"
         vpc_id: "{{ vpc.vpc.id }}"
         state: absent
-        <<: *aws_connection_info
       register: remove_subnet
       retries: 10
       delay: 5
@@ -225,7 +207,6 @@
         tags:
           Name: "{{ resource_prefix }}"
         state: absent
-        <<: *aws_connection_info
       register: remove_igw
       retries: 10
       delay: 5
@@ -237,7 +218,6 @@
         cidr_block: 10.228.228.0/22
         name: "{{ resource_prefix }}_vpc"
         state: absent
-        <<: *aws_connection_info
       register: remove_vpc
       retries: 10
       delay: 5
@@ -248,5 +228,4 @@
       iam_cert:
         name: test_cert
         state: absent
-        <<: *aws_connection_info
       ignore_errors: yes

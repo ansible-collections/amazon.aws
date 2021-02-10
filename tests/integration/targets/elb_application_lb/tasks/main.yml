@@ -1,44 +1,55 @@
-- set_fact:
-    virtualenv: "{{ remote_tmp_dir }}/virtualenv"
-    virtualenv_command: "{{ ansible_python_interpreter }} -m virtualenv"
+- name: 'elb_application_lb integration tests'
+  collections:
+    - amazon.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
 
-- set_fact:
-    virtualenv_interpreter: "{{ virtualenv }}/bin/python"
+    - set_fact:
+        virtualenv: "{{ remote_tmp_dir }}/virtualenv"
+        virtualenv_command: "{{ ansible_python_interpreter }} -m virtualenv"
 
-- pip:
-    name: virtualenv
+    - set_fact:
+        virtualenv_interpreter: "{{ virtualenv }}/bin/python"
 
-- pip:
-    name:
-      - 'botocore<1.10.30'
-      - boto3
-      - boto
-      - coverage<5
-      - cryptography
-    virtualenv: "{{ virtualenv }}"
-    virtualenv_command: "{{ virtualenv_command }}"
-    virtualenv_site_packages: no
+    - pip:
+        name: virtualenv
 
-- include_tasks: multiple_actions_fail.yml
-  vars:
-    ansible_python_interpreter: "{{ virtualenv_interpreter }}"
+    - pip:
+        name:
+          - 'botocore<1.10.30'
+          - boto3
+          - boto
+          - coverage<5
+          - cryptography
+        virtualenv: "{{ virtualenv }}"
+        virtualenv_command: "{{ virtualenv_command }}"
+        virtualenv_site_packages: no
+
+    - include_tasks: multiple_actions_fail.yml
+      vars:
+        ansible_python_interpreter: "{{ virtualenv_interpreter }}"
 
 
-- pip:
-    name:
-      - 'botocore>=1.10.30'
-      - boto3
-      - boto
-      - coverage<5
-      - cryptography
-    virtualenv: "{{ virtualenv }}"
-    virtualenv_command: "{{ virtualenv_command }}"
-    virtualenv_site_packages: no
+    - pip:
+        name:
+          - 'botocore>=1.10.30'
+          - boto3
+          - boto
+          - coverage<5
+          - cryptography
+        virtualenv: "{{ virtualenv }}"
+        virtualenv_command: "{{ virtualenv_command }}"
+        virtualenv_site_packages: no
 
-- include_tasks: full_test.yml
-  vars:
-    ansible_python_interpreter: "{{ virtualenv_interpreter }}"
+    - include_tasks: full_test.yml
+      vars:
+        ansible_python_interpreter: "{{ virtualenv_interpreter }}"
 
-- file:
-    path: "{{ virtualenv }}"
-    state: absent
+    - file:
+        path: "{{ virtualenv }}"
+        state: absent

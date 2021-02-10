@@ -1,14 +1,5 @@
 - block:
 
-  - name: set connection information for all tasks
-    set_fact:
-      aws_connection_info: &aws_connection_info
-        aws_access_key: "{{ aws_access_key }}"
-        aws_secret_key: "{{ aws_secret_key }}"
-        security_token: "{{ security_token }}"
-        region: "{{ aws_region }}"
-    no_log: yes
-
   - name: register dummy OIDC config
     set_fact:
         AuthenticateOidcActionConfig:
@@ -39,7 +30,6 @@
             - Type: authenticate-oidc
               AuthenticateOidcConfig: "{{ AuthenticateOidcActionConfig }}"
               Order: 1
-      <<: *aws_connection_info
     register: alb
     ignore_errors: yes
 

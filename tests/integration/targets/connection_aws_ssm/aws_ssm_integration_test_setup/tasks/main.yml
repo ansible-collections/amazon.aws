@@ -1,21 +1,20 @@
 ---
-## Task file for setup/teardown AWS resources for aws_ssm integration testing
-- block:
-    - name: set up aws connection info
-      set_fact:
-        aws_connection_info: &aws_connection_info
-          aws_access_key: "{{aws_access_key}}"
-          aws_secret_key: "{{aws_secret_key}}"
-          security_token: "{{security_token}}"
-          region: "{{aws_region}}"
-      no_log: yes
+- name: 'aws_ssm connection plugin integration test resource creation'
+  collections:
+    - amazon.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
 
     - name: AMI Lookup
       ec2_ami_info:
         owners: 'amazon'
         filters:
           name: '{{ item }}'
-        <<: *aws_connection_info  
       register: ec2_amis
       loop:
         - '{{ linux_ami_name }}'
@@ -62,13 +61,11 @@
         create_instance_profile: yes
         managed_policy:
         - AmazonEC2RoleforSSM
-        <<: *aws_connection_info
       register: role_output
 
     - name: Create S3 bucket
       s3_bucket:
         name: "{{resource_prefix}}-aws-ssm-s3"
-        <<: *aws_connection_info
       register: s3_output
 
     - name: Wait for IAM Role getting created
@@ -88,7 +85,6 @@
                     #!/bin/sh
                     sudo systemctl start amazon-ssm-agent
         state: present
-        <<: *aws_connection_info
       register: linux_output
 
     - name: Create Windows EC2 instance
@@ -107,7 +103,6 @@
                     Restart-Service AmazonSSMAgent
                     </powershell>
         state: present
-        <<: *aws_connection_info
       register: windows_output
 
     - name: Wait for EC2 to be available

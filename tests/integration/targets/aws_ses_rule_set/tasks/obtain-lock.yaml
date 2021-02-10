@@ -54,15 +54,6 @@
 # cleaned up by the next process to win the lock.
 # ============================================================
 
-- name: set up aws connection info
-  set_fact:
-    aws_connection_info: &aws_connection_info
-      aws_access_key: "{{ aws_access_key }}"
-      aws_secret_key: "{{ aws_secret_key }}"
-      security_token: "{{ security_token }}"
-      region: "{{ aws_region }}"
-  no_log: yes
-
 - name: Set lock_attempt_log_group_name
   set_fact:
     lock_attempt_log_group_name: "{{ lock_log_group_prefix }}/{{ lock_process_id|default(resource_prefix) }}"
@@ -81,13 +72,11 @@
     log_group_name: "{{ lock_attempt_log_group_name }}"
     state: present
     overwrite: True
-    <<: *aws_connection_info
   register: lock_attempt_log_group_result
 
 - name: Get Lock Attempt Lock Groups
   cloudwatchlogs_log_group_info:
     log_group_name: "{{ lock_log_group_prefix }}/"
-    <<: *aws_connection_info
   register: lock_attempt_log_groups
 
 - name: Calculate Expired Lock Attempt Timestamp
@@ -114,13 +103,11 @@
   cloudwatchlogs_log_group:
     log_group_name: "{{ lock_attempt_log_group_name }}"
     state: absent
-    <<: *aws_connection_info
   when: "not won_lock|bool"
 
 - name: Delete Expired Lock Attempts
   cloudwatchlogs_log_group:
     log_group_name: "{{ item.log_group_name }}"
     state: absent
-    <<: *aws_connection_info
   when: "won_lock|bool"
   loop: "{{ expired_lock_attempts }}"

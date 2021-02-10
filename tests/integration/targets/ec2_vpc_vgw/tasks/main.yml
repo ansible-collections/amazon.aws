@@ -1,18 +1,14 @@
 ---
-- name: ec2_vpc_net tests
+- name: 'ec2_vpc_vgw integration tests'
   collections:
     - amazon.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
   block:
-
-    # ============================================================
-    - name: set up aws connection info
-      set_fact:
-        aws_connection_info: &aws_connection_info
-          aws_access_key: "{{ aws_access_key }}"
-          aws_secret_key: "{{ aws_secret_key }}"
-          security_token: "{{ security_token }}"
-          region: "{{ aws_region }}"
-      no_log: yes
 
     # ============================================================
     - debug: msg="Setting up test dependencies"
@@ -22,7 +18,6 @@
         name: "{{ resource_prefix }}-vpc-{{ item }}"
         state: present
         cidr_block: "10.0.0.0/26"
-        <<: *aws_connection_info
         tags:
           Name: "{{ resource_prefix }}-vpc-{{ item }}"
           Description: "Created by ansible-test"
@@ -42,7 +37,6 @@
         state: present
         vpc_id: '{{ vpc_id_1 }}'
         name: "{{ resource_prefix }}-vgw"
-        <<: *aws_connection_info
       register: vgw
 
     - assert:
@@ -56,7 +50,6 @@
         state: present
         vpc_id: '{{ vpc_id_1 }}'
         name: "{{ resource_prefix }}-vgw"
-        <<: *aws_connection_info
       register: vgw
 
     - assert:
@@ -69,7 +62,6 @@
         state: present
         vpc_id: '{{ vpc_id_2 }}'
         name: "{{ resource_prefix }}-vgw"
-        <<: *aws_connection_info
       register: vgw
 
     - assert:
@@ -85,7 +77,6 @@
         name: "{{ resource_prefix }}-vgw"
         tags:
           created_by: ec2_vpc_vgw integration tests
-        <<: *aws_connection_info
       register: vgw
 
     - assert:
@@ -101,7 +92,6 @@
         name: "{{ resource_prefix }}-vgw"
         tags:
           created_by: ec2_vpc_vgw integration tests
-        <<: *aws_connection_info
       register: vgw
 
     - assert:
@@ -114,7 +104,6 @@
         state: present
         vpc_id: '{{ vpc_id_2 }}'
         name: "{{ resource_prefix }}-vgw"
-        <<: *aws_connection_info
       register: vgw
 
     - assert:
@@ -128,7 +117,6 @@
       ec2_vpc_vgw:
         state: present
         name: "{{ resource_prefix }}-vgw"
-        <<: *aws_connection_info
       register: vgw
 
     - assert:
@@ -140,7 +128,6 @@
       ec2_vpc_vgw:
         state: present
         name: "{{ resource_prefix }}-vgw"
-        <<: *aws_connection_info
       register: vgw
 
     - assert:
@@ -157,7 +144,6 @@
       ec2_vpc_vgw:
         state: absent
         vpn_gateway_id: '{{ vgw.vgw.id }}'
-        <<: *aws_connection_info
       ignore_errors: yes
 
     - name: delete vpc
@@ -165,7 +151,6 @@
         name: "{{ resource_prefix }}-vpc-{{ item }}"
         state: absent
         cidr_block: "10.0.0.0/26"
-        <<: *aws_connection_info
       loop: [1, 2]
       register: result
       retries: 10

@@ -3,24 +3,23 @@
 #  Author: Michael De La Rue
 #  based on aws_lambda test cases
 
-- block:
+- name: 'aws_ssm_parameter_store integration tests'
+  collections:
+    - amazon.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
 
-    # ============================================================
-    - name: set up aws connection info
-      set_fact:
-        aws_connection_info: &aws_connection_info
-           aws_access_key: "{{ aws_access_key }}"
-           aws_secret_key: "{{ aws_secret_key }}"
-           security_token: "{{ security_token }}"
-           region: "{{ aws_region }}"
-      no_log: yes
     # ============================================================
     - name: Create or update key/value pair in aws parameter store
       aws_ssm_parameter_store:
         name: "/{{ssm_key_prefix}}/Hello"
         description: "This is your first key"
         value: "World"
-        <<: *aws_connection_info
 
     - name: Check that parameter was stored correctly
       assert:
@@ -33,21 +32,18 @@
         name: "/{{ssm_key_prefix}}/path/wonvar"
         description: "This is your first key"
         value: "won value"
-        <<: *aws_connection_info
 
     - name: Create or update key/value pair in aws parameter store
       aws_ssm_parameter_store:
         name: "/{{ssm_key_prefix}}/path/toovar"
         description: "This is your first key"
         value: "too value"
-        <<: *aws_connection_info
 
     - name: Create or update key/value pair in aws parameter store
       aws_ssm_parameter_store:
         name: "/{{ssm_key_prefix}}/path/tree/treevar"
         description: "This is your first key"
         value: "tree value"
-        <<: *aws_connection_info
 
     # ============================================================
     - name: Create or update key/value pair in aws parameter store
@@ -55,14 +51,12 @@
         name: "/{{ssm_key_prefix}}/deeppath/wondir/samevar"
         description: "This is your first key"
         value: "won value"
-        <<: *aws_connection_info
 
     - name: Create or update key/value pair in aws parameter store
       aws_ssm_parameter_store:
         name: "/{{ssm_key_prefix}}/deeppath/toodir/samevar"
         description: "This is your first key"
         value: "too value"
-        <<: *aws_connection_info
 
     # ============================================================
     - name: debug the lookup
@@ -103,14 +97,12 @@
       aws_ssm_parameter_store:
         name: "/{{ssm_key_prefix}}/Hello"
         state: absent
-        <<: *aws_connection_info
 
     # ============================================================
     - name: Attempt delete key/value pair in aws parameter store again
       aws_ssm_parameter_store:
         name: "/{{ssm_key_prefix}}/Hello"
         state: absent
-        <<: *aws_connection_info
       register: result
 
     - name: assert that changed is False since parameter should be deleted
@@ -123,7 +115,6 @@
       aws_ssm_parameter_store:
         name: "{{item}}"
         state: absent
-        <<: *aws_connection_info
       with_items:
         - "/{{ssm_key_prefix}}/Hello"
         - "/{{ssm_key_prefix}}/path/wonvar"

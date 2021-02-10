@@ -1,22 +1,17 @@
 ---
-
-- name: set connection information for all tasks
-  set_fact:
-    aws_connection_info: &aws_connection_info
-      aws_access_key: "{{ aws_access_key }}"
-      aws_secret_key: "{{ aws_secret_key }}"
-      region: "{{ aws_region }}"
-    dms_sg_identifier: "{{ resource_prefix }}-dms"
-  no_log: yes
-
-- name: dms_replication_subnet_group tests
+- name: 'dms_replication_subnet_group integration tests'
   collections:
     - amazon.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
   block:
 
     - name: ensure IAM role exists
       iam_role:
-        <<: *aws_connection_info
         name: "{{ dms_role_role_name }}"
         assume_role_policy_document: "{{ lookup('file','dmsAssumeRolePolicyDocument.json') }}"
         state: present
@@ -33,12 +28,10 @@
         tags:
           Name: Ansible ec2_instance Testing VPC
         tenancy: default
-        <<: *aws_connection_info
       register: testing_vpc
 
     - name: 'Fetch AZ availability'
       aws_az_info:
-        <<: *aws_connection_info
       register: az_info
 
     - name: 'Assert that we have multiple AZs available to us'
@@ -56,7 +49,6 @@
         vpc_id:  "{{ testing_vpc.vpc.id }}"
         cidr: 10.22.32.16/28
         az: "{{ az_one }}"
-        <<: *aws_connection_info
       register: subnet1
 
     - name: create subnet2
@@ -65,7 +57,6 @@
         vpc_id:  "{{ testing_vpc.vpc.id }}"
         cidr: 10.22.32.32/28
         az: "{{ az_two }}"
-        <<: *aws_connection_info
       register: subnet2
 
     - name: create replication subnet group
@@ -74,7 +65,6 @@
         identifier: "{{ dms_sg_identifier }}"
         description: "Development Subnet Group"
         subnet_ids: [ "{{ subnet1.subnet.id }}", "{{ subnet2.subnet.id }}"]
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -88,7 +78,6 @@
         identifier: "{{ dms_sg_identifier }}"
         description: "Development Subnet Group"
         subnet_ids: [ "{{ subnet1.subnet.id }}", "{{ subnet2.subnet.id }}"]
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -102,7 +91,6 @@
         identifier: "{{ dms_sg_identifier }}"
         description: "Development Subnet Group updated"
         subnet_ids: [ "{{ subnet1.subnet.id }}", "{{ subnet2.subnet.id }}"]
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -116,7 +104,6 @@
         identifier: "{{ dms_sg_identifier }}"
         description: "Development Subnet Group updated"
         subnet_ids: [ "{{ subnet1.subnet.id }}", "{{ subnet2.subnet.id }}"]
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -131,7 +118,6 @@
         identifier: "{{ dms_sg_identifier }}"
         description: "Development Subnet Group updated"
         subnet_ids: [ "{{ subnet1.subnet.id }}", "{{ subnet2.subnet.id }}"]
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -145,7 +131,6 @@
         identifier: "{{ dms_sg_identifier }}"
         description: "Development Subnet Group updated"
         subnet_ids: [ "{{ subnet1.subnet.id }}", "{{ subnet2.subnet.id }}"]
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -159,7 +144,6 @@
         vpc_id:  "{{ testing_vpc.vpc.id }}"
         cidr: 10.22.32.16/28
         az: "{{ az_one }}"
-        <<: *aws_connection_info
 
     - name: delete subnet2
       ec2_vpc_subnet:
@@ -167,7 +151,6 @@
         vpc_id:  "{{ testing_vpc.vpc.id }}"
         cidr: 10.22.32.32/28
         az: "{{ az_two }}"
-        <<: *aws_connection_info
 
     - name: delete VPC for use in testing
       ec2_vpc_net:
@@ -177,11 +160,9 @@
           Name: Ansible ec2_instance Testing VPC
         tenancy: default
         state: absent
-        <<: *aws_connection_info
 
     - name: delete dms-vpc role
       iam_role:
-        <<: *aws_connection_info
         name: "{{ dms_role_role_name }}"
         assume_role_policy_document: "{{ lookup('file','dmsAssumeRolePolicyDocument.json') }}"
         state: absent

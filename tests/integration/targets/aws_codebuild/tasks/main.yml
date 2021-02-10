@@ -1,23 +1,16 @@
 ---
-# tasks file for aws_codebuild
-
-- name: Run aws_codebuild integration tests.
-
+- name: 'aws_codebuild integration tests'
   collections:
     - amazon.aws
-
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
   block:
 
     # ==================== preparations ========================================
-
-    - name: set connection information for all tasks
-      set_fact:
-        aws_connection_info: &aws_connection_info
-          aws_access_key: "{{ aws_access_key }}"
-          aws_secret_key: "{{ aws_secret_key }}"
-          security_token: "{{ security_token }}"
-          region: "{{ aws_region }}"
-      no_log: yes
 
     - name: create IAM role needed for CodeBuild
       iam_role:
@@ -25,7 +18,6 @@
         description: Role with permissions for CodeBuild actions.
         assume_role_policy_document: "{{ lookup('file', 'codebuild_iam_trust_policy.json') }}"
         state: present
-        <<: *aws_connection_info
       register: codebuild_iam_role
 
     - name: Set variable with aws account id
@@ -58,7 +50,6 @@
         tags:
           - { key: 'purpose', value: 'ansible-test' }
         state: present
-        <<: *aws_connection_info
       register: output
       retries: 10
       delay: 5
@@ -93,7 +84,6 @@
         tags:
           - { key: 'purpose', value: 'ansible-test' }
         state: present
-        <<: *aws_connection_info
       register: rerun_test_output
 
     - assert:
@@ -108,7 +98,6 @@
           buildspec: ''
         artifacts: {}
         state: absent
-        <<: *aws_connection_info
       async: 300
 
   # ============================== cleanup ======================================
@@ -119,4 +108,3 @@
       iam_role:
         name: "{{ iam_role_name }}"
         state: absent
-        <<: *aws_connection_info

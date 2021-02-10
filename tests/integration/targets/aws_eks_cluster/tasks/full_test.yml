@@ -1,9 +1,6 @@
 ---
-# tasks file for aws_eks modules
-- name: aws_eks_cluster tests
-  collections:
-    - amazon.aws
-  block:
+- block:
+
     # If us-west-1 does become supported, change this test to use an unsupported region
     # or if all regions are supported, delete this test
     - name: attempt to use eks in unsupported region
@@ -23,20 +20,10 @@
           - aws_eks_unsupported_region is failed
           - '"msg" in aws_eks_unsupported_region'
 
-    - name: set up aws connection info
-      set_fact:
-        aws_connection_info: &aws_connection_info
-          aws_access_key: "{{ aws_access_key }}"
-          aws_secret_key: "{{ aws_secret_key }}"
-          security_token: "{{ security_token }}"
-          region: "{{ aws_region }}"
-      no_log: yes
-
     - name: delete an as yet non-existent EKS cluster
       aws_eks_cluster:
         name: "{{ eks_cluster_name }}"
         state: absent
-        <<: *aws_connection_info
       register: aws_eks_delete_non_existent
 
     - name: check that aws_eks_cluster did nothing
@@ -53,7 +40,6 @@
         managed_policies:
           - AmazonEKSServicePolicy
           - AmazonEKSClusterPolicy
-        <<: *aws_connection_info
       register: iam_role
 
     - name: create a VPC to work in
@@ -63,7 +49,6 @@
         name: '{{ resource_prefix }}_aws_eks'
         resource_tags:
           Name: '{{ resource_prefix }}_aws_eks'
-        <<: *aws_connection_info
       register: setup_vpc
 
     - name: create subnets
@@ -74,7 +59,6 @@
         vpc_id: '{{ setup_vpc.vpc.id }}'
         cidr: "{{ item.cidr }}"
         state: present
-        <<: *aws_connection_info
       register: setup_subnets
       with_items:
         - "{{ eks_subnets }}"
@@ -87,7 +71,6 @@
         rules: "{{ item.rules }}"
         rules_egress: "{{ item.rules_egress|default(omit) }}"
         vpc_id: '{{ setup_vpc.vpc.id }}'
-        <<: *aws_connection_info
       with_items: "{{ eks_security_groups }}"
       register: setup_security_groups
 
@@ -97,7 +80,6 @@
         security_groups: "{{ eks_security_groups | community.general.json_query('[].name') }}"
         subnets: "{{ setup_subnets.results | community.general.json_query('[].subnet.id') }}"
         role_arn: "{{ iam_role.arn }}"
-        <<: *aws_connection_info
       register: eks_create
 
     - name: check that EKS cluster was created
@@ -113,7 +95,6 @@
         subnets: "{{ setup_subnets.results | community.general.json_query('[].subnet.id') }}"
         role_arn: "{{ iam_role.arn }}"
         wait: yes
-        <<: *aws_connection_info
       register: eks_create
 
     - name: Check that EKS cluster is active and has CA and endpoint data
@@ -133,7 +114,6 @@
         security_groups: "{{ setup_security_groups.results | community.general.json_query('[].group_id') }}"
         subnets: "{{ setup_subnets.results | community.general.json_query('[].subnet.id') }}"
         role_arn: "{{ iam_role.arn }}"
-        <<: *aws_connection_info
       register: eks_create
 
     - name: check that EKS cluster did not change
@@ -147,7 +127,6 @@
         name: "{{ eks_cluster_name }}"
         state: absent
         wait: yes
-        <<: *aws_connection_info
       register: eks_delete
 
     - name: check that EKS cluster was removed
@@ -162,7 +141,6 @@
         subnets: "{{ setup_subnets.results | community.general.json_query('[].subnet.id') }}"
         role_arn: "{{ iam_role.arn }}"
         wait: yes
-        <<: *aws_connection_info
       register: eks_create
 
     - name: check that EKS cluster was created
@@ -175,7 +153,6 @@
       aws_eks_cluster:
         name: "{{ eks_cluster_name }}"
         state: absent
-        <<: *aws_connection_info
       register: eks_delete
 
     - name: check that EKS cluster remove has started
@@ -193,7 +170,6 @@
         name: "{{ eks_cluster_name }}"
         state: absent
         wait: yes
-        <<: *aws_connection_info
       register: eks_delete
       ignore_errors: yes
 
@@ -215,7 +191,6 @@
         purge_rules: yes
         purge_rules_egress: yes
         vpc_id: '{{ setup_vpc.vpc.id }}'
-        <<: *aws_connection_info
       with_items: "{{ eks_security_groups }}"
       ignore_errors: yes
 
@@ -224,7 +199,6 @@
         name: '{{ item.name }}'
         state: absent
         vpc_id: '{{ setup_vpc.vpc.id }}'
-        <<: *aws_connection_info
       with_items: "{{ eks_security_groups|reverse|list + additional_eks_sg }}"
       ignore_errors: yes
 
@@ -234,7 +208,6 @@
         vpc_id: '{{ setup_vpc.vpc.id }}'
         cidr: "{{ item.cidr}}"
         state: absent
-        <<: *aws_connection_info
       with_items: "{{ eks_subnets }}"
       ignore_errors: yes
 
@@ -243,5 +216,4 @@
         cidr_block: 10.0.0.0/16
         state: absent
         name: '{{ resource_prefix }}_aws_eks'
-        <<: *aws_connection_info
       ignore_errors: yes

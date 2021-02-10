@@ -1,53 +1,67 @@
-- set_fact:
-    virtualenv: "{{ remote_tmp_dir }}/virtualenv"
-    virtualenv_command: "{{ ansible_python_interpreter }} -m virtualenv"
+---
+- name: 'ecs_cluster integration tests'
+  collections:
+    - amazon.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
 
-- set_fact:
-    virtualenv_interpreter: "{{ virtualenv }}/bin/python"
+    - set_fact:
+        virtualenv: "{{ remote_tmp_dir }}/virtualenv"
+        virtualenv_command: "{{ ansible_python_interpreter }} -m virtualenv"
 
-- pip:
-    name: virtualenv
+    - set_fact:
+        virtualenv_interpreter: "{{ virtualenv }}/bin/python"
 
-- pip:
-    name:
-      - 'botocore<1.8.4'
-      - boto3
-      - coverage<5
-    virtualenv: "{{ virtualenv }}"
-    virtualenv_command: "{{ virtualenv_command }}"
-    virtualenv_site_packages: no
+    - pip:
+        name: virtualenv
 
-- include_tasks: network_assign_public_ip_fail.yml
-  vars:
-    ansible_python_interpreter: "{{ virtualenv_interpreter }}"
+    # Test graceful failures when botocore<1.8.4
 
-- include_tasks: network_force_new_deployment_fail.yml
-  vars:
-    ansible_python_interpreter: "{{ virtualenv_interpreter }}"
+    - pip:
+        name:
+          - 'botocore<1.8.4'
+          - boto3
+          - coverage<5
+        virtualenv: "{{ virtualenv }}"
+        virtualenv_command: "{{ virtualenv_command }}"
+        virtualenv_site_packages: no
 
-- file:
-    path: "{{ virtualenv }}"
-    state: absent
+    - include_tasks: network_assign_public_ip_fail.yml
+      vars:
+        ansible_python_interpreter: "{{ virtualenv_interpreter }}"
 
-# Test graceful failures when botocore<1.12.38
+    - include_tasks: network_force_new_deployment_fail.yml
+      vars:
+        ansible_python_interpreter: "{{ virtualenv_interpreter }}"
 
-- pip:
-    name:
-      - 'botocore>=1.12.60'
-      - 'boto3>=1.16.57'
-      - coverage<5
-    virtualenv: "{{ virtualenv }}"
-    virtualenv_command: "{{ virtualenv_command }}"
-    virtualenv_site_packages: no
+    - file:
+        path: "{{ virtualenv }}"
+        state: absent
 
-- include_tasks: network_force_new_deployment.yml
-  vars:
-    ansible_python_interpreter: "{{ virtualenv_interpreter }}"
+    # Test graceful failures when botocore<1.12.38
 
-- include_tasks: full_test.yml
-  vars:
-    ansible_python_interpreter: "{{ virtualenv_interpreter }}"
+    - pip:
+        name:
+          - 'botocore>=1.12.60'
+          - 'boto3>=1.16.57'
+          - coverage<5
+        virtualenv: "{{ virtualenv }}"
+        virtualenv_command: "{{ virtualenv_command }}"
+        virtualenv_site_packages: no
 
-- file:
-    path: "{{ virtualenv }}"
-    state: absent
+    - include_tasks: network_force_new_deployment.yml
+      vars:
+        ansible_python_interpreter: "{{ virtualenv_interpreter }}"
+
+    - include_tasks: full_test.yml
+      vars:
+        ansible_python_interpreter: "{{ virtualenv_interpreter }}"
+
+    - file:
+        path: "{{ virtualenv }}"
+        state: absent

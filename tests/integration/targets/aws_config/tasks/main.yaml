@@ -1,21 +1,21 @@
 ---
-- block:
+- name: 'aws_config integration tests'
+  collections:
+    - amazon.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
 
     # ============================================================
     # Prerequisites
     # ============================================================
-    - name: set connection information for all tasks
-      set_fact:
-        aws_connection_info: &aws_connection_info
-          aws_access_key: "{{ aws_access_key }}"
-          aws_secret_key: "{{ aws_secret_key }}"
-          security_token: "{{ security_token }}"
-          region: "{{ aws_region }}"
-      no_log: true
 
     - name: ensure IAM role exists
       iam_role:
-        <<: *aws_connection_info
         name: '{{ config_role_name }}'
         assume_role_policy_document: "{{ lookup('file','config-trust-policy.json') }}"
         state: present
@@ -26,7 +26,6 @@
 
     - name: ensure SNS topic exists
       sns_topic:
-        <<: *aws_connection_info
         name: '{{ config_sns_name }}'
         state: present
         subscriptions:
@@ -36,12 +35,10 @@
 
     - name: ensure S3 bucket exists
       s3_bucket:
-        <<: *aws_connection_info
         name: "{{ config_s3_bucket }}"
 
     - name: ensure S3 access for IAM role
       iam_policy:
-        <<: *aws_connection_info
         iam_type: role
         iam_name: '{{ config_role_name }}'
         policy_name: AwsConfigRecorderTestRoleS3Policy
@@ -53,7 +50,6 @@
     # ============================================================
     - name: test rule with no source parameter
       aws_config_rule:
-        <<: *aws_connection_info
         name: random_name
         state: present
       register: output
@@ -67,7 +63,6 @@
 
     - name: test resource_type delivery_channel with no s3_bucket parameter
       aws_config_delivery_channel:
-        <<: *aws_connection_info
         name: random_name
         state: present
       register: output
@@ -81,7 +76,6 @@
 
     - name: test resource_type configuration_recorder with no role_arn parameter
       aws_config_recorder:
-        <<: *aws_connection_info
         name: random_name
         state: present
       register: output
@@ -95,7 +89,6 @@
 
     - name: test resource_type configuration_recorder with no recording_group parameter
       aws_config_recorder:
-        <<: *aws_connection_info
         name: random_name
         state: present
         role_arn: 'arn:aws:iam::123456789012:role/AwsConfigRecorder'
@@ -111,7 +104,6 @@
     - name: test resource_type aggregation_authorization with no authorized_account_id parameter
       aws_config_aggregation_authorization:
         state: present
-        <<: *aws_connection_info
       register: output
       ignore_errors: true
 
@@ -123,7 +115,6 @@
 
     - name: test resource_type aggregation_authorization with no authorized_aws_region parameter
       aws_config_aggregation_authorization:
-        <<: *aws_connection_info
         state: present
         authorized_account_id: '123456789012'
       register: output
@@ -137,7 +128,6 @@
 
     - name: test resource_type configuration_aggregator with no account_sources parameter
       aws_config_aggregator:
-        <<: *aws_connection_info
         name: random_name
         state: present
       register: output
@@ -151,7 +141,6 @@
 
     - name: test resource_type configuration_aggregator with no organization_source parameter
       aws_config_aggregator:
-        <<: *aws_connection_info
         name: random_name
         state: present
         account_sources: []
@@ -169,7 +158,6 @@
     # ============================================================
     - name: Create Configuration Recorder for AWS Config
       aws_config_recorder:
-        <<: *aws_connection_info
         name: test_configuration_recorder
         state: present
         role_arn: "{{ config_iam_role.arn }}"
@@ -184,7 +172,6 @@
 
     - name: Create Delivery Channel for AWS Config
       aws_config_delivery_channel:
-        <<: *aws_connection_info
         name: test_delivery_channel
         state: present
         s3_bucket: "{{ config_s3_bucket }}"
@@ -199,7 +186,6 @@
 
     - name: Create Config Rule for AWS Config
       aws_config_rule:
-        <<: *aws_connection_info
         name: test_config_rule
         state: present
         description: 'This AWS Config rule checks for public write access on S3 buckets'
@@ -220,7 +206,6 @@
     # ============================================================
     - name: Update Configuration Recorder
       aws_config_recorder:
-        <<: *aws_connection_info
         name: test_configuration_recorder
         state: present
         role_arn: "{{ config_iam_role.arn }}"
@@ -237,7 +222,6 @@
 
     - name: Update Delivery Channel
       aws_config_delivery_channel:
-        <<: *aws_connection_info
         name: test_delivery_channel
         state: present
         s3_bucket: "{{ config_s3_bucket }}"
@@ -251,7 +235,6 @@
 
     - name: Update Config Rule
       aws_config_rule:
-        <<: *aws_connection_info
         name: test_config_rule
         state: present
         description: 'This AWS Config rule checks for public write access on S3 buckets'
@@ -272,7 +255,6 @@
     # ============================================================
     - name: Don't update Configuration Recorder
       aws_config_recorder:
-        <<: *aws_connection_info
         name: test_configuration_recorder
         state: present
         role_arn: "{{ config_iam_role.arn }}"
@@ -289,7 +271,6 @@
 
     - name: Don't update Delivery Channel
       aws_config_delivery_channel:
-        <<: *aws_connection_info
         name: test_delivery_channel
         state: present
         s3_bucket: "{{ config_s3_bucket }}"
@@ -303,7 +284,6 @@
 
     - name: Don't update Config Rule
       aws_config_rule:
-        <<: *aws_connection_info
         name: test_config_rule
         state: present
         description: 'This AWS Config rule checks for public write access on S3 buckets'
@@ -325,7 +305,6 @@
     # ============================================================
     - name: Destroy Configuration Recorder
       aws_config_recorder:
-        <<: *aws_connection_info
         name: test_configuration_recorder
         state: absent
       register: output
@@ -337,7 +316,6 @@
 
     - name: Destroy Delivery Channel
       aws_config_delivery_channel:
-        <<: *aws_connection_info
         name: test_delivery_channel
         state: absent
         s3_bucket: "{{ config_s3_bucket }}"
@@ -352,7 +330,6 @@
 
     - name: Destroy Config Rule
       aws_config_rule:
-        <<: *aws_connection_info
         name: test_config_rule
         state: absent
         description: 'This AWS Config rule checks for public write access on S3 buckets'
@@ -374,7 +351,6 @@
     # ============================================================
     - name: remove S3 access from IAM role
       iam_policy:
-        <<: *aws_connection_info
         iam_type: role
         iam_name: '{{ config_role_name }}'
         policy_name: AwsConfigRecorderTestRoleS3Policy
@@ -384,21 +360,18 @@
 
     - name: remove IAM role
       iam_role:
-        <<: *aws_connection_info
         name: '{{ config_role_name }}'
         state: absent
       ignore_errors: yes
 
     - name: remove SNS topic
       sns_topic:
-        <<: *aws_connection_info
         name: '{{ config_sns_name }}'
         state: absent
       ignore_errors: yes
 
     - name: remove S3 bucket
       s3_bucket:
-        <<: *aws_connection_info
         name: "{{ config_s3_bucket }}"
         state: absent
         force: yes

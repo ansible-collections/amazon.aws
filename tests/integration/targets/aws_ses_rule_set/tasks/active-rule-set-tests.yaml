@@ -6,27 +6,16 @@
 # See the locking block in main.yaml for how this restriction is enforced
 # ============================================================
 
-- name: set up aws connection info
-  set_fact:
-    aws_connection_info: &aws_connection_info
-      aws_access_key: "{{ aws_access_key }}"
-      aws_secret_key: "{{ aws_secret_key }}"
-      security_token: "{{ security_token }}"
-      region: "{{ aws_region }}"
-  no_log: yes
-
 # ============================================================
 - name: mark rule set active
   block:
     - name: create rule set
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
-        <<: *aws_connection_info
     - name: mark rule set active
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         active: True
-        <<: *aws_connection_info
       register: result
     - name: assert changed to active
       assert:
@@ -37,7 +26,6 @@
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         active: True
-        <<: *aws_connection_info
       register: result
     - name: assert changed is False
       assert:
@@ -49,7 +37,6 @@
         name: "{{ default_rule_set }}"
         state: absent
         force: True
-        <<: *aws_connection_info
 
 # ============================================================
 - name: create rule set active
@@ -58,7 +45,6 @@
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         active: True
-        <<: *aws_connection_info
       register: result
     - name: assert changed to existing and active
       assert:
@@ -70,7 +56,6 @@
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         active: True
-        <<: *aws_connection_info
       register: result
     - name: assert changed is False
       assert:
@@ -82,7 +67,6 @@
         name: "{{ default_rule_set }}"
         state: absent
         force: True
-        <<: *aws_connection_info
 
 # ============================================================
 - name: mark rule set inactive
@@ -91,12 +75,10 @@
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         active: True
-        <<: *aws_connection_info
     - name: mark rule set inactive
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         active: False
-        <<: *aws_connection_info
       register: result
     - name: assert changed to inactive
       assert:
@@ -107,7 +89,6 @@
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         active: False
-        <<: *aws_connection_info
       register: result
     - name: assert changed is False
       assert:
@@ -119,7 +100,6 @@
         name: "{{ default_rule_set }}"
         state: absent
         force: True
-        <<: *aws_connection_info
 
 # ============================================================
 - name: Absent active flag does not change active status
@@ -128,11 +108,9 @@
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         active: True
-        <<: *aws_connection_info
     - name: recreate rule set
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
-        <<: *aws_connection_info
       register: result
     - name: assert not changed and still active
       assert:
@@ -145,7 +123,6 @@
         name: "{{ default_rule_set }}"
         state: absent
         force: True
-        <<: *aws_connection_info
 
 # ============================================================
 - name: Cannot Remove Active Rule Set
@@ -154,12 +131,10 @@
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         active: True
-        <<: *aws_connection_info
     - name: remove rule set
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         state: absent
-        <<: *aws_connection_info
       register: result
       failed_when: "result.error.code != 'CannotDelete'"
     - name: assert error code is CannotDelete
@@ -172,7 +147,6 @@
         name: "{{ default_rule_set }}"
         state: absent
         force: True
-        <<: *aws_connection_info
 
 # ============================================================
 - name: Remove Active Rule Set with Force
@@ -181,13 +155,11 @@
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         active: True
-        <<: *aws_connection_info
     - name: force remove rule set
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         state: absent
         force: True
-        <<: *aws_connection_info
       register: result
     - name: assert changed and absent
       assert:
@@ -200,7 +172,6 @@
         name: "{{ default_rule_set }}"
         state: absent
         force: True
-        <<: *aws_connection_info
 
 # ============================================================
 - name: Force Remove of Inactive Rule Set does Not Affect Active Rule Set
@@ -209,18 +180,15 @@
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         active: True
-        <<: *aws_connection_info
     - name: create inactive rule set
       aws_ses_rule_set:
         name: "{{ second_rule_set }}"
         active: False
-        <<: *aws_connection_info
     - name: force remove inactiave rule set
       aws_ses_rule_set:
         name: "{{ second_rule_set }}"
         state: absent
         force: True
-        <<: *aws_connection_info
       register: result
     - name: assert changed and absent
       assert:
@@ -231,7 +199,6 @@
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         active: True
-        <<: *aws_connection_info
       register: result
     - name: assert no change
       assert:
@@ -243,7 +210,6 @@
         name: "{{ item }}"
         state: absent
         force: True
-        <<: *aws_connection_info
       loop:
         - "{{ default_rule_set }}"
         - "{{ second_rule_set }}"
@@ -255,12 +221,10 @@
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         active: True
-        <<: *aws_connection_info
     - name: mark rule set inactive in check mode
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         active: False
-        <<: *aws_connection_info
       register: result
       check_mode: True
     - name: assert changed to inactive
@@ -272,7 +236,6 @@
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         active: False
-        <<: *aws_connection_info
       register: result
     - name: assert changed is True since previous inactive was in check mode
       assert:
@@ -284,7 +247,6 @@
         name: "{{ default_rule_set }}"
         state: absent
         force: True
-        <<: *aws_connection_info
 
 # ============================================================
 - name: Cannot Remove Active Rule Set in check mode
@@ -293,12 +255,10 @@
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         active: True
-        <<: *aws_connection_info
     - name: remove rule set
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         state: absent
-        <<: *aws_connection_info
       register: result
       failed_when: "result.error.code != 'CannotDelete'"
       check_mode: True
@@ -312,7 +272,6 @@
         name: "{{ default_rule_set }}"
         state: absent
         force: True
-        <<: *aws_connection_info
 
 # ============================================================
 - name: Remove Active Rule Set with Force in check mode
@@ -321,13 +280,11 @@
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         active: True
-        <<: *aws_connection_info
     - name: force remove rule set
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         state: absent
         force: True
-        <<: *aws_connection_info
       register: result
       check_mode: True
     - name: assert changed and absent
@@ -341,7 +298,6 @@
         name: "{{ default_rule_set }}"
         state: absent
         force: True
-        <<: *aws_connection_info
       register: result
     - name: assert changed is True since previous removal was in check mode
       assert:

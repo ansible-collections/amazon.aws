@@ -1,0 +1,2 @@
+---
+dms_identifier: "{{ resource_prefix }}-dms"

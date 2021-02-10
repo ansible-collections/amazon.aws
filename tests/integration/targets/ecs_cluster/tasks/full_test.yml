@@ -1,19 +1,5 @@
 ---
-# tasks file for ecs_cluster
-- name: ecs_cluster tests
-  collections:
-    - amazon.aws
-
-  block:
-    # ============================================================
-    - name: set up aws connection info
-      set_fact:
-        aws_connection_info: &aws_connection_info
-          aws_access_key: "{{ aws_access_key }}"
-          aws_secret_key: "{{ aws_secret_key }}"
-          security_token: "{{ security_token }}"
-          region: "{{ aws_region }}"
-      no_log: yes
+- block:
 
     - name: ensure IAM instance role exists
       iam_role:
@@ -23,7 +9,6 @@
         create_instance_profile: yes
         managed_policy:
         - AmazonEC2ContainerServiceforEC2Role
-        <<: *aws_connection_info
 
     - name: ensure IAM service role exists
       iam_role:
@@ -33,12 +18,10 @@
         create_instance_profile: no
         managed_policy:
         - AmazonEC2ContainerServiceRole
-        <<: *aws_connection_info
 
     - name: ensure AWSServiceRoleForECS role exists
       iam_role_info:
         name: AWSServiceRoleForECS
-        <<: *aws_connection_info
       register: iam_role_result
 
       # FIXME: come up with a way to automate this
@@ -53,7 +36,6 @@
       ecs_cluster:
         name: "{{ ecs_cluster_name }}"
         state: present
-        <<: *aws_connection_info
       register: ecs_cluster
 
     - name: check that ecs_cluster changed
@@ -65,7 +47,6 @@
       ecs_cluster:
         name: "{{ ecs_cluster_name }}"
         state: present
-        <<: *aws_connection_info
       register: ecs_cluster_again
 
     - name: check that ecs_cluster did not change
@@ -80,14 +61,12 @@
         name: '{{ resource_prefix }}_ecs_cluster'
         resource_tags:
           Name: '{{ resource_prefix }}_ecs_cluster'
-        <<: *aws_connection_info
       register: setup_vpc
 
     - name: create a key pair to use for creating an ec2 instance
       ec2_key:
         name: '{{ resource_prefix }}_ecs_cluster'
         state: present
-        <<: *aws_connection_info
       when: ec2_keypair is not defined  # allow override in cloud-config-aws.ini
       register: setup_key
 
@@ -99,7 +78,6 @@
         vpc_id: '{{ setup_vpc.vpc.id }}'
         cidr: "{{ item.cidr }}"
         state: present
-        <<: *aws_connection_info
       register: setup_subnet
       with_items:
         - zone: a
@@ -111,7 +89,6 @@
       ec2_vpc_igw:
         vpc_id: '{{ setup_vpc.vpc.id }}'
         state: present
-        <<: *aws_connection_info
       register: igw
 
     - name: create a security group to use for creating an ec2 instance
@@ -123,7 +100,6 @@
         rules: # allow all ssh traffic but nothing else
         - ports: 22
           cidr: 0.0.0.0/0
-        <<: *aws_connection_info
       register: setup_sg
 
     - name: find a suitable AMI
@@ -131,7 +107,6 @@
         owner: amazon
         filters:
           description: "Amazon Linux AMI* ECS *"
-        <<: *aws_connection_info
       register: ec2_ami_info
 
     - name: set image id fact
@@ -151,7 +126,6 @@
           Name: '{{ resource_prefix }}_ecs_agent'
         security_group: '{{ setup_sg.group_id }}'
         vpc_subnet_id: '{{ setup_subnet.results[0].subnet.id }}'
-        <<: *aws_connection_info
       register: setup_instance
 
     - name: create target group
@@ -163,7 +137,6 @@
         modify_targets: no
         vpc_id: '{{ setup_vpc.vpc.id }}'
         target_type: instance
-        <<: *aws_connection_info
       register: elb_target_group_instance
 
     - name: create second target group to use ip target_type
@@ -175,7 +148,6 @@
         modify_targets: no
         vpc_id: '{{ setup_vpc.vpc.id }}'
         target_type: ip
-        <<: *aws_connection_info
       register: elb_target_group_ip
 
     - name: create load balancer
@@ -196,14 +168,12 @@
             DefaultActions:
               - Type: forward
                 TargetGroupName: "{{ ecs_target_group_name }}2"
-        <<: *aws_connection_info
 
     - name: create task definition
       ecs_taskdefinition:
         containers: "{{ ecs_task_containers }}"
         family: "{{ ecs_task_name }}"
         state: present
-        <<: *aws_connection_info
       register: ecs_task_definition
 
     - name: recreate task definition
@@ -211,7 +181,6 @@
         containers: "{{ ecs_task_containers }}"
         family: "{{ ecs_task_name }}"
         state: present
-        <<: *aws_connection_info
       register: ecs_task_definition_again
 
     - name: check that task definition does not change
@@ -224,7 +193,6 @@
     - name: obtain ECS task definition facts
       ecs_taskdefinition_info:
         task_definition: "{{ ecs_task_name }}:{{ ecs_task_definition.taskdefinition.revision }}"
-        <<: *aws_connection_info
 
     - name: create ECS service definition
       ecs_service:
@@ -241,7 +209,6 @@
             containerName: "{{ ecs_task_name }}"
             containerPort: "{{ ecs_task_container_port }}"
         role: "ecsServiceRole"
-        <<: *aws_connection_info
       register: ecs_service
 
     - name: check that ECS service creation changed
@@ -264,7 +231,6 @@
             containerName: "{{ ecs_task_name }}"
             containerPort: "{{ ecs_task_container_port }}"
         role: "ecsServiceRole"
-        <<: *aws_connection_info
       register: ecs_service_again
 
     - name: check that ECS service recreation changed nothing
@@ -290,7 +256,6 @@
             containerName: "{{ ecs_task_name }}"
             containerPort: "{{ ecs_task_container_port|int + 1 }}"
         role: "ecsServiceRole"
-        <<: *aws_connection_info
       register: update_ecs_service
       ignore_errors: yes
 
@@ -319,7 +284,6 @@
           subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
           security_groups:
             - '{{ setup_sg.group_id }}'
-        <<: *aws_connection_info
       register: ecs_service_network_without_awsvpc_task
       ignore_errors: yes
 
@@ -342,7 +306,6 @@
             containerName: "{{ ecs_task_name }}"
             containerPort: "{{ ecs_task_container_port }}"
         role: "ecsServiceRole"
-        <<: *aws_connection_info
       register: ecs_service_scale_down
 
     - name: pause to allow service to scale down
@@ -354,7 +317,6 @@
         state: absent
         name: "{{ ecs_service_name }}"
         cluster: "{{ ecs_cluster_name }}"
-        <<: *aws_connection_info
       register: delete_ecs_service
 
     - name: assert that deleting ECS service worked
@@ -373,7 +335,6 @@
         family: "{{ ecs_task_name }}-vpc"
         state: present
         network_mode: awsvpc
-        <<: *aws_connection_info
       register: ecs_task_definition_vpc_no_host_port
       ignore_errors: yes
 
@@ -389,7 +350,6 @@
         family: "{{ ecs_task_name }}-vpc"
         network_mode: awsvpc
         state: present
-        <<: *aws_connection_info
       vars:
         ecs_task_host_port: 8080
       register: ecs_task_definition_vpc_with_host_port
@@ -397,7 +357,6 @@
     - name: obtain ECS task definition facts
       ecs_taskdefinition_info:
         task_definition: "{{ ecs_task_name }}-vpc:{{ ecs_task_definition_vpc_with_host_port.taskdefinition.revision }}"
-        <<: *aws_connection_info
       register: ecs_taskdefinition_info
 
     - name: assert that network mode is awsvpc
@@ -414,7 +373,6 @@
         state: absent
         name: "{{ ecs_service_name }}4"
         cluster: "{{ ecs_cluster_name }}"
-        <<: *aws_connection_info
       register: delete_ecs_service
 
     - name: create ECS service definition with network configuration
@@ -434,7 +392,6 @@
           subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
           security_groups:
             - '{{ setup_sg.group_id }}'
-        <<: *aws_connection_info
       register: create_ecs_service_with_vpc
 
     - name: assert that network configuration is correct
@@ -451,7 +408,6 @@
         description: "Test security group for ECS with VPC"
         vpc_id: '{{ setup_vpc.vpc.id }}'
         state: present
-        <<: *aws_connection_info
 
     - name: update ECS service definition with new network configuration
       ecs_service:
@@ -470,7 +426,6 @@
           subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
           security_groups:
             - "{{ resource_prefix }}-ecs-vpc-test-sg"
-        <<: *aws_connection_info
       register: update_ecs_service_with_vpc
 
     - name: check that ECS service changed
@@ -495,7 +450,6 @@
         health_check_grace_period_seconds: 10
         desired_count: 1
         state: present
-        <<: *aws_connection_info
       register: ecs_service_creation_hcgp
 
 
@@ -517,7 +471,6 @@
         desired_count: 1
         health_check_grace_period_seconds: 30
         state: present
-        <<: *aws_connection_info
       register: ecs_service_creation_hcgp2
       ignore_errors: no
 
@@ -544,7 +497,6 @@
 #       task_definition: "{{ ecs_task_name }}:{{ ecs_task_definition.taskdefinition.revision }}"
 #       desired_count: 1
 #       state: present
-#       <<: *aws_connection_info
 #     register: ecs_service_creation_sr
 #     ignore_errors: yes
 
@@ -568,7 +520,6 @@
         task_definition: "{{ ecs_task_name }}:{{ ecs_task_definition.taskdefinition.revision }}"
         desired_count: 1
         state: present
-        <<: *aws_connection_info
       register: ecs_service_creation_replica
 
     - name: obtain facts for all ECS services in the cluster
@@ -576,7 +527,6 @@
         cluster: "{{ ecs_cluster_name }}"
         details: yes
         events: no
-        <<: *aws_connection_info
       register: ecs_service_info
 
     - name: assert that facts are useful
@@ -592,7 +542,6 @@
         service: "{{ ecs_service_name }}"
         details: yes
         events: no
-        <<: *aws_connection_info
       register: ecs_service_info
 
     - name: assert that existing service is available and running
@@ -607,7 +556,6 @@
         service: madeup
         details: yes
         events: no
-        <<: *aws_connection_info
       register: ecs_service_info
 
     - name: assert that non-existent service is missing
@@ -620,7 +568,6 @@
         service: "{{ ecs_service_name }}2"
         cluster: "{{ ecs_cluster_name }}"
         details: yes
-        <<: *aws_connection_info
       register: ecs_service_info
 
     - name: check that facts contain network configuration
@@ -631,7 +578,6 @@
     - name: attempt to get facts from missing task definition
       ecs_taskdefinition_info:
         task_definition: "{{ ecs_task_name }}-vpc:{{ ecs_task_definition.taskdefinition.revision + 1}}"
-        <<: *aws_connection_info
 
     # ============================================================
     # Begin tests for Fargate
@@ -645,7 +591,6 @@
         create_instance_profile: no
         managed_policy:
         - AmazonEC2ContainerServiceRole
-        <<: *aws_connection_info
       register: iam_execution_role
 
     - name: create Fargate VPC-networked task definition with host port set to 8080 and unsupported network mode (expected to fail)
@@ -657,7 +602,6 @@
         cpu: 512
         memory: 1024
         state: present
-        <<: *aws_connection_info
       vars:
         ecs_task_host_port: 8080
       ignore_errors: yes
@@ -676,7 +620,6 @@
         network_mode: awsvpc
         launch_type: FARGATE
         state: present
-        <<: *aws_connection_info
       ignore_errors: yes
       register: ecs_fargate_task_definition_vpc_no_mem
 
@@ -696,7 +639,6 @@
         memory: 1024
         execution_role_arn: "{{ iam_execution_role.arn }}"
         state: present
-        <<: *aws_connection_info
       vars:
         ecs_task_host_port: 8080
       register: ecs_fargate_task_definition
@@ -704,7 +646,6 @@
     - name: obtain ECS task definition facts
       ecs_taskdefinition_info:
         task_definition: "{{ ecs_task_name }}-vpc:{{ ecs_fargate_task_definition.taskdefinition.revision }}"
-        <<: *aws_connection_info
 
     - name: create fargate ECS service without network config (expected to fail)
       ecs_service:
@@ -715,7 +656,6 @@
         desired_count: 1
         deployment_configuration: "{{ ecs_service_deployment_configuration }}"
         launch_type: FARGATE
-        <<: *aws_connection_info
       register: ecs_fargate_service_network_without_awsvpc
       ignore_errors: yes
 
@@ -738,7 +678,6 @@
           security_groups:
             - '{{ setup_sg.group_id }}'
           assign_public_ip: true
-        <<: *aws_connection_info
       register: ecs_fargate_service_network_with_awsvpc
 
     - name: assert that public IP assignment is enabled
@@ -759,7 +698,6 @@
             - '{{ setup_sg.group_id }}'
           assign_public_ip: true
         started_by: ansible_user
-        <<: *aws_connection_info
       register: fargate_run_task_output
 
       # aws cli not installed in docker container; make sure it's installed.
@@ -792,7 +730,6 @@
             - '{{ setup_sg.group_id }}'
           assign_public_ip: true
         started_by: ansible_user
-        <<: *aws_connection_info
       register: fargate_run_task_output_with_tags_fail
       ignore_errors: yes
 
@@ -820,7 +757,6 @@
             - '{{ setup_sg.group_id }}'
           assign_public_ip: true
         started_by: ansible_user
-        <<: *aws_connection_info
       register: fargate_run_task_output_with_tags
 
 
@@ -832,14 +768,12 @@
         containers: "{{ ecs_task_containers }}"
         family: "{{ ecs_task_name }}-absent"
         state: present
-        <<: *aws_connection_info
       register: ecs_task_definition_absent_with_arn
 
     - name: absent task definition by arn
       ecs_taskdefinition:
         arn: "{{ ecs_task_definition_absent_with_arn.taskdefinition.taskDefinitionArn }}"
         state: absent
-        <<: *aws_connection_info
 
   always:
     # TEAR DOWN: snapshot, ec2 instance, ec2 key pair, security group, vpc
@@ -852,7 +786,6 @@
         service: "{{ ecs_service_name }}"
         cluster: "{{ ecs_cluster_name }}"
         details: yes
-        <<: *aws_connection_info
       register: ecs_service_info
 
     - name: scale down ECS service
@@ -868,7 +801,6 @@
           - targetGroupArn: "{{ ecs_service_info.services[0].loadBalancers[0].targetGroupArn }}"
             containerName: "{{ ecs_task_name }}"
             containerPort: "{{ ecs_task_container_port }}"
-        <<: *aws_connection_info
       ignore_errors: yes
       register: ecs_service_scale_down
 
@@ -877,7 +809,6 @@
         service: "{{ ecs_service_name }}2"
         cluster: "{{ ecs_cluster_name }}"
         details: yes
-        <<: *aws_connection_info
       ignore_errors: yes
       register: ecs_service_info
 
@@ -894,7 +825,6 @@
           - targetGroupArn: "{{ ecs_service_info.services[0].loadBalancers[0].targetGroupArn }}"
             containerName: "{{ ecs_task_name }}"
             containerPort: "{{ ecs_task_container_port }}"
-        <<: *aws_connection_info
       ignore_errors: yes
       register: ecs_service_scale_down
 
@@ -909,7 +839,6 @@
             containerPort: "{{ ecs_task_container_port }}"
         task_definition: "{{ ecs_task_name }}:{{ ecs_task_definition.taskdefinition.revision }}"
         desired_count: 0
-        <<: *aws_connection_info
       ignore_errors: yes
       register: ecs_service_scale_down
 
@@ -926,7 +855,6 @@
             containerPort: "{{ ecs_task_container_port }}"
         task_definition: "{{ ecs_task_name }}:{{ ecs_task_definition.taskdefinition.revision }}"
         desired_count: 0
-        <<: *aws_connection_info
       ignore_errors: yes
       register: ecs_service_scale_down
 
@@ -944,7 +872,6 @@
 #           containerPort: "{{ ecs_task_container_port }}"
 #       task_definition: "{{ ecs_task_name }}:{{ ecs_task_definition.taskdefinition.revision }}"
 #       desired_count: 0
-#       <<: *aws_connection_info
 #     ignore_errors: yes
 #     register: ecs_service_scale_down
 
@@ -956,7 +883,6 @@
         task_definition: "{{ ecs_task_name }}-vpc:{{ ecs_fargate_task_definition.taskdefinition.revision }}"
         desired_count: 0
         deployment_configuration: "{{ ecs_service_deployment_configuration }}"
-        <<: *aws_connection_info
       ignore_errors: yes
       register: ecs_service_scale_down
 
@@ -966,7 +892,6 @@
         task_definition: "{{ ecs_task_name }}-vpc"
         operation: stop
         cluster: "{{ ecs_cluster_name }}"
-        <<: *aws_connection_info
       ignore_errors: yes
 
     - name: stop Fargate ECS task
@@ -975,7 +900,6 @@
         task_definition: "{{ ecs_task_name }}-vpc"
         operation: stop
         cluster: "{{ ecs_cluster_name }}"
-        <<: *aws_connection_info
       ignore_errors: yes
     - name: pause to allow services to scale down
       pause:
@@ -987,7 +911,6 @@
         state: absent
         cluster: "{{ ecs_cluster_name }}"
         name: "{{ ecs_service_name }}"
-        <<: *aws_connection_info
       ignore_errors: yes
 
     - name: remove second ecs service
@@ -995,7 +918,6 @@
         state: absent
         cluster: "{{ ecs_cluster_name }}"
         name: "{{ ecs_service_name }}2"
-        <<: *aws_connection_info
       ignore_errors: yes
 
     - name: remove mft ecs service
@@ -1003,7 +925,6 @@
         state: absent
         cluster: "{{ ecs_cluster_name }}"
         name: "{{ ecs_service_name }}-mft"
-        <<: *aws_connection_info
       ignore_errors: yes
 
     - name: remove scheduling_strategy ecs service
@@ -1011,7 +932,6 @@
         state: absent
         cluster: "{{ ecs_cluster_name }}"
         name: "{{ ecs_service_name }}-replica"
-        <<: *aws_connection_info
       ignore_errors: yes
 
 # until ansible supports service registries, the test for it can't run and this
@@ -1021,7 +941,6 @@
 #       state: absent
 #       cluster: "{{ ecs_cluster_name }}"
 #       name: "{{ ecs_service_name }}-service-registries"
-#       <<: *aws_connection_info
 #     ignore_errors: yes
 
     - name: remove fargate ECS service
@@ -1029,7 +948,6 @@
         state: absent
         name: "{{ ecs_service_name }}4"
         cluster: "{{ ecs_cluster_name }}"
-        <<: *aws_connection_info
       ignore_errors: yes
       register: ecs_fargate_service_network_with_awsvpc
 
@@ -1039,7 +957,6 @@
         family: "{{ ecs_task_name }}"
         revision: "{{ ecs_task_definition.taskdefinition.revision }}"
         state: absent
-        <<: *aws_connection_info
       vars:
         ecs_task_host_port: 8080
       ignore_errors: yes
@@ -1050,7 +967,6 @@
         family: "{{ ecs_task_name }}"
         revision: "{{ ecs_task_definition_again.taskdefinition.revision }}"
         state: absent
-        <<: *aws_connection_info
       vars:
         ecs_task_host_port: 8080
       ignore_errors: yes
@@ -1061,7 +977,6 @@
         family: "{{ ecs_task_name }}-vpc"
         revision: "{{ ecs_task_definition_vpc_with_host_port.taskdefinition.revision }}"
         state: absent
-        <<: *aws_connection_info
       vars:
         ecs_task_host_port: 8080
       ignore_errors: yes
@@ -1072,7 +987,6 @@
         family: "{{ ecs_task_name }}-vpc"
         revision: "{{ ecs_fargate_task_definition.taskdefinition.revision }}"
         state: absent
-        <<: *aws_connection_info
       ignore_errors: yes
 
     - name: remove ecs task definition for absent with arn
@@ -1081,7 +995,6 @@
         family: "{{ ecs_task_name }}-absent"
         revision: "{{ ecs_task_definition_absent_with_arn.taskdefinition.revision }}"
         state: absent
-        <<: *aws_connection_info
       ignore_errors: yes
 
     - name: remove load balancer
@@ -1089,7 +1002,6 @@
         name: "{{ ecs_load_balancer_name }}"
         state: absent
         wait: yes
-        <<: *aws_connection_info
       ignore_errors: yes
       register: elb_application_lb_remove
 
@@ -1102,7 +1014,6 @@
       elb_target_group:
         name: "{{ item }}"
         state: absent
-        <<: *aws_connection_info
       with_items:
         - "{{ ecs_target_group_name }}1"
         - "{{ ecs_target_group_name }}2"
@@ -1113,14 +1024,12 @@
         instance_ids: '{{ setup_instance.instance_ids }}'
         state: absent
         wait: yes
-        <<: *aws_connection_info
       ignore_errors: yes
 
     - name: remove setup keypair
       ec2_key:
         name: '{{ resource_prefix }}_ecs_cluster'
         state: absent
-        <<: *aws_connection_info
       ignore_errors: yes
 
     - name: remove security groups
@@ -1129,7 +1038,6 @@
         description: 'created by Ansible integration tests'
         state: absent
         vpc_id: '{{ setup_vpc.vpc.id }}'
-        <<: *aws_connection_info
       with_items:
         - "{{ resource_prefix }}-ecs-vpc-test-sg"
         - '{{ resource_prefix }}_ecs_cluster-sg'
@@ -1139,7 +1047,6 @@
       ec2_vpc_igw:
         state: absent
         vpc_id: '{{ setup_vpc.vpc.id }}'
-        <<: *aws_connection_info
       ignore_errors: yes
 
     - name: remove setup subnet
@@ -1148,7 +1055,6 @@
         vpc_id: '{{ setup_vpc.vpc.id }}'
         cidr: "{{ item.cidr}}"
         state: absent
-        <<: *aws_connection_info
       with_items:
         - zone: a
           cidr: 10.0.1.0/24
@@ -1161,12 +1067,10 @@
         cidr_block: 10.0.0.0/16
         state: absent
         name: '{{ resource_prefix }}_ecs_cluster'
-        <<: *aws_connection_info
       ignore_errors: yes
 
     - name: remove ECS cluster
       ecs_cluster:
         name: "{{ ecs_cluster_name }}"
         state: absent
-        <<: *aws_connection_info
       ignore_errors: yes

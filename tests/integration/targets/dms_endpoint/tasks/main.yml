@@ -1,18 +1,15 @@
 ---
-
-- name: set connection information for all tasks
-  set_fact:
-    aws_connection_info: &aws_connection_info
-      aws_access_key: "{{ aws_access_key }}"
-      aws_secret_key: "{{ aws_secret_key }}"
-      region: "{{ aws_region }}"
-    dms_identifier: "{{ resource_prefix }}-dms"
-  no_log: yes
-
-- name: dms_endpoint tests
+- name: 'dms_endpoint integration tests'
   collections:
     - amazon.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
   block:
+
     - name: create endpoints
       dms_endpoint:
           state: present
@@ -25,7 +22,6 @@
           port: 3306
           databasename: 'testdb'
           sslmode: none
-          <<: *aws_connection_info
       register: result
 
     - assert:
@@ -45,7 +41,6 @@
           port: 3306
           databasename: 'testdb'
           sslmode: none
-          <<: *aws_connection_info
       register: result
 
     - assert:
@@ -65,7 +60,6 @@
         port: 3306
         databasename: 'testdb2'
         sslmode: none
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -85,7 +79,6 @@
         port: 3306
         databasename: 'testdb2'
         sslmode: none
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -109,7 +102,6 @@
         wait: True
         timeout: 60
         retries: 10
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -130,7 +122,6 @@
         databasename: 'testdb'
         sslmode: none
         wait: False
-        <<: *aws_connection_info
       register: result
 
     - assert:

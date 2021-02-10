@@ -5,15 +5,16 @@
      resource_prefix: 'ansible-testing'
 
   tasks:
-    - block:
-        - name: set up aws connection info
-          set_fact:
-            aws_connection_info: &aws_connection_info
-              aws_access_key: "{{ aws_access_key }}"
-              aws_secret_key: "{{ aws_secret_key }}"
-              security_token: "{{ security_token }}"
-              region: "{{ aws_region }}"
-          no_log: True
+    - name: 'efs graceful failure tests'
+      collections:
+        - amazon.aws
+      module_defaults:
+        group/aws:
+          aws_access_key: '{{ aws_access_key }}'
+          aws_secret_key: '{{ aws_secret_key }}'
+          security_token: '{{ security_token | default(omit) }}'
+          region: '{{ aws_region }}'
+      block:
 
         - name: create efs with provisioned_throughput options (fails gracefully)
           efs:
@@ -21,7 +22,6 @@
             name: "{{ resource_prefix }}-efs"
             throughput_mode: 'provisioned'
             provisioned_throughput_in_mibps: 8.0
-            <<: *aws_connection_info
           register: efs_provisioned_throughput_creation
           ignore_errors: yes
 

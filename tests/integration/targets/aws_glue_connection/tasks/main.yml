@@ -1,15 +1,16 @@
-- block:
+---
+- name: 'aws_glue_connection integration tests'
+  collections:
+    - amazon.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
 
     # TODO: description, match_criteria, security_groups, and subnet_id are unused module options
-
-    - name: set up aws connection info
-      set_fact:
-        aws_connection_info: &aws_connection_info
-          aws_access_key: "{{ aws_access_key }}"
-          aws_secret_key: "{{ aws_secret_key }}"
-          security_token: "{{ security_token }}"
-          region: "{{ aws_region }}"
-      no_log: yes
 
     - name: create glue connection
       aws_glue_connection:
@@ -19,7 +20,6 @@
           USERNAME: my-username
           PASSWORD: my-password
         state: present
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -34,7 +34,6 @@
           USERNAME: my-username
           PASSWORD: my-password
         state: present
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -49,7 +48,6 @@
           USERNAME: my-username
           PASSWORD: my-password
         state: present
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -60,7 +58,6 @@
       aws_glue_connection:
         name: "{{ resource_prefix }}"
         state: absent
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -71,7 +68,6 @@
       aws_glue_connection:
         name: "{{ resource_prefix }}"
         state: absent
-        <<: *aws_connection_info
       register: result
 
     - assert:
@@ -84,4 +80,3 @@
       aws_glue_connection:
         name: "{{ resource_prefix }}"
         state: absent
-        <<: *aws_connection_info

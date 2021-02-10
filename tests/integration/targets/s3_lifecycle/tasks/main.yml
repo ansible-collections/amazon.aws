@@ -1,23 +1,20 @@
 ---
-
-- block:
-
-    # ============================================================
-    - name: set connection information for all tasks
-      set_fact:
-        aws_connection_info: &aws_connection_info
-          aws_access_key: "{{ aws_access_key }}"
-          aws_secret_key: "{{ aws_secret_key }}"
-          security_token: "{{ security_token }}"
-          region: "{{ aws_region }}"
-      no_log: true
+- name: 's3_lifecycle integration tests'
+  collections:
+    - amazon.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
 
     # ============================================================
     - name: Create simple s3_bucket
       s3_bucket:
         name: "{{ resource_prefix }}-testbucket-ansible"
         state: present
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -31,7 +28,6 @@
         name: "{{ resource_prefix }}-testbucket-ansible"
         expiration_days: 300
         prefix: ''
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -42,7 +38,6 @@
       s3_lifecycle:
         name: "{{ resource_prefix }}-testbucket-ansible"
         expiration_days: 300
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -54,7 +49,6 @@
         name: "{{ resource_prefix }}-testbucket-ansible"
         transition_days: 30
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -66,7 +60,6 @@
         name: "{{ resource_prefix }}-testbucket-ansible"
         transition_days: 30
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -79,7 +72,6 @@
         status: disabled
         transition_days: 30
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -92,7 +84,6 @@
         status: disabled
         transition_days: 30
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -105,7 +96,6 @@
         status: enabled
         transition_days: 300
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -118,7 +108,6 @@
         status: enabled
         transition_days: 300
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -130,7 +119,6 @@
         name: "{{ resource_prefix }}-testbucket-ansible"
         state: absent
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -142,7 +130,6 @@
         name: "{{ resource_prefix }}-testbucket-ansible"
         state: absent
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -155,7 +142,6 @@
         transition_days: 30
         storage_class: standard_ia
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -168,7 +154,6 @@
         storage_class: standard_ia
         transition_days: 30
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -180,7 +165,6 @@
         name: "{{ resource_prefix }}-testbucket-ansible"
         transition_days: 300
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -192,7 +176,6 @@
         name: "{{ resource_prefix }}-testbucket-ansible"
         transition_days: 300
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -205,7 +188,6 @@
         transition_days: 30
         storage_class: standard_ia
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - name: Create a second lifecycle policy, with glacier
@@ -214,7 +196,6 @@
         transition_days: 300
         prefix: /something
         purge_transitions: false
-        <<: *aws_connection_info
       register: output
 
     - name: Create a lifecycle policy with infrequent access (idempotency)
@@ -224,7 +205,6 @@
         transition_days: 30
         prefix: /something
         purge_transitions: false
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -237,7 +217,6 @@
         transition_days: 300
         prefix: /something
         purge_transitions: false
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -249,7 +228,6 @@
         name: "{{ resource_prefix }}-testbucket-ansible"
         noncurrent_version_expiration_days: 300
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -261,7 +239,6 @@
         name: "{{ resource_prefix }}-testbucket-ansible"
         noncurrent_version_expiration_days: 300
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -273,7 +250,6 @@
         name: "{{ resource_prefix }}-testbucket-ansible"
         noncurrent_version_transition_days: 300
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -285,7 +261,6 @@
         name: "{{ resource_prefix }}-testbucket-ansible"
         noncurrent_version_transition_days: 300
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -298,7 +273,6 @@
         noncurrent_version_transition_days: 300
         noncurrent_version_storage_class: standard_ia
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -311,7 +285,6 @@
         noncurrent_version_storage_class: standard_ia
         noncurrent_version_transition_days: 300
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -329,7 +302,6 @@
           - transition_days: 90
             storage_class: glacier
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -347,7 +319,6 @@
           - transition_days: 90
             storage_class: glacier
         prefix: /something
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -361,7 +332,6 @@
         expiration_days: 30
         prefix: /logs/
         status: enabled
-        <<: *aws_connection_info
         state: present
 
     # Configure a lifecycle rule to transition all items with a prefix of /logs/ to glacier after 7 days and then delete after 90 days
@@ -371,7 +341,6 @@
         expiration_days: 90
         prefix: /logs/
         status: enabled
-        <<: *aws_connection_info
         state: present
 
     # Configure a lifecycle rule to transition all items with a prefix of /logs/ to glacier on 31 Dec 2020 and then delete on 31 Dec 2030.
@@ -383,7 +352,6 @@
         expiration_date: "2030-12-30T00:00:00.000Z"
         prefix: /logs/
         status: enabled
-        <<: *aws_connection_info
         state: present
 
     # Disable the rule created above
@@ -391,13 +359,11 @@
         name: "{{ resource_prefix }}-testbucket-ansible"
         prefix: /logs/
         status: disabled
-        <<: *aws_connection_info
         state: present
 
     # Delete the lifecycle rule created above
     - s3_lifecycle:
         name: "{{ resource_prefix }}-testbucket-ansible"
-        <<: *aws_connection_info
         prefix: /logs/
         state: absent
 
@@ -408,7 +374,6 @@
         storage_class: standard_ia
         transition_days: 31
         state: present
-        <<: *aws_connection_info
         status: enabled
 
     # Configure a lifecycle rule to transition files to infrequent access after 30 days and glacier after 90
@@ -416,7 +381,6 @@
         name: "{{ resource_prefix }}-testbucket-ansible"
         prefix: /other_logs/
         state: present
-        <<: *aws_connection_info
         status: enabled
         transitions:
           - transition_days: 30
@@ -429,7 +393,6 @@
       s3_bucket:
         name: "{{item}}"
         state: absent
-        <<: *aws_connection_info
       ignore_errors: yes
       with_items:
         - "{{ resource_prefix }}-testbucket-ansible"

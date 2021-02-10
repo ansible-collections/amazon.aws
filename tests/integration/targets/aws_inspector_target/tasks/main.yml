@@ -1,15 +1,15 @@
 ---
+- name: 'aws_inspector_target integration tests'
+  collections:
+    - amazon.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
 
-- name: Set Connexion Information for All Tasks
-  set_fact:
-    aws_connection_info: &aws_connection_info
-      aws_access_key: "{{ aws_access_key }}"
-      aws_secret_key: "{{ aws_secret_key }}"
-      security_token: "{{ security_token }}"
-      region: "{{ aws_region }}"
-  no_log: yes
-
-- block:
     - name: Create AWS Inspector Target Group
       aws_inspector_target:
         name: "{{ aws_inspector_scan_name }}"
@@ -17,7 +17,6 @@
         tags:
           Name: "{{ aws_inspector_scan_name }}"
           changed: "no"
-        <<: *aws_connection_info
       register: target_group_create
 
     - name: Create AWS Inspector Target Group (Verify)
@@ -27,7 +26,6 @@
         tags:
           Name: "{{ aws_inspector_scan_name }}"
           changed: "no"
-        <<: *aws_connection_info
       register: target_group_create_verify
 
     - name: Assert Successful AWS Inspector Target Group Creation
@@ -49,7 +47,6 @@
         tags:
           Name: "{{ aws_inspector_scan_name }}"
           changed: "yes"
-        <<: *aws_connection_info
       register: target_group_tag_change
 
     - name: Change AWS Inspector Target Group Tags (Verify)
@@ -59,7 +56,6 @@
         tags:
           Name: "{{ aws_inspector_scan_name }}"
           changed: "yes"
-        <<: *aws_connection_info
       register: target_group_tag_change_verify
 
     - name: Assert Successful AWS Inspector Target Group Tag Change
@@ -79,14 +75,12 @@
       aws_inspector_target:
         name: "{{ aws_inspector_scan_name }}"
         state: absent
-        <<: *aws_connection_info
       register: target_group_delete
 
     - name: Delete AWS Inspector Target Group (Verify)
       aws_inspector_target:
         name: "{{ aws_inspector_scan_name }}"
         state: absent
-        <<: *aws_connection_info
       register: target_group_delete_verify
 
     - name: Assert Successful AWS Inspector Target Group Deletion

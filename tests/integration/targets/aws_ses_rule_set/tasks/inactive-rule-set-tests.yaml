@@ -10,22 +10,12 @@
 # from multiple builds interacting
 # ============================================================
 
-- name: set up aws connection info
-  set_fact:
-    aws_connection_info: &aws_connection_info
-      aws_access_key: "{{ aws_access_key }}"
-      aws_secret_key: "{{ aws_secret_key }}"
-      security_token: "{{ security_token }}"
-      region: "{{ aws_region }}"
-  no_log: yes
-
 # ============================================================
 - name: test create rule sets
   block:
     - name: create rule set
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
-        <<: *aws_connection_info
       register: result
     - name: assert changed to exists inactive
       assert:
@@ -36,7 +26,6 @@
     - name: recreate rule set
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
-        <<: *aws_connection_info
       register: result
     - name: assert changed is False
       assert:
@@ -48,7 +37,6 @@
         name: "{{ default_rule_set }}"
         state: absent
         force: True
-        <<: *aws_connection_info
 # ============================================================
 - name: Remove No Such Rules Set
   block:
@@ -56,7 +44,6 @@
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         state: absent
-        <<: *aws_connection_info
       register: result
     - name: assert not changed and absent
       assert:
@@ -69,12 +56,10 @@
     - name: create rule set
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
-        <<: *aws_connection_info
     - name: remove rule set
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         state: absent
-        <<: *aws_connection_info
       register: result
     - name: assert changed and removed
       assert:
@@ -87,14 +72,12 @@
         name: "{{ default_rule_set }}"
         state: absent
         force: True
-        <<: *aws_connection_info
 # ============================================================
 - name: test create in check mode
   block:
     - name: create rule set in check mode
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
-        <<: *aws_connection_info
       register: result
       check_mode: True
     - name: assert changed inactive and present
@@ -109,7 +92,6 @@
         name: "{{ default_rule_set }}"
         state: absent
         force: True
-        <<: *aws_connection_info
       register: result
     - name: assert nothing to clean up since create was in check mode
       assert:
@@ -121,12 +103,10 @@
     - name: create rule set
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
-        <<: *aws_connection_info
     - name: mark rule set active in check mode
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         active: True
-        <<: *aws_connection_info
       register: result
       check_mode: True
     - name: assert changed and active
@@ -141,7 +121,6 @@
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         active: False
-        <<: *aws_connection_info
       register: result
     - name: assert unchanged since activation was in check mode
       assert:
@@ -153,19 +132,16 @@
         name: "{{ default_rule_set }}"
         state: absent
         force: True
-        <<: *aws_connection_info
 # ============================================================
 - name: Remove Inactive Rule Set in check mode
   block:
     - name: create rule set
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
-        <<: *aws_connection_info
     - name: remove rule set
       aws_ses_rule_set:
         name: "{{ default_rule_set }}"
         state: absent
-        <<: *aws_connection_info
       register: result
       check_mode: True
     - name: assert changed and removed
@@ -179,7 +155,6 @@
         name: "{{ default_rule_set }}"
         state: absent
         force: True
-        <<: *aws_connection_info
       register: result
     - name: assert changed is True since previous removal was in check mode
       assert:

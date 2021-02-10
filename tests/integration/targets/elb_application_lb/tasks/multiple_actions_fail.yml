@@ -1,36 +1,13 @@
 - name: elb_application_lb multiple_actions_fail tests
-  collections:
-    - amazon.aws
   block:
-  - name: set connection information for all tasks
-    set_fact:
-      aws_connection_info:
-        aws_access_key: '{{ aws_access_key }}'
-        aws_secret_key: '{{ aws_secret_key }}'
-        security_token: '{{ security_token }}'
-        region: '{{ aws_region }}'
-      awscli_connection_info:
-        AWS_ACCESS_KEY_ID: '{{ aws_access_key }}'
-        AWS_SECRET_ACCESS_KEY: '{{ aws_secret_key }}'
-        AWS_SESSION_TOKEN: '{{ security_token }}'
-        AWS_DEFAULT_REGION: '{{ aws_region }}'
-    no_log: true
   - name: create VPC
     ec2_vpc_net:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       cidr_block: 10.228.228.0/22
       name: '{{ resource_prefix }}_vpc'
       state: present
     register: vpc
   - name: create internet gateway
     ec2_vpc_igw:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       vpc_id: '{{ vpc.vpc.id }}'
       state: present
       tags:
@@ -38,10 +15,6 @@
     register: igw
   - name: create public subnet
     ec2_vpc_subnet:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       cidr: '{{ item.cidr }}'
       az: '{{ aws_region}}{{ item.az }}'
       vpc_id: '{{ vpc.vpc.id }}'
@@ -64,10 +37,6 @@
       public: 'False'
     register: subnets
   - ec2_vpc_subnet_facts:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       filters:
         vpc-id: '{{ vpc.vpc.id }}'
     register: vpc_subnets
@@ -77,10 +46,6 @@
       private_subnets: '{{ vpc_subnets|community.general.json_query(''subnets[?tags.Public != `True`].id'') }}'
   - name: create a route table
     ec2_vpc_route_table:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       vpc_id: '{{ vpc.vpc.id }}'
       tags:
         Name: igw-route
@@ -91,10 +56,6 @@
         gateway_id: '{{ igw.gateway_id }}'
     register: route_table
   - ec2_group:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       name: '{{ resource_prefix }}'
       description: security group for Ansible ALB integration tests
       state: present
@@ -107,10 +68,6 @@
     register: sec_group
   - name: create a target group for testing
     elb_target_group:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       name: '{{ tg_name }}'
       protocol: http
       port: 80
@@ -121,10 +78,6 @@
   always:
   - name: destroy ALB
     elb_application_lb:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       name: '{{ alb_name }}'
       state: absent
       wait: true
@@ -132,10 +85,6 @@
     ignore_errors: true
   - name: destroy target group if it was created
     elb_target_group:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       name: '{{ tg_name }}'
       protocol: http
       port: 80
@@ -151,10 +100,6 @@
     ignore_errors: true
   - name: destroy sec group
     ec2_group:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       name: '{{ sec_group.group_name }}'
       description: security group for Ansible ALB integration tests
       state: absent
@@ -166,10 +111,6 @@
     ignore_errors: true
   - name: remove route table
     ec2_vpc_route_table:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       vpc_id: '{{ vpc.vpc.id }}'
       route_table_id: '{{ route_table.route_table.route_table_id }}'
       lookup: id
@@ -181,10 +122,6 @@
     ignore_errors: true
   - name: destroy subnets
     ec2_vpc_subnet:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       cidr: '{{ item.cidr }}'
       vpc_id: '{{ vpc.vpc.id }}'
       state: absent
@@ -200,10 +137,6 @@
     ignore_errors: true
   - name: destroy internet gateway
     ec2_vpc_igw:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       vpc_id: '{{ vpc.vpc.id }}'
       tags:
         Name: '{{ resource_prefix }}'
@@ -215,10 +148,6 @@
     ignore_errors: true
   - name: destroy VPC
     ec2_vpc_net:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token }}'
-      region: '{{ aws_region }}'
       cidr_block: 10.228.228.0/22
       name: '{{ resource_prefix }}_vpc'
       state: absent

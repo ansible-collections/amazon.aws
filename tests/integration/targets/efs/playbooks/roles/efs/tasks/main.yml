@@ -1,20 +1,16 @@
 ---
-- name: efs tests
+- name: 'efs integration tests'
   collections:
     - amazon.aws
-
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
   block:
 
     # ============================================================
-    - name: set connection information for all tasks
-      set_fact:
-        aws_connection_info: &aws_connection_info
-          aws_access_key: "{{ aws_access_key }}"
-          aws_secret_key: "{{ aws_secret_key }}"
-          security_token: "{{ security_token }}"
-          region: "{{ aws_region }}"
-      no_log: true
-
     - name: Create VPC for testing
       ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
@@ -22,7 +18,6 @@
         tags:
           Name: Ansible ec2_instance Testing VPC
         tenancy: default
-        <<: *aws_connection_info
       register: testing_vpc
 
     - name: Create subnet in zone A for testing
@@ -33,7 +28,6 @@
         az: "{{ aws_region }}a"
         resource_tags:
           Name: "{{ resource_prefix }}-subnet-a"
-        <<: *aws_connection_info
       register: testing_subnet_a
 
     - name: Create subnet in zone B for testing
@@ -44,12 +38,10 @@
         az: "{{ aws_region }}b"
         resource_tags:
           Name: "{{ resource_prefix }}-subnet-b"
-        <<: *aws_connection_info
       register: testing_subnet_b
 
     - name: Get default security group id for vpc
       ec2_group_info:
-        <<: *aws_connection_info
         filters:
           vpc-id: "{{ testing_vpc.vpc.id }}"
       register: sg_facts
@@ -61,7 +53,6 @@
     # ============================================================
     - name: Create Efs for testing
       efs:
-        <<: *aws_connection_info
         state: present
         name: "{{ resource_prefix }}-test-efs"
         tags:
@@ -76,7 +67,6 @@
     # ============================================================
     - name: Get all EFS Facts
       efs_info:
-        <<: *aws_connection_info
       register: efs_result
 
     - assert:
@@ -87,7 +77,6 @@
     - name: Get EFS by creation token
       efs_info:
         name: "{{ resource_prefix }}-test-efs"
-        <<: *aws_connection_info
       register: efs_result
 
     - set_fact:
@@ -115,7 +104,6 @@
     - name: Get EFS by id
       efs_info:
         id: "{{created_efs.efs.file_system_id}}"
-        <<: *aws_connection_info
       register: efs_result
 
     - assert:
@@ -126,7 +114,6 @@
       efs_info:
         tags:
           Name: "{{ resource_prefix }}-test-tag"
-        <<: *aws_connection_info
       register: efs_result
 
     - assert:
@@ -137,7 +124,6 @@
       efs_info:
         targets:
           - "{{testing_subnet_a.subnet.id}}"
-        <<: *aws_connection_info
       register: efs_result
 
     - assert:
@@ -148,7 +134,6 @@
       efs_info:
         targets:
           - "{{vpc_default_sg_id}}"
-        <<: *aws_connection_info
       register: efs_result
 
     - assert:
@@ -161,7 +146,6 @@
           Name: "{{ resource_prefix }}-test-tag"
         targets:
           - "{{testing_subnet_a.subnet.id}}"
-        <<: *aws_connection_info
       register: efs_result
 
     - assert:
@@ -172,7 +156,6 @@
     #   Efs with status "life_cycle_state": "updating" might return the previous values
     - name: Update Efs to use provisioned throughput_mode
       efs:
-        <<: *aws_connection_info
         state: present
         name: "{{ resource_prefix }}-test-efs"
         tags:
@@ -192,7 +175,6 @@
     # ============================================================
     - name: Efs same value for provisioned_throughput_in_mibps
       efs:
-        <<: *aws_connection_info
         state: present
         name: "{{ resource_prefix }}-test-efs"
         tags:
@@ -214,7 +196,6 @@
     # ============================================================
     - name: Efs new value for provisioned_throughput_in_mibps
       efs:
-        <<: *aws_connection_info
         state: present
         name: "{{ resource_prefix }}-test-efs"
         tags:
@@ -236,7 +217,6 @@
     - name: Check new facts with provisioned mode
       efs_info:
         name: "{{ resource_prefix }}-test-efs"
-        <<: *aws_connection_info
       register: efs_result
 
     - set_fact:
@@ -256,7 +236,6 @@
       efs_info:
         tags:
           Name: "{{ resource_prefix }}-unknown"
-        <<: *aws_connection_info
       register: efs_result
 
     - assert:
@@ -268,7 +247,6 @@
       efs_info:
         targets:
           - sg-00000000000
-        <<: *aws_connection_info
       register: efs_result
 
     - assert:
@@ -280,7 +258,6 @@
   always:
     - name: Delete EFS used for tests
       efs:
-        <<: *aws_connection_info
         state: absent
         name: "{{ resource_prefix }}-test-efs"
         tags:
@@ -299,7 +276,6 @@
         az: "{{ aws_region }}a"
         resource_tags:
           Name: "{{ resource_prefix }}-subnet-a"
-        <<: *aws_connection_info
       register: removed
       until: removed is not failed
       ignore_errors: yes
@@ -313,7 +289,6 @@
         az: "{{ aws_region }}b"
         resource_tags:
           Name: "{{ resource_prefix }}-subnet-b"
-        <<: *aws_connection_info
       register: removed
       until: removed is not failed
       ignore_errors: yes
@@ -324,7 +299,6 @@
         name: "{{ resource_prefix }}-vpc"
         cidr_block: 10.22.32.0/23
         state: absent
-        <<: *aws_connection_info
       register: removed
       until: removed is not failed
       ignore_errors: yes
