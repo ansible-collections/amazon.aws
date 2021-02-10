@@ -1,20 +1,11 @@
 ---
   - block:
-      - name: set up aws connection info
-        set_fact:
-          aws_connection_info: &aws_connection_info
-            aws_access_key: "{{ aws_access_key }}"
-            aws_secret_key: "{{ aws_secret_key }}"
-            security_token: "{{ security_token }}"
-            region: "{{ aws_region }}"
-        no_log: yes
 
       - name: Ensure the resource doesn't exist
         rds_instance:
           id: "{{ instance_id }}"
           state: absent
           skip_final_snapshot: True
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -31,7 +22,6 @@
           password: "{{ password }}"
           db_instance_class: "{{ db_instance_class }}"
           allocated_storage: "{{ allocated_storage }}"
-          <<: *aws_connection_info
         register: result
         check_mode: yes
 
@@ -48,7 +38,6 @@
           password: "{{ password }}"
           db_instance_class: "{{ db_instance_class }}"
           allocated_storage: "{{ allocated_storage }}"
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -65,7 +54,6 @@
           password: "{{ password }}"
           db_instance_class: "{{ db_instance_class }}"
           allocated_storage: "{{ allocated_storage }}"
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -77,7 +65,6 @@
         rds_instance:
           id: '{{ instance_id }}'
           state: present
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -89,7 +76,6 @@
         rds_instance:
           id: '{{ instance_id }}'
           state: stopped
-          <<: *aws_connection_info
         register: result
         check_mode: yes
 
@@ -101,7 +87,6 @@
         rds_instance:
           id: '{{ instance_id }}'
           state: stopped
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -112,7 +97,6 @@
         rds_instance:
           id: '{{ instance_id }}'
           state: stopped
-          <<: *aws_connection_info
         register: result
         check_mode: yes
 
@@ -124,7 +108,6 @@
         rds_instance:
           id: '{{ instance_id }}'
           state: stopped
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -135,7 +118,6 @@
         rds_instance:
           id: '{{ instance_id }}'
           state: rebooted
-          <<: *aws_connection_info
         register: result
         check_mode: yes
 
@@ -147,7 +129,6 @@
         rds_instance:
           id: '{{ instance_id }}'
           state: rebooted
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -158,7 +139,6 @@
         rds_instance:
           id: '{{ instance_id }}'
           state: started
-          <<: *aws_connection_info
         register: result
         check_mode: yes
 
@@ -170,13 +150,11 @@
         rds_instance:
           id: '{{ instance_id }}'
           state: stopped
-          <<: *aws_connection_info
 
       - name: Start the instance
         rds_instance:
           id: '{{ instance_id }}'
           state: started
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -189,14 +167,12 @@
           db_snapshot_identifier: '{{ resource_prefix }}-test-snapshot'
           state: present
           wait: yes
-          <<: *aws_connection_info
 
       - name: take a snapshot - idempotence
         rds_snapshot:
           db_instance_identifier: '{{ instance_id }}'
           db_snapshot_identifier: '{{ resource_prefix }}-test-snapshot'
           state: present
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -206,7 +182,6 @@
       - name: check snapshot is ok
         rds_snapshot_info:
           db_snapshot_identifier: '{{ resource_prefix }}-test-snapshot'
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -217,7 +192,6 @@
         rds_snapshot:
           db_snapshot_identifier: '{{ resource_prefix }}-test-snapshot'
           state: absent
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -229,7 +203,6 @@
           db_snapshot_identifier: '{{ resource_prefix }}-test-snapshot'
           state: absent
           wait: yes
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -241,7 +214,6 @@
           db_snapshot_identifier: '{{ resource_prefix }}-test-snapshot'
           state: absent
           wait: yes
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -251,7 +223,6 @@
       - name: check snapshot is removed
         rds_snapshot_info:
           db_snapshot_identifier: '{{ resource_prefix }}-test-snapshot'
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -265,7 +236,6 @@
           db_snapshot_identifier: '{{ resource_prefix }}-test-snapshot'
           state: absent
           wait: yes
-          <<: *aws_connection_info
         ignore_errors: yes
 
       - name: Remove DB instance
@@ -273,5 +243,4 @@
           id: '{{ instance_id }}'
           state: absent
           skip_final_snapshot: True
-          <<: *aws_connection_info
         ignore_errors: yes

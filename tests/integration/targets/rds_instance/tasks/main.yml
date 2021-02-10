@@ -1,6 +1,14 @@
 ---
-- block:
-
+- name: 'rds_instance integration tests'
+  collections:
+    - amazon.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
     - include: ./credential_tests.yml
       tags: credentials
     - include: ./test_states.yml
