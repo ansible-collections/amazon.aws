@@ -1,18 +1,16 @@
 ---
-- name: route53_zone tests
+- name: 'route53_zone integration tests'
   collections:
     - amazon.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
   block:
 
     # ============================================================
-    - name: set connection information for all tasks
-      set_fact:
-        aws_connection_info: &aws_connection_info
-          aws_access_key: "{{ aws_access_key }}"
-          aws_secret_key: "{{ aws_secret_key }}"
-          security_token: "{{ security_token }}"
-          region: "{{ aws_region }}"
-      no_log: true
 
     - name: Create VPC for use in testing
       ec2_vpc_net:
@@ -21,7 +19,6 @@
         tags:
           Name: Ansible ec2_instance Testing VPC
         tenancy: default
-        <<: *aws_connection_info
       register: testing_vpc
 
     # ============================================================
@@ -30,7 +27,6 @@
         zone: "{{ resource_prefix }}.public"
         comment: original comment
         state: present
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -46,7 +42,6 @@
         zone: "{{ resource_prefix }}.check.public"
         comment: original comment
         state: present
-        <<: *aws_connection_info
       register: output
       check_mode: yes
 
@@ -63,7 +58,6 @@
         zone: "{{ resource_prefix }}.public"
         comment: original comment
         state: present
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -78,7 +72,6 @@
         zone: "{{ resource_prefix }}.public"
         comment: original comment
         state: present
-        <<: *aws_connection_info
       register: output
       check_mode: yes
 
@@ -95,7 +88,6 @@
         zone: "{{ resource_prefix }}.public"
         comment: updated comment
         state: present
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -108,7 +100,6 @@
         zone: "{{ resource_prefix }}.public"
         comment: updated comment for check
         state: present
-        <<: *aws_connection_info
       register: output
       check_mode: yes
 
@@ -122,7 +113,6 @@
       route53_zone:
         zone: "{{ resource_prefix }}.public"
         state: absent
-        <<: *aws_connection_info
       register: output
       check_mode: yes
 
@@ -135,7 +125,6 @@
       route53_zone:
         zone: "{{ resource_prefix }}.public"
         state: absent
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -151,7 +140,6 @@
         zone: "{{ resource_prefix }}.private"
         comment: original comment
         state: present
-        <<: *aws_connection_info
       register: output
       check_mode: yes
 
@@ -166,7 +154,6 @@
         zone: "{{ resource_prefix }}.private"
         comment: original comment
         state: present
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -180,7 +167,6 @@
         zone: "{{ resource_prefix }}.private"
         comment: original comment
         state: present
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -195,7 +181,6 @@
         zone: "{{ resource_prefix }}.private"
         comment: original comment
         state: present
-        <<: *aws_connection_info
       register: output
       check_mode: yes
 
@@ -212,7 +197,6 @@
         zone: "{{ resource_prefix }}.private"
         comment: updated_comment
         state: present
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -227,7 +211,6 @@
         zone: "{{ resource_prefix }}.private"
         comment: updated_comment check
         state: present
-        <<: *aws_connection_info
       register: output
       check_mode: yes
 
@@ -241,7 +224,6 @@
       route53_zone:
         zone: "{{ resource_prefix }}.private"
         state: absent
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -253,7 +235,6 @@
       route53_zone:
         zone: "{{ resource_prefix }}.private"
         state: absent
-        <<: *aws_connection_info
       register: output
       check_mode: yes
 
@@ -268,7 +249,6 @@
         zone: "{{ resource_prefix }}.publicfake"
         comment: original comment
         state: absent
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -281,7 +261,6 @@
         zone: "{{ resource_prefix }}.publicfake"
         comment: original comment
         state: absent
-        <<: *aws_connection_info
       register: output
       check_mode: yes
 
@@ -297,7 +276,6 @@
         vpc_region: "{{ aws_region }}"
         zone: "{{ resource_prefix }}.private"
         state: absent
-        <<: *aws_connection_info
       register: output
       check_mode: yes
 
@@ -312,7 +290,6 @@
         vpc_region: "{{ aws_region }}"
         zone: "{{ resource_prefix }}.private"
         state: absent
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -326,7 +303,6 @@
         zone: "{{ resource_prefix }}.public2"
         comment: this is an example
         state: present
-        <<: *aws_connection_info
       register: new_zone
 
     # Delete zone using its id
@@ -335,7 +311,6 @@
         zone: "{{ resource_prefix }}.public2"
         hosted_zone_id: "{{new_zone.zone_id}}"
         state: absent
-        <<: *aws_connection_info
       register: output
       check_mode: yes
 
@@ -349,7 +324,6 @@
         zone: "{{ resource_prefix }}.public2"
         hosted_zone_id: "{{new_zone.zone_id}}"
         state: absent
-        <<: *aws_connection_info
       register: output
 
     - assert:
@@ -363,7 +337,6 @@
       route53_zone:
         zone: "{{ item }}"
         state: absent
-        <<: *aws_connection_info
       register: removed
       until: removed is not failed
       ignore_errors: yes
@@ -378,7 +351,6 @@
         vpc_region: "{{ aws_region }}"
         zone: "{{ resource_prefix }}.private"
         state: absent
-        <<: *aws_connection_info
       register: removed
       until: removed is not failed
       ignore_errors: yes
@@ -389,7 +361,6 @@
         name: "{{ resource_prefix }}-vpc"
         cidr_block: 10.22.32.0/23
         state: absent
-        <<: *aws_connection_info
       register: removed
       until: removed is not failed
       ignore_errors: yes
