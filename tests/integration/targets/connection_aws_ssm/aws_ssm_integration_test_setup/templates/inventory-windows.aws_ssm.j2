@@ -1,5 +1,5 @@
 [aws_ssm]
-{{windows_output.instance_ids[0]}} ansible_aws_ssm_instance_id={{windows_output.instance_ids[0]}} ansible_aws_ssm_region={{aws_region}}
+{{ windows_output.instances[0].instance_id }} ansible_aws_ssm_instance_id={{ windows_output.instances[0].instance_id }} ansible_aws_ssm_region={{ aws_regioni }}
 
 [aws_ssm:vars]
 ansible_shell_type=powershell

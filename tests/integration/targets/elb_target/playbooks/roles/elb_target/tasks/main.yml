@@ -129,17 +129,14 @@
           Description: "Created by {{ resource_prefix }}"
 
     - name: set up ec2 instance to use as a target
-      ec2:
-        group_id: "{{ sg.group_id }}"
+      ec2_instance:
+        name: "{{ resource_prefix }}-inst"
+        security_group: "{{ sg.group_id }}"
         instance_type: t3.micro
-        image: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_image }}"
         vpc_subnet_id: "{{ subnet_2.subnet.id }}"
-        instance_tags:
-          Name: "{{ resource_prefix }}-inst"
-        exact_count: 1
-        count_tag:
-          Name: "{{ resource_prefix }}-inst"
-        assign_public_ip: true
+        network:
+          assign_public_ip: true
         volumes: []
         wait: true
         ebs_optimized: false
@@ -153,6 +150,9 @@
             - "service httpd start"
             - echo "HELLO ANSIBLE" > /var/www/html/index.html
       register: ec2
+
+    - set_fact:
+        instance_id: "{{ ec2.instances[0].instance_id }}"
 
     - name: create an application load balancer
       elb_application_lb:
@@ -180,7 +180,7 @@
     - name: register an instance to unused target group
       elb_target:
         target_group_name: "{{ tg_name }}"
-        target_id: "{{ ec2.instance_ids[0] }}"
+        target_id: "{{ instance_id }}"
         state: present
       register: result
 
@@ -189,14 +189,14 @@
         that:
           - result.changed
           - result.target_group_arn
-          - result.target_health_descriptions.target.id == ec2.instance_ids[0]
+          - result.target_health_descriptions.target.id == instance_id
 
     # ============================================================
 
     - name: test idempotence
       elb_target:
         target_group_name: "{{ tg_name }}"
-        target_id: "{{ ec2.instance_ids[0] }}"
+        target_id: "{{ instance_id }}"
         state: present
       register: result
 
@@ -210,7 +210,7 @@
     - name: remove an unused target
       elb_target:
         target_group_name: "{{ tg_name }}"
-        target_id: "{{ ec2.instance_ids[0] }}"
+        target_id: "{{ instance_id }}"
         state: absent
         deregister_unused: true
       register: result
@@ -226,7 +226,7 @@
     - name: register an instance to used target group and wait until healthy
       elb_target:
         target_group_name: "{{ tg_name }}-used"
-        target_id: "{{ ec2.instance_ids[0] }}"
+        target_id: "{{ instance_id }}"
         state: present
         target_status: healthy
         target_status_timeout: 400
@@ -237,7 +237,7 @@
         that:
           - result.changed
           - result.target_group_arn
-          - result.target_health_descriptions.target.id == ec2.instance_ids[0]
+          - result.target_health_descriptions.target.id == instance_id
           - result.target_health_descriptions.target_health == healthy_state
 
     # ============================================================
@@ -245,7 +245,7 @@
     - name: remove a target from used target group
       elb_target:
         target_group_name: "{{ tg_name }}-used"
-        target_id: "{{ ec2.instance_ids[0] }}"
+        target_id: "{{ instance_id }}"
         state: absent
         target_status: unused
         target_status_timeout: 400
@@ -261,7 +261,7 @@
     - name: test idempotence
       elb_target:
         target_group_name: "{{ tg_name }}-used"
-        target_id: "{{ ec2.instance_ids[0] }}"
+        target_id: "{{ instance_id }}"
         state: absent
       register: result
 
@@ -275,7 +275,7 @@
     - name: register an instance to used target group and wait until healthy again to test deregistering differently
       elb_target:
         target_group_name: "{{ tg_name }}-used"
-        target_id: "{{ ec2.instance_ids[0] }}"
+        target_id: "{{ instance_id }}"
         state: present
         target_status: healthy
         target_status_timeout: 400
@@ -286,13 +286,13 @@
         that:
           - result.changed
           - result.target_group_arn
-          - result.target_health_descriptions.target.id == ec2.instance_ids[0]
+          - result.target_health_descriptions.target.id == instance_id
           - result.target_health_descriptions.target_health == healthy_state
 
     - name: start deregisteration but don't wait
       elb_target:
         target_group_name: "{{ tg_name }}-used"
-        target_id: "{{ ec2.instance_ids[0] }}"
+        target_id: "{{ instance_id }}"
         state: absent
       register: result
 
@@ -305,7 +305,7 @@
     - name: now wait for target to finish deregistering
       elb_target:
         target_group_name: "{{ tg_name }}-used"
-        target_id: "{{ ec2.instance_ids[0] }}"
+        target_id: "{{ instance_id }}"
         state: absent
         target_status: unused
         target_status_timeout: 400
@@ -325,20 +325,10 @@
       debug: msg="********** Tearing down elb_target test dependencies **********"
 
     - name: remove ec2 instance
-      ec2:
-        group_id: "{{ sg.group_id }}"
-        instance_type: t2.micro
-        image: "{{ ec2_ami_image }}"
-        vpc_subnet_id: "{{ subnet_2.subnet.id }}"
-        instance_tags:
-          Name: "{{ resource_prefix }}-inst"
-        exact_count: 0
-        count_tag:
-          Name: "{{ resource_prefix }}-inst"
-        assign_public_ip: true
-        volumes: []
-        wait: true
-        ebs_optimized: false
+      ec2_instance:
+        name: "{{ resource_prefix }}-inst"
+        state: absent
+        wait: True
       ignore_errors: true
 
     - name: remove testing target groups
@@ -480,5 +470,6 @@
       register: removed
       retries: 10
       until: removed is not failed
+      ignore_errors: true
 
     # ============================================================

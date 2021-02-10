@@ -73,14 +73,12 @@
         seconds: 10
 
     - name: Create Linux EC2 instance
-      ec2:
+      ec2_instance:
         instance_type: "{{instance_type}}"
-        image: "{{linux_ami_id}}"
+        image_id: "{{linux_ami_id}}"
         wait: "yes"
-        count: 1
-        instance_profile_name: "{{role_output.iam_role.role_name}}"
-        instance_tags:
-          Name: "{{resource_prefix}}-integration-test-aws-ssm-linux"
+        instance_role: "{{role_output.iam_role.role_name}}"
+        name: "{{resource_prefix}}-integration-test-aws-ssm-linux"
         user_data: |
                     #!/bin/sh
                     sudo systemctl start amazon-ssm-agent
@@ -88,14 +86,12 @@
       register: linux_output
 
     - name: Create Windows EC2 instance
-      ec2:
+      ec2_instance:
         instance_type: "{{instance_type}}"
-        image: "{{windows_ami_id}}"
+        image_id: "{{windows_ami_id}}"
         wait: "yes"
-        count: 1
-        instance_profile_name: "{{role_output.iam_role.role_name}}"
-        instance_tags:
-          Name: "{{resource_prefix}}-integration-test-aws-ssm-windows"
+        instance_role: "{{role_output.iam_role.role_name}}"
+        name: "{{resource_prefix}}-integration-test-aws-ssm-windows"
         user_data: |
                     <powershell>
                     Invoke-WebRequest -Uri "https://amazon-ssm-us-east-1.s3.amazonaws.com/latest/windows_amd64/AmazonSSMAgentSetup.exe" -OutFile "C:\AmazonSSMAgentSetup.exe"

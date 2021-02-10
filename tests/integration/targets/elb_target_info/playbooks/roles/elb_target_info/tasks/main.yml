@@ -136,17 +136,14 @@
           Description: "Created by {{ resource_prefix }}"
 
     - name: set up ec2 instance to use as a target
-      ec2:
-        group_id: "{{ sg.group_id }}"
-        instance_type: t2.micro
-        image: "{{ ec2_ami_image }}"
+      ec2_instance:
+        name: "{{ resource_prefix }}-inst"
+        security_group: "{{ sg.group_id }}"
+        instance_type: t3.micro
+        image_id: "{{ ec2_ami_image }}"
         vpc_subnet_id: "{{ subnet_2.subnet.id }}"
-        instance_tags:
-          Name: "{{ resource_prefix }}-inst"
-        exact_count: 1
-        count_tag:
-          Name: "{{ resource_prefix }}-inst"
-        assign_public_ip: true
+        network:
+          assign_public_ip: true
         volumes: []
         wait: true
         ebs_optimized: false
@@ -160,6 +157,9 @@
             - "service httpd start"
             - echo "HELLO ANSIBLE" > /var/www/html/index.html
       register: ec2
+
+    - set_fact:
+        instance_id: "{{ ec2.instances[0].instance_id }}"
 
     - name: create an application load balancer
       elb_application_lb:
@@ -195,14 +195,14 @@
     - name: register with the ALB
       elb_target:
         target_group_name: "{{ tg_name }}-inst"
-        target_id: "{{ ec2.instance_ids[0] }}"
+        target_id: "{{ instance_id }}"
         state: present
         target_status: "initial"
 
     - name: register with the NLB IP target group
       elb_target:
         target_group_name: "{{ tg_name }}-ip"
-        target_id: "{{ ec2.instances[0].private_ip }}"
+        target_id: "{{ ec2.instances[0].private_ip_address }}"
         state: present
         target_status: "initial"
 
@@ -213,7 +213,7 @@
     # ============================================================
     - name: gather facts
       elb_target_info:
-        instance_id: "{{ ec2.instance_ids[0]}}"
+        instance_id: "{{ instance_id }}"
       register: target_facts
 
     - assert:
@@ -228,13 +228,13 @@
     - name: register with unused target group
       elb_target:
         target_group_name: "{{ tg_name }}-idle"
-        target_id: "{{ ec2.instance_ids[0]}}"
+        target_id: "{{ instance_id }}"
         state: present
         target_status: "unused"
 
     - name: gather facts again, including the idle group
       elb_target_info:
-        instance_id: "{{ ec2.instance_ids[0]}}"
+        instance_id: "{{ instance_id }}"
       register: target_facts
 
     - assert:
@@ -247,7 +247,7 @@
 
     - name: gather facts again, this time excluding the idle group
       elb_target_info:
-        instance_id: "{{ ec2.instance_ids[0]}}"
+        instance_id: "{{ instance_id }}"
         get_unused_target_groups: false
       register: target_facts
 
@@ -263,14 +263,14 @@
       elb_target:
         target_group_name: "{{ tg_name }}-ip"
         target_port: 22
-        target_id: "{{ ec2.instances[0].private_ip }}"
+        target_id: "{{ ec2.instances[0].private_ip_address }}"
         state: present
         target_status: "healthy"
         target_status_timeout: 400
 
     - name: gather facts
       elb_target_info:
-        instance_id: "{{ ec2.instance_ids[0] }}"
+        instance_id: "{{ instance_id }}"
         get_unused_target_groups: false
       register: target_facts
 
@@ -305,7 +305,7 @@
     - name: wait for all targets to deregister simultaneously
       elb_target_info:
         get_unused_target_groups: false
-        instance_id: "{{ ec2.instance_ids[0] }}"
+        instance_id: "{{ instance_id }}"
       register: target_facts
       until: (target_facts.instance_target_groups | length) == 0
       retries: 60
@@ -328,7 +328,7 @@
     - name: wait for registration
       elb_target_info:
         get_unused_target_groups: false
-        instance_id: "{{ ec2.instance_ids[0] }}"
+        instance_id: "{{ instance_id }}"
       register: target_facts
       until: >
                 (target_facts.instance_target_groups |
@@ -361,20 +361,10 @@
       debug: msg="********** Tearing down elb_target_info test dependencies **********"
 
     - name: remove ec2 instance
-      ec2:
-        group_id: "{{ sg.group_id }}"
-        instance_type: t2.micro
-        image: "{{ ec2_ami_image }}"
-        vpc_subnet_id: "{{ subnet_2.subnet.id }}"
-        instance_tags:
-          Name: "{{ resource_prefix }}-inst"
-        exact_count: 0
-        count_tag:
-          Name: "{{ resource_prefix }}-inst"
-        assign_public_ip: true
-        volumes: []
-        wait: true
-        ebs_optimized: false
+      ec2_instance:
+        name: "{{ resource_prefix }}-inst"
+        state: absent
+        wait: True
       ignore_errors: true
 
     - name: remove application load balancer
@@ -503,5 +493,6 @@
       register: removed
       retries: 10
       until: removed is not failed
+      ignore_errors: True
 
     # ============================================================
