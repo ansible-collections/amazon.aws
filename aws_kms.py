@@ -117,6 +117,15 @@ options:
   tags:
     description: A dictionary of tags to apply to a key.
     type: dict
+  pending_window:
+    description:
+    - The number of days between requesting deletion of the CMK and when it will actually be deleted.
+    - Only used when I(state=absent) and the CMK has not yet been deleted.
+    - Valid values are between 7 and 30 (inclusive).
+    - 'See also: U(https://docs.aws.amazon.com/kms/latest/APIReference/API_ScheduleKeyDeletion.html#KMS-ScheduleKeyDeletion-request-PendingWindowInDays)'
+    type: int
+    aliases: ['deletion_delay']
+    version_added: 1.4.0
   purge_tags:
     description: Whether the I(tags) argument should cause tags not in the list to
       be removed
@@ -405,18 +414,24 @@ statement_label = {
     'admin': 'Allow access for Key Administrators'
 }
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule, is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry, camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict, ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags, compare_policies
-from ansible.module_utils.six import string_types
-
 import json
+import re
 
 try:
     import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
+
+from ansible.module_utils.six import string_types
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
 
 
 @AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
@@ -533,8 +548,11 @@ def get_key_details(connection, module, key_id):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to obtain aliases")
 
-    current_rotation_status = connection.get_key_rotation_status(KeyId=key_id)
-    result['enable_key_rotation'] = current_rotation_status.get('KeyRotationEnabled')
+    try:
+        current_rotation_status = connection.get_key_rotation_status(KeyId=key_id)
+        result['enable_key_rotation'] = current_rotation_status.get('KeyRotationEnabled')
+    except is_boto3_error_code(['AccessDeniedException', 'UnsupportedOperationException']) as e:
+        result['enable_key_rotation'] = None
     result['aliases'] = aliases.get(result['KeyId'], [])
 
     result = camel_dict_to_snake_dict(result)
@@ -622,8 +640,12 @@ def start_key_deletion(connection, module, key_metadata):
     if module.check_mode:
         return True
 
+    deletion_params = {'KeyId': key_metadata['Arn']}
+    if module.params.get('pending_window'):
+        deletion_params['PendingWindowInDays'] = module.params.get('pending_window')
+
     try:
-        connection.schedule_key_deletion(KeyId=key_metadata['Arn'])
+        connection.schedule_key_deletion(**deletion_params)
         return True
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to schedule key for deletion")
@@ -767,14 +789,23 @@ def update_key_rotation(connection, module, key, enable_key_rotation):
     if enable_key_rotation is None:
         return False
     key_id = key['key_arn']
-    current_rotation_status = connection.get_key_rotation_status(KeyId=key_id)
-    if current_rotation_status.get('KeyRotationEnabled') == enable_key_rotation:
-        return False
 
-    if enable_key_rotation:
-        connection.enable_key_rotation(KeyId=key_id)
-    else:
-        connection.disable_key_rotation(KeyId=key_id)
+    try:
+        current_rotation_status = connection.get_key_rotation_status(KeyId=key_id)
+        if current_rotation_status.get('KeyRotationEnabled') == enable_key_rotation:
+            return False
+    except is_boto3_error_code('AccessDeniedException'):
+        pass
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Unable to get current key rotation status")
+
+    try:
+        if enable_key_rotation:
+            connection.enable_key_rotation(KeyId=key_id)
+        else:
+            connection.disable_key_rotation(KeyId=key_id)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to enable/disable key rotation")
     return True
 
 
@@ -881,8 +912,10 @@ def _clean_statement_principals(statement, clean_invalid_entries):
     if not isinstance(statement['Principal'].get('AWS'), list):
         statement['Principal']['AWS'] = list()
 
-    invalid_entries = [item for item in statement['Principal']['AWS'] if not item.startswith('arn:aws:iam::')]
-    valid_entries = [item for item in statement['Principal']['AWS'] if item.startswith('arn:aws:iam::')]
+    valid_princ = re.compile('^arn:aws:(iam|sts)::')
+
+    invalid_entries = [item for item in statement['Principal']['AWS'] if not valid_princ.match(item)]
+    valid_entries = [item for item in statement['Principal']['AWS'] if valid_princ.match(item)]
 
     if bool(invalid_entries) and clean_invalid_entries:
         statement['Principal']['AWS'] = valid_entries
@@ -1024,6 +1057,7 @@ def main():
         policy_role_arn=dict(aliases=['role_arn']),
         policy_grant_types=dict(aliases=['grant_types'], type='list', elements='str'),
         policy_clean_invalid_entries=dict(aliases=['clean_invalid_entries'], type='bool', default=True),
+        pending_window=dict(aliases=['deletion_delay'], type='int'),
         key_id=dict(aliases=['key_arn']),
         description=dict(),
         enabled=dict(type='bool', default=True),
