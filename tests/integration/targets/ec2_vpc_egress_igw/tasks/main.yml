@@ -1,8 +1,13 @@
 ---
-- name: ec2_vpc_egress_igw tests
+- name: 'ec2_vpc_egress_igw integration tests'
   collections:
     - amazon.aws
-
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
   block:
 
   # ============================================================
@@ -18,21 +23,10 @@
         - 'result.msg == "missing required arguments: vpc_id"'
 
   # ============================================================
-  - name: set up aws connection info
-    set_fact:
-      aws_connection_info: &aws_connection_info
-        aws_access_key: "{{ aws_access_key }}"
-        aws_secret_key: "{{ aws_secret_key }}"
-        security_token: "{{ security_token }}"
-        region: "{{ aws_region }}"
-    no_log: yes
-
-  # ============================================================
   - name: test failure with non-existent VPC ID
     ec2_vpc_egress_igw:
       state: present
       vpc_id: vpc-012345678
-      <<: *aws_connection_info
     register: result
     ignore_errors: true
 
@@ -49,7 +43,6 @@
       name: "{{ resource_prefix }}-vpc"
       state: present
       cidr_block: "10.232.232.128/26"
-      <<: *aws_connection_info
       tags:
         Name: "{{ resource_prefix }}-vpc"
         Description: "Created by ansible-test"
@@ -60,7 +53,6 @@
     ec2_vpc_egress_igw:
       state: present
       vpc_id: "{{ vpc_result.vpc.id }}"
-      <<: *aws_connection_info
     register: vpc_eigw_create
 
   - name: assert creation happened (expected changed=true)
@@ -75,7 +67,6 @@
     ec2_vpc_egress_igw:
       state: present
       vpc_id: "{{ vpc_result.vpc.id }}"
-      <<: *aws_connection_info
     register: vpc_eigw_recreate
 
   - name: assert recreation did nothing (expected changed=false)
@@ -90,7 +81,6 @@
     ec2_vpc_egress_igw:
       state: absent
       vpc_id: "{{ vpc_result.vpc.id }}"
-      <<: *aws_connection_info
     register: vpc_eigw_delete
 
   - name: assert state=absent (expected changed=true)
@@ -104,7 +94,6 @@
       ec2_vpc_egress_igw:
         state: absent
         vpc_id: "{{ vpc_result.vpc.id }}"
-        <<: *aws_connection_info
       ignore_errors: true
 
     - name: tidy up VPC
@@ -112,5 +101,4 @@
         name: "{{ resource_prefix }}-vpc"
         state: absent
         cidr_block: "10.232.232.128/26"
-        <<: *aws_connection_info
       ignore_errors: true
