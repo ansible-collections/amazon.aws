@@ -803,7 +803,7 @@ import time
 import uuid
 
 try:
-    import botocore.exceptions
+    import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
@@ -821,6 +821,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_security_group_ids_from_names
 
 module = None
 
@@ -1029,7 +1030,7 @@ def build_network_spec(params, ec2=None):
                 subnet_id=spec['SubnetId'],
                 ec2=ec2
             )
-            spec['Groups'] = [g['GroupId'] for g in groups]
+            spec['Groups'] = groups
         if network.get('description') is not None:
             spec['Description'] = network['description']
         # TODO more special snowflake network things
@@ -1131,57 +1132,11 @@ def discover_security_groups(group, groups, parent_vpc_id=None, subnet_id=None, 
             module.fail_json_aws(e, msg="Error while searching for subnet {0} parent VPC.".format(subnet_id))
         parent_vpc_id = sub['Subnets'][0]['VpcId']
 
-    vpc = {
-        'Name': 'vpc-id',
-        'Values': [parent_vpc_id]
-    }
-
-    # because filter lists are AND in the security groups API,
-    # make two separate requests for groups by ID and by name
-    id_filters = [vpc]
-    name_filters = [vpc]
-
     if group:
-        name_filters.append(
-            dict(
-                Name='group-name',
-                Values=[group]
-            )
-        )
-        if group.startswith('sg-'):
-            id_filters.append(
-                dict(
-                    Name='group-id',
-                    Values=[group]
-                )
-            )
+        return get_ec2_security_group_ids_from_names(group, ec2, vpc_id=parent_vpc_id)
     if groups:
-        name_filters.append(
-            dict(
-                Name='group-name',
-                Values=groups
-            )
-        )
-        if [g for g in groups if g.startswith('sg-')]:
-            id_filters.append(
-                dict(
-                    Name='group-id',
-                    Values=[g for g in groups if g.startswith('sg-')]
-                )
-            )
-
-    found_groups = []
-    for f_set in (id_filters, name_filters):
-        if len(f_set) > 1:
-            found_groups.extend(describe_security_groups(ec2, Filters=f_set))
-    return list(dict((g['GroupId'], g) for g in found_groups).values())
-
-
-@AWSRetry.jittered_backoff()
-def describe_security_groups(ec2, **params):
-    paginator = ec2.get_paginator('describe_security_groups')
-    results = paginator.paginate(**params)
-    return list(results.search('SecurityGroups[]'))
+        return get_ec2_security_group_ids_from_names(groups, ec2, vpc_id=parent_vpc_id)
+    return []
 
 
 def build_top_level_options(params):
@@ -1379,7 +1334,7 @@ def diff_instance_and_params(instance, params, ec2=None, skip=None):
             subnet_id=subnet_id,
             ec2=ec2
         )
-        expected_groups = [g['GroupId'] for g in groups]
+        expected_groups = groups
         instance_groups = [g['GroupId'] for g in value['Groups']]
         if set(instance_groups) != set(expected_groups):
             changes_to_apply.append(dict(

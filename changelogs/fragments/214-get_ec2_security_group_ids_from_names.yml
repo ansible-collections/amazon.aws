@@ -1,0 +1,4 @@
+minor_changes:
+- ec2_instance - migrate to shared implementation of get_ec2_security_group_ids_from_names.
+  The module will now return an error if the subnet provided isn't in the requested VPC.
+  (https://github.com/ansible-collections/community.aws/pull/214)
