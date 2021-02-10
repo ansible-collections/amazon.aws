@@ -1,20 +1,11 @@
 ---
   - block:
-      - name: set up aws connection info
-        set_fact:
-          aws_connection_info: &aws_connection_info
-            aws_access_key: "{{ aws_access_key }}"
-            aws_secret_key: "{{ aws_secret_key }}"
-            security_token: "{{ security_token }}"
-            region: "{{ aws_region }}"
-        no_log: yes
 
       - name: Ensure the resource doesn't exist
         rds_instance:
           id: "{{ instance_id }}"
           state: absent
           skip_final_snapshot: True
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -31,7 +22,6 @@
           password: "{{ password }}"
           db_instance_class: "{{ db_instance_class }}"
           allocated_storage: "{{ allocated_storage }}"
-          <<: *aws_connection_info
         register: result
 
       - name: Delete the DB instance
@@ -39,7 +29,6 @@
           id: "{{ instance_id }}"
           state: absent
           final_snapshot_identifier: "{{ instance_id }}"
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -50,7 +39,6 @@
       - name: Check that snapshot exists
         rds_snapshot_info:
           db_snapshot_identifier: "{{ instance_id }}"
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -63,7 +51,6 @@
         rds_snapshot:
           db_snapshot_identifier: "{{ instance_id }}"
           state: absent
-          <<: *aws_connection_info
         ignore_errors: yes
 
       - name: Remove the DB instance
@@ -71,5 +58,4 @@
           id: "{{ instance_id }}"
           state: absent
           skip_final_snapshot: True
-          <<: *aws_connection_info
         ignore_errors: yes         

@@ -6,21 +6,12 @@
           region_src: "{{ aws_region }}"
           region_dest: "{{ aws_region }}"
 
-      - name: set up aws connection info
-        set_fact:
-          aws_connection_info: &aws_connection_info
-            aws_access_key: "{{ aws_access_key }}"
-            aws_secret_key: "{{ aws_secret_key }}"
-            security_token: "{{ security_token }}"
-        no_log: yes
-
       - name: Ensure the resource doesn't exist
         rds_instance:
           id: "{{ instance_id }}"
           state: absent
           skip_final_snapshot: True
           region: "{{ region_src }}"
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -42,7 +33,6 @@
           tags:
             Name: "{{ instance_id }}"
             Created_by: Ansible rds_instance tests
-          <<: *aws_connection_info
         register: source_db
 
       - assert:
@@ -65,7 +55,6 @@
           tags:
             Name: "{{ instance_id }}"
             Created_by: Ansible rds_instance tests
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -90,7 +79,6 @@
           tags:
             Name: "{{ instance_id }}"
             Created_by: Ansible rds_instance tests
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -112,7 +100,6 @@
           tags:
             Name: "{{ instance_id }}"
             Created_by: Ansible rds_instance tests
-          <<: *aws_connection_info
         register: result
 
       - name: Promote the read replica
@@ -121,7 +108,6 @@
           state: present
           read_replica: False
           region: "{{ region_dest }}"
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -134,7 +120,6 @@
           state: present
           read_replica: False
           region: "{{ region_dest }}"
-          <<: *aws_connection_info
         register: result
 
       - assert:
@@ -149,7 +134,6 @@
           state: absent
           skip_final_snapshot: True
           region: "{{ region_src }}"
-          <<: *aws_connection_info
         ignore_errors: yes
 
       - name: Remove the DB replica
@@ -158,5 +142,4 @@
           state: absent
           skip_final_snapshot: True
           region: "{{ region_dest }}"
-          <<: *aws_connection_info
         ignore_errors: yes
