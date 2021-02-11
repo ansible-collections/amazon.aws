@@ -254,7 +254,7 @@ def pipeline_description(client, dp_id):
     """
     try:
         return client.describe_pipelines(pipelineIds=[dp_id])
-    except is_boto3_error_code('PipelineNotFoundException', 'PipelineDeletedException'):
+    except is_boto3_error_code(['PipelineNotFoundException', 'PipelineDeletedException']):
         raise DataPipelineNotFound
 
 
