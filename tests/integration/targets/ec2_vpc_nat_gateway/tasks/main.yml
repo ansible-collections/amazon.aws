@@ -1,19 +1,14 @@
-# The tests for this module are incomplete.
-# The tests below were migrated from unit tests.
-# They take advantage of hard-coded results within the module to trigger both changed and unchanged responses.
-# They were migrated to maintain test coverage while removing unit tests that depended on use of TaskQueueManager.
-
 ---
 # ============================================================
 # Known issues:
 #
-# `check_mode` is not working correctly due to the hard-coded DRY_RUN_GATEWAY (module code). The values passed here, 
-# when CHECK_MODE is used, don't correspond to those used for the DRY_RUN_GATEWAY and all test 
+# `check_mode` is not working correctly due to the hard-coded DRY_RUN_GATEWAY (module code). The values passed here,
+# when CHECK_MODE is used, don't correspond to those used for the DRY_RUN_GATEWAY and all test
 # (except when the NAT gateway is created for the first time) fail.
 #
-# `Create new NAT gateway with eip address` - when the task is run for the first time, do we expect changed=true? 
-# As we use the same EIP, I think changed should be false (if this is correct, lines 194-218 are redundant and 
-# lines 177 and 190 should report `not create_ngw.changed`).  
+# `Create new NAT gateway with eip address` - when the task is run for the first time, do we expect changed=true?
+# As we use the same EIP, I think changed should be false (if this is correct, lines 194-218 are redundant and
+# lines 177 and 190 should report `not create_ngw.changed`).
 #  ============================================================
 
 - name: ec2_vpc_nat_gateway tests
@@ -26,8 +21,8 @@
   collections:
     - amazon.aws
 
-  block:  
-          
+  block:
+
   # ============================================================
   - name: Create a VPC
     ec2_vpc_net:
@@ -52,7 +47,7 @@
       reuse_existing_ip_allowed: true
       tag_name: FREE
     register: eip_result
-  
+
   - name: Assert success
     assert:
       that:
@@ -62,7 +57,7 @@
     set_fact:
       eip_address: "{{ eip_result.public_ip }}"
       allocation_id: "{{ eip_result.allocation_id }}"
-  
+
 
   # ============================================================
   - name: Create subnet and associate to the VPC
@@ -80,7 +75,7 @@
   - name: "set fact: VPC subnet ID"
     set_fact:
       subnet_id: "{{ subnet_result.subnet.id }}"
- 
+
 
   # ============================================================
   - name: Search for NAT gateways by subnet - no matches
@@ -91,12 +86,12 @@
     register: existing_ngws
     retries: 10
     until: existing_ngws is not failed
-  
+
   - name: Assert no NAT gateway found
     assert:
       that:
         - existing_ngws is successful
-        - (existing_ngws.result|length) == 0     
+        - (existing_ngws.result|length) == 0
 
 
 
@@ -105,7 +100,7 @@
     ec2_vpc_igw:
       vpc_id: "{{ vpc_id }}"
     register: create_igw
-  
+
   - name: Assert success
     assert:
       that:
@@ -121,7 +116,7 @@
     register: create_ngw
     retries: 10
     until: create_ngw is not failed
- 
+
   - name: Assert creation happened (expected changed=true)
     assert:
       that:
@@ -131,7 +126,7 @@
     set_fact:
       nat_gateway_id: "{{ create_ngw.nat_gateway_id }}"
       network_interface_id: "{{ create_ngw.nat_gateway_addresses[0].network_interface_id }}"
-  
+
  # - name: Create new NAT gateway with eip allocation-id - CHECK_MODE
  #   ec2_vpc_nat_gateway:
  #     subnet_id: "{{ subnet_id }}"
@@ -159,7 +154,7 @@
     assert:
       that:
         - not create_ngw.changed
-  
+
   # - name: Trying this again for idempotency - create new NAT gateway with eip allocation-id - CHECK_MODE
   #   ec2_vpc_nat_gateway:
   #     subnet_id: "{{ subnet_id }}"
@@ -167,7 +162,7 @@
   #     wait: yes
   #   register: create_ngw
   #   check_mode: yes
-    
+
   # - name: Assert recreation would do nothing (expected changed=false) - CHECK_MODE
   #   assert:
   #     that:
@@ -175,7 +170,7 @@
 
 
   # ============================================================
-  #- name: Create new NAT gateway with eip address 
+  #- name: Create new NAT gateway with eip address
   #  ec2_vpc_nat_gateway:
   #     subnet_id: "{{ subnet_id }}"
   #     eip_address: "{{ eip_address }}"
@@ -186,7 +181,7 @@
   #  assert:
   #     that:
   #       - create_ngw.changed
-  
+
   # - name: Create new nat gateway with eip address - CHECK_MODE
   #   ec2_vpc_nat_gateway:
   #     subnet_id: "{{ subnet_id }}"
@@ -242,7 +237,7 @@
     assert:
       that:
         - not create_ngw.changed
-  
+
   # - name: Create new nat gateway only if one does not exist already - CHECK_MODE
   #   ec2_vpc_nat_gateway:
   #     if_exist_do_not_create: yes
@@ -257,7 +252,7 @@
   #       - not create_ngw.changed
 
 
-  # ============================================================  
+  # ============================================================
   - name: Delete NAT gateway
     ec2_vpc_nat_gateway:
       nat_gateway_id: "{{ nat_gateway_id }}"
@@ -271,7 +266,7 @@
     assert:
       that:
         - delete_nat_gateway.changed
-  
+
   # - name: Delete NAT gateway - CHECK_MODE
   #   ec2_vpc_nat_gateway:
   #     nat_gateway_id: "{{ nat_gateway_id }}"
@@ -332,8 +327,8 @@
   - name: assert tag update would do nothing (expected changed=false)
     assert:
       that:
-        - not update_tags_ngw.changed        
-  
+        - not update_tags_ngw.changed
+
   # - name: Update the tags (no change) - CHECK_MODE
   #   ec2_vpc_nat_gateway:
   #     subnet_id: "{{ subnet_id }}"
@@ -366,7 +361,7 @@
     assert:
       that:
          - update_tags_ngw.changed
-  
+
   # - name: Update the tags - remove and add - CHECK_MODE
   #   ec2_vpc_nat_gateway:
   #     subnet_id: "{{ subnet_id }}"
@@ -431,7 +426,7 @@
     assert:
       that:
         - delete_tags_ngw.changed
-  
+
   # - name: Remove all tags - CHECK_MODE
   #   ec2_vpc_nat_gateway:
   #     subnet_id: "{{ subnet_id }}"
@@ -445,8 +440,8 @@
   #     that:
   #         - delete_tags_ngw.changed
 
-  
-  
+
+
   # ============================================================
   - name: Update with CamelCase tags
     ec2_vpc_nat_gateway:
@@ -496,8 +491,8 @@
   #       - update_tags_ngw.tags["snake_case"] == 'simple_snake_case ❤️'
 
   # ============================================================
-  
-  
+
+
   always:
   - name: Get NAT gateways
     ec2_vpc_nat_gateway_info:
@@ -507,7 +502,7 @@
     retries: 10
     until: existing_ngws is not failed
     ignore_errors: true
-  
+
   - name: Tidy up NAT gateway
     ec2_vpc_nat_gateway:
       subnet_id: "{{ item.subnet_id }}"
@@ -517,19 +512,19 @@
       wait: yes
     with_items: "{{ existing_ngws.result }}"
     ignore_errors: true
-  
+
   - name: Delete IGW
     ec2_vpc_igw:
       vpc_id: "{{ vpc_id }}"
       state: absent
-    ignore_errors: true 
-  
+    ignore_errors: true
+
   - name: Remove subnet
     ec2_vpc_subnet:
       state: absent
       cidr: "{{ subnet_cidr }}"
       vpc_id: "{{ vpc_id }}"
-    ignore_errors: true 
+    ignore_errors: true
 
   - name: Ensure EIP is actually released
     ec2_eip:
