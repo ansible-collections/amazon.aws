@@ -44,6 +44,9 @@ options:
         on how to use it properly. Cannot be used with I(policy).
       - Option when creating an endpoint. If not provided AWS will
         utilise a default policy which provides full access to the service.
+      - This option has been deprecated and will be removed after 2022-12-01
+        to maintain the existing functionality please use the I(policy) option
+        and a file lookup.
     required: false
     aliases: [ "policy_path" ]
     type: path
@@ -345,6 +348,11 @@ def main():
 
     # Validate Requirements
     state = module.params.get('state')
+
+    if module.params.get('policy_file'):
+        module.deprecate('The policy_file option has been deprecated and'
+                         ' will be removed after 2022-12-01',
+                         date='2022-12-01', collection_name='community.aws')
 
     try:
         ec2 = module.client('ec2')
