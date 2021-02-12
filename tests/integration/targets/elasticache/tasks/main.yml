@@ -1,0 +1,32 @@
+---
+
+- name: Integration testing for the elasticache module
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  collections:
+    - amazon.aws
+  block:
+
+    - name: Create Redis Server on Elasticache
+      elasticache:
+        name: elasticache-module-redis-test
+        engine: redis
+        node_type: cache.t3.micro
+        num_nodes: 1
+        state: present
+      register: elasticache_redis
+
+    - name: Assert that task worked
+      assert:
+        that:
+          elasticache_redis is defined
+          elasticache_redis is changed
+          elasticache_redis.elasticache.data is defined
+          elasticache_redis.elasticache.name == "elasticache-module-redis-test"
+
+
+
