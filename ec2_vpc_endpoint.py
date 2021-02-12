@@ -313,8 +313,16 @@ def setup_removal(client, module):
         params['VpcEndpointIds'] = module.params.get('vpc_endpoint_id')
     try:
         result = client.delete_vpc_endpoints(**params)['Unsuccessful']
-        if not module.check_mode and (result != []):
-            module.fail_json(msg=result)
+        if len(result) < len(params['VpcEndpointIds']):
+            changed = True
+        # For some reason delete_vpc_endpoints doesn't throw exceptions it
+        # returns a list of failed 'results' instead.  Throw these so we can
+        # catch them the way we expect
+        for r in result:
+            try:
+                raise botocore.exceptions.ClientError(r, 'delete_vpc_endpoints')
+            except is_boto3_error_code('InvalidVpcEndpoint.NotFound'):
+                continue
     except is_boto3_error_code('DryRunOperation'):
         changed = True
         result = 'Would have deleted VPC Endpoint if not in check mode'
