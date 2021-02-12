@@ -5,6 +5,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
@@ -135,7 +136,6 @@ author:
 - Mike Buzzetti (@jimbydamonk)
 extends_documentation_fragment:
 - amazon.aws.aws
-
 '''
 
 RETURN = r'''
@@ -224,7 +224,6 @@ EXAMPLES = r'''
     ttl: 7200
     value: 1.1.1.1,2.2.2.2,3.3.3.3
     wait: yes
-
 - name: Update new.foo.com as an A record with a list of 3 IPs and wait until the changes have been replicated
   community.aws.route53:
     state: present
@@ -237,7 +236,6 @@ EXAMPLES = r'''
       - 2.2.2.2
       - 3.3.3.3
     wait: yes
-
 - name: Retrieve the details for new.foo.com
   community.aws.route53:
     state: get
@@ -245,7 +243,6 @@ EXAMPLES = r'''
     record: new.foo.com
     type: A
   register: rec
-
 - name: Delete new.foo.com A record using the results from the get command
   community.aws.route53:
     state: absent
@@ -254,7 +251,6 @@ EXAMPLES = r'''
     ttl: "{{ rec.set.ttl }}"
     type: "{{ rec.set.type }}"
     value: "{{ rec.set.value }}"
-
 # Add an AAAA record.  Note that because there are colons in the value
 # that the IPv6 address must be quoted. Also shows using the old form command=create.
 - name: Add an AAAA record
@@ -265,7 +261,6 @@ EXAMPLES = r'''
     type: AAAA
     ttl: 7200
     value: "::1"
-
 # For more information on SRV records see:
 # https://en.wikipedia.org/wiki/SRV_record
 - name: Add a SRV record with multiple fields for a service on port 22222
@@ -275,7 +270,6 @@ EXAMPLES = r'''
     record: "_example-service._tcp.foo.com"
     type: SRV
     value: "0 0 22222 host1.foo.com,0 0 22222 host2.foo.com"
-
 # Note that TXT and SPF records must be surrounded
 # by quotes when sent to Route 53:
 - name: Add a TXT record.
@@ -286,7 +280,6 @@ EXAMPLES = r'''
     type: TXT
     ttl: 7200
     value: '"bar"'
-
 - name: Add an alias record that points to an Amazon ELB
   community.aws.route53:
     state: present
@@ -296,7 +289,6 @@ EXAMPLES = r'''
     value: "{{ elb_dns_name }}"
     alias: True
     alias_hosted_zone_id: "{{ elb_zone_id }}"
-
 - name: Retrieve the details for elb.foo.com
   community.aws.route53:
     state: get
@@ -304,7 +296,6 @@ EXAMPLES = r'''
     record: elb.foo.com
     type: A
   register: rec
-
 - name: Delete an alias record using the results from the get command
   community.aws.route53:
     state: absent
@@ -315,7 +306,6 @@ EXAMPLES = r'''
     value: "{{ rec.set.value }}"
     alias: True
     alias_hosted_zone_id: "{{ rec.set.alias_hosted_zone_id }}"
-
 - name: Add an alias record that points to an Amazon ELB and evaluates it health
   community.aws.route53:
     state: present
@@ -326,7 +316,6 @@ EXAMPLES = r'''
     alias: True
     alias_hosted_zone_id: "{{ elb_zone_id }}"
     alias_evaluate_target_health: True
-
 - name: Add an AAAA record with Hosted Zone ID
   community.aws.route53:
     state: present
@@ -336,7 +325,6 @@ EXAMPLES = r'''
     type: AAAA
     ttl: 7200
     value: "::1"
-
 - name: Use a routing policy to distribute traffic
   community.aws.route53:
     state: present
@@ -349,7 +337,6 @@ EXAMPLES = r'''
     identifier: "host1@www"
     weight: 100
     health_check: "d994b780-3150-49fd-9205-356abdd42e75"
-
 - name: Add a CAA record (RFC 6844)
   community.aws.route53:
     state: present
@@ -360,134 +347,80 @@ EXAMPLES = r'''
       - 0 issue "ca.example.net"
       - 0 issuewild ";"
       - 0 iodef "mailto:security@example.com"
-
 '''
 
-import time
-import distutils.version
+from operator import itemgetter
 
 try:
-    import boto
-    import boto.ec2
-    from boto.route53 import Route53Connection
-    from boto.route53.record import Record, ResourceRecordSets
-    from boto.route53.status import Status
+    import botocore
 except ImportError:
-    pass  # Handled by HAS_BOTO
+    pass  # Handled by AnsibleAWSModule
+
+from ansible.module_utils._text import to_native
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
+from ansible_collections.amazon.aws.plugins.module_utils.core import scrub_none_parameters
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+
+MAX_AWS_RETRIES = 10  # How many retries to perform when an API call is failing
+WAIT_RETRY = 5  # how many seconds to wait between propagation status polls
 
 
-MINIMUM_BOTO_VERSION = '2.28.0'
-WAIT_RETRY_SLEEP = 5  # how many seconds to wait between propagation status polls
+@AWSRetry.jittered_backoff(retries=MAX_AWS_RETRIES)
+def _list_record_sets(route53, **kwargs):
+    paginator = route53.get_paginator('list_resource_record_sets')
+    return paginator.paginate(**kwargs).build_full_result()['ResourceRecordSets']
 
 
-class TimeoutError(Exception):
-    pass
+@AWSRetry.jittered_backoff(retries=MAX_AWS_RETRIES)
+def _list_hosted_zones(route53, **kwargs):
+    paginator = route53.get_paginator('list_hosted_zones')
+    return paginator.paginate(**kwargs).build_full_result()['HostedZones']
 
 
-def get_zone_id_by_name(conn, module, zone_name, want_private, want_vpc_id):
-    """Finds a zone by name or zone_id"""
-    for zone in invoke_with_throttling_retries(conn.get_zones):
-        # only save this zone id if the private status of the zone matches
-        # the private_zone_in boolean specified in the params
-        private_zone = module.boolean(zone.config.get('PrivateZone', False))
-        if private_zone == want_private and zone.name == zone_name:
-            if want_vpc_id:
-                # NOTE: These details aren't available in other boto methods, hence the necessary
-                # extra API call
-                hosted_zone = invoke_with_throttling_retries(conn.get_hosted_zone, zone.id)
-                zone_details = hosted_zone['GetHostedZoneResponse']
-                # this is to deal with this boto bug: https://github.com/boto/boto/pull/2882
-                if isinstance(zone_details['VPCs'], dict):
-                    if zone_details['VPCs']['VPC']['VPCId'] == want_vpc_id:
-                        return zone.id
-                else:  # Forward compatibility for when boto fixes that bug
-                    if want_vpc_id in [v['VPCId'] for v in zone_details['VPCs']]:
-                        return zone.id
-            else:
-                return zone.id
+def get_record(route53, zone_id, record_name, record_type, record_identifier):
+    record_sets_results = _list_record_sets(route53, HostedZoneId=zone_id)
+
+    for record_set in record_sets_results:
+        # If the record name and type is not equal, move to the next record
+        if (record_name, record_type) != (record_set['Name'], record_set['Type']):
+            continue
+
+        if record_identifier and record_identifier != record_set.get("SetIdentifier"):
+            continue
+
+        return record_set
+
     return None
 
 
-def commit(changes, retry_interval, wait, wait_timeout):
-    """Commit changes, but retry PriorRequestNotComplete errors."""
-    result = None
-    retry = 10
-    while True:
-        try:
-            retry -= 1
-            result = changes.commit()
-            break
-        except boto.route53.exception.DNSServerError as e:
-            code = e.body.split("<Code>")[1]
-            code = code.split("</Code>")[0]
-            if code != 'PriorRequestNotComplete' or retry < 0:
-                raise e
-            time.sleep(float(retry_interval))
+def get_zone_id_by_name(route53, module, zone_name, want_private, want_vpc_id):
+    """Finds a zone by name or zone_id"""
+    hosted_zones_results = _list_hosted_zones(route53)
 
-    if wait:
-        timeout_time = time.time() + wait_timeout
-        connection = changes.connection
-        change = result['ChangeResourceRecordSetsResponse']['ChangeInfo']
-        status = Status(connection, change)
-        while status.status != 'INSYNC' and time.time() < timeout_time:
-            time.sleep(WAIT_RETRY_SLEEP)
-            status.update()
-        if time.time() >= timeout_time:
-            raise TimeoutError()
-        return result
+    for zone in hosted_zones_results:
+        # only save this zone id if the private status of the zone matches
+        # the private_zone_in boolean specified in the params
+        private_zone = module.boolean(zone['Config'].get('PrivateZone', False))
+        zone_id = zone['Id'].replace("/hostedzone/", "")
 
-
-# Shamelessly copied over from https://git.io/vgmDG
-IGNORE_CODE = 'Throttling'
-MAX_RETRIES = 5
-
-
-def invoke_with_throttling_retries(function_ref, *argv, **kwargs):
-    retries = 0
-    while True:
-        try:
-            retval = function_ref(*argv, **kwargs)
-            return retval
-        except boto.exception.BotoServerError as e:
-            if e.code != IGNORE_CODE or retries == MAX_RETRIES:
-                raise e
-        time.sleep(5 * (2**retries))
-        retries += 1
-
-
-def decode_name(name):
-    # Due to a bug in either AWS or Boto, "special" characters are returned as octals, preventing round
-    # tripping of things like * and @.
-    return name.encode().decode('unicode_escape')
-
-
-def to_dict(rset, zone_in, zone_id):
-    record = dict()
-    record['zone'] = zone_in
-    record['type'] = rset.type
-    record['record'] = decode_name(rset.name)
-    record['ttl'] = str(rset.ttl)
-    record['identifier'] = rset.identifier
-    record['weight'] = rset.weight
-    record['region'] = rset.region
-    record['failover'] = rset.failover
-    record['health_check'] = rset.health_check
-    record['hosted_zone_id'] = zone_id
-    if rset.alias_dns_name:
-        record['alias'] = True
-        record['value'] = rset.alias_dns_name
-        record['values'] = [rset.alias_dns_name]
-        record['alias_hosted_zone_id'] = rset.alias_hosted_zone_id
-        record['alias_evaluate_target_health'] = rset.alias_evaluate_target_health
-    else:
-        record['alias'] = False
-        record['value'] = ','.join(sorted(rset.resource_records))
-        record['values'] = sorted(rset.resource_records)
-    return record
+        if private_zone == want_private and zone['Name'] == zone_name:
+            if want_vpc_id:
+                # NOTE: These details aren't available in other boto methods, hence the necessary
+                # extra API call
+                hosted_zone = route53.get_hosted_zone(aws_retry=True, Id=zone.id)
+                zone_details = hosted_zone['HostedZone']
+                # this is to deal with this boto bug: https://github.com/boto/boto/pull/2882
+                if isinstance(zone_details['VPCs'], dict):
+                    if zone_details['VPCs']['VPC']['VPCId'] == want_vpc_id:
+                        return zone_id
+                else:  # Forward compatibility for when boto fixes that bug
+                    if want_vpc_id in [v['VPCId'] for v in zone_details['VPCs']]:
+                        return zone_id
+            else:
+                return zone_id
+    return None
 
 
 def main():
@@ -536,14 +469,7 @@ def main():
             region=('identifier',),
             weight=('identifier',),
         ),
-        check_boto3=False,
     )
-
-    if not HAS_BOTO:
-        module.fail_json(msg='boto required for this module')
-
-    if distutils.version.StrictVersion(boto.__version__) < distutils.version.StrictVersion(MINIMUM_BOTO_VERSION):
-        module.fail_json(msg='Found boto in version %s, but >= %s is required' % (boto.__version__, MINIMUM_BOTO_VERSION))
 
     if module.params['state'] in ('present', 'create'):
         command_in = 'create'
@@ -577,8 +503,6 @@ def main():
     wait_in = module.params.get('wait')
     wait_timeout_in = module.params.get('wait_timeout')
 
-    region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module)
-
     if zone_in[-1:] != '.':
         zone_in += "."
 
@@ -593,113 +517,106 @@ def main():
 
     # connect to the route53 endpoint
     try:
-        conn = Route53Connection(**aws_connect_kwargs)
-    except boto.exception.BotoServerError as e:
-        module.fail_json(msg=e.error_message)
+        route53 = module.client(
+            'route53',
+            retry_decorator=AWSRetry.jittered_backoff(retries=MAX_AWS_RETRIES, delay=retry_interval_in)
+        )
+    except botocore.exceptions.HTTPClientError as e:
+        module.fail_json_aws(e, msg='Failed to connect to AWS')
 
     # Find the named zone ID
-    zone_id = hosted_zone_id_in or get_zone_id_by_name(conn, module, zone_in, private_zone_in, vpc_id_in)
+    zone_id = hosted_zone_id_in or get_zone_id_by_name(route53, module, zone_in, private_zone_in, vpc_id_in)
 
     # Verify that the requested zone is already defined in Route53
     if zone_id is None:
         errmsg = "Zone %s does not exist in Route53" % (zone_in or hosted_zone_id_in)
         module.fail_json(msg=errmsg)
 
-    record = {}
+    aws_record = get_record(route53, zone_id, record_in, type_in, identifier_in)
 
-    found_record = False
-    wanted_rset = Record(name=record_in, type=type_in, ttl=ttl_in,
-                         identifier=identifier_in, weight=weight_in,
-                         region=region_in, health_check=health_check_in,
-                         failover=failover_in)
-    for v in value_in:
-        if alias_in:
-            wanted_rset.set_alias(alias_hosted_zone_id_in, v, alias_evaluate_target_health_in)
-        else:
-            wanted_rset.add_value(v)
+    resource_record_set = scrub_none_parameters({
+        'Name': record_in,
+        'Type': type_in,
+        'Weight': weight_in,
+        'Region': region_in,
+        'Failover': failover_in,
+        'TTL': ttl_in,
+        'ResourceRecords': [dict(Value=value) for value in value_in],
+        'HealthCheckId': health_check_in,
+    })
 
-    need_to_sort_records = (type_in == 'CAA')
+    if alias_in:
+        resource_record_set['AliasTarget'] = dict(
+            HostedZoneId=alias_hosted_zone_id_in,
+            DNSName=value_in[0],
+            EvaluateTargetHealth=alias_evaluate_target_health_in
+        )
 
-    # Sort records for wanted_rset if necessary (keep original list)
-    unsorted_records = wanted_rset.resource_records
-    if need_to_sort_records:
-        wanted_rset.resource_records = sorted(unsorted_records)
+    # On CAA records order doesn't matter
+    if type_in == 'CAA':
+        resource_record_set['ResourceRecords'] = sorted(resource_record_set['ResourceRecords'], key=itemgetter('Value'))
 
-    sets = invoke_with_throttling_retries(conn.get_all_rrsets, zone_id, name=record_in,
-                                          type=type_in, identifier=identifier_in)
-    sets_iter = iter(sets)
-    while True:
-        try:
-            rset = invoke_with_throttling_retries(next, sets_iter)
-        except StopIteration:
-            break
-        # Need to save this changes in rset, because of comparing rset.to_xml() == wanted_rset.to_xml() in next block
-        rset.name = decode_name(rset.name)
-
-        if identifier_in is not None:
-            identifier_in = str(identifier_in)
-
-        if rset.type == type_in and rset.name.lower() == record_in.lower() and rset.identifier == identifier_in:
-            if need_to_sort_records:
-                # Sort records
-                rset.resource_records = sorted(rset.resource_records)
-            found_record = True
-            record = to_dict(rset, zone_in, zone_id)
-            if command_in == 'create' and rset.to_xml() == wanted_rset.to_xml():
-                module.exit_json(changed=False)
-
-        # We need to look only at the first rrset returned by the above call,
-        # so break here. The returned elements begin with the one matching our
-        # requested name, type, and identifier, if such an element exists,
-        # followed by all others that come after it in alphabetical order.
-        # Therefore, if the first set does not match, no subsequent set will
-        # match either.
-        break
+    if command_in == 'create' and aws_record == resource_record_set:
+        module.exit_json(changed=False)
 
     if command_in == 'get':
         if type_in == 'NS':
-            ns = record.get('values', [])
+            ns = aws_record.get('values', [])
         else:
             # Retrieve name servers associated to the zone.
-            z = invoke_with_throttling_retries(conn.get_zone, zone_in)
-            ns = invoke_with_throttling_retries(z.get_nameservers)
+            ns = route53.get_hosted_zone(aws_retry=True, Id=zone_id)['DelegationSet']['NameServers']
 
-        module.exit_json(changed=False, set=record, nameservers=ns)
+        module.exit_json(changed=False, set=aws_record, nameservers=ns)
 
-    if command_in == 'delete' and not found_record:
+    if command_in == 'delete' and not aws_record:
         module.exit_json(changed=False)
 
-    changes = ResourceRecordSets(conn, zone_id)
-
     if command_in == 'create' or command_in == 'delete':
-        if command_in == 'create' and found_record:
+        if command_in == 'create' and aws_record:
             if not module.params['overwrite']:
                 module.fail_json(msg="Record already exists with different value. Set 'overwrite' to replace it")
             command = 'UPSERT'
         else:
             command = command_in.upper()
-        # Restore original order of records
-        wanted_rset.resource_records = unsorted_records
-        changes.add_change_record(command, wanted_rset)
 
     if not module.check_mode:
         try:
-            invoke_with_throttling_retries(commit, changes, retry_interval_in, wait_in, wait_timeout_in)
-        except boto.route53.exception.DNSServerError as e:
-            txt = e.body.split("<Message>")[1]
-            txt = txt.split("</Message>")[0]
-            if "but it already exists" in txt:
-                module.exit_json(changed=False)
-            else:
-                module.fail_json(msg=txt)
-        except TimeoutError:
-            module.fail_json(msg='Timeout waiting for changes to replicate')
+            change_resource_record_sets = route53.change_resource_record_sets(
+                aws_retry=True,
+                HostedZoneId=zone_id,
+                ChangeBatch=dict(
+                    Changes=[
+                        dict(
+                            Action=command,
+                            ResourceRecordSet=resource_record_set
+                        )
+                    ]
+                )
+            )
+
+            if wait_in:
+                waiter = route53.get_waiter('resource_record_sets_changed')
+                waiter.wait(
+                    Id=change_resource_record_sets['ChangeInfo']['Id'],
+                    WaiterConfig=dict(
+                        Delay=WAIT_RETRY,
+                        MaxAttemps=wait_timeout_in // WAIT_RETRY,
+                    )
+                )
+        except is_boto3_error_message('but it already exists'):
+            module.exit_json(changed=False)
+        except botocore.exceptions.WaiterError as e:
+            module.fail_json_aws(e, msg='Timeout waiting for resource records changes to be applied')
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+            module.fail_json_aws(e, msg='Failed to update records')
+        except Exception as e:
+            module.fail_json(msg='Unhandled exception. (%s)' % to_native(e))
 
     module.exit_json(
         changed=True,
         diff=dict(
-            before=record,
-            after=to_dict(wanted_rset, zone_in, zone_id) if command != 'delete' else {},
+            before=aws_record,
+            after=resource_record_set if command != 'delete' else {},
         ),
     )
 
