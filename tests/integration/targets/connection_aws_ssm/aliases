@@ -1,7 +1,11 @@
+# reason: unstable
+# reason: slow
+disabled
+
 cloud/aws
-destructive
 shippable/aws/group4
+
+destructive
 non_local
 needs/root
 needs/target/connection
-disabled

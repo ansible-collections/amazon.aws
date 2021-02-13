@@ -1,6 +1,10 @@
-cloud/aws
+# reason: missing-policy
+# We don't have CI or 'unsupported' policy for AWS config
 disabled
+
+cloud/aws
 shippable/aws/group2
+
 aws_config_aggregation_authorization
 aws_config_aggregator
 aws_config_delivery_channel

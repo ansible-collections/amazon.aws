@@ -1,2 +1,5 @@
+# reason: broken
+# Tests rely on additional non-standard secondary_aws_ credentials
+disabled
+
 cloud/aws
-unsupported

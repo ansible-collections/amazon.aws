@@ -1,4 +1,6 @@
+# reason: unstable
+# When running tests a failure rate of around 20% was observed
+unsupported
+
 cloud/aws
 #shippable/aws/group1
-# when running tests we saw an ~20% failure rate
-unsupported
