@@ -77,7 +77,7 @@
 
     - name: Update Redis Elasticache config with security group (to if changes to existing setup work)
       community.aws.elasticache:
-        name: "{{ elasticache_test_name }}"
+        name: "{{ elasticache_redis.name }}"
         engine: redis
         node_type: cache.t3.micro
         num_nodes: 1
@@ -101,7 +101,7 @@
 
     - name: Make sure test Redis is deleted again from Elasticache
       community.aws.elasticache:
-        name: "{{ elasticache_test_name }}"
+        name: "{{ elasticache_redis_test_name }}"
         engine: redis
         state: absent
 
