@@ -172,17 +172,15 @@ import time
 
 try:
     import boto3
+    from botocore.client import Config
     HAS_BOTO_3 = True
 except ImportError as e:
     HAS_BOTO_3_ERROR = str(e)
     HAS_BOTO_3 = False
-from botocore.client import Config
 
 from functools import wraps
-from ansible import constants as C
 from ansible.errors import AnsibleConnectionFailure, AnsibleError, AnsibleFileNotFound
 from ansible.module_utils.basic import missing_required_lib
-from ansible.module_utils.six import PY3
 from ansible.module_utils.six.moves import xrange
 from ansible.module_utils._text import to_bytes, to_native, to_text
 from ansible.plugins.connection import ConnectionBase
@@ -285,6 +283,11 @@ class Connection(ConnectionBase):
         if not self._session_id:
             self.start_session()
         return self
+
+    def reset(self):
+        ''' start a fresh ssm session '''
+        display.vvvv('reset called on ssm connection')
+        return self.start_session()
 
     def start_session(self):
         ''' start ssm session '''
@@ -525,7 +528,7 @@ class Connection(ConnectionBase):
     def _file_transport_command(self, in_path, out_path, ssm_action):
         ''' transfer a file from using an intermediate S3 bucket '''
 
-        path_unescaped = "{0}/{1}".format(self.instance_id, out_path)
+        path_unescaped = u"{0}/{1}".format(self.instance_id, out_path)
         s3_path = path_unescaped.replace('\\', '/')
         bucket_url = 's3://%s/%s' % (self.get_option('bucket_name'), s3_path)
 
