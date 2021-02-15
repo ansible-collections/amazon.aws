@@ -97,8 +97,25 @@
 
   always:
 
-    - name: Make sure test redis is deleted again
+    # == Cleanup ==
+
+    - name: Make sure test Redis is deleted again from Elasticache
       community.aws.elasticache:
         name: "{{ elasticache_test_name }}"
         engine: redis
+        state: absent
+
+    - name: Make sure Subnet group is deleted again
+      community.aws.elasticache_subnet_group:
+        name: "{{ elasticache_subnet_group_name }}"
+        state: absent
+
+    - name: Make sure VPC SG is deleted again
+      amazon.aws.ec2_group:
+        name: elasticache-test-redis-sg
+        state: absent
+
+    - name: Make sure VPC is deleted again (should also delete subnets?)
+      amazon.aws.ec2_vpc_net:
+        name: elasticache-test-vpc
         state: absent
