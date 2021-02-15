@@ -1,6 +1,6 @@
-# reason: unstable
 # reason: slow
-disabled
+# This test suite can take almost 25 minutes (on a good day)
+unstable
 
 cloud/aws
 shippable/aws/group4

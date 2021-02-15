@@ -1,0 +1,2 @@
+bugfixes:
+- aws_ssm - fixed ``UnicodeEncodeError`` error when using unicode file names (https://github.com/ansible-collections/community.aws/pull/295).

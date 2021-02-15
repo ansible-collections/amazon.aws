@@ -5,15 +5,9 @@ __metaclass__ = type
 from io import StringIO
 import pytest
 import sys
-from ansible import constants as C
-from ansible.compat.selectors import SelectorKey, EVENT_READ
 from ansible_collections.community.aws.tests.unit.compat import unittest
-from ansible_collections.community.aws.tests.unit.compat.mock import patch, MagicMock, PropertyMock
-from ansible.errors import AnsibleError, AnsibleConnectionFailure, AnsibleFileNotFound
-from ansible.module_utils.six.moves import shlex_quote
-from ansible.module_utils._text import to_bytes
+from ansible_collections.community.aws.tests.unit.compat.mock import patch, MagicMock
 from ansible.playbook.play_context import PlayContext
-from ansible_collections.community.aws.plugins.connection import aws_ssm
 from ansible.plugins.loader import connection_loader
 
 

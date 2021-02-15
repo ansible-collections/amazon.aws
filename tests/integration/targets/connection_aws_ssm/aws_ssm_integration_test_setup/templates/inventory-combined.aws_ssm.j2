@@ -1,0 +1,30 @@
+[aws_ssm_linux]
+linux_{{linux_output.instance_ids[0]}} ansible_aws_ssm_instance_id={{linux_output.instance_ids[0]}} ansible_aws_ssm_region={{aws_region}}
+
+[aws_ssm_linux:vars]
+remote_tmp=/tmp/ansible-remote
+action_prefix=
+
+[aws_ssm_windows]
+windows_{{windows_output.instance_ids[0]}} ansible_aws_ssm_instance_id={{windows_output.instance_ids[0]}} ansible_aws_ssm_region={{aws_region}}
+
+[aws_ssm_windows:vars]
+ansible_shell_type=powershell
+remote_tmp=c:/windows/temp/ansible-remote
+action_prefix=win_
+
+[aws_ssm:children]
+aws_ssm_linux
+## To run the connection test uncomment here
+# aws_ssm_windows
+
+[aws_ssm:vars]
+ansible_connection=community.aws.aws_ssm
+ansible_aws_ssm_bucket_name={{s3_output.name}}
+ansible_aws_ssm_plugin=/usr/local/sessionmanagerplugin/bin/session-manager-plugin
+ansible_python_interpreter=/usr/bin/env python
+local_tmp=/tmp/ansible-local-
+
+# support tests that target testhost
+[testhost:children]
+aws_ssm

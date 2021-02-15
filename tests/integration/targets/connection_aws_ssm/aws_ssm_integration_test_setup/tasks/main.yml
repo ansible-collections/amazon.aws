@@ -1,4 +1,5 @@
 ---
+## Task file for setup/teardown AWS resources for aws_ssm integration testing
 - name: 'aws_ssm connection plugin integration test resource creation'
   collections:
     - amazon.aws
@@ -9,7 +10,6 @@
       security_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region }}'
   block:
-
     - name: AMI Lookup
       ec2_ami_info:
         owners: 'amazon'
@@ -45,14 +45,6 @@
         - install_plugin_debian is skipped
         - install_plugin_redhat is skipped
 
-    - name: Install Boto3
-      pip:
-        name: boto3
-
-    - name: Install Boto
-      pip:
-        name: boto
-
     - name: Ensure IAM instance role exists
       iam_role:
         name: "ansible-test-{{resource_prefix}}-aws-ssm-role"
@@ -60,36 +52,19 @@
         state: present
         create_instance_profile: yes
         managed_policy:
-        - AmazonEC2RoleforSSM
+        - AmazonSSMManagedInstanceCore
       register: role_output
-
-    - name: Create S3 bucket
-      s3_bucket:
-        name: "{{resource_prefix}}-aws-ssm-s3"
-      register: s3_output
 
     - name: Wait for IAM Role getting created
       pause:
         seconds: 10
 
-    - name: Create Linux EC2 instance
-      ec2_instance:
-        instance_type: "{{instance_type}}"
-        image_id: "{{linux_ami_id}}"
-        wait: "yes"
-        instance_role: "{{role_output.iam_role.role_name}}"
-        name: "{{resource_prefix}}-integration-test-aws-ssm-linux"
-        user_data: |
-                    #!/bin/sh
-                    sudo systemctl start amazon-ssm-agent
-        state: present
-      register: linux_output
-
     - name: Create Windows EC2 instance
       ec2_instance:
         instance_type: "{{instance_type}}"
+        ebs_optimized: True
         image_id: "{{windows_ami_id}}"
-        wait: "yes"
+        wait: no
         instance_role: "{{role_output.iam_role.role_name}}"
         name: "{{resource_prefix}}-integration-test-aws-ssm-windows"
         user_data: |
@@ -99,21 +74,40 @@
                     Restart-Service AmazonSSMAgent
                     </powershell>
         state: present
+        tags:
+          TestPrefix: '{{ resource_prefix }}'
       register: windows_output
 
+    - name: Create Linux EC2 instance
+      ec2_instance:
+        instance_type: "{{instance_type}}"
+        ebs_optimized: True
+        image_id: "{{linux_ami_id}}"
+        wait: "yes"
+        instance_role: "{{role_output.iam_role.role_name}}"
+        name: "{{resource_prefix}}-integration-test-aws-ssm-linux"
+        user_data: |
+                    #!/bin/sh
+                    sudo systemctl start amazon-ssm-agent
+        state: present
+        tags:
+          TestPrefix: '{{ resource_prefix }}'
+      register: linux_output
+
+    # This is just a delay, current host is localhost
     - name: Wait for EC2 to be available
       wait_for_connection:
-        delay: 300
+        delay: 360
 
-    - name: Create Inventory file for Linux host
-      template:
-        dest: "{{playbook_dir}}/inventory-linux.aws_ssm"
-        src: inventory-linux.aws_ssm.j2
+    - name: Create S3 bucket
+      s3_bucket:
+        name: "{{resource_prefix}}-aws-ssm-s3"
+      register: s3_output
 
-    - name: Create Inventory file for Windows host
+    - name: Create Inventory file
       template:
-        dest: "{{playbook_dir}}/inventory-windows.aws_ssm"
-        src: inventory-windows.aws_ssm.j2
+        dest: "{{playbook_dir}}/ssm_inventory"
+        src: inventory-combined.aws_ssm.j2
 
     - name: Create AWS Keys Environement
       template:

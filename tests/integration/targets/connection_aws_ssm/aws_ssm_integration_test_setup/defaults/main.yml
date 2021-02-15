@@ -1,5 +1,5 @@
 ---
-instance_type: t2.micro
-linux_ami_name: amzn-ami-hvm-2018.03.0.20190611-x86_64-ebs
+instance_type: t3.micro
+linux_ami_name: amzn-ami-hvm-2018.03*x86_64-ebs
 # Windows AMIs get replaced every few months, don't be too specific
 windows_ami_name: Windows_Server-2019-English-Full-Base-*

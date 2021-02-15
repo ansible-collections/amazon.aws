@@ -1,7 +1,15 @@
 - hosts: "{{ target_hosts }}"
   gather_facts: no
-  serial: 1
+  strategy: free
+  vars:
+    local_dir: '{{ local_tmp }}-{{ inventory_hostname }}-汉语'
+    local_file: '{{ local_dir }}/汉语.txt'
+    remote_dir: '{{ remote_tmp }}-汉语'
+    remote_file: '{{ remote_dir }}/汉语.txt'
   tasks:
+
+  ### test wait_for_connection plugin
+  - wait_for_connection:
 
   ### raw with unicode arg and output
 
@@ -17,27 +25,24 @@
   ### copy local file with unicode filename and content
 
   - name: create local file with unicode filename and content
-    local_action: lineinfile dest={{ local_tmp }}-汉语/汉语.txt create=true line=汉语
+    local_action: lineinfile dest={{ local_file }} create=true line=汉语
   - name: remove remote file with unicode filename and content
-    action: "{{ action_prefix }}file path={{ remote_tmp }}-汉语/汉语.txt state=absent"
+    action: "{{ action_prefix }}file path={{ remote_file }} state=absent"
   - name: create remote directory with unicode name
-    action: "{{ action_prefix }}file path={{ remote_tmp }}-汉语 state=directory"
+    action: "{{ action_prefix }}file path={{ remote_dir }} state=directory"
   - name: copy local file with unicode filename and content
-    action: "{{ action_prefix }}copy src={{ local_tmp }}-汉语/汉语.txt dest={{ remote_tmp }}-汉语/汉语.txt"
+    action: "{{ action_prefix }}copy src={{ local_file }} dest={{ remote_file }}"
 
   ### fetch remote file with unicode filename and content
 
   - name: remove local file with unicode filename and content
-    local_action: file path={{ local_tmp }}-汉语/汉语.txt state=absent
+    local_action: file path={{ local_file }} state=absent
   - name: fetch remote file with unicode filename and content
-    fetch: src={{ remote_tmp }}-汉语/汉语.txt dest={{ local_tmp }}-汉语/汉语.txt fail_on_missing=true validate_checksum=true flat=true
+    fetch: src={{ remote_file }} dest={{ local_file }} fail_on_missing=true validate_checksum=true flat=true
 
   ### remove local and remote temp files
 
   - name: remove local temp file
-    local_action: file path={{ local_tmp }}-汉语 state=absent
+    local_action: file path={{ local_file }} state=absent
   - name: remove remote temp file
-    action: "{{ action_prefix }}file path={{ remote_tmp }}-汉语 state=absent"
-
-  ### test wait_for_connection plugin
-  - wait_for_connection:
+    action: "{{ action_prefix }}file path={{ remote_file }} state=absent"
