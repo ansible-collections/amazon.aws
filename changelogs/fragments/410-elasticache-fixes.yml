@@ -1,0 +1,5 @@
+---
+bugfixes:
+  - elasticache - Fix issue when updating security group (KeyError)
+minor_changes:
+  - elasticache - Improve docs a little, add intgration tests

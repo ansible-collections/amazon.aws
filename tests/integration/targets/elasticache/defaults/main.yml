@@ -1,1 +1,5 @@
 ---
+
+elasticache_redis_test_name: elasticache-module-redis-test
+elasticache_subnet_group_name: elasticache-test-vpc-subnet-group
+elasticache_redis_port: 6379
