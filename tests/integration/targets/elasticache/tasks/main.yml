@@ -13,43 +13,39 @@
     # == Dependency setup ==
 
     - name: Create VPC to launch Elasticache instances into
-      amazon.aws.ec2_vpc_net:
+      ec2_vpc_net:
         name: elasticache-test-vpc
         cidr_block: 10.31.0.0/16
         state: present
-        region: "{{ aws_region }}"
       register: elasticache_vpc
 
     - name: Create subnet 1 in this VPC to launch Elasticache instances into
-      amazon.aws.ec2_vpc_subnet:
+      ec2_vpc_subnet:
         vpc_id: "{{ elasticache_vpc.vpc.id }}"
         cidr: 10.31.1.0/24
         state: present
-        region: "{{ aws_region }}"
       register: elasticache_vpc_subnet_1
 
     - name: Create subnet 2 in this VPC to launch Elasticache instances into
-      amazon.aws.ec2_vpc_subnet:
+      ec2_vpc_subnet:
         vpc_id: "{{ elasticache_vpc.vpc.id }}"
         cidr: 10.31.2.0/24
         state: present
-        region: "{{ aws_region }}"
       register: elasticache_vpc_subnet_2
 
     - name: Create Elasticache Subnet Group (grouping two subnets together)
-      community.aws.elasticache_subnet_group:
+      elasticache_subnet_group:
         name: "{{ elasticache_subnet_group_name }}"
         description: Subnet group grouping together both VPC subnets for Elasticache Test setup
         subnets:
           - "{{ elasticache_vpc_subnet_1.subnet.id }}"
           - "{{ elasticache_vpc_subnet_2.subnet.id }}"
         state: present
-        region: "{{ aws_region }}"
 
     # == Actual testing of the elasticache module ==
 
     - name: Create Redis Server on Elasticache in VPC subnets
-      community.aws.elasticache:
+      elasticache:
         name: "{{ elasticache_redis_test_name }}"
         engine: redis
         node_type: cache.t3.micro
@@ -57,7 +53,6 @@
         cache_subnet_group: "{{  elasticache_subnet_group_name }}"
         num_nodes: 1
         state: present
-        region: "{{ aws_region }}"
       register: elasticache_redis
 
     - name: Assert that task worked
@@ -69,7 +64,7 @@
           elasticache_redis.elasticache.data.CacheSubnetGroupName == "{{ elasticache_subnet_group_name }}"
 
     - name: Add security group for Redis access in Elasticache
-      amazon.aws.ec2_group:
+      ec2_group:
         name: elasticache-test-redis-sg
         description: Allow access to Elasticache Redis for testing EC module
         vpc_id: "{{  elasticache_vpc.vpc.id }}"
@@ -78,11 +73,10 @@
             from_port: "{{ elasticache_redis_port }}"
             to_port: "{{ elasticache_redis_port }}"
             cidr: 10.31.0.0/16
-        region: "{{ aws_region }}"
         register: elasticache_redis_sg
 
     - name: Update Redis Elasticache config with security group (to if changes to existing setup work)
-      community.aws.elasticache:
+      elasticache:
         name: "{{ elasticache_redis.name }}"
         engine: redis
         node_type: cache.t3.micro
@@ -90,7 +84,6 @@
         cache_port: "{{ elasticache_redis_port }}"
         cache_subnet_group: elasticache-test-vpc-subnet-group
         security_group_ids: "{{ elasticache_redis_sg.group_id }}"
-        region: "{{ aws_region }}"
         state: present
       register: elasticache_redis_new
 
@@ -107,26 +100,22 @@
     # == Cleanup ==
 
     - name: Make sure test Redis is deleted again from Elasticache
-      community.aws.elasticache:
+      elasticache:
         name: "{{ elasticache_redis_test_name }}"
         engine: redis
-        region: "{{ aws_region }}"
         state: absent
 
     - name: Make sure Subnet group is deleted again
-      community.aws.elasticache_subnet_group:
+      elasticache_subnet_group:
         name: "{{ elasticache_subnet_group_name }}"
-        region: "{{ aws_region }}"
         state: absent
 
     - name: Make sure VPC SG is deleted again
-      amazon.aws.ec2_group:
+      ec2_group:
         name: elasticache-test-redis-sg
-        region: "{{ aws_region }}"
         state: absent
 
     - name: Make sure VPC is deleted again (should also delete subnets?)
-      amazon.aws.ec2_vpc_net:
+      ec2_vpc_net:
         name: elasticache-test-vpc
-        region: "{{ aws_region }}"
         state: absent
