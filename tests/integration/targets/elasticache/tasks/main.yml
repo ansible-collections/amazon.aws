@@ -14,7 +14,7 @@
 
     - name: Create VPC to launch Elasticache instances into
       ec2_vpc_net:
-        name: elasticache-test-vpc
+        name: "{{ resource_prefix }}-elasticache-test-vpc"
         cidr_block: 10.31.0.0/16
         state: present
       register: elasticache_vpc
@@ -50,7 +50,7 @@
         engine: redis
         node_type: cache.t3.micro
         cache_port: "{{ elasticache_redis_port }}"
-        cache_subnet_group: "{{  elasticache_subnet_group_name }}"
+        cache_subnet_group: "{{ elasticache_subnet_group_name }}"
         num_nodes: 1
         state: present
       register: elasticache_redis
@@ -82,7 +82,7 @@
         node_type: cache.t3.micro
         num_nodes: 1
         cache_port: "{{ elasticache_redis_port }}"
-        cache_subnet_group: elasticache-test-vpc-subnet-group
+        cache_subnet_group: "{{ elasticache_subnet_group_name }}"
         security_group_ids: "{{ elasticache_redis_sg.group_id }}"
         state: present
       register: elasticache_redis_new
