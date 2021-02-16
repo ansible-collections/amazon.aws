@@ -441,7 +441,7 @@ def index_of_matching_route(route_spec, routes_to_match):
 
 def ensure_routes(connection=None, module=None, route_table=None, route_specs=None,
                   propagating_vgw_ids=None, check_mode=None, purge_routes=None):
-    routes_to_match = [route for route in route_table['Routes']]
+    routes_to_match = list(route_table['Routes'])
     route_specs_to_create = []
     route_specs_to_recreate = []
     for route_spec in route_specs:
