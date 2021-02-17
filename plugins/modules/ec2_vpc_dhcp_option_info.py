@@ -113,7 +113,7 @@ def list_dhcp_options(client, module):
     except botocore.exceptions.ClientError as e:
         module.fail_json_aws(e)
 
-    return [camel_dict_to_snake_dict(get_dhcp_options_info(option))
+    return [camel_dict_to_snake_dict(get_dhcp_options_info(option), ignore_list=['Tags'])
             for option in all_dhcp_options['DhcpOptions']]
 
 
