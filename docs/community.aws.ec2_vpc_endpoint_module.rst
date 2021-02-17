@@ -193,6 +193,7 @@ Parameters
                 <td>
                         <div>The path to the properly json formatted policy file, see <a href='https://github.com/ansible/ansible/issues/7005#issuecomment-42894813'>https://github.com/ansible/ansible/issues/7005#issuecomment-42894813</a> on how to use it properly. Cannot be used with <em>policy</em>.</div>
                         <div>Option when creating an endpoint. If not provided AWS will utilise a default policy which provides full access to the service.</div>
+                        <div>This option has been deprecated and will be removed after 2022-12-01 to maintain the existing functionality please use the <em>policy</em> option and a file lookup.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: policy_path</div>
                 </td>
             </tr>

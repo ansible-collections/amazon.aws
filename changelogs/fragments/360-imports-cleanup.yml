@@ -1,2 +1,0 @@
-minor_changes:
-- various community.aws modules - cleanup of Python imports (https://github.com/ansible-collections/community.aws/pull/360).

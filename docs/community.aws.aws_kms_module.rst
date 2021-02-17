@@ -333,6 +333,26 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>pending_window</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.4.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The number of days between requesting deletion of the CMK and when it will actually be deleted.</div>
+                        <div>Only used when <em>state=absent</em> and the CMK has not yet been deleted.</div>
+                        <div>Valid values are between 7 and 30 (inclusive).</div>
+                        <div>See also: <a href='https://docs.aws.amazon.com/kms/latest/APIReference/API_ScheduleKeyDeletion.html#KMS-ScheduleKeyDeletion-request-PendingWindowInDays'>https://docs.aws.amazon.com/kms/latest/APIReference/API_ScheduleKeyDeletion.html#KMS-ScheduleKeyDeletion-request-PendingWindowInDays</a></div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: deletion_delay</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>policy</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">

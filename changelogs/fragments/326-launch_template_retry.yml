@@ -1,2 +1,0 @@
-minor_changes:
-- ec2_launch_template - Add retries on common AWS failures (https://github.com/ansible-collections/community.aws/pull/326).

@@ -1,2 +1,0 @@
-minor_changes:
-- various community.aws modules - migrate exception error message handling from fail_json to fail_json_aws (https://github.com/ansible-collections/community.aws/pull/361).

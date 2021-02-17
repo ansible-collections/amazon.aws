@@ -120,6 +120,7 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
@@ -282,6 +283,9 @@ Parameters
                 </td>
                 <td>
                         <div>Which task operation to execute.</div>
+                        <div>When <em>operation=run</em> <em>task_definition</em> must be set.</div>
+                        <div>When <em>operation=start</em> both <em>task_definition</em> and <em>container_instances</em> must be set.</div>
+                        <div>When <em>operation=stop</em> both <em>task_definition</em> and <em>task</em> must be set.</div>
                 </td>
             </tr>
             <tr>
@@ -393,7 +397,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The task to stop.</div>
+                        <div>The ARN of the task to stop.</div>
                 </td>
             </tr>
             <tr>
@@ -408,7 +412,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The task definition to start or run.</div>
+                        <div>The task definition to start, run or stop.</div>
                 </td>
             </tr>
             <tr>

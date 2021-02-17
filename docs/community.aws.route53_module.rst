@@ -25,8 +25,10 @@ Requirements
 ------------
 The below requirements are needed on the host that executes this module.
 
-- python >= 2.6
+- boto
 - boto3
+- botocore
+- python >= 2.6
 
 
 Parameters
@@ -601,7 +603,6 @@ Examples
         ttl: 7200
         value: 1.1.1.1,2.2.2.2,3.3.3.3
         wait: yes
-
     - name: Update new.foo.com as an A record with a list of 3 IPs and wait until the changes have been replicated
       community.aws.route53:
         state: present
@@ -614,7 +615,6 @@ Examples
           - 2.2.2.2
           - 3.3.3.3
         wait: yes
-
     - name: Retrieve the details for new.foo.com
       community.aws.route53:
         state: get
@@ -622,7 +622,6 @@ Examples
         record: new.foo.com
         type: A
       register: rec
-
     - name: Delete new.foo.com A record using the results from the get command
       community.aws.route53:
         state: absent
@@ -631,7 +630,6 @@ Examples
         ttl: "{{ rec.set.ttl }}"
         type: "{{ rec.set.type }}"
         value: "{{ rec.set.value }}"
-
     # Add an AAAA record.  Note that because there are colons in the value
     # that the IPv6 address must be quoted. Also shows using the old form command=create.
     - name: Add an AAAA record
@@ -642,7 +640,6 @@ Examples
         type: AAAA
         ttl: 7200
         value: "::1"
-
     # For more information on SRV records see:
     # https://en.wikipedia.org/wiki/SRV_record
     - name: Add a SRV record with multiple fields for a service on port 22222
@@ -652,7 +649,6 @@ Examples
         record: "_example-service._tcp.foo.com"
         type: SRV
         value: "0 0 22222 host1.foo.com,0 0 22222 host2.foo.com"
-
     # Note that TXT and SPF records must be surrounded
     # by quotes when sent to Route 53:
     - name: Add a TXT record.
@@ -663,7 +659,6 @@ Examples
         type: TXT
         ttl: 7200
         value: '"bar"'
-
     - name: Add an alias record that points to an Amazon ELB
       community.aws.route53:
         state: present
@@ -673,7 +668,6 @@ Examples
         value: "{{ elb_dns_name }}"
         alias: True
         alias_hosted_zone_id: "{{ elb_zone_id }}"
-
     - name: Retrieve the details for elb.foo.com
       community.aws.route53:
         state: get
@@ -681,7 +675,6 @@ Examples
         record: elb.foo.com
         type: A
       register: rec
-
     - name: Delete an alias record using the results from the get command
       community.aws.route53:
         state: absent
@@ -692,7 +685,6 @@ Examples
         value: "{{ rec.set.value }}"
         alias: True
         alias_hosted_zone_id: "{{ rec.set.alias_hosted_zone_id }}"
-
     - name: Add an alias record that points to an Amazon ELB and evaluates it health
       community.aws.route53:
         state: present
@@ -703,7 +695,6 @@ Examples
         alias: True
         alias_hosted_zone_id: "{{ elb_zone_id }}"
         alias_evaluate_target_health: True
-
     - name: Add an AAAA record with Hosted Zone ID
       community.aws.route53:
         state: present
@@ -713,7 +704,6 @@ Examples
         type: AAAA
         ttl: 7200
         value: "::1"
-
     - name: Use a routing policy to distribute traffic
       community.aws.route53:
         state: present
@@ -726,7 +716,6 @@ Examples
         identifier: "host1@www"
         weight: 100
         health_check: "d994b780-3150-49fd-9205-356abdd42e75"
-
     - name: Add a CAA record (RFC 6844)
       community.aws.route53:
         state: present

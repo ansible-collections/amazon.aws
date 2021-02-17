@@ -1,3 +1,0 @@
----
-bugfixes:
-- ecs_task - use `required_if` to enforce mandatory parameters based on specified operation (https://github.com/ansible-collections/community.aws/pull/402).

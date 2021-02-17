@@ -162,6 +162,7 @@ Parameters
                 </td>
                 <td>
                         <div>The id of the device for the EIP. Can be an EC2 Instance id or Elastic Network Interface (ENI) id.</div>
+                        <div>The <em>instance_id</em> alias has been deprecated and will be removed after 2022-12-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: instance_id</div>
                 </td>
             </tr>

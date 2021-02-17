@@ -1,2 +1,0 @@
-bugfixes:
-- aws_s3_cors - fix element type for rules parameter. (https://github.com/ansible-collections/community.aws/pull/408).

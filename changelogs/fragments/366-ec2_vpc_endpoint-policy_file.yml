@@ -1,2 +1,0 @@
-deprecated_features:
-- ec2_vpc_endpoint - deprecate the policy_file option and recommend using policy with a lookup (https://github.com/ansible-collections/community.aws/pull/366).

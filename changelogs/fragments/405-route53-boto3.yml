@@ -1,2 +1,0 @@
-minor_changes:
-- route53 - migrated from boto to boto3 (https://github.com/ansible-collections/community.aws/pull/405).

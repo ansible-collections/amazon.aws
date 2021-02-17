@@ -44,6 +44,24 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>alias</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.4.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Alias for key.</div>
+                        <div>Mutually exclusive with <em>key_id</em> and <em>filters</em>.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: key_alias</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>aws_access_key</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -159,6 +177,25 @@ Parameters
                 </td>
                 <td>
                         <div>A dict of filters to apply. Each dict item consists of a filter key and a filter value. The filters aren&#x27;t natively supported by boto3, but are supported to provide similar functionality to other modules. Standard tag filters (<code>tag-key</code>, <code>tag-value</code> and <code>tag:tagName</code>) are available, as are <code>key-id</code> and <code>alias</code></div>
+                        <div>Mutually exclusive with <em>alias</em> and <em>key_id</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>key_id</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.4.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Key ID or ARN of the key.</div>
+                        <div>Mutually exclusive with <em>alias</em> and <em>filters</em>.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: key_arn</div>
                 </td>
             </tr>
             <tr>

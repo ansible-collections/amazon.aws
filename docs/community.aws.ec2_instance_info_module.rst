@@ -183,6 +183,22 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>minimum_uptime</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Minimum running uptime in minutes of instances.  For example if <em>uptime</em> is <code>60</code> return all instances that have run more than 60 minutes.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: uptime</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>profile</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -294,6 +310,15 @@ Examples
       community.aws.ec2_instance_info:
         filters:
           instance-state-name: [ "shutting-down", "stopping", "stopped" ]
+
+    - name: Gather information about any instance with Name beginning with RHEL and an uptime of at least 60 minutes
+      community.aws.ec2_instance_info:
+        region: "{{ ec2_region }}"
+        uptime: 60
+        filters:
+          "tag:Name": "RHEL-*"
+          instance-state-name: [ "running"]
+      register: ec2_node_info
 
 
 

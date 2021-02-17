@@ -1,2 +1,0 @@
-deprecated_features:
-- ec2_eip - formally deprecate the ``instance_id`` alias for ``device_id`` (https://github.com/ansible-collections/community.aws/pull/349).
