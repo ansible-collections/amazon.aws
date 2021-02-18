@@ -91,7 +91,7 @@
       that:
         - original_dhcp_options_info.dhcp_options | length == 1
         - original_config.keys() | list | sort == ['domain-name', 'domain-name-servers']
-        - original_config['domain-name'][0]['value'] == "{{ aws_domain_name }}"
+        - original_config['domain-name'][0]['value'] == '{{ aws_domain_name }}'
         - original_config['domain-name-servers'][0]['value'] == 'AmazonProvidedDNS'
         - original_dhcp_options_id not in preexisting_option_sets
 
@@ -195,7 +195,7 @@
   - assert:
       that:
         - new_config.keys() | list | sort == ['domain-name', 'domain-name-servers', 'netbios-name-servers', 'netbios-node-type', 'ntp-servers']
-        - new_config['domain-name'][0]['value'] == "{{ aws_domain_name }}"
+        - new_config['domain-name'][0]['value'] == '{{ aws_domain_name }}'
         - new_config['domain-name-servers'][0]['value'] == 'AmazonProvidedDNS'
         - new_config['ntp-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.2', '10.0.1.2']
         - new_config['netbios-name-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.1', '10.0.1.1']
@@ -363,7 +363,7 @@
   - assert:
       that:
         - new_config.keys() | list | sort == ['domain-name', 'domain-name-servers', 'netbios-name-servers', 'netbios-node-type', 'ntp-servers']
-        - new_config['domain-name'][0]['value'] == "{{ aws_domain_name }}"
+        - new_config['domain-name'][0]['value'] == '{{ aws_domain_name }}'
         - new_config['ntp-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.2', '10.0.1.2']
         - new_config['netbios-name-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.1', '10.0.1.1']
         - new_config['netbios-node-type'][0]['value'] == '1'
@@ -425,7 +425,7 @@
       that:
         - dhcp_options.new_options
         - dhcp_options.new_options.keys() | list | sort is superset(['domain-name', 'domain-name-servers'])
-        - dhcp_options.new_options['domain-name']  in ["{{ aws_domain_name }}", ["{{ aws_domain_name }}"]]
+        - dhcp_options.new_options['domain-name'] == ['{{ aws_domain_name }}']
         - dhcp_options.new_options['domain-name-servers'] == ['AmazonProvidedDNS']
         - original_dhcp_options_id != dhcp_options.dhcp_options_id
 

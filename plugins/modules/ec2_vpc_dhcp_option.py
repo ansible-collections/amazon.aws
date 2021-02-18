@@ -436,9 +436,9 @@ def normalize_config(option_config):
         "new_options": {
             "domain-name": "ec2.internal",
             "domain-name-servers": ["AmazonProvidedDNS"],
-            "netbios-name-servers": [10.0.0.1", "10.0.1.1"],
+            "netbios-name-servers": ["10.0.0.1", "10.0.1.1"],
             "netbios-node-type": "1",
-            "ntp-servers": [10.0.0.2", "10.0.1.2"]
+            "ntp-servers": ["10.0.0.2", "10.0.1.2"]
         },
     And all keys were historically returned by the module.
     """
