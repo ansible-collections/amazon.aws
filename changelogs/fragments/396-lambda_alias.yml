@@ -1,0 +1,4 @@
+minor_changes:
+- lambda_alias - use common helper functions to create AWS connections (https://github.com/ansible-collections/community.aws/pull/396).
+- lambda_alias - use common helper functions to perform snake_case to CamelCase conversions (https://github.com/ansible-collections/community.aws/pull/396).
+- lambda_alias - add retries on common AWS failures (https://github.com/ansible-collections/community.aws/pull/396).
