@@ -1,0 +1,622 @@
+- name: set connection information for AWS modules and run tests
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  collections:
+    - community.general
+  block:
+  # ==============================================================
+  # Preparation
+  - name: create minimal lambda role
+    iam_role:
+      name: '{{ lambda_role_name }}'
+      assume_role_policy_document: '{{ lookup("file", "minimal_trust_policy.json") }}'
+      create_instance_profile: false
+      managed_policies:
+      - 'arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess'
+    register: iam_role
+  - name: wait 10 seconds for role to become available
+    pause:
+      seconds: 10
+    when: iam_role.changed
+  - name: move lambda into place for archive module
+    copy:
+      src: mini_lambda.py
+      dest: '{{ output_dir }}/mini_lambda.py'
+      mode: preserve
+  - name: bundle lambda into a zip
+    register: zip_res
+    archive:
+      format: zip
+      path: '{{ output_dir }}/mini_lambda.py'
+      dest: '{{ output_dir }}/mini_lambda.zip'
+
+  - name: Upload test lambda (version 1)
+    lambda:
+      name: '{{ lambda_function_name }}'
+      runtime: 'python2.7'
+      handler: 'mini_lambda.handler'
+      role: '{{ lambda_role_name }}'
+      zip_file: '{{ zip_res.dest }}'
+    register: lambda_a
+  - name: assert lambda upload succeeded
+    assert:
+      that:
+      - lambda_a is changed
+
+  - name: Update lambda (version 2)
+    lambda:
+      name: '{{ lambda_function_name }}'
+      runtime: 'python3.6'
+      handler: 'mini_lambda.handler'
+      role: '{{ lambda_role_name }}'
+    register: lambda_b
+  - name: assert that update succeeded
+    assert:
+      that:
+      - lambda_b is changed
+
+  - name: Update lambda (version 3 / LATEST)
+    lambda:
+      name: '{{ lambda_function_name }}'
+      runtime: 'python3.7'
+      handler: 'mini_lambda.handler'
+      role: '{{ lambda_role_name }}'
+    register: lambda_c
+  - name: assert that update succeeded
+    assert:
+      that:
+      - lambda_c is changed
+
+  - name: Store Lambda info
+    vars:
+      _full_arn: '{{ lambda_a.configuration.function_arn }}'
+    set_fact:
+      lambda_arn: '{{ ":".join(_full_arn.split(":")[:-1]) }}'
+
+  # ==============================================================
+  # Creation of an alias
+  - name: Create an alias (check mode)
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+    check_mode: True
+    register: create_alias
+  - name: Check changed
+    assert:
+      that:
+      - create_alias is changed
+
+  - name: Create an alias
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+    register: create_alias
+  - name: Check changed and returned values
+    assert:
+      that:
+      - create_alias is changed
+      - '"alias_arn" in create_alias'
+      - create_alias.alias_arn.startswith(lambda_arn)
+      - create_alias.alias_arn.endswith("Testing")
+      - '"description" in create_alias'
+      - create_alias.description == ""
+      - '"function_version" in create_alias'
+      - create_alias.function_version == "$LATEST"
+      - '"name" in create_alias'
+      - create_alias.name == "Testing"
+      - '"revision_id" in create_alias'
+      # The revision_id doesn't line up with the revision IDs of the versions
+      # It will change any time the alias is updated
+
+  - name: Create an alias - idempotency (check mode)
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+    check_mode: True
+    register: create_alias
+  - name: Check not changed
+    assert:
+      that:
+      - create_alias is not changed
+
+  - name: Create an alias - idempotecy
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+    register: create_alias
+  - name: Check not changed
+    assert:
+      that:
+      - create_alias is not changed
+      - '"alias_arn" in create_alias'
+      - create_alias.alias_arn.startswith(lambda_arn)
+      - create_alias.alias_arn.endswith("Testing")
+      - '"description" in create_alias'
+      - create_alias.description == ""
+      - '"function_version" in create_alias'
+      - create_alias.function_version == "$LATEST"
+      - '"name" in create_alias'
+      - create_alias.name == "Testing"
+      - '"revision_id" in create_alias'
+      # The revision_id doesn't line up with the revision IDs of the versions
+      # It will change any time the alias is updated
+
+  # ==============================================================
+  # Update description of an alias when none set to start
+  - name: Update an alias description (check mode)
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+      description: 'Description 1'
+    check_mode: True
+    register: update_alias_description
+  - name: Check changed
+    assert:
+      that:
+      - update_alias_description is changed
+
+  - name: Update an alias description
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+      description: 'Description 1'
+    register: update_alias_description
+  - name: Check changed and returned values
+    assert:
+      that:
+      - update_alias_description is changed
+      - '"alias_arn" in update_alias_description'
+      - update_alias_description.alias_arn.startswith(lambda_arn)
+      - update_alias_description.alias_arn.endswith("Testing")
+      - '"description" in update_alias_description'
+      - update_alias_description.description == "Description 1"
+      - '"function_version" in update_alias_description'
+      - update_alias_description.function_version == "$LATEST"
+      - '"name" in update_alias_description'
+      - update_alias_description.name == "Testing"
+      - '"revision_id" in update_alias_description'
+      # The revision_id doesn't line up with the revision IDs of the versions
+      # It will change any time the alias is updated
+
+  - name: Update an alias description - idempotency (check mode)
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+      description: 'Description 1'
+    check_mode: True
+    register: update_alias_description
+  - name: Check not changed
+    assert:
+      that:
+      - update_alias_description is not changed
+
+  - name: Update an alias description - idempotecy
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+      description: 'Description 1'
+    register: update_alias_description
+  - name: Check not changed
+    assert:
+      that:
+      - update_alias_description is not changed
+      - '"alias_arn" in update_alias_description'
+      - update_alias_description.alias_arn.startswith(lambda_arn)
+      - update_alias_description.alias_arn.endswith("Testing")
+      - '"description" in update_alias_description'
+      - update_alias_description.description == "Description 1"
+      - '"function_version" in update_alias_description'
+      - update_alias_description.function_version == "$LATEST"
+      - '"name" in update_alias_description'
+      - update_alias_description.name == "Testing"
+      - '"revision_id" in update_alias_description'
+      # The revision_id doesn't line up with the revision IDs of the versions
+      # It will change any time the alias is updated
+
+  # ==============================================================
+  # Update description of an alias when one set to start
+  - name: Update an alias description again (check mode)
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+      description: 'description 2'
+    check_mode: True
+    register: update_alias_description
+  - name: Check changed
+    assert:
+      that:
+      - update_alias_description is changed
+
+  - name: Update an alias description again
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+      description: 'description 2'
+    register: update_alias_description
+  - name: Check changed and returned values
+    assert:
+      that:
+      - update_alias_description is changed
+      - '"alias_arn" in update_alias_description'
+      - update_alias_description.alias_arn.startswith(lambda_arn)
+      - update_alias_description.alias_arn.endswith("Testing")
+      - '"description" in update_alias_description'
+      - update_alias_description.description == "description 2"
+      - '"function_version" in update_alias_description'
+      - update_alias_description.function_version == "$LATEST"
+      - '"name" in update_alias_description'
+      - update_alias_description.name == "Testing"
+      - '"revision_id" in update_alias_description'
+      # The revision_id doesn't line up with the revision IDs of the versions
+      # It will change any time the alias is updated
+
+  # ==============================================================
+  # Update version of an alias
+  - name: Update an alias version (check mode)
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+      function_version: 1
+    check_mode: True
+    register: update_alias_version
+  - name: Check changed
+    assert:
+      that:
+      - update_alias_version is changed
+
+  - name: Update an alias version
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+      function_version: 1
+    register: update_alias_version
+  - name: Check changed and returned values
+    assert:
+      that:
+      - update_alias_version is changed
+      - '"alias_arn" in update_alias_version'
+      - update_alias_version.alias_arn.startswith(lambda_arn)
+      - update_alias_version.alias_arn.endswith("Testing")
+      - '"description" in update_alias_version'
+      - update_alias_version.description == "description 2"
+      - '"function_version" in update_alias_version'
+      - update_alias_version.function_version == "1"
+      - '"name" in update_alias_version'
+      - update_alias_version.name == "Testing"
+      - '"revision_id" in update_alias_version'
+      # The revision_id doesn't line up with the revision IDs of the versions
+      # It will change any time the alias is updated
+
+  - name: Update an alias version - idempotency (check mode)
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+      function_version: 1
+    check_mode: True
+    register: update_alias_version
+  - name: Check not changed
+    assert:
+      that:
+      - update_alias_version is not changed
+
+  - name: Update an alias version - idempotecy
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+      function_version: 1
+    register: update_alias_version
+  - name: Check not changed
+    assert:
+      that:
+      - update_alias_version is not changed
+      - '"alias_arn" in update_alias_version'
+      - update_alias_version.alias_arn.startswith(lambda_arn)
+      - update_alias_version.alias_arn.endswith("Testing")
+      - '"description" in update_alias_version'
+      - update_alias_version.description == "description 2"
+      - '"function_version" in update_alias_version'
+      - update_alias_version.function_version == "1"
+      - '"name" in update_alias_version'
+      - update_alias_version.name == "Testing"
+      - '"revision_id" in update_alias_version'
+      # The revision_id doesn't line up with the revision IDs of the versions
+      # It will change any time the alias is updated
+
+  - name: Update an alias version to implied LATEST (check mode)
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+      # docs state that when not defined defaults to LATEST
+      #function_version: 1
+    check_mode: True
+    register: update_alias_version
+  - name: Check changed
+    assert:
+      that:
+      - update_alias_version is changed
+
+  - name: Update an alias version to implied LATEST
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+      # docs state that when not defined defaults to LATEST
+      #function_version: 1
+    register: update_alias_version
+  - name: Check changed and returned values
+    assert:
+      that:
+      - update_alias_version is changed
+      - '"alias_arn" in update_alias_version'
+      - update_alias_version.alias_arn.startswith(lambda_arn)
+      - update_alias_version.alias_arn.endswith("Testing")
+      - '"description" in update_alias_version'
+      - update_alias_version.description == "description 2"
+      - '"function_version" in update_alias_version'
+      - update_alias_version.function_version == "$LATEST"
+      - '"name" in update_alias_version'
+      - update_alias_version.name == "Testing"
+      - '"revision_id" in update_alias_version'
+      # The revision_id doesn't line up with the revision IDs of the versions
+      # It will change any time the alias is updated
+
+  # Make sure that 0 also causes a change
+  - name: Update an alias version
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+      function_version: 1
+    register: update_alias_version
+  - name: Check not changed
+    assert:
+      that:
+      - update_alias_version is changed
+      - '"alias_arn" in update_alias_version'
+      - update_alias_version.alias_arn.startswith(lambda_arn)
+      - update_alias_version.alias_arn.endswith("Testing")
+      - '"description" in update_alias_version'
+      - update_alias_version.description == "description 2"
+      - '"function_version" in update_alias_version'
+      - update_alias_version.function_version == "1"
+      - '"name" in update_alias_version'
+      - update_alias_version.name == "Testing"
+      - '"revision_id" in update_alias_version'
+      # The revision_id doesn't line up with the revision IDs of the versions
+      # It will change any time the alias is updated
+
+  - name: Update an alias version to explicit LATEST with 0 (check mode)
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+      function_version: 0
+    check_mode: True
+    register: update_alias_version
+  - name: Check changed
+    assert:
+      that:
+      - update_alias_version is changed
+
+  - name: Update an alias version to explicit LATEST with 0
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+      function_version: 0
+    register: update_alias_version
+  - name: Check changed and returned values
+    assert:
+      that:
+      - update_alias_version is changed
+      - '"alias_arn" in update_alias_version'
+      - update_alias_version.alias_arn.startswith(lambda_arn)
+      - update_alias_version.alias_arn.endswith("Testing")
+      - '"description" in update_alias_version'
+      - update_alias_version.description == "description 2"
+      - '"function_version" in update_alias_version'
+      - update_alias_version.function_version == "$LATEST"
+      - '"name" in update_alias_version'
+      - update_alias_version.name == "Testing"
+      - '"revision_id" in update_alias_version'
+      # The revision_id doesn't line up with the revision IDs of the versions
+      # It will change any time the alias is updated
+
+  - name: Update an alias version to explicit LATEST with 0 - idempotency (check mode)
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+      function_version: 0
+    check_mode: True
+    register: update_alias_version
+  - name: Check changed
+    assert:
+      that:
+      - update_alias_version is not changed
+
+  - name: Update an alias version to explicit LATEST with 0 - idempotecy
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+      function_version: 0
+    register: update_alias_version
+  - name: Check changed and returned values
+    assert:
+      that:
+      - update_alias_version is not changed
+      - '"alias_arn" in update_alias_version'
+      - update_alias_version.alias_arn.startswith(lambda_arn)
+      - update_alias_version.alias_arn.endswith("Testing")
+      - '"description" in update_alias_version'
+      - update_alias_version.description == "description 2"
+      - '"function_version" in update_alias_version'
+      - update_alias_version.function_version == "$LATEST"
+      - '"name" in update_alias_version'
+      - update_alias_version.name == "Testing"
+      - '"revision_id" in update_alias_version'
+      # The revision_id doesn't line up with the revision IDs of the versions
+      # It will change any time the alias is updated
+
+  # ==============================================================
+  # Creation of an alias with all options
+  - name: Create an alias with all options (check mode)
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      description: 'Hello world'
+      name: stable
+      function_version: 1
+    check_mode: True
+    register: create_alias
+  - name: Check changed
+    assert:
+      that:
+      - create_alias is changed
+
+  - name: Create an alias with all options
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      description: 'Hello world'
+      name: stable
+      function_version: 1
+    register: create_alias
+  - name: Check changed and returned values
+    assert:
+      that:
+      - create_alias is changed
+      - '"alias_arn" in create_alias'
+      - create_alias.alias_arn.startswith(lambda_arn)
+      - create_alias.alias_arn.endswith("stable")
+      - '"description" in create_alias'
+      - create_alias.description == "Hello world"
+      - '"function_version" in create_alias'
+      - create_alias.function_version == "1"
+      - '"name" in create_alias'
+      - create_alias.name == "stable"
+      - '"revision_id" in create_alias'
+      # The revision_id doesn't line up with the revision IDs of the versions
+      # It will change any time the alias is updated
+
+  - name: Create an alias with all options - idempotency (check mode)
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      description: 'Hello world'
+      name: stable
+      function_version: 1
+    check_mode: True
+    register: create_alias
+  - name: Check not changed
+    assert:
+      that:
+      - create_alias is not changed
+
+  - name: Create an alias wth all options - idempotecy
+    lambda_alias:
+      state: present
+      function_name: '{{ lambda_function_name }}'
+      description: 'Hello world'
+      name: stable
+      function_version: 1
+    register: create_alias
+  - name: Check not changed
+    assert:
+      that:
+      - create_alias is not changed
+      - '"alias_arn" in create_alias'
+      - create_alias.alias_arn.startswith(lambda_arn)
+      - create_alias.alias_arn.endswith("stable")
+      - '"description" in create_alias'
+      - create_alias.description == "Hello world"
+      - '"function_version" in create_alias'
+      - create_alias.function_version == "1"
+      - '"name" in create_alias'
+      - create_alias.name == "stable"
+      - '"revision_id" in create_alias'
+      # The revision_id doesn't line up with the revision IDs of the versions
+      # It will change any time the alias is updated
+
+  # ==============================================================
+  # Deletion of an alias
+  - name: Delete an alias (check mode)
+    lambda_alias:
+      state: absent
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+    check_mode: True
+    register: delete_alias
+  - name: Check changed
+    assert:
+      that:
+      - delete_alias is changed
+
+  - name: Delete an alias
+    lambda_alias:
+      state: absent
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+    register: delete_alias
+  - name: Check changed
+    assert:
+      that:
+      - delete_alias is changed
+
+  - name: Delete an alias - idempotency (check mode)
+    lambda_alias:
+      state: absent
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+    check_mode: True
+    register: delete_alias
+  - name: Check not changed
+    assert:
+      that:
+      - delete_alias is not changed
+
+  - name: Delete an alias - idempotecy
+    lambda_alias:
+      state: absent
+      function_name: '{{ lambda_function_name }}'
+      name: Testing
+    register: delete_alias
+  - name: Check not changed
+    assert:
+      that:
+      - delete_alias is not changed
+
+  # ==============================================================
+  # Cleanup
+  always:
+  - name: ensure function is absent at end of test
+    lambda:
+      name: '{{lambda_function_name}}'
+      state: absent
+    ignore_errors: true
+  - name: ensure role has been removed at end of test
+    iam_role:
+      name: '{{ lambda_role_name }}'
+      state: absent
+      delete_instance_profile: True
+    ignore_errors: true
