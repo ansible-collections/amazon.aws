@@ -1,2 +1,5 @@
+# https://github.com/ansible-collections/community.aws/issues/428
+unstable
+
 cloud/aws
 shippable/aws/group2
