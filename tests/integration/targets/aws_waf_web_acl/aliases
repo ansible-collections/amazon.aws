@@ -1,6 +1,6 @@
 # reason: broken
 # ansible/ansible#38258
-unsupported
+disabled
 
 cloud/aws
 

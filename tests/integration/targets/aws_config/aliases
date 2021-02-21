@@ -1,6 +1,6 @@
 # reason: missing-policy
 # We don't have CI or 'unsupported' policy for AWS config
-disabled
+unsupported
 
 cloud/aws
 shippable/aws/group2

@@ -1,4 +1,6 @@
-# reason:
-unsupported
+# reason: missing-policy
+# reason: broken
+# The SSL cert stored in the test has expired.  Should be dynamically generated.
+disabled
 
 cloud/aws

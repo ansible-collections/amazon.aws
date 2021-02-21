@@ -1,6 +1,6 @@
 # reason: slow
-# reason: broken
 # Tests take around 30 minutes
-unsupported
+# reason: broken
+disabled
 
 cloud/aws

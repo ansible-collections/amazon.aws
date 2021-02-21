@@ -1,2 +1,7 @@
+# reason: boto2
+# elb_classic_lb is boto2 based which means that it handles rate limiting poorly
+# https://github.com/ansible-collections/community.aws/issues/430
+unstable
+
 cloud/aws
 shippable/aws/group2

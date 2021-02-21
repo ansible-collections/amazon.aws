@@ -1,5 +1,5 @@
 # reason: unstable
-# When running tests a failure rate of around 20% was observed
+# https://github.com/ansible/ansible/issues/63520
 unsupported
 
 cloud/aws

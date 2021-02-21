@@ -1,5 +1,7 @@
-ec2_vpc_nacl_info
-cloud/aws
-shippable/aws/group2
 # https://github.com/ansible-collections/community.aws/issues/153
 unstable
+
+cloud/aws
+shippable/aws/group2
+
+ec2_vpc_nacl_info

@@ -1,4 +1,10 @@
+# reason: boto2
+# ec2_vpc_route_table_info is currently boto v2 based which means it can't handle API rate limiting
+# https://github.com/ansible-collections/community.aws/issues/277 with AWSRetry
+# would likely fix the issue.
+unstable
+
 cloud/aws
 shippable/aws/group2
-unstable
+
 ec2_vpc_route_table_info

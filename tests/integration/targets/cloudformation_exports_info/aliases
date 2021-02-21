@@ -1,4 +1,5 @@
-cloud/aws
-shippable/aws/group3
 # https://github.com/ansible-collections/community.aws/issues/157
 unstable
+
+cloud/aws
+shippable/aws/group3

@@ -1,4 +1,7 @@
-# reason: unknown
+# reason: missing-policy
+# We don't have CI or 'unsupported' policy for AWS config
+# reason: slow
+# Starting up an EKS cluster is a slow process, tests can take 40 minutes
 unsupported
 
 cloud/aws
