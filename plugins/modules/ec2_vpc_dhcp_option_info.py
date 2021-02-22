@@ -90,6 +90,7 @@ from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ..module_utils.ec2 import normalize_ec2_vpc_dhcp_config
 
 
 def get_dhcp_options_info(dhcp_option):
@@ -113,8 +114,9 @@ def list_dhcp_options(client, module):
     except botocore.exceptions.ClientError as e:
         module.fail_json_aws(e)
 
-    return [camel_dict_to_snake_dict(get_dhcp_options_info(option), ignore_list=['Tags'])
-            for option in all_dhcp_options['DhcpOptions']]
+    normalized_config = [normalize_ec2_vpc_dhcp_config(config['DhcpConfigurations']) for config in all_dhcp_options['DhcpOptions']]
+    raw_config = [camel_dict_to_snake_dict(get_dhcp_options_info(option), ignore_list=['Tags']) for option in all_dhcp_options['DhcpOptions']]
+    return raw_config, normalized_config
 
 
 def main():
@@ -135,9 +137,9 @@ def main():
     client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
     # call your function here
-    results = list_dhcp_options(client, module)
+    results, normalized_config = list_dhcp_options(client, module)
 
-    module.exit_json(dhcp_options=results)
+    module.exit_json(dhcp_options=results, dhcp_config=normalized_config)
 
 
 if __name__ == '__main__':

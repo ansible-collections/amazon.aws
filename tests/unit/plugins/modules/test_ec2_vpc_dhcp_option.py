@@ -76,7 +76,7 @@ class TestDhcpModule(ModuleTestCase):
         client_mock.create_dhcp_options.assert_called_once_with(DhcpConfigurations=test_create_option_set, aws_retry=True)
 
     def test_normalize_config(self, client_mock):
-        result = dhcp_module.normalize_config(test_create_config)
+        result = dhcp_module.normalize_ec2_vpc_dhcp_config(test_create_config)
 
         print(result)
         print(test_normalize_config)

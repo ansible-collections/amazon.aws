@@ -939,3 +939,46 @@ def ensure_ec2_tags(client, module, resource_id, resource_type=None, tags=None, 
     changed |= add_ec2_tags(client, module, resource_id, tags_to_set, retry_codes)
 
     return changed
+
+
+def normalize_ec2_vpc_dhcp_config(option_config):
+    """
+    The boto2 module returned a config dict, but boto3 returns a list of dicts
+    Make the data we return look like the old way, so we don't break users.
+    This is also much more user-friendly.
+    boto3:
+        'DhcpConfigurations': [
+            {'Key': 'domain-name', 'Values': [{'Value': 'us-west-2.compute.internal'}]},
+            {'Key': 'domain-name-servers', 'Values': [{'Value': 'AmazonProvidedDNS'}]},
+            {'Key': 'netbios-name-servers', 'Values': [{'Value': '1.2.3.4'}, {'Value': '5.6.7.8'}]},
+            {'Key': 'netbios-node-type', 'Values': [1]},
+             {'Key': 'ntp-servers', 'Values': [{'Value': '1.2.3.4'}, {'Value': '5.6.7.8'}]}
+        ],
+    The module historically returned:
+        "new_options": {
+            "domain-name": "ec2.internal",
+            "domain-name-servers": ["AmazonProvidedDNS"],
+            "netbios-name-servers": ["10.0.0.1", "10.0.1.1"],
+            "netbios-node-type": "1",
+            "ntp-servers": ["10.0.0.2", "10.0.1.2"]
+        },
+    """
+    config_data = {}
+
+    if len(option_config) == 0:
+        # If there is no provided config, return the empty dictionary
+        return config_data
+
+    for config_item in option_config:
+        # # Handle single value keys
+        if config_item['Key'] == 'netbios-node-type':
+            if isinstance(config_item['Values'], integer_types):
+                config_data['netbios-node-type'] = str((config_item['Values']))
+            elif isinstance(config_item['Values'], list):
+                config_data['netbios-node-type'] = str((config_item['Values'][0]['Value']))
+        # Handle actual lists of values
+        for option in ['domain-name', 'domain-name-servers', 'ntp-servers', 'netbios-name-servers']:
+            if config_item['Key'] == option:
+                config_data[option] = [val['Value'] for val in config_item['Values']]
+
+    return config_data

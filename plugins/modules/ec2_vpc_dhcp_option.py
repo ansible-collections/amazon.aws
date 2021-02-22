@@ -144,7 +144,7 @@ dhcp_options_id:
     type: str
     returned: when available
 new_options:
-    description: The boto2-style DHCP options created, associated or found (DEPRECATED)
+    description: The boto2-style DHCP options created, associated or found
     returned: when available
     type: dict
     contains:
@@ -257,6 +257,7 @@ from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import camel_dict_to_snake_dict
 from ..module_utils.ec2 import compare_aws_tags
+from ..module_utils.ec2 import normalize_ec2_vpc_dhcp_config
 
 
 def ensure_tags(client, module, dhcp_options_id, tags, purge_tags):
@@ -401,7 +402,7 @@ def create_dhcp_option_set(client, module, new_config):
     that we made in create_dhcp_config().
     normalize_config() gives us the nicest format to work with for this.
     """
-    desired_config = normalize_config(new_config)
+    desired_config = normalize_ec2_vpc_dhcp_config(new_config)
     create_config = []
     for option in ['domain-name', 'domain-name-servers', 'ntp-servers', 'netbios-name-servers']:
         if desired_config.get(option) is not None:
@@ -446,46 +447,6 @@ def inherit_dhcp_config(existing_config, new_config):
     return changed, new_config
 
 
-def normalize_config(option_config):
-    """
-    The boto2 module returned a config dict, but boto3 returns a list of dicts
-    Make the data we return look like the old way, so we don't break users
-    boto3:
-        'DhcpConfigurations': [
-            {'Key': 'domain-name', 'Values': [{'Value': 'us-west-2.compute.internal'}]},
-            {'Key': 'domain-name-servers', 'Values': [{'Value': 'AmazonProvidedDNS'}]},
-            {'Key': 'netbios-name-servers', 'Values': [{'Value': '1.2.3.4'}, {'Value': '5.6.7.8'}]},
-            {'Key': 'netbios-node-type', 'Values': [1]},
-             {'Key': 'ntp-servers', 'Values': [{'Value': '1.2.3.4'}, {'Value': '5.6.7.8'}]}
-        ],
-    The module historically returned:
-        "new_options": {
-            "domain-name": "ec2.internal",
-            "domain-name-servers": ["AmazonProvidedDNS"],
-            "netbios-name-servers": ["10.0.0.1", "10.0.1.1"],
-            "netbios-node-type": "1",
-            "ntp-servers": ["10.0.0.2", "10.0.1.2"]
-        },
-    And all keys were historically returned by the module.
-    """
-    config_data = {}
-
-    if len(option_config) == 0:
-        # If there is no provided config, return the empty dictionary
-        return config_data
-
-    for config_item in option_config:
-        # # Handle single value keys
-        if config_item['Key'] == 'netbios-node-type':
-            config_data['netbios-node-type'] = str((config_item['Values']))
-        # Handle actual lists of values
-        for option in ['domain-name', 'domain-name-servers', 'ntp-servers', 'netbios-name-servers']:
-            if config_item['Key'] == option:
-                config_data[option] = [val['Value'] for val in config_item['Values']]
-
-    return config_data
-
-
 def get_dhcp_options_info(client, module, dhcp_options_id):
     # Return boto3-style details, consistent with the _info module
 
@@ -499,7 +460,10 @@ def get_dhcp_options_info(client, module, dhcp_options_id):
         module.fail_json_aws(e, msg="Unable to describe dhcp options")
 
     dhcp_options_set = dhcp_option_info['DhcpOptions'][0]
-    return camel_dict_to_snake_dict(dhcp_options_set, ignore_list=['Tags'])
+    dhcp_option_info = {'DhcpOptionsId': dhcp_options_set['DhcpOptionsId'],
+                        'DhcpConfigurations': dhcp_options_set['DhcpConfigurations'],
+                        'Tags': boto3_tag_list_to_ansible_dict(dhcp_options_set.get('Tags', [{'Value': '', 'Key': 'Name'}]))}
+    return camel_dict_to_snake_dict(dhcp_option_info, ignore_list=['Tags'])
 
 
 def associate_options(client, module, vpc_id, dhcp_options_id):
@@ -569,7 +533,7 @@ def main():
                     if tags or purge_tags:
                         tags_changed = ensure_tags(client, module, dhcp_options_id, tags, purge_tags)
                         changed = changed or tags_changed
-                    return_config = normalize_config(new_config)
+                    return_config = normalize_ec2_vpc_dhcp_config(new_config)
                     results = get_dhcp_options_info(client, module, dhcp_options_id)
                     module.exit_json(changed=changed, new_options=return_config, dhcp_options_id=dhcp_options_id, dhcp_options=results)
         # If no vpc_id was given, or the options don't match then look for an existing set using tags
@@ -604,7 +568,7 @@ def main():
     if delete_old and existing_id:
         remove_dhcp_options_by_id(client, module, existing_id)
 
-    return_config = normalize_config(new_config)
+    return_config = normalize_ec2_vpc_dhcp_config(new_config)
     results = get_dhcp_options_info(client, module, dhcp_options_id)
     module.exit_json(changed=changed, new_options=return_config, dhcp_options_id=dhcp_options_id, dhcp_options=results)
 
