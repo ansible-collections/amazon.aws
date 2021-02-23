@@ -278,6 +278,18 @@ DRY_RUN_ALLOCATION_UNCONVERTED = {
 DRY_RUN_MSGS = 'DryRun Mode:'
 
 
+@AWSRetry.jittered_backoff(retries=10)
+def _describe_addresses(client, **params):
+    paginator = client.get_paginator('describe_addresses')
+    return paginator.paginate(**params).build_full_result()['Addresses']
+
+
+@AWSRetry.jittered_backoff(retries=10)
+def _describe_nat_gateways(client, **params):
+    paginator = client.get_paginator('describe_nat_gateways')
+    return paginator.paginate(**params).build_full_result()['NatGateways']
+
+
 def get_nat_gateways(client, subnet_id=None, nat_gateway_id=None,
                      states=None, check_mode=False):
     """Retrieve a list of NAT Gateways
@@ -339,7 +351,7 @@ def get_nat_gateways(client, subnet_id=None, nat_gateway_id=None,
 
     try:
         if not check_mode:
-            gateways = client.describe_nat_gateways(**params)['NatGateways']
+            gateways = _describe_nat_gateways(client, **params)
             if gateways:
                 for gw in gateways:
                     existing_gateways.append(camel_dict_to_snake_dict(gw))
@@ -534,7 +546,7 @@ def get_eip_allocation_id_by_address(client, eip_address, check_mode=False):
     err_msg = ""
     try:
         if not check_mode:
-            allocations = client.describe_addresses(**params)['Addresses']
+            allocations = _describe_addresses(client, **params)
             if len(allocations) == 1:
                 allocation = allocations[0]
             else:
@@ -597,7 +609,7 @@ def allocate_eip_address(client, check_mode=False):
             )
             new_eip = 'eipalloc-{0}'.format(random_numbers)
         else:
-            new_eip = client.allocate_address(**params)['AllocationId']
+            new_eip = client.allocate_address(aws_retry=True, **params)['AllocationId']
             ip_allocated = True
         err_msg = 'eipalloc id {0} created'.format(new_eip)
 
@@ -632,14 +644,14 @@ def release_address(client, allocation_id, check_mode=False):
 
     ip_released = False
     try:
-        client.describe_addresses(AllocationIds=[allocation_id])
+        _describe_addresses(client, aws_retry=True, AllocationIds=[allocation_id])
     except botocore.exceptions.ClientError as e:
         # IP address likely already released
         # Happens with gateway in 'deleted' state that
         # still lists associations
         return True, str(e)
     try:
-        client.release_address(AllocationId=allocation_id)
+        client.release_address(aws_retry=True, AllocationId=allocation_id)
         ip_released = True
     except botocore.exceptions.ClientError as e:
         err_msg = str(e)
@@ -712,7 +724,7 @@ def create(client, module, subnet_id, allocation_id, tags, purge_tags, client_to
 
     try:
         if not check_mode:
-            result = camel_dict_to_snake_dict(client.create_nat_gateway(**params)["NatGateway"])
+            result = camel_dict_to_snake_dict(client.create_nat_gateway(aws_retry=True, **params)["NatGateway"])
         else:
             result = DRY_RUN_GATEWAYS[0]
             result['create_time'] = datetime.datetime.utcnow()
@@ -939,7 +951,7 @@ def remove(client, nat_gateway_id, wait=False, wait_timeout=0,
         if exist and len(gw) == 1:
             results = gw[0]
             if not check_mode:
-                client.delete_nat_gateway(**params)
+                client.delete_nat_gateway(aws_retry=True, **params)
 
             allocation_id = (
                 results['nat_gateway_addresses'][0]['allocation_id']
@@ -1102,8 +1114,9 @@ def main():
         )
 
     if not success:
+        results = results or {}
         module.fail_json(
-            msg=err_msg, success=success, changed=changed
+            msg=err_msg, success=success, changed=changed, **results
         )
     else:
         module.exit_json(
