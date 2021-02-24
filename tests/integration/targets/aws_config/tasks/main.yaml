@@ -158,7 +158,7 @@
     # ============================================================
     - name: Create Configuration Recorder for AWS Config
       aws_config_recorder:
-        name: test_configuration_recorder
+        name: '{{ resource_prefix }}-recorder'
         state: present
         role_arn: "{{ config_iam_role.arn }}"
         recording_group:
@@ -172,7 +172,7 @@
 
     - name: Create Delivery Channel for AWS Config
       aws_config_delivery_channel:
-        name: test_delivery_channel
+        name: '{{ resource_prefix }}-channel'
         state: present
         s3_bucket: "{{ config_s3_bucket }}"
         s3_prefix: "foo/bar"
@@ -186,7 +186,7 @@
 
     - name: Create Config Rule for AWS Config
       aws_config_rule:
-        name: test_config_rule
+        name: '{{ resource_prefix }}-rule'
         state: present
         description: 'This AWS Config rule checks for public write access on S3 buckets'
         scope:
@@ -206,7 +206,7 @@
     # ============================================================
     - name: Update Configuration Recorder
       aws_config_recorder:
-        name: test_configuration_recorder
+        name: '{{ resource_prefix }}-recorder'
         state: present
         role_arn: "{{ config_iam_role.arn }}"
         recording_group:
@@ -222,7 +222,7 @@
 
     - name: Update Delivery Channel
       aws_config_delivery_channel:
-        name: test_delivery_channel
+        name: '{{ resource_prefix }}-channel'
         state: present
         s3_bucket: "{{ config_s3_bucket }}"
         sns_topic_arn: "{{ config_sns_topic.sns_arn }}"
@@ -235,7 +235,7 @@
 
     - name: Update Config Rule
       aws_config_rule:
-        name: test_config_rule
+        name: '{{ resource_prefix }}-rule'
         state: present
         description: 'This AWS Config rule checks for public write access on S3 buckets'
         scope:
@@ -255,7 +255,7 @@
     # ============================================================
     - name: Don't update Configuration Recorder
       aws_config_recorder:
-        name: test_configuration_recorder
+        name: '{{ resource_prefix }}-recorder'
         state: present
         role_arn: "{{ config_iam_role.arn }}"
         recording_group:
@@ -271,7 +271,7 @@
 
     - name: Don't update Delivery Channel
       aws_config_delivery_channel:
-        name: test_delivery_channel
+        name: '{{ resource_prefix }}-channel'
         state: present
         s3_bucket: "{{ config_s3_bucket }}"
         sns_topic_arn: "{{ config_sns_topic.sns_arn }}"
@@ -284,7 +284,7 @@
 
     - name: Don't update Config Rule
       aws_config_rule:
-        name: test_config_rule
+        name: '{{ resource_prefix }}-rule'
         state: present
         description: 'This AWS Config rule checks for public write access on S3 buckets'
         scope:
@@ -305,7 +305,7 @@
     # ============================================================
     - name: Destroy Configuration Recorder
       aws_config_recorder:
-        name: test_configuration_recorder
+        name: '{{ resource_prefix }}-recorder'
         state: absent
       register: output
       ignore_errors: yes
@@ -316,7 +316,7 @@
 
     - name: Destroy Delivery Channel
       aws_config_delivery_channel:
-        name: test_delivery_channel
+        name: '{{ resource_prefix }}-channel'
         state: absent
         s3_bucket: "{{ config_s3_bucket }}"
         sns_topic_arn: "{{ config_sns_topic.sns_arn }}"
@@ -330,7 +330,7 @@
 
     - name: Destroy Config Rule
       aws_config_rule:
-        name: test_config_rule
+        name: '{{ resource_prefix }}-rule'
         state: absent
         description: 'This AWS Config rule checks for public write access on S3 buckets'
         scope:

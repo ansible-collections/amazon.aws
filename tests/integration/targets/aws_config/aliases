@@ -1,5 +1,9 @@
 # reason: missing-policy
-# We don't have CI or 'unsupported' policy for AWS config
+# AWS Config will test that it's able to deliver using its assumed role.
+# Either we'll need to grant the role global access to S3/SNS/SQS or we'll need
+# some custom Managed Policies.
+# reason: serial
+# Only one Config Recorder per region per account is permitted
 unsupported
 
 cloud/aws
