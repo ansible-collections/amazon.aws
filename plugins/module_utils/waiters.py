@@ -250,6 +250,24 @@ ec2_data = {
                 },
             ]
         },
+        "VpcEndpointExists": {
+            "delay": 5,
+            "maxAttempts": 40,
+            "operation": "DescribeVpcEndpoints",
+            "acceptors": [
+                {
+                    "matcher": "path",
+                    "expected": True,
+                    "argument": "length(VpcEndpoints[]) > `0`",
+                    "state": "success"
+                },
+                {
+                    "matcher": "error",
+                    "expected": "InvalidVpcEndpointId.NotFound",
+                    "state": "retry"
+                },
+            ]
+        },
         "VpnGatewayExists": {
             "delay": 5,
             "maxAttempts": 40,
@@ -495,6 +513,12 @@ waiters_by_name = {
         ec2_model('SubnetDeleted'),
         core_waiter.NormalizedOperationMethod(
             ec2.describe_subnets
+        )),
+    ('EC2', 'vpc_endpoint_exists'): lambda ec2: core_waiter.Waiter(
+        'vpc_endpoint_exists',
+        ec2_model('VpcEndpointExists'),
+        core_waiter.NormalizedOperationMethod(
+            ec2.describe_vpc_endpoints
         )),
     ('EC2', 'vpn_gateway_exists'): lambda ec2: core_waiter.Waiter(
         'vpn_gateway_exists',
