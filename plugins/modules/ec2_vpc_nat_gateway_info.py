@@ -84,6 +84,7 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible.module_utils._text import to_native
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
@@ -102,7 +103,7 @@ def get_nat_gateways(client, module, nat_gateway_id=None):
     params['NatGatewayIds'] = module.params.get('nat_gateway_ids')
 
     try:
-        result = json.loads(json.dumps(client.describe_nat_gateways(**params), default=date_handler))
+        result = json.loads(json.dumps(client.describe_nat_gateways(aws_retry=True, **params), default=date_handler))
     except Exception as e:
         module.fail_json(msg=to_native(e))
 
@@ -131,7 +132,7 @@ def main():
                          date='2021-12-01', collection_name='community.aws')
 
     try:
-        connection = module.client('ec2')
+        connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to connect to AWS')
 
