@@ -162,6 +162,19 @@ ec2_data = {
                 },
             ]
         },
+        "SubnetAvailable": {
+            "delay": 15,
+            "operation": "DescribeSubnets",
+            "maxAttempts": 40,
+            "acceptors": [
+                {
+                    "expected": "available",
+                    "matcher": "pathAll",
+                    "state": "success",
+                    "argument": "Subnets[].State"
+                }
+            ]
+        },
         "SubnetExists": {
             "delay": 5,
             "maxAttempts": 40,
@@ -248,6 +261,36 @@ ec2_data = {
                     "expected": "InvalidSubnetID.NotFound",
                     "state": "success"
                 },
+            ]
+        },
+        "VpcAvailable": {
+            "delay": 15,
+            "operation": "DescribeVpcs",
+            "maxAttempts": 40,
+            "acceptors": [
+                {
+                    "expected": "available",
+                    "matcher": "pathAll",
+                    "state": "success",
+                    "argument": "Vpcs[].State"
+                }
+            ]
+        },
+        "VpcExists": {
+            "operation": "DescribeVpcs",
+            "delay": 1,
+            "maxAttempts": 5,
+            "acceptors": [
+                {
+                    "matcher": "status",
+                    "expected": 200,
+                    "state": "success"
+                },
+                {
+                    "matcher": "error",
+                    "expected": "InvalidVpcID.NotFound",
+                    "state": "retry"
+                }
             ]
         },
         "VpcEndpointExists": {
@@ -478,6 +521,12 @@ waiters_by_name = {
         core_waiter.NormalizedOperationMethod(
             ec2.describe_security_groups
         )),
+    ('EC2', 'subnet_available'): lambda ec2: core_waiter.Waiter(
+        'subnet_available',
+        ec2_model('SubnetAvailable'),
+        core_waiter.NormalizedOperationMethod(
+            ec2.describe_subnets
+        )),
     ('EC2', 'subnet_exists'): lambda ec2: core_waiter.Waiter(
         'subnet_exists',
         ec2_model('SubnetExists'),
@@ -513,6 +562,18 @@ waiters_by_name = {
         ec2_model('SubnetDeleted'),
         core_waiter.NormalizedOperationMethod(
             ec2.describe_subnets
+        )),
+    ('EC2', 'vpc_available'): lambda ec2: core_waiter.Waiter(
+        'vpc_available',
+        ec2_model('VpcAvailable'),
+        core_waiter.NormalizedOperationMethod(
+            ec2.describe_vpcs
+        )),
+    ('EC2', 'vpc_exists'): lambda ec2: core_waiter.Waiter(
+        'vpc_exists',
+        ec2_model('VpcExists'),
+        core_waiter.NormalizedOperationMethod(
+            ec2.describe_vpcs
         )),
     ('EC2', 'vpc_endpoint_exists'): lambda ec2: core_waiter.Waiter(
         'vpc_endpoint_exists',
