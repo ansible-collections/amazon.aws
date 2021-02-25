@@ -7,7 +7,6 @@
 unsupported
 
 cloud/aws
-shippable/aws/group2
 
 aws_config_aggregation_authorization
 aws_config_aggregator
