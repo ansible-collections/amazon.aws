@@ -279,12 +279,6 @@ DRY_RUN_MSGS = 'DryRun Mode:'
 
 
 @AWSRetry.jittered_backoff(retries=10)
-def _describe_addresses(client, **params):
-    paginator = client.get_paginator('describe_addresses')
-    return paginator.paginate(**params).build_full_result()['Addresses']
-
-
-@AWSRetry.jittered_backoff(retries=10)
 def _describe_nat_gateways(client, **params):
     paginator = client.get_paginator('describe_nat_gateways')
     return paginator.paginate(**params).build_full_result()['NatGateways']
@@ -546,7 +540,7 @@ def get_eip_allocation_id_by_address(client, eip_address, check_mode=False):
     err_msg = ""
     try:
         if not check_mode:
-            allocations = _describe_addresses(client, **params)
+            allocations = client.describe_addresses(aws_retry=True, **params)
             if len(allocations) == 1:
                 allocation = allocations[0]
             else:
@@ -644,7 +638,7 @@ def release_address(client, allocation_id, check_mode=False):
 
     ip_released = False
     try:
-        _describe_addresses(client, aws_retry=True, AllocationIds=[allocation_id])
+        client.describe_addresses(aws_retry=True, AllocationIds=[allocation_id])
     except botocore.exceptions.ClientError as e:
         # IP address likely already released
         # Happens with gateway in 'deleted' state that
