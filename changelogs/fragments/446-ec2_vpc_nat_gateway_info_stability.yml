@@ -1,0 +1,2 @@
+minor_changes:
+ - ec2_vpc_nat_gateway_info - solve RequestLimitExceeded error by adding retry decorator (https://github.com/ansible-collections/community.aws/pull/446) 
