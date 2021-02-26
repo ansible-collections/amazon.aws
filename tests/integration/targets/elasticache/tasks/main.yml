@@ -105,17 +105,29 @@
         engine: redis
         state: absent
 
-    - name: Make sure Subnet group is deleted again
+    - name: Make sure Elasticache Subnet group is deleted again
       elasticache_subnet_group:
         name: "{{ elasticache_subnet_group_name }}"
         state: absent
 
-    - name: Make sure VPC SG is deleted again
+    - name: Make sure Redis Security Group is deleted again
       ec2_group:
         name: "{{ elasticache_redis_sg_name }}"
         state: absent
 
-    - name: Make sure VPC is deleted again (should also delete subnets?)
+    - name: Make sure VPC subnet 1 is deleted again
+      ec2_vpc_subnet:
+        vpc_id: "{{ elasticache_vpc.vpc.id }}"
+        cidr: "{{ vpc_cidr_prefix }}.1.0/24"
+        state: absent
+
+    - name: Make sure VPC subnet 2 is deleted again
+      ec2_vpc_subnet:
+        vpc_id: "{{ elasticache_vpc.vpc.id }}"
+        cidr: "{{ vpc_cidr_prefix }}.2.0/24"
+        state: absent
+
+    - name: Make sure VPC is deleted again (only works if subnets were deleted)
       ec2_vpc_net:
         name: "{{ vpc_name }}"
         cidr_block: "{{ vpc_cidr_prefix }}.0.0/16"
