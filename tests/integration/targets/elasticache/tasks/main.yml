@@ -58,10 +58,10 @@
     - name: Assert that task worked
       assert:
         that:
-          elasticache_redis is changed
-          elasticache_redis.elasticache.data is defined
-          elasticache_redis.elasticache.name == "{{ elasticache_redis_test_name }}"
-          elasticache_redis.elasticache.data.CacheSubnetGroupName == "{{ elasticache_subnet_group_name }}"
+          - elasticache_redis is changed
+          - elasticache_redis.elasticache.data is defined
+          - elasticache_redis.elasticache.name == "{{ elasticache_redis_test_name }}"
+          - elasticache_redis.elasticache.data.CacheSubnetGroupName == "{{ elasticache_subnet_group_name }}"
 
     - name: Add security group for Redis access in Elasticache
       ec2_group:
@@ -72,12 +72,12 @@
           - proto: tcp
             from_port: "{{ elasticache_redis_port }}"
             to_port: "{{ elasticache_redis_port }}"
-            cidr: 10.31.0.0/16
+            cidr_ip: 10.31.0.0/16
         register: elasticache_redis_sg
 
     - name: Update Redis Elasticache config with security group (to if changes to existing setup work)
       elasticache:
-        name: "{{ elasticache_redis.name }}"
+        name: "{{ elasticache_redis.elasticache.name }}"
         engine: redis
         node_type: cache.t3.micro
         num_nodes: 1
@@ -90,10 +90,10 @@
     - name: Assert that task worked
       assert:
         that:
-          elasticache_redis_new is changed
-          elasticache_redis_new.elasticache.data is defined
-          elasticache_redis_new.elasticache.data.Engine == "redis"
-          elasticache_redis_new.elasticache.data.SecurityGroups.0.SecurityGroupId == "{{ elasticache_redis_sg.group_id }}"
+          - elasticache_redis_new is changed
+          - elasticache_redis_new.elasticache.data is defined
+          - elasticache_redis_new.elasticache.data.Engine == "redis"
+          - elasticache_redis_new.elasticache.data.SecurityGroups.0.SecurityGroupId == elasticache_redis_sg.group_id
 
   always:
 
@@ -118,4 +118,5 @@
     - name: Make sure VPC is deleted again (should also delete subnets?)
       ec2_vpc_net:
         name: "{{ vpc_name }}"
+        cidr_block: "{{ vpc_cidr_prefix }}.0.0/16"
         state: absent
