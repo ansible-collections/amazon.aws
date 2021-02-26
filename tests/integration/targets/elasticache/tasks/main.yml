@@ -73,7 +73,7 @@
             from_port: "{{ elasticache_redis_port }}"
             to_port: "{{ elasticache_redis_port }}"
             cidr_ip: 10.31.0.0/16
-        register: elasticache_redis_sg
+      register: elasticache_redis_sg
 
     - name: Update Redis Elasticache config with security group (to if changes to existing setup work)
       elasticache:
