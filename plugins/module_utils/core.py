@@ -53,6 +53,7 @@ don't need to be wrapped in the backoff decorator.
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
+import json
 import re
 import logging
 import traceback
@@ -379,3 +380,21 @@ def scrub_none_parameters(parameters):
             clean_parameters[k] = v
 
     return clean_parameters
+
+
+def _boto3_handler(obj):
+    if hasattr(obj, 'isoformat'):
+        return obj.isoformat()
+    else:
+        return obj
+
+
+def normalize_boto3_result(result):
+    """
+    Because Boto3 returns datetime objects where it knows things are supposed to
+    be dates we need to mass-convert them over to strings which Ansible/Jinja
+    handle better.  This also makes it easier to compare complex objects which
+    include a mix of dates in string format (from parameters) and dates as
+    datetime objects.  Boto3 is happy to be passed ISO8601 format strings.
+    """
+    return json.loads(json.dumps(result, default=_boto3_handler))
