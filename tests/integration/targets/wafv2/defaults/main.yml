@@ -1,0 +1,6 @@
+---
+web_acl_name: '{{ resource_prefix }}-web-acl'
+rule_group_name: '{{ resource_prefix }}-rule-group'
+alb_name: "my-alb-{{ resource_prefix | regex_search('([0-9]+)$') }}"
+tg_name: "my-tg-{{ resource_prefix | regex_search('([0-9]+)$') }}"
+
