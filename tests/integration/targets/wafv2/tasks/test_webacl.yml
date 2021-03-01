@@ -1,0 +1,184 @@
+###############################
+# test web acl
+###############################
+- name: get web acl
+  wafv2_web_acl_info:
+    name: "{{ web_acl_name }}"
+    scope: REGIONAL
+  register: out
+
+- name: verify rules
+  assert:
+    that:
+      - out.rules | count == 2
+
+- name: change web acl description
+  wafv2_web_acl:
+    name: "{{ web_acl_name }}"
+    state: present
+    description: hallo eins drei
+    scope: REGIONAL
+    default_action: Allow
+    sampled_requests: no
+    cloudwatch_metrics: yes
+    metric_name: blub
+    rules:
+      - name: zwei
+        priority: 2
+        action: 
+          block: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: ddos
+        statement:
+          xss_match_statement:
+            field_to_match:
+              body: {}
+            text_transformations:
+              - type: NONE
+                priority: 0
+      - name: admin_protect
+        priority: 1
+        override_action: 
+          none: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: fsd
+        statement:
+          managed_rule_group_statement:
+            vendor_name: AWS
+            name: AWSManagedRulesAdminProtectionRuleSet
+    tags:
+      A: B
+      C: D
+  register: out
+
+- name: verify change
+  assert:
+    that:
+      - out is changed
+
+
+- name: add 1 rules
+  wafv2_web_acl:
+    name: "{{ web_acl_name }}"
+    state: present
+    description: hallo eins drei
+    scope: REGIONAL
+    default_action: Allow
+    sampled_requests: no
+    cloudwatch_metrics: yes
+    metric_name: blub
+    purge_rules: no
+    rules:
+      - name: bla
+        priority: 8
+        override_action: 
+          none: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: fsd
+        statement:
+          managed_rule_group_statement:
+            vendor_name: AWS
+            name: AWSManagedRulesAdminProtectionRuleSet
+    tags:
+      A: B
+      C: D
+  register: out
+
+- name: verify change
+  assert:
+    that:
+      - out is changed
+
+- name: get web acl
+  wafv2_web_acl_info:
+    name: "{{ web_acl_name }}"
+    scope: REGIONAL
+  register: out
+
+- name: verify rules
+  assert:
+    that:
+      - out.rules | count == 3
+
+- name: reduce rules to 1
+  wafv2_web_acl:
+    name: "{{ web_acl_name }}"
+    state: present
+    description: hallo eins drei
+    scope: REGIONAL
+    default_action: Allow
+    sampled_requests: no
+    cloudwatch_metrics: yes
+    metric_name: blub
+    rules:
+      - name: admin_protect
+        priority: 1
+        override_action: 
+          none: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: admin_protect
+        statement:
+          managed_rule_group_statement:
+            vendor_name: AWS
+            name: AWSManagedRulesAdminProtectionRuleSet
+    tags:
+      A: B
+      C: D
+  register: out
+
+- name: verify change
+  assert:
+    that:
+      - out is changed
+
+- name: get web acl
+  wafv2_web_acl_info:
+    name: "{{ web_acl_name }}"
+    scope: REGIONAL
+  register: out
+
+- name: verify rules
+  assert:
+    that:
+      - out.rules | count == 1
+
+- name: immutable change web acl
+  wafv2_web_acl:
+    name: "{{ web_acl_name }}"
+    state: present
+    description: hallo eins drei
+    scope: REGIONAL
+    default_action: Allow
+    sampled_requests: no
+    cloudwatch_metrics: yes
+    metric_name: blub
+    rules:
+      - name: admin_protect
+        priority: 1
+        override_action: 
+          none: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: admin_protect
+        statement:
+          managed_rule_group_statement:
+            vendor_name: AWS
+            name: AWSManagedRulesAdminProtectionRuleSet
+    tags:
+      A: B
+      C: D
+  register: out
+
+- name: verify no change
+  assert:
+    that:
+      - out is not changed
