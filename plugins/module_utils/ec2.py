@@ -952,7 +952,7 @@ def normalize_ec2_vpc_dhcp_config(option_config):
             {'Key': 'domain-name-servers', 'Values': [{'Value': 'AmazonProvidedDNS'}]},
             {'Key': 'netbios-name-servers', 'Values': [{'Value': '1.2.3.4'}, {'Value': '5.6.7.8'}]},
             {'Key': 'netbios-node-type', 'Values': [1]},
-             {'Key': 'ntp-servers', 'Values': [{'Value': '1.2.3.4'}, {'Value': '5.6.7.8'}]}
+            {'Key': 'ntp-servers', 'Values': [{'Value': '1.2.3.4'}, {'Value': '5.6.7.8'}]}
         ],
     The module historically returned:
         "new_options": {
@@ -970,7 +970,7 @@ def normalize_ec2_vpc_dhcp_config(option_config):
         return config_data
 
     for config_item in option_config:
-        # # Handle single value keys
+        # Handle single value keys
         if config_item['Key'] == 'netbios-node-type':
             if isinstance(config_item['Values'], integer_types):
                 config_data['netbios-node-type'] = str((config_item['Values']))

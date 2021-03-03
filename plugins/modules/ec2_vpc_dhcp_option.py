@@ -393,7 +393,6 @@ def create_dhcp_config(module):
 
 
 def create_dhcp_option_set(client, module, new_config):
-    changed = True
     """
     A CreateDhcpOptions object looks different than the object we create in create_dhcp_config()
     This is the only place we use it, so create it now
@@ -402,12 +401,13 @@ def create_dhcp_option_set(client, module, new_config):
     that we made in create_dhcp_config().
     normalize_config() gives us the nicest format to work with for this.
     """
+    changed = True
     desired_config = normalize_ec2_vpc_dhcp_config(new_config)
     create_config = []
     for option in ['domain-name', 'domain-name-servers', 'ntp-servers', 'netbios-name-servers']:
-        if desired_config.get(option) is not None:
+        if desired_config.get(option):
             create_config.append({'Key': option, 'Values': desired_config[option]})
-    if desired_config.get('netbios-node-type') is not None:
+    if desired_config.get('netbios-node-type'):
         # We need to listify this one
         create_config.append({'Key': 'netbios-node-type', 'Values': [desired_config['netbios-node-type']]})
 
