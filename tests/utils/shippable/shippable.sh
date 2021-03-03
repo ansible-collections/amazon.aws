@@ -89,7 +89,7 @@ git clone https://github.com/ansible-collections/community.aws community/aws
 # once community.general is published this will be handled by galaxy cli
 git clone https://github.com/ansible-collections/ansible_collections_google google/cloud
 git clone https://opendev.org/openstack/ansible-collections-openstack openstack/cloud
-ansible-galaxy collection install ansible.netcommon
+ansible-galaxy collection install "ansible.netcommon:>=0.0.1,<2.0.0"
 cd "${cwd}"
 
 export ANSIBLE_COLLECTIONS_PATHS="${HOME}/.ansible/"
