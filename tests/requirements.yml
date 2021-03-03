@@ -1,4 +1,5 @@
 integration_tests_dependencies:
 - ansible.windows
 - community.general
+- ansible.netcommon: '>=0.0.1,<2.0.0'
 unit_tests_dependencies: []
