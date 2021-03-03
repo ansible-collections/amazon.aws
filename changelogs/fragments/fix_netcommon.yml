@@ -1,0 +1,2 @@
+bugfixes:
+- netcommon - fix ansible.netcommon version lesser than 2.0.0 (https://github.com/ansible-collections/amazon.aws/issues/273).
