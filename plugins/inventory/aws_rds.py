@@ -74,8 +74,9 @@ from ansible.plugins.inventory import BaseInventoryPlugin, Constructable, Cachea
 try:
     import boto3
     import botocore
+    HAS_BOTO3 = True
 except ImportError:
-    raise AnsibleError('The RDS dynamic inventory plugin requires boto3 and botocore.')
+    HAS_BOTO3 = False
 
 
 class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
@@ -326,6 +327,9 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
     def parse(self, inventory, loader, path, cache=True):
         super(InventoryModule, self).parse(inventory, loader, path)
+
+        if not HAS_BOTO3:
+            raise AnsibleError('The RDS dynamic inventory plugin requires boto3 and botocore.')
 
         config_data = self._read_config_data(path)
         self._set_credentials()
