@@ -1,0 +1,3 @@
+---
+minor_changes:
+- remove the dependency against the ansible.netcommon collection

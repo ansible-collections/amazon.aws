@@ -407,8 +407,6 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible.module_utils.common.network import to_ipv6_subnet
 from ansible.module_utils.common.network import to_subnet
 from ansible.module_utils.six import string_types
-from ansible_collections.ansible.netcommon.plugins.module_utils.compat.ipaddress import IPv6Network
-from ansible_collections.ansible.netcommon.plugins.module_utils.compat.ipaddress import ip_network
 
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.core import is_boto3_error_code
@@ -878,11 +876,9 @@ def validate_ip(module, cidr_ip):
                                 cidr_ip, ip))
         except ValueError:
             # to_subnet throws a ValueError on IPv6 networks, so we should be working with v6 if we get here
-            try:
-                isinstance(ip_network(to_text(cidr_ip)), IPv6Network)
+            if "/" not in to_text(cidr_ip) or to_text(cidr_ip).endswith("/128"):
                 ip = cidr_ip
-            except ValueError:
-                # If a host bit is set on something other than a /128, IPv6Network will throw a ValueError
+            else:
                 # The ipv6_cidr in this case probably looks like "2001:DB8:A0B:12F0::1/64" and we just want the network bits
                 ip6 = to_ipv6_subnet(split_addr[0]) + "/" + split_addr[1]
                 if ip6 != cidr_ip:
