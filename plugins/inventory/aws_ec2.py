@@ -158,11 +158,13 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable, Cacheable
 
+
 try:
     import boto3
     import botocore
+    HAS_BOTO3 = True
 except ImportError:
-    raise AnsibleError('The ec2 dynamic inventory plugin requires boto3 and botocore.')
+    HAS_BOTO3 = False
 
 # The mappings give an array of keys to get from the filter name to the value
 # returned by boto3's EC2 describe_instances method.
@@ -615,6 +617,9 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
     def parse(self, inventory, loader, path, cache=True):
 
         super(InventoryModule, self).parse(inventory, loader, path)
+
+        if not HAS_BOTO3:
+            raise AnsibleError('The ec2 dynamic inventory plugin requires boto3 and botocore.')
 
         self._read_config_data(path)
 

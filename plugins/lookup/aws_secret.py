@@ -108,8 +108,9 @@ from ansible.module_utils.six import string_types
 try:
     import boto3
     import botocore
+    HAS_BOTO3 = True
 except ImportError:
-    raise AnsibleError("The lookup aws_secret requires boto3 and botocore.")
+    HAS_BOTO3 = False
 
 from ansible.plugins.lookup import LookupBase
 from ansible.module_utils._text import to_native
