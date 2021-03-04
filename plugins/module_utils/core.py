@@ -188,7 +188,6 @@ class AnsibleAWSModule(object):
         return boto3_conn(self, conn_type='resource', resource=service,
                           region=region, endpoint=ec2_url, **aws_connect_kwargs)
 
-    @property
     def region(self, boto3=True):
         return get_aws_region(self, boto3)
 
