@@ -7,8 +7,6 @@ authors:
 description: null
 license_file: COPYING
 tags: [amazon, aws, cloud]
-dependencies:
-  ansible.netcommon: '>=0.0.1'
 repository: https://github.com/ansible-collections/amazon.aws
 documentation: https://github.com/ansible-collections/amazon.aws/tree/main/docs
 homepage: https://github.com/ansible-collections/amazon.aws
