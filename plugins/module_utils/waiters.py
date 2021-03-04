@@ -299,6 +299,24 @@ ec2_data = {
                 },
             ]
         },
+         "NatGatewayDeleted": {
+            "operation": "DescribeNatGateways",
+            "delay": 15,
+            "maxAttempts": 40,
+            "acceptors": [
+               {
+                    "state": "retry",
+                    "matcher": "pathAll",
+                    "argument": "NatGateways[].State != 'deleted'",
+                    "expected": True
+                },
+                {
+                    "matcher": "error",
+                    "expected": "NatGatewayNotFound",
+                    "state": "retry"
+                },
+            ]
+        },
     }
 }
 
@@ -531,6 +549,12 @@ waiters_by_name = {
         ec2_model('VpnGatewayDetached'),
         core_waiter.NormalizedOperationMethod(
             ec2.describe_vpn_gateways
+        )),
+    ('EC2', 'nat_gateway_deleted'): lambda ec2: core_waiter.Waiter(
+        'nat_gateway_deleted',
+        ec2_model('NatGatewayDeleted'),
+        core_waiter.NormalizedOperationMethod(
+            ec2.describe_nat_gateways
         )),
     ('WAF', 'change_token_in_sync'): lambda waf: core_waiter.Waiter(
         'change_token_in_sync',
