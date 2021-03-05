@@ -67,9 +67,8 @@ keyed_groups:
 try:
     import boto3
     import botocore
-    HAS_BOTO3 = True
 except ImportError:
-    HAS_BOTO3 = False
+    pass  # will be captured by imported HAS_BOTO3
 
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_native
@@ -78,6 +77,7 @@ from ansible.plugins.inventory import Cacheable
 from ansible.plugins.inventory import Constructable
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
