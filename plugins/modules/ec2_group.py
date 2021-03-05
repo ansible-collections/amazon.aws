@@ -407,9 +407,9 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible.module_utils.common.network import to_ipv6_subnet
 from ansible.module_utils.common.network import to_subnet
 from ansible.module_utils.six import string_types
-from ansible_collections.ansible.netcommon.plugins.module_utils.compat.ipaddress import IPv6Network
-from ansible_collections.ansible.netcommon.plugins.module_utils.compat.ipaddress import ip_network
 
+from ..module_utils.compat._ipaddress import IPv6Network
+from ..module_utils.compat._ipaddress import ip_network
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.core import is_boto3_error_code
 from ..module_utils.ec2 import AWSRetry
