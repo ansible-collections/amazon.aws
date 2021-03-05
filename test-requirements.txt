@@ -1,1 +1,6 @@
 coverage==4.5.4
+placebo
+mock
+pytest-xdist
+# We should avoid these two modules with py3
+pytest-mock
