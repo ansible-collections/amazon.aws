@@ -51,10 +51,6 @@ _raw:
     Returns a boolean when I(attribute) is check_ec2_classic. Otherwise returns the value(s) of the attribute
     (or all attributes if one is not specified).
 """
-
-from ansible.errors import AnsibleError
-
-
 try:
     import boto3
     import botocore
@@ -62,6 +58,7 @@ try:
 except ImportError:
     HAS_BOTO3 = False
 
+from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_native
 from ansible.plugins.lookup import LookupBase
 
