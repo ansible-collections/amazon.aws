@@ -4,3 +4,6 @@ tests/utils/shippable/check_matrix.py replace-urlopen
 tests/utils/shippable/timing.py shebang
 plugins/module_utils/compat/_ipaddress.py no-assert
 plugins/module_utils/compat/_ipaddress.py no-unicode-literals
+plugins/module_utils/cloud.py pylint:isinstance-second-argument-not-valid-type
+plugins/module_utils/cloudfront_facts.py pylint:unnecessary-comprehension
+plugins/module_utils/core.py pylint:property-with-parameters
