@@ -1,6 +1,6 @@
-plugins/modules/ec2_tag.py validate-modules:parameter-state-invalid-choice
-plugins/modules/ec2_vol.py validate-modules:parameter-state-invalid-choice
-tests/utils/shippable/check_matrix.py replace-urlopen
-tests/utils/shippable/timing.py shebang
-plugins/module_utils/compat/_ipaddress.py no-assert
-plugins/module_utils/compat/_ipaddress.py no-unicode-literals
+plugins/modules/ec2_tag.py validate-modules:parameter-state-invalid-choice  # Deprecated choice that can't be removed until 2022
+plugins/modules/ec2_vol.py validate-modules:parameter-state-invalid-choice  # Deprecated choice that can't be removed until 2022
+plugins/module_utils/compat/_ipaddress.py no-assert  # Vendored library
+plugins/module_utils/compat/_ipaddress.py no-unicode-literals  # Vendored library
+tests/utils/shippable/check_matrix.py replace-urlopen  # Standalone script used as part of testing
+tests/utils/shippable/timing.py shebang  # Standalone script used as part of testing
