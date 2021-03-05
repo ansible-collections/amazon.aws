@@ -190,8 +190,8 @@ class AnsibleAWSModule(object):
                           region=region, endpoint=ec2_url, **aws_connect_kwargs)
 
     @property
-    def region(self, boto3=True):
-        return get_aws_region(self, boto3)
+    def region(self):
+        return get_aws_region(self, True)
 
     def fail_json_aws(self, exception, msg=None, **kwargs):
         """call fail_json with processed exception
