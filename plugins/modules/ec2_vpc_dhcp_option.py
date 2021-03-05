@@ -143,7 +143,7 @@ dhcp_options_id:
     description: The aws resource id of the primary DCHP options set created, found or removed
     type: str
     returned: when available
-new_options:
+dhcp_config:
     description: The boto2-style DHCP options created, associated or found
     returned: when available
     type: dict
@@ -512,6 +512,8 @@ def main():
 
     client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
+    module.deprecate("The 'new_config' return key is deprecated and will be replaced by 'dhcp_config'. Both values are returned for now.",
+                     date='2022-12-01', collection_name='amazon.aws')
     if state == 'absent':
         if not dhcp_options_id:
             # Look up the option id first by matching the supplied options
@@ -570,7 +572,7 @@ def main():
 
     return_config = normalize_ec2_vpc_dhcp_config(new_config)
     results = get_dhcp_options_info(client, module, dhcp_options_id)
-    module.exit_json(changed=changed, new_options=return_config, dhcp_options_id=dhcp_options_id, dhcp_options=results)
+    module.exit_json(changed=changed, new_options=return_config, dhcp_options_id=dhcp_options_id, dhcp_options=results, dhcp_config=return_config)
 
 
 if __name__ == '__main__':
