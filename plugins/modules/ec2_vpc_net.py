@@ -257,6 +257,8 @@ def wait_for_vpc_to_exist(module, connection, **params):
     # wait for vpc to be available
     try:
         get_waiter(connection, 'vpc_exists').wait(**params)
+    except botocore.exceptions.WaiterError as e:
+        module.fail_json_aws(e, msg="VPC failed to reach expected state (exists)")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to wait for VPC creation.")
 
@@ -265,6 +267,8 @@ def wait_for_vpc(module, connection, **params):
     # wait for vpc to be available
     try:
         get_waiter(connection, 'vpc_available').wait(**params)
+    except botocore.exceptions.WaiterError as e:
+        module.fail_json_aws(e, msg="VPC failed to reach expected state (available)")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to wait for VPC state to update.")
 
