@@ -353,6 +353,26 @@
       that:
         - endpoint_delete_check is not changed
 
+  - name: Create interface endpoint
+    ec2_vpc_endpoint:
+      state: present
+      vpc_id: '{{ vpc_id }}'
+      service: '{{ endpoint_service_a }}'
+      vpc_endpoint_type: Interface
+    register: create_interface_endpoint
+  - name: Check that the interface endpoint was created properly
+    assert:
+      that:
+        - create_interface_endpoint is changed
+        - create_interface_endpoint.result.vpc_endpoint_type == "Interface"
+  - name: Delete interface endpoint
+    ec2_vpc_endpoint:
+      state: absent
+      vpc_endpoint_id: "{{ create_interface_endpoint.result.vpc_endpoint_id }}"
+    register: interface_endpoint_delete_check
+  - assert:
+      that:
+        - interface_endpoint_delete_check is changed
 
   # ============================================================
   # BEGIN POST-TEST CLEANUP
