@@ -251,11 +251,6 @@ def get_subnet_info(subnet):
     return subnet
 
 
-@AWSRetry.exponential_backoff()
-def describe_subnets_with_backoff(client, **params):
-    return client.describe_subnets(**params)
-
-
 def waiter_params(module, params, start_time):
     if not module.botocore_at_least("1.7.0"):
         remaining_wait_timeout = int(module.params['wait_timeout'] + start_time - time.time())
@@ -288,7 +283,7 @@ def create_subnet(conn, module, vpc_id, cidr, ipv6_cidr=None, az=None, start_tim
         params['AvailabilityZone'] = az
 
     try:
-        subnet = get_subnet_info(conn.create_subnet(**params))
+        subnet = get_subnet_info(conn.create_subnet(aws_retry=True, **params))
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't create subnet")
 
@@ -297,13 +292,8 @@ def create_subnet(conn, module, vpc_id, cidr, ipv6_cidr=None, az=None, start_tim
     # exception.
     if wait and subnet.get('state') != 'available':
         handle_waiter(conn, module, 'subnet_exists', {'SubnetIds': [subnet['id']]}, start_time)
-        try:
-            conn.get_waiter('subnet_available').wait(
-                **waiter_params(module, {'SubnetIds': [subnet['id']]}, start_time)
-            )
-            subnet['state'] = 'available'
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, "Create subnet action timed out waiting for subnet to become available")
+        handle_waiter(conn, module, 'subnet_available', {'SubnetIds': [subnet['id']]}, start_time)
+        subnet['state'] = 'available'
 
     return subnet
 
@@ -313,7 +303,7 @@ def ensure_tags(conn, module, subnet, tags, purge_tags, start_time):
 
     filters = ansible_dict_to_boto3_filter_list({'resource-id': subnet['id'], 'resource-type': 'subnet'})
     try:
-        cur_tags = conn.describe_tags(Filters=filters)
+        cur_tags = conn.describe_tags(aws_retry=True, Filters=filters)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't describe tags")
 
@@ -322,7 +312,8 @@ def ensure_tags(conn, module, subnet, tags, purge_tags, start_time):
     if to_update:
         try:
             if not module.check_mode:
-                AWSRetry.exponential_backoff(
+                AWSRetry.jittered_backoff(
+                    retries=10,
                     catch_extra_error_codes=['InvalidSubnetID.NotFound']
                 )(conn.create_tags)(
                     Resources=[subnet['id']],
@@ -340,7 +331,8 @@ def ensure_tags(conn, module, subnet, tags, purge_tags, start_time):
                 for key in to_delete:
                     tags_list.append({'Key': key})
 
-                AWSRetry.exponential_backoff(
+                AWSRetry.jittered_backoff(
+                    retries=10,
                     catch_extra_error_codes=['InvalidSubnetID.NotFound']
                 )(conn.delete_tags)(Resources=[subnet['id']], Tags=tags_list)
 
@@ -361,7 +353,8 @@ def ensure_map_public(conn, module, subnet, map_public, check_mode, start_time):
     if check_mode:
         return
     try:
-        conn.modify_subnet_attribute(SubnetId=subnet['id'], MapPublicIpOnLaunch={'Value': map_public})
+        conn.modify_subnet_attribute(aws_retry=True, SubnetId=subnet['id'],
+                                     MapPublicIpOnLaunch={'Value': map_public})
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't modify subnet attribute")
 
@@ -370,7 +363,8 @@ def ensure_assign_ipv6_on_create(conn, module, subnet, assign_instances_ipv6, ch
     if check_mode:
         return
     try:
-        conn.modify_subnet_attribute(SubnetId=subnet['id'], AssignIpv6AddressOnCreation={'Value': assign_instances_ipv6})
+        conn.modify_subnet_attribute(aws_retry=True, SubnetId=subnet['id'],
+                                     AssignIpv6AddressOnCreation={'Value': assign_instances_ipv6})
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't modify subnet attribute")
 
@@ -380,7 +374,7 @@ def disassociate_ipv6_cidr(conn, module, subnet, start_time):
         ensure_assign_ipv6_on_create(conn, module, subnet, False, False, start_time)
 
     try:
-        conn.disassociate_subnet_cidr_block(AssociationId=subnet['ipv6_association_id'])
+        conn.disassociate_subnet_cidr_block(aws_retry=True, AssociationId=subnet['ipv6_association_id'])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't disassociate ipv6 cidr block id {0} from subnet {1}"
                              .format(subnet['ipv6_association_id'], subnet['id']))
@@ -409,7 +403,8 @@ def ensure_ipv6_cidr_block(conn, module, subnet, ipv6_cidr, check_mode, start_ti
                                                      'vpc-id': subnet['vpc_id']})
 
         try:
-            check_subnets = get_subnet_info(describe_subnets_with_backoff(conn, Filters=filters))
+            _subnets = conn.describe_subnets(aws_retry=True, Filters=filters)
+            check_subnets = get_subnet_info(_subnets)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't get subnet info")
 
@@ -423,7 +418,8 @@ def ensure_ipv6_cidr_block(conn, module, subnet, ipv6_cidr, check_mode, start_ti
 
         try:
             if not check_mode:
-                associate_resp = conn.associate_subnet_cidr_block(SubnetId=subnet['id'], Ipv6CidrBlock=ipv6_cidr)
+                associate_resp = conn.associate_subnet_cidr_block(aws_retry=True, SubnetId=subnet['id'],
+                                                                  Ipv6CidrBlock=ipv6_cidr)
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't associate ipv6 cidr {0} to {1}".format(ipv6_cidr, subnet['id']))
@@ -450,7 +446,8 @@ def ensure_ipv6_cidr_block(conn, module, subnet, ipv6_cidr, check_mode, start_ti
 def get_matching_subnet(conn, module, vpc_id, cidr):
     filters = ansible_dict_to_boto3_filter_list({'vpc-id': vpc_id, 'cidr-block': cidr})
     try:
-        subnets = get_subnet_info(describe_subnets_with_backoff(conn, Filters=filters))
+        _subnets = conn.describe_subnets(aws_retry=True, Filters=filters)
+        subnets = get_subnet_info(_subnets)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't get matching subnet")
 
@@ -547,7 +544,7 @@ def ensure_subnet_absent(conn, module):
 
     try:
         if not module.check_mode:
-            conn.delete_subnet(SubnetId=subnet['id'])
+            conn.delete_subnet(aws_retry=True, SubnetId=subnet['id'])
             if module.params['wait']:
                 handle_waiter(conn, module, 'subnet_deleted', {'SubnetIds': [subnet['id']]}, time.time())
         return {'changed': True}
@@ -580,7 +577,8 @@ def main():
     if not module.botocore_at_least("1.7.0"):
         module.warn("botocore >= 1.7.0 is required to use wait_timeout for custom wait times")
 
-    connection = module.client('ec2')
+    retry_decorator = AWSRetry.jittered_backoff(retries=10)
+    connection = module.client('ec2', retry_decorator=retry_decorator)
 
     state = module.params.get('state')
 
