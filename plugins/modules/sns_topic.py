@@ -349,8 +349,11 @@ class SnsTopicManager(object):
         return changed
 
     def _canonicalize_endpoint(self, protocol, endpoint):
+        # AWS SNS expects phone numbers in
+        # and canonicalizes to E.164 format
+        # See <https://docs.aws.amazon.com/sns/latest/dg/sms_publish-to-phone.html>
         if protocol == 'sms':
-            return re.sub('[^0-9]*', '', endpoint)
+            return re.sub('[^0-9+]*', '', endpoint)
         return endpoint
 
     def _set_topic_subs(self):

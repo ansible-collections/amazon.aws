@@ -1,0 +1,2 @@
+bugfixes:
+  - sns_topic - Add ``+`` to allowable characters in SMS endpoints (https://github.com/ansible-collections/community.aws/pull/454).
