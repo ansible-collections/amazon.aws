@@ -179,6 +179,8 @@ class SAMLProviderManager:
                         res['saml_provider'] = self._build_res(resp['SAMLProviderArn'])
                     except botocore.exceptions.ClientError as e:
                         self.module.fail_json_aws(e, msg="Could not update the identity provider '{0}'".format(name))
+            else:
+                res['saml_provider'] = self._build_res(arn)
 
         else:  # create
             res['changed'] = True
