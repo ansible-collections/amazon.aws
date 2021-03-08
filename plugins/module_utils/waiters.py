@@ -329,7 +329,7 @@ ec2_data = {
                     "argument": "NatGateways[].State"
                 },
                 {
-                    "state": "success",
+                    "state": "retry",
                     "matcher": "error",
                     "expected": "NatGatewayNotFound"
                 }
