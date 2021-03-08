@@ -9,71 +9,170 @@
   block:
     # ============================================================
     #   TESTS
-    - name: Create the identity provider
+
+    # Create
+
+    - name: Create the identity provider (check-mode)
       iam_saml_federation:
-        name: '{{ resource_prefix }}-saml'
+        name: '{{ provider_name }}'
         state: present
         saml_metadata_document: '{{ lookup("file", "example1.xml") }}'
       register: create_result
-
-    - name: assert idp created
+      check_mode: yes
+    - name: assert changed
       assert:
         that:
           - create_result is changed
 
-    - name: Test that nothing changes when we retry
+    - name: Create the identity provider
       iam_saml_federation:
-        name: '{{ resource_prefix }}-saml'
+        name: '{{ provider_name }}'
         state: present
         saml_metadata_document: '{{ lookup("file", "example1.xml") }}'
       register: create_result
+    - name: assert idp created
+      assert:
+        that:
+          - create_result is changed
+          - "'saml_provider' in create_result"
+          - "'arn' in create_result.saml_provider"
+          - create_result.saml_provider.arn.startswith("arn:aws")
+          - create_result.saml_provider.arn.endswith(provider_name)
+          - "'create_date' in create_result.saml_provider"
+          - "'expire_date' in create_result.saml_provider"
+          - "'metadata_document' in create_result.saml_provider"
 
+    - name: Test that nothing changes when we retry (check_mode)
+      iam_saml_federation:
+        name: '{{ provider_name }}'
+        state: present
+        saml_metadata_document: '{{ lookup("file", "example1.xml") }}'
+      register: create_result
+      check_mode: yes
     - name: assert the idp doesn't change when we retry
       assert:
         that:
           - create_result is not changed
 
-    - name: Change the identity provider
+    - name: Test that nothing changes when we retry
       iam_saml_federation:
-        name: '{{ resource_prefix }}-saml'
+        name: '{{ provider_name }}'
+        state: present
+        saml_metadata_document: '{{ lookup("file", "example1.xml") }}'
+      register: create_result
+    - name: assert the idp doesn't change when we retry
+      assert:
+        that:
+          - create_result is not changed
+          - "'saml_provider' in create_result"
+          - "'arn' in create_result.saml_provider"
+          - create_result.saml_provider.arn.startswith("arn:aws")
+          - create_result.saml_provider.arn.endswith(provider_name)
+          - "'create_date' in create_result.saml_provider"
+          - "'expire_date' in create_result.saml_provider"
+          - "'metadata_document' in create_result.saml_provider"
+
+    # Update
+
+    - name: Change the identity provider (check_mode)
+      iam_saml_federation:
+        name: '{{ provider_name }}'
         state: present
         saml_metadata_document: '{{ lookup("file", "example2.xml") }}'
       register: change_result
-
+      check_mode: yes
     - name: assert idp created
       assert:
         that:
           - change_result is changed
 
-    - name: Test that nothing changes when we retry
+    - name: Change the identity provider
       iam_saml_federation:
-        name: '{{ resource_prefix }}-saml'
+        name: '{{ provider_name }}'
         state: present
         saml_metadata_document: '{{ lookup("file", "example2.xml") }}'
       register: change_result
+    - name: assert idp created
+      assert:
+        that:
+          - change_result is changed
+          - "'saml_provider' in create_result"
+          - "'arn' in create_result.saml_provider"
+          - change_result.saml_provider.arn.startswith("arn:aws")
+          - change_result.saml_provider.arn.endswith(provider_name)
+          - "'create_date' in create_result.saml_provider"
+          - "'expire_date' in create_result.saml_provider"
+          - "'metadata_document' in create_result.saml_provider"
 
+    - name: Test that nothing changes when we retry (check_mode)
+      iam_saml_federation:
+        name: '{{ provider_name }}'
+        state: present
+        saml_metadata_document: '{{ lookup("file", "example2.xml") }}'
+      register: change_result
+      check_mode: yes
     - name: assert the idp doesn't change when we retry
       assert:
         that:
           - change_result is not changed
 
-    - name: Delete the identity provider
+    - name: Test that nothing changes when we retry
       iam_saml_federation:
-        name: '{{ resource_prefix }}-saml'
+        name: '{{ provider_name }}'
+        state: present
+        saml_metadata_document: '{{ lookup("file", "example2.xml") }}'
+      register: change_result
+    - name: assert the idp doesn't change when we retry
+      assert:
+        that:
+          - change_result is not changed
+          - "'saml_provider' in create_result"
+          - "'arn' in create_result.saml_provider"
+          - change_result.saml_provider.arn.startswith("arn:aws")
+          - change_result.saml_provider.arn.endswith(provider_name)
+          - "'create_date' in create_result.saml_provider"
+          - "'expire_date' in create_result.saml_provider"
+          - "'metadata_document' in create_result.saml_provider"
+
+    # delete
+
+    - name: Delete the identity provider (check_mode)
+      iam_saml_federation:
+        name: '{{ provider_name }}'
         state: absent
       register: destroy_result
+      check_mode: yes
+    - name: assert changed
+      assert:
+        that:
+          - destroy_result is changed
 
+    - name: Delete the identity provider
+      iam_saml_federation:
+        name: '{{ provider_name }}'
+        state: absent
+      register: destroy_result
     - name: assert deleted
       assert:
         that:
           - destroy_result is changed
 
-    - name: Attempt to re-delete the identity provider
+    - name: Attempt to re-delete the identity provider (check_mode)
       iam_saml_federation:
-        name: '{{ resource_prefix }}-saml'
+        name: '{{ provider_name }}'
         state: absent
       register: destroy_result
+      check_mode: yes
+    - name: assert deleted
+      assert:
+        that:
+          - destroy_result is not changed
 
+    - name: Attempt to re-delete the identity provider
+      iam_saml_federation:
+        name: '{{ provider_name }}'
+        state: absent
+      register: destroy_result
     - name: assert deleted
       assert:
         that:
@@ -84,6 +183,6 @@
     #   CLEAN-UP
     - name: finish off by deleting the identity provider
       iam_saml_federation:
-        name: '{{ resource_prefix }}-saml'
+        name: '{{ provider_name }}'
         state: absent
       register: destroy_result

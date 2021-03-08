@@ -1,0 +1,2 @@
+minor_changes:
+- iam_saml_federation - module now returns the state of the provider when no changes are made (https://github.com/ansible-collections/community.aws/pull/419).
