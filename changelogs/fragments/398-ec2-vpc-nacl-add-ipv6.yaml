@@ -1,0 +1,2 @@
+minor_changes:
+  - ec2_vpc_nacl - add support for IPv6 (https://github.com/ansible-collections/community.aws/pull/398).

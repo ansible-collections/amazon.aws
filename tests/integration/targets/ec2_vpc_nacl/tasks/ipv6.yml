@@ -62,7 +62,7 @@
         ingress:
           - [100, 'tcp', 'allow', '0.0.0.0/0', null, null, 22, 22]
           - [200, 'tcp', 'allow', '0.0.0.0/0', null, null, 80, 80]
-          - [205, 'ipv6-tcp', 'allow', '::/0', null, null, 80, 80]
+          - [205, 'tcp', 'allow', '::/0', null, null, 80, 80]
           - [300, 'icmp', 'allow', '0.0.0.0/0', 0, 8]
           - [305, 'ipv6-icmp', 'allow', '::/0', 0, 8]
         egress:
@@ -70,20 +70,24 @@
           - [105, 'all', 'allow', '::/0', null, null, null, null]
         state: 'present'
       register: nacl
-      # FIXME: Currently IPv6 rules are not supported - uncomment assertion when
-      # fixed (and add some nacl_info tests)
-      ignore_errors: yes
+
+    - assert:
+       that:
+         - nacl.changed
+         - nacl.nacl_id == nacl_id
+
     - name: get network ACL facts (test that it works with ipv6 entries)
       ec2_vpc_nacl_info:
         nacl_ids:
           - "{{ nacl_id }}"
       register: nacl_facts
 
-
-    #- assert:
-    #    that:
-    #      - nacl.changed
-    #      - nacl.nacl_id == nacl_id
+    - name: assert the nacl has the correct attributes
+      assert:
+        that:
+          - nacl_facts.nacls | length == 1
+          - nacl_facts.nacls[0].ingress | length == 5
+          - nacl_facts.nacls[0].egress | length == 2
 
     - name: purge ingress entries
       ec2_vpc_nacl:
@@ -99,14 +103,11 @@
           - [105, 'all', 'allow', '::/0', null, null, null, null]
         state: 'present'
       register: nacl
-      # FIXME: Currently IPv6 rules are not supported - uncomment assertion when
-      # fixed (and add some nacl_info tests)
-      ignore_errors: yes
 
-    #- assert:
-    #    that:
-    #      - nacl.changed
-    #      - nacl.nacl_id == nacl_id
+    - assert:
+       that:
+         - nacl.changed
+         - nacl.nacl_id == nacl_id
 
     - name: purge egress entries
       ec2_vpc_nacl:
@@ -124,6 +125,19 @@
     - assert:
         that:
           - nacl.changed
+
+    - name: get network ACL facts (test that removed entries are gone)
+      ec2_vpc_nacl_info:
+        nacl_ids:
+          - "{{ nacl_id }}"
+      register: nacl_facts
+
+    - name: assert the nacl has the correct attributes
+      assert:
+        that:
+          - nacl_facts.nacls | length == 1
+          - nacl_facts.nacls[0].ingress | length == 0
+          - nacl_facts.nacls[0].egress | length == 0
 
     # ============================================================
     - name: remove subnet ipv6 cidr (expected changed=true)
