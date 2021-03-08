@@ -28,6 +28,7 @@ options:
     default: Gateway
     choices: [ "Interface", "Gateway", "GatewayLoadBalancer" ]
     type: str
+    version_added: 1.5.0
   service:
     description:
       - An AWS supported vpc endpoint service. Use the M(community.aws.ec2_vpc_endpoint_info)
