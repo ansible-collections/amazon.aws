@@ -1,0 +1,130 @@
+- set_fact:
+    # As a lookup plugin we don't have access to module_defaults
+    connection_args:
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        aws_security_token: "{{ security_token | default(omit) }}"
+  no_log: True
+
+- module_defaults:
+    group/aws:
+      region: "{{ aws_region }}"
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+  block:
+  - name: 'Check for EC2 Classic support (has-ec2-classic)'
+    set_fact:
+      has_ec2_classic: "{{ lookup('amazon.aws.aws_account_attribute',
+                                  attribute='has-ec2-classic',
+                                  wantlist=True,
+                                  **connection_args) }}"
+  - assert:
+      that:
+      - ( has_ec2_classic is sameas true ) or ( has_ec2_classic is sameas false )
+
+  - name: 'Fetch all account attributes (wantlist=True)'
+    set_fact:
+      account_attrs: "{{ lookup('amazon.aws.aws_account_attribute',
+                                wantlist=True,
+                                **connection_args) }}"
+  - assert:
+      that:
+      # Not guaranteed that there will be a default-vpc
+      - '"default-vpc" in account_attrs'
+      - '"max-elastic-ips" in account_attrs'
+      - account_attrs['max-elastic-ips'][0] | int
+      - '"max-instances" in account_attrs'
+      - account_attrs['max-instances'][0] | int
+      # EC2 and VPC are both valid values, but we can't guarantee which are available
+      - '"supported-platforms" in account_attrs'
+      - account_attrs['supported-platforms'] | difference(['VPC', 'EC2']) | length == 0
+      - '"vpc-max-elastic-ips" in account_attrs'
+      - account_attrs['vpc-max-elastic-ips'][0] | int
+      - '"vpc-max-security-groups-per-interface" in account_attrs'
+      - account_attrs['vpc-max-security-groups-per-interface'][0] | int
+
+  # Not espcially useful, but let's be thorough and leave hints what folks could
+  # expect
+  - name: 'Fetch all account attributes (wantlist=False)'
+    set_fact:
+      account_attrs: "{{ lookup('amazon.aws.aws_account_attribute',
+                                wantlist=False,
+                                **connection_args) }}"
+  - assert:
+      that:
+      - '"default-vpc" in split_attrs'
+      - '"max-elastic-ips" in split_attrs'
+      - '"max-instances" in split_attrs'
+      - '"supported-platforms" in split_attrs'
+      - '"vpc-max-elastic-ips" in split_attrs'
+      - '"vpc-max-security-groups-per-interface" in split_attrs'
+    vars:
+      split_attrs: '{{ account_attrs.split(",") }}'
+
+  - name: 'Check for Default VPC (default-vpc)'
+    set_fact:
+      default_vpc: "{{ lookup('amazon.aws.aws_account_attribute',
+                              attribute='default-vpc',
+                              **connection_args) }}"
+  - assert:
+      that:
+      - (default_vpc == "none")
+          or
+        default_vpc.startswith("vpc-")
+
+  - name: 'Check for maximum number of EIPs (max-elastic-ips)'
+    set_fact:
+      max_eips: "{{ lookup('amazon.aws.aws_account_attribute',
+                           attribute='max-elastic-ips',
+                           **connection_args) }}"
+  - assert:
+      that:
+      - max_eips | int
+
+  - name: 'Check for maximum number of Instances (max-instances)'
+    set_fact:
+      max_instances: "{{ lookup('amazon.aws.aws_account_attribute',
+                                attribute='max-instances',
+                                **connection_args) }}"
+  - assert:
+      that:
+      - max_instances | int
+
+  - name: 'Check for maximum number of EIPs in a VPC (vpc-max-elastic-ips)'
+    set_fact:
+      vpc_max_eips: "{{ lookup('amazon.aws.aws_account_attribute',
+                               attribute='vpc-max-elastic-ips',
+                               **connection_args) }}"
+  - assert:
+      that:
+      - vpc_max_eips | int
+
+  - name: 'Check for maximum number of Security Groups per Interface (vpc-max-security-groups-per-interface)'
+    set_fact:
+      max_sg_per_int: "{{ lookup('amazon.aws.aws_account_attribute',
+                                 attribute='vpc-max-security-groups-per-interface',
+                                 **connection_args) }}"
+  - assert:
+      that:
+      - max_sg_per_int | int
+
+  - name: 'Check for support of Classic EC2 vs VPC (supported-platforms)'
+    set_fact:
+      supported_plat: "{{ lookup('amazon.aws.aws_account_attribute',
+                                 attribute='supported-platforms',
+                                 **connection_args) }}"
+  - assert:
+      that:
+      - supported_plat.split(',') | difference(['VPC', 'EC2']) | length == 0
+
+  - name: 'Check for support of Classic EC2 vs VPC (supported-platforms) (wantlist)'
+    set_fact:
+      supported_plat: "{{ lookup('amazon.aws.aws_account_attribute',
+                                 attribute='supported-platforms',
+                                 wantlist=True,
+                                 **connection_args) }}"
+  - assert:
+      that:
+      - supported_plat | difference(['VPC', 'EC2']) | length == 0
