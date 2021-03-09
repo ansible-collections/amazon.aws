@@ -375,9 +375,9 @@ def scrub_none_parameters(parameters, descend_into_lists=False):
 
     for k, v in parameters.items():
         if isinstance(v, dict):
-            clean_parameters[k] = scrub_none_parameters(v)
+            clean_parameters[k] = scrub_none_parameters(v, descend_into_lists=descend_into_lists)
         elif descend_into_lists and isinstance(v, list):
-            clean_parameters[k] = [scrub_none_parameters(vv) if isinstance(vv, dict) else vv for vv in v]
+            clean_parameters[k] = [scrub_none_parameters(vv, descend_into_lists=descend_into_lists) if isinstance(vv, dict) else vv for vv in v]
         elif v is not None:
             clean_parameters[k] = v
 
