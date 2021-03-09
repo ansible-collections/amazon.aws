@@ -108,7 +108,8 @@ class CloudRetry(object):
     """
     # This is the base class of the exception.
     # AWS Example botocore.exceptions.ClientError
-    base_class = None
+    # NoneType can't be raised (it's not a subclass of Exception) so would never be caught by an except.
+    base_class = type(None)
 
     @staticmethod
     def status_code_from_exception(error):
