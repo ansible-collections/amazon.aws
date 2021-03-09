@@ -266,7 +266,7 @@ def create_or_update_bucket(s3_client, module, location):
     except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as exp:
         if versioning is not None:
             module.fail_json_aws(exp, msg="Failed to get bucket versioning")
-    except (BotoCoreError, ClientError) as exp:
+    except (BotoCoreError, ClientError) as exp:  # pylint: disable=duplicate-except
         module.fail_json_aws(exp, msg="Failed to get bucket versioning")
     else:
         if versioning is not None:
@@ -297,7 +297,7 @@ def create_or_update_bucket(s3_client, module, location):
     except is_boto3_error_code(['NotImplemented', 'XNotImplemented']):
         if requester_pays is not None:
             module.fail_json_aws(exp, msg="Failed to get bucket request payment")
-    except (BotoCoreError, ClientError) as exp:
+    except (BotoCoreError, ClientError) as exp:  # pylint: disable=duplicate-except
         module.fail_json_aws(exp, msg="Failed to get bucket request payment")
     else:
         if requester_pays is not None:
@@ -320,7 +320,7 @@ def create_or_update_bucket(s3_client, module, location):
     except is_boto3_error_code(['NotImplemented', 'XNotImplemented']):
         if policy is not None:
             module.fail_json_aws(exp, msg="Failed to get bucket policy")
-    except (BotoCoreError, ClientError) as exp:
+    except (BotoCoreError, ClientError) as exp:  # pylint: disable=duplicate-except
         module.fail_json_aws(exp, msg="Failed to get bucket policy")
     else:
         if policy is not None:
@@ -355,7 +355,7 @@ def create_or_update_bucket(s3_client, module, location):
     except is_boto3_error_code(['NotImplemented', 'XNotImplemented']):
         if tags is not None:
             module.fail_json_aws(exp, msg="Failed to get bucket tags")
-    except (ClientError, BotoCoreError) as exp:
+    except (ClientError, BotoCoreError) as exp:  # pylint: disable=duplicate-except
         module.fail_json_aws(exp, msg="Failed to get bucket tags")
     else:
         if tags is not None:
