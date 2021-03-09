@@ -221,7 +221,7 @@ def list_eni(connection, module):
         network_interfaces_result = connection.describe_network_interfaces(aws_retry=True, **params)['NetworkInterfaces']
     except is_boto3_error_code('InvalidNetworkInterfaceID.NotFound'):
         module.exit_json(network_interfaces=[])
-    except (ClientError, NoCredentialsError) as e:
+    except (ClientError, NoCredentialsError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e)
 
     # Modify boto3 tags list to be ansible friendly dict and then camel_case

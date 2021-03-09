@@ -174,7 +174,7 @@ def find_key_pair(module, ec2_client, name):
         key = ec2_client.describe_key_pairs(aws_retry=True, KeyNames=[name])['KeyPairs'][0]
     except is_boto3_error_code('InvalidKeyPair.NotFound'):
         return None
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as err:  # pylint: disable=duplicate-except
         module.fail_json_aws(err, msg="error finding keypair")
     except IndexError:
         key = None
