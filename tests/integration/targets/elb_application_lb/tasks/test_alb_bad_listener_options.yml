@@ -56,3 +56,13 @@
       that:
         - alb is failed
         - "'unable to convert to int' in alb.msg"
+
+  always:
+  # Cleanup
+  - name: destroy ALB if created
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      state: absent
+      wait: true
+      wait_timeout: 600
+    ignore_errors: true
