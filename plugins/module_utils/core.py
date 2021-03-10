@@ -359,7 +359,7 @@ def get_boto3_client_method_parameters(client, method_name, required=False):
     return parameters
 
 
-def scrub_none_parameters(parameters, descend_into_lists=False):
+def scrub_none_parameters(parameters, descend_into_lists=True):
     """
     Iterate over a dictionary removing any keys that have a None value
 
