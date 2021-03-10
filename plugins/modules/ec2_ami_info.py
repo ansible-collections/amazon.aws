@@ -257,7 +257,7 @@ def list_ec2_images(ec2_client, module):
         except is_boto3_error_code('AuthFailure'):
             # describing launch permissions of images owned by others is not permitted, but shouldn't cause failures
             pass
-        except (ClientError, BotoCoreError) as err:
+        except (ClientError, BotoCoreError) as err:  # pylint: disable=duplicate-except
             module.fail_json_aws(err, 'Failed to describe AMI')
 
     images.sort(key=lambda e: e.get('creation_date', ''))  # it may be possible that creation_date does not always exist
