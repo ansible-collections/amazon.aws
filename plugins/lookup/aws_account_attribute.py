@@ -52,20 +52,18 @@ _raw:
     (or all attributes if one is not specified).
 """
 
-from ansible.errors import AnsibleError
-
-
 try:
     import boto3
     import botocore
-    HAS_BOTO3 = True
 except ImportError:
-    HAS_BOTO3 = False
+    pass  # will be captured by imported HAS_BOTO3
 
+from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_native
 from ansible.plugins.lookup import LookupBase
 
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 
 
 def _boto3_conn(region, credentials):

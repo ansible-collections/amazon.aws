@@ -102,22 +102,21 @@ _raw:
     Returns the value of the secret stored in AWS Secrets Manager.
 """
 
-from ansible.errors import AnsibleError
-from ansible.module_utils.six import string_types
+import json
 
 try:
     import boto3
     import botocore
-    HAS_BOTO3 = True
 except ImportError:
-    HAS_BOTO3 = False
+    pass  # will be captured by imported HAS_BOTO3
 
-from ansible.plugins.lookup import LookupBase
+from ansible.errors import AnsibleError
+from ansible.module_utils.six import string_types
 from ansible.module_utils._text import to_native
+from ansible.plugins.lookup import LookupBase
+
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
-
-import json
 
 
 def _boto3_conn(region, credentials):

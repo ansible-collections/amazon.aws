@@ -106,7 +106,6 @@ EXAMPLES = '''
 '''
 
 try:
-    from botocore.exceptions import ClientError
     import botocore
     import boto3
 except ImportError:
@@ -117,8 +116,8 @@ from ansible.module_utils._text import to_native
 from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
 
-from ..module_utils.ec2 import HAS_BOTO3
-from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 display = Display()
 
@@ -189,7 +188,7 @@ class LookupModule(LookupBase):
                 display.vvv("AWS_ssm path lookup term: %s in region: %s" % (term, region))
                 try:
                     response = client.get_parameters_by_path(**ssm_dict)
-                except ClientError as e:
+                except botocore.exceptions.ClientError as e:
                     raise AnsibleError("SSM lookup exception: {0}".format(to_native(e)))
                 paramlist = list()
                 paramlist.extend(response['Parameters'])
@@ -217,7 +216,7 @@ class LookupModule(LookupBase):
             ssm_dict["Names"] = terms
             try:
                 response = client.get_parameters(**ssm_dict)
-            except ClientError as e:
+            except botocore.exceptions.ClientError as e:
                 raise AnsibleError("SSM lookup exception: {0}".format(to_native(e)))
             params = boto3_tag_list_to_ansible_dict(response['Parameters'], tag_name_key_name="Name",
                                                     tag_value_key_name="Value")
