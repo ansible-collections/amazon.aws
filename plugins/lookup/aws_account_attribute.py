@@ -62,6 +62,7 @@ from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_native
 from ansible.plugins.lookup import LookupBase
 
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 
 
@@ -92,6 +93,11 @@ def _get_credentials(options):
     return credentials
 
 
+@AWSRetry.jittered_backoff(retries=10)
+def _describe_account_attributes(client, **params):
+    return client.describe_account_attributes(**params)
+
+
 class LookupModule(LookupBase):
     def run(self, terms, variables, **kwargs):
 
@@ -114,7 +120,7 @@ class LookupModule(LookupBase):
             params['AttributeNames'] = [attribute]
 
         try:
-            response = client.describe_account_attributes(**params)['AccountAttributes']
+            response = _describe_account_attributes(client, **params)['AccountAttributes']
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             raise AnsibleError("Failed to describe account attributes: %s" % to_native(e))
 

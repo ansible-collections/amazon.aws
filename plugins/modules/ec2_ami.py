@@ -578,7 +578,7 @@ def deregister_image(module, connection):
             # Don't error out if root volume snapshot was already deregistered as part of deregister_image
             except is_boto3_error_code('InvalidSnapshot.NotFound'):
                 pass
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
                 module.fail_json_aws(e, msg='Failed to delete snapshot.')
         exit_params['snapshots_deleted'] = snapshots
 
@@ -671,7 +671,7 @@ def get_image_by_id(module, connection, image_id):
                                                                              ImageId=image_id)['ProductCodes']
             except is_boto3_error_code('InvalidAMIID.Unavailable'):
                 pass
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
                 module.fail_json_aws(e, msg="Error retrieving image attributes for image %s" % image_id)
             return result
         module.fail_json(msg="Invalid number of instances (%s) found for image_id: %s." % (str(len(images)), image_id))

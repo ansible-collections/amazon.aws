@@ -339,10 +339,10 @@ def key_check(module, s3, bucket, obj, version=None, validate=True):
             s3.head_object(Bucket=bucket, Key=obj)
     except is_boto3_error_code('404'):
         return False
-    except is_boto3_error_code('403') as e:
+    except is_boto3_error_code('403') as e:  # pylint: disable=duplicate-except
         if validate is True:
             module.fail_json_aws(e, msg="Failed while looking up object (during key check) %s." % obj)
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed while looking up object (during key check) %s." % obj)
 
     return True
@@ -374,12 +374,12 @@ def bucket_check(module, s3, bucket, validate=True):
         s3.head_bucket(Bucket=bucket)
     except is_boto3_error_code('404'):
         return False
-    except is_boto3_error_code('403') as e:
+    except is_boto3_error_code('403') as e:  # pylint: disable=duplicate-except
         if validate is True:
             module.fail_json_aws(e, msg="Failed while looking up bucket (during bucket_check) %s." % bucket)
-    except botocore.exceptions.EndpointConnectionError as e:
+    except botocore.exceptions.EndpointConnectionError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Invalid endpoint provided")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed while looking up bucket (during bucket_check) %s." % bucket)
     return exists
 
@@ -404,7 +404,7 @@ def create_bucket(module, s3, bucket, location=None):
             )(s3.put_bucket_acl)(ACL=acl, Bucket=bucket)
     except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
         module.warn("PutBucketAcl is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed while creating bucket or setting acl (check that you have CreateBucket and PutBucketAcl permission).")
 
     if bucket:
@@ -455,7 +455,7 @@ def delete_bucket(module, s3, bucket):
         return True
     except is_boto3_error_code('NoSuchBucket'):
         return False
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed while deleting bucket %s." % bucket)
 
 
@@ -484,7 +484,7 @@ def create_dirkey(module, s3, bucket, obj, encrypt):
             s3.put_object_acl(ACL=acl, Bucket=bucket, Key=obj)
     except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
         module.warn("PutObjectAcl is not implemented by your storage provider. Set the permissions parameters to the empty list to avoid this warning")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed while creating object %s." % obj)
     module.exit_json(msg="Virtual directory %s created in bucket %s" % (obj, bucket), changed=True)
 
@@ -552,7 +552,7 @@ def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, s
             s3.put_object_acl(ACL=acl, Bucket=bucket, Key=obj)
     except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
         module.warn("PutObjectAcl is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to set object ACL")
     try:
         url = s3.generate_presigned_url(ClientMethod='put_object',
@@ -577,7 +577,7 @@ def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
         # AccessDenied errors may be triggered if 1) file does not exist or 2) file exists but
         # user does not have the s3:GetObject permission. 404 errors are handled by download_file().
         module.fail_json_aws(e, msg="Could not find the key %s." % obj)
-    except is_boto3_error_message('require AWS Signature Version 4'):
+    except is_boto3_error_message('require AWS Signature Version 4'):  # pylint: disable=duplicate-except
         raise Sigv4Required()
     except is_boto3_error_code('InvalidArgument') as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Could not find the key %s." % obj)
