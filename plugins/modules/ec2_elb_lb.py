@@ -94,11 +94,6 @@ options:
     type: str
     choices: ["internal", "internet-facing"]
     default: 'internet-facing'
-  validate_certs:
-    description:
-      - When set to C(no), SSL certificates will not be validated for boto versions >= 2.6.0.
-    type: bool
-    default: yes
   connection_draining_timeout:
     description:
       - Wait a specified timeout allowing connections to drain before terminating an instance.

@@ -73,11 +73,6 @@ options:
     description:
       - Snapshot ID on which to base the volume.
     type: str
-  validate_certs:
-    description:
-      - When set to "no", SSL certificates will not be validated for boto versions >= 2.6.0.
-    type: bool
-    default: true
   state:
     description:
       - Whether to ensure the volume is present or absent.
