@@ -15,7 +15,6 @@ short_description: Create and attach a volume, return volume id and device map
 description:
     - Creates an EBS volume and optionally attaches it to an instance.
     - If both I(instance) and I(name) are given and the instance has a device at the device name, then no volume is created and no attachment is made.
-    - This module has a dependency on python-boto.
 options:
   instance:
     description:
@@ -73,11 +72,6 @@ options:
     description:
       - Snapshot ID on which to base the volume.
     type: str
-  validate_certs:
-    description:
-      - When set to "no", SSL certificates will not be validated for boto versions >= 2.6.0.
-    type: bool
-    default: true
   state:
     description:
       - Whether to ensure the volume is present or absent.

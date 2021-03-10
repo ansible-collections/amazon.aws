@@ -15,7 +15,7 @@ author: "Andrew de Quincey (@adq)"
 requirements: [ boto3 ]
 short_description: maintain an ec2 VPC security group.
 description:
-    - Maintains ec2 security groups. This module has a dependency on python-boto >= 2.5.
+    - Maintains ec2 security groups.
 options:
   name:
     description:
