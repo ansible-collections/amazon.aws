@@ -15,7 +15,6 @@ short_description: Create and attach a volume, return volume id and device map
 description:
     - Creates an EBS volume and optionally attaches it to an instance.
     - If both I(instance) and I(name) are given and the instance has a device at the device name, then no volume is created and no attachment is made.
-    - This module has a dependency on python-boto.
 options:
   instance:
     description:
