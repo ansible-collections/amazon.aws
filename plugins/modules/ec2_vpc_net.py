@@ -78,9 +78,6 @@ options:
         duplicate VPCs created.
     type: bool
     default: false
-requirements:
-    - boto3
-    - botocore
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2

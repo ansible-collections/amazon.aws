@@ -20,7 +20,6 @@ author:
     - Ed Costello (@orthanc)
     - Stijn Dubrul (@sdubrul)
 
-requirements: [ 'botocore', 'boto3' ]
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2

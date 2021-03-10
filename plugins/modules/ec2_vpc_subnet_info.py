@@ -15,9 +15,6 @@ description:
     - Gather information about ec2 VPC subnets in AWS
     - This module was called C(ec2_vpc_subnet_facts) before Ansible 2.9. The usage did not change.
 author: "Rob White (@wimnat)"
-requirements:
-  - boto3
-  - botocore
 options:
   subnet_ids:
     description:

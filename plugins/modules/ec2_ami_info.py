@@ -16,7 +16,6 @@ description:
   - This module was called C(amazon.aws.ec2_ami_facts) before Ansible 2.9. The usage did not change.
 author:
   - Prasad Katti (@prasadkatti)
-requirements: [ boto3 ]
 options:
   image_ids:
     description: One or more image IDs.

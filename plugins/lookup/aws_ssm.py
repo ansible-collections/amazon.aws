@@ -14,6 +14,7 @@ author:
   - Marat Bakeev <hawara(at)gmail.com>
   - Michael De La Rue <siblemitcom.mddlr@spamgourmet.com>
 requirements:
+  - python >= 3.6
   - boto3
   - botocore
 short_description: Get the value for a SSM parameter or all parameters under a path.

@@ -14,7 +14,6 @@ short_description: Gather information about dhcp options sets in AWS
 description:
     - Gather information about dhcp options sets in AWS.
     - This module was called C(ec2_vpc_dhcp_option_facts) before Ansible 2.9. The usage did not change.
-requirements: [ boto3 ]
 author: "Nick Aslanidis (@naslanidis)"
 options:
   filters:

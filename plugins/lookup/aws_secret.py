@@ -9,8 +9,9 @@ lookup: aws_secret
 author:
   - Aaron Smith <ajsmith10381@gmail.com>
 requirements:
+  - python >= 3.6
   - boto3
-  - botocore>=1.10.0
+  - botocore >= 1.10.0
 extends_documentation_fragment:
 - amazon.aws.aws_credentials
 - amazon.aws.aws_region

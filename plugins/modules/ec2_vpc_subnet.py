@@ -16,7 +16,6 @@ description:
 author:
 - Robert Estelle (@erydo)
 - Brad Davidson (@brandond)
-requirements: [ boto3 ]
 options:
   az:
     description:

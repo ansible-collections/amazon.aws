@@ -157,7 +157,6 @@ options:
     description:
       - KMS key id to use when encrypting objects using I(encrypting=aws:kms). Ignored if I(encryption) is not C(aws:kms).
     type: str
-requirements: [ "boto3", "botocore" ]
 author:
     - "Lester Wade (@lwade)"
     - "Sloane Hertel (@s-hertel)"

@@ -24,7 +24,6 @@ version_added: 1.0.0
 short_description: Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID
 description:
     - Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID.
-requirements: [ boto3 ]
 author:
     - Rob White (@wimnat)
     - Aubin Bikouo (@abikouo)

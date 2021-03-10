@@ -175,7 +175,10 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 
-requirements: [ boto3, botocore>=1.5.45 ]
+requirements:
+- python >= 3.6
+- boto3
+- botocore >= 1.5.45
 '''
 
 EXAMPLES = '''

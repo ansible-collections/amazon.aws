@@ -8,6 +8,7 @@ lookup: aws_account_attribute
 author:
   - Sloane Hertel <shertel@redhat.com>
 requirements:
+  - python >= 3.6
   - boto3
   - botocore
 extends_documentation_fragment:
