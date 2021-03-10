@@ -80,12 +80,12 @@ options:
       - The CloudFormation stack policy in JSON. A policy cannot be removed once placed, but it can be modified.
         for instance, allow all updates U(https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/protect-stack-resources.html#d0e9051)
     type: json
-    version_added: 1.3.0
+    version_added: 1.5.0
   stack_policy_on_update_body:
     description:
       - the body of the cloudformation stack policy only applied during this update.
     type: json
-    version_added: 1.3.0
+    version_added: 1.5.0
   tags:
     description:
       - Dictionary of tags to associate with stack and its resources during stack creation.

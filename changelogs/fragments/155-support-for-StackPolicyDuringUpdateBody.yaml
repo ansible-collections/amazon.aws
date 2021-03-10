@@ -1,2 +1,2 @@
 minor_changes:
-  - cloudformation - support for StackPolicyDuringUpdateBody
+  - cloudformation - added support for StackPolicyDuringUpdateBody (https://github.com/ansible-collections/amazon.aws/pull/155).
