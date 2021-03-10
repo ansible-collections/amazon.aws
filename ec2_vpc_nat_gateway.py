@@ -247,36 +247,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_
 from ansible.module_utils.six import string_types
 from ansible.module_utils._text import to_native
 
-DRY_RUN_GATEWAYS = [
-    {
-        "nat_gateway_id": "nat-123456789",
-        "subnet_id": "subnet-123456789",
-        "nat_gateway_addresses": [
-            {
-                "public_ip": "55.55.55.55",
-                "network_interface_id": "eni-1234567",
-                "private_ip": "10.0.0.102",
-                "allocation_id": "eipalloc-1234567"
-            }
-        ],
-        "state": "available",
-        "create_time": "2016-03-05T05:19:20.282000+00:00",
-        "vpc_id": "vpc-12345678"
-    }
-]
-
-DRY_RUN_ALLOCATION_UNCONVERTED = {
-    'Addresses': [
-        {
-            'PublicIp': '55.55.55.55',
-            'Domain': 'vpc',
-            'AllocationId': 'eipalloc-1234567'
-        }
-    ]
-}
-
-DRY_RUN_MSGS = 'DryRun Mode:'
-
 
 @AWSRetry.jittered_backoff(retries=10)
 def _describe_nat_gateways(client, **params):
@@ -344,22 +314,11 @@ def get_nat_gateways(client, subnet_id=None, nat_gateway_id=None,
         ]
 
     try:
-        if not check_mode:
-            gateways = _describe_nat_gateways(client, **params)
-            if gateways:
-                for gw in gateways:
-                    existing_gateways.append(camel_dict_to_snake_dict(gw))
-            gateways_retrieved = True
-        else:
-            gateways_retrieved = True
-            if nat_gateway_id:
-                if DRY_RUN_GATEWAYS[0]['nat_gateway_id'] == nat_gateway_id:
-                    existing_gateways = DRY_RUN_GATEWAYS
-            elif subnet_id:
-                if DRY_RUN_GATEWAYS[0]['subnet_id'] == subnet_id:
-                    existing_gateways = DRY_RUN_GATEWAYS
-            err_msg = '{0} Retrieving gateways'.format(DRY_RUN_MSGS)
-
+        gateways = _describe_nat_gateways(client, **params)
+        if gateways:
+            for gw in gateways:
+                existing_gateways.append(camel_dict_to_snake_dict(gw))
+        gateways_retrieved = True
     except botocore.exceptions.ClientError as e:
         err_msg = str(e)
 
@@ -422,8 +381,6 @@ def wait_for_status(client, wait_timeout, nat_gateway_id, status,
             )
             if gws_retrieved and nat_gateways:
                 nat_gateway = nat_gateways[0]
-                if check_mode:
-                    nat_gateway['state'] = status
 
                 if nat_gateway.get('state') == status:
                     status_achieved = True
@@ -500,6 +457,7 @@ def gateway_in_subnet_exists(client, subnet_id, allocation_id=None,
             client, subnet_id, states=states, check_mode=check_mode
         )
     )
+
     if not gws_retrieved:
         return gateways, allocation_id_exists
     for gw in gws:
@@ -538,21 +496,14 @@ def get_eip_allocation_id_by_address(client, eip_address, check_mode=False):
     }
     allocation_id = None
     err_msg = ""
+
     try:
-        if not check_mode:
-            allocations = client.describe_addresses(aws_retry=True, **params)
-            if len(allocations) == 1:
-                allocation = allocations[0]
-            else:
-                allocation = None
+        allocations = client.describe_addresses(aws_retry=True, **params)['Addresses']
+        if len(allocations) == 1:
+            allocation = allocations[0]
         else:
-            dry_run_eip = (
-                DRY_RUN_ALLOCATION_UNCONVERTED['Addresses'][0]['PublicIp']
-            )
-            if dry_run_eip == eip_address:
-                allocation = DRY_RUN_ALLOCATION_UNCONVERTED['Addresses'][0]
-            else:
-                allocation = None
+            allocation = None
+
         if allocation:
             if allocation.get('Domain') != 'vpc':
                 err_msg = (
@@ -595,16 +546,15 @@ def allocate_eip_address(client, check_mode=False):
     params = {
         'Domain': 'vpc',
     }
+
+    if check_mode:
+        ip_allocated = True
+        new_eip = None
+        return ip_allocated, err_msg, new_eip
+
     try:
-        if check_mode:
-            ip_allocated = True
-            random_numbers = (
-                ''.join(str(x) for x in random.sample(range(0, 9), 7))
-            )
-            new_eip = 'eipalloc-{0}'.format(random_numbers)
-        else:
-            new_eip = client.allocate_address(aws_retry=True, **params)['AllocationId']
-            ip_allocated = True
+        new_eip = client.allocate_address(aws_retry=True, **params)['AllocationId']
+        ip_allocated = True
         err_msg = 'eipalloc id {0} created'.format(new_eip)
 
     except botocore.exceptions.ClientError as e:
@@ -633,6 +583,7 @@ def release_address(client, allocation_id, check_mode=False):
         Boolean, string
     """
     err_msg = ''
+
     if check_mode:
         return True, ''
 
@@ -711,22 +662,24 @@ def create(client, module, subnet_id, allocation_id, tags, purge_tags, client_to
     success = False
     token_provided = False
     err_msg = ""
+    result = {}
 
     if client_token:
         token_provided = True
         params['ClientToken'] = client_token
 
-    try:
-        if not check_mode:
-            result = camel_dict_to_snake_dict(client.create_nat_gateway(aws_retry=True, **params)["NatGateway"])
-        else:
-            result = DRY_RUN_GATEWAYS[0]
-            result['create_time'] = datetime.datetime.utcnow()
-            result['nat_gateway_addresses'][0]['allocation_id'] = allocation_id
-            result['subnet_id'] = subnet_id
+    if check_mode:
         success = True
         changed = True
+        return success, changed, err_msg, result
+
+    try:
+        result = camel_dict_to_snake_dict(client.create_nat_gateway(aws_retry=True, **params)["NatGateway"])
+        success = True
+        changed = True
+
         create_time = result['create_time'].replace(tzinfo=None)
+
         if token_provided and (request_time > create_time):
             changed = False
         elif wait:
@@ -815,10 +768,11 @@ def pre_create(client, module, subnet_id, tags, purge_tags, allocation_id=None, 
     success = False
     changed = False
     err_msg = ""
-    results = list()
+    results = {}
 
     if not allocation_id and not eip_address:
         existing_gateways, allocation_id_exists = (gateway_in_subnet_exists(client, subnet_id, check_mode=check_mode))
+
         if len(existing_gateways) > 0 and if_exist_do_not_create:
             results = existing_gateways[0]
             results['tags'], tags_update_exists = ensure_tags(client, module, results['nat_gateway_id'], tags, purge_tags, check_mode)
@@ -855,6 +809,7 @@ def pre_create(client, module, subnet_id, tags, purge_tags, allocation_id=None, 
                 success = False
                 changed = False
                 return success, changed, err_msg, dict()
+
         existing_gateways, allocation_id_exists = (
             gateway_in_subnet_exists(
                 client, subnet_id, allocation_id, check_mode=check_mode
@@ -933,8 +888,14 @@ def remove(client, nat_gateway_id, wait=False, wait_timeout=0,
     success = False
     changed = False
     err_msg = ""
-    results = list()
+    results = {}
     states = ['pending', 'available']
+
+    if check_mode:
+        changed = True
+        success = True
+        return success, changed, err_msg, results
+
     try:
         exist, err_msg, gw = (
             get_nat_gateways(
@@ -944,8 +905,7 @@ def remove(client, nat_gateway_id, wait=False, wait_timeout=0,
         )
         if exist and len(gw) == 1:
             results = gw[0]
-            if not check_mode:
-                client.delete_nat_gateway(aws_retry=True, **params)
+            client.delete_nat_gateway(aws_retry=True, **params)
 
             allocation_id = (
                 results['nat_gateway_addresses'][0]['allocation_id']
@@ -989,6 +949,10 @@ def remove(client, nat_gateway_id, wait=False, wait_timeout=0,
 def ensure_tags(client, module, nat_gw_id, tags, purge_tags, check_mode):
     final_tags = []
     changed = False
+
+    if check_mode and nat_gw_id is None:
+        # We can't describe tags without an EIP id, we might get here when creating a new EIP in check_mode
+        return final_tags, changed
 
     filters = ansible_dict_to_boto3_filter_list({'resource-id': nat_gw_id, 'resource-type': 'natgateway'})
     cur_tags = None
@@ -1041,6 +1005,7 @@ def ensure_tags(client, module, nat_gw_id, tags, purge_tags, check_mode):
             final_tags = boto3_tag_list_to_ansible_dict(response.get('Tags'))
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, "Couldn't describe tags")
+
     return final_tags, changed
 
 
