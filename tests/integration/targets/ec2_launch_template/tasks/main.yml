@@ -1,0 +1,52 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+
+    - set_fact:
+        virtualenv: "{{ remote_tmp_dir }}/virtualenv"
+        virtualenv_command: "{{ ansible_python_interpreter }} -m virtualenv"
+
+    - set_fact:
+        virtualenv_interpreter: "{{ virtualenv }}/bin/python"
+
+    - pip:
+        name: virtualenv
+
+    - pip:
+        name:
+          - 'boto3<1.6.0'
+          - botocore
+          - boto
+          - coverage<5
+          - cryptography
+        virtualenv: "{{ virtualenv }}"
+        virtualenv_command: "{{ virtualenv_command }}"
+        virtualenv_site_packages: no
+
+    - include_tasks: graceful_failure.yml
+      vars:
+        ansible_python_interpreter: "{{ virtualenv_interpreter }}"
+
+    - name: Find AMI to use
+      ec2_ami_info:
+        owners: 'amazon'
+        filters:
+          name: '{{ ec2_ami_name }}'
+      register: ec2_amis
+    - set_fact:
+        ec2_ami_image: '{{ ec2_amis.images[0].image_id }}'
+
+    - include_tasks: cpu_options.yml
+    - include_tasks: iam_instance_role.yml
+    - include_tasks: versions.yml
+
+  always:
+
+    - file:
+        path: "{{ virtualenv }}"
+        state: absent
