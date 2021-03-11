@@ -275,6 +275,8 @@
           - new_vol_attach_result.volume.tags["Title Case"] == 'Hello Cruel World ❤️'
           - new_vol_attach_result.volume.tags["CamelCase"] == 'SimpleCamelCase ❤️'
           - new_vol_attach_result.volume.tags["snake_case"] == 'simple_snake_case ❤️'
+          - new_vol_attach_result.volume.tags["ResourcePrefix"] == resource_prefix
+          - new_vol_attach_result.volume.tags["Name"] == '{{ resource_prefix }} - sdh'
 
 
     - name: create a volume from a snapshot and attach to the instance
