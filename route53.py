@@ -424,6 +424,17 @@ def get_zone_id_by_name(route53, module, zone_name, want_private, want_vpc_id):
     return None
 
 
+def get_hosted_zone_nameservers(route53, zone_id):
+    hosted_zone_name = route53.get_hosted_zone(aws_retry=True, Id=zone_id)['HostedZone']['Name']
+    resource_records_sets = _list_record_sets(route53, HostedZoneId=zone_id)
+
+    nameservers_records = list(
+        filter(lambda record: record['Name'] == hosted_zone_name and record['Type'] == 'NS', resource_records_sets)
+    )[0]['ResourceRecords']
+
+    return [ns_record['Value'] for ns_record in nameservers_records]
+
+
 def main():
     argument_spec = dict(
         state=dict(type='str', required=True, choices=['absent', 'create', 'delete', 'get', 'present'], aliases=['command']),
@@ -565,7 +576,7 @@ def main():
             ns = aws_record.get('values', [])
         else:
             # Retrieve name servers associated to the zone.
-            ns = route53.get_hosted_zone(aws_retry=True, Id=zone_id)['DelegationSet']['NameServers']
+            ns = get_hosted_zone_nameservers(route53, zone_id)
 
         module.exit_json(changed=False, set=aws_record, nameservers=ns)
 
