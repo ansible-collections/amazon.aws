@@ -19,6 +19,12 @@ ansible-playbook playbooks/test_invalid_aws_ec2_inventory_config.yml "$@"
 ansible-playbook playbooks/create_inventory_config.yml "$@"
 ansible-playbook playbooks/test_populating_inventory.yml "$@"
 
+# generate inventory with access_key provided through a templated variable
+ansible-playbook playbooks/create_environment_script.yml "$@"
+source access_key.sh
+ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_template.yml.j2'" "$@"
+ansible-playbook playbooks/test_populating_inventory.yml "$@"
+
 # generate inventory config with caching and test using it
 ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_cache.yml.j2'" "$@"
 ansible-playbook playbooks/populate_cache.yml "$@"
