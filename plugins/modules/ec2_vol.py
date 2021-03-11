@@ -93,10 +93,10 @@ options:
     default: {}
     type: dict
   purge_tags:
-    description: Whether to remove existing tags that aren't passed in the C(tags) parameter
+    description: Whether to remove existing tags that aren't passed in the I(tags) parameter
     default: false
     type: bool
-    version_added: 1.4.0
+    version_added: 1.5.0
   modify_volume:
     description:
       - The volume won't be modify unless this key is C(true).
