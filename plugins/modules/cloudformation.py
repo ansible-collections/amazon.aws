@@ -72,9 +72,20 @@ options:
     type: str
   stack_policy:
     description:
-      - The path of the CloudFormation stack policy. A policy cannot be removed once placed, but it can be modified.
+      - The path of the file containing the CloudFormation stack policy. A policy cannot be removed once placed, but it can be modified.
         for instance, allow all updates U(https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/protect-stack-resources.html#d0e9051)
     type: str
+  stack_policy_body:
+    description:
+      - The CloudFormation stack policy in JSON. A policy cannot be removed once placed, but it can be modified.
+        for instance, allow all updates U(https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/protect-stack-resources.html#d0e9051)
+    type: json
+    version_added: 1.5.0
+  stack_policy_on_update_body:
+    description:
+      - the body of the cloudformation stack policy only applied during this update.
+    type: json
+    version_added: 1.5.0
   tags:
     description:
       - Dictionary of tags to associate with stack and its resources during stack creation.
@@ -471,6 +482,9 @@ def update_stack(module, stack_params, cfn, events_limit):
     if 'TemplateBody' not in stack_params and 'TemplateURL' not in stack_params:
         stack_params['UsePreviousTemplate'] = True
 
+    if module.params['stack_policy_on_update_body'] is not None:
+        stack_params['StackPolicyDuringUpdateBody'] = module.params['stack_policy_on_update_body']
+
     # if the state is present and the stack already exists, we try to update it.
     # AWS will tell us if the stack template and parameters are the same and
     # don't need to be updated.
@@ -628,6 +642,8 @@ def main():
         template=dict(default=None, required=False, type='path'),
         notification_arns=dict(default=None, required=False),
         stack_policy=dict(default=None, required=False),
+        stack_policy_body=dict(default=None, required=False, type='json'),
+        stack_policy_on_update_body=dict(default=None, required=False, type='json'),
         disable_rollback=dict(default=False, type='bool'),
         on_create_failure=dict(default=None, required=False, choices=['DO_NOTHING', 'ROLLBACK', 'DELETE']),
         create_timeout=dict(default=None, type='int'),
@@ -685,7 +701,9 @@ def main():
         stack_params['NotificationARNs'] = []
 
     # can't check the policy when verifying.
-    if module.params['stack_policy'] is not None and not module.check_mode and not module.params['create_changeset']:
+    if module.params['stack_policy_body'] is not None and not module.check_mode and not module.params['create_changeset']:
+        stack_params['StackPolicyBody'] = module.params['stack_policy_body']
+    elif module.params['stack_policy'] is not None and not module.check_mode and not module.params['create_changeset']:
         with open(module.params['stack_policy'], 'r') as stack_policy_fh:
             stack_params['StackPolicyBody'] = stack_policy_fh.read()
 

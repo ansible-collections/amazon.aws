@@ -363,6 +363,46 @@
         that:
           - "not stack_info.cloudformation[stack_name].stack_description.enable_termination_protection"
 
+    # ==== Cloudformation tests (update_policy) ======================
+
+    - name: setting an stack policy with json body
+      cloudformation:
+        stack_name: "{{ stack_name }}"
+        stack_policy_body: "{{ lookup('file','update_policy.json') }}"
+        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_parameters:
+          InstanceType: "t3.nano"
+          ImageId: "{{ ec2_ami_image }}"
+          SubnetId: "{{ testing_subnet.subnet.id }}"
+        tags:
+          Stack: "{{ stack_name }}"
+          test: "{{ resource_prefix }}"
+      register: cf_stack
+
+    - name: get stack details
+      cloudformation_info:
+        stack_name: "{{ stack_name }}"
+      register: stack_info
+
+    - name: setting an stack policy on update
+      cloudformation:
+        stack_name: "{{ stack_name }}"
+        stack_policy_on_update_body: "{{ lookup('file','update_policy.json') }}"
+        template_body: "{{ lookup('file','cf_template.json') }}"
+        template_parameters:
+          InstanceType: "t3.nano"
+          ImageId: "{{ ec2_ami_image }}"
+          SubnetId: "{{ testing_subnet.subnet.id }}"
+        tags:
+          Stack: "{{ stack_name }}"
+          test: "{{ resource_prefix }}"
+      register: cf_stack
+
+    - name: get stack details
+      cloudformation_info:
+        stack_name: "{{ stack_name }}"
+      register: stack_info
+
     # ==== Cloudformation tests (delete stack tests) ==========================
 
     - name: delete cloudformation stack (check mode)
