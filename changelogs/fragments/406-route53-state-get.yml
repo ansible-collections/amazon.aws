@@ -1,0 +1,2 @@
+bugfixes:
+- route53 - fix when using ``state=get`` on private DNS zones and add tests to cover this scenario (https://github.com/ansible-collections/community.aws/pull/424).

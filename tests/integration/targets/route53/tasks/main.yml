@@ -52,6 +52,20 @@
         - qdn is not failed
         - qdn is changed
 
+  - name: Get A record using 'get' method of route53 module
+    route53:
+      state: get
+      zone: "{{ zone_one }}"
+      record: "qdn_test.{{ zone_one }}"
+      type: A
+    register: get_result
+  - assert:
+      that:
+        - get_result.nameservers|length > 0
+        - get_result.set.Name == "qdn_test.{{ zone_one }}"
+        - get_result.set.ResourceRecords[0].Value == "1.2.3.4"
+        - get_result.set.Type == "A"
+
   - name: Create same A record using zone non-qualified domain
     route53:
       state: present
