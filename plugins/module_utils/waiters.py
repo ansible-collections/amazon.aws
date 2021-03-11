@@ -342,6 +342,42 @@ ec2_data = {
                 },
             ]
         },
+        "NatGatewayDeleted": {
+            "delay": 5,
+            "maxAttempts": 40,
+            "operation": "DescribeNatGateways",
+            "acceptors": [
+                {
+                    "state": "success",
+                    "matcher": "pathAll",
+                    "expected": "deleted",
+                    "argument": "NatGateways[].State"
+                },
+                {
+                    "state": "success",
+                    "matcher": "error",
+                    "expected": "NatGatewayNotFound"
+                }
+            ]
+        },
+        "NatGatewayAvailable": {
+            "delay": 5,
+            "maxAttempts": 40,
+            "operation": "DescribeNatGateways",
+            "acceptors": [
+                {
+                    "state": "success",
+                    "matcher": "pathAll",
+                    "expected": "available",
+                    "argument": "NatGateways[].State"
+                },
+                {
+                    "state": "retry",
+                    "matcher": "error",
+                    "expected": "NatGatewayNotFound"
+                }
+            ]
+        },
     }
 }
 
@@ -592,6 +628,18 @@ waiters_by_name = {
         ec2_model('VpnGatewayDetached'),
         core_waiter.NormalizedOperationMethod(
             ec2.describe_vpn_gateways
+        )),
+    ('EC2', 'nat_gateway_deleted'): lambda ec2: core_waiter.Waiter(
+        'nat_gateway_deleted',
+        ec2_model('NatGatewayDeleted'),
+        core_waiter.NormalizedOperationMethod(
+            ec2.describe_nat_gateways
+        )),
+    ('EC2', 'nat_gateway_available'): lambda ec2: core_waiter.Waiter(
+        'nat_gateway_available',
+        ec2_model('NatGatewayAvailable'),
+        core_waiter.NormalizedOperationMethod(
+            ec2.describe_nat_gateways
         )),
     ('WAF', 'change_token_in_sync'): lambda waf: core_waiter.Waiter(
         'change_token_in_sync',
