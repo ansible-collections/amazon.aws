@@ -497,7 +497,7 @@ def main():
         mode=dict(choices=['push'], default='push'),
         file_change_strategy=dict(choices=['force', 'date_size', 'checksum'], default='date_size'),
         bucket=dict(required=True),
-        key_prefix=dict(required=False, default=''),
+        key_prefix=dict(required=False, default='', no_log=False),
         file_root=dict(required=True, type='path'),
         permission=dict(required=False, choices=['private', 'public-read', 'public-read-write', 'authenticated-read',
                                                  'aws-exec-read', 'bucket-owner-read', 'bucket-owner-full-control']),
