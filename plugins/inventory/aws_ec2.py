@@ -87,7 +87,10 @@ regions:
 
 # Example using filters, ignoring permission errors, and specifying the hostname precedence
 plugin: aws_ec2
+# The values for profile, access key, secret key and token can be hardcoded like:
 boto_profile: aws_profile
+# or you could use Jinja as:
+# boto_profile: "{{ lookup('env', 'AWS_PROFILE') | default('aws_profile', true) }}"
 # Populate inventory with instances in these regions
 regions:
   - us-east-1
@@ -161,7 +164,11 @@ except ImportError:
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_native
 from ansible.module_utils._text import to_text
-from ansible.plugins.inventory import BaseInventoryPlugin, Constructable, Cacheable
+from ansible.plugins.inventory import BaseInventoryPlugin
+from ansible.plugins.inventory import Cacheable
+from ansible.plugins.inventory import Constructable
+from ansible.template import Templar
+from ansible.utils.display import Display
 
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
@@ -579,16 +586,25 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             # Create groups based on variable values and add the corresponding hosts to it
             self._add_host_to_keyed_groups(self.get_option('keyed_groups'), host, hostname, strict=strict)
 
-    def _set_credentials(self):
+    def _set_credentials(self, loader):
         '''
             :param config_data: contents of the inventory config file
         '''
 
-        self.boto_profile = self.get_option('aws_profile')
-        self.aws_access_key_id = self.get_option('aws_access_key')
-        self.aws_secret_access_key = self.get_option('aws_secret_key')
-        self.aws_security_token = self.get_option('aws_security_token')
-        self.iam_role_arn = self.get_option('iam_role_arn')
+        t = Templar(loader=loader)
+        credentials = {}
+
+        for credential_type in ['aws_profile', 'aws_access_key', 'aws_secret_key', 'aws_security_token', 'iam_role_arn']:
+            if t.is_template(self.get_option(credential_type)):
+                credentials[credential_type] = t.template(variable=self.get_option(credential_type), disable_lookups=False)
+            else:
+                credentials[credential_type] = self.get_option(credential_type)
+
+        self.boto_profile = credentials['aws_profile']
+        self.aws_access_key_id = credentials['aws_access_key']
+        self.aws_secret_access_key = credentials['aws_secret_key']
+        self.aws_security_token = credentials['aws_security_token']
+        self.iam_role_arn = credentials['iam_role_arn']
 
         if not self.boto_profile and not (self.aws_access_key_id and self.aws_secret_access_key):
             session = botocore.session.get_session()
@@ -629,7 +645,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         if self.get_option('use_contrib_script_compatible_sanitization'):
             self._sanitize_group_name = self._legacy_script_compatible_group_sanitization
 
-        self._set_credentials()
+        self._set_credentials(loader)
 
         # get user specifications
         regions = self.get_option('regions')

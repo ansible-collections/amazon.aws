@@ -1,0 +1,9 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+  - name: 'Write access key to file we can source'
+    copy:
+      dest: '../access_key.sh'
+      content: 'export MY_ACCESS_KEY="{{ aws_access_key }}"'
