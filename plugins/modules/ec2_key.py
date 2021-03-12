@@ -241,7 +241,7 @@ def main():
 
     argument_spec = dict(
         name=dict(required=True),
-        key_material=dict(),
+        key_material=dict(no_log=False),
         force=dict(type='bool', default=True),
         state=dict(default='present', choices=['present', 'absent']),
         wait=dict(type='bool', removed_at_date='2022-06-01', removed_from_collection='amazon.aws'),
