@@ -1,0 +1,3 @@
+minor_changes:
+  - ec2_metric_alarm - Made ``unit`` parameter optional (https://github.com/ansible-collections/community.aws/pull/470).
+  - ec2_metric_alarm - Added support for check mode (https://github.com/ansible-collections/community.aws/pull/470).
