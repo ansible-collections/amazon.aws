@@ -74,6 +74,7 @@
           - "'attachment_set' in volume1.volume"
           - "'instance_id' in volume1.volume.attachment_set"
           - not volume1.volume.attachment_set.instance_id
+          - not ("Name" in volume1.volume.tags)
           - not volume1.volume.encrypted
           - volume1.volume.tags.ResourcePrefix == "{{ resource_prefix }}"
 
@@ -103,6 +104,7 @@
           - volume2.volume_type == 'io1'
           - volume2.volume.iops == 101
           - volume2.volume.size == 4
+          - volume2.volume.tags.Name == "{{ resource_prefix }}" 
           - volume2.volume.encrypted
           - volume2.volume.tags.ResourcePrefix == "{{ resource_prefix }}"
 
@@ -209,7 +211,12 @@
         device_name: /dev/sdh
         volume_size: 1
         volume_type: gp2
+        name: '{{ resource_prefix }} - sdh'
         tags:
+          "lowercase spaced": 'hello cruel world'
+          "Title Case": 'Hello Cruel World'
+          CamelCase: 'SimpleCamelCase'
+          snake_case: 'simple_snake_case'
           ResourcePrefix: "{{ resource_prefix }}"
       register: new_vol_attach_result
 
@@ -222,6 +229,12 @@
           - new_vol_attach_result.volume.attachment_set.status in ['attached', 'attaching']
           - new_vol_attach_result.volume.attachment_set.instance_id == test_instance.instance_ids[0]
           - new_vol_attach_result.volume.attachment_set.device == '/dev/sdh'
+          - new_vol_attach_result.volume.tags["lowercase spaced"] == 'hello cruel world'
+          - new_vol_attach_result.volume.tags["Title Case"] == 'Hello Cruel World'
+          - new_vol_attach_result.volume.tags["CamelCase"] == 'SimpleCamelCase'
+          - new_vol_attach_result.volume.tags["snake_case"] == 'simple_snake_case'
+          - new_vol_attach_result.volume.tags["Name"] == '{{ resource_prefix }} - sdh'          
+
 
     - name: attach a new volume to an instance (idempotent)
       ec2_vol:
@@ -239,6 +252,32 @@
         that:
           - "not new_vol_attach_result_idem.changed"
           - "'Volume mapping for /dev/sdh already exists' in new_vol_attach_result_idem.msg"
+
+    - name: change some tag values
+      ec2_vol:
+        instance: "{{ test_instance.instance_ids[0] }}"
+        id: "{{ new_vol_attach_result.volume.id }}"
+        device_name: /dev/sdh
+        volume_size: 1
+        volume_type: gp2
+        tags:
+          "lowercase spaced": 'hello cruel world ❤️'
+          "Title Case": 'Hello Cruel World ❤️'
+          CamelCase: 'SimpleCamelCase ❤️'
+          snake_case: 'simple_snake_case ❤️'
+      register: new_vol_attach_result
+
+    - name: check task return attributes
+      assert:
+        that:
+          - new_vol_attach_result.changed
+          - new_vol_attach_result.volume.tags["lowercase spaced"] == 'hello cruel world ❤️'
+          - new_vol_attach_result.volume.tags["Title Case"] == 'Hello Cruel World ❤️'
+          - new_vol_attach_result.volume.tags["CamelCase"] == 'SimpleCamelCase ❤️'
+          - new_vol_attach_result.volume.tags["snake_case"] == 'simple_snake_case ❤️'
+          - new_vol_attach_result.volume.tags["ResourcePrefix"] == resource_prefix
+          - new_vol_attach_result.volume.tags["Name"] == '{{ resource_prefix }} - sdh'
+
 
     - name: create a volume from a snapshot and attach to the instance
       ec2_vol:
@@ -339,6 +378,11 @@
         that:
           - changed_gp3_volume.volume_type == 'gp3'
           - changed_gp3_volume.changed
+          # Ensure our tags are still here
+          - new_vol_attach_result.volume.tags["lowercase spaced"] == 'hello cruel world ❤️'
+          - new_vol_attach_result.volume.tags["Title Case"] == 'Hello Cruel World ❤️'
+          - new_vol_attach_result.volume.tags["CamelCase"] == 'SimpleCamelCase ❤️'
+          - new_vol_attach_result.volume.tags["snake_case"] == 'simple_snake_case ❤️'
 
     - name: volume must be from type gp3 (idempotent)
       ec2_vol:
