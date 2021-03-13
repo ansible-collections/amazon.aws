@@ -11,14 +11,19 @@ DOCUMENTATION = '''
 ---
 module: ec2_metadata_facts
 version_added: 1.0.0
-short_description: Gathers facts (instance metadata) about remote hosts within ec2
+short_description: gathers facts (instance metadata) about remote hosts within EC2
 author:
     - Silviu Dicu (@silviud)
     - Vinay Dandekar (@roadmapper)
 description:
-    - This module fetches data from the instance metadata endpoint in ec2 as per
+    - This module fetches data from the instance metadata endpoint in EC2 as per
       U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html).
     - The module must be called from within the EC2 instance itself.
+    - The module is configured to utilize the session oriented Instance Metadata Service v2 (IMDSv2)
+      U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html).
+    - If the HttpEndpoint parameter
+      U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifyInstanceMetadataOptions.html#API_ModifyInstanceMetadataOptions_RequestParameters)
+      is set to disabled for the EC2 instance, the module will return an error while retrieving a session token.
 notes:
     - Parameters to filter on ec2_metadata_facts may be added later.
 '''
@@ -270,7 +275,7 @@ ansible_facts:
             type: str
             sample: "00:11:22:33:44:55"
         ansible_ec2_metrics_vhostmd:
-            description: Metrics.
+            description: Metrics; no longer available.
             type: str
             sample: ""
         ansible_ec2_network_interfaces_macs_<mac address>_device_number:
@@ -438,29 +443,37 @@ socket.setdefaulttimeout(5)
 
 
 class Ec2Metadata(object):
+    ec2_metadata_token_uri = 'http://169.254.169.254/latest/api/token'
     ec2_metadata_uri = 'http://169.254.169.254/latest/meta-data/'
     ec2_sshdata_uri = 'http://169.254.169.254/latest/meta-data/public-keys/0/openssh-key'
     ec2_userdata_uri = 'http://169.254.169.254/latest/user-data/'
     ec2_dynamicdata_uri = 'http://169.254.169.254/latest/dynamic/'
 
-    def __init__(self, module, ec2_metadata_uri=None, ec2_sshdata_uri=None, ec2_userdata_uri=None, ec2_dynamicdata_uri=None):
+    def __init__(self, module, ec2_metadata_token_uri=None, ec2_metadata_uri=None, ec2_sshdata_uri=None, ec2_userdata_uri=None, ec2_dynamicdata_uri=None):
         self.module = module
+        self.uri_token = ec2_metadata_token_uri or self.ec2_metadata_token_uri
         self.uri_meta = ec2_metadata_uri or self.ec2_metadata_uri
         self.uri_user = ec2_userdata_uri or self.ec2_userdata_uri
         self.uri_ssh = ec2_sshdata_uri or self.ec2_sshdata_uri
         self.uri_dynamic = ec2_dynamicdata_uri or self.ec2_dynamicdata_uri
         self._data = {}
+        self._token = None
         self._prefix = 'ansible_ec2_%s'
 
     def _fetch(self, url):
         encoded_url = quote(url, safe='%/:=&?~#+!$,;\'@()*[]')
-        response, info = fetch_url(self.module, encoded_url, force=True)
+        headers = {}
+        if self._token:
+            headers = {'X-aws-ec2-metadata-token': self._token}
+        response, info = fetch_url(self.module, encoded_url, headers=headers, force=True)
 
-        if info.get('status') not in (200, 404):
+        if info.get('status') in (401, 403):
+            self.module.fail_json(msg='Failed to retrieve metadata from AWS: {0}'.format(info['msg']), response=info)
+        elif info.get('status') not in (200, 404):
             time.sleep(3)
             # request went bad, retry once then raise
             self.module.warn('Retrying query to metadata service. First attempt failed: {0}'.format(info['msg']))
-            response, info = fetch_url(self.module, encoded_url, force=True)
+            response, info = fetch_url(self.module, encoded_url, headers=headers, force=True)
             if info.get('status') not in (200, 404):
                 # fail out now
                 self.module.fail_json(msg='Failed to retrieve metadata from AWS: {0}'.format(info['msg']), response=info)
@@ -529,7 +542,29 @@ class Ec2Metadata(object):
 
         return new_data
 
+    def fetch_session_token(self, uri_token):
+        """Used to get a session token for IMDSv2"""
+        headers = {'X-aws-ec2-metadata-token-ttl-seconds': '60'}
+        response, info = fetch_url(self.module, uri_token, method='PUT', headers=headers, force=True)
+
+        if info.get('status') == 403:
+            self.module.fail_json(msg='Failed to retrieve metadata token from AWS: {0}'.format(info['msg']), response=info)
+        elif info.get('status') not in (200, 404):
+            time.sleep(3)
+            # request went bad, retry once then raise
+            self.module.warn('Retrying query to metadata service. First attempt failed: {0}'.format(info['msg']))
+            response, info = fetch_url(self.module, uri_token, method='PUT', headers=headers, force=True)
+            if info.get('status') not in (200, 404):
+                # fail out now
+                self.module.fail_json(msg='Failed to retrieve metadata token from AWS: {0}'.format(info['msg']), response=info)
+        if response:
+            token_data = response.read()
+        else:
+            token_data = None
+        return to_text(token_data)
+
     def run(self):
+        self._token = self.fetch_session_token(self.uri_token)  # create session token for IMDS
         self.fetch(self.uri_meta)  # populate _data with metadata
         data = self._mangle_fields(self._data, self.uri_meta)
         data[self._prefix % 'user-data'] = self._fetch(self.uri_user)
