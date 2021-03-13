@@ -129,7 +129,7 @@ def main():
     argument_spec = dict(
         duration_seconds=dict(required=False, default=None, type='int'),
         mfa_serial_number=dict(required=False, default=None),
-        mfa_token=dict(required=False, default=None),
+        mfa_token=dict(required=False, default=None, no_log=True),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec)
