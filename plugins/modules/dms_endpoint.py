@@ -387,7 +387,7 @@ def main():
         port=dict(type='int'),
         databasename=dict(),
         extraconnectionattributes=dict(),
-        kmskeyid=dict(),
+        kmskeyid=dict(no_log=False),
         tags=dict(type='dict'),
         certificatearn=dict(),
         sslmode=dict(choices=['none', 'require', 'verify-ca', 'verify-full'],

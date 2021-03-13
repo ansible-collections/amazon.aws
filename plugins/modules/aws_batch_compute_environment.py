@@ -460,7 +460,7 @@ def main():
         image_id=dict(),
         subnets=dict(type='list', required=True, elements='str'),
         security_group_ids=dict(type='list', required=True, elements='str'),
-        ec2_key_pair=dict(),
+        ec2_key_pair=dict(no_log=False),
         instance_role=dict(required=True),
         tags=dict(type='dict'),
         bid_percentage=dict(type='int'),

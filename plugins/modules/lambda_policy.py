@@ -397,7 +397,7 @@ def setup_module_object():
         principal=dict(required=True, ),
         source_arn=dict(),
         source_account=dict(),
-        event_source_token=dict(),
+        event_source_token=dict(no_log=False),
     )
 
     return AnsibleAWSModule(

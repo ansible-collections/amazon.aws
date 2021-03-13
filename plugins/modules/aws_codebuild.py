@@ -378,7 +378,7 @@ def main():
         environment=dict(type='dict'),
         service_role=dict(),
         timeout_in_minutes=dict(type='int', default=60),
-        encryption_key=dict(),
+        encryption_key=dict(no_log=False),
         tags=dict(type='list', elements='dict'),
         vpc_config=dict(type='dict'),
         state=dict(choices=['present', 'absent'], default='present')

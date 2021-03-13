@@ -652,7 +652,7 @@ def main():
         task_definition=dict(required=False, type='str'),
         load_balancers=dict(required=False, default=[], type='list', elements='dict'),
         desired_count=dict(required=False, type='int'),
-        client_token=dict(required=False, default='', type='str'),
+        client_token=dict(required=False, default='', type='str', no_log=False),
         role=dict(required=False, default='', type='str'),
         delay=dict(required=False, type='int', default=10),
         repeat=dict(required=False, type='int', default=10),
