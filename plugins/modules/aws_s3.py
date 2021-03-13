@@ -678,7 +678,7 @@ def main():
         expiry=dict(default=600, type='int', aliases=['expiration']),
         headers=dict(type='dict'),
         marker=dict(default=""),
-        max_keys=dict(default=1000, type='int'),
+        max_keys=dict(default=1000, type='int', no_log=False),
         metadata=dict(type='dict'),
         mode=dict(choices=['get', 'put', 'delete', 'create', 'geturl', 'getstr', 'delobj', 'list'], required=True),
         object=dict(),
