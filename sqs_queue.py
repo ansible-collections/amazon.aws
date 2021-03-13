@@ -450,7 +450,7 @@ def main():
         redrive_policy=dict(type='dict'),
         visibility_timeout=dict(type='int', aliases=['default_visibility_timeout']),
         kms_master_key_id=dict(type='str'),
-        kms_data_key_reuse_period_seconds=dict(type='int', aliases=['kms_data_key_reuse_period']),
+        kms_data_key_reuse_period_seconds=dict(type='int', aliases=['kms_data_key_reuse_period'], no_log=False),
         content_based_deduplication=dict(type='bool'),
         tags=dict(type='dict'),
         purge_tags=dict(type='bool', default=False),

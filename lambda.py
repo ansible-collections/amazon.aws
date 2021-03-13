@@ -330,7 +330,7 @@ def main():
         handler=dict(),
         zip_file=dict(aliases=['src']),
         s3_bucket=dict(),
-        s3_key=dict(),
+        s3_key=dict(no_log=False),
         s3_object_version=dict(),
         description=dict(default=''),
         timeout=dict(type='int', default=3),

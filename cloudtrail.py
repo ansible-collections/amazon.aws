@@ -438,7 +438,7 @@ def main():
         name=dict(default='default'),
         enable_logging=dict(default=True, type='bool'),
         s3_bucket_name=dict(),
-        s3_key_prefix=dict(),
+        s3_key_prefix=dict(no_log=False),
         sns_topic_name=dict(),
         is_multi_region_trail=dict(default=False, type='bool'),
         enable_log_file_validation=dict(type='bool', aliases=['log_file_validation_enabled']),

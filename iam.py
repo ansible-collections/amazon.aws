@@ -627,7 +627,7 @@ def main():
         access_key_state=dict(default=None, required=False, choices=[
             'active', 'inactive', 'create', 'remove',
             'Active', 'Inactive', 'Create', 'Remove']),
-        access_key_ids=dict(type='list', default=None, required=False, elements='str'),
+        access_key_ids=dict(type='list', default=None, required=False, elements='str', no_log=False),
         key_count=dict(type='int', default=1, required=False),
         name=dict(required=True),
         trust_policy_filepath=dict(default=None, required=False),

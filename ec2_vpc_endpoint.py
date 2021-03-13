@@ -352,7 +352,7 @@ def main():
         wait_timeout=dict(type='int', default=320, required=False),
         route_table_ids=dict(type='list', elements='str'),
         vpc_endpoint_id=dict(),
-        client_token=dict(),
+        client_token=dict(no_log=False),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,

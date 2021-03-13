@@ -1020,7 +1020,7 @@ def main():
         wait_timeout=dict(type='int', default=320, required=False),
         release_eip=dict(type='bool', default=False),
         nat_gateway_id=dict(type='str'),
-        client_token=dict(type='str'),
+        client_token=dict(type='str', no_log=False),
         tags=dict(required=False, type='dict', aliases=['resource_tags']),
         purge_tags=dict(default=True, type='bool'),
     )

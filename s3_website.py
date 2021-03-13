@@ -291,7 +291,7 @@ def main():
         name=dict(type='str', required=True),
         state=dict(type='str', required=True, choices=['present', 'absent']),
         suffix=dict(type='str', required=False, default='index.html'),
-        error_key=dict(type='str', required=False),
+        error_key=dict(type='str', required=False, no_log=False),
         redirect_all_requests=dict(type='str', required=False),
     )
 
