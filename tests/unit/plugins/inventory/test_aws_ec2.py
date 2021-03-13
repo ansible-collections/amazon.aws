@@ -29,7 +29,9 @@ boto3 = pytest.importorskip('boto3')
 botocore = pytest.importorskip('botocore')
 
 from ansible.errors import AnsibleError
+from ansible.parsing.dataloader import DataLoader
 from ansible_collections.amazon.aws.plugins.inventory.aws_ec2 import InventoryModule, instance_data_filter_to_boto_attr
+
 
 instances = {
     u'Instances': [
@@ -134,7 +136,8 @@ def test_boto3_conn(inventory):
                           "aws_secret_key": "test_secret_key",
                           "aws_security_token": "test_security_token",
                           "iam_role_arn": None}
-    inventory._set_credentials()
+    loader = DataLoader()
+    inventory._set_credentials(loader)
     with pytest.raises(AnsibleError) as error_message:
         for connection, region in inventory._boto3_conn(regions=['us-east-1']):
             assert "Insufficient credentials found" in error_message
@@ -163,7 +166,8 @@ def test_set_credentials(inventory):
                           'aws_security_token': 'test_security_token',
                           'aws_profile': 'test_profile',
                           'iam_role_arn': 'arn:aws:iam::112233445566:role/test-role'}
-    inventory._set_credentials()
+    loader = DataLoader()
+    inventory._set_credentials(loader)
 
     assert inventory.boto_profile == "test_profile"
     assert inventory.aws_access_key_id == "test_access_key"
@@ -181,7 +185,8 @@ def test_insufficient_credentials(inventory):
         'iam_role_arn': None
     }
     with pytest.raises(AnsibleError) as error_message:
-        inventory._set_credentials()
+        loader = DataLoader()
+        inventory._set_credentials(loader)
         assert "Insufficient credentials found" in error_message
 
 
