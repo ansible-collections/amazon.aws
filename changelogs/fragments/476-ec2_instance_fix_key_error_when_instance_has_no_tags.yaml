@@ -1,0 +1,2 @@
+bugfixes:
+  - ec2_instance - fix key errors when instance has no tags (https://github.com/ansible-collections/community.aws/pull/476).
