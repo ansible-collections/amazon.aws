@@ -325,6 +325,32 @@ options:
       U(http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2-instance-metadata.html#instancedata-add-user-data)
       documentation on user-data.
     type: str
+  metadata_options:
+    description:
+    - Configure EC2 Metadata options.
+    - For more information see the IMDS documentation
+      U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html).
+    type: dict
+    version_added: 1.5.0
+    suboptions:
+      http_endpoint:
+        type: str
+        description: >
+          This parameter enables or disables the HTTP metadata endpoint on your instances.
+        choices: [enabled, disabled]
+        default: 'enabled'
+      http_put_response_hop_limit:
+        type: int
+        description: >
+          The desired HTTP PUT response hop limit for instance metadata requests.
+          The larger the number, the further instance metadata requests can travel.
+        default: 1
+      http_tokens:
+        type: str
+        description: >
+          The state of token usage for your instance metadata requests.
+        choices: [optional, required]
+        default: 'optional'
 '''
 
 EXAMPLES = '''
@@ -635,6 +661,14 @@ def main():
             options=dict(
                 enabled=dict(type='bool')
             ),
+        ),
+        metadata_options=dict(
+            type='dict',
+            options=dict(
+                http_endpoint=dict(choices=['enabled', 'disabled'], default='enabled'),
+                http_put_response_hop_limit=dict(type='int', default=1),
+                http_tokens=dict(choices=['optional', 'required'], default='optional')
+            )
         ),
         network_interfaces=dict(
             type='list',
