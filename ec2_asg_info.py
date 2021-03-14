@@ -143,6 +143,28 @@ launch_configuration_name:
     returned: success
     type: str
     sample: "public-webapp-production-1"
+lifecycle_hooks:
+    description: List of lifecycle hooks for the ASG.
+    returned: success
+    type: list
+    sample: [
+        {
+            "AutoScalingGroupName": "public-webapp-production-1",
+            "DefaultResult": "ABANDON",
+            "GlobalTimeout": 172800,
+            "HeartbeatTimeout": 3600,
+            "LifecycleHookName": "instance-launch",
+            "LifecycleTransition": "autoscaling:EC2_INSTANCE_LAUNCHING"
+        },
+        {
+            "AutoScalingGroupName": "public-webapp-production-1",
+            "DefaultResult": "ABANDON",
+            "GlobalTimeout": 172800,
+            "HeartbeatTimeout": 3600,
+            "LifecycleHookName": "instance-terminate",
+            "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING"
+        }
+    ]
 load_balancer_names:
     description: List of load balancers names attached to the ASG.
     returned: success
@@ -289,6 +311,25 @@ def find_asgs(conn, module, name=None, tags=None):
                 ],
                 "launch_config_name": "public-webapp-production-1",
                 "launch_configuration_name": "public-webapp-production-1",
+                "lifecycle_hooks":
+                [
+                    {
+                        "AutoScalingGroupName": "public-webapp-production-1",
+                        "DefaultResult": "ABANDON",
+                        "GlobalTimeout": 172800,
+                        "HeartbeatTimeout": 3600,
+                        "LifecycleHookName": "instance-launch",
+                        "LifecycleTransition": "autoscaling:EC2_INSTANCE_LAUNCHING"
+                    },
+                    {
+                        "AutoScalingGroupName": "public-webapp-production-1",
+                        "DefaultResult": "ABANDON",
+                        "GlobalTimeout": 172800,
+                        "HeartbeatTimeout": 3600,
+                        "LifecycleHookName": "instance-terminate",
+                        "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING"
+                    }
+                ],
                 "load_balancer_names": ["public-webapp-production-lb"],
                 "max_size": 4,
                 "min_size": 2,
@@ -381,6 +422,12 @@ def find_asgs(conn, module, name=None, tags=None):
                         module.fail_json_aws(e, msg="Failed to describe Target Groups")
             else:
                 asg['target_group_names'] = []
+            # get asg lifecycle hooks if any
+            try:
+                asg_lifecyclehooks = conn.describe_lifecycle_hooks(AutoScalingGroupName=asg['auto_scaling_group_name'])
+                asg['lifecycle_hooks'] = asg_lifecyclehooks['LifecycleHooks']
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                module.fail_json_aws(e, msg="Failed to fetch information about ASG lifecycle hooks")
             matched_asgs.append(asg)
 
     return matched_asgs
