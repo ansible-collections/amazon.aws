@@ -5,3 +5,5 @@ unstable
 
 cloud/aws
 shippable/aws/group2
+
+elb_classic_lb_info
