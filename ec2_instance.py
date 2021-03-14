@@ -889,7 +889,7 @@ def tower_callback_script(tower_conf, windows=False, passwd=None):
 
 def manage_tags(match, new_tags, purge_tags, ec2):
     changed = False
-    old_tags = boto3_tag_list_to_ansible_dict(match['Tags'])
+    old_tags = boto3_tag_list_to_ansible_dict(match.get('Tags', {}))
     tags_to_set, tags_to_delete = compare_aws_tags(
         old_tags, new_tags,
         purge_tags=purge_tags,
@@ -1559,7 +1559,7 @@ def change_instance_state(filters, desired_state, ec2=None):
 
 def pretty_instance(i):
     instance = camel_dict_to_snake_dict(i, ignore_list=['Tags'])
-    instance['tags'] = boto3_tag_list_to_ansible_dict(i['Tags'])
+    instance['tags'] = boto3_tag_list_to_ansible_dict(i.get('Tags', {}))
     return instance
 
 
