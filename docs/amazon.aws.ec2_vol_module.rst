@@ -19,7 +19,6 @@ Synopsis
 --------
 - Creates an EBS volume and optionally attaches it to an instance.
 - If both *instance* and *name* are given and the instance has a device at the device name, then no volume is created and no attachment is made.
-- This module has a dependency on python-boto.
 
 
 

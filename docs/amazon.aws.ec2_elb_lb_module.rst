@@ -536,7 +536,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>When set to <code>no</code>, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
+                        <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                 </td>
             </tr>
             <tr>

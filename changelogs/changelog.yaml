@@ -233,3 +233,29 @@ releases:
     - 25-aws_ec2-hostname-options-concatenation.yaml
     - 273-vendor-ipaddress-utility.yml
     release_date: '2021-03-05'
+  1.5.0:
+    changes:
+      minor_changes:
+      - AWS inventory plugins - use shared HAS_BOTO3 helper rather than copying code
+        (https://github.com/ansible-collections/amazon.aws/pull/288).
+      - AWS lookup plugins - use shared HAS_BOTO3 helper rather than copying code
+        (https://github.com/ansible-collections/amazon.aws/pull/288).
+      - aws_account_attribute - add retries on common AWS failures (https://github.com/ansible-collections/amazon.aws/pull/295).
+      - cloudformation - added support for StackPolicyDuringUpdateBody (https://github.com/ansible-collections/amazon.aws/pull/155).
+      - ec2_vpc_net - use a custom waiter which can handle API rate limiting (https://github.com/ansible-collections/amazon.aws/pull/270).
+      - ec2_vpc_subnet - use AWSRetry decorator to more consistently handle API rate
+        limiting (https://github.com/ansible-collections/amazon.aws/pull/270).
+      - module_utils.cloudfront_facts - linting cleanup (https://github.com/ansible-collections/amazon.aws/pull/291).
+      - module_utils.ec2 - linting cleanup (https://github.com/ansible-collections/amazon.aws/pull/291).
+      - module_utils/core - add a helper function ``normalize_boto3_result`` (https://github.com/ansible-collections/amazon.aws/pull/271).
+      - module_utils/core - add parameter ``descend_into_lists`` to ``scrub_none_parameters``
+        helper function (https://github.com/ansible-collections/amazon.aws/pull/262).
+    fragments:
+    - 155-support-for-StackPolicyDuringUpdateBody.yaml
+    - 261-scrub-params-descend-into-lists.yml
+    - 270-vpc-waiters.yaml
+    - 271-normalize_boto3_result.yml
+    - 288-has_boto3.yml
+    - 291-lint-cleanup.yml
+    - 295-aws_account_attribute-awsretry.yml
+    release_date: '2021-03-15'
