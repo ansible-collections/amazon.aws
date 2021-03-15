@@ -124,6 +124,29 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
+# AWS uses VpnGatewayLimitExceeded for both 'Too many VGWs' and 'Too many concurrent changes'
+# we need to look at the mesage to tell the difference.
+class VGWRetry(AWSRetry):
+    @staticmethod
+    def status_code_from_exception(error):
+        return (error.response['Error']['Code'], error.response['Error']['Message'],)
+
+    @staticmethod
+    def found(response_codes, catch_extra_error_codes=None):
+        retry_on = ['The maximum number of mutating objects has been reached.']
+
+        if catch_extra_error_codes:
+            retry_on.extend(catch_extra_error_codes)
+        if not isinstance(response_codes, tuple):
+            response_codes = (response_codes,)
+
+        for code in response_codes:
+            if super().found(response_codes, catch_extra_error_codes):
+                return True
+
+        return False
+
+
 def get_vgw_info(vgws):
     if not isinstance(vgws, list):
         return
@@ -174,7 +197,7 @@ def attach_vgw(client, module, vpn_gateway_id):
         # Immediately after a detachment, the EC2 API sometimes will report the VpnGateways[0].State
         # as available several seconds before actually permitting a new attachment.
         # So we catch and retry that error.  See https://github.com/ansible/ansible/issues/53185
-        response = AWSRetry.jittered_backoff(retries=5,
+        response = VGWRetry.jittered_backoff(retries=5,
                                              catch_extra_error_codes=['InvalidParameterValue']
                                              )(client.attach_vpn_gateway)(VpnGatewayId=vpn_gateway_id,
                                                                           VpcId=params['VpcId'])
@@ -193,16 +216,13 @@ def detach_vgw(client, module, vpn_gateway_id, vpc_id=None):
     params = dict()
     params['VpcId'] = module.params.get('vpc_id')
 
-    if vpc_id:
-        try:
-            response = client.detach_vpn_gateway(VpnGatewayId=vpn_gateway_id, VpcId=vpc_id)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Failed to detach gateway')
-    else:
-        try:
-            response = client.detach_vpn_gateway(VpnGatewayId=vpn_gateway_id, VpcId=params['VpcId'])
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Failed to detach gateway')
+    try:
+        if vpc_id:
+            response = client.detach_vpn_gateway(VpnGatewayId=vpn_gateway_id, VpcId=vpc_id, aws_retry=True)
+        else:
+            response = client.detach_vpn_gateway(VpnGatewayId=vpn_gateway_id, VpcId=params['VpcId'], aws_retry=True)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, 'Failed to detach gateway')
 
     status_achieved, vgw = wait_for_status(client, module, [vpn_gateway_id], 'detached')
     if not status_achieved:
@@ -219,7 +239,7 @@ def create_vgw(client, module):
         params['AmazonSideAsn'] = module.params.get('asn')
 
     try:
-        response = client.create_vpn_gateway(**params)
+        response = client.create_vpn_gateway(aws_retry=True, **params)
         get_waiter(
             client, 'vpn_gateway_exists'
         ).wait(
@@ -239,7 +259,7 @@ def create_vgw(client, module):
 def delete_vgw(client, module, vpn_gateway_id):
 
     try:
-        response = client.delete_vpn_gateway(VpnGatewayId=vpn_gateway_id)
+        response = client.delete_vpn_gateway(VpnGatewayId=vpn_gateway_id, aws_retry=True)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to delete gateway')
 
@@ -252,7 +272,7 @@ def create_tags(client, module, vpn_gateway_id):
     params = dict()
 
     try:
-        response = client.create_tags(Resources=[vpn_gateway_id], Tags=load_tags(module))
+        response = client.create_tags(Resources=[vpn_gateway_id], Tags=load_tags(module), aws_retry=True)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to add tags")
 
@@ -263,16 +283,13 @@ def create_tags(client, module, vpn_gateway_id):
 def delete_tags(client, module, vpn_gateway_id, tags_to_delete=None):
     params = dict()
 
-    if tags_to_delete:
-        try:
-            response = client.delete_tags(Resources=[vpn_gateway_id], Tags=tags_to_delete)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Failed to delete tags')
-    else:
-        try:
-            response = client.delete_tags(Resources=[vpn_gateway_id])
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Failed to delete all tags')
+    try:
+        if tags_to_delete:
+            response = client.delete_tags(Resources=[vpn_gateway_id], Tags=tags_to_delete, aws_retry=True)
+        else:
+            response = client.delete_tags(Resources=[vpn_gateway_id], aws_retry=True)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Unable to remove tags from gateway')
 
     result = response
     return result
@@ -294,8 +311,8 @@ def find_tags(client, module, resource_id=None):
 
     if resource_id:
         try:
-            response = client.describe_tags(Filters=[
-                {'Name': 'resource-id', 'Values': [resource_id]}
+            response = client.describe_tags(aws_retry=True, Filters=[
+                {'Name': 'resource-id', 'Values': [resource_id]},
             ])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg='Failed to describe tags searching by resource')
@@ -343,7 +360,7 @@ def find_vpc(client, module):
 
     if params['vpc_id']:
         try:
-            response = client.describe_vpcs(VpcIds=[params['vpc_id']])
+            response = client.describe_vpcs(VpcIds=[params['vpc_id']], aws_retry=True)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg='Failed to describe VPC')
 
@@ -363,7 +380,7 @@ def find_vgw(client, module, vpn_gateway_id=None):
         if module.params.get('state') == 'present':
             params['Filters'].append({'Name': 'state', 'Values': ['pending', 'available']})
     try:
-        response = client.describe_vpn_gateways(**params)
+        response = client.describe_vpn_gateways(aws_retry=True, **params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to describe gateway using filters')
 
@@ -549,10 +566,7 @@ def main():
 
     state = module.params.get('state').lower()
 
-    try:
-        client = module.client('ec2')
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to connect to AWS')
+    client = module.client('ec2', retry_decorator=VGWRetry.jittered_backoff(retries=10))
 
     if state == 'present':
         (changed, results) = ensure_vgw_present(client, module)
