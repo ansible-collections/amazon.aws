@@ -747,9 +747,9 @@ def main():
             inst = get_instance(module, ec2_conn, instance_id=instance)
             zone = inst['placement']['availability_zone']
 
-            # Use password data attribute to tell whether the instance is Windows or Linux
+            # Use platform attribute to guess whether the instance is Windows or Linux
             if device_name is None:
-                if inst['platform'] == 'Windows':
+                if inst.get('platform', '') == 'Windows':
                     device_name = '/dev/xvdf'
                 else:
                     device_name = '/dev/sdf'
