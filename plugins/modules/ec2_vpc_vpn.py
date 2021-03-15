@@ -298,14 +298,13 @@ vpn_connection_id:
     vpn_connection_id: vpn-781e0e19
 """
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible.module_utils._text import to_text
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
-    camel_dict_to_snake_dict,
-    boto3_tag_list_to_ansible_dict,
-    compare_aws_tags,
-    ansible_dict_to_boto3_tag_list,
-)
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
 
 try:
     from botocore.exceptions import BotoCoreError, ClientError, WaiterError
@@ -317,6 +316,29 @@ class VPNConnectionException(Exception):
     def __init__(self, msg, exception=None):
         self.msg = msg
         self.exception = exception
+
+
+# AWS uses VpnGatewayLimitExceeded for both 'Too many VGWs' and 'Too many concurrent changes'
+# we need to look at the mesage to tell the difference.
+class VPNRetry(AWSRetry):
+    @staticmethod
+    def status_code_from_exception(error):
+        return (error.response['Error']['Code'], error.response['Error']['Message'],)
+
+    @staticmethod
+    def found(response_codes, catch_extra_error_codes=None):
+        retry_on = ['The maximum number of mutating objects has been reached.']
+
+        if catch_extra_error_codes:
+            retry_on.extend(catch_extra_error_codes)
+        if not isinstance(response_codes, tuple):
+            response_codes = (response_codes,)
+
+        for code in response_codes:
+            if super().found(response_codes, catch_extra_error_codes):
+                return True
+
+        return False
 
 
 def find_connection(connection, module_params, vpn_connection_id=None):
@@ -342,10 +364,11 @@ def find_connection(connection, module_params, vpn_connection_id=None):
     # see if there is a unique matching connection
     try:
         if vpn_connection_id:
-            existing_conn = connection.describe_vpn_connections(VpnConnectionIds=vpn_connection_id,
+            existing_conn = connection.describe_vpn_connections(aws_retry=True,
+                                                                VpnConnectionIds=vpn_connection_id,
                                                                 Filters=formatted_filter)
         else:
-            existing_conn = connection.describe_vpn_connections(Filters=formatted_filter)
+            existing_conn = connection.describe_vpn_connections(aws_retry=True, Filters=formatted_filter)
     except (BotoCoreError, ClientError) as e:
         raise VPNConnectionException(msg="Failed while describing VPN connection.",
                                      exception=e)
@@ -356,7 +379,8 @@ def find_connection(connection, module_params, vpn_connection_id=None):
 def add_routes(connection, vpn_connection_id, routes_to_add):
     for route in routes_to_add:
         try:
-            connection.create_vpn_connection_route(VpnConnectionId=vpn_connection_id,
+            connection.create_vpn_connection_route(aws_retry=True,
+                                                   VpnConnectionId=vpn_connection_id,
                                                    DestinationCidrBlock=route)
         except (BotoCoreError, ClientError) as e:
             raise VPNConnectionException(msg="Failed while adding route {0} to the VPN connection {1}.".format(route, vpn_connection_id),
@@ -366,7 +390,8 @@ def add_routes(connection, vpn_connection_id, routes_to_add):
 def remove_routes(connection, vpn_connection_id, routes_to_remove):
     for route in routes_to_remove:
         try:
-            connection.delete_vpn_connection_route(VpnConnectionId=vpn_connection_id,
+            connection.delete_vpn_connection_route(aws_retry=True,
+                                                   VpnConnectionId=vpn_connection_id,
                                                    DestinationCidrBlock=route)
         except (BotoCoreError, ClientError) as e:
             raise VPNConnectionException(msg="Failed to remove route {0} from the VPN connection {1}.".format(route, vpn_connection_id),
@@ -504,7 +529,7 @@ def create_connection(connection, customer_gateway_id, static_only, vpn_gateway_
 def delete_connection(connection, vpn_connection_id, delay, max_attempts):
     """ Deletes a VPN connection """
     try:
-        connection.delete_vpn_connection(VpnConnectionId=vpn_connection_id)
+        connection.delete_vpn_connection(aws_retry=True, VpnConnectionId=vpn_connection_id)
         connection.get_waiter('vpn_connection_deleted').wait(
             VpnConnectionIds=[vpn_connection_id],
             WaiterConfig={'Delay': delay, 'MaxAttempts': max_attempts}
@@ -519,7 +544,8 @@ def delete_connection(connection, vpn_connection_id, delay, max_attempts):
 
 def add_tags(connection, vpn_connection_id, add):
     try:
-        connection.create_tags(Resources=[vpn_connection_id],
+        connection.create_tags(aws_retry=True,
+                               Resources=[vpn_connection_id],
                                Tags=add)
     except (BotoCoreError, ClientError) as e:
         raise VPNConnectionException(msg="Failed to add the tags: {0}.".format(add),
@@ -530,7 +556,8 @@ def remove_tags(connection, vpn_connection_id, remove):
     # format tags since they are a list in the format ['tag1', 'tag2', 'tag3']
     key_dict_list = [{'Key': tag} for tag in remove]
     try:
-        connection.delete_tags(Resources=[vpn_connection_id],
+        connection.delete_tags(aws_retry=True,
+                               Resources=[vpn_connection_id],
                                Tags=key_dict_list)
     except (BotoCoreError, ClientError) as e:
         raise VPNConnectionException(msg="Failed to remove the tags: {0}.".format(remove),
@@ -755,7 +782,7 @@ def main():
     )
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               supports_check_mode=True)
-    connection = module.client('ec2')
+    connection = module.client('ec2', retry_decorator=VPNRetry.jittered_backoff(retries=10))
 
     state = module.params.get('state')
     parameters = dict(module.params)
