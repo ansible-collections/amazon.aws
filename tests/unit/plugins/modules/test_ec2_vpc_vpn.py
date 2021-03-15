@@ -6,14 +6,26 @@ __metaclass__ = type
 
 import pytest
 import os
-from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify, maybe_sleep
+from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify
+from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import maybe_sleep
+
+import ansible_collections.amazon.aws.plugins.module_utils.core as aws_core
+import ansible_collections.amazon.aws.plugins.module_utils.ec2 as aws_ec2
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+
 from ansible_collections.community.aws.plugins.modules import ec2_vpc_vpn
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info, boto3_conn, boto3_tag_list_to_ansible_dict
 
 
 class FakeModule(object):
     def __init__(self, **kwargs):
         self.params = kwargs
+
+    def fail_json_aws(self, *args, **kwargs):
+        self.exit_args = args
+        self.exit_kwargs = kwargs
+        raise Exception('FAIL')
 
     def fail_json(self, *args, **kwargs):
         self.exit_args = args
@@ -68,8 +80,10 @@ def get_dependencies():
 
 def setup_mod_conn(placeboify, params):
     conn = placeboify.client('ec2')
+    retry_decorator = aws_ec2.AWSRetry.jittered_backoff()
+    wrapped_conn = aws_core._RetryingBotoClientWrapper(conn, retry_decorator)
     m = FakeModule(**params)
-    return m, conn
+    return m, wrapped_conn
 
 
 def make_params(cgw, vgw, tags=None, filters=None, routes=None):
