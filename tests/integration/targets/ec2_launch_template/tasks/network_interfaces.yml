@@ -1,0 +1,53 @@
+- block:
+  - name: network_interfaces
+    ec2_launch_template:
+      name: "{{ resource_prefix }}-test-nic"
+      state: present
+      network_interfaces:
+        - device_index: 0
+          associate_public_ip_address: false
+          delete_on_termination: true
+        - device_index: 1
+          associate_public_ip_address: true
+          delete_on_termination: false
+          ipv6_address_count: 1
+    register: nic_template
+  - name: instance with network_interfaces created with the right settings
+    assert:
+      that:
+        - nic_template is changed
+        - nic_template.default_template.launch_template_data.network_interfaces[0].associate_public_ip_address == False
+        - nic_template.default_template.launch_template_data.network_interfaces[0].delete_on_termination == True
+        - nic_template.default_template.launch_template_data.network_interfaces[0].device_index == 0
+        - nic_template.default_template.launch_template_data.network_interfaces[1].associate_public_ip_address == True
+        - nic_template.default_template.launch_template_data.network_interfaces[1].delete_on_termination == False
+        - nic_template.default_template.launch_template_data.network_interfaces[1].device_index == 1
+        - nic_template.default_template.launch_template_data.network_interfaces[1].ipv6_address_count == 1
+
+  - name: network_interfaces
+    ec2_launch_template:
+      name: "{{ resource_prefix }}-test-nic"
+      state: present
+      network_interfaces:
+        - device_index: 0
+          associate_public_ip_address: false
+          delete_on_termination: true
+        - device_index: 1
+          associate_public_ip_address: true
+          delete_on_termination: false
+          ipv6_address_count: 1
+    register: nic_template
+  - name: instance with network_interfaces created with the right settings
+    assert:
+      that:
+        - nic_template is not changed
+
+  always:
+  - name: delete the template
+    ec2_launch_template:
+      name: "{{ resource_prefix }}-test-nic"
+      state: absent
+    register: del_lt
+    retries: 10
+    until: del_lt is not failed
+    ignore_errors: true

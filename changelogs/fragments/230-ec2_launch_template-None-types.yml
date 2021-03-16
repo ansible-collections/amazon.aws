@@ -1,0 +1,2 @@
+bugfixes:
+- ec2_launch_template - ensure that empty parameters are properly removed before passing to AWS (https://github.com/ansible-collections/community.aws/issues/230). 
