@@ -123,7 +123,7 @@ def manage_state_machine(state, sfn_client, module):
             remove(state_machine_arn, sfn_client, module)
 
     check_mode(module, msg='State is up-to-date.')
-    module.exit_json(changed=False)
+    module.exit_json(changed=False, state_machine_arn=state_machine_arn)
 
 
 def create(sfn_client, module):
