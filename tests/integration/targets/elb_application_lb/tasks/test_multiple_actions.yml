@@ -160,10 +160,26 @@
               FixedResponseConfig: "{{ FixedResponseActionConfig }}"
           Rules:
             - Conditions:
+                - Field: http-header
+                  HttpHeaderConfig:
+                    HttpHeaderName: 'User-Agent'
+                    Values: ['*Trident/7:0*rv:*']
+                - Field: http-header
+                  HttpHeaderConfig:
+                    HttpHeaderName: 'X-Something'
+                    Values: ['foobar']
+              Priority: '1'
+              Actions:
+                - Type: fixed-response
+                  FixedResponseConfig:
+                    StatusCode: "200"
+                    ContentType: "text/html"
+                    MessageBody: "<b>Hello World!</b>"
+            - Conditions:
                 - Field: path-pattern
                   Values:
                     - "/forward-path/*"
-              Priority: 1
+              Priority: 2
               Actions:
                 - Type: forward
                   TargetGroupName: "{{ tg_name }}"
@@ -171,7 +187,7 @@
                 - Field: path-pattern
                   Values:
                     - "/redirect-path/*"
-              Priority: 2
+              Priority: 3
               Actions:
                 - Type: redirect
                   RedirectConfig: "{{ RedirectActionConfig }}"
@@ -179,7 +195,7 @@
                 - Field: path-pattern
                   Values:
                     - "/fixed-response-path/"
-              Priority: 3
+              Priority: 4
               Actions:
                 - Type: fixed-response
                   FixedResponseConfig: "{{ FixedResponseActionConfig }}"
@@ -189,13 +205,15 @@
       that:
         - alb.changed
         - alb.listeners|length == 1
-        - alb.listeners[0].rules|length == 4 ## defaultactions is included as a rule
+        - alb.listeners[0].rules|length == 5 ## defaultactions is included as a rule
         - alb.listeners[0].rules[0].actions|length == 1
-        - alb.listeners[0].rules[0].actions[0].type == "forward"
+        - alb.listeners[0].rules[0].actions[0].type == "fixed-response"
         - alb.listeners[0].rules[1].actions|length == 1
-        - alb.listeners[0].rules[1].actions[0].type == "redirect"
+        - alb.listeners[0].rules[1].actions[0].type == "forward"
         - alb.listeners[0].rules[2].actions|length == 1
-        - alb.listeners[0].rules[2].actions[0].type == "fixed-response"
+        - alb.listeners[0].rules[2].actions[0].type == "redirect"
+        - alb.listeners[0].rules[3].actions|length == 1
+        - alb.listeners[0].rules[3].actions[0].type == "fixed-response"
 
   - name: test idempotence multiple non-default rules
     elb_application_lb:
@@ -211,10 +229,26 @@
               FixedResponseConfig: "{{ FixedResponseActionConfig }}"
           Rules:
             - Conditions:
+                - Field: http-header
+                  HttpHeaderConfig:
+                    HttpHeaderName: 'User-Agent'
+                    Values: ['*Trident/7:0*rv:*']
+                - Field: http-header
+                  HttpHeaderConfig:
+                    HttpHeaderName: 'X-Something'
+                    Values: ['foobar']
+              Priority: '1'
+              Actions:
+                - Type: fixed-response
+                  FixedResponseConfig:
+                    StatusCode: "200"
+                    ContentType: "text/html"
+                    MessageBody: "<b>Hello World!</b>"
+            - Conditions:
                 - Field: path-pattern
                   Values:
                     - "/forward-path/*"
-              Priority: 1
+              Priority: 2
               Actions:
                 - Type: forward
                   TargetGroupName: "{{ tg_name }}"
@@ -222,7 +256,7 @@
                 - Field: path-pattern
                   Values:
                     - "/redirect-path/*"
-              Priority: 2
+              Priority: 3
               Actions:
                 - Type: redirect
                   RedirectConfig: "{{ RedirectActionConfig }}"
@@ -230,7 +264,7 @@
                 - Field: path-pattern
                   Values:
                     - "/fixed-response-path/"
-              Priority: 3
+              Priority: 4
               Actions:
                 - Type: fixed-response
                   FixedResponseConfig: "{{ FixedResponseActionConfig }}"
@@ -240,13 +274,15 @@
       that:
         - not alb.changed
         - alb.listeners|length == 1
-        - alb.listeners[0].rules|length == 4 ## defaultactions is included as a rule
+        - alb.listeners[0].rules|length == 5 ## defaultactions is included as a rule
         - alb.listeners[0].rules[0].actions|length == 1
-        - alb.listeners[0].rules[0].actions[0].type == "forward"
+        - alb.listeners[0].rules[0].actions[0].type == "fixed-response"
         - alb.listeners[0].rules[1].actions|length == 1
-        - alb.listeners[0].rules[1].actions[0].type == "redirect"
+        - alb.listeners[0].rules[1].actions[0].type == "forward"
         - alb.listeners[0].rules[2].actions|length == 1
-        - alb.listeners[0].rules[2].actions[0].type == "fixed-response"
+        - alb.listeners[0].rules[2].actions[0].type == "redirect"
+        - alb.listeners[0].rules[3].actions|length == 1
+        - alb.listeners[0].rules[3].actions[0].type == "fixed-response"
 
 
 #  - name: test creating ALB with a default listener with multiple actions
