@@ -37,6 +37,13 @@
     assert:
       that:
           - vpc_result is successful
+          - '"vpc" in vpc_result'
+          - '"id" in vpc_result.vpc'
+          - vpc_result.vpc.state == 'available'
+          - '"tags" in vpc_result.vpc'
+          - vpc_result.vpc.tags | length == 2
+          - vpc_result.vpc.tags["Name"] == "{{ resource_prefix }}-vpc"
+          - vpc_result.vpc.tags["Description"] == "Created by ansible-test"
 
   # ============================================================
   - name: Search for internet gateway by VPC - no matches
@@ -50,6 +57,7 @@
       that:
           - igw_info is successful
           - '"internet_gateways" in igw_info'
+          - (igw_info.internet_gateways | length) == 0
 
   # ============================================================
   - name: create internet gateway (expected changed=true) - CHECK_MODE
@@ -194,6 +202,12 @@
     assert:
       that:
           - vpc_igw_recreate is not changed
+          - vpc_igw_recreate.gateway_id == igw_id
+          - vpc_igw_recreate.vpc_id == vpc_id
+          - '"tags" in vpc_igw_create'
+          - vpc_igw_create.tags | length == 2
+          - vpc_igw_create.tags["tag_one"] == '{{ resource_prefix }} One'
+          - vpc_igw_create.tags["Tag Two"] == 'two {{ resource_prefix }}'
 
   - name: attempt to recreate internet gateway on VPC (expected changed=false)
     ec2_vpc_igw:
@@ -227,6 +241,12 @@
     assert:
       that:
           - vpc_igw_recreate is not changed
+          - vpc_igw_recreate.gateway_id == igw_id
+          - vpc_igw_recreate.vpc_id == vpc_id
+          - '"tags" in vpc_igw_recreate'
+          - vpc_igw_recreate.tags | length == 2
+          - vpc_igw_recreate.tags["tag_one"] == '{{ resource_prefix }} One'
+          - vpc_igw_recreate.tags["Tag Two"] == 'two {{ resource_prefix }}'
 
   - name: Update the tags (no change)
     ec2_vpc_igw:
@@ -263,6 +283,13 @@
     assert:
       that:
           - vpc_igw_update is changed
+          - vpc_igw_update.gateway_id == igw_id
+          - vpc_igw_update.vpc_id == vpc_id
+          - '"tags" in vpc_igw_update'
+          - vpc_igw_update.tags | length == 2
+          - vpc_igw_update.tags["tag_three"] == '{{ resource_prefix }} Three'
+          - vpc_igw_update.tags["Tag Two"] == 'two {{ resource_prefix }}'
+
 
   - name: Update the tags - remove and add
     ec2_vpc_igw:
@@ -299,6 +326,13 @@
     assert:
       that:
           - vpc_igw_update is changed
+          - vpc_igw_update.gateway_id == igw_id
+          - vpc_igw_update.vpc_id == vpc_id
+          - '"tags" in vpc_igw_update'
+          - vpc_igw_update.tags | length == 3
+          - vpc_igw_update.tags["tag_one"] == '{{ resource_prefix }} One'
+          - vpc_igw_update.tags["tag_three"] == '{{ resource_prefix }} Three'
+          - vpc_igw_update.tags["Tag Two"] == 'two {{ resource_prefix }}'
 
   - name: Update the tags add without purge
     ec2_vpc_igw:
@@ -320,6 +354,114 @@
           - vpc_igw_update.tags["tag_one"] == '{{ resource_prefix }} One'
           - vpc_igw_update.tags["tag_three"] == '{{ resource_prefix }} Three'
           - vpc_igw_update.tags["Tag Two"] == 'two {{ resource_prefix }}'
+
+
+  # ============================================================
+  - name: Update with CamelCase tags - CHECK_MODE
+    ec2_vpc_igw:
+      state: present
+      vpc_id: "{{ vpc_result.vpc.id }}"
+      tags:
+        "lowercase spaced": 'hello cruel world ❤️'
+        "Title Case": 'Hello Cruel World ❤️'
+        CamelCase: 'SimpleCamelCase ❤️'
+        snake_case: 'simple_snake_case ❤️'
+    register: vpc_igw_update
+    check_mode: yes
+
+  - name: assert tag update would happen (expected changed=true) - CHECK_MODE
+    assert:
+      that:
+          - vpc_igw_update is changed
+          - vpc_igw_update.gateway_id == igw_id
+          - vpc_igw_update.vpc_id == vpc_id
+          - '"tags" in vpc_igw_update'
+          - vpc_igw_update.tags | length == 4
+          - vpc_igw_update.tags["lowercase spaced"] == 'hello cruel world ❤️'
+          - vpc_igw_update.tags["Title Case"] == 'Hello Cruel World ❤️'
+          - vpc_igw_update.tags["CamelCase"] == 'SimpleCamelCase ❤️'
+          - vpc_igw_update.tags["snake_case"] == 'simple_snake_case ❤️'
+  
+
+  - name: Update the tags - remove and add
+    ec2_vpc_igw:
+      state: present
+      vpc_id: "{{ vpc_result.vpc.id }}"
+      tags:
+        "lowercase spaced": 'hello cruel world ❤️'
+        "Title Case": 'Hello Cruel World ❤️'
+        CamelCase: 'SimpleCamelCase ❤️'
+        snake_case: 'simple_snake_case ❤️'
+    register: vpc_igw_update
+
+  - name: assert tags are updated (expected changed=true)
+    assert:
+      that:
+          - vpc_igw_update is changed
+          - vpc_igw_update.gateway_id == igw_id
+          - vpc_igw_update.vpc_id == vpc_id
+          - '"tags" in vpc_igw_update'
+          - vpc_igw_update.tags | length == 4
+          - vpc_igw_update.tags["lowercase spaced"] == 'hello cruel world ❤️'
+          - vpc_igw_update.tags["Title Case"] == 'Hello Cruel World ❤️'
+          - vpc_igw_update.tags["CamelCase"] == 'SimpleCamelCase ❤️'
+          - vpc_igw_update.tags["snake_case"] == 'simple_snake_case ❤️'
+  
+  # ============================================================
+  - name: Gather information about a filtered list of Internet Gateways using tags
+    ec2_vpc_igw_info:
+      filters:
+        "tag:Title Case": 'Hello Cruel World ❤️'
+    register: igw_info
+
+  - name: Assert success
+    assert:
+      that:
+          - igw_info is successful
+          - '"internet_gateways" in igw_info'
+          - igw_info.internet_gateways | selectattr("internet_gateway_id",'equalto',"{{ igw_id }}")
+  
+  - name: Gather information about a filtered list of Internet Gateways using tags - CHECK_MODE
+    ec2_vpc_igw_info:
+      filters:
+        "tag:Title Case": 'Hello Cruel World ❤️'
+    register: igw_info
+    check_mode: yes
+
+  - name: Assert success - CHECK_MODE
+    assert:
+      that:
+          - igw_info is successful
+          - '"internet_gateways" in igw_info'
+          - igw_info.internet_gateways | selectattr("internet_gateway_id",'equalto',"{{ igw_id }}")
+
+  # ============================================================
+  - name: Gather information about a filtered list of Internet Gateways using tags (no match)
+    ec2_vpc_igw_info:
+      filters:
+        "tag:tag_one": '{{ resource_prefix }} One'
+    register: igw_info
+
+  - name: Assert success
+    assert:
+      that:
+          - igw_info is successful
+          - '"internet_gateways" in igw_info'
+          - igw_info.internet_gateways | length == 0
+
+  - name: Gather information about a filtered list of Internet Gateways using tags (no match) - CHECK_MODE
+    ec2_vpc_igw_info:
+      filters:
+        "tag:tag_one": '{{ resource_prefix }} One'
+    register: igw_info
+    check_mode: yes
+
+  - name: Assert success - CHECK_MODE
+    assert:
+      that:
+          - igw_info is successful
+          - '"internet_gateways" in igw_info'
+          - igw_info.internet_gateways | length == 0
 
   # ============================================================
   - name: Remove all tags - CHECK_MODE
@@ -350,7 +492,7 @@
           - vpc_igw_update.vpc_id == vpc_id
           - '"tags" in vpc_igw_update'
           - vpc_igw_update.tags | length == 0
-
+  
   # ============================================================
   - name: test state=absent (expected changed=true) - CHECK_MODE
     ec2_vpc_igw:
