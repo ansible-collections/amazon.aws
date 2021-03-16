@@ -375,7 +375,7 @@ def update_sqs_queue(module, client, queue_url):
 
         if isinstance(new_value, bool):
             new_value = str(new_value).lower()
-            existing_value = str(existing_value).lower()
+            value = str(value).lower()
 
         if new_value == value:
             continue
