@@ -104,3 +104,25 @@
         with_items:
           - { name: "{{ create_result.name }}" }
           - { name: "{{ dead_letter_queue.name }}" }
+  - name: Test FIFO queue
+    block:
+      - name: Creating FIFO queue
+        sqs_queue:
+          name: "{{ resource_prefix }}{{ 1000 | random }}"
+          queue_type: fifo
+          content_based_deduplication: yes
+        register: create_result
+      - name: Assert queue created with configuration
+        assert:
+          that:
+            - create_result.changed
+    always:
+      - name: Cleaning up queue
+        sqs_queue:
+          name: "{{ item.name }}"
+          state: absent
+        register: delete_result
+        retries: 3
+        delay: 3
+        with_items:
+          - { name: "{{ create_result.name }}" }

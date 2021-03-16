@@ -1,0 +1,2 @@
+bugfixes:
+- sqs_queue - fix UnboundLocalError when passing a boolean parameter (https://github.com/ansible-collections/community.aws/issues/172).
