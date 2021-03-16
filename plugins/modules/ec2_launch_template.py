@@ -398,6 +398,7 @@ from ansible.module_utils.common.dict_transformations import snake_dict_to_camel
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.core import scrub_none_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
@@ -512,6 +513,7 @@ def create_or_update(module, template_options):
     template, template_versions = existing_templates(module)
     out = {}
     lt_data = params_to_launch_data(module, dict((k, v) for k, v in module.params.items() if k in template_options))
+    lt_data = scrub_none_parameters(lt_data, descend_into_lists=True)
     if not (template or template_versions):
         # create a full new one
         try:
