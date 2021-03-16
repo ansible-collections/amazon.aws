@@ -92,8 +92,6 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
-from ansible.module_utils.six import string_types
-
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
@@ -141,13 +139,6 @@ class AnsibleEc2Igw(object):
 
         return igw
 
-    def check_input_tags(self, tags):
-        if tags is None:
-            return
-        nonstring_tags = [k for k, v in tags.items() if not isinstance(v, string_types)]
-        if nonstring_tags:
-            self._module.fail_json(msg='One or more tags contain non-string values: {0}'.format(nonstring_tags))
-
     def ensure_tags(self, igw_id, tags, purge_tags):
         final_tags = []
 
@@ -167,7 +158,6 @@ class AnsibleEc2Igw(object):
         if to_update:
             try:
                 if self._check_mode:
-                    # update tags
                     final_tags.update(to_update)
                 else:
                     self._connection.create_tags(
@@ -183,7 +173,6 @@ class AnsibleEc2Igw(object):
         if to_delete:
             try:
                 if self._check_mode:
-                    # update tags
                     for key in to_delete:
                         del final_tags[key]
                 else:
@@ -233,8 +222,6 @@ class AnsibleEc2Igw(object):
         return self._results
 
     def ensure_igw_present(self, vpc_id, tags, purge_tags):
-        self.check_input_tags(tags)
-
         igw = self.get_matching_igw(vpc_id)
 
         if igw is None:
@@ -253,6 +240,8 @@ class AnsibleEc2Igw(object):
                 igw = camel_dict_to_snake_dict(response['InternetGateway'])
                 self._connection.attach_internet_gateway(aws_retry=True, InternetGatewayId=igw['internet_gateway_id'], VpcId=vpc_id)
                 self._results['changed'] = True
+            except botocore.exceptions.WaiterError as e:
+                self._module.fail_json_aws(e, msg="No Internet Gateway exists.")
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 self._module.fail_json_aws(e, msg='Unable to create Internet Gateway')
 
