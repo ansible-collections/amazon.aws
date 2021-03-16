@@ -26,11 +26,11 @@
       pause:
         seconds: 10
 
-    # ==== Tests ===================================================
-
     - name: Create a random component for state machine name
       set_fact:
         random_num: "{{ 999999999 | random }}"
+
+    # ==== Tests ===================================================
 
     - name: Create a new state machine -- check_mode
       aws_step_functions_state_machine:
@@ -61,6 +61,7 @@
     - assert:
         that:
           - creation_output.changed == True
+          - '"state_machine_arn" in creation_output'
 
     - name: Pause a few seconds to ensure state machine role is available
       pause:
@@ -95,6 +96,7 @@
     - assert:
         that:
           - result.changed == False
+          - result.state_machine_arn == creation_output.state_machine_arn
 
     - name: Update an existing state machine -- check_mode
       aws_step_functions_state_machine:
