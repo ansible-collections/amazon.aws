@@ -98,7 +98,6 @@ dhcp_config:
     description: The boto2-style DHCP options created, associated or found. Provided for consistency with ec2_vpc_dhcp_option's `new_config`.
     returned: always
     type: list
-    contains: dict
     contains:
       domain-name-servers:
         description: The IP addresses of up to four domain name servers, or AmazonProvidedDNS.
