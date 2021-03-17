@@ -70,30 +70,30 @@ EXAMPLES = '''
 RETURN = '''
 dhcp_options:
     description: The DHCP options created, associated or found
-     returned: always
-     type: list
-     elements: dict
-     contains:
-         dhcp_configurations:
-             description: The DHCP configuration for the option set
-             type: list
-             sample:
-               - '{"key": "ntp-servers", "values": [{"value": "10.0.0.2" , "value": "10.0.1.2"}]}'
-               - '{"key": "netbios-name-servers", "values": [{value": "10.0.0.1"}, {"value": "10.0.1.1" }]}'
-         dhcp_options_id:
-             description: The aws resource id of the primary DCHP options set created or found
-             type: str
-             sample: "dopt-0955331de6a20dd07"
-         owner_id:
-             description: The ID of the AWS account that owns the DHCP options set.
-             type: str
-             sample: 012345678912
-         tags:
-             description: The tags to be applied to a DHCP options set
-             type: list
-             sample:
-               - '{"Key": "CreatedBy", "Value": "ansible-test"}'
-               - '{"Key": "Collection", "Value": "amazon.aws"}'
+    returned: always
+    type: list
+    elements: dict
+    contains:
+        dhcp_configurations:
+            description: The DHCP configuration for the option set
+            type: list
+            sample:
+              - '{"key": "ntp-servers", "values": [{"value": "10.0.0.2" , "value": "10.0.1.2"}]}'
+              - '{"key": "netbios-name-servers", "values": [{value": "10.0.0.1"}, {"value": "10.0.1.1" }]}'
+        dhcp_options_id:
+            description: The aws resource id of the primary DCHP options set created or found
+            type: str
+            sample: "dopt-0955331de6a20dd07"
+        owner_id:
+            description: The ID of the AWS account that owns the DHCP options set.
+            type: str
+            sample: 012345678912
+        tags:
+            description: The tags to be applied to a DHCP options set
+            type: list
+            sample:
+              - '{"Key": "CreatedBy", "Value": "ansible-test"}'
+              - '{"Key": "Collection", "Value": "amazon.aws"}'
 dhcp_config:
     description: The boto2-style DHCP options created, associated or found. Provided for consistency with ec2_vpc_dhcp_option's `new_config`.
     returned: always
