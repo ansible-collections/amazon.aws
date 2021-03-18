@@ -8,7 +8,7 @@ files:
   $modules/:
     authors: wimnat
     maintainers: $team_aws
-    ignore: erydo joshsouza nadirollo seiffert tedder
+    ignore: erydo joshsouza nadirollo seiffert tedder willthames
     label: modules
   $modules/_aws_region_facts.py:
     authors: Sodki
