@@ -30,7 +30,6 @@ author: Karen Cheng (@Etherdaemon)
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
 '''
 
 EXAMPLES = r'''
@@ -69,33 +68,109 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
+changed:
+  description: True if listing the internet gateways succeeds
+  type: bool
+  returned: always
+  sample: false
 result:
-  description: The result of the describe, converted to ansible snake case style.
-    See http://boto3.readthedocs.io/en/latest/reference/services/ec2.html#EC2.Client.describe_nat_gateways for the response.
-  returned: success
+  description:
+    - The result of the describe, converted to ansible snake case style.
+    - See also U(http://boto3.readthedocs.io/en/latest/reference/services/ec2.html#EC2.Client.describe_nat_gateways)
+  returned: suceess
   type: list
+  contains:
+    create_time:
+        description: The date and time the NAT gateway was created
+        returned: always
+        type: str
+        sample: "2021-03-11T22:43:25+00:00"
+    delete_time:
+        description: The date and time the NAT gateway was deleted
+        returned: when the NAT gateway has been deleted
+        type: str
+        sample: "2021-03-11T22:43:25+00:00"
+    nat_gateway_addresses:
+        description: List containing a dictionary with the IP addresses and network interface associated with the NAT gateway
+        returned: always
+        type: dict
+        contains:
+            allocation_id:
+                description: The allocation ID of the Elastic IP address that's associated with the NAT gateway
+                returned: always
+                type: str
+                sample: eipalloc-0853e66a40803da76
+            network_interface_id:
+                description: The ID of the network interface associated with the NAT gateway
+                returned: always
+                type: str
+                sample: eni-0a37acdbe306c661c
+            private_ip:
+                description: The private IP address associated with the Elastic IP address
+                returned: always
+                type: str
+                sample: 10.0.238.227
+            public_ip:
+                description: The Elastic IP address associated with the NAT gateway
+                returned: always
+                type: str
+                sample: 34.204.123.52
+    nat_gateway_id:
+        description: The ID of the NAT gateway
+        returned: always
+        type: str
+        sample: nat-0c242a2397acf6173
+    state:
+        description: state of the NAT gateway
+        returned: always
+        type: str
+        sample: available
+    subnet_id:
+        description: The ID of the subnet in which the NAT gateway is located
+        returned: always
+        type: str
+        sample: subnet-098c447465d4344f9
+    vpc_id:
+        description: The ID of the VPC in which the NAT gateway is located
+        returned: always
+        type: str
+        sample: vpc-02f37f48438ab7d4c
+    tags:
+        description: Tags applied to the NAT gateway
+        returned: always
+        type: dict
+        sample:
+            Tag1: tag1
+            Tag_2: tag_2
 '''
 
-import json
 
 try:
     import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils._text import to_native
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.core import normalize_boto3_result
 
 
-def date_handler(obj):
-    return obj.isoformat() if hasattr(obj, 'isoformat') else obj
+@AWSRetry.jittered_backoff(retries=10)
+def _describe_nat_gateways(client, module, **params):
+    try:
+        paginator = client.get_paginator('describe_nat_gateways')
+        return paginator.paginate(**params).build_full_result()['NatGateways']
+    except is_boto3_error_code('InvalidNatGatewayID.NotFound'):
+        module.exit_json(msg="NAT gateway not found.")
+    except is_boto3_error_code('NatGatewayMalformed'):  # pylint: disable=duplicate-except
+        module.fail_json_aws(msg="NAT gateway id is malformed.")
 
 
-def get_nat_gateways(client, module, nat_gateway_id=None):
+def get_nat_gateways(client, module):
     params = dict()
     nat_gateways = list()
 
@@ -103,17 +178,16 @@ def get_nat_gateways(client, module, nat_gateway_id=None):
     params['NatGatewayIds'] = module.params.get('nat_gateway_ids')
 
     try:
-        result = json.loads(json.dumps(client.describe_nat_gateways(aws_retry=True, **params), default=date_handler))
-    except Exception as e:
-        module.fail_json(msg=to_native(e))
+        result = normalize_boto3_result(_describe_nat_gateways(client, module, **params))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, 'Unable to describe NAT gateways.')
 
-    for gateway in result['NatGateways']:
+    for gateway in result:
         # Turn the boto3 result into ansible_friendly_snaked_names
         converted_gateway = camel_dict_to_snake_dict(gateway)
         if 'tags' in converted_gateway:
             # Turn the boto3 result into ansible friendly tag dictionary
             converted_gateway['tags'] = boto3_tag_list_to_ansible_dict(converted_gateway['tags'])
-
         nat_gateways.append(converted_gateway)
 
     return nat_gateways
