@@ -11,6 +11,7 @@ def wafv2_list_web_acls(wafv2, scope, Nextmarker=None):
         response['WebACLs'] += wafv2_list_web_acls(wafv2, scope, Nextmarker=response.get('NextMarker')).get('WebACLs')
     return response
 
+
 def wafv2_list_rule_groups(wafv2, scope, Nextmarker=None):
     req_obj = {
         'Scope': scope,
@@ -22,6 +23,7 @@ def wafv2_list_rule_groups(wafv2, scope, Nextmarker=None):
     if response.get('NextMarker'):
         response['RuleGroups'] += wafv2_list_rule_groups(wafv2, scope, Nextmarker=response.get('NextMarker')).get('RuleGroups')
     return response
+
 
 def wafv2_snake_dict_to_camel_dict(a):
     retval = {}
@@ -45,6 +47,7 @@ def wafv2_snake_dict_to_camel_dict(a):
             retval[item] = a.get(item)
     return retval
 
+
 def nestes_byte_values_to_strings(rule, keyname):
     """
     currently valid nested byte values in statements array are
@@ -55,21 +58,25 @@ def nestes_byte_values_to_strings(rule, keyname):
     if rule.get('Statement', {}).get(keyname):
         for idx in range(len(rule.get('Statement', {}).get(keyname, {}).get('Statements'))):
             if rule['Statement'][keyname]['Statements'][idx].get('ByteMatchStatement'):
-                rule['Statement'][keyname]['Statements'][idx]['ByteMatchStatement']['SearchString'] = rule.get('Statement').get(keyname).get('Statements')[idx].get('ByteMatchStatement').get('SearchString').decode('utf-8')
+                rule['Statement'][keyname]['Statements'][idx]['ByteMatchStatement']['SearchString'] = \
+                    rule.get('Statement').get(keyname).get('Statements')[idx].get('ByteMatchStatement').get('SearchString').decode('utf-8')
 
     return rule
+
 
 def byte_values_to_strings_before_compare(rules):
     for idx in range(len(rules)):
         if rules[idx].get('Statement', {}).get('ByteMatchStatement', {}).get('SearchString'):
-            rules[idx]['Statement']['ByteMatchStatement']['SearchString'] = rules[idx].get('Statement').get('ByteMatchStatement').get('SearchString').decode('utf-8')
-        
+            rules[idx]['Statement']['ByteMatchStatement']['SearchString'] = \
+                rules[idx].get('Statement').get('ByteMatchStatement').get('SearchString').decode('utf-8')
+
         else:
             for statement in ['AndStatement', 'OrStatement', 'NotStatement']:
                 if rules[idx].get('Statement', {}).get(statement):
                     rules[idx] = nestes_byte_values_to_strings(rules[idx], statement)
 
     return rules
+
 
 def compare_priority_rules(existing_rules, requested_rules, purge_rules, state):
     diff = False
