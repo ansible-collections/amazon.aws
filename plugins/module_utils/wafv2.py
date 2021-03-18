@@ -1,3 +1,7 @@
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
+
 def wafv2_list_web_acls(wafv2, scope, Nextmarker=None):
     # there is currently no paginator for wafv2
     req_obj = {
