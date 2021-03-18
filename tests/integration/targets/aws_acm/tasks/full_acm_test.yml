@@ -9,7 +9,16 @@
   - name: list certs
     aws_acm_info: null
     register: list_all
-    failed_when: list_all.certificates is not defined
+  - name: list certs with check mode
+    aws_acm_info: null
+    register: list_all_check
+    check_mode: yes # read-only task, should work the same as with no
+  - name: check certificate listing worked
+    assert:
+      that:
+        - list_all.certificates is defined
+        - list_all_check.certificates is defined
+        - list_all.certificates == list_all_check.certificates
   - name: ensure absent cert which doesn't exist - first time
     aws_acm:
       name_tag: '{{ item.name }}'
@@ -17,18 +26,33 @@
     with_items: '{{ local_certs }}'
   - name: ensure absent cert which doesn't exist - second time
     aws_acm:
-      name_tag: '{{ item.name }}'
+      name_tag: '{{ item[0].name }}'
       state: absent
-    with_items: '{{ local_certs }}'
+    check_mode: '{{ item[1] }}'
+    with_nested:
+      - '{{ local_certs }}'
+      - [true, false]
     register: absent_start_two
-    failed_when: absent_start_two.changed
+  - name: check no change when ensuring absent cert is absent
+    assert:
+      that:
+        - not item.changed
+    with_items: "{{ absent_start_two.results }}"
   - name: list cert which shouldn't exist
     aws_acm_info:
       tags:
-        Name: '{{ item.name }}'
+        Name: '{{ item[0].name }}'
     register: list_tag
-    with_items: '{{ local_certs }}'
-    failed_when: list_tag.certificates | length > 0
+    check_mode: '{{ item[1] }}'
+    with_nested:
+      - '{{ local_certs }}'
+      - [ False, True ] # read-only task, should work the same with check mode or not
+  - name: check listing of missing cert returns no result
+    with_items: "{{ list_tag.results }}"
+    assert:
+      that:
+        - (item.certificates | length) == 0
+        - not list_tag.changed
   - name: check directory was made
     assert:
       that:
@@ -54,6 +78,27 @@
       privatekey_path: '{{ item.priv_key }}'
       signature_algorithms:
       - sha256WithRSAEncryption
+  - name: upload certificate with check mode
+    aws_acm:
+      name_tag: '{{ item.name }}'
+      certificate: '{{ lookup(''file'', item.cert ) }}'
+      private_key: '{{ lookup(''file'', item.priv_key ) }}'
+      state: present
+    check_mode: yes
+    register: upload_check
+    with_items: '{{ local_certs }}'
+  - name: check whether cert was uploaded in check mode
+    aws_acm_info:
+      tags:
+        Name: '{{ item.name }}'
+    register: list_after_check_mode_upload
+    with_items: '{{ local_certs }}'
+  - name: check cert was not really uploaded in check mode
+    with_items: "{{ list_after_check_mode_upload.results }}"
+    assert:
+      that:
+        - upload_check.changed
+        - (item.certificates | length) == 0
   - name: upload certificates first time
     aws_acm:
       name_tag: '{{ item.name }}'
@@ -61,6 +106,7 @@
       private_key: '{{ lookup(''file'', item.priv_key ) }}'
       state: present
     register: upload
+    check_mode: no
     with_items: '{{ local_certs }}'
     until: upload is succeeded
     retries: 5
@@ -148,7 +194,33 @@
     register: upload2
     with_items: '{{ local_certs }}'
     failed_when: upload2.changed
-  - name: update first cert with body of the second, first time
+  - name: update first cert with body of the second, first time, check mode
+    aws_acm:
+      state: present
+      name_tag: '{{ local_certs[0].name }}'
+      certificate: '{{ lookup(''file'', local_certs[1].cert ) }}'
+      private_key: '{{ lookup(''file'', local_certs[1].priv_key ) }}'
+    check_mode: yes
+    register: overwrite_check
+  - name: check update in check mode detected required update
+    assert:
+      that:
+        - overwrite_check.changed
+  - name: check previous tasks did not change real cert
+    aws_acm_info:
+      tags:
+        Name: '{{ local_certs[0].name }}'
+    register: fetch_after_overwrite_check
+  - name: check update with check mode did not change real cert
+    assert:
+      that:
+      - fetch_after_overwrite_check.certificates | length == 1
+      - fetch_after_overwrite_check.certificates[0].certificate_arn == fetch_after_up.results[0].certificates[0].certificate_arn
+      - fetch_after_overwrite_check.certificates[0].domain_name == local_certs[0].domain
+      - (fetch_after_overwrite_check.certificates[0].certificate | replace( ' ', '' ) | replace( '\n', '')) == (lookup('file', local_certs[0].cert )| replace( ' ', '' ) | replace( '\n', ''))
+      - '''Name'' in fetch_after_overwrite_check.certificates[0].tags'
+      - fetch_after_overwrite_check.certificates[0].tags['Name'] == local_certs[0].name
+  - name: update first cert with body of the second, first real time
     aws_acm:
       state: present
       name_tag: '{{ local_certs[0].name }}'
@@ -206,7 +278,30 @@
       - overwrite2.certificate.arn == upload.results[0].certificate.arn
       - overwrite2.certificate.domain_name == local_certs[1].domain
       - not overwrite2.changed
-  - name: delete certs 1 and 2
+  - name: delete certs 1 and 2 in check mode
+    aws_acm:
+      state: absent
+      domain_name: '{{ local_certs[1].domain }}'
+    check_mode: yes
+    register: delete_both_check
+  - name: test deletion with check mode detected change
+    assert:
+      that:
+        - delete_both_check.changed
+  - name: fetch info for certs 1 and 2
+    aws_acm_info:
+      tags:
+        Name: '{{ local_certs[item].name }}'
+    register: check_del_one_check
+    with_items:
+    - 0
+    - 1
+  - name: test deletion with check mode detected change
+    with_items: '{{ check_del_one_check.results }}'
+    assert:
+      that:
+        - (item.certificates | length) == 1
+  - name: delete certs 1 and 2 real
     aws_acm:
       state: absent
       domain_name: '{{ local_certs[1].domain }}'
@@ -234,13 +329,16 @@
   - name: check certs 1 and 2 were already deleted
     with_items: '{{ check_del_one.results }}'
     assert:
-      that: item.certificates | length == 0
-  - name: check cert 3 not deleted
+      that: (item.certificates | length) == 0
+  - name: check cert 3
     aws_acm_info:
       tags:
         Name: '{{ local_certs[2].name }}'
     register: check_del_one_remain
-    failed_when: check_del_one_remain.certificates | length != 1
+  - name: check cert 3 not deleted
+    assert:
+      that:
+        - (check_del_one_remain.certificates | length) == 1
   - name: delete cert 3
     aws_acm:
       state: absent
@@ -270,6 +368,16 @@
       - delete_third.arns is defined
       - delete_third.arns | length == 0
       - not delete_third.changed
+  - name: delete cert 3 again, check mode
+    aws_acm:
+      state: absent
+      domain_name: '{{ local_certs[2].domain }}'
+    check_mode: yes
+    register: delete_third_check
+  - name: test deletion in check mode detected required change
+    assert:
+      that:
+        - not delete_third_check.changed
   - name: check directory was made
     assert:
       that:
