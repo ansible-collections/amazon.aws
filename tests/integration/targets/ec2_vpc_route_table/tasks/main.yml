@@ -46,6 +46,11 @@
         vpc-id: "{{ vpc.vpc.id }}"
     register: vpc_subnets
 
+  - set_fact:
+      public_subnets: "{{ (vpc_subnets.subnets| selectattr('tags.Public', 'equalto', 'True')| map(attribute='id')| list) }}"
+      public_cidrs: "{{ (vpc_subnets.subnets| selectattr('tags.Public', 'equalto', 'True')| map(attribute='cidr_block')| list) }}"
+      private_subnets: "{{ (vpc_subnets.subnets| selectattr('tags.Public', 'equalto', 'False')| map(attribute='id')| list)  }}"
+
   - name: create IGW
     ec2_vpc_igw:
       vpc_id: "{{ vpc.vpc.id }}"
@@ -82,11 +87,14 @@
   - name: assert that public route table has an id
     assert:
       that:
-        # - create_public_table.changed
+        - create_public_table.changed
         - "create_public_table.route_table.id.startswith('rtb-')"
         - "'Public' in create_public_table.route_table.tags and create_public_table.route_table.tags['Public'] == 'true'"
         - create_public_table.route_table.routes|length == 1
         - create_public_table.route_table.associations|length == 0
+        - create_public_table.route_table.vpc_id == "{{ vpc.vpc.id }}"
+        - create_public_table.route_table.propagating_vgws|length == 0
+        - create_public_table.route_table.routes|length == 1
 
   - name: CHECK MODE - route table should already exist
     ec2_vpc_route_table:
@@ -114,6 +122,13 @@
     assert:
       that:
         - not recreate_public_route_table.changed
+        - "create_public_table.route_table.id.startswith('rtb-')"
+        - "'Public' in create_public_table.route_table.tags and create_public_table.route_table.tags['Public'] == 'true'"
+        - create_public_table.route_table.routes|length == 1
+        - create_public_table.route_table.associations|length == 0
+        - create_public_table.route_table.vpc_id == "{{ vpc.vpc.id }}"
+        - create_public_table.route_table.propagating_vgws|length == 0
+        - create_public_table.route_table.routes|length == 1
 
   - name: CHECK MODE - add route to public route table
     ec2_vpc_route_table:
@@ -148,6 +163,12 @@
       that:
         - add_routes.changed
         - add_routes.route_table.routes|length == 2
+        - "add_routes.route_table.id.startswith('rtb-')"
+        - "'Public' in add_routes.route_table.tags and add_routes.route_table.tags['Public'] == 'true'"
+        - add_routes.route_table.routes|length == 2
+        - add_routes.route_table.associations|length == 0
+        - add_routes.route_table.vpc_id == "{{ vpc.vpc.id }}"
+        - add_routes.route_table.propagating_vgws|length == 0
 
   - name: CHECK MODE - add subnets to public route table
     ec2_vpc_route_table:
@@ -158,7 +179,7 @@
       routes:
       - dest: 0.0.0.0/0
         gateway_id: igw
-      subnets: "{{ vpc_subnets|community.general.json_query('subnets[?tags.Public == `True`].id') }}"
+      subnets: "{{ public_subnets }}"
     check_mode: True
     register: check_mode_results
 
@@ -176,7 +197,7 @@
       routes:
       - dest: 0.0.0.0/0
         gateway_id: igw
-      subnets: "{{ vpc_subnets|community.general.json_query('subnets[?tags.Public == `True`].id') }}"
+      subnets: "{{ public_subnets }}"
     register: add_subnets
 
   - name: assert route table contains subnets
@@ -203,7 +224,7 @@
         Public: "true"
         Name: "Public route table"
       purge_routes: no
-      subnets: "{{ vpc_subnets|community.general.json_query('subnets[?tags.Public == `True`].id') }}"
+      subnets: "{{ public_subnets }}"
     check_mode: True
     register: check_mode_results
 
@@ -219,7 +240,7 @@
         Public: "true"
         Name: "Public route table"
       purge_routes: no
-      subnets: "{{ vpc_subnets|community.general.json_query('subnets[?tags.Public == `True`].id') }}"
+      subnets: "{{ public_subnets }}"
     register: no_purge_routes
 
   - name: assert route table still has routes
@@ -256,7 +277,7 @@
         gateway_id: igw
       lookup: id
       route_table_id: "{{ create_public_table.route_table.id }}"
-      subnets: "{{ vpc_subnets|community.general.json_query('subnets[?tags.Public == `True`].id') }}"
+      subnets: "{{ public_subnets }}"
     register: no_purge_tags
 
   - name: assert route table still has tags
@@ -323,7 +344,7 @@
       routes:
       - dest: 0.0.0.0/0
         gateway_id: igw
-      subnets: "{{ vpc_subnets|community.general.json_query('subnets[?tags.Public == `True`].cidr_block') }}"
+      subnets: "{{ public_cidrs }}"
       lookup: id
       route_table_id: "{{ create_public_table.route_table.id }}"
     register: add_subnets_cidr
@@ -357,7 +378,7 @@
       routes:
       - dest: 0.0.0.0/0
         gateway_id: igw
-      subnets: "{{ vpc_subnets|community.general.json_query('subnets[?tags.Public == `True`].tags.Name') }}"
+      subnets: "{{ public_subnets }}"
       lookup: id
       route_table_id: "{{ create_public_table.route_table.id }}"
     register: add_subnets_name
@@ -452,7 +473,7 @@
       routes:
       - gateway_id: "{{ nat_gateway.nat_gateway_id }}"
         dest: 0.0.0.0/0
-      subnets: "{{ vpc_subnets|community.general.json_query('subnets[?tags.Public == `False`].id') }}"
+      subnets: "{{ private_subnets }}"
     check_mode: True
     register: check_mode_results
 
@@ -470,7 +491,7 @@
       routes:
       - gateway_id: "{{ nat_gateway.nat_gateway_id }}"
         dest: 0.0.0.0/0
-      subnets: "{{ vpc_subnets|community.general.json_query('subnets[?tags.Public == `False`].id') }}"
+      subnets: "{{ private_subnets }}"
     register: create_private_table
 
   - name: assert creating private route table worked
@@ -560,6 +581,7 @@
         - '"tags" in route_table_info.route_tables[0]'
         - '"vpc_id" in route_table_info.route_tables[0]'
         - 'route_table_info.route_tables[0].id == create_private_table.route_table.id'
+        - '"propagating_vgws" in route_table_info.route_tables[0]'
 
   - name: show route table info, get table using tags
     ec2_vpc_route_table_info:
@@ -598,7 +620,7 @@
       routes:
       - nat_gateway_id: "{{ nat_gateway.nat_gateway_id }}"
         dest: 0.0.0.0/0
-      subnets: "{{ vpc_subnets|community.general.json_query('subnets[?tags.Public == `False`].id') }}"
+      subnets: "{{ private_subnets }}"
     register: recreate_private_table
 
   - name: assert creating private route table worked
@@ -625,7 +647,7 @@
       routes:
       - nat_gateway_id: "{{ nat_gateway.nat_gateway_id }}"
         dest: 0.0.0.0/0
-      subnets: "{{ vpc_subnets|community.general.json_query('subnets[?tags.Public == `False`].id') }}"
+      subnets: "{{ private_subnets }}"
       purge_routes: true
     register: result
 
@@ -688,15 +710,6 @@
       - cidr: 10.228.229.0/24
       - cidr: 10.228.230.0/24
       - cidr: 10.228.231.0/24
-    ignore_errors: yes
-
-    # FIXME: ec2_vpc_nat_gateway should take care of this, but clearly doesn't always
-  - name: ensure EIP is actually released
-    ec2_eip:
-      state: absent
-      device_id: "{{ item.network_interface_id }}"
-      in_vpc: yes
-    with_items: "{{ nat_gateway.nat_gateway_addresses }}"
     ignore_errors: yes
 
   - name: destroy VPC

@@ -245,11 +245,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
-CIDR_RE = re.compile(r'^(\d{1,3}\.){3}\d{1,3}/\d{1,2}$')
-SUBNET_RE = re.compile(r'^subnet-[A-z0-9]+$')
-ROUTE_TABLE_RE = re.compile(r'^rtb-[A-z0-9]+$')
-
-
 @AWSRetry.jittered_backoff()
 def describe_subnets_with_backoff(connection, **params):
     paginator = connection.get_paginator('describe_subnets')
@@ -283,10 +278,10 @@ def find_subnets(connection, module, vpc_id, identified_subnets):
     """
     Finds a list of subnets, each identified either by a raw ID, a unique
     'Name' tag, or a CIDR such as 10.0.0.0/8.
-
-    Note that this function is duplicated in other ec2 modules, and should
-    potentially be moved into a shared module_utils
     """
+    CIDR_RE = re.compile(r'^(\d{1,3}\.){3}\d{1,3}/\d{1,2}$')
+    SUBNET_RE = re.compile(r'^subnet-[A-z0-9]+$')
+
     subnet_ids = []
     subnet_names = []
     subnet_cidrs = []
