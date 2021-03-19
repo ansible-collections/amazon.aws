@@ -129,6 +129,7 @@ action_groups:
   - ec2_vpc_egress_igw
   - ec2_vpc_endpoint
   - ec2_vpc_endpoint_info
+  - ec2_vpc_endpoint_service_info
   - ec2_vpc_igw
   - ec2_vpc_igw_info
   - ec2_vpc_nacl

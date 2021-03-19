@@ -1,0 +1,6 @@
+minor_changes:
+- ec2_vpc_endpoint_service_info - new module added for fetching information about available VPC endpoint services (https://github.com/ansible-collections/community.aws/pull/346).
+deprecated_features:
+- ec2_vpc_endpoint_info - the ``query`` option has been deprecated and will be removed after 2022-12-01 (https://github.com/ansible-collections/community.aws/pull/346).
+  The ec2_vpc_endpoint_info now defaults to listing information about endpoints.
+  The ability to search for information about available services has been moved to the dedicated module ``ec2_vpc_endpoint_service_info``.

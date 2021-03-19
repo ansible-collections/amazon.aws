@@ -1,0 +1,3 @@
+search_service_names:
+- 'com.amazonaws.{{ aws_region }}.s3'
+- 'com.amazonaws.{{ aws_region }}.ec2'
