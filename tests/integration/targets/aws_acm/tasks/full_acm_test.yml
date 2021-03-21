@@ -41,14 +41,11 @@
   - name: list cert which shouldn't exist
     aws_acm_info:
       tags:
-        Name: '{{ item[0].name }}'
+        Name: '{{ item.name }}'
     register: list_tag
-    check_mode: '{{ item[1] }}'
-    with_nested:
-      - '{{ local_certs }}'
-      - [ False, True ] # read-only task, should work the same with check mode or not
+    with_items: '{{ local_certs }}'
   - name: check listing of missing cert returns no result
-    with_items: "{{ list_tag.results }}"
+    with_items: '{{ list_tag.results }}'
     assert:
       that:
         - (item.certificates | length) == 0
