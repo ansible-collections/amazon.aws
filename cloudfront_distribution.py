@@ -1975,7 +1975,7 @@ class CloudFrontValidationManager(object):
     def validate_distribution_config_parameters(self, config, default_root_object, ipv6_enabled, http_version, web_acl_id):
         try:
             config['default_root_object'] = default_root_object or config.get('default_root_object', '')
-            config['is_i_p_v_6_enabled'] = ipv6_enabled or config.get('i_p_v_6_enabled', self.__default_ipv6_enabled)
+            config['is_i_p_v6_enabled'] = ipv6_enabled if ipv6_enabled is not None else config.get('is_i_p_v6_enabled', self.__default_ipv6_enabled)
             if http_version is not None or config.get('http_version'):
                 self.validate_attribute_with_allowed_values(http_version, 'http_version', self.__valid_http_versions)
                 config['http_version'] = http_version or config.get('http_version')
@@ -2056,7 +2056,7 @@ class CloudFrontValidationManager(object):
             if caller_reference is not None:
                 return self.validate_distribution_from_caller_reference(caller_reference)
             else:
-                if aliases:
+                if aliases and distribution_id is None:
                     distribution_id = self.validate_distribution_id_from_alias(aliases)
                 if distribution_id:
                     return self.__cloudfront_facts_mgr.get_distribution(distribution_id)
