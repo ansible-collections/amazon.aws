@@ -492,20 +492,16 @@ def ensure_routes(connection=None, module=None, route_table=None, route_specs=No
 
         for route_spec in route_specs_to_recreate:
             try:
-                connection.replace_route(
-                    aws_retry=True,
-                    RouteTableId=route_table['RouteTableId'],
-                    **route_spec)
+                connection.replace_route(aws_retry=True, RouteTableId=route_table['RouteTableId'], **route_spec)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Couldn't recreate route")
 
         for route_spec in route_specs_to_create:
             try:
-                connection.create_route(
-                    aws_retry=True,
-                    RouteTableId=route_table['RouteTableId'],
-                    **route_spec)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                connection.create_route(aws_retry=True, RouteTableId=route_table['RouteTableId'], **route_spec)
+            except is_boto3_error_code('RouteAlreadyExists'):
+                changed = False
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
                 module.fail_json_aws(e, msg="Couldn't create route")
 
     return {'changed': bool(changed)}
