@@ -66,6 +66,19 @@ options:
     default: present
     choices: [ "present", "absent" ]
     type: str
+  tags:
+    description:
+      - A dict of tags to apply to the internet gateway.
+      - To remove all tags set I(tags={}) and I(purge_tags=true).
+    type: dict
+    version_added: 1.5.0
+  purge_tags:
+    description:
+      - Delete any tags not specified in the task that are on the instance.
+        This means you have to specify all the desired tags on each task affecting an instance.
+    default: false
+    type: bool
+    version_added: 1.5.0
   wait:
     description:
       - When specified, will wait for either available status for state present.
@@ -200,58 +213,112 @@ from ansible.module_utils.six import string_types
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import normalize_boto3_result
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
+
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
-def date_handler(obj):
-    return obj.isoformat() if hasattr(obj, 'isoformat') else obj
-
-
-def wait_for_status(client, module, resource_id, status):
-    polling_increment_secs = 15
-    max_retries = (module.params.get('wait_timeout') // polling_increment_secs)
-    status_achieved = False
-
-    for x in range(0, max_retries):
-        try:
-            resource = get_endpoints(client, module, resource_id)['VpcEndpoints'][0]
-            if resource['State'] == status:
-                status_achieved = True
-                break
-            else:
-                time.sleep(polling_increment_secs)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Failure while waiting for status')
-
-    return status_achieved, resource
-
-
-def get_endpoints(client, module, resource_id=None):
+def get_endpoints(client, module, endpoint_id=None):
     params = dict()
-    if resource_id:
-        params['VpcEndpointIds'] = [resource_id]
+    if endpoint_id:
+        params['VpcEndpointIds'] = [endpoint_id]
+    else:
+        filters = list()
+        if module.params.get('service'):
+            filters.append({'Name': 'service-name', 'Values': [module.params.get('service')]})
+        if module.params.get('vpc_id'):
+            filters.append({'Name': 'vpc-id', 'Values': [module.params.get('vpc_id')]})
+        params['Filters'] = filters
+    try:
+        result = client.describe_vpc_endpoints(aws_retry=True, **params)
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        module.fail_json_aws(e, msg="Failed to get endpoints")
 
-    result = json.loads(json.dumps(client.describe_vpc_endpoints(**params), default=date_handler))
-    return result
+    # normalize iso datetime fields in result
+    normalized_result = normalize_boto3_result(result)
+    return normalized_result
+
+
+def match_endpoints(route_table_ids, service_name, vpc_id, endpoint):
+    found = False
+    sorted_route_table_ids = []
+
+    if route_table_ids:
+        sorted_route_table_ids = sorted(route_table_ids)
+
+    if endpoint['VpcId'] == vpc_id and endpoint['ServiceName'] == service_name:
+        sorted_endpoint_rt_ids = sorted(endpoint['RouteTableIds'])
+        if sorted_endpoint_rt_ids == sorted_route_table_ids:
+
+            found = True
+    return found
+
+
+def ensure_tags(client, module, vpc_endpoint_id):
+    changed = False
+    tags = module.params['tags']
+    purge_tags = module.params['purge_tags']
+
+    filters = ansible_dict_to_boto3_filter_list({'resource-id': vpc_endpoint_id})
+    try:
+        current_tags = client.describe_tags(aws_retry=True, Filters=filters)
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        module.fail_json_aws(e, msg="Failed to describe tags for VPC Endpoint: {0}".format(vpc_endpoint_id))
+
+    tags_to_set, tags_to_unset = compare_aws_tags(boto3_tag_list_to_ansible_dict(current_tags.get('Tags')), tags, purge_tags=purge_tags)
+    if purge_tags and not tags:
+        tags_to_unset = current_tags
+
+    if tags_to_unset:
+        changed = True
+        if not module.check_mode:
+            try:
+                client.delete_tags(aws_retry=True, Resources=[vpc_endpoint_id], Tags=[dict(Key=tagkey) for tagkey in tags_to_unset])
+            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                module.fail_json_aws(e, msg="Unable to delete tags {0}".format(tags_to_unset))
+
+    if tags_to_set:
+        changed = True
+        if not module.check_mode:
+            try:
+                client.create_tags(aws_retry=True, Resources=[vpc_endpoint_id], Tags=ansible_dict_to_boto3_tag_list(tags_to_set))
+            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                module.fail_json_aws(e, msg="Unable to add tags {0}".format(tags_to_set))
+    return changed
 
 
 def setup_creation(client, module):
-    vpc_id = module.params.get('vpc_id')
+    endpoint_id = module.params.get('vpc_endpoint_id')
+    route_table_ids = module.params.get('route_table_ids')
     service_name = module.params.get('service')
+    vpc_id = module.params.get('vpc_id')
+    changed = False
 
-    if module.params.get('route_table_ids'):
-        route_table_ids = module.params.get('route_table_ids')
-        existing_endpoints = get_endpoints(client, module)
-        for endpoint in existing_endpoints['VpcEndpoints']:
-            if endpoint['VpcId'] == vpc_id and endpoint['ServiceName'] == service_name:
-                sorted_endpoint_rt_ids = sorted(endpoint['RouteTableIds'])
-                sorted_route_table_ids = sorted(route_table_ids)
-                if sorted_endpoint_rt_ids == sorted_route_table_ids:
-                    return False, camel_dict_to_snake_dict(endpoint)
+    if not endpoint_id:
+        # Try to use the module parameters to match any existing endpoints
+        all_endpoints = get_endpoints(client, module, endpoint_id)
+        if len(all_endpoints['VpcEndpoints']) > 0:
+            for endpoint in all_endpoints['VpcEndpoints']:
+                if match_endpoints(route_table_ids, service_name, vpc_id, endpoint):
+                    endpoint_id = endpoint['VpcEndpointId']
+                    break
+
+    if endpoint_id:
+        # If we have an endpoint now, just ensure tags and exit
+        if module.params.get('tags'):
+            changed = ensure_tags(client, module, endpoint_id)
+        normalized_result = get_endpoints(client, module, endpoint_id=endpoint_id)['VpcEndpoints'][0]
+        return changed, camel_dict_to_snake_dict(normalized_result, ignore_list=['Tags'])
 
     changed, result = create_vpc_endpoint(client, module)
 
-    return changed, json.loads(json.dumps(result, default=date_handler))
+    return changed, camel_dict_to_snake_dict(result, ignore_list=['Tags'])
 
 
 def create_vpc_endpoint(client, module):
@@ -261,7 +328,11 @@ def create_vpc_endpoint(client, module):
     params['VpcId'] = module.params.get('vpc_id')
     params['VpcEndpointType'] = module.params.get('vpc_endpoint_type')
     params['ServiceName'] = module.params.get('service')
-    params['DryRun'] = module.check_mode
+
+    if module.check_mode:
+        changed = True
+        result = 'Would have created VPC Endpoint if not in check mode'
+        module.exit_json(changed=changed, result=result)
 
     if module.params.get('route_table_ids'):
         params['RouteTableIds'] = module.params.get('route_table_ids')
@@ -292,16 +363,18 @@ def create_vpc_endpoint(client, module):
 
     try:
         changed = True
-        result = camel_dict_to_snake_dict(client.create_vpc_endpoint(**params)['VpcEndpoint'])
+        result = client.create_vpc_endpoint(aws_retry=True, **params)['VpcEndpoint']
         if token_provided and (request_time > result['creation_timestamp'].replace(tzinfo=None)):
             changed = False
         elif module.params.get('wait') and not module.check_mode:
-            status_achieved, result = wait_for_status(client, module, result['vpc_endpoint_id'], 'available')
-            if not status_achieved:
-                module.fail_json(msg='Error waiting for vpc endpoint to become available - please check the AWS console')
-    except is_boto3_error_code('DryRunOperation'):
-        changed = True
-        result = 'Would have created VPC Endpoint if not in check mode'
+            try:
+                waiter = get_waiter(client, 'vpc_endpoint_exists')
+                waiter.wait(VpcEndpointIds=[result['VpcEndpointId']], WaiterConfig=dict(Delay=15, MaxAttempts=module.params.get('wait_timeout') // 15))
+            except botocore.exceptions.WaiterError as e:
+                module.fail_json_aws(msg='Error waiting for vpc endpoint to become available - please check the AWS console')
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+                module.fail_json_aws(e, msg='Failure while waiting for status')
+
     except is_boto3_error_code('IdempotentParameterMismatch'):  # pylint: disable=duplicate-except
         module.fail_json(msg="IdempotentParameterMismatch - updates of endpoints are not allowed by the API")
     except is_boto3_error_code('RouteAlreadyExists'):  # pylint: disable=duplicate-except
@@ -309,19 +382,38 @@ def create_vpc_endpoint(client, module):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to create VPC.")
 
-    return changed, result
+    if module.params.get('tags'):
+        ensure_tags(client, module, result['VpcEndpointId'])
+
+    # describe and normalize iso datetime fields in result after adding tags
+    normalized_result = get_endpoints(client, module, endpoint_id=result['VpcEndpointId'])['VpcEndpoints'][0]
+    return changed, normalized_result
 
 
 def setup_removal(client, module):
     params = dict()
     changed = False
-    params['DryRun'] = module.check_mode
+
+    if module.check_mode:
+        try:
+            exists = client.describe_vpc_endpoints(aws_retry=True, VpcEndpointIds=[module.params.get('vpc_endpoint_id')])
+            if exists:
+                result = {'msg': 'Would have deleted VPC Endpoint if not in check mode'}
+                changed = True
+        except is_boto3_error_code('InvalidVpcEndpointId.NotFound'):
+            result = {'msg': 'Endpoint does not exist, nothing to delete.'}
+            changed = False
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+            module.fail_json_aws(e, msg="Failed to get endpoints")
+
+        return changed, result
+
     if isinstance(module.params.get('vpc_endpoint_id'), string_types):
         params['VpcEndpointIds'] = [module.params.get('vpc_endpoint_id')]
     else:
         params['VpcEndpointIds'] = module.params.get('vpc_endpoint_id')
     try:
-        result = client.delete_vpc_endpoints(**params)['Unsuccessful']
+        result = client.delete_vpc_endpoints(aws_retry=True, **params)['Unsuccessful']
         if len(result) < len(params['VpcEndpointIds']):
             changed = True
         # For some reason delete_vpc_endpoints doesn't throw exceptions it
@@ -332,9 +424,7 @@ def setup_removal(client, module):
                 raise botocore.exceptions.ClientError(r, 'delete_vpc_endpoints')
             except is_boto3_error_code('InvalidVpcEndpoint.NotFound'):
                 continue
-    except is_boto3_error_code('DryRunOperation'):
-        changed = True
-        result = 'Would have deleted VPC Endpoint if not in check mode'
+
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, "Failed to delete VPC endpoint")
     return changed, result
@@ -353,6 +443,8 @@ def main():
         route_table_ids=dict(type='list', elements='str'),
         vpc_endpoint_id=dict(),
         client_token=dict(no_log=False),
+        tags=dict(type='dict'),
+        purge_tags=dict(type='bool', default=False),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
@@ -373,7 +465,7 @@ def main():
                          date='2022-12-01', collection_name='community.aws')
 
     try:
-        ec2 = module.client('ec2')
+        ec2 = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to connect to AWS')
 
