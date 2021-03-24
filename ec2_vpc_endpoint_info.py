@@ -120,12 +120,10 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.core import normalize_boto3_result
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-
-
-def date_handler(obj):
-    return obj.isoformat() if hasattr(obj, 'isoformat') else obj
 
 
 @AWSRetry.exponential_backoff()
@@ -149,16 +147,14 @@ def get_endpoints(client, module):
     params['Filters'] = ansible_dict_to_boto3_filter_list(module.params.get('filters'))
     if module.params.get('vpc_endpoint_ids'):
         params['VpcEndpointIds'] = module.params.get('vpc_endpoint_ids')
-    while True:
-        response = client.describe_vpc_endpoints(**params)
-        results.extend(response['VpcEndpoints'])
-        if 'NextToken' in response:
-            params['NextToken'] = response['NextToken']
-        else:
-            break
     try:
-        results = json.loads(json.dumps(results, default=date_handler))
-    except Exception as e:
+        paginator = client.get_paginator('describe_vpc_endpoints')
+        results = paginator.paginate(**params).build_full_result()['VpcEndpoints']
+
+        results = normalize_boto3_result(results)
+    except is_boto3_error_code('InvalidVpcEndpointId.NotFound'):
+        module.exit_json(msg='VpcEndpoint {0} does not exist'.format(module.params.get('vpc_endpoint_ids')), vpc_endpoints=[])
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to get endpoints")
     return dict(vpc_endpoints=[camel_dict_to_snake_dict(result) for result in results])
 
