@@ -742,7 +742,7 @@ def main():
                 (user_groups, changed) = set_users_groups(
                     module, iam, name, groups, been_updated, new_name)
             module.exit_json(
-                user_meta=meta, groups=user_groups, keys=keys, changed=changed)
+                user_meta=meta, groups=user_groups, user_name=meta['created_user']['user_name'], keys=keys, changed=changed)
 
         elif state in ['present', 'update'] and user_exists:
             if update_pw == 'on_create':
@@ -778,7 +778,7 @@ def main():
                                  created_keys=new_key, user_meta=user_meta)
             elif new_name and not new_path and not been_updated:
                 module.exit_json(
-                    changed=changed, groups=user_groups, old_user_name=orig_name, new_user_name=new_name, keys=key_list,
+                    changed=changed, groups=user_groups, old_user_name=orig_name, user_name=new_name, new_user_name=new_name, keys=key_list,
                     created_keys=new_key, user_meta=user_meta)
             elif new_name and not new_path and been_updated:
                 module.exit_json(
@@ -802,7 +802,7 @@ def main():
                 try:
                     set_users_groups(module, iam, name, '')
                     name, changed = delete_user(module, iam, name)
-                    module.exit_json(deleted_user=name, changed=changed)
+                    module.exit_json(deleted_user=name, user_name=name, changed=changed)
 
                 except Exception as ex:
                     module.fail_json(changed=changed, msg=str(ex))

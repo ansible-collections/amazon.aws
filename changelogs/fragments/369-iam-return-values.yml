@@ -1,0 +1,2 @@
+minor_changes:
+  - iam - Make iam module more predictable when returning the ``user_name`` it creates or deletes (https://github.com/ansible-collections/community.aws/pull/369).
