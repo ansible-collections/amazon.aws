@@ -1,0 +1,2 @@
+bugfixes:
+  - ec2_vpc_route_table - catch RouteAlreadyExists error when rerunning same task twice to make module idempotent
