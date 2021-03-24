@@ -102,6 +102,22 @@ options:
     - Directives are separated by commas.
     required: false
     type: str
+  storage_class:
+    description:
+    - Storage class to be associated to each object added to the S3 bucket.
+    required: false
+    choices:
+    - 'STANDARD'
+    - 'REDUCED_REDUNDANCY'
+    - 'STANDARD_IA'
+    - 'ONEZONE_IA'
+    - 'INTELLIGENT_TIERING'
+    - 'GLACIER'
+    - 'DEEP_ARCHIVE'
+    - 'OUTPOSTS'
+    default: 'STANDARD'
+    type: str
+    version_added: 1.5.0
   delete:
     description:
     - Remove remote files that exist in bucket but are not present in the file root.
@@ -131,6 +147,12 @@ EXAMPLES = '''
     bucket: tedder
     file_root: roles/s3/files/
 
+- name: basic upload using the glacier storage class
+  community.aws.s3_sync:
+    bucket: tedder
+    file_root: roles/s3/files/
+    storage_class: GLACIER
+
 - name: all the options
   community.aws.s3_sync:
     bucket: tedder
@@ -142,6 +164,7 @@ EXAMPLES = '''
     file_change_strategy: force
     permission: public-read
     cache_control: "public, max-age=31536000"
+    storage_class: "GLACIER"
     include: "*"
     exclude: "*.txt,.*"
 '''
@@ -470,6 +493,8 @@ def upload_files(s3, bucket, filelist, params):
             args['ACL'] = params['permission']
         if params.get('cache_control'):
             args['CacheControl'] = params['cache_control']
+        if params.get('storage_class'):
+            args['StorageClass'] = params['storage_class']
         # if this fails exception is caught in main()
         s3.upload_file(entry['fullpath'], bucket, entry['s3_path'], ExtraArgs=args, Callback=None, Config=None)
         ret.append(entry)
@@ -507,7 +532,10 @@ def main():
         include=dict(required=False, default="*"),
         cache_control=dict(required=False, default=''),
         delete=dict(required=False, type='bool', default=False),
-        # future options: encoding, metadata, storage_class, retries
+        storage_class=dict(required=False, default='STANDARD',
+                           choices=['STANDARD', 'REDUCED_REDUNDANCY', 'STANDARD_IA', 'ONEZONE_IA',
+                                    'INTELLIGENT_TIERING', 'GLACIER', 'DEEP_ARCHIVE', 'OUTPOSTS']),
+        # future options: encoding, metadata, retries
     )
 
     module = AnsibleAWSModule(
