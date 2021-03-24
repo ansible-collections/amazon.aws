@@ -44,7 +44,7 @@
         dd if=/dev/zero of=test4.txt bs=1M count=10
       args:
         chdir: "{{ output_dir }}/s3_sync"
-
+   
     - name: Sync files with remote bucket
       s3_sync:
         bucket: "{{ resource_prefix }}-testbucket-ansible"
@@ -55,6 +55,30 @@
           - output is changed
 
     # ============================================================
+    - name: Create a second s3_bucket
+      s3_bucket:
+        name: "{{ resource_prefix }}-testbucket-ansible-2"
+        state: present
+      register: output
+
+    - assert:
+        that:
+          - output.changed
+          - output.name == '{{ resource_prefix }}-testbucket-ansible-2'
+          - not output.requester_pays
+    
+    - name: Sync files with remote bucket using glacier storage class
+      s3_sync:
+        bucket: "{{ resource_prefix }}-testbucket-ansible-2"
+        file_root: "{{ output_dir }}/s3_sync"
+        storage_class: "GLACIER"
+      register: output
+
+    - assert:
+        that:
+          - output is changed
+    # ============================================================
+
     - name: Sync files already present
       s3_sync:
         bucket: "{{ resource_prefix }}-testbucket-ansible"
@@ -74,6 +98,7 @@
     - assert:
         that:
           - output is not changed
+ 
 
     # ============================================================
     # DOCUMENTATION EXAMPLES
@@ -106,3 +131,4 @@
       ignore_errors: yes
       with_items:
         - "{{ resource_prefix }}-testbucket-ansible"
+        - "{{ resource_prefix }}-testbucket-ansible-2"
