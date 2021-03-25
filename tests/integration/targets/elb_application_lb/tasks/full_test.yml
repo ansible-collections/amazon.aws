@@ -6,6 +6,7 @@
       cidr_block: 10.228.228.0/22
       name: '{{ resource_prefix }}_vpc'
       state: present
+      ipv6_cidr: true
     register: vpc
   - name: create internet gateway
     ec2_vpc_igw:
@@ -14,7 +15,7 @@
       tags:
         Name: '{{ resource_prefix }}'
     register: igw
-  - name: create public subnet
+  - name: create private subnet
     ec2_vpc_subnet:
       cidr: '{{ item.cidr }}'
       az: '{{ aws_region}}{{ item.az }}'
@@ -24,19 +25,33 @@
         Public: '{{ item.public|string }}'
         Name: '{{ item.public|ternary(''public'', ''private'') }}-{{ item.az }}'
     with_items:
-    - cidr: 10.228.228.0/24
-      az: a
-      public: 'True'
-    - cidr: 10.228.229.0/24
-      az: b
-      public: 'True'
     - cidr: 10.228.230.0/24
       az: a
       public: 'False'
     - cidr: 10.228.231.0/24
       az: b
       public: 'False'
-    register: subnets
+
+  - name: create public subnets with ipv6
+    ec2_vpc_subnet:
+      cidr: '{{ item.cidr }}'
+      az: '{{ aws_region}}{{ item.az }}'
+      vpc_id: '{{ vpc.vpc.id }}'
+      state: present
+      ipv6_cidr: '{{ item.vpc_ipv6_cidr }}'
+      tags:
+        Public: '{{ item.public|string }}'
+        Name: '{{ item.public|ternary(''public'', ''private'') }}-{{ item.az }}'
+    with_items:
+    - cidr: 10.228.228.0/24
+      az: a
+      public: 'True'
+      vpc_ipv6_cidr: "{{ vpc.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | replace('0::/56','0::/64') }}"
+    - cidr: 10.228.229.0/24
+      az: b
+      public: 'True'
+      vpc_ipv6_cidr: "{{ vpc.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | replace('0::/56','1::/64') }}"
+    
   - ec2_vpc_subnet_info:
       filters:
         vpc-id: '{{ vpc.vpc.id }}'
@@ -83,6 +98,7 @@
 
   # Run main tests
   - include_tasks: test_alb_bad_listener_options.yml
+  - include_tasks: test_alb_ip_address_type_options.yml
   - include_tasks: test_alb_tags.yml
   - include_tasks: test_creating_alb.yml
   - include_tasks: test_alb_with_asg.yml

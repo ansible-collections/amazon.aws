@@ -1,0 +1,11 @@
+- name: elb_application_lb full_test
+  block:
+  # setup
+  - include_tasks: setup.yml
+
+  # Run main tests
+  - include_tasks: test_elb_application_lb_info.yml
+
+  always:
+  # Cleanup
+  - include_tasks: teardown.yml
