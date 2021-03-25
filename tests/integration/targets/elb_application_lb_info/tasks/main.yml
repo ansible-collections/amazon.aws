@@ -1,0 +1,40 @@
+- name: 'elb_application_lb_info integration tests'
+  collections:
+    - amazon.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
+
+    # Prepare a virtual environment for multiple_actions_fail.yml
+    - set_fact:
+        virtualenv: "{{ remote_tmp_dir }}/virtualenv"
+        virtualenv_command: "{{ ansible_python_interpreter }} -m virtualenv"
+
+    - set_fact:
+        virtualenv_interpreter: "{{ virtualenv }}/bin/python"
+
+    - pip:
+        name: virtualenv
+
+    - pip:
+        name:
+          - 'botocore<1.10.30'
+          - boto3
+          - boto
+          - coverage<5
+          - cryptography
+        virtualenv: "{{ virtualenv }}"
+        virtualenv_command: "{{ virtualenv_command }}"
+        virtualenv_site_packages: no
+
+    - include_tasks: full_test.yml
+
+  always:
+
+    - file:
+        path: "{{ virtualenv }}"
+        state: absent

@@ -1,0 +1,83 @@
+- name: elb_application_lb_info teardown
+  block:
+  - name: destroy ALB
+    elb_application_lb:
+      name: '{{ alb_name }}'
+      state: absent
+      wait: true
+      wait_timeout: 600
+    ignore_errors: true
+
+  - name: destroy target group if it was created
+    elb_target_group:
+      name: '{{ tg_name }}'
+      protocol: http
+      port: 80
+      vpc_id: '{{ vpc.vpc.id }}'
+      state: absent
+      wait: true
+      wait_timeout: 600
+    register: remove_tg
+    retries: 5
+    delay: 3
+    until: remove_tg is success
+    when: tg is defined
+    ignore_errors: true
+  - name: destroy sec group
+    ec2_group:
+      name: '{{ sec_group.group_name }}'
+      description: security group for Ansible ALB integration tests
+      state: absent
+      vpc_id: '{{ vpc.vpc.id }}'
+    register: remove_sg
+    retries: 10
+    delay: 5
+    until: remove_sg is success
+    ignore_errors: true
+  - name: remove route table
+    ec2_vpc_route_table:
+      vpc_id: '{{ vpc.vpc.id }}'
+      route_table_id: '{{ route_table.route_table.route_table_id }}'
+      lookup: id
+      state: absent
+    register: remove_rt
+    retries: 10
+    delay: 5
+    until: remove_rt is success
+    ignore_errors: true
+  - name: destroy subnets
+    ec2_vpc_subnet:
+      cidr: '{{ item.cidr }}'
+      vpc_id: '{{ vpc.vpc.id }}'
+      state: absent
+    register: remove_subnet
+    retries: 10
+    delay: 5
+    until: remove_subnet is success
+    with_items:
+    - cidr: 10.228.228.0/24
+    - cidr: 10.228.229.0/24
+    - cidr: 10.228.230.0/24
+    - cidr: 10.228.231.0/24
+    ignore_errors: true
+  - name: destroy internet gateway
+    ec2_vpc_igw:
+      vpc_id: '{{ vpc.vpc.id }}'
+      tags:
+        Name: '{{ resource_prefix }}'
+      state: absent
+    register: remove_igw
+    retries: 10
+    delay: 5
+    until: remove_igw is success
+    ignore_errors: true
+  - name: destroy VPC
+    ec2_vpc_net:
+      cidr_block: 10.228.228.0/22
+      name: '{{ resource_prefix }}_vpc'
+      state: absent
+    register: remove_vpc
+    retries: 10
+    delay: 5
+    until: remove_vpc is success
+    ignore_errors: true

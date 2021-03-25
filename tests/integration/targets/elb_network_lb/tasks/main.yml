@@ -22,6 +22,7 @@
     ec2_vpc_net:
       cidr_block: 10.228.228.0/22
       name: "{{ resource_prefix }}_vpc"
+      ipv6_cidr: true
       state: present
     register: vpc
 
@@ -33,7 +34,7 @@
         Name: "{{ resource_prefix }}"
     register: igw
 
-  - name: create subnets
+  - name: create private subnets
     ec2_vpc_subnet:
       cidr: "{{ item.cidr }}"
       az: "{{ aws_region}}{{ item.az }}"
@@ -43,12 +44,6 @@
         Created_By: "{{ resource_prefix }}"
         Public: "{{ item.public }}"
     with_items:
-      - cidr: 10.228.228.0/24
-        az: "a"
-        public: True
-      - cidr: 10.228.229.0/24
-        az: "b"
-        public: True
       - cidr: 10.228.230.0/24
         az: "a"
         public: False
@@ -56,6 +51,27 @@
         az: "b"
         public: False
     register: subnets
+
+  - name: create public subnets with ipv6
+    ec2_vpc_subnet:
+      cidr: '{{ item.cidr }}'
+      az: '{{ aws_region}}{{ item.az }}'
+      vpc_id: '{{ vpc.vpc.id }}'
+      state: present
+      ipv6_cidr: '{{ item.vpc_ipv6_cidr }}'
+      tags:
+        Public: '{{ item.public|string }}'
+        Name: '{{ item.public|ternary(''public'', ''private'') }}-{{ item.az }}'
+        Created_By: "{{ resource_prefix }}"
+    with_items:
+      - cidr: 10.228.228.0/24
+        az: "a"
+        public: True
+        vpc_ipv6_cidr: "{{ vpc.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | replace('0::/56','0::/64') }}"
+      - cidr: 10.228.229.0/24
+        az: "b"
+        public: True
+        vpc_ipv6_cidr: "{{ vpc.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | replace('0::/56','1::/64') }}"
 
   - ec2_vpc_subnet_info:
       filters:
@@ -113,6 +129,7 @@
     register: tg_tcpudp
 
   - include_tasks: test_nlb_bad_listener_options.yml
+  - include_tasks: test_nlb_ip_address_type_option.yml
   - include_tasks: test_nlb_tags.yml
   - include_tasks: test_creating_nlb.yml
   - include_tasks: test_nlb_with_asg.yml

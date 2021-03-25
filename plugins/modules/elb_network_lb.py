@@ -125,6 +125,12 @@ options:
     description:
       - The duration in seconds to wait, used in conjunction with I(wait).
     type: int
+  ip_address_type:
+    description:
+      - Sets the type of IP addresses used by the subnets of the specified Application Load Balancer.
+    default: "ipv4"
+    choices: [ 'ipv4', 'dualstack' ]
+    type: str
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -311,10 +317,8 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSM
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, boto3_tag_list_to_ansible_dict, compare_aws_tags
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import NetworkLoadBalancer, ELBListeners, ELBListener
 
-
 def create_or_update_elb(elb_obj):
     """Create ELB or modify main attributes. json_exit here"""
-
     if elb_obj.elb:
         # ELB exists so check subnets, security groups and tags match what has been passed
 
@@ -338,6 +342,7 @@ def create_or_update_elb(elb_obj):
     else:
         # Create load balancer
         elb_obj.create_elb()
+
 
     # ELB attributes
     elb_obj.update_elb_attributes()
@@ -379,6 +384,10 @@ def create_or_update_elb(elb_obj):
     # Update the ELB attributes
     elb_obj.update_elb_attributes()
 
+    # Update ELB ip address type only if option has been provided
+    if elb_obj.module.params.get('ip_address_type') is not None :
+      elb_obj.modify_ip_address_type(elb_obj.module.params.get('ip_address_type'))
+
     # Convert to snake_case and merge in everything we want to return to the user
     snaked_elb = camel_dict_to_snake_dict(elb_obj.elb)
     snaked_elb.update(camel_dict_to_snake_dict(elb_obj.elb_attributes))
@@ -388,6 +397,9 @@ def create_or_update_elb(elb_obj):
 
     # Change tags to ansible friendly dict
     snaked_elb['tags'] = boto3_tag_list_to_ansible_dict(snaked_elb['tags'])
+
+    # ip address type
+    snaked_elb['ip_address_type']=elb_obj.get_elb_ip_address_type()
 
     elb_obj.module.exit_json(changed=elb_obj.changed, **snaked_elb)
 
@@ -425,7 +437,8 @@ def main():
             state=dict(choices=['present', 'absent'], type='str'),
             tags=dict(type='dict'),
             wait_timeout=dict(type='int'),
-            wait=dict(type='bool')
+            wait=dict(type='bool'),
+            ip_address_type=dict(type='str', choices=['ipv4', 'dualstack'])
         )
     )
 

@@ -1,0 +1,92 @@
+- block:
+  - name: set NLB name for ipv6
+    set_fact:
+      nlb_name_ipv6: "{{ nlb_name ~ 'ipv6' }}"
+
+  - name: Create NLB with invalid ip address type
+    elb_network_lb:
+      name: "{{ nlb_name_ipv6 }}"
+      subnets: "{{ nlb_subnets }}"
+      state: present
+      listeners:
+        - Protocol: TCP
+          Port: 80
+          DefaultActions:
+            - Type: forward
+              TargetGroupName: "{{ tg_name }}"
+      ip_address_type: "ipv6"
+    ignore_errors: true
+    register: nlb
+
+  - assert:
+      that:
+        - nlb is failed
+
+  - name: Create NLB with dualstack ip address type
+    elb_network_lb:
+      name: "{{ nlb_name_ipv6 }}"
+      subnets: "{{ nlb_subnets }}"
+      state: present
+      listeners:
+        - Protocol: TCP
+          Port: 80
+          DefaultActions:
+            - Type: forward
+              TargetGroupName: "{{ tg_name }}"
+      ip_address_type: "dualstack"
+    ignore_errors: true
+    register: nlb
+
+  - assert:
+      that:
+        - nlb.ip_address_type == "dualstack"
+
+  - name: Update NLB with ipv4 address type
+    elb_network_lb:
+      name: "{{ nlb_name_ipv6 }}"
+      subnets: "{{ nlb_subnets }}"
+      state: present
+      listeners:
+        - Protocol: TCP
+          Port: 80
+          DefaultActions:
+            - Type: forward
+              TargetGroupName: "{{ tg_name }}"
+      ip_address_type: "ipv4"
+    ignore_errors: true
+    register: nlb
+
+  - assert:
+      that:
+        - nlb.changed
+        - nlb.ip_address_type == "ipv4"
+
+  - name: Test idempotence when updating NLB
+    elb_network_lb:
+      name: "{{ nlb_name_ipv6 }}"
+      subnets: "{{ nlb_subnets }}"
+      state: present
+      listeners:
+        - Protocol: TCP
+          Port: 80
+          DefaultActions:
+            - Type: forward
+              TargetGroupName: "{{ tg_name }}"
+      ip_address_type: "ipv4"
+    ignore_errors: true
+    register: nlb
+
+  - assert:
+      that:
+        - not nlb.changed
+        - nlb.ip_address_type == "ipv4"
+
+  always:
+  # Cleanup
+  - name: destroy NLB if created
+    elb_network_lb:
+      name: '{{ nlb_name_ipv6 }}'
+      state: absent
+      wait: true
+      wait_timeout: 600
+    ignore_errors: true
