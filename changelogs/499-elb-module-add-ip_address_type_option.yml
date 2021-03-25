@@ -1,0 +1,4 @@
+minor_changes:
+- elb_application_lb - added ``ip_address_type`` parameter to support changing application load balancer configuration (https://github.com/ansible-collections/community.aws/pull/499).
+- elb_network_lb - added ``ip_address_type`` parameter to support changing network load balancer configuration (https://github.com/ansible-collections/community.aws/pull/499).
+- elb_application_lb_info - added ``ip_address_type`` in output when gathering application load balancer parameters (https://github.com/ansible-collections/community.aws/pull/499).
