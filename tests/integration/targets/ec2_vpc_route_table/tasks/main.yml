@@ -17,7 +17,7 @@
       state: present
     register: vpc
 
-  - name: create public subnet
+  - name: create subnets
     ec2_vpc_subnet:
       cidr: "{{ item.cidr }}"
       az: "{{ aws_region}}{{ item.az }}"
@@ -169,6 +169,40 @@
         - add_routes.route_table.associations|length == 0
         - add_routes.route_table.vpc_id == "{{ vpc.vpc.id }}"
         - add_routes.route_table.propagating_vgws|length == 0
+
+  - name: CHECK MODE - re-add route to public route table
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: "true"
+        Name: "Public route table"
+      routes:
+      - dest: 0.0.0.0/0
+        gateway_id: igw
+    check_mode: True
+    register: check_mode_results
+
+  - name: assert a route would not be added
+    assert:
+      that:
+        - check_mode_results is not changed
+
+  - name: re-add a route to public route table
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: "true"
+        Name: "Public route table"
+      routes:
+      - dest: 0.0.0.0/0
+        gateway_id: igw
+    register: add_routes
+
+  - name: assert route table contains route
+    assert:
+      that:
+        - add_routes is not changed
+        - add_routes.route_table.routes|length == 2
 
   - name: CHECK MODE - add subnets to public route table
     ec2_vpc_route_table:
