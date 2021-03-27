@@ -125,7 +125,6 @@ class ElasticLoadBalancerV2(object):
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 
-
     def update_elb_attributes(self):
         """
         Update the elb_attributes parameter
