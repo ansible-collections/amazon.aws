@@ -119,7 +119,7 @@ class ElasticLoadBalancerV2(object):
         try:
             self.elb_ip_addr_type = AWSRetry.jittered_backoff()(
                 self.connection.describe_load_balancers
-            )(LoadBalancerArns=[ self.elb['LoadBalancerArn'] ])['LoadBalancers'][0]['IpAddressType']
+            )(LoadBalancerArns=[self.elb['LoadBalancerArn']])['LoadBalancers'][0]['IpAddressType']
             return self.elb_ip_addr_type
 
         except (BotoCoreError, ClientError) as e:
@@ -251,12 +251,12 @@ class ElasticLoadBalancerV2(object):
         self.elb = get_elb(self.connection, self.module, self.module.params.get("name"))
         self.elb['tags'] = self.get_elb_tags()
 
-    def modify_ip_address_type(self,ip_addr_type) :
+    def modify_ip_address_type(self,ip_addr_type):
         """
         Modify ELB ip address type
         :return:
         """
-        if self.elb_ip_addr_type != ip_addr_type :
+        if self.elb_ip_addr_type != ip_addr_type:
             try:
                 AWSRetry.jittered_backoff()(
                     self.connection.set_ip_address_type
@@ -393,6 +393,7 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
             self.module.fail_json_aws(e)
 
         self.changed = True
+
 
 class NetworkLoadBalancer(ElasticLoadBalancerV2):
 
