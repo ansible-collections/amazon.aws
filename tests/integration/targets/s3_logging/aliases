@@ -1,5 +1,2 @@
-# reason: unstable
-# https://github.com/ansible/ansible/issues/63520
-unsupported
-
 cloud/aws
+shippable/aws/group3

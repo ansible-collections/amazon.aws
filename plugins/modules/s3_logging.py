@@ -59,26 +59,67 @@ EXAMPLES = '''
 '''
 
 try:
-    import boto.ec2
-    from boto.s3.connection import OrdinaryCallingFormat, Location
-    from boto.exception import S3ResponseError
+    import botocore
 except ImportError:
-    pass  # Handled by HAS_BOTO
+    pass  # Handled by AnsibleAWSModule
 
-from ansible.module_utils._text import to_native
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleAWSError
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
-def compare_bucket_logging(bucket, target_bucket, target_prefix):
+def compare_bucket_logging(bucket_logging, target_bucket, target_prefix):
 
-    bucket_log_obj = bucket.get_logging_status()
-    if bucket_log_obj.target != target_bucket or bucket_log_obj.prefix != target_prefix:
+    if not bucket_logging.get('LoggingEnabled', False):
+        if target_bucket:
+            return True
         return False
-    else:
+
+    logging = bucket_logging['LoggingEnabled']
+    if logging['TargetBucket'] != target_bucket:
         return True
+    if logging['TargetPrefix'] != target_prefix:
+        return True
+    return False
+
+
+def verify_acls(connection, module, target_bucket):
+    try:
+        current_acl = connection.get_bucket_acl(aws_retry=True, Bucket=target_bucket)
+        current_grants = current_acl['Grants']
+    except is_boto3_error_code('NoSuchBucket'):
+        module.fail_json(msg="Target Bucket '{0}' not found".format(target_bucket))
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to fetch target bucket ACL")
+
+    required_grant = {
+        'Grantee': {
+            'URI': "http://acs.amazonaws.com/groups/s3/LogDelivery",
+            'Type': 'Group'
+        },
+        'Permission': 'FULL_CONTROL'
+    }
+
+    for grant in current_grants:
+        if grant == required_grant:
+            return False
+
+    if module.check_mode:
+        return True
+
+    updated_acl = dict(current_acl)
+    updated_grants = list(current_grants)
+    updated_grants.append(required_grant)
+    updated_acl['Grants'] = updated_grants
+    del updated_acl['ResponseMetadata']
+    try:
+        connection.put_bucket_acl(aws_retry=True, Bucket=target_bucket, AccessControlPolicy=updated_acl)
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        module.fail_json_aws(e, msg="Failed to update target bucket ACL to allow log delivery")
+
+    return True
 
 
 def enable_bucket_logging(connection, module):
@@ -89,29 +130,37 @@ def enable_bucket_logging(connection, module):
     changed = False
 
     try:
-        bucket = connection.get_bucket(bucket_name)
-    except S3ResponseError as e:
-        module.fail_json(msg=to_native(e))
+        bucket_logging = connection.get_bucket_logging(aws_retry=True, Bucket=bucket_name)
+    except is_boto3_error_code('NoSuchBucket'):
+        module.fail_json(msg="Bucket '{0}' not found".format(bucket_name))
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to fetch current logging status")
 
     try:
-        if not compare_bucket_logging(bucket, target_bucket, target_prefix):
-            # Before we can enable logging we must give the log-delivery group WRITE and READ_ACP permissions to the target bucket
-            try:
-                target_bucket_obj = connection.get_bucket(target_bucket)
-            except S3ResponseError as e:
-                if e.status == 301:
-                    module.fail_json(msg="the logging target bucket must be in the same region as the bucket being logged")
-                else:
-                    module.fail_json(msg=to_native(e))
-            target_bucket_obj.set_as_logging_target()
+        changed |= verify_acls(connection, module, target_bucket)
 
-            bucket.enable_logging(target_bucket, target_prefix)
-            changed = True
+        if not compare_bucket_logging(bucket_logging, target_bucket, target_prefix):
+            bucket_logging = camel_dict_to_snake_dict(bucket_logging)
+            module.exit_json(changed=changed, **bucket_logging)
 
-    except S3ResponseError as e:
-        module.fail_json(msg=to_native(e))
+        if module.check_mode:
+            module.exit_json(changed=True)
 
-    module.exit_json(changed=changed)
+        result = connection.put_bucket_logging(
+            aws_retry=True,
+            Bucket=bucket_name,
+            BucketLoggingStatus={
+                'LoggingEnabled': {
+                    'TargetBucket': target_bucket,
+                    'TargetPrefix': target_prefix,
+                }
+            })
+
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        module.fail_json_aws(e, msg="Failed to enable bucket logging")
+
+    result = camel_dict_to_snake_dict(result)
+    module.exit_json(changed=True, **result)
 
 
 def disable_bucket_logging(connection, module):
@@ -120,14 +169,26 @@ def disable_bucket_logging(connection, module):
     changed = False
 
     try:
-        bucket = connection.get_bucket(bucket_name)
-        if not compare_bucket_logging(bucket, None, None):
-            bucket.disable_logging()
-            changed = True
-    except S3ResponseError as e:
-        module.fail_json(msg=to_native(e))
+        bucket_logging = connection.get_bucket_logging(aws_retry=True, Bucket=bucket_name)
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        module.fail_json_aws(e, msg="Failed to fetch current logging status")
 
-    module.exit_json(changed=changed)
+    if not compare_bucket_logging(bucket_logging, None, None):
+        module.exit_json(changed=False)
+
+    if module.check_mode:
+        module.exit_json(changed=True)
+
+    try:
+        response = AWSRetry.jittered_backoff(
+            catch_extra_error_codes=['InvalidTargetBucketForLogging']
+        )(connection.put_bucket_logging)(
+            Bucket=bucket_name, BucketLoggingStatus={}
+        )
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        module.fail_json_aws(e, msg="Failed to disable bucket logging")
+
+    module.exit_json(changed=True)
 
 
 def main():
@@ -139,28 +200,9 @@ def main():
         state=dict(required=False, default='present', choices=['present', 'absent']),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec)
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    if not HAS_BOTO:
-        module.fail_json(msg='boto required for this module')
-
-    region, ec2_url, aws_connect_params = get_aws_connection_info(module)
-
-    if region in ('us-east-1', '', None):
-        # S3ism for the US Standard region
-        location = Location.DEFAULT
-    else:
-        # Boto uses symbolic names for locations but region strings will
-        # actually work fine for everything except us-east-1 (US Standard)
-        location = region
-    try:
-        connection = boto.s3.connect_to_region(location, is_secure=True, calling_format=OrdinaryCallingFormat(), **aws_connect_params)
-        # use this as fallback because connect_to_region seems to fail in boto + non 'classic' aws accounts in some cases
-        if connection is None:
-            connection = boto.connect_s3(**aws_connect_params)
-    except (boto.exception.NoAuthHandlerFound, AnsibleAWSError) as e:
-        module.fail_json(msg=str(e))
-
+    connection = module.client('s3', retry_decorator=AWSRetry.jittered_backoff())
     state = module.params.get("state")
 
     if state == 'present':
