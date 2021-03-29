@@ -1,0 +1,2 @@
+minor_changes:
+- ecs_service - Add ``platform_version`` parameter to ``ecs_service`` (https://github.com/ansible-collections/community.aws/pull/353).
