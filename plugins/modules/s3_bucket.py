@@ -480,7 +480,7 @@ def create_or_update_bucket(s3_client, module, location):
     if delete_object_ownership or object_ownership is not None :
         if delete_object_ownership :
             # delete S3 buckect ownership
-            if bucket_ownership != {} :
+            if bucket_ownership != {}:
                 delete_bucket_ownership(s3_client,name)
                 changed=True
                 result['object_ownership']=None
