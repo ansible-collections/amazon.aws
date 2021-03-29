@@ -16,6 +16,12 @@ description:
 requirements: [ boto3 ]
 author: "Rob White (@wimnat)"
 options:
+  availability_zone:
+    description:
+      - Availability Zone used by the connection
+      - Required when I(connection_type=NETWORK).
+    type: str
+    version_added: 1.5.0
   catalog_id:
     description:
       - The ID of the Data Catalog in which to create the connection. If none is supplied,
@@ -28,9 +34,9 @@ options:
     type: dict
   connection_type:
     description:
-      - The type of the connection. Currently, only JDBC is supported; SFTP is not supported.
+      - The type of the connection. Currently, SFTP is not supported.
     default: JDBC
-    choices: [ 'JDBC', 'SFTP' ]
+    choices: [ 'CUSTOM', 'JDBC', 'KAFKA', 'MARKETPLACE', 'MONGODB', 'NETWORK' ]
     type: str
   description:
     description:
@@ -49,6 +55,7 @@ options:
   security_groups:
     description:
       - A list of security groups to be used by the connection. Use either security group name or ID.
+      - Required when I(connection_type=NETWORK).
     type: list
     elements: str
   state:
@@ -60,6 +67,7 @@ options:
   subnet_id:
     description:
       - The subnet ID used by the connection.
+      - Required when I(connection_type=NETWORK).
     type: str
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -77,6 +85,19 @@ EXAMPLES = r'''
       JDBC_CONNECTION_URL: jdbc:mysql://mydb:3306/databasename
       USERNAME: my-username
       PASSWORD: my-password
+    state: present
+
+# Create an AWS Glue network connection
+- community.aws.aws_glue_connection:
+    name: my-glue-network-connection
+    availability_zone: us-east-1a
+    connection_properties:
+      JDBC_ENFORCE_SSL: "false"
+    connection_type: NETWORK
+    description: Test connection
+    security_groups:
+      - sg-glue
+    subnet_id: subnet-123abc
     state: present
 
 # Delete an AWS Glue connection
@@ -142,6 +163,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_security_group_ids_from_names
 
 
@@ -162,7 +184,7 @@ def _get_glue_connection(connection, module):
         params['CatalogId'] = connection_catalog_id
 
     try:
-        return connection.get_connection(**params)['Connection']
+        return connection.get_connection(aws_retry=True, **params)['Connection']
     except is_boto3_error_code('EntityNotFoundException'):
         return None
 
@@ -207,8 +229,27 @@ def _compare_glue_connection_params(user_params, current_params):
                 user_params['ConnectionInput']['PhysicalConnectionRequirements']['SubnetId'] \
                 != current_params['PhysicalConnectionRequirements']['SubnetId']:
             return True
+        if 'AvailabilityZone' in user_params['ConnectionInput']['PhysicalConnectionRequirements'] and \
+                user_params['ConnectionInput']['PhysicalConnectionRequirements']['AvailabilityZone'] \
+                != current_params['PhysicalConnectionRequirements']['AvailabilityZone']:
+            return True
 
     return False
+
+
+# Glue module doesn't appear to have any waiters, unlike EC2 or RDS
+def _await_glue_connection(connection, module):
+    start_time = time.time()
+    wait_timeout = start_time + 30
+    check_interval = 5
+
+    while wait_timeout > time.time():
+        glue_connection = _get_glue_connection(connection, module)
+        if glue_connection and glue_connection.get('Name'):
+            return glue_connection
+        time.sleep(check_interval)
+
+    module.fail_json(msg='Timeout waiting for Glue connection %s' % module.params.get('name'))
 
 
 def create_or_update_glue_connection(connection, connection_ec2, module, glue_connection):
@@ -220,8 +261,8 @@ def create_or_update_glue_connection(connection, connection_ec2, module, glue_co
     :param glue_connection: a dict of AWS Glue connection parameters or None
     :return:
     """
-
     changed = False
+
     params = dict()
     params['ConnectionInput'] = dict()
     params['ConnectionInput']['Name'] = module.params.get("name")
@@ -241,6 +282,8 @@ def create_or_update_glue_connection(connection, connection_ec2, module, glue_co
         params['ConnectionInput']['PhysicalConnectionRequirements']['SecurityGroupIdList'] = security_group_ids
     if module.params.get("subnet_id") is not None:
         params['ConnectionInput']['PhysicalConnectionRequirements']['SubnetId'] = module.params.get("subnet_id")
+    if module.params.get("availability_zone") is not None:
+        params['ConnectionInput']['PhysicalConnectionRequirements']['AvailabilityZone'] = module.params.get("availability_zone")
 
     # If glue_connection is not None then check if it needs to be modified, else create it
     if glue_connection:
@@ -249,27 +292,24 @@ def create_or_update_glue_connection(connection, connection_ec2, module, glue_co
                 # We need to slightly modify the params for an update
                 update_params = copy.deepcopy(params)
                 update_params['Name'] = update_params['ConnectionInput']['Name']
-                connection.update_connection(**update_params)
+                if not module.check_mode:
+                    connection.update_connection(aws_retry=True, **update_params)
                 changed = True
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e)
     else:
         try:
-            connection.create_connection(**params)
+            if not module.check_mode:
+                connection.create_connection(aws_retry=True, **params)
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e)
 
     # If changed, get the Glue connection again
-    if changed:
-        glue_connection = None
-        for i in range(10):
-            glue_connection = _get_glue_connection(connection, module)
-            if glue_connection is not None:
-                break
-            time.sleep(10)
+    if changed and not module.check_mode:
+        glue_connection = _await_glue_connection(connection, module)
 
-    module.exit_json(changed=changed, **camel_dict_to_snake_dict(glue_connection))
+    module.exit_json(changed=changed, **camel_dict_to_snake_dict(glue_connection or {}))
 
 
 def delete_glue_connection(connection, module, glue_connection):
@@ -281,7 +321,6 @@ def delete_glue_connection(connection, module, glue_connection):
     :param glue_connection: a dict of AWS Glue connection parameters or None
     :return:
     """
-
     changed = False
 
     params = {'ConnectionName': module.params.get("name")}
@@ -290,7 +329,8 @@ def delete_glue_connection(connection, module, glue_connection):
 
     if glue_connection:
         try:
-            connection.delete_connection(**params)
+            if not module.check_mode:
+                connection.delete_connection(aws_retry=True, **params)
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e)
@@ -302,9 +342,10 @@ def main():
 
     argument_spec = (
         dict(
+            availability_zone=dict(type='str'),
             catalog_id=dict(type='str'),
             connection_properties=dict(type='dict'),
-            connection_type=dict(type='str', default='JDBC', choices=['JDBC', 'SFTP']),
+            connection_type=dict(type='str', default='JDBC', choices=['CUSTOM', 'JDBC', 'KAFKA', 'MARKETPLACE', 'MONGODB', 'NETWORK']),
             description=dict(type='str'),
             match_criteria=dict(type='list', elements='str'),
             name=dict(required=True, type='str'),
@@ -316,12 +357,15 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               required_if=[
-                                  ('state', 'present', ['connection_properties'])
-                              ]
+                                  ('state', 'present', ['connection_properties']),
+                                  ('connection_type', 'NETWORK', ['availability_zone', 'security_groups', 'subnet_id'])
+                              ],
+                              supports_check_mode=True
                               )
 
-    connection_glue = module.client('glue')
-    connection_ec2 = module.client('ec2')
+    retry_decorator = AWSRetry.jittered_backoff(retries=10)
+    connection_glue = module.client('glue', retry_decorator=retry_decorator)
+    connection_ec2 = module.client('ec2', retry_decorator=retry_decorator)
 
     glue_connection = _get_glue_connection(connection_glue, module)
 

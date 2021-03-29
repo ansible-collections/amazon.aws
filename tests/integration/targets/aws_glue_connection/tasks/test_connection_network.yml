@@ -1,0 +1,334 @@
+---
+- name: aws_glue_connection integration tests (network)
+  block:
+    - name: Install AWS CLI
+      pip:
+        name: awscli
+        state: present
+
+    - name: Create VPC
+      ec2_vpc_net:
+        name: "{{ resource_prefix }}-vpc"
+        cidr_block: 10.22.32.0/23
+        tags:
+          Name: Ansible ec2_instance Testing VPC
+        tenancy: default
+      register: glue_vpc
+
+    - name: Create default subnet in zone A
+      ec2_vpc_subnet:
+        az: "{{ aws_region }}a"
+        cidr: 10.22.32.0/24
+        vpc_id: "{{ glue_vpc.vpc.id }}"
+        resource_tags:
+          Name: "{{ resource_prefix }}-subnet-a"
+        state: present
+      register: glue_subnet_a
+
+    - name: Create security group 1
+      ec2_group:
+        name: "{{ resource_prefix }}-sg-glue-1"
+        description: A security group for Ansible tests
+        vpc_id: "{{ glue_vpc.vpc.id }}"
+        rules:
+          - proto: -1
+            ports: -1
+            group_name: "{{ resource_prefix }}-sg-glue-1"
+            rule_desc: Connections from Glue
+
+    - name: Create security group 2
+      ec2_group:
+        name: "{{ resource_prefix }}-sg-glue-2"
+        description: A security group for Ansible tests
+        vpc_id: "{{ glue_vpc.vpc.id }}"
+        rules:
+          - proto: -1
+            ports: -1
+            group_name: "{{ resource_prefix }}-sg-glue-2"
+            rule_desc: Connections from Glue
+
+    - name: Create Glue connection (check mode)
+      aws_glue_connection:
+        name: "{{ resource_prefix }}"
+        availability_zone: "{{ aws_region }}a"
+        connection_properties:
+          jdbc_enforce_ssl: "false"
+        connection_type: NETWORK
+        description: Test connection
+        security_groups:
+          - "{{ resource_prefix }}-sg-glue-1"
+        subnet_id: "{{ glue_subnet_a.subnet.id }}"
+        state: present
+      check_mode: true
+      register: glue_connection_check
+
+    - name: Verity that Glue connection was not created in check mode
+      assert:
+        that:
+          - glue_connection_check.changed
+          - glue_connection_check.description is not defined
+
+    - name: Create Glue connection
+      aws_glue_connection:
+        name: "{{ resource_prefix }}"
+        availability_zone: "{{ aws_region }}a"
+        connection_properties:
+          jdbc_enforce_ssl: "false"
+        connection_type: NETWORK
+        description: Test connection
+        security_groups:
+          - "{{ resource_prefix }}-sg-glue-1"
+        subnet_id: "{{ glue_subnet_a.subnet.id }}"
+        state: present
+      register: glue_connection
+
+    - name: Get info on Glue connection
+      command: "aws glue get-connection --name {{ resource_prefix }}"
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: connection_info_query
+
+    - name: Convert it to an object
+      set_fact:
+        connection_info: "{{ connection_info_query.stdout | from_json }}"
+
+    - name: Verity that Glue connection was created
+      assert:
+        that:
+          - glue_connection.changed
+          - glue_connection.name == connection_info["Connection"]["Name"]
+          - glue_connection.description == connection_info["Connection"]["Description"]
+          - glue_connection.connection_properties == connection_info["Connection"]["ConnectionProperties"]
+          - glue_connection.connection_type == connection_info["Connection"]["ConnectionType"]
+          - glue_connection.physical_connection_requirements.subnet_id == connection_info["Connection"]["PhysicalConnectionRequirements"]["SubnetId"]
+          - glue_connection.physical_connection_requirements.security_group_id_list == connection_info["Connection"]["PhysicalConnectionRequirements"]["SecurityGroupIdList"]
+          - glue_connection.physical_connection_requirements.availability_zone == connection_info["Connection"]["PhysicalConnectionRequirements"]["AvailabilityZone"]
+
+    - name: Create Glue connection (idempotent) (check mode)
+      aws_glue_connection:
+        name: "{{ resource_prefix }}"
+        availability_zone: "{{ aws_region }}a"
+        connection_properties:
+          jdbc_enforce_ssl: "false"
+        connection_type: NETWORK
+        description: Test connection
+        security_groups:
+          - "{{ resource_prefix }}-sg-glue-1"
+        subnet_id: "{{ glue_subnet_a.subnet.id }}"
+        state: present
+      check_mode: true
+      register: glue_connection_idempotent_check
+
+    - name: Get info on Glue connection
+      command: "aws glue get-connection --name {{ resource_prefix }}"
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: connection_info_query_idempotent_check
+
+    - name: Convert it to an object
+      set_fact:
+        connection_info_idempotent_check: "{{ connection_info_query_idempotent_check.stdout | from_json }}"
+
+    - name: Verity that Glue connection was not modified in check mode
+      assert:
+        that:
+          - not glue_connection_idempotent_check.changed
+          - connection_info_idempotent_check["Connection"]["Name"] == connection_info["Connection"]["Name"]
+          - connection_info_idempotent_check["Connection"]["Description"] == connection_info["Connection"]["Description"]
+          - connection_info_idempotent_check["Connection"]["ConnectionProperties"] == connection_info["Connection"]["ConnectionProperties"]
+          - connection_info_idempotent_check["Connection"]["ConnectionType"] == connection_info["Connection"]["ConnectionType"]
+          - connection_info_idempotent_check["Connection"]["PhysicalConnectionRequirements"]["SubnetId"] == connection_info["Connection"]["PhysicalConnectionRequirements"]["SubnetId"]
+          - connection_info_idempotent_check["Connection"]["PhysicalConnectionRequirements"]["SecurityGroupIdList"]== connection_info["Connection"]["PhysicalConnectionRequirements"]["SecurityGroupIdList"]
+          - connection_info_idempotent_check["Connection"]["PhysicalConnectionRequirements"]["AvailabilityZone"] == connection_info["Connection"]["PhysicalConnectionRequirements"]["AvailabilityZone"]
+
+    - name: Create Glue connection (idempotent)
+      aws_glue_connection:
+        name: "{{ resource_prefix }}"
+        availability_zone: "{{ aws_region }}a"
+        connection_properties:
+          jdbc_enforce_ssl: "false"
+        connection_type: NETWORK
+        description: Test connection
+        security_groups:
+          - "{{ resource_prefix }}-sg-glue-1"
+        subnet_id: "{{ glue_subnet_a.subnet.id }}"
+        state: present
+      register: glue_connection_idempotent
+
+    - name: Get info on Glue connection
+      command: "aws glue get-connection --name {{ resource_prefix }}"
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: connection_info_query_idempotent
+
+    - name: Convert it to an object
+      set_fact:
+        connection_info_idempotent: "{{ connection_info_query_idempotent.stdout | from_json }}"
+
+    - name: Verity that Glue connection was not modified
+      assert:
+        that:
+          - not glue_connection_idempotent.changed
+          - connection_info_idempotent["Connection"]["Name"] == connection_info["Connection"]["Name"]
+          - connection_info_idempotent["Connection"]["Description"] == connection_info["Connection"]["Description"]
+          - connection_info_idempotent["Connection"]["ConnectionProperties"] == connection_info["Connection"]["ConnectionProperties"]
+          - connection_info_idempotent["Connection"]["ConnectionType"] == connection_info["Connection"]["ConnectionType"]
+          - connection_info_idempotent["Connection"]["PhysicalConnectionRequirements"]["SubnetId"] == connection_info["Connection"]["PhysicalConnectionRequirements"]["SubnetId"]
+          - connection_info_idempotent["Connection"]["PhysicalConnectionRequirements"]["SecurityGroupIdList"]== connection_info["Connection"]["PhysicalConnectionRequirements"]["SecurityGroupIdList"]
+          - connection_info_idempotent["Connection"]["PhysicalConnectionRequirements"]["AvailabilityZone"] == connection_info["Connection"]["PhysicalConnectionRequirements"]["AvailabilityZone"]
+
+    - name: Update Glue connection (check mode)
+      aws_glue_connection:
+        name: "{{ resource_prefix }}"
+        availability_zone: "{{ aws_region }}a"
+        connection_properties:
+          jdbc_enforce_ssl: "false"
+        connection_type: NETWORK
+        description: Test connection modified
+        security_groups:
+          - "{{ resource_prefix }}-sg-glue-2"
+        subnet_id: "{{ glue_subnet_a.subnet.id }}"
+        state: present
+      check_mode: true
+      register: glue_connection_update_check
+
+    - name: Get info on Glue connection
+      command: "aws glue get-connection --name {{ resource_prefix }}"
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: connection_info_query_update_check
+
+    - name: Convert it to an object
+      set_fact:
+        connection_info_update_check: "{{ connection_info_query_update_check.stdout | from_json }}"
+
+    - name: Verity that Glue connection was not modified in check mode
+      assert:
+        that:
+          - glue_connection_update_check.changed
+          - glue_connection_update_check.name == connection_info_update_check["Connection"]["Name"]
+          - glue_connection_update_check.description == connection_info_update_check["Connection"]["Description"]
+          - glue_connection_update_check.connection_properties == connection_info_update_check["Connection"]["ConnectionProperties"]
+          - glue_connection_update_check.connection_type == connection_info_update_check["Connection"]["ConnectionType"]
+          - glue_connection_update_check.physical_connection_requirements.subnet_id == connection_info_update_check["Connection"]["PhysicalConnectionRequirements"]["SubnetId"]
+          - glue_connection_update_check.physical_connection_requirements.security_group_id_list == connection_info_update_check["Connection"]["PhysicalConnectionRequirements"]["SecurityGroupIdList"]
+          - glue_connection_update_check.physical_connection_requirements.availability_zone == connection_info_update_check["Connection"]["PhysicalConnectionRequirements"]["AvailabilityZone"]
+
+    - name: Update Glue connection
+      aws_glue_connection:
+        name: "{{ resource_prefix }}"
+        availability_zone: "{{ aws_region }}a"
+        connection_properties:
+          jdbc_enforce_ssl: "false"
+        connection_type: NETWORK
+        description: Test connection modified
+        security_groups:
+          - "{{ resource_prefix }}-sg-glue-2"
+        subnet_id: "{{ glue_subnet_a.subnet.id }}"
+        state: present
+      register: glue_connection_update
+
+    - name: Get info on Glue connection
+      command: "aws glue get-connection --name {{ resource_prefix }}"
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: connection_info_query_update
+
+    - name: Convert it to an object
+      set_fact:
+        connection_info_update: "{{ connection_info_query_update.stdout | from_json }}"
+
+    - name: Verity that Glue connection was modified
+      assert:
+        that:
+          - glue_connection_update.changed
+          - glue_connection_update.name == connection_info_update["Connection"]["Name"]
+          - glue_connection_update.description == connection_info_update["Connection"]["Description"]
+          - glue_connection_update.connection_properties == connection_info_update["Connection"]["ConnectionProperties"]
+          - glue_connection_update.connection_type == connection_info_update["Connection"]["ConnectionType"]
+          - glue_connection_update.physical_connection_requirements.subnet_id == connection_info_update["Connection"]["PhysicalConnectionRequirements"]["SubnetId"]
+          - glue_connection_update.physical_connection_requirements.security_group_id_list == connection_info_update["Connection"]["PhysicalConnectionRequirements"]["SecurityGroupIdList"]
+          - glue_connection_update.physical_connection_requirements.availability_zone == connection_info_update["Connection"]["PhysicalConnectionRequirements"]["AvailabilityZone"]
+
+    - name: Delete Glue connection (check mode)
+      aws_glue_connection:
+        name: "{{ resource_prefix }}"
+        state: absent
+      check_mode: true
+      register: glue_connection_delete_check
+
+    - name: Get info on Glue connection
+      command: "aws glue get-connection --name {{ resource_prefix }}"
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: connection_info_query_delete_check
+
+    - name: Convert it to an object
+      set_fact:
+        connection_info_delete_check: "{{ connection_info_query_delete_check.stdout | from_json }}"
+
+    - name: Verity that Glue connection was not deleted in check mode
+      assert:
+        that:
+          - glue_connection_delete_check.changed
+          - connection_info["Connection"]["Name"] == connection_info_delete_check["Connection"]["Name"]
+
+    - name: Delete Glue connection
+      aws_glue_connection:
+        name: "{{ resource_prefix }}"
+        state: absent
+      register: glue_connection_delete
+
+    - name: Verity that Glue connection was deleted
+      assert:
+        that:
+          - glue_connection_delete.changed
+
+  always:
+    - name: Delete Glue connection
+      aws_glue_connection:
+        name: "{{ resource_prefix }}"
+        state: absent
+      ignore_errors: true
+    - name: Delete security group 1
+      ec2_group:
+        name: "{{ resource_prefix }}-sg-glue-1"
+        state: absent
+      ignore_errors: true
+    - name: Delete security group 2
+      ec2_group:
+        name: "{{ resource_prefix }}-sg-glue-2"
+        state: absent
+      ignore_errors: true
+    - name: Delete default subnet in zone A
+      ec2_vpc_subnet:
+        az: "{{ aws_region }}a"
+        cidr: 10.22.32.0/24
+        vpc_id: "{{ glue_vpc.vpc.id }}"
+        state: absent
+      register: glue_subnet_a
+      ignore_errors: true
+    - name: Delete VPC
+      ec2_vpc_net:
+        name: "{{ resource_prefix }}-vpc"
+        cidr_block: 10.22.32.0/23
+        state: absent
+      ignore_errors: true

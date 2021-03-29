@@ -1,0 +1,74 @@
+---
+- name: 'aws_glue_connection integration tests (JDBC)'
+  block:
+
+    # TODO: description, match_criteria, security_groups, and subnet_id are unused module options
+
+    - name: create glue connection
+      aws_glue_connection:
+        name: "{{ resource_prefix }}"
+        connection_properties:
+          JDBC_CONNECTION_URL: "jdbc:mysql://mydb:3306/{{ resource_prefix }}"
+          USERNAME: my-username
+          PASSWORD: my-password
+        state: present
+      register: result
+
+    - assert:
+        that:
+          - result.changed
+
+    - name: test idempotence creating glue connection
+      aws_glue_connection:
+        name: "{{ resource_prefix }}"
+        connection_properties:
+          JDBC_CONNECTION_URL: "jdbc:mysql://mydb:3306/{{ resource_prefix }}"
+          USERNAME: my-username
+          PASSWORD: my-password
+        state: present
+      register: result
+
+    - assert:
+        that:
+          - not result.changed
+
+    - name: test updating JDBC connection url
+      aws_glue_connection:
+        name: "{{ resource_prefix }}"
+        connection_properties:
+          JDBC_CONNECTION_URL: "jdbc:mysql://mydb:3306/{{ resource_prefix }}-updated"
+          USERNAME: my-username
+          PASSWORD: my-password
+        state: present
+      register: result
+
+    - assert:
+        that:
+          - result.changed
+
+    - name: delete glue connection
+      aws_glue_connection:
+        name: "{{ resource_prefix }}"
+        state: absent
+      register: result
+
+    - assert:
+        that:
+          - result.changed
+
+    - name: test idempotence removing glue connection
+      aws_glue_connection:
+        name: "{{ resource_prefix }}"
+        state: absent
+      register: result
+
+    - assert:
+        that:
+          - not result.changed
+
+  always:
+
+    - name: delete glue connection
+      aws_glue_connection:
+        name: "{{ resource_prefix }}"
+        state: absent
