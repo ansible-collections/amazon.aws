@@ -273,7 +273,7 @@ def create_or_update_bucket(s3_client, module, location):
     public_access = module.params.get("public_access")
     delete_public_access = module.params.get("delete_public_access")
     delete_object_ownership = module.params.get("delete_object_ownership")
-    object_ownership=module.params.get("object_ownership")
+    object_ownership = module.params.get("object_ownership")
     changed = False
     result = {}
 
