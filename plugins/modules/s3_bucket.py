@@ -138,7 +138,7 @@ options:
       - This option cannot be used together with a I(object_ownership) definition.
     default: false
     type: bool
-    version_added: 1.3.0
+    version_added: 1.5.0
 
 extends_documentation_fragment:
 - amazon.aws.aws
