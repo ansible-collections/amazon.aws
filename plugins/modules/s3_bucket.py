@@ -888,8 +888,8 @@ def main():
             block_public_policy=dict(type='bool', default=False),
             restrict_public_buckets=dict(type='bool', default=False))),
         delete_public_access=dict(type='bool', default=False),
-        object_ownership=dict(type='str',choices=['BucketOwnerPreferred','ObjectWriter']),
-        delete_object_ownership=dict(type='bool',default=False)
+        object_ownership=dict(type='str', choices=['BucketOwnerPreferred', 'ObjectWriter']),
+        delete_object_ownership=dict(type='bool', default=False),
     )
 
     required_by = dict(
