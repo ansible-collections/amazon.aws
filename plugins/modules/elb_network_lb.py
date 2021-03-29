@@ -316,6 +316,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSM
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, boto3_tag_list_to_ansible_dict, compare_aws_tags
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import NetworkLoadBalancer, ELBListeners, ELBListener
 
+
 def create_or_update_elb(elb_obj):
     """Create ELB or modify main attributes. json_exit here"""
     if elb_obj.elb:
@@ -341,7 +342,6 @@ def create_or_update_elb(elb_obj):
     else:
         # Create load balancer
         elb_obj.create_elb()
-
 
     # ELB attributes
     elb_obj.update_elb_attributes()
@@ -385,7 +385,7 @@ def create_or_update_elb(elb_obj):
 
     # Update ELB ip address type only if option has been provided
     if elb_obj.module.params.get('ip_address_type') is not None:
-      elb_obj.modify_ip_address_type(elb_obj.module.params.get('ip_address_type'))
+        elb_obj.modify_ip_address_type(elb_obj.module.params.get('ip_address_type'))
 
     # Convert to snake_case and merge in everything we want to return to the user
     snaked_elb = camel_dict_to_snake_dict(elb_obj.elb)
