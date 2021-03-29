@@ -116,14 +116,7 @@ class ElasticLoadBalancerV2(object):
         :return:
         """
 
-        try:
-            self.elb_ip_addr_type = AWSRetry.jittered_backoff()(
-                self.connection.describe_load_balancers
-            )(LoadBalancerArns=[self.elb['LoadBalancerArn']])['LoadBalancers'][0]['IpAddressType']
-            return self.elb_ip_addr_type
-
-        except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws(e)
+        return self.elb.get('IpAddressType', None)
 
     def update_elb_attributes(self):
         """
