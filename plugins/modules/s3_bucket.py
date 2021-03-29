@@ -638,6 +638,7 @@ def delete_bucket_public_access(s3_client, bucket_name):
     '''
     s3_client.delete_public_access_block(Bucket=bucket_name)
 
+
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
 def delete_bucket_ownership(s3_client, bucket_name):
     '''
@@ -656,6 +657,7 @@ def put_bucket_ownership(s3_client, bucket_name, target):
         OwnershipControls={
             'Rules': [{'ObjectOwnership': target}]
         })
+
 
 def wait_policy_is_applied(module, s3_client, bucket_name, expected_policy, should_fail=True):
     for dummy in range(0, 12):
