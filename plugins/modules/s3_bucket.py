@@ -132,6 +132,7 @@ options:
       - This option cannot be used together with a I(delete_object_ownership) definition.
     choices: [ 'BucketOwnerPreferred', 'ObjectWriter' ]
     type: str
+    version_added: 1.5.0
   delete_object_ownership:
     description:
       - Delete bucket's ownership controls.
