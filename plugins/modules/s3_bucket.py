@@ -760,14 +760,14 @@ def get_bucket_public_access(s3_client, bucket_name):
     except is_boto3_error_code('NoSuchPublicAccessBlockConfiguration'):
         return {}
 
-def get_bucket_ownership_cntrl(s3_client,bucket_name) :
+def get_bucket_ownership_cntrl(s3_client, bucket_name):
     '''
     Get current bucket public access block
     '''
     try:
         bucket_ownership = s3_client.get_bucket_ownership_controls(Bucket=bucket_name)
         return bucket_ownership['OwnershipControls']['Rules'][0]['ObjectOwnership']
-    except is_boto3_error_code([ 'OwnershipControlsNotFoundError','NoSuchOwnershipControls' ]):
+    except is_boto3_error_code(['OwnershipControlsNotFoundError', 'NoSuchOwnershipControls']):
         return None
 
 def paginated_list(s3_client, **pagination_params):
