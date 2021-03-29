@@ -182,7 +182,6 @@ options:
   ip_address_type:
     description:
       - Sets the type of IP addresses used by the subnets of the specified Application Load Balancer.
-    default: "ipv4"
     choices: [ 'ipv4', 'dualstack' ]
     type: str
 extends_documentation_fragment:
