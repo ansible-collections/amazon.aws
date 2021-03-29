@@ -1,0 +1,3 @@
+---
+minor_changes:
+- ecs_task - added ``assign_public_ip`` option for network_configuration (https://github.com/ansible-collections/community.aws/pull/395).

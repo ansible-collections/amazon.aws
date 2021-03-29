@@ -64,8 +64,13 @@ options:
     network_configuration:
         description:
           - Network configuration of the service. Only applicable for task definitions created with I(network_mode=awsvpc).
+          - I(assign_public_ip) requires botocore >= 1.8.4
         type: dict
         suboptions:
+            assign_public_ip:
+                description: Whether the task's elastic network interface receives a public IP address.
+                type: bool
+                version_added: 1.5.0
             subnets:
                 description: A list of subnet IDs to which the task is attached.
                 type: list
@@ -140,6 +145,21 @@ EXAMPLES = r'''
         security_groups:
         - sg-aaaa1111
         - my_security_group
+  register: task_output
+
+- name: RUN a task on Fargate with public ip assigned
+  community.aws.ecs_task:
+      operation: run
+      count: 2
+      cluster: console-sample-app-static-cluster
+      task_definition: console-sample-app-static-taskdef
+      task: "arn:aws:ecs:us-west-2:172139249013:task/3f8353d1-29a8-4689-bbf6-ad79937ffe8a"
+      started_by: ansible_user
+      launch_type: FARGATE
+      network_configuration:
+        assign_public_ip: yes
+        subnets:
+        - subnet-abcd1234
   register: task_output
 
 - name: Stop a task
@@ -248,6 +268,12 @@ class EcsExecManager:
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     self.module.fail_json_aws(e, msg="Couldn't look up security groups")
             result['securityGroups'] = groups
+        if 'assign_public_ip' in network_config:
+            if network_config['assign_public_ip'] is True:
+                result['assignPublicIp'] = "ENABLED"
+            else:
+                result['assignPublicIp'] = "DISABLED"
+
         return dict(awsvpcConfiguration=result)
 
     def list_tasks(self, cluster_name, service_name, status):
@@ -331,6 +357,12 @@ class EcsExecManager:
         # to e.g. ecs.run_task, it's just passed as a keyword argument)
         return self.module.botocore_at_least('1.7.44')
 
+    def ecs_api_handles_network_configuration_assignIp(self):
+        # There doesn't seem to be a nice way to inspect botocore to look
+        # for attributes (and networkConfiguration is not an explicit argument
+        # to e.g. ecs.run_task, it's just passed as a keyword argument)
+        return self.module.botocore_at_least('1.8.4')
+
 
 def main():
     argument_spec = dict(
@@ -373,8 +405,11 @@ def main():
 
     service_mgr = EcsExecManager(module)
 
-    if module.params['network_configuration'] and not service_mgr.ecs_api_handles_network_configuration():
-        module.fail_json(msg='botocore needs to be version 1.7.44 or higher to use network configuration')
+    if module.params['network_configuration']:
+        if 'assignPublicIp' in module.params['network_configuration'] and not service_mgr.ecs_api_handles_network_configuration_assignIp():
+            module.fail_json(msg='botocore needs to be version 1.8.4 or higher to use assign_public_ip in network_configuration')
+        elif not service_mgr.ecs_api_handles_network_configuration():
+            module.fail_json(msg='botocore needs to be version 1.7.44 or higher to use network configuration')
 
     if module.params['launch_type'] and not service_mgr.ecs_api_handles_launch_type():
         module.fail_json(msg='botocore needs to be version 1.8.4 or higher to use launch type')

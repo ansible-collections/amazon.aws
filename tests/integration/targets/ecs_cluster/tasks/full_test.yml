@@ -759,6 +759,21 @@
         started_by: ansible_user
       register: fargate_run_task_output_with_tags
 
+    - name: create fargate ECS task with run task and assign public ip disable
+      ecs_task:
+        operation: run
+        cluster: "{{ ecs_cluster_name }}"
+        task_definition: "{{ ecs_task_name }}-vpc"
+        launch_type: FARGATE
+        count: 1
+        network_configuration:
+          subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
+          security_groups:
+            - '{{ setup_sg.group_id }}'
+          assign_public_ip: false
+        started_by: ansible_user
+      register: fargate_run_task_output_with_assign_ip
+
 
     # ============================================================
     # End tests for Fargate
