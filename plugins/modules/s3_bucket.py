@@ -126,9 +126,9 @@ options:
     description:
       - Allow bucket's ownership controls.
       - C(BucketOwnerPreferred) - Objects uploaded to the bucket change ownership to the bucket owner
-      if the objects are uploaded with the bucket-owner-full-control canned ACL.
+        if the objects are uploaded with the bucket-owner-full-control canned ACL.
       - C(ObjectWriter) - The uploading account will own the object
-      if the object is uploaded with the bucket-owner-full-control canned ACL.
+        if the object is uploaded with the bucket-owner-full-control canned ACL.
       - This option cannot be used together with a I(delete_object_ownership) definition.
     choices: [ 'BucketOwnerPreferred', 'ObjectWriter' ]
     type: str
@@ -475,23 +475,21 @@ def create_or_update_bucket(s3_client, module, location):
             result['public_access_block'] = {}
 
     # -- Bucket ownership
-    bucket_ownership = get_bucket_ownership_cntrl(s3_client,name)
+    bucket_ownership = get_bucket_ownership_cntrl(s3_client, name)
     result['object_ownership'] = bucket_ownership
-    if delete_object_ownership or object_ownership is not None :
-        if delete_object_ownership :
+    if delete_object_ownership or object_ownership is not None:
+        if delete_object_ownership:
             # delete S3 buckect ownership
             if bucket_ownership != {}:
-                delete_bucket_ownership(s3_client,name)
-                changed=True
-                result['object_ownership']=None
+                delete_bucket_ownership(s3_client, name)
+                changed = True
+                result['object_ownership'] = None
         else:
             # update S3 bucket ownership
-            if bucket_ownership != object_ownership :
-                put_bucket_ownership(s3_client,name,object_ownership)
-                changed=True
+            if bucket_ownership != object_ownership:
+                put_bucket_ownership(s3_client, name, object_ownership)
+                changed = True
                 result['object_ownership'] = object_ownership
-
-
 
     # Module exit
     module.exit_json(changed=changed, name=name, **result)
@@ -647,12 +645,14 @@ def delete_bucket_ownership(s3_client, bucket_name):
     '''
     s3_client.delete_bucket_ownership_controls(Bucket=bucket_name)
 
+
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
-def put_bucket_ownership(s3_client, bucket_name, target) :
+def put_bucket_ownership(s3_client, bucket_name, target):
     '''
     Put bucket ownership controls for S3 bucket
     '''
-    s3_client.put_bucket_ownership_controls(Bucket=bucket_name,
+    s3_client.put_bucket_ownership_controls(
+        Bucket=bucket_name,
         OwnershipControls={
             'Rules': [{'ObjectOwnership': target}]
         })
@@ -760,6 +760,7 @@ def get_bucket_public_access(s3_client, bucket_name):
     except is_boto3_error_code('NoSuchPublicAccessBlockConfiguration'):
         return {}
 
+
 def get_bucket_ownership_cntrl(s3_client, bucket_name):
     '''
     Get current bucket public access block
@@ -769,6 +770,7 @@ def get_bucket_ownership_cntrl(s3_client, bucket_name):
         return bucket_ownership['OwnershipControls']['Rules'][0]['ObjectOwnership']
     except is_boto3_error_code(['OwnershipControlsNotFoundError', 'NoSuchOwnershipControls']):
         return None
+
 
 def paginated_list(s3_client, **pagination_params):
     pg = s3_client.get_paginator('list_objects_v2')
