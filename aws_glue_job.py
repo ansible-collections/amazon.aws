@@ -14,7 +14,9 @@ short_description: Manage an AWS Glue job
 description:
     - Manage an AWS Glue job. See U(https://aws.amazon.com/glue/) for details.
 requirements: [ boto3 ]
-author: "Rob White (@wimnat)"
+author:
+  - "Rob White (@wimnat)"
+  - "Vijayanand Sharma (@vijayanandsharma)"
 options:
   allocated_capacity:
     description:
@@ -75,6 +77,22 @@ options:
     description:
       - The job timeout in minutes.
     type: int
+  glue_version:
+    description:
+      - Glue version determines the versions of Apache Spark and Python that AWS Glue supports.
+    type: str
+    version_added: 1.5.0
+  worker_type:
+    description:
+      - The type of predefined worker that is allocated when a job runs.
+    choices: [ 'Standard', 'G.1X', 'G.2X' ]
+    type: str
+    version_added: 1.5.0
+  number_of_workers:
+    description:
+      - The number of workers of a defined workerType that are allocated when a job runs.
+    type: int
+    version_added: 1.5.0
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -249,6 +267,12 @@ def _compare_glue_job_params(user_params, current_params):
         return True
     if 'Timeout' in user_params and user_params['Timeout'] != current_params['Timeout']:
         return True
+    if 'GlueVersion' in user_params and user_params['GlueVersion'] != current_params['GlueVersion']:
+        return True
+    if 'WorkerType' in user_params and user_params['WorkerType'] != current_params['WorkerType']:
+        return True
+    if 'NumberOfWorkers' in user_params and user_params['NumberOfWorkers'] != current_params['NumberOfWorkers']:
+        return True
 
     return False
 
@@ -283,6 +307,12 @@ def create_or_update_glue_job(connection, module, glue_job):
         params['MaxRetries'] = module.params.get("max_retries")
     if module.params.get("timeout") is not None:
         params['Timeout'] = module.params.get("timeout")
+    if module.params.get("glue_version") is not None:
+        params['GlueVersion'] = module.params.get("glue_version")
+    if module.params.get("worker_type") is not None:
+        params['WorkerType'] = module.params.get("worker_type")
+    if module.params.get("number_of_workers") is not None:
+        params['NumberOfWorkers'] = module.params.get("number_of_workers")
 
     # If glue_job is not None then check if it needs to be modified, else create it
     if glue_job:
@@ -346,7 +376,10 @@ def main():
             name=dict(required=True, type='str'),
             role=dict(type='str'),
             state=dict(required=True, choices=['present', 'absent'], type='str'),
-            timeout=dict(type='int')
+            timeout=dict(type='int'),
+            glue_version=dict(type='str'),
+            worker_type=dict(choices=['Standard', 'G.1X', 'G.2X'], type='str'),
+            number_of_workers=dict(type='int'),
         )
     )
 
