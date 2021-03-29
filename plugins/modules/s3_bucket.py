@@ -127,7 +127,7 @@ options:
       - Allow bucket's ownership controls.
       - C(BucketOwnerPreferred) - Objects uploaded to the bucket change ownership to the bucket owner
       if the objects are uploaded with the bucket-owner-full-control canned ACL.
-      - ObjectWriter: The uploading account will own the object
+      - C(ObjectWriter) - The uploading account will own the object
       if the object is uploaded with the bucket-owner-full-control canned ACL.
       - This option cannot be used together with a I(delete_object_ownership) definition.
     choices: [ 'BucketOwnerPreferred', 'ObjectWriter' ]
