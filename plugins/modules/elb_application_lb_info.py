@@ -195,14 +195,14 @@ def get_load_balancer_tags(connection, module, load_balancer_arn):
         module.fail_json_aws(e, msg="Failed to describe load balancer tags")
 
 
-def get_load_balancer_ipaddresstype(connection, module, load_balancer_arn) : 
+def get_load_balancer_ipaddresstype(connection, module, load_balancer_arn):
     try:
         return connection.describe_load_balancers(LoadBalancerArns=[load_balancer_arn])['LoadBalancers'][0]['IpAddressType']
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe load balancer tags")
 
-def list_load_balancers(connection, module):
 
+def list_load_balancers(connection, module):
     load_balancer_arns = module.params.get("load_balancer_arns")
     names = module.params.get("names")
 
@@ -231,7 +231,7 @@ def list_load_balancers(connection, module):
             listener['rules'] = get_listener_rules(connection, module, listener['ListenerArn'])
 
         # Get ELB ip address type
-        load_balancer['IpAddressType']=get_load_balancer_ipaddresstype(connection,module,load_balancer['LoadBalancerArn'])
+        load_balancer['IpAddressType'] = get_load_balancer_ipaddresstype(connection, module, load_balancer['LoadBalancerArn'])
 
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_load_balancers = [camel_dict_to_snake_dict(load_balancer) for load_balancer in load_balancers['LoadBalancers']]

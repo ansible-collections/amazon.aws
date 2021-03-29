@@ -567,8 +567,8 @@ def create_or_update_elb(elb_obj):
                 elb_obj.changed = True
 
     # Update ELB ip address type only if option has been provided
-    if elb_obj.module.params.get('ip_address_type') is not None :
-      elb_obj.modify_ip_address_type(elb_obj.module.params.get('ip_address_type'))
+    if elb_obj.module.params.get('ip_address_type') is not None:
+        elb_obj.modify_ip_address_type(elb_obj.module.params.get('ip_address_type'))
     # Get the ELB again
     elb_obj.update()
 
@@ -591,7 +591,7 @@ def create_or_update_elb(elb_obj):
     snaked_elb['tags'] = boto3_tag_list_to_ansible_dict(snaked_elb['tags'])
 
     # ip address type
-    snaked_elb['ip_address_type']=elb_obj.get_elb_ip_address_type()
+    snaked_elb['ip_address_type'] = elb_obj.get_elb_ip_address_type()
 
     elb_obj.module.exit_json(changed=elb_obj.changed, **snaked_elb)
 
