@@ -410,15 +410,9 @@ def get_zone_id_by_name(route53, module, zone_name, want_private, want_vpc_id):
             if want_vpc_id:
                 # NOTE: These details aren't available in other boto methods, hence the necessary
                 # extra API call
-                hosted_zone = route53.get_hosted_zone(aws_retry=True, Id=zone.id)
-                zone_details = hosted_zone['HostedZone']
-                # this is to deal with this boto bug: https://github.com/boto/boto/pull/2882
-                if isinstance(zone_details['VPCs'], dict):
-                    if zone_details['VPCs']['VPC']['VPCId'] == want_vpc_id:
-                        return zone_id
-                else:  # Forward compatibility for when boto fixes that bug
-                    if want_vpc_id in [v['VPCId'] for v in zone_details['VPCs']]:
-                        return zone_id
+                hosted_zone = route53.get_hosted_zone(aws_retry=True, Id=zone_id)
+                if want_vpc_id in [v['VPCId'] for v in hosted_zone['VPCs']]:
+                    return zone_id
             else:
                 return zone_id
     return None
