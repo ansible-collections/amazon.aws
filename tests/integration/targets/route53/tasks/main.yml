@@ -16,6 +16,14 @@
     route53:
       region: null
   block:
+
+  - name: create VPC
+    ec2_vpc_net:
+      cidr_block: 192.0.2.0/24
+      name: '{{ resource_prefix }}_vpc'
+      state: present
+    register: vpc
+
   - route53_zone:
       zone: '{{ zone_one }}'
       comment: Created in Ansible test {{ resource_prefix }}
@@ -39,13 +47,39 @@
       that:
         - hosted_zones.HostedZone.ResourceRecordSetCount == 2
 
+  - route53_zone:
+      zone: '{{ zone_two }}'
+      vpc_id: '{{ vpc.vpc.id }}'
+      vpc_region: '{{ aws_region }}'
+      comment: Created in Ansible test {{ resource_prefix }}
+    register: z2
+
+  - assert:
+      that:
+        - z2 is success
+        - z2 is changed
+        - "z2.comment == 'Created in Ansible test {{ resource_prefix }}'"
+
+  - name: Get zone details
+    route53_info:
+      query: hosted_zone
+      hosted_zone_id: '{{ z2.zone_id }}'
+      hosted_zone_method: details
+    register: hosted_zones
+
+  - name: Assert newly created hosted zone only has NS and SOA records
+    assert:
+      that:
+        - hosted_zones.HostedZone.ResourceRecordSetCount == 2
+        - hosted_zones.HostedZone.Config.PrivateZone
+
   - name: Create A record using zone fqdn
     route53:
       state: present
       zone: '{{ zone_one }}'
       record: 'qdn_test.{{ zone_one }}'
       type: A
-      value: 1.2.3.4
+      value: 192.0.2.1
     register: qdn
   - assert:
       that:
@@ -63,7 +97,7 @@
       that:
         - get_result.nameservers|length > 0
         - get_result.set.Name == "qdn_test.{{ zone_one }}"
-        - get_result.set.ResourceRecords[0].Value == "1.2.3.4"
+        - get_result.set.ResourceRecords[0].Value == "192.0.2.1"
         - get_result.set.Type == "A"
 
   - name: Create same A record using zone non-qualified domain
@@ -72,7 +106,7 @@
       zone: '{{ zone_one[:-1] }}'
       record: 'qdn_test.{{ zone_one[:-1] }}'
       type: A
-      value: 1.2.3.4
+      value: 192.0.2.1
     register: non_qdn
   - assert:
       that:
@@ -85,7 +119,7 @@
       hosted_zone_id: '{{ z1.zone_id }}'
       record: 'zid_test.{{ zone_one }}'
       type: A
-      value: 1.2.3.4
+      value: 192.0.2.1
     register: zid
   - assert:
       that:
@@ -99,8 +133,8 @@
       record: 'order_test.{{ zone_one }}'
       type: A
       value:
-        - 4.5.6.7
-        - 1.2.3.4
+        - 192.0.2.2
+        - 192.0.2.1
     register: mv_a_record
   - assert:
       that:
@@ -114,8 +148,8 @@
       record: 'order_test.{{ zone_one }}'
       type: A
       value:
-        - 4.5.6.7
-        - 1.2.3.4
+        - 192.0.2.2
+        - 192.0.2.1
     register: mv_a_record
   - assert:
       that:
@@ -134,8 +168,8 @@
       that:
         - records.ResourceRecordSets|length == 3
         - records.ResourceRecordSets[0].ResourceRecords|length == 2
-        - records.ResourceRecordSets[0].ResourceRecords[0].Value == "4.5.6.7"
-        - records.ResourceRecordSets[0].ResourceRecords[1].Value == "1.2.3.4"
+        - records.ResourceRecordSets[0].ResourceRecords[0].Value == "192.0.2.2"
+        - records.ResourceRecordSets[0].ResourceRecords[1].Value == "192.0.2.1"
 
   - name: Remove a member from multi-value A record with values in different order
     route53:
@@ -144,7 +178,7 @@
       record: 'order_test.{{ zone_one }}'
       type: A
       value:
-        - 4.5.6.7
+        - 192.0.2.2
     register: del_a_record
     ignore_errors: true
   - name: This should fail, because `overwrite` is false
@@ -160,7 +194,7 @@
       overwrite: true
       type: A
       value:
-        - 4.5.6.7
+        - 192.0.2.2
     register: del_a_record
     ignore_errors: true
   - name: This should not fail, because `overwrite` is true
@@ -181,7 +215,7 @@
       that:
         - records.ResourceRecordSets|length == 3
         - records.ResourceRecordSets[0].ResourceRecords|length == 1
-        - records.ResourceRecordSets[0].ResourceRecords[0].Value == "4.5.6.7"
+        - records.ResourceRecordSets[0].ResourceRecords[0].Value == "192.0.2.2"
 
   - name: Create a LetsEncrypt CAA record
     route53:
@@ -232,6 +266,93 @@
         - caa is not failed
         - caa is not changed
 
+  # Tests on zone two (private zone)
+  - name: Create A record using zone fqdn
+    route53:
+      state: present
+      zone: '{{ zone_two }}'
+      record: 'qdn_test.{{ zone_two }}'
+      type: A
+      value: 192.0.2.1
+      private_zone: true
+    register: qdn
+  - assert:
+      that:
+        - qdn is not failed
+        - qdn is changed
+
+  - name: Get A record using 'get' method of route53 module
+    route53:
+      state: get
+      zone: "{{ zone_two }}"
+      record: "qdn_test.{{ zone_two }}"
+      type: A
+      private_zone: true
+    register: get_result
+  - assert:
+      that:
+        - get_result.nameservers|length > 0
+        - get_result.set.Name == "qdn_test.{{ zone_two }}"
+        - get_result.set.ResourceRecords[0].Value == "192.0.2.1"
+        - get_result.set.Type == "A"
+
+  - name: Create same A record using zone non-qualified domain
+    route53:
+      state: present
+      zone: '{{ zone_two[:-1] }}'
+      record: 'qdn_test.{{ zone_two[:-1] }}'
+      type: A
+      value: 192.0.2.1
+      private_zone: true
+    register: non_qdn
+  - assert:
+      that:
+        - non_qdn is not failed
+        - non_qdn is not changed
+
+  - name: Create A record using zone ID
+    route53:
+      state: present
+      hosted_zone_id: '{{ z2.zone_id }}'
+      record: 'zid_test.{{ zone_two }}'
+      type: A
+      value: 192.0.2.2
+      private_zone: true
+    register: zid
+  - assert:
+      that:
+        - zid is not failed
+        - zid is changed
+
+  - name: Create A record using zone fqdn and vpc_id
+    route53:
+      state: present
+      zone: '{{ zone_two }}'
+      record: 'qdn_test_vpc.{{ zone_two }}'
+      type: A
+      value: 192.0.2.3
+      private_zone: true
+      vpc_id: '{{ vpc.vpc.id }}'
+    register: qdn
+  - assert:
+      that:
+        - qdn is not failed
+        - qdn is changed
+
+  - name: Create A record using zone ID and vpc_id
+    route53:
+      state: present
+      hosted_zone_id: '{{ z2.zone_id }}'
+      record: 'zid_test_vpc.{{ zone_two }}'
+      type: A
+      value: 192.0.2.4
+      private_zone: true
+      vpc_id: '{{ vpc.vpc.id }}'
+    register: zid
+  - assert:
+      that:
+        - zid is not failed
+        - zid is changed
 
   always:
   - route53_info:
@@ -247,6 +368,20 @@
       type: '{{ item.Type }}'
       value: '{{ item.ResourceRecords | map(attribute="Value") | join(",") }}'
     loop: '{{ z1_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
+  - route53_info:
+      query: record_sets
+      hosted_zone_id: '{{ z2.zone_id }}'
+    register: z2_records
+  - debug: var=z2_records
+  - name: Loop over A/AAAA/CNAME records and delete them
+    route53:
+      state: absent
+      zone: '{{ zone_two }}'
+      record: '{{ item.Name }}'
+      type: '{{ item.Type }}'
+      value: '{{ item.ResourceRecords | map(attribute="Value") | join(",") }}'
+      private_zone: true
+    loop: '{{ z2_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
   - name: Delete test zone one '{{ zone_one }}'
     route53_zone:
       state: absent
@@ -264,3 +399,13 @@
     retries: 10
     until: delete_two is not failed
     when: false
+  - name: destroy VPC
+    ec2_vpc_net:
+      cidr_block: 192.0.2.0/24
+      name: '{{ resource_prefix }}_vpc'
+      state: absent
+    register: remove_vpc
+    retries: 10
+    delay: 5
+    until: remove_vpc is success
+    ignore_errors: true
