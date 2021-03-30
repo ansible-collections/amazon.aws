@@ -243,7 +243,7 @@ class ElasticLoadBalancerV2(object):
         self.elb = get_elb(self.connection, self.module, self.module.params.get("name"))
         self.elb['tags'] = self.get_elb_tags()
 
-    def modify_ip_address_type(self,ip_addr_type):
+    def modify_ip_address_type(self, ip_addr_type):
         """
         Modify ELB ip address type
         :return:
