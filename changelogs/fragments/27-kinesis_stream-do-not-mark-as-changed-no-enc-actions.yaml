@@ -1,0 +1,2 @@
+bugfixes:
+  - kinesis_stream - fixed issue where streams get marked as changed even if no encryption actions were necessary (https://github.com/ansible/ansible/issues/65928).

@@ -1,17 +1,5 @@
 ---
 # ============================================================
-# Known issues:
-#
-# - (CM) check_mode returns changed (always?)
-# - (CM_snake) check_mode returns keys and values that don't directly
-#   map to those from non-check_mode
-# - (Tag_snake) tag keys get snake_cased in return values
-# - (Tag_changed) changing tags doesn't return changed
-# - (Enc_snake) return values don't get snake_cased when updating encryption
-# - (Enc_disable) disabling encryption Requires key and type be set
-# - (Enc_idemp) Updating encryption settings isn't idempotent
-#
-# ============================================================
 - name: 'Setup AWS Module Defaults'
   module_defaults:
     group/aws:
@@ -114,8 +102,6 @@
       that:
       - result is success
       - result is not changed
-    # XXX BUG (CM)
-    ignore_errors: yes
 
   - name: 'Create a basic Kinesis stream - Idempotency'
     kinesis_stream:
@@ -178,8 +164,6 @@
       that:
       - result is success
       - result is not changed
-    # XXX BUG (CM)
-    ignore_errors: yes
 
   - name: 'Increase the retention period - Idempotency'
     kinesis_stream:
@@ -240,8 +224,6 @@
       that:
       - result is success
       - result is not changed
-    # XXX BUG (CM)
-    ignore_errors: yes
 
   - name: 'Decrease the retention period - Idempotency'
     kinesis_stream:
@@ -292,8 +274,6 @@
       that:
       - result is changed
       - result.tags == kinesis_stream_tags_1
-    # XXX BUG (CM)
-    ignore_errors: yes
 
   - name: 'Set some tags - Idempotency (CHECK_MODE)'
     check_mode: yes
@@ -306,8 +286,6 @@
       that:
       - result is success
       - result is not changed
-    # XXX BUG (CM)
-    ignore_errors: yes
 
   - name: 'Set some tags - Idempotency'
     kinesis_stream:
@@ -382,8 +360,6 @@
       that:
       - result is success
       - result is not changed
-    # XXX BUG (CM)
-    ignore_errors: yes
 
   - name: 'Change some tags - Idempotency'
     kinesis_stream:
@@ -462,8 +438,6 @@
       that:
       - result is success
       - result is not changed
-    # XXX BUG (CM)
-    ignore_errors: yes
 
   - name: 'Change the number of shards - Idempotency'
     kinesis_stream:
@@ -535,6 +509,7 @@
       kinesis_stream:
         name: '{{ kinesis_stream_name }}'
         encryption_state: 'disabled'
+      register: result
     - name: 'Assert state is not changed when encryption_state not changed (CHECK_MODE)'
       ignore_errors: yes
       assert:
@@ -547,13 +522,12 @@
       kinesis_stream:
         name: '{{ kinesis_stream_name }}'
         encryption_state: 'disabled'
+      register: result
     - name: 'Assert state is not changed when encryption_state not changed (CHECK_MODE)'
       assert:
         that:
         - result is success
         - result is not changed
-      # XXX BUG (Enc_idemp)
-      ignore_errors: yes
     # Merge this into the main assertion when the main return keys are
     # snake_cased
     - name: 'Assert expected return values'
@@ -583,6 +557,7 @@
         encryption_state: 'enabled'
         encryption_type: 'KMS'
         key_id: '{{ kms_cmk_id_1 }}'
+      register: result
     - name: 'Assert that state is changed when enabling encryption'
       assert:
         that:
@@ -596,6 +571,7 @@
         encryption_state: 'enabled'
         encryption_type: 'KMS'
         key_id: '{{ kms_cmk_id_2 }}'
+      register: result
     - name: 'Assert state is changed when stream encryption key is changed (CHECK_MODE)'
       assert:
         that:
@@ -608,6 +584,7 @@
         encryption_state: 'enabled'
         encryption_type: 'KMS'
         key_id: '{{ kms_cmk_id_2 }}'
+      register: result
     - name: 'Assert state is changed when stream encryption key is changed'
       assert:
         that:
@@ -676,8 +653,6 @@
       that:
       - result is success
       - result is not changed
-    # XXX BUG (CM)
-    ignore_errors: yes
 
   - name: 'Delete stream - Idempotency'
     module_defaults: { kinesis_stream: {} }

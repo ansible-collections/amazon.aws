@@ -1,0 +1,5 @@
+minor_changes:
+- kinesis_stream - now returns tags consistently (https://github.com/ansible-collections/community.aws/pull/27).
+- kinesis_stream - now returns changed more accurately (https://github.com/ansible-collections/community.aws/pull/27).
+- kinesis_stream - return values are now the same format when working with both encrypted and un-encrypted streams (https://github.com/ansible-collections/community.aws/pull/27).
+- kinesis_stream - check_mode is now based on the live settings rather than comparisons with a hard coded/fake stream definition (https://github.com/ansible-collections/community.aws/pull/27).

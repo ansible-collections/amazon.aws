@@ -1,4 +1,5 @@
 ---
+run_kms_tests: True
 kinesis_stream_name: '{{ resource_prefix }}'
 
 kms_cmk_alias_1: '{{ resource_prefix }}-1'
