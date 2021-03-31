@@ -192,111 +192,20 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible.module_utils._text import to_native
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
 
 
-def convert_to_lower(data):
-    """Convert all uppercase keys in dict with lowercase_
-    Args:
-        data (dict): Dictionary with keys that have upper cases in them
-            Example.. FooBar == foo_bar
-            if a val is of type datetime.datetime, it will be converted to
-            the ISO 8601
-
-    Basic Usage:
-        >>> test = {'FooBar': []}
-        >>> test = convert_to_lower(test)
-        {
-            'foo_bar': []
-        }
-
-    Returns:
-        Dictionary
-    """
-    results = dict()
-    if isinstance(data, dict):
-        for key, val in data.items():
-            key = re.sub(r'(([A-Z]{1,3}){1})', r'_\1', key).lower()
-            if key[0] == '_':
-                key = key[1:]
-            if isinstance(val, datetime.datetime):
-                results[key] = val.isoformat()
-            elif isinstance(val, dict):
-                results[key] = convert_to_lower(val)
-            elif isinstance(val, list):
-                converted = list()
-                for item in val:
-                    converted.append(convert_to_lower(item))
-                results[key] = converted
-            else:
-                results[key] = val
-    return results
-
-
-def make_tags_in_proper_format(tags):
-    """Take a dictionary of tags and convert them into the AWS Tags format.
-    Args:
-        tags (list): The tags you want applied.
-
-    Basic Usage:
-        >>> tags = [{'Key': 'env', 'Value': 'development'}]
-        >>> make_tags_in_proper_format(tags)
-        {
-            "env": "development",
-        }
-
-    Returns:
-        Dict
-    """
-    formatted_tags = dict()
-    for tag in tags:
-        formatted_tags[tag.get('Key')] = tag.get('Value')
-
-    return formatted_tags
-
-
-def make_tags_in_aws_format(tags):
-    """Take a dictionary of tags and convert them into the AWS Tags format.
-    Args:
-        tags (dict): The tags you want applied.
-
-    Basic Usage:
-        >>> tags = {'env': 'development', 'service': 'web'}
-        >>> make_tags_in_proper_format(tags)
-        [
-            {
-                "Value": "web",
-                "Key": "service"
-             },
-            {
-               "Value": "development",
-               "key": "env"
-            }
-        ]
-
-    Returns:
-        List
-    """
-    formatted_tags = list()
-    for key, val in tags.items():
-        formatted_tags.append({
-            'Key': key,
-            'Value': val
-        })
-
-    return formatted_tags
-
-
-def get_tags(client, stream_name, check_mode=False):
+def get_tags(client, stream_name):
     """Retrieve the tags for a Kinesis Stream.
     Args:
         client (botocore.client.EC2): Boto3 client.
         stream_name (str): Name of the Kinesis stream.
-
-    Kwargs:
-        check_mode (bool): This will pass DryRun as one of the parameters to the aws api.
-            default=False
 
     Basic Usage:
         >>> client = boto3.client('kinesis')
@@ -313,33 +222,21 @@ def get_tags(client, stream_name, check_mode=False):
     }
     results = dict()
     try:
-        if not check_mode:
-            results = (
-                client.list_tags_for_stream(**params)['Tags']
-            )
-        else:
-            results = [
-                {
-                    'Key': 'DryRunMode',
-                    'Value': 'true'
-                },
-            ]
+        results = (
+            client.list_tags_for_stream(**params)['Tags']
+        )
         success = True
     except botocore.exceptions.ClientError as e:
         err_msg = to_native(e)
 
-    return success, err_msg, results
+    return success, err_msg, boto3_tag_list_to_ansible_dict(results)
 
 
-def find_stream(client, stream_name, check_mode=False):
+def find_stream(client, stream_name):
     """Retrieve a Kinesis Stream.
     Args:
         client (botocore.client.EC2): Boto3 client.
         stream_name (str): Name of the Kinesis stream.
-
-    Kwargs:
-        check_mode (bool): This will pass DryRun as one of the parameters to the aws api.
-            default=False
 
     Basic Usage:
         >>> client = boto3.client('kinesis')
@@ -357,32 +254,19 @@ def find_stream(client, stream_name, check_mode=False):
     has_more_shards = True
     shards = list()
     try:
-        if not check_mode:
-            while has_more_shards:
-                results = (
-                    client.describe_stream(**params)['StreamDescription']
-                )
-                shards.extend(results.pop('Shards'))
-                has_more_shards = results['HasMoreShards']
-                if has_more_shards:
-                    params['ExclusiveStartShardId'] = shards[-1]['ShardId']
-            results['Shards'] = shards
-            num_closed_shards = len([s for s in shards if 'EndingSequenceNumber' in s['SequenceNumberRange']])
-            results['OpenShardsCount'] = len(shards) - num_closed_shards
-            results['ClosedShardsCount'] = num_closed_shards
-            results['ShardsCount'] = len(shards)
-        else:
-            results = {
-                'OpenShardsCount': 5,
-                'ClosedShardsCount': 0,
-                'ShardsCount': 5,
-                'HasMoreShards': True,
-                'RetentionPeriodHours': 24,
-                'StreamName': stream_name,
-                'StreamARN': 'arn:aws:kinesis:east-side:123456789:stream/{0}'.format(stream_name),
-                'StreamStatus': 'ACTIVE',
-                'EncryptionType': 'NONE'
-            }
+        while has_more_shards:
+            results = (
+                client.describe_stream(**params)['StreamDescription']
+            )
+            shards.extend(results.pop('Shards'))
+            has_more_shards = results['HasMoreShards']
+            if has_more_shards:
+                params['ExclusiveStartShardId'] = shards[-1]['ShardId']
+        results['Shards'] = shards
+        num_closed_shards = len([s for s in shards if 'EndingSequenceNumber' in s['SequenceNumberRange']])
+        results['OpenShardsCount'] = len(shards) - num_closed_shards
+        results['ClosedShardsCount'] = num_closed_shards
+        results['ShardsCount'] = len(shards)
         success = True
     except botocore.exceptions.ClientError as e:
         err_msg = to_native(e)
@@ -421,7 +305,7 @@ def wait_for_status(client, stream_name, status, wait_timeout=300,
     while wait_timeout > time.time():
         try:
             find_success, find_msg, stream = (
-                find_stream(client, stream_name, check_mode=check_mode)
+                find_stream(client, stream_name)
             )
             if check_mode:
                 status_achieved = True
@@ -486,7 +370,7 @@ def tags_action(client, stream_name, tags, action='create', check_mode=False):
                 client.add_tags_to_stream(**params)
                 success = True
             elif action == 'delete':
-                params['TagKeys'] = list(tags)
+                params['TagKeys'] = tags
                 client.remove_tags_from_stream(**params)
                 success = True
             else:
@@ -503,38 +387,6 @@ def tags_action(client, stream_name, tags, action='create', check_mode=False):
         err_msg = to_native(e)
 
     return success, err_msg
-
-
-def recreate_tags_from_list(list_of_tags):
-    """Recreate tags from a list of tuples into the Amazon Tag format.
-    Args:
-        list_of_tags (list): List of tuples.
-
-    Basic Usage:
-        >>> list_of_tags = [('Env', 'Development')]
-        >>> recreate_tags_from_list(list_of_tags)
-        [
-            {
-                "Value": "Development",
-                "Key": "Env"
-            }
-        ]
-
-    Returns:
-        List
-    """
-    tags = list()
-    i = 0
-    for i in range(len(list_of_tags)):
-        key_name = list_of_tags[i][0]
-        key_val = list_of_tags[i][1]
-        tags.append(
-            {
-                'Key': key_name,
-                'Value': key_val
-            }
-        )
-    return tags
 
 
 def update_tags(client, stream_name, tags, check_mode=False):
@@ -561,52 +413,28 @@ def update_tags(client, stream_name, tags, check_mode=False):
     changed = False
     err_msg = ''
     tag_success, tag_msg, current_tags = (
-        get_tags(client, stream_name, check_mode=check_mode)
+        get_tags(client, stream_name)
     )
-    if current_tags:
-        tags = make_tags_in_aws_format(tags)
-        current_tags_set = (
-            set(
-                reduce(
-                    lambda x, y: x + y,
-                    [make_tags_in_proper_format(current_tags).items()]
-                )
+
+    tags_to_set, tags_to_delete = compare_aws_tags(
+        current_tags, tags,
+        purge_tags=True,
+    )
+    if tags_to_delete:
+        delete_success, delete_msg = (
+            tags_action(
+                client, stream_name, tags_to_delete, action='delete',
+                check_mode=check_mode
             )
         )
+        if not delete_success:
+            return delete_success, changed, delete_msg
+        tag_msg = 'Tags removed'
 
-        new_tags_set = (
-            set(
-                reduce(
-                    lambda x, y: x + y,
-                    [make_tags_in_proper_format(tags).items()]
-                )
-            )
-        )
-        tags_to_delete = list(current_tags_set.difference(new_tags_set))
-        tags_to_update = list(new_tags_set.difference(current_tags_set))
-        if tags_to_delete:
-            tags_to_delete = make_tags_in_proper_format(
-                recreate_tags_from_list(tags_to_delete)
-            )
-            delete_success, delete_msg = (
-                tags_action(
-                    client, stream_name, tags_to_delete, action='delete',
-                    check_mode=check_mode
-                )
-            )
-            if not delete_success:
-                return delete_success, changed, delete_msg
-        if tags_to_update:
-            tags = make_tags_in_proper_format(
-                recreate_tags_from_list(tags_to_update)
-            )
-        else:
-            return True, changed, 'Tags do not need to be updated'
-
-    if tags:
+    if tags_to_set:
         create_success, create_msg = (
             tags_action(
-                client, stream_name, tags, action='create',
+                client, stream_name, tags_to_set, action='create',
                 check_mode=check_mode
             )
         )
@@ -926,7 +754,7 @@ def update(client, current_stream, stream_name, number_of_shards=1, retention_pe
                     return wait_success, False, wait_msg
             elif changed and not wait:
                 stream_found, stream_msg, current_stream = (
-                    find_stream(client, stream_name, check_mode=check_mode)
+                    find_stream(client, stream_name)
                 )
                 if stream_found:
                     if current_stream['StreamStatus'] != 'ACTIVE':
@@ -963,7 +791,7 @@ def update(client, current_stream, stream_name, number_of_shards=1, retention_pe
                 return wait_success, changed, wait_msg
         else:
             stream_found, stream_msg, current_stream = (
-                find_stream(client, stream_name, check_mode=check_mode)
+                find_stream(client, stream_name)
             )
             if stream_found and current_stream['StreamStatus'] != 'ACTIVE':
                 err_msg = (
@@ -976,6 +804,7 @@ def update(client, current_stream, stream_name, number_of_shards=1, retention_pe
         tag_success, tag_changed, err_msg = (
             update_tags(client, stream_name, tags, check_mode=check_mode)
         )
+        changed |= tag_changed
     if wait:
         success, err_msg, status_stream = (
             wait_for_status(
@@ -1028,7 +857,7 @@ def create_stream(client, stream_name, number_of_shards=1, retention_period=None
     results = dict()
 
     stream_found, stream_msg, current_stream = (
-        find_stream(client, stream_name, check_mode=check_mode)
+        find_stream(client, stream_name)
     )
 
     if stream_found and current_stream.get('StreamStatus') == 'DELETING' and wait:
@@ -1089,7 +918,7 @@ def create_stream(client, stream_name, number_of_shards=1, retention_period=None
                     return success, changed, err_msg, results
 
             stream_found, stream_msg, current_stream = (
-                find_stream(client, stream_name, check_mode=check_mode)
+                find_stream(client, stream_name)
             )
             if retention_period and current_stream.get('StreamStatus') == 'ACTIVE':
                 changed, err_msg = (
@@ -1112,19 +941,19 @@ def create_stream(client, stream_name, number_of_shards=1, retention_period=None
 
     if success:
         stream_found, stream_msg, results = (
-            find_stream(client, stream_name, check_mode=check_mode)
+            find_stream(client, stream_name)
         )
         tag_success, tag_msg, current_tags = (
-            get_tags(client, stream_name, check_mode=check_mode)
+            get_tags(client, stream_name)
         )
-        if current_tags and not check_mode:
-            current_tags = make_tags_in_proper_format(current_tags)
-            results['Tags'] = current_tags
-        elif check_mode and tags:
-            results['Tags'] = tags
-        else:
-            results['Tags'] = dict()
-        results = convert_to_lower(results)
+        if check_mode:
+            current_tags = tags
+
+        if not current_tags:
+            current_tags = dict()
+
+        results = camel_dict_to_snake_dict(results)
+        results['tags'] = current_tags
 
     return success, changed, err_msg, results
 
@@ -1157,7 +986,7 @@ def delete_stream(client, stream_name, wait=False, wait_timeout=300,
     err_msg = ''
     results = dict()
     stream_found, stream_msg, current_stream = (
-        find_stream(client, stream_name, check_mode=check_mode)
+        find_stream(client, stream_name)
     )
     if stream_found:
         success, err_msg = (
@@ -1226,34 +1055,52 @@ def start_stream_encryption(client, stream_name, encryption_type='', key_id='',
 
     results = dict()
     stream_found, stream_msg, current_stream = (
-        find_stream(client, stream_name, check_mode=check_mode)
+        find_stream(client, stream_name)
     )
     if stream_found:
-        success, err_msg = (
-            stream_encryption_action(
-                client, stream_name, action='start_encryption', encryption_type=encryption_type, key_id=key_id, check_mode=check_mode
+        if (current_stream.get("EncryptionType") == encryption_type and current_stream.get("KeyId") == key_id):
+            changed = False
+            success = True
+            err_msg = 'Kinesis Stream {0} encryption already configured.'.format(stream_name)
+        else:
+            success, err_msg = (
+                stream_encryption_action(
+                    client, stream_name, action='start_encryption', encryption_type=encryption_type, key_id=key_id, check_mode=check_mode
+                )
             )
-        )
-        if success:
-            changed = True
-            if wait:
-                success, err_msg, results = (
-                    wait_for_status(
-                        client, stream_name, 'ACTIVE', wait_timeout,
-                        check_mode=check_mode
+            if success:
+                changed = True
+                if wait:
+                    success, err_msg, results = (
+                        wait_for_status(
+                            client, stream_name, 'ACTIVE', wait_timeout,
+                            check_mode=check_mode
+                        )
                     )
-                )
-                err_msg = 'Kinesis Stream {0} encryption started successfully.'.format(stream_name)
-                if not success:
-                    return success, True, err_msg, results
-            else:
-                err_msg = (
-                    'Kinesis Stream {0} is in the process of starting encryption.'.format(stream_name)
-                )
+                    err_msg = 'Kinesis Stream {0} encryption started successfully.'.format(stream_name)
+                    if not success:
+                        return success, True, err_msg, results
+                else:
+                    err_msg = (
+                        'Kinesis Stream {0} is in the process of starting encryption.'.format(stream_name)
+                    )
     else:
         success = True
         changed = False
         err_msg = 'Kinesis Stream {0} does not exist'.format(stream_name)
+
+    if success:
+        stream_found, stream_msg, results = (
+            find_stream(client, stream_name)
+        )
+        tag_success, tag_msg, current_tags = (
+            get_tags(client, stream_name)
+        )
+        if not current_tags:
+            current_tags = dict()
+
+        results = camel_dict_to_snake_dict(results)
+        results['tags'] = current_tags
 
     return success, changed, err_msg, results
 
@@ -1278,7 +1125,7 @@ def stop_stream_encryption(client, stream_name, encryption_type='', key_id='',
     Basic Usage:
         >>> client = boto3.client('kinesis')
         >>> stream_name = 'test-stream'
-        >>> start_stream_encryption(client, stream_name,encryption_type, key_id)
+        >>> stop_stream_encryption(client, stream_name,encryption_type, key_id)
 
     Returns:
         Tuple (bool, bool, str, dict)
@@ -1292,7 +1139,7 @@ def stop_stream_encryption(client, stream_name, encryption_type='', key_id='',
 
     results = dict()
     stream_found, stream_msg, current_stream = (
-        find_stream(client, stream_name, check_mode=check_mode)
+        find_stream(client, stream_name)
     )
     if stream_found:
         if current_stream.get('EncryptionType') == 'KMS':
@@ -1301,11 +1148,7 @@ def stop_stream_encryption(client, stream_name, encryption_type='', key_id='',
                     client, stream_name, action='stop_encryption', key_id=key_id, encryption_type=encryption_type, check_mode=check_mode
                 )
             )
-        elif current_stream.get('EncryptionType') == 'NONE':
-            success = True
-
-        if success:
-            changed = True
+            changed = success
             if wait:
                 success, err_msg, results = (
                     wait_for_status(
@@ -1313,17 +1156,33 @@ def stop_stream_encryption(client, stream_name, encryption_type='', key_id='',
                         check_mode=check_mode
                     )
                 )
-                err_msg = 'Kinesis Stream {0} encryption stopped successfully.'.format(stream_name)
                 if not success:
                     return success, True, err_msg, results
+                err_msg = 'Kinesis Stream {0} encryption stopped successfully.'.format(stream_name)
             else:
                 err_msg = (
                     'Stream {0} is in the process of stopping encryption.'.format(stream_name)
                 )
+        elif current_stream.get('EncryptionType') == 'NONE':
+            success = True
+            err_msg = 'Kinesis Stream {0} encryption already stopped.'.format(stream_name)
     else:
         success = True
         changed = False
         err_msg = 'Stream {0} does not exist.'.format(stream_name)
+
+    if success:
+        stream_found, stream_msg, results = (
+            find_stream(client, stream_name)
+        )
+        tag_success, tag_msg, current_tags = (
+            get_tags(client, stream_name)
+        )
+        if not current_tags:
+            current_tags = dict()
+
+        results = camel_dict_to_snake_dict(results)
+        results['tags'] = current_tags
 
     return success, changed, err_msg, results
 
