@@ -627,11 +627,11 @@ Examples
         name: mys3bucket
         state: present
         public_access:
-            BlockPublicAcls: true
-            IgnorePublicAcls: true
+            block_public_acls: true
+            ignore_public_acls: true
             ## keys == 'false' can be ommited, undefined keys defaults to 'false'
-            # BlockPublicPolicy: false
-            # RestrictPublicBuckets: false
+            # block_public_policy: false
+            # restrict_public_buckets: false
 
     # Delete public policy block from bucket
     - amazon.aws.s3_bucket:
