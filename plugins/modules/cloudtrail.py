@@ -261,6 +261,24 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (camel_dict_
                                                                      )
 
 
+def get_kms_key_aliases(module, client, keyId):
+    """
+    get list of key aliases
+
+    module : AnsibleAWSModule object
+    client : boto3 client connection object for kms
+    keyId : keyId to get aliases for
+    """
+    try:
+        key_resp = client.list_aliases(KeyId=keyId)
+    except (BotoCoreError, ClientError) as err:
+        # Don't fail here, just return [] to maintain backwards compat
+        # in case user doesn't have kms:ListAliases permissions
+        return []
+
+    return key_resp['Aliases']
+
+
 def create_trail(module, client, ct_params):
     """
     Creates a CloudTrail
@@ -500,6 +518,7 @@ def main():
     # If the trail exists set the result exists variable
     if trail is not None:
         results['exists'] = True
+        initial_kms_key_id = trail.get('KmsKeyId')
 
     if state == 'absent' and results['exists']:
         # If Trail exists go ahead and delete
@@ -524,7 +543,11 @@ def main():
                 val = ct_params.get(key)
             if val != trail.get(tkey):
                 do_update = True
-                results['changed'] = True
+                if tkey != 'KmsKeyId':
+                    # We'll check if the KmsKeyId casues changes later since
+                    # user could've provided a key alias, alias arn, or key id
+                    # and trail['KmsKeyId'] is always a key arn
+                    results['changed'] = True
                 # If we are in check mode copy the changed values to the trail facts in result output to show what would change.
                 if module.check_mode:
                     trail.update({tkey: ct_params.get(key)})
@@ -532,6 +555,26 @@ def main():
         if not module.check_mode and do_update:
             update_trail(module, client, ct_params)
             trail = get_trail_facts(module, client, ct_params['Name'])
+
+        # Determine if KmsKeyId changed
+        if not module.check_mode:
+            if initial_kms_key_id != trail.get('KmsKeyId'):
+                results['changed'] = True
+        else:
+            new_key = ct_params.get('KmsKeyId')
+            if initial_kms_key_id != new_key:
+                # Assume changed for a moment
+                results['changed'] = True
+
+                # However, new_key could be a key id, alias arn, or alias name
+                # that maps back to the key arn in initial_kms_key_id. So check
+                # all aliases for a match.
+                initial_aliases = get_kms_key_aliases(module, module.client('kms'), initial_kms_key_id)
+                for a in initial_aliases:
+                    if(a['AliasName'] == new_key or
+                       a['AliasArn'] == new_key or
+                       a['TargetKeyId'] == new_key):
+                        results['changed'] = False
 
         # Check if we need to start/stop logging
         if enable_logging and not trail['IsLogging']:
@@ -554,11 +597,12 @@ def main():
             results['changed'] = True
             trail['tags'] = tags
         # Populate trail facts in output
-        results['trail'] = camel_dict_to_snake_dict(trail)
+        results['trail'] = camel_dict_to_snake_dict(trail, ignore_list=['tags'])
 
     elif state == 'present' and not results['exists']:
         # Trail doesn't exist just go create it
         results['changed'] = True
+        results['exists'] = True
         if not module.check_mode:
             # If we aren't in check_mode then actually create it
             created_trail = create_trail(module, client, ct_params)
@@ -598,7 +642,7 @@ def main():
             trail['IsLogging'] = enable_logging
             trail['tags'] = tags
         # Populate trail facts in output
-        results['trail'] = camel_dict_to_snake_dict(trail)
+        results['trail'] = camel_dict_to_snake_dict(trail, ignore_list=['tags'])
 
     module.exit_json(**results)
 
