@@ -93,6 +93,67 @@ options:
           - A list of instance_types.
         type: list
         elements: str
+        required: false
+      instances_distribution:
+        description:
+          - >-
+            Specifies the distribution of On-Demand Instances and Spot Instances, the maximum price
+            to pay for Spot Instances, and how the Auto Scaling group allocates instance types
+            to fulfill On-Demand and Spot capacity.
+          - 'See also U(https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstancesDistribution.html)'
+        required: false
+        type: dict
+        version_added: 1.5.0
+        suboptions:
+          on_demand_allocation_strategy:
+            description:
+              - Indicates how to allocate instance types to fulfill On-Demand capacity.
+            type: str
+            required: false
+            version_added: 1.5.0
+          on_demand_base_capacity:
+            description:
+              - >-
+                The minimum amount of the Auto Scaling group's capacity that must be fulfilled by On-Demand
+                Instances. This base portion is provisioned first as your group scales.
+              - >-
+                Default if not set is 0. If you leave it set to 0, On-Demand Instances are launched as a
+                percentage of the Auto Scaling group's desired capacity, per the OnDemandPercentageAboveBaseCapacity setting.
+            type: int
+            required: false
+            version_added: 1.5.0
+          on_demand_percentage_above_base_capacity:
+            description:
+              - Controls the percentages of On-Demand Instances and Spot Instances for your additional capacity beyond OnDemandBaseCapacity.
+              - Default if not set is 100. If you leave it set to 100, the percentages are 100% for On-Demand Instances and 0% for Spot Instances.
+              - 'Valid range: 0 to 100'
+            type: int
+            required: false
+            version_added: 1.5.0
+          spot_allocation_strategy:
+            description:
+              - Indicates how to allocate instances across Spot Instance pools.
+            type: str
+            required: false
+            version_added: 1.5.0
+          spot_instance_pools:
+            description:
+              - >-
+                The number of Spot Instance pools across which to allocate your Spot Instances. The Spot pools are determined from
+                the different instance types in the Overrides array of LaunchTemplate. Default if not set is 2.
+              - Used only when the Spot allocation strategy is lowest-price.
+              - 'Valid Range: Minimum value of 1. Maximum value of 20.'
+            type: int
+            required: false
+            version_added: 1.5.0
+          spot_max_price:
+            description:
+              - The maximum price per unit hour that you are willing to pay for a Spot Instance.
+              - If you leave the value of this parameter blank (which is the default), the maximum Spot price is set at the On-Demand price.
+              - To remove a value that you previously set, include the parameter but leave the value blank.
+            type: str
+            required: false
+            version_added: 1.5.0
     type: dict
   placement_group:
     description:
@@ -339,6 +400,9 @@ EXAMPLES = r'''
             - t3a.large
             - t3.large
             - t2.large
+        instances_distribution:
+            on_demand_percentage_above_base_capacity: 0
+            spot_allocation_strategy: capacity-optimized
     min_size: 1
     max_size: 10
     desired_capacity: 5
@@ -447,11 +511,38 @@ min_size:
     returned: success
     type: int
     sample: 1
-mixed_instance_policy:
-    description: Returns the list of instance types if a mixed instance policy is set.
+mixed_instances_policy:
+    description: Returns the list of instance types if a mixed instances policy is set.
     returned: success
     type: list
     sample: ["t3.micro", "t3a.micro"]
+mixed_instances_policy_full:
+    description: Returns the full dictionary representation of the mixed instances policy if a mixed instances policy is set.
+    returned: success
+    type: dict
+    sample: {
+        "instances_distribution": {
+            "on_demand_allocation_strategy": "prioritized",
+            "on_demand_base_capacity": 0,
+            "on_demand_percentage_above_base_capacity": 0,
+            "spot_allocation_strategy": "capacity-optimized"
+        },
+        "launch_template": {
+            "launch_template_specification": {
+                "launch_template_id": "lt-53c2425cffa544c23",
+                "launch_template_name": "random-LaunchTemplate",
+                "version": "2"
+            },
+            "overrides": [
+                {
+                    "instance_type": "m5.xlarge"
+                },
+                {
+                    "instance_type": "m5a.xlarge"
+                },
+            ]
+        }
+    }
 pending_instances:
     description: Number of instances in pending state
     returned: success
@@ -536,7 +627,10 @@ from ansible.module_utils._text import to_native
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.core import scrub_none_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 ASG_ATTRIBUTES = ('AvailabilityZones', 'DefaultCooldown', 'DesiredCapacity',
                   'HealthCheckGracePeriod', 'HealthCheckType', 'LaunchConfigurationName',
@@ -742,6 +836,7 @@ def get_properties(autoscaling_group):
     properties['vpc_zone_identifier'] = autoscaling_group.get('VPCZoneIdentifier')
     raw_mixed_instance_object = autoscaling_group.get('MixedInstancesPolicy')
     if raw_mixed_instance_object:
+        properties['mixed_instances_policy_full'] = camel_dict_to_snake_dict(raw_mixed_instance_object)
         properties['mixed_instances_policy'] = [x['InstanceType'] for x in raw_mixed_instance_object.get('LaunchTemplate').get('Overrides')]
 
     metrics = autoscaling_group.get('EnabledMetrics')
@@ -792,6 +887,7 @@ def get_launch_object(connection, ec2_connection):
 
         if mixed_instances_policy:
             instance_types = mixed_instances_policy.get('instance_types', [])
+            instances_distribution = mixed_instances_policy.get('instances_distribution', {})
             policy = {
                 'LaunchTemplate': {
                     'LaunchTemplateSpecification': launch_object['LaunchTemplate']
@@ -802,6 +898,9 @@ def get_launch_object(connection, ec2_connection):
                 for instance_type in instance_types:
                     instance_type_dict = {'InstanceType': instance_type}
                     policy['LaunchTemplate']['Overrides'].append(instance_type_dict)
+            if instances_distribution:
+                instances_distribution_params = scrub_none_parameters(instances_distribution)
+                policy['InstancesDistribution'] = snake_dict_to_camel_dict(instances_distribution_params, capitalize_first=True)
             launch_object['MixedInstancesPolicy'] = policy
         return launch_object
 
@@ -1661,6 +1760,18 @@ def main():
                     type='list',
                     elements='str'
                 ),
+                instances_distribution=dict(
+                    type='dict',
+                    default=None,
+                    options=dict(
+                        on_demand_allocation_strategy=dict(type='str'),
+                        on_demand_base_capacity=dict(type='int'),
+                        on_demand_percentage_above_base_capacity=dict(type='int'),
+                        spot_allocation_strategy=dict(type='str'),
+                        spot_instance_pools=dict(type='int'),
+                        spot_max_price=dict(type='str'),
+                    )
+                )
             )
         ),
         placement_group=dict(type='str'),

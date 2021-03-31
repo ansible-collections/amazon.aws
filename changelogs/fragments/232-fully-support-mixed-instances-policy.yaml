@@ -1,0 +1,2 @@
+minor_changes:
+  - ec2_asg module - add support for all mixed_instances_policy parameters (https://github.com/ansible-collections/community.aws/issues/231).

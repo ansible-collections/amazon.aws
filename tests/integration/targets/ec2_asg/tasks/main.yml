@@ -629,9 +629,9 @@
       until: status is finished
       retries: 200
       delay: 15
-    
+
     # we need a launch template, otherwise we cannot test the mixed instance policy
-    - name: create launch template for autoscaling group to test its mixed instance policy
+    - name: create launch template for autoscaling group to test its mixed instances policy
       ec2_launch_template:
         template_name: "{{ resource_prefix }}-lt"
         image_id: "{{ ec2_ami_image }}"
@@ -645,10 +645,10 @@
             groups:
               - "{{ sg.group_id }}"
 
-    - name: update autoscaling group with mixed-instance policy
+    - name: update autoscaling group with mixed-instances policy with mixed instances types
       ec2_asg:
         name: "{{ resource_prefix }}-asg"
-        launch_template: 
+        launch_template:
           launch_template_name: "{{ resource_prefix }}-lt"
         desired_capacity: 1
         min_size: 1
@@ -667,6 +667,33 @@
           - "output.mixed_instances_policy | length == 2"
           - "output.mixed_instances_policy[0] == 't3.micro'"
           - "output.mixed_instances_policy[1] == 't3a.micro'"
+
+    - name: update autoscaling group with mixed-instances policy with instances_distribution
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_template:
+          launch_template_name: "{{ resource_prefix }}-lt"
+        desired_capacity: 1
+        min_size: 1
+        max_size: 1
+        vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
+        state: present
+        mixed_instances_policy:
+          instance_types:
+            - t3.micro
+            - t3a.micro
+          instances_distribution:
+            on_demand_percentage_above_base_capacity: 0
+            spot_allocation_strategy: capacity-optimized
+        wait_for_instances: yes
+      register: output
+
+    - assert:
+        that:
+          - "output.mixed_instances_policy_full['launch_template']['overrides'][0]['instance_type'] == 't3.micro'"
+          - "output.mixed_instances_policy_full['launch_template']['overrides'][1]['instance_type'] == 't3a.micro'"
+          - "output.mixed_instances_policy_full['instances_distribution']['on_demand_percentage_above_base_capacity'] == 0"
+          - "output.mixed_instances_policy_full['instances_distribution']['spot_allocation_strategy'] == 'capacity-optimized'"
 
 # ============================================================
 
