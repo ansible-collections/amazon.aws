@@ -1,0 +1,3 @@
+bugfixes:
+  - cloudtrail - fix always reporting changed = true when kms alias used (https://github.com/ansible-collections/community.aws/pull/506).
+  - cloudtrail - fix lower casing of tag keys (https://github.com/ansible-collections/community.aws/pull/506).

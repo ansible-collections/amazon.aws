@@ -24,9 +24,6 @@
 # - Using blank string for CloudWatch Log Group / Role doesn't remove them
 #
 # Possible Bugs:
-# - output.exists == false when creating
-# - Changed reports true when using a KMS alias
-# - Tags Keys are being lower-cased
 
 - module_defaults:
     group/aws:
@@ -175,6 +172,27 @@
       policy_name: 'CloudWatch'
       policy_json: "{{ lookup('template', 'cloudwatch-policy.j2') | to_json }}"
 
+  - name: 'Create CloudWatch IAM Role with no kms permissions'
+    iam_role:
+      state: present
+      name: '{{ cloudwatch_no_kms_role }}'
+      assume_role_policy_document: "{{ lookup('template', 'cloudtrail-no-kms-assume-policy.j2') }}"
+      managed_policies:
+        - "arn:aws:iam::aws:policy/AWSCloudTrail_FullAccess"
+    register: output_cloudwatch_no_kms_role
+
+  - name: pause to ensure role exists before attaching policy
+    pause:
+      seconds: 15
+  
+  - name: 'Add inline policy to CloudWatch Role'
+    iam_policy:
+      state: present
+      iam_type: role
+      iam_name: '{{ cloudwatch_no_kms_role }}'
+      policy_name: 'CloudWatchNokms'
+      policy_json: "{{ lookup('template', 'cloudtrail-no-kms-policy.j2') }}"
+
   # ============================================================
   #   Tests
   # ============================================================
@@ -197,8 +215,7 @@
   - assert:
       that:
       - output is changed
-      # XXX This appears to be a bug...
-      #- output.exists == True
+      - output.exists == True
       - output.trail.name == cloudtrail_name
 
   - name: 'No-op update to trail'
@@ -451,7 +468,7 @@
       - output.trail.name == cloudtrail_name
       - output.trail.tags | length == 2
       - '("tag2" in output.trail.tags) and (output.trail.tags["tag2"] == "Value2")'
-      #- '("Tag3" in output.trail.tags) and (output.trail.tags["Tag3"] == "Value3")'
+      - '("Tag3" in output.trail.tags) and (output.trail.tags["Tag3"] == "Value3")'
 
   - name: 'Change tags (no change)'
     cloudtrail:
@@ -467,7 +484,7 @@
       - output.trail.name == cloudtrail_name
       - output.trail.tags | length == 2
       - '("tag2" in output.trail.tags) and (output.trail.tags["tag2"] == "Value2")'
-      #- '("Tag3" in output.trail.tags) and (output.trail.tags["Tag3"] == "Value3")'
+      - '("Tag3" in output.trail.tags) and (output.trail.tags["Tag3"] == "Value3")'
 
   - name: 'Remove tags (CHECK MODE)'
     cloudtrail:
@@ -1146,6 +1163,18 @@
       - output is not changed
       - output.trail.kms_key_id == kms_key.key_arn
 
+  - name: 'Enable logging encryption (no change, check mode)'
+    cloudtrail:
+      state: present
+      name: '{{ cloudtrail_name }}'
+      kms_key_id: '{{ kms_key.key_arn }}'
+    check_mode: yes
+    register: output
+  - assert:
+      that:
+      - output is not changed
+      - output.trail.kms_key_id == kms_key.key_arn
+
   - name: 'No-op update to trail'
     cloudtrail:
       state: present
@@ -1219,8 +1248,47 @@
     register: output
   - assert:
       that:
-  #    - output is not changed
+      - output is not changed
       - output.trail.kms_key_id == kms_key.key_arn
+
+  - name: 'Update logging encryption to alias (CHECK MODE, no change)'
+    cloudtrail:
+      state: present
+      name: '{{ cloudtrail_name }}'
+      kms_key_id: '{{ kms_key.key_id }}' # Test when using key id
+    register: output
+    check_mode: yes
+  - assert:
+      that:
+      - output is not changed
+      - output.trail.kms_key_id == kms_key.key_id
+
+  # Assume role to a role with Denied access to KMS
+
+  - community.aws.sts_assume_role:
+      role_arn: '{{ output_cloudwatch_no_kms_role.arn }}'
+      role_session_name: "cloudtrailNoKms"
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+    register: noKms_assumed_role
+
+  - name: 'Enable logging encryption w/ alias (no change, no kms permmissions, check mode)'
+    cloudtrail:
+      state: present
+      name: '{{ cloudtrail_name }}'
+      kms_key_id: 'alias/{{ kms_alias }}'
+      aws_access_key: "{{ noKms_assumed_role.sts_creds.access_key }}"
+      aws_secret_key: "{{ noKms_assumed_role.sts_creds.secret_key }}"
+      security_token: "{{ noKms_assumed_role.sts_creds.session_token }}"
+    check_mode: yes
+    register: output
+  - assert:
+      that:
+      - output is changed
+      # when using check_mode, with no kms permissions, and not giving kms_key_id as a key arn
+      # output will always be marked as changed.
 
   #- name: 'Disable logging encryption (CHECK MODE)'
   #  cloudtrail:
@@ -1422,4 +1490,16 @@
     iam_role:
       state: absent
       name: '{{ cloudwatch_role }}'
+    ignore_errors: yes
+  - name: 'Remove inline policy to CloudWatch Role'
+    iam_policy:
+      state: absent
+      iam_type: role
+      iam_name: '{{ cloudwatch_no_kms_role }}'
+      policy_name: 'CloudWatchNokms'
+    ignore_errors: yes
+  - name: 'Delete CloudWatch No KMS IAM Role'
+    iam_role:
+      state: absent
+      name: '{{ cloudwatch_no_kms_role }}'
     ignore_errors: yes
