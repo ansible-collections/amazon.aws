@@ -1260,25 +1260,22 @@ def create_autoscaling_group(connection):
             # Get differences
             wanted_tgs = set(target_group_arns)
             has_tgs = set(as_group['TargetGroupARNs'])
-            # check if all requested are already existing
-            if has_tgs.issuperset(wanted_tgs):
-                # if wanted contains less than existing, then we need to delete some
-                tgs_to_detach = has_tgs.difference(wanted_tgs)
-                if tgs_to_detach:
-                    changed = True
-                    try:
-                        detach_lb_target_groups(connection, group_name, list(tgs_to_detach))
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, msg="Failed to detach load balancer target groups {0}".format(tgs_to_detach))
-            if wanted_tgs.issuperset(has_tgs):
-                # if has contains less than wanted, then we need to add some
-                tgs_to_attach = wanted_tgs.difference(has_tgs)
-                if tgs_to_attach:
-                    changed = True
-                    try:
-                        attach_lb_target_groups(connection, group_name, list(tgs_to_attach))
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json(msg="Failed to attach load balancer target groups {0}".format(tgs_to_attach))
+
+            tgs_to_detach = has_tgs.difference(wanted_tgs)
+            if tgs_to_detach:
+                changed = True
+                try:
+                    detach_lb_target_groups(connection, group_name, list(tgs_to_detach))
+                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                    module.fail_json_aws(e, msg="Failed to detach load balancer target groups {0}".format(tgs_to_detach))
+
+            tgs_to_attach = wanted_tgs.difference(has_tgs)
+            if tgs_to_attach:
+                changed = True
+                try:
+                    attach_lb_target_groups(connection, group_name, list(tgs_to_attach))
+                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                    module.fail_json(msg="Failed to attach load balancer target groups {0}".format(tgs_to_attach))
 
         # check for attributes that aren't required for updating an existing ASG
         # check if min_size/max_size/desired capacity have been specified and if not use ASG values
