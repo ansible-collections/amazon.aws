@@ -695,6 +695,134 @@
           - "output.mixed_instances_policy_full['instances_distribution']['on_demand_percentage_above_base_capacity'] == 0"
           - "output.mixed_instances_policy_full['instances_distribution']['spot_allocation_strategy'] == 'capacity-optimized'"
 
+    # ============================================================
+
+    # Target group names have max length of 32 characters
+    - set_fact:
+        tg1_name: "{{ (resource_prefix + '-tg1' ) | regex_search('(.{1,32})$') }}"
+        tg2_name: "{{ (resource_prefix + '-tg2' ) | regex_search('(.{1,32})$') }}"
+
+    - name: create target group 1
+      elb_target_group:
+        name: "{{ tg1_name }}"
+        protocol: tcp
+        port: 80
+        health_check_protocol: tcp
+        health_check_port: 80
+        healthy_threshold_count: 2
+        unhealthy_threshold_count: 2
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        state: present
+      register: out_tg1
+
+    - name: create target group 2
+      elb_target_group:
+        name: "{{ tg2_name }}"
+        protocol: tcp
+        port: 80
+        health_check_protocol: tcp
+        health_check_port: 80
+        healthy_threshold_count: 2
+        unhealthy_threshold_count: 2
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        state: present
+      register: out_tg2
+
+    - name: update autoscaling group with tg1
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_template: 
+          launch_template_name: "{{ resource_prefix }}-lt"
+        target_group_arns:
+          - "{{ out_tg1.target_group_arn }}"
+        desired_capacity: 1
+        min_size: 1
+        max_size: 1
+        state: present
+        wait_for_instances: yes
+      register: output
+
+    - assert:
+        that:
+          - output.target_group_arns[0] == out_tg1.target_group_arn
+
+    - name: update autoscaling group add tg2
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_template: 
+          launch_template_name: "{{ resource_prefix }}-lt"
+        target_group_arns:
+          - "{{ out_tg1.target_group_arn }}"
+          - "{{ out_tg2.target_group_arn }}"
+        desired_capacity: 1
+        min_size: 1
+        max_size: 1
+        state: present
+        wait_for_instances: yes
+      register: output
+
+    - assert:
+        that:
+          - "output.target_group_arns | length == 2"
+
+    - name: update autoscaling group remove tg1
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_template: 
+          launch_template_name: "{{ resource_prefix }}-lt"
+        target_group_arns:
+          - "{{ out_tg2.target_group_arn }}"
+        desired_capacity: 1
+        min_size: 1
+        max_size: 1
+        state: present
+        wait_for_instances: yes
+      register: output
+
+    - assert:
+        that:
+          - "output.target_group_arns | length == 1"
+          - "output.target_group_arns[0] == out_tg2.target_group_arn"
+
+    - name: update autoscaling group remove tg2 and add tg1
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_template: 
+          launch_template_name: "{{ resource_prefix }}-lt"
+        target_group_arns:
+          - "{{ out_tg1.target_group_arn }}"
+        desired_capacity: 1
+        min_size: 1
+        max_size: 1
+        state: present
+        wait_for_instances: yes
+      register: output
+
+    - assert:
+        that:
+          - "output.target_group_arns | length == 1"
+          - "output.target_group_arns[0] == out_tg1.target_group_arn"
+
+    - name: target group no change
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_template: 
+          launch_template_name: "{{ resource_prefix }}-lt"
+        target_group_arns:
+          - "{{ out_tg1.target_group_arn }}"
+        desired_capacity: 1
+        min_size: 1
+        max_size: 1
+        state: present
+        wait_for_instances: yes
+      register: output
+
+    - assert:
+        that:
+          - "output.target_group_arns | length == 1"
+          - "output.target_group_arns[0] == out_tg1.target_group_arn"
+          - "output.changed == false"
+
 # ============================================================
 
   always:
@@ -709,6 +837,18 @@
       retries: 10
 
     # Remove the testing dependencies
+
+    - name: remove target group
+      elb_target_group:
+        name: "{{ item }}"
+        state: absent
+      register: removed
+      until: removed is not failed
+      ignore_errors: yes
+      retries: 10
+      loop:
+        - "{{ tg1_name }}"
+        - "{{ tg2_name }}"
 
     - name: remove the load balancer
       ec2_elb_lb:
@@ -738,7 +878,7 @@
 
     - name: remove launch configs
       ec2_lc:
-        name: "{{ resource_prefix }}-lc"
+        name: "{{ item }}"
         state: absent
       register: removed
       until: removed is not failed
