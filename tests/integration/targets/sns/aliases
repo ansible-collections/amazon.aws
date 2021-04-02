@@ -1,4 +1,2 @@
-# reason: missing-policy
-unsupported
-
 cloud/aws
+shippable/aws/group1
