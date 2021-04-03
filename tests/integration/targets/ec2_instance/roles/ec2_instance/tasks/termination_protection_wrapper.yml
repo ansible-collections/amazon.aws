@@ -1,0 +1,32 @@
+---
+- include_role:
+    name: 'setup_remote_tmp_dir'
+
+- set_fact:
+    virtualenv: "{{ remote_tmp_dir }}/virtualenv"
+    virtualenv_command: "{{ ansible_python_interpreter }} -m virtualenv"
+
+- set_fact:
+    virtualenv_interpreter: "{{ virtualenv }}/bin/python"
+    aws_cli: "{{ virtualenv }}/bin/aws"
+
+- pip:
+    name: "virtualenv"
+
+- pip:
+    name:
+      - awscli<=1.18.159
+      - botocore<1.19.0,>=1.13.3
+      - boto3 >= 1.9.250, <= 1.15.18
+      - coverage<5
+    virtualenv: "{{ virtualenv }}"
+    virtualenv_command: "{{ virtualenv_command }}"
+    virtualenv_site_packages: no
+
+- include_tasks: termination_protection.yml
+  vars:
+    ansible_python_interpreter: "{{ virtualenv_interpreter }}"
+
+- file:
+    state: absent
+    path: "{{ virtualenv }}"

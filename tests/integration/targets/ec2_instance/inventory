@@ -8,7 +8,7 @@ default_vpc_tests
 external_resource_attach
 instance_no_wait
 iam_instance_role
-termination_protection
+termination_protection_wrapper
 tags_and_vpc_settings
 checkmode_tests
 security_group
