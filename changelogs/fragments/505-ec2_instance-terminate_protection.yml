@@ -1,0 +1,2 @@
+bugfixes:
+- ec2_instance - ensure that termination protection isn't modified when using check_mode (https://github.com/ansible/ansible/issues/67716).
