@@ -1512,6 +1512,7 @@ def change_instance_state(filters, desired_state, ec2=None):
     unchanged = set()
     failure_reason = ""
 
+    # TODO: better check_moding in here https://github.com/ansible-collections/community.aws/issues/16
     for inst in instances:
         try:
             if desired_state == 'TERMINATED':
@@ -1588,7 +1589,8 @@ def handle_existing(existing_matches, changed, ec2, state):
         )
     changes = diff_instance_and_params(existing_matches[0], module.params)
     for c in changes:
-        ec2.modify_instance_attribute(aws_retry=True, **c)
+        if not module.check_mode:
+            ec2.modify_instance_attribute(aws_retry=True, **c)
     changed |= bool(changes)
     changed |= add_or_update_instance_profile(existing_matches[0], module.params.get('instance_role'))
     changed |= change_network_attachments(existing_matches[0], module.params, ec2)
