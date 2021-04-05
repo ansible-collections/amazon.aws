@@ -44,6 +44,7 @@ options:
   ttl:
     description:
       - The TTL, in second, to give the new record.
+      - Mutually exclusive with I(alias).
     default: 3600
     type: int
   type:
@@ -55,6 +56,7 @@ options:
   alias:
     description:
       - Indicates if this is an alias record.
+      - Mutually exclusive with I(ttl).
       - Defaults to C(false).
     type: bool
   alias_hosted_zone_id:
@@ -99,6 +101,7 @@ options:
         have the same combination of DNS name and type, a value that
         determines what portion of traffic for the current resource record set
         is routed to the associated location.
+      - Mutually exclusive with I(region) and I(failover).
     type: int
   region:
     description:
@@ -106,6 +109,7 @@ options:
         that have the same combination of DNS name and type, a value that
         determines which region this should be associated with for the
         latency-based routing
+      - Mutually exclusive with I(weight) and I(failover).
     type: str
   health_check:
     description:
@@ -115,6 +119,7 @@ options:
     description:
       - Failover resource record sets only. Whether this is the primary or
         secondary resource record set. Allowed values are PRIMARY and SECONDARY
+      - Mutually exclusive with I(weight) and I(region).
     type: str
     choices: ['SECONDARY', 'PRIMARY']
   vpc_id:
@@ -468,7 +473,10 @@ def main():
             ('state', 'delete', ['value']),
         ),
         # failover, region and weight are mutually exclusive
-        mutually_exclusive=[('failover', 'region', 'weight')],
+        mutually_exclusive=[
+            ('failover', 'region', 'weight'),
+            ('alias', 'ttl'),
+        ],
         # failover, region and weight require identifier
         required_by=dict(
             failover=('identifier',),
@@ -557,6 +565,10 @@ def main():
             DNSName=value_in[0],
             EvaluateTargetHealth=alias_evaluate_target_health_in
         )
+        if 'ResourceRecords' in resource_record_set:
+            del resource_record_set['ResourceRecords']
+        if 'TTL' in resource_record_set:
+            del resource_record_set['TTL']
 
     # On CAA records order doesn't matter
     if type_in == 'CAA':

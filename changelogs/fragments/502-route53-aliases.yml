@@ -1,0 +1,2 @@
+minor_changes:
+- route53 - fixes AWS API error when attempting to create Alias records (https://github.com/ansible-collections/community.aws/issues/434).

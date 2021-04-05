@@ -2,21 +2,22 @@
 # tasks file for Route53 integration tests
 
 - set_fact:
-    zone_one: '{{ resource_prefix | replace("-", "") }}.one.fakeansible.com.'
-    zone_two: '{{ resource_prefix | replace("-", "") }}.two.fakeansible.com.'
-- debug: msg='Set zones {{ zone_one }} and {{ zone_two }}'
+    zone_one: '{{ resource_prefix | replace("-", "") }}.one.ansible.test.'
+    zone_two: '{{ resource_prefix | replace("-", "") }}.two.ansible.test.'
+- debug:
+    msg: 'Set zones {{ zone_one }} and {{ zone_two }}'
 
 - name: Test basics (new zone, A and AAAA records)
   module_defaults:
     group/aws:
-      aws_access_key: "{{ aws_access_key }}"
-      aws_secret_key: "{{ aws_secret_key }}"
-      security_token: "{{ security_token | default(omit) }}"
-      region: "{{ aws_region }}"
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
     route53:
+      # Route53 is explicitly a global service
       region: null
   block:
-
   - name: create VPC
     ec2_vpc_net:
       cidr_block: 192.0.2.0/24
@@ -24,36 +25,35 @@
       state: present
     register: vpc
 
-  - route53_zone:
+  - name: 'Create a zone'
+    route53_zone:
       zone: '{{ zone_one }}'
-      comment: Created in Ansible test {{ resource_prefix }}
+      comment: 'Created in Ansible test {{ resource_prefix }}'
     register: z1
-
   - assert:
       that:
         - z1 is success
         - z1 is changed
         - "z1.comment == 'Created in Ansible test {{ resource_prefix }}'"
 
-  - name: Get zone details
+  - name: 'Get zone details'
     route53_info:
       query: hosted_zone
       hosted_zone_id: '{{ z1.zone_id }}'
       hosted_zone_method: details
     register: hosted_zones
-
-  - name: Assert newly created hosted zone only has NS and SOA records
+  - name: 'Assert newly created hosted zone only has NS and SOA records'
     assert:
       that:
         - hosted_zones.HostedZone.ResourceRecordSetCount == 2
 
-  - route53_zone:
+  - name: 'Create a second zone'
+    route53_zone:
       zone: '{{ zone_two }}'
       vpc_id: '{{ vpc.vpc.id }}'
       vpc_region: '{{ aws_region }}'
       comment: Created in Ansible test {{ resource_prefix }}
     register: z2
-
   - assert:
       that:
         - z2 is success
@@ -73,90 +73,90 @@
         - hosted_zones.HostedZone.ResourceRecordSetCount == 2
         - hosted_zones.HostedZone.Config.PrivateZone
 
-  - name: Create A record using zone fqdn
+  - name: 'Create A record using zone fqdn'
     route53:
       state: present
       zone: '{{ zone_one }}'
       record: 'qdn_test.{{ zone_one }}'
       type: A
-      value: 192.0.2.1
+      value: '192.0.2.1'
     register: qdn
   - assert:
       that:
         - qdn is not failed
         - qdn is changed
 
-  - name: Get A record using 'get' method of route53 module
+  - name: 'Get A record using "get" method of route53 module'
     route53:
       state: get
-      zone: "{{ zone_one }}"
-      record: "qdn_test.{{ zone_one }}"
+      zone: '{{ zone_one }}'
+      record: 'qdn_test.{{ zone_one }}'
       type: A
     register: get_result
   - assert:
       that:
         - get_result.nameservers|length > 0
-        - get_result.set.Name == "qdn_test.{{ zone_one }}"
-        - get_result.set.ResourceRecords[0].Value == "192.0.2.1"
-        - get_result.set.Type == "A"
+        - get_result.set.Name == 'qdn_test.{{ zone_one }}'
+        - get_result.set.ResourceRecords[0].Value == '192.0.2.1'
+        - get_result.set.Type == 'A'
 
-  - name: Create same A record using zone non-qualified domain
+  - name: 'Create same A record using zone non-qualified domain'
     route53:
       state: present
       zone: '{{ zone_one[:-1] }}'
       record: 'qdn_test.{{ zone_one[:-1] }}'
       type: A
-      value: 192.0.2.1
+      value: '192.0.2.1'
     register: non_qdn
   - assert:
       that:
         - non_qdn is not failed
         - non_qdn is not changed
 
-  - name: Create A record using zone ID
+  - name: 'Create A record using zone ID'
     route53:
       state: present
       hosted_zone_id: '{{ z1.zone_id }}'
       record: 'zid_test.{{ zone_one }}'
       type: A
-      value: 192.0.2.1
+      value: '192.0.2.1'
     register: zid
   - assert:
       that:
         - zid is not failed
         - zid is changed
 
-  - name: Create a multi-value A record with values in different order
+  - name: 'Create a multi-value A record with values in different order'
     route53:
       state: present
       zone: '{{ zone_one }}'
       record: 'order_test.{{ zone_one }}'
       type: A
       value:
-        - 192.0.2.2
-        - 192.0.2.1
+        - '192.0.2.2'
+        - '192.0.2.1'
     register: mv_a_record
   - assert:
       that:
         - mv_a_record is not failed
         - mv_a_record is changed
 
-  - name: Create same multi-value A record with values in different order
+  - name: 'Create same multi-value A record with values in different order'
     route53:
       state: present
       zone: '{{ zone_one }}'
       record: 'order_test.{{ zone_one }}'
       type: A
       value:
-        - 192.0.2.2
-        - 192.0.2.1
+        - '192.0.2.2'
+        - '192.0.2.1'
     register: mv_a_record
   - assert:
       that:
         - mv_a_record is not failed
         - mv_a_record is not changed
 
-  - name: get Route53 A record information
+  - name: 'get Route53 A record information'
     route53_info:
       type: A
       query: record_sets
@@ -168,25 +168,25 @@
       that:
         - records.ResourceRecordSets|length == 3
         - records.ResourceRecordSets[0].ResourceRecords|length == 2
-        - records.ResourceRecordSets[0].ResourceRecords[0].Value == "192.0.2.2"
-        - records.ResourceRecordSets[0].ResourceRecords[1].Value == "192.0.2.1"
+        - records.ResourceRecordSets[0].ResourceRecords[0].Value == '192.0.2.2'
+        - records.ResourceRecordSets[0].ResourceRecords[1].Value == '192.0.2.1'
 
-  - name: Remove a member from multi-value A record with values in different order
+  - name: 'Remove a member from multi-value A record with values in different order'
     route53:
       state: present
       zone: '{{ zone_one }}'
       record: 'order_test.{{ zone_one }}'
       type: A
       value:
-        - 192.0.2.2
+        - '192.0.2.2'
     register: del_a_record
     ignore_errors: true
-  - name: This should fail, because `overwrite` is false
+  - name: 'This should fail, because `overwrite` is false'
     assert:
       that:
         - del_a_record is failed
 
-  - name: Remove a member from multi-value A record with values in different order
+  - name: 'Remove a member from multi-value A record with values in different order'
     route53:
       state: present
       zone: '{{ zone_one }}'
@@ -194,16 +194,16 @@
       overwrite: true
       type: A
       value:
-        - 192.0.2.2
+        - '192.0.2.2'
     register: del_a_record
     ignore_errors: true
-  - name: This should not fail, because `overwrite` is true
+  - name: 'This should not fail, because `overwrite` is true'
     assert:
       that:
         - del_a_record is not failed
         - del_a_record is changed
 
-  - name: get Route53 zone A record information
+  - name: 'get Route53 zone A record information'
     route53_info:
       type: A
       query: record_sets
@@ -215,17 +215,17 @@
       that:
         - records.ResourceRecordSets|length == 3
         - records.ResourceRecordSets[0].ResourceRecords|length == 1
-        - records.ResourceRecordSets[0].ResourceRecords[0].Value == "192.0.2.2"
+        - records.ResourceRecordSets[0].ResourceRecords[0].Value == '192.0.2.2'
 
-  - name: Create a LetsEncrypt CAA record
+  - name: 'Create a LetsEncrypt CAA record'
     route53:
       state: present
       zone: '{{ zone_one }}'
       record: '{{ zone_one }}'
       type: CAA
       value:
-      - 0 issue "letsencrypt.org;"
-      - 0 issuewild "letsencrypt.org;"
+      - '0 issue "letsencrypt.org;"'
+      - '0 issuewild "letsencrypt.org;"'
       overwrite: true
     register: caa
   - assert:
@@ -233,15 +233,15 @@
         - caa is not failed
         - caa is changed
 
-  - name: Re-create the same LetsEncrypt CAA record
+  - name: 'Re-create the same LetsEncrypt CAA record'
     route53:
       state: present
       zone: '{{ zone_one }}'
       record: '{{ zone_one }}'
       type: CAA
       value:
-      - 0 issue "letsencrypt.org;"
-      - 0 issuewild "letsencrypt.org;"
+      - '0 issue "letsencrypt.org;"'
+      - '0 issuewild "letsencrypt.org;"'
       overwrite: true
     register: caa
   - assert:
@@ -249,18 +249,18 @@
         - caa is not failed
         - caa is not changed
 
-  - name: Re-create the same LetsEncrypt CAA record in opposite-order
+  - name: 'Re-create the same LetsEncrypt CAA record in opposite-order'
     route53:
       state: present
       zone: '{{ zone_one }}'
       record: '{{ zone_one }}'
       type: CAA
       value:
-      - 0 issuewild "letsencrypt.org;"
-      - 0 issue "letsencrypt.org;"
+      - '0 issuewild "letsencrypt.org;"'
+      - '0 issue "letsencrypt.org;"'
       overwrite: true
     register: caa
-  - name: This should not be changed, as CAA records are not order sensitive
+  - name: 'This should not be changed, as CAA records are not order sensitive'
     assert:
       that:
         - caa is not failed
@@ -354,26 +354,89 @@
         - zid is not failed
         - zid is changed
 
+  - name: 'Create an Alias record'
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: 'alias.{{ zone_one }}'
+      type: A
+      alias: True
+      alias_hosted_zone_id: '{{ z1.zone_id }}'
+      value: 'zid_test.{{ zone_one }}'
+      overwrite: True
+    register: alias_record
+  - name: 'This should be changed'
+    assert:
+      that:
+        - alias_record is not failed
+        - alias_record is changed
+
+  - name: 'Re-Create an Alias record'
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: 'alias.{{ zone_one }}'
+      type: A
+      alias: True
+      alias_hosted_zone_id: '{{ z1.zone_id }}'
+      value: 'zid_test.{{ zone_one }}'
+      overwrite: True
+    register: alias_record
+  - name: 'This should not be changed'
+    assert:
+      that:
+        - alias_record is not failed
+        - alias_record is not changed
+
   always:
   - route53_info:
       query: record_sets
       hosted_zone_id: '{{ z1.zone_id }}'
     register: z1_records
-  - debug: var=z1_records
-  - name: Loop over A/AAAA/CNAME records and delete them
+  - name: 'Loop over A/AAAA/CNAME Alias records and delete them'
+    route53:
+      state: absent
+      alias: True
+      alias_hosted_zone_id: '{{ item.AliasTarget.HostedZoneId }}'
+      zone: '{{ zone_one }}'
+      record: '{{ item.Name }}'
+      type: '{{ item.Type }}'
+      value: '{{ item.AliasTarget.DNSName }}'
+    ignore_errors: True
+    loop: '{{ z1_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
+    when:
+    - '"AliasTarget" in item'
+  - name: 'Loop over A/AAAA/CNAME records and delete them'
     route53:
       state: absent
       zone: '{{ zone_one }}'
       record: '{{ item.Name }}'
       type: '{{ item.Type }}'
       value: '{{ item.ResourceRecords | map(attribute="Value") | join(",") }}'
+    ignore_errors: True
     loop: '{{ z1_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
+    when:
+    - '"ResourceRecords" in item'
+
   - route53_info:
       query: record_sets
       hosted_zone_id: '{{ z2.zone_id }}'
     register: z2_records
-  - debug: var=z2_records
-  - name: Loop over A/AAAA/CNAME records and delete them
+  - name: 'Loop over A/AAAA/CNAME Alias records and delete them'
+    route53:
+      state: absent
+      alias: True
+      alias_hosted_zone_id: '{{ item.AliasTarget.HostedZoneId }}'
+      zone: '{{ zone_two }}'
+      record: '{{ item.Name }}'
+      type: '{{ item.Type }}'
+      value: '{{ item.AliasTarget.DNSName }}'
+      private_zone: true
+    ignore_errors: True
+    loop: '{{ z2_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
+    when:
+    - '"AliasTarget" in item'
+  - name: 'Loop over A/AAAA/CNAME records and delete them'
     route53:
       state: absent
       zone: '{{ zone_two }}'
@@ -381,8 +444,12 @@
       type: '{{ item.Type }}'
       value: '{{ item.ResourceRecords | map(attribute="Value") | join(",") }}'
       private_zone: true
+    ignore_errors: True
     loop: '{{ z2_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
-  - name: Delete test zone one '{{ zone_one }}'
+    when:
+    - '"ResourceRecords" in item'
+
+  - name: 'Delete test zone one {{ zone_one }}'
     route53_zone:
       state: absent
       zone: '{{ zone_one }}'
@@ -390,7 +457,7 @@
     ignore_errors: yes
     retries: 10
     until: delete_one is not failed
-  - name: Delete test zone two '{{ zone_two }}'
+  - name: 'Delete test zone two {{ zone_two }}'
     route53_zone:
       state: absent
       zone: '{{ zone_two }}'
