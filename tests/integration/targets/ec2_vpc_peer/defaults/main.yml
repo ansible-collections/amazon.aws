@@ -1,0 +1,6 @@
+---
+vpc_seed: '{{ resource_prefix }}'
+vpc_1_name: '{{ resource_prefix }}-vpc-1'
+vpc_1_cidr: '10.{{ 256 | random(seed=vpc_seed) }}.0.0/23'
+vpc_2_name: '{{ resource_prefix }}-vpc-1'
+vpc_2_cidr: '10.{{ 256 | random(seed=vpc_seed) }}.2.0/23'
