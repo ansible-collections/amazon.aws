@@ -1,0 +1,2 @@
+minor_changes:
+- ec2_instance_info - add retries on common AWS failures (https://github.com/ansible-collections/community.aws/pull/521).
