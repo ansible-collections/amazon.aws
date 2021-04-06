@@ -266,6 +266,63 @@
         - caa is not failed
         - caa is not changed
 
+  - name: Create an A record for a wildcard prefix
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: '*.wildcard_test.{{ zone_one }}'
+      type: A
+      value:
+        - 192.0.2.1
+    register: wc_a_record
+  - assert:
+      that:
+        - wc_a_record is not failed
+        - wc_a_record is changed
+
+  - name: Create an A record for a wildcard prefix (idempotency)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: '*.wildcard_test.{{ zone_one }}'
+      type: A
+      value:
+        - 192.0.2.1
+    register: wc_a_record
+  - assert:
+      that:
+        - wc_a_record is not failed
+        - wc_a_record is not changed
+
+  - name: Create an A record for a wildcard prefix (change)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: '*.wildcard_test.{{ zone_one }}'
+      type: A
+      value:
+        - 192.0.2.2
+      overwrite: true
+    register: wc_a_record
+  - assert:
+      that:
+        - wc_a_record is not failed
+        - wc_a_record is changed
+
+  - name: Delete an A record for a wildcard prefix
+    route53:
+      state: absent
+      zone: '{{ zone_one }}'
+      record: '*.wildcard_test.{{ zone_one }}'
+      type: A
+      value:
+        - 192.0.2.2
+    register: wc_a_record
+  - assert:
+      that:
+        - wc_a_record is not failed
+        - wc_a_record is changed
+
   # Tests on zone two (private zone)
   - name: Create A record using zone fqdn
     route53:

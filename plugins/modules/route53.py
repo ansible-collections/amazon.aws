@@ -389,8 +389,9 @@ def get_record(route53, zone_id, record_name, record_type, record_identifier):
     record_sets_results = _list_record_sets(route53, HostedZoneId=zone_id)
 
     for record_set in record_sets_results:
+        record_set['Name'] = record_set['Name'].encode().decode('unicode_escape')
         # If the record name and type is not equal, move to the next record
-        if (record_name, record_type) != (record_set['Name'], record_set['Type']):
+        if (record_name.lower(), record_type) != (record_set['Name'].lower(), record_set['Type']):
             continue
 
         if record_identifier and record_identifier != record_set.get("SetIdentifier"):
@@ -573,6 +574,8 @@ def main():
     # On CAA records order doesn't matter
     if type_in == 'CAA':
         resource_record_set['ResourceRecords'] = sorted(resource_record_set['ResourceRecords'], key=itemgetter('Value'))
+        if aws_record:
+            aws_record['ResourceRecords'] = sorted(aws_record['ResourceRecords'], key=itemgetter('Value'))
 
     if command_in == 'create' and aws_record == resource_record_set:
         module.exit_json(changed=False)
