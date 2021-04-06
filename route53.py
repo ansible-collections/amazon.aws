@@ -363,6 +363,7 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible.module_utils._text import to_native
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
@@ -621,7 +622,8 @@ def main():
             aws_record['ResourceRecords'] = sorted(aws_record['ResourceRecords'], key=itemgetter('Value'))
 
     if command_in == 'create' and aws_record == resource_record_set:
-        module.exit_json(changed=False)
+        rr_sets = [camel_dict_to_snake_dict(resource_record_set)]
+        module.exit_json(changed=False, resource_records_sets=rr_sets)
 
     if command_in == 'get':
         if type_in == 'NS':
@@ -631,7 +633,8 @@ def main():
             ns = get_hosted_zone_nameservers(route53, zone_id)
 
         formatted_aws = format_record(aws_record, zone_in, zone_id)
-        module.exit_json(changed=False, set=formatted_aws, nameservers=ns)
+        rr_sets = [camel_dict_to_snake_dict(aws_record)]
+        module.exit_json(changed=False, set=formatted_aws, nameservers=ns, resource_record_sets=rr_sets)
 
     if command_in == 'delete' and not aws_record:
         module.exit_json(changed=False)
@@ -677,6 +680,7 @@ def main():
         except Exception as e:
             module.fail_json(msg='Unhandled exception. (%s)' % to_native(e))
 
+    rr_sets = [camel_dict_to_snake_dict(resource_record_set)]
     formatted_aws = format_record(aws_record, zone_in, zone_id)
     formatted_record = format_record(resource_record_set, zone_in, zone_id)
 
@@ -685,6 +689,7 @@ def main():
         diff=dict(
             before=formatted_aws,
             after=formatted_record if command != 'delete' else {},
+            resource_record_sets=rr_sets,
         ),
     )
 
