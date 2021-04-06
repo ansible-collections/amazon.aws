@@ -61,6 +61,140 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
+vpc_peering_connections:
+  description: Details of the matching VPC peering connections.
+  returned: success
+  type: list
+  contains:
+    accepter_vpc_info:
+      description: Information about the VPC which accepted the connection.
+      returned: success
+      type: complex
+      contains:
+        cidr_block:
+          description: The primary CIDR for the VPC.
+          returned: when connection is in the accepted state.
+          type: str
+          example: '10.10.10.0/23'
+        cidr_block_set:
+          description: A list of all CIDRs for the VPC.
+          returned: when connection is in the accepted state.
+          type: complex
+          contains:
+            cidr_block:
+              description: A CIDR block used by the VPC.
+              returned: success
+              type: str
+              example: '10.10.10.0/23'
+        owner_id:
+          description: The AWS account that owns the VPC.
+          returned: success
+          type: str
+          example: 012345678901
+        peering_options:
+          description: Additional peering configuration.
+          returned: when connection is in the accepted state.
+          type: dict
+          contains:
+            allow_dns_resolution_from_remote_vpc:
+              description: Indicates whether a VPC can resolve public DNS hostnames to private IP addresses when queried from instances in a peer VPC.
+              returned: success
+              type: bool
+            allow_egress_from_local_classic_link_to_remote_vpc:
+              description: Indicates whether a local ClassicLink connection can communicate with the peer VPC over the VPC peering connection.
+              returned: success
+              type: bool
+            allow_egress_from_local_vpc_to_remote_classic_link:
+              description: Indicates whether a local VPC can communicate with a ClassicLink connection in the peer VPC over the VPC peering connection.
+              returned: success
+              type: bool
+        region:
+          description: The AWS region that the VPC is in.
+          returned: success
+          type: str
+          example: us-east-1
+        vpc_id:
+          description: The ID of the VPC
+          returned: success
+          type: str
+          example: vpc-0123456789abcdef0
+    requester_vpc_info:
+      description: Information about the VPC which requested the connection.
+      returned: success
+      type: complex
+      contains:
+        cidr_block:
+          description: The primary CIDR for the VPC.
+          returned: when connection is not in the deleted state.
+          type: str
+          example: '10.10.10.0/23'
+        cidr_block_set:
+          description: A list of all CIDRs for the VPC.
+          returned: when connection is not in the deleted state.
+          type: complex
+          contains:
+            cidr_block:
+              description: A CIDR block used by the VPC
+              returned: success
+              type: str
+              example: '10.10.10.0/23'
+        owner_id:
+          description: The AWS account that owns the VPC.
+          returned: success
+          type: str
+          example: 012345678901
+        peering_options:
+          description: Additional peering configuration.
+          returned: when connection is not in the deleted state.
+          type: dict
+          contains:
+            allow_dns_resolution_from_remote_vpc:
+              description: Indicates whether a VPC can resolve public DNS hostnames to private IP addresses when queried from instances in a peer VPC.
+              returned: success
+              type: bool
+            allow_egress_from_local_classic_link_to_remote_vpc:
+              description: Indicates whether a local ClassicLink connection can communicate with the peer VPC over the VPC peering connection.
+              returned: success
+              type: bool
+            allow_egress_from_local_vpc_to_remote_classic_link:
+              description: Indicates whether a local VPC can communicate with a ClassicLink connection in the peer VPC over the VPC peering connection.
+              returned: success
+              type: bool
+        region:
+          description: The AWS region that the VPC is in.
+          returned: success
+          type: str
+          example: us-east-1
+        vpc_id:
+          description: The ID of the VPC
+          returned: success
+          type: str
+          example: vpc-0123456789abcdef0
+    status:
+      description: Details of the current status of the connection.
+      returned: success
+      type: complex
+      contains:
+        code:
+          description: A short code describing the status of the connection.
+          returned: success
+          type: str
+          example: active
+        message:
+          description: Additional information about the status of the connection.
+          returned: success
+          type: str
+          example: Pending Acceptance by 012345678901
+    tags:
+      description: Tags applied to the connection.
+      returned: success
+      type: dict
+    vpc_peering_connection_id:
+      description: The ID of the VPC peering connection.
+      returned: success
+      type: str
+      example: "pcx-0123456789abcdef0"
+
 result:
   description: The result of the describe.
   returned: success
@@ -121,7 +255,7 @@ def main():
     for peer in results:
         peer['tags'] = boto3_tag_list_to_ansible_dict(peer.get('tags', []))
 
-    module.exit_json(result=results)
+    module.exit_json(result=results, vpc_peering_connections=results)
 
 
 if __name__ == '__main__':
