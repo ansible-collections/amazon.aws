@@ -1,2 +1,2 @@
 minor_changes:
-- add ignore.txt for 2.12.
+- sanity tests - add ignore.txt for 2.12 (https://github.com/ansible-collections/amazon.aws/pull/315).
