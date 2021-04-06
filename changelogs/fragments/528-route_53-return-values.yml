@@ -1,0 +1,2 @@
+bugfixes:
+- route53 - ensure that the old return values are re-added along side the new ones (https://github.com/ansible-collections/community.aws/issues/523).
