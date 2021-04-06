@@ -511,15 +511,21 @@ import datetime
 
 try:
     import botocore
-    from botocore.exceptions import ClientError
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+
+
+@AWSRetry.jittered_backoff()
+def _describe_instances(connection, **params):
+    paginator = connection.get_paginator('describe_instances')
+    return paginator.paginate(**params).build_full_result()
 
 
 def list_ec2_instances(connection, module):
@@ -529,9 +535,8 @@ def list_ec2_instances(connection, module):
     filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
 
     try:
-        reservations_paginator = connection.get_paginator('describe_instances')
-        reservations = reservations_paginator.paginate(InstanceIds=instance_ids, Filters=filters).build_full_result()
-    except ClientError as e:
+        reservations = _describe_instances(connection, InstanceIds=instance_ids, Filters=filters)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to list ec2 instances")
 
     instances = []
