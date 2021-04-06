@@ -1,0 +1,2 @@
+minor_changes:
+- sanity tests - add ignore.txt for 2.12 (https://github.com/ansible-collections/community.aws/pull/527).

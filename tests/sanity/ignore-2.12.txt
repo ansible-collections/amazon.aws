@@ -1,0 +1,5 @@
+plugins/modules/route53.py validate-modules:parameter-state-invalid-choice
+tests/utils/shippable/check_matrix.py replace-urlopen
+tests/utils/shippable/timing.py shebang
+plugins/modules/cloudfront_info.py pylint:unnecessary-comprehension # Should be an easy fix, but testing is a challenge - test are broken and aliases require a wildcard cert in ACM
+plugins/modules/iam.py pylint:unnecessary-comprehension # iam.py is boto2 so any refactoring can get complex, also it does not have tests
