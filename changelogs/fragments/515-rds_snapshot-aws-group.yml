@@ -1,0 +1,2 @@
+minor_changes:
+- rds_snapshot - added to the aws module_defaults group (https://github.com/ansible-collections/community.aws/pull/515).
