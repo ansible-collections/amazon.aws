@@ -531,6 +531,13 @@ def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, s
                 else:
                     extra['Metadata'][option] = metadata[option]
 
+        if module.params.get('permission'):
+            permissions = module.params['permission']
+            if isinstance(permissions, str):
+                extra['ACL'] = permissions
+            elif isinstance(permissions, list):
+                extra['ACL'] = permissions[0]
+
         if 'ContentType' not in extra:
             content_type = None
             if src is not None:
