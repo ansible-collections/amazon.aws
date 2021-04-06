@@ -424,6 +424,49 @@ def get_zone_id_by_name(route53, module, zone_name, want_private, want_vpc_id):
     return None
 
 
+def format_record(record_in, zone_in, zone_id):
+    """
+    Formats a record in a way that's consistent with the pre-boto3 migration values
+    as well as returning the 'normal' boto3 style values
+    """
+    if not record_in:
+        return None
+
+    record = dict(record_in)
+    record['zone'] = zone_in
+    record['hosted_zone_id'] = zone_id
+
+    record['type'] = record_in.get('Type', None)
+    record['record'] = record_in.get('Name').encode().decode('unicode_escape')
+    record['ttl'] = record_in.get('TTL', None)
+    record['identifier'] = record_in.get('SetIdentifier', None)
+    record['weight'] = record_in.get('Weight', None)
+    record['region'] = record_in.get('Region', None)
+    record['failover'] = record_in.get('Failover', None)
+    record['health_check'] = record_in.get('HealthCheckId', None)
+
+    if record['ttl']:
+        record['ttl'] = str(record['ttl'])
+    if record['weight']:
+        record['weight'] = str(record['weight'])
+    if record['region']:
+        record['region'] = str(record['region'])
+
+    if record_in.get('AliasTarget'):
+        record['alias'] = True
+        record['value'] = record_in['AliasTarget'].get('DNSName')
+        record['values'] = [record_in['AliasTarget'].get('DNSName')]
+        record['alias_hosted_zone_id'] = record_in['AliasTarget'].get('HostedZoneId')
+        record['alias_evaluate_target_health'] = record_in['AliasTarget'].get('EvaluateTargetHealth')
+    else:
+        record['alias'] = False
+        records = [r.get('Value') for r in record_in.get('ResourceRecords')]
+        record['value'] = ','.join(sorted(records))
+        record['values'] = sorted(records)
+
+    return record
+
+
 def get_hosted_zone_nameservers(route53, zone_id):
     hosted_zone_name = route53.get_hosted_zone(aws_retry=True, Id=zone_id)['HostedZone']['Name']
     resource_records_sets = _list_record_sets(route53, HostedZoneId=zone_id)
@@ -587,7 +630,8 @@ def main():
             # Retrieve name servers associated to the zone.
             ns = get_hosted_zone_nameservers(route53, zone_id)
 
-        module.exit_json(changed=False, set=aws_record, nameservers=ns)
+        formatted_aws = format_record(aws_record, zone_in, zone_id)
+        module.exit_json(changed=False, set=formatted_aws, nameservers=ns)
 
     if command_in == 'delete' and not aws_record:
         module.exit_json(changed=False)
@@ -633,11 +677,14 @@ def main():
         except Exception as e:
             module.fail_json(msg='Unhandled exception. (%s)' % to_native(e))
 
+    formatted_aws = format_record(aws_record, zone_in, zone_id)
+    formatted_record = format_record(resource_record_set, zone_in, zone_id)
+
     module.exit_json(
         changed=True,
         diff=dict(
-            before=aws_record,
-            after=resource_record_set if command != 'delete' else {},
+            before=formatted_aws,
+            after=formatted_record if command != 'delete' else {},
         ),
     )
 
