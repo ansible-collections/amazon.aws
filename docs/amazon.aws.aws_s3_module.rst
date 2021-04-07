@@ -460,7 +460,7 @@ Parameters
                         <b>Default:</b><br/><div style="color: blue">["private"]</div>
                 </td>
                 <td>
-                        <div>This option lets the user set the canned permissions on the object/bucket that are created. The permissions that can be set are <code>private</code>, <code>public-read</code>, <code>public-read-write</code>, <code>authenticated-read</code> for a bucket or <code>private</code>, <code>public-read</code>, <code>public-read-write</code>, <code>aws-exec-read</code>, <code>authenticated-read</code>, <code>bucket-owner-read</code>, <code>bucket-owner-full-control</code> for an object. Multiple permissions can be specified as a list, yet only the first one is used when first uploading the object(s).</div>
+                        <div>This option lets the user set the canned permissions on the object/bucket that are created. The permissions that can be set are <code>private</code>, <code>public-read</code>, <code>public-read-write</code>, <code>authenticated-read</code> for a bucket or <code>private</code>, <code>public-read</code>, <code>public-read-write</code>, <code>aws-exec-read</code>, <code>authenticated-read</code>, <code>bucket-owner-read</code>, <code>bucket-owner-full-control</code> for an object. Multiple permissions can be specified as a list.</div>
                 </td>
             </tr>
             <tr>
