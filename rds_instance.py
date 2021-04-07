@@ -416,6 +416,13 @@ options:
           - A list of EC2 VPC security groups to associate with the DB cluster.
         type: list
         elements: str
+    purge_security_groups:
+        description:
+          - Set to False to retain any enabled security groups that aren't specified in the task and are associated with the instance.
+          - Can be applied to I(vpc_security_group_ids) and I(db_security_groups)
+        type: bool
+        default: True
+        version_added: 1.5.0
 '''
 
 EXAMPLES = r'''
@@ -451,6 +458,15 @@ EXAMPLES = r'''
     id: "{{ instance_id }}"
     state: absent
     final_snapshot_identifier: "{{ snapshot_id }}"
+
+- name: Add a new security group without purge
+  community.aws.rds_instance:
+    id: "{{ instance_id }}"
+    state: present
+    vpc_security_group_ids:
+      - sg-0be17ba10c9286b0b
+    purge_security_groups: false
+    register: result
 '''
 
 RETURN = r'''
@@ -752,6 +768,7 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
+
 from ansible.module_utils._text import to_text
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.six import string_types
@@ -861,6 +878,7 @@ def get_options_with_changing_values(client, module, parameters):
     port = module.params['port']
     apply_immediately = parameters.pop('ApplyImmediately', None)
     cloudwatch_logs_enabled = module.params['enable_cloudwatch_logs_exports']
+    purge_security_groups = module.params['purge_security_groups']
 
     if port:
         parameters['DBPortNumber'] = port
@@ -872,7 +890,7 @@ def get_options_with_changing_values(client, module, parameters):
         parameters.pop('Iops', None)
 
     instance = get_instance(client, module, instance_id)
-    updated_parameters = get_changing_options_with_inconsistent_keys(parameters, instance, purge_cloudwatch_logs)
+    updated_parameters = get_changing_options_with_inconsistent_keys(parameters, instance, purge_cloudwatch_logs, purge_security_groups)
     updated_parameters.update(get_changing_options_with_consistent_keys(parameters, instance))
     parameters = updated_parameters
 
@@ -922,7 +940,7 @@ def get_current_attributes_with_inconsistent_keys(instance):
     return options
 
 
-def get_changing_options_with_inconsistent_keys(modify_params, instance, purge_cloudwatch_logs):
+def get_changing_options_with_inconsistent_keys(modify_params, instance, purge_cloudwatch_logs, purge_security_groups):
     changing_params = {}
     current_options = get_current_attributes_with_inconsistent_keys(instance)
 
@@ -938,7 +956,12 @@ def get_changing_options_with_inconsistent_keys(modify_params, instance, purge_c
         # TODO: allow other purge_option module parameters rather than just checking for things to add
         if isinstance(current_option, list):
             if isinstance(desired_option, list):
-                if set(desired_option) <= set(current_option):
+                if (
+                    set(desired_option) < set(current_option) and
+                    option in ('DBSecurityGroups', 'VpcSecurityGroupIds',) and purge_security_groups
+                ):
+                    changing_params[option] = desired_option
+                elif set(desired_option) <= set(current_option):
                     continue
             elif isinstance(desired_option, string_types):
                 if desired_option in current_option:
@@ -958,6 +981,11 @@ def get_changing_options_with_inconsistent_keys(modify_params, instance, purge_c
                 format_option['DisableLogTypes'] = list(current_option.difference(desired_option))
             if format_option['EnableLogTypes'] or format_option['DisableLogTypes']:
                 changing_params[option] = format_option
+        elif option in ('DBSecurityGroups', 'VpcSecurityGroupIds',):
+            if purge_security_groups:
+                changing_params[option] = desired_option
+            else:
+                changing_params[option] = list(set(current_option) | set(desired_option))
         else:
             changing_params[option] = desired_option
 
@@ -1082,6 +1110,7 @@ def main():
         purge_tags=dict(type='bool', default=True),
         read_replica=dict(type='bool'),
         wait=dict(type='bool', default=True),
+        purge_security_groups=dict(type='bool', default=True),
     )
 
     parameter_options = dict(
