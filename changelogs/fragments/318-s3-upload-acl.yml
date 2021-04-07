@@ -1,2 +1,2 @@
 bugfixes:
-- aws_s3 - Fix upload permission when an S3 bucket ACL policy requires a particular canned ACL
+- aws_s3 - Fix upload permission when an S3 bucket ACL policy requires a particular canned ACL (https://github.com/ansible-collections/amazon.aws/pull/318)
