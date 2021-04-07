@@ -1,5 +1,6 @@
 ---
   - block:
+     # TODO: snapshot, s3
 
       - name: Ensure the resource doesn't exist
         rds_instance:

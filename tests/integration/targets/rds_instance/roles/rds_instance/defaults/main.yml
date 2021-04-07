@@ -1,0 +1,28 @@
+---
+instance_id: "{{ resource_prefix }}-{{ inventory_hostname | replace('_','-') }}"
+modified_instance_id: "{{ resource_prefix }}-updated"
+username: test
+password: test12345678
+db_instance_class: db.t3.micro
+storage_encrypted_db_instance_class: db.t3.small
+modified_db_instance_class: db.t3.medium
+allocated_storage: 20
+modified_allocated_storage: 30
+
+# For aurora tests
+cluster_id: "{{ resource_prefix }}-cluster"
+aurora_db_instance_class: db.t3.medium
+
+# For oracle tests
+# Smallest instance that permits modification of the coreCount
+oracle_ee_db_instance_class: db.r5.2xlarge
+processor_features:
+  coreCount: 2
+  threadsPerCore: 1
+modified_processor_features:
+  coreCount: 4
+  threadsPerCore: 2
+
+# For mariadb tests
+mariadb_engine_version: 10.3.20
+mariadb_engine_version_2: 10.4.8
