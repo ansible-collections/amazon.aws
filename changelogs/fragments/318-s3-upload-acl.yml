@@ -1,0 +1,2 @@
+bugfixes:
+- aws_s3 - Fix upload permission when an S3 bucket ACL policy requires a particular canned ACL
