@@ -1,4 +1,5 @@
 ---
+  #TODO: test availability_zone and multi_az
   - block:
 
       - name: Ensure the resource doesn't exist
@@ -18,7 +19,7 @@
           id: "{{ instance_id }}"
           state: present
           engine: mariadb
-          engine_version: "10.1.26"
+          engine_version: "{{ mariadb_engine_version }}"
           username: "{{ username }}"
           password: "{{ password }}"
           db_instance_class: "{{ db_instance_class }}"
@@ -108,7 +109,7 @@
           backup_retention_period: 2
           preferred_backup_window: "05:00-06:00"
           preferred_maintenance_window: "mon:06:20-mon:06:50"
-          engine_version: "10.2.21"
+          engine_version: "{{ mariadb_engine_version_2 }}"
           allow_major_version_upgrade: true
           auto_minor_version_upgrade: false
           port: 1150
@@ -122,8 +123,8 @@
             - '"allocated_storage" in result.pending_modified_values or result.allocated_storage == 30'
             - '"max_allocated_storage" in result.pending_modified_values or result.max_allocated_storage == 100'
             - '"port" in result.pending_modified_values or result.endpoint.port == 1150'
-            - '"db_instance_class" in result.pending_modified_values or result.db_instance_class == "db.t2.medium"'
-            - '"engine_version" in result.pending_modified_values or result.engine_version == "10.2.21"'
+            - '"db_instance_class" in result.pending_modified_values or result.db_instance_class == modified_db_instance_class'
+            - '"engine_version" in result.pending_modified_values or result.engine_version == mariadb_engine_version_2'
 
       - name: Idempotence modifying several pending attributes
         rds_instance:
@@ -134,7 +135,7 @@
           backup_retention_period: 2
           preferred_backup_window: "05:00-06:00"
           preferred_maintenance_window: "mon:06:20-mon:06:50"
-          engine_version: "10.2.21"
+          engine_version: "{{ mariadb_engine_version_2 }}"
           allow_major_version_upgrade: true
           auto_minor_version_upgrade: false
           port: 1150
@@ -150,8 +151,8 @@
             - '"allocated_storage" in result.pending_modified_values or result.allocated_storage == 30'
             - '"max_allocated_storage" in result.pending_modified_values or result.max_allocated_storage == 100'
             - '"port" in result.pending_modified_values or result.endpoint.port == 1150'
-            - '"db_instance_class" in result.pending_modified_values or result.db_instance_class == "db.t2.medium"'
-            - '"engine_version" in result.pending_modified_values or result.engine_version == "10.2.21"'
+            - '"db_instance_class" in result.pending_modified_values or result.db_instance_class == modified_db_instance_class'
+            - '"engine_version" in result.pending_modified_values or result.engine_version == mariadb_engine_version_2'
 
       - name: Idempotence modifying several pending attributes - preferred_maintenance_window not lowercase
         rds_instance:

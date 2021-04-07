@@ -69,4 +69,15 @@
           that:
             - result.changed
 
-      # TODO ideally we test with an actual shared snapshot - but we'd need a second account - making tests fairly complicated?
+      #  TODO ideally we test with an actual shared snapshot - but we'd need a second account - making tests fairly complicated?
+
+    always:
+
+      - name: Delete the instance
+        rds_instance:
+          id: "{{ item }}"
+          state: absent
+          skip_final_snapshot: True
+        loop:
+          - "{{ instance_id }}"
+        ignore_errors: yes

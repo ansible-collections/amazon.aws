@@ -1,0 +1,14 @@
+---
+- name: 'rds_instance integration tests'
+  collections:
+    - amazon.aws
+    - community.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
+    - include: './test_{{ inventory_hostname }}.yml'
+    #- include: ./test_restore_instance.yml  # TODO: snapshot, s3

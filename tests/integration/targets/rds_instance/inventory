@@ -1,0 +1,21 @@
+[tests]
+credentials
+states
+tags
+modification
+bad_options
+processor_features
+encryption
+final_snapshot
+read_replica
+vpc_security_groups
+restore_instance
+snapshot
+
+# TODO: uncomment after adding rds_cluster module
+# aurora
+
+
+[all:vars]
+ansible_connection=local
+ansible_python_interpreter="{{ ansible_playbook_python }}"
