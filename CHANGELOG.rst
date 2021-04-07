@@ -24,6 +24,7 @@ Minor Changes
 Bugfixes
 --------
 
+- aws_s3 - Fix upload permission when an S3 bucket ACL policy requires a particular canned ACL
 - ec2_vol - a creation or update now returns a structure with an up to date list of tags (https://github.com/ansible-collections/amazon.aws/pull/241).
 
 v1.3.0
