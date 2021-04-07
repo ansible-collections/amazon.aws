@@ -73,18 +73,70 @@
           that:
             - result.changed
             - "result.db_instance_identifier == '{{ instance_id }}'"
+            - "result.vpc_security_groups | selectattr('status', 'in', ['active', 'adding']) | list | length == 2"
 
-      - name: Add a new security group
+      - name: Add a new security group without purge (check_mode)
         rds_instance:
           id: "{{ instance_id }}"
           state: present
           vpc_security_group_ids:
             - "{{ sgs_result.results.2.group_id }}"
+          apply_immediately: true
+          purge_security_groups: false
+        check_mode: true
         register: result
 
       - assert:
           that:
             - result.changed
+            - "result.db_instance_identifier == '{{ instance_id }}'"
+
+      - name: Add a new security group without purge
+        rds_instance:
+          id: "{{ instance_id }}"
+          state: present
+          vpc_security_group_ids:
+            - "{{ sgs_result.results.2.group_id }}"
+          apply_immediately: true
+          purge_security_groups: false
+        register: result
+
+      - assert:
+          that:
+            - result.changed
+            - "result.db_instance_identifier == '{{ instance_id }}'"
+            - "result.vpc_security_groups | selectattr('status', 'in', ['active', 'adding']) | list | length == 3"
+
+      - name: Add a new security group without purge (test idempotence)
+        rds_instance:
+          id: "{{ instance_id }}"
+          state: present
+          vpc_security_group_ids:
+            - "{{ sgs_result.results.2.group_id }}"
+          apply_immediately: true
+          purge_security_groups: false
+        register: result
+
+      - assert:
+          that:
+            - not result.changed
+            - "result.db_instance_identifier == '{{ instance_id }}'"
+
+      - name: Add a security group with purge
+        rds_instance:
+          id: "{{ instance_id }}"
+          state: present
+          vpc_security_group_ids:
+            - "{{ sgs_result.results.2.group_id }}"
+          apply_immediately: true
+        register: result
+
+      - assert:
+          that:
+            - result.changed
+            - "result.db_instance_identifier == '{{ instance_id }}'"
+            - "result.vpc_security_groups | selectattr('status', 'in', ['active', 'adding']) | list | length == 1"
+            - "result.vpc_security_groups | selectattr('status', 'equalto', 'removing') | list | length == 2"
 
     always:
 
@@ -127,7 +179,7 @@
           - {"cidr": "10.122.122.160/28", "zone": "{{ aws_region }}c"}
           - {"cidr": "10.122.122.176/28", "zone": "{{ aws_region }}d"}
 
-      - name: create a VPC
+      - name: Delete VPC
         ec2_vpc_net:
           name: "{{ resource_prefix }}-vpc"
           state: absent
