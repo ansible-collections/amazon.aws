@@ -1,0 +1,2 @@
+minor_changes:
+- rds_instance - new ``purge_security_groups`` parameter (https://github.com/ansible-collections/community.aws/issues/385).
