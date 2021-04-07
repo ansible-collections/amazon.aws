@@ -55,6 +55,7 @@
           tags:
             Name: "{{ instance_id }}"
             Created_by: Ansible rds_instance tests
+          wait: yes
         register: result
 
       - assert:

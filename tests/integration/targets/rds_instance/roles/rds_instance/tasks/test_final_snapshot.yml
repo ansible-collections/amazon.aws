@@ -58,4 +58,4 @@
           id: "{{ instance_id }}"
           state: absent
           skip_final_snapshot: True
-        ignore_errors: yes         
+        ignore_errors: yes
