@@ -526,6 +526,38 @@
               - result is not changed
       when: ansible_system == 'Linux' or ansible_distribution == 'MacOSX'
 
+    - name: test upload to ACL-restricted bucket
+      block:
+        - name: make a bucket to upload the file
+          aws_s3:
+            bucket: "{{ bucket_name }}_with_acl"
+            mode: create
+            permission: bucket-owner-full-control
+
+        # This should fail
+        - name: fail to upload the file to the bucket
+          aws_s3:
+            bucket: "{{ bucket_name }}"
+            mode: put
+            src: "{{ tmpdir.path }}/largefile"
+            object: multipart.txt
+            permission: private
+          delay: 3
+          until: "result.msg == 'PUT operation complete'"
+          register: result
+
+        # This should succeed
+        - name: fail to upload the file to the bucket
+          aws_s3:
+            bucket: "{{ bucket_name }}"
+            mode: put
+            src: "{{ tmpdir.path }}/largefile"
+            object: multipart.txt
+            permission: bucket-owner-full-control
+          delay: 3
+          until: "result.msg == 'PUT operation complete'"
+          register: result
+
     - name: create an object from static content
       aws_s3:
         bucket: "{{ bucket_name }}"
