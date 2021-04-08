@@ -1,6 +1,11 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
+try:
+    from botocore.exceptions import ClientError, BotoCoreError
+except ImportError:
+    pass  # caught by AnsibleAWSModule
+
 
 def wafv2_list_web_acls(wafv2, scope, fail_json_aws, Nextmarker=None):
     # there is currently no paginator for wafv2
