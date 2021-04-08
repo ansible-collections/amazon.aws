@@ -23,7 +23,7 @@
     state: present
     arn: "{{ alb.load_balancer_arn }}"
   register: out
-  retries: 5
+  retries: 10
   delay: 15
   until: out.failed == false
 
