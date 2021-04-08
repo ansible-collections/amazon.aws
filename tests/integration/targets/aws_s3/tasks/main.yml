@@ -528,16 +528,35 @@
 
     - name: test upload to ACL-restricted bucket
       block:
+
         - name: make a bucket to upload the file
-          aws_s3:
-            bucket: "{{ bucket_name }}_with_acl"
-            mode: create
-            permission: bucket-owner-full-control
+          s3_bucket:
+            name: "{{ bucket_name_acl }}"
+            state: present
+            policy: " {{ lookup('template', 'policy.json') }}"
+            requester_pays: yes
+            versioning: yes
+          register: output
+
+        - assert:
+            that:
+              - output is changed
+              - output.name == '{{ bucket_name_acl }}'
+              - output.requester_pays
+              - output.versioning.MfaDelete == 'Disabled'
+              - output.versioning.Versioning == 'Enabled'
+              - output.tags.example == 'tag1'
+              - output.tags.another == 'tag2'
+              - output.policy.Statement[0].Action == 's3:PutObject'
+              - output.policy.Statement[0].Effect == 'Allow'
+              - output.policy.Statement[0].Principal == '*'
+              - output.policy.Statement[0].Resource == 'arn:aws:s3:::{{ bucket_name }}/*'
+              #- output.policy.Statement[0].Condition.StringEquals. == 'AddPerm'
 
         # This should fail
         - name: fail to upload the file to the bucket
           aws_s3:
-            bucket: "{{ bucket_name }}"
+            bucket: "{{ bucket_name_acl }}"
             mode: put
             src: "{{ tmpdir.path }}/largefile"
             object: multipart.txt
@@ -549,7 +568,7 @@
         # This should succeed
         - name: fail to upload the file to the bucket
           aws_s3:
-            bucket: "{{ bucket_name }}"
+            bucket: "{{ bucket_name_acl }}"
             mode: put
             src: "{{ tmpdir.path }}/largefile"
             object: multipart.txt
