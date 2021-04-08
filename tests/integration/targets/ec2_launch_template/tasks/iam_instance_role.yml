@@ -73,6 +73,36 @@
           - 'template_with_updated_role is not changed'
           - 'template_with_updated_role.default_template.launch_template_data.iam_instance_profile.arn == iam_role_2.arn.replace(":role/", ":instance-profile/")'
 
+    - name: Update instance with original instance_role (pass profile ARN)
+      ec2_launch_template:
+        name: "{{ resource_prefix }}-test-instance-role"
+        image_id: "{{ ec2_ami_image }}"
+        instance_type: t2.micro
+        # By default an instance profile will be created with the same name as the role
+        iam_instance_profile: '{{ iam_role.arn.replace(":role/", ":instance-profile/") }}'
+      register: template_with_updated_role
+
+    - assert:
+        that:
+          - 'template_with_updated_role.default_template.launch_template_data.iam_instance_profile.arn == iam_role.arn.replace(":role/", ":instance-profile/")'
+          - 'template_with_updated_role.default_template.launch_template_data.iam_instance_profile.arn == iam_role.arn.replace(":role/", ":instance-profile/")'
+          - 'template_with_role.default_template.version_number < template_with_updated_role.default_template.version_number'
+          - 'template_with_updated_role is changed'
+          - 'template_with_updated_role is not failed'
+
+    - name: Re-set with same new instance_role (pass profile ARN)
+      ec2_launch_template:
+        name: "{{ resource_prefix }}-test-instance-role"
+        image_id: "{{ ec2_ami_image }}"
+        instance_type: t2.micro
+        iam_instance_profile: '{{ iam_role.arn.replace(":role/", ":instance-profile/") }}'
+      register: template_with_updated_role
+
+    - assert:
+        that:
+          - 'template_with_updated_role is not changed'
+          - 'template_with_updated_role.default_template.launch_template_data.iam_instance_profile.arn == iam_role.arn.replace(":role/", ":instance-profile/")'
+
   always:
     - name: delete launch template
       ec2_launch_template:

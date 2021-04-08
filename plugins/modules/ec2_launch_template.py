@@ -411,7 +411,7 @@ except ImportError:
 
 def determine_iam_role(module, name_or_arn):
     if re.match(r'^arn:aws:iam::\d+:instance-profile/[\w+=/,.@-]+$', name_or_arn):
-        return name_or_arn
+        return {'arn': name_or_arn}
     iam = module.client('iam', retry_decorator=AWSRetry.jittered_backoff())
     try:
         role = iam.get_instance_profile(InstanceProfileName=name_or_arn, aws_retry=True)
