@@ -99,6 +99,24 @@ options:
             - If using the Fargate launch type, this field is required and is limited by the CPU.
         required: false
         type: str
+    depends_on:
+        version_added: 1.5.0
+        description:
+            - The dependencies defined for container startup and shutdown.
+            - When a dependency is defined for container startup, for container shutdown it is reversed.
+        required: false
+        type: list
+        elements: dict
+        suboptions:
+            container_name:
+                description: The name of a container.
+                type: str
+                required: true
+            condition:
+                description: The dependency condition of the container. 
+                type: str
+                required: true
+                choices: ["start", "complete", "success", "healthy"]
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -233,7 +251,7 @@ class EcsTaskManager:
         except botocore.exceptions.ClientError:
             return None
 
-    def register_task(self, family, task_role_arn, execution_role_arn, network_mode, container_definitions, volumes, launch_type, cpu, memory):
+    def register_task(self, family, task_role_arn, execution_role_arn, network_mode, container_definitions, volumes, launch_type, cpu, memory, depends_on):
         validated_containers = []
 
         # Ensures the number parameters are int as required by boto
@@ -258,7 +276,7 @@ class EcsTaskManager:
             family=family,
             taskRoleArn=task_role_arn,
             containerDefinitions=container_definitions,
-            volumes=volumes
+            volumes=volumes,
         )
         if network_mode != 'default':
             params['networkMode'] = network_mode
@@ -270,6 +288,8 @@ class EcsTaskManager:
             params['requiresCompatibilities'] = [launch_type]
         if execution_role_arn:
             params['executionRoleArn'] = execution_role_arn
+        if depends_on:
+            pass['dependsOn'] = depends_on
 
         try:
             response = self.ecs.register_task_definition(**params)
@@ -329,7 +349,8 @@ def main():
         volumes=dict(required=False, type='list', elements='dict'),
         launch_type=dict(required=False, choices=['EC2', 'FARGATE']),
         cpu=dict(),
-        memory=dict(required=False, type='str')
+        memory=dict(required=False, type='str'),
+        depends_on=dict(required=False, type='list', elements='dict'), 
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec,
@@ -483,7 +504,8 @@ def main():
                                                                    volumes,
                                                                    module.params['launch_type'],
                                                                    module.params['cpu'],
-                                                                   module.params['memory'])
+                                                                   module.params['memory'],
+                                                                   module.params['depends_on'])
             results['changed'] = True
 
     elif module.params['state'] == 'absent':
