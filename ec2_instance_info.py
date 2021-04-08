@@ -512,7 +512,7 @@ import datetime
 try:
     import botocore
 except ImportError:
-    pass  # Handled by AnsibleAWSModule
+    pass  # caught by AnsibleAWSModule
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
