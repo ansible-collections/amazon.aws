@@ -1,0 +1,213 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  block:
+    - name: check_mode create ip set
+      wafv2_ip_set:
+        name: "{{ ip_set_name }}"
+        state: present
+        description: hallo eins
+        scope: REGIONAL
+        ip_address_version: IPV4
+        addresses:
+          - 8.8.8.8/32
+          - 8.8.4.4/32
+        tags:
+          A: B
+          C: D
+      register: out
+      check_mode: yes
+
+    - name: verify create
+      assert:
+        that:
+          - out is changed
+
+    - name: create ip set
+      wafv2_ip_set:
+        name: "{{ ip_set_name }}"
+        state: present
+        description: hallo eins
+        scope: REGIONAL
+        ip_address_version: IPV4
+        addresses:
+          - 8.8.8.8/32
+          - 8.8.4.4/32
+        tags:
+          A: B
+          C: D
+      register: out
+
+    - name: verify create
+      assert:
+        that:
+          - out is changed
+          - "'8.8.8.8/32' in out.addresses"
+          - out.ip_address_version == 'IPV4'
+          - out.addresses | count == 2
+          - out.description == 'hallo eins'
+
+    - name: change ip set
+      wafv2_ip_set:
+        name: "{{ ip_set_name }}"
+        state: present
+        description: hallo eins
+        scope: REGIONAL
+        ip_address_version: IPV4
+        addresses:
+          - 8.8.8.8/32
+          - 8.8.4.4/32
+          - 10.0.0.0/8
+        tags:
+          A: B
+          C: D
+      register: out
+
+    - name: verify create
+      assert:
+        that:
+          - out is changed
+          - "'10.0.0.0/8' in out.addresses"
+
+    - name: test ip set immutable
+      wafv2_ip_set:
+        name: "{{ ip_set_name }}"
+        state: present
+        description: hallo eins
+        scope: REGIONAL
+        ip_address_version: IPV4
+        addresses:
+          - 8.8.8.8/32
+          - 8.8.4.4/32
+          - 10.0.0.0/8
+        tags:
+          A: B
+          C: D
+      register: out
+
+    - name: verify immutable create
+      assert:
+        that:
+          - out is not changed
+          - out.addresses | count == 3
+
+    - name: add one ip
+      wafv2_ip_set:
+        name: "{{ ip_set_name }}"
+        state: present
+        description: hallo eins
+        scope: REGIONAL
+        ip_address_version: IPV4
+        purge_addresses: no
+        addresses:
+          - 127.0.0.1/32
+      register: out
+
+    - name: verify change
+      assert:
+        that:
+          - out is changed
+          - out.addresses | count == 4
+          - "'127.0.0.1/32' in out.addresses"
+
+
+    - name: remove one ip
+      wafv2_ip_set:
+        name: "{{ ip_set_name }}"
+        state: absent
+        description: hallo eins
+        scope: REGIONAL
+        ip_address_version: IPV4
+        purge_addresses: yes
+        addresses:
+          - 127.0.0.1/32
+      register: out
+
+    - name: verify change
+      assert:
+        that:
+          - out is changed
+          - out.addresses | count == 3
+          - "'127.0.0.1/32' not in out.addresses"
+          - "'8.8.8.8/32' in out.addresses"
+
+    - name: get ip set info
+      wafv2_ip_set_info:
+        name: "{{ ip_set_name }}"
+        scope: REGIONAL
+      register: out
+
+    - name: verify rules
+      assert:
+        that:
+          - out.addresses | count == 3
+
+
+    - name: purge all but one
+      wafv2_ip_set:
+        name: "{{ ip_set_name }}"
+        state: present
+        description: hallo eins
+        scope: REGIONAL
+        ip_address_version: IPV4
+        purge_addresses: yes
+        addresses:
+          - 127.0.0.1/32
+      register: out
+
+    - name: verify change
+      assert:
+        that:
+          - out is changed
+          - out.addresses | count == 1
+
+    - name: get ip set info
+      wafv2_ip_set_info:
+        name: "{{ ip_set_name }}"
+        scope: REGIONAL
+      register: out
+
+    - name: verify rules
+      assert:
+        that:
+          - out.addresses | count == 1
+
+    - name: delete ip set
+      wafv2_ip_set:
+        name: "{{ ip_set_name }}"
+        state: absent
+        scope: REGIONAL
+        ip_address_version: IPV4
+      register: out
+
+    - name: verify delete
+      assert:
+        that:
+          - out is changed
+
+    - name: delete ip set immutable
+      wafv2_ip_set:
+        name: "{{ ip_set_name }}"
+        state: absent
+        scope: REGIONAL
+        ip_address_version: IPV4
+      register: out
+
+    - name: verify immutable delete
+      assert:
+        that:
+          - out is not changed
+
+
+  always:
+    - name: always delete ip set
+      wafv2_ip_set:
+        name: "{{ ip_set_name }}"
+        state: absent
+        scope: REGIONAL
+        ip_address_version: IPV4

@@ -219,6 +219,8 @@ action_groups:
   - sqs_queue
   - sts_assume_role
   - sts_session_token
+  - wafv2_ip_set
+  - wafv2_ip_set_info
 
 plugin_routing:
   modules:
