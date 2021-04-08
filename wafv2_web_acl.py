@@ -164,42 +164,49 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_t
 from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_list_web_acls, compare_priority_rules, wafv2_snake_dict_to_camel_dict
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError, WaiterError
+    from botocore.exceptions import ClientError, BotoCoreError
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
 
 class WebACL:
-    def __init__(self, wafv2, name, scope):
+    def __init__(self, wafv2, name, scope, fail_json_aws):
         self.wafv2 = wafv2
         self.name = name
         self.scope = scope
+        self.fail_json_aws = fail_json_aws
         self.existing_acl, self.id, self.locktoken = self.get_web_acl()
 
     def update(self, default_action, description, rules, sampled_requests, cloudwatch_metrics, metric_name):
-        response = self.wafv2.update_web_acl(
-            Name=self.name,
-            Scope=self.scope,
-            Id=self.id,
-            DefaultAction=default_action,
-            Description=description,
-            Rules=rules,
-            VisibilityConfig={
-                'SampledRequestsEnabled': sampled_requests,
-                'CloudWatchMetricsEnabled': cloudwatch_metrics,
-                'MetricName': metric_name
-            },
-            LockToken=self.locktoken
-        )
+        try:
+            response = self.wafv2.update_web_acl(
+                Name=self.name,
+                Scope=self.scope,
+                Id=self.id,
+                DefaultAction=default_action,
+                Description=description,
+                Rules=rules,
+                VisibilityConfig={
+                    'SampledRequestsEnabled': sampled_requests,
+                    'CloudWatchMetricsEnabled': cloudwatch_metrics,
+                    'MetricName': metric_name
+                },
+                LockToken=self.locktoken
+            )
+        except (BotoCoreError, ClientError) as e:
+            self.fail_json_aws(e, msg="Failed to update wafv2 web acl.")
         return response
 
     def remove(self):
-        response = self.wafv2.delete_web_acl(
-            Name=self.name,
-            Scope=self.scope,
-            Id=self.id,
-            LockToken=self.locktoken
-        )
+        try:
+            response = self.wafv2.delete_web_acl(
+                Name=self.name,
+                Scope=self.scope,
+                Id=self.id,
+                LockToken=self.locktoken
+            )
+        except (BotoCoreError, ClientError) as e:
+            self.fail_json_aws(e, msg="Failed to remove wafv2 web acl.")
         return response
 
     def get(self):
@@ -221,15 +228,18 @@ class WebACL:
                 arn = item.get('ARN')
 
         if id:
-            existing_acl = self.wafv2.get_web_acl(
-                Name=self.name,
-                Scope=self.scope,
-                Id=id
-            )
+            try:
+                existing_acl = self.wafv2.get_web_acl(
+                    Name=self.name,
+                    Scope=self.scope,
+                    Id=id
+                )
+            except (BotoCoreError, ClientError) as e:
+                self.fail_json_aws(e, msg="Failed to get wafv2 web acl.")
         return existing_acl, id, locktoken
 
     def list(self):
-        return wafv2_list_web_acls(self.wafv2, self.scope)
+        return wafv2_list_web_acls(self.wafv2, self.scope, self.fail_json_aws)
 
     def create(self, default_action, rules, sampled_requests, cloudwatch_metrics, metric_name, tags, description):
         req_obj = {
@@ -248,9 +258,12 @@ class WebACL:
         if tags:
             req_obj['Tags'] = ansible_dict_to_boto3_tag_list(tags)
 
-        response = self.wafv2.create_web_acl(**req_obj)
-        self.existing_acl, self.id, self.locktoken = self.get_web_acl()
+        try:
+            response = self.wafv2.create_web_acl(**req_obj)
+        except (BotoCoreError, ClientError) as e:
+            self.fail_json_aws(e, msg="Failed to create wafv2 web acl.")
 
+        self.existing_acl, self.id, self.locktoken = self.get_web_acl()
         return self.existing_acl
 
 
@@ -302,7 +315,7 @@ def main():
     if not metric_name:
         metric_name = name
 
-    web_acl = WebACL(module.client('wafv2'), name, scope)
+    web_acl = WebACL(module.client('wafv2'), name, scope, module.fail_json_aws)
     change = False
     retval = {}
 

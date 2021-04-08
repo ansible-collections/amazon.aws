@@ -13,8 +13,7 @@ author:
   - "Markus Bergholz (@markuman)"
 short_description: wafv2_web_acl_info
 description:
-  - Create, modify and delete CloudWatch log group metric filter.
-  - CloudWatch log group metric filter can be use with M(community.aws.ec2_metric_alarm).
+  - Get informations about existing wafv2 rule groups.
 requirements:
   - boto3
   - botocore
@@ -102,17 +101,20 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_t
 from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_list_rule_groups
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError, WaiterError
+    from botocore.exceptions import ClientError, BotoCoreError
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
 
-def get_rule_group(wafv2, name, scope, id):
-    response = wafv2.get_rule_group(
-        Name=name,
-        Scope=scope,
-        Id=id
-    )
+def get_rule_group(wafv2, name, scope, id, fail_json_aws):
+    try:
+        response = wafv2.get_rule_group(
+            Name=name,
+            Scope=scope,
+            Id=id
+        )
+    except (BotoCoreError, ClientError) as e:
+        fail_json_aws(e, msg="Failed to get wafv2 rule group.")
     return response
 
 
@@ -135,7 +137,7 @@ def main():
     wafv2 = module.client('wafv2')
 
     # check if rule group exists
-    response = wafv2_list_rule_groups(wafv2, scope)
+    response = wafv2_list_rule_groups(wafv2, scope, module.fail_json_aws)
     id = None
     retval = {}
 
@@ -145,7 +147,7 @@ def main():
 
     existing_group = None
     if id:
-        existing_group = get_rule_group(wafv2, name, scope, id)
+        existing_group = get_rule_group(wafv2, name, scope, id, module.fail_json_aws)
         retval = camel_dict_to_snake_dict(existing_group.get('RuleGroup'))
 
     module.exit_json(**retval)

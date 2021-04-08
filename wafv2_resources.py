@@ -13,8 +13,7 @@ author:
   - "Markus Bergholz (@markuman)"
 short_description: wafv2_web_acl
 description:
-  - Create, modify and delete CloudWatch log group metric filter.
-  - CloudWatch log group metric filter can be use with M(community.aws.ec2_metric_alarm).
+  - Apply or remove wafv2 to other aws resources.
 requirements:
   - boto3
   - botocore
@@ -68,39 +67,51 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_t
 from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_list_web_acls
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError, WaiterError
+    from botocore.exceptions import ClientError, BotoCoreError
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
 
-def get_web_acl(wafv2, name, scope, id):
-    response = wafv2.get_web_acl(
-        Name=name,
-        Scope=scope,
-        Id=id
-    )
+def get_web_acl(wafv2, name, scope, id, fail_json_aws):
+    try:
+        response = wafv2.get_web_acl(
+            Name=name,
+            Scope=scope,
+            Id=id
+        )
+    except (BotoCoreError, ClientError) as e:
+        fail_json_aws(e, msg="Failed to get wafv2 web acl.")
     return response
 
 
-def list_wafv2_resources(wafv2, arn):
-    response = wafv2.list_resources_for_web_acl(
-        WebACLArn=arn
-    )
+def list_wafv2_resources(wafv2, arn, fail_json_aws):
+    try:
+        response = wafv2.list_resources_for_web_acl(
+            WebACLArn=arn
+        )
+    except (BotoCoreError, ClientError) as e:
+        fail_json_aws(e, msg="Failed to list wafv2 web acl.")
     return response
 
 
-def add_wafv2_resources(wafv2, waf_arn, arn):
-    response = wafv2.associate_web_acl(
-        WebACLArn=waf_arn,
-        ResourceArn=arn
-    )
+def add_wafv2_resources(wafv2, waf_arn, arn, fail_json_aws):
+    try:
+        response = wafv2.associate_web_acl(
+            WebACLArn=waf_arn,
+            ResourceArn=arn
+        )
+    except (BotoCoreError, ClientError) as e:
+        fail_json_aws(e, msg="Failed to add wafv2 web acl.")
     return response
 
 
-def remove_resources(wafv2, arn):
-    response = wafv2.disassociate_web_acl(
-        ResourceArn=arn
-    )
+def remove_resources(wafv2, arn, fail_json_aws):
+    try:
+        response = wafv2.disassociate_web_acl(
+            ResourceArn=arn
+        )
+    except (BotoCoreError, ClientError) as e:
+        fail_json_aws(e, msg="Failed to remove wafv2 web acl.")
     return response
 
 
@@ -129,7 +140,7 @@ def main():
 
     # check if web acl exists
 
-    response = wafv2_list_web_acls(wafv2, scope)
+    response = wafv2_list_web_acls(wafv2, scope, module.fail_json_aws)
 
     id = None
     retval = {}
@@ -140,24 +151,24 @@ def main():
             id = item.get('Id')
 
     if id:
-        existing_acl = get_web_acl(wafv2, name, scope, id)
+        existing_acl = get_web_acl(wafv2, name, scope, id, module.fail_json_aws)
         waf_arn = existing_acl.get('WebACL').get('ARN')
 
-        retval = list_wafv2_resources(wafv2, waf_arn)
+        retval = list_wafv2_resources(wafv2, waf_arn, module.fail_json_aws)
 
     if state == 'present':
         if retval:
             if arn not in retval.get('ResourceArns'):
                 change = True
                 if not check_mode:
-                    retval = add_wafv2_resources(wafv2, waf_arn, arn)
+                    retval = add_wafv2_resources(wafv2, waf_arn, arn, module.fail_json_aws)
 
     elif state == 'absent':
         if retval:
             if arn in retval.get('ResourceArns'):
                 change = True
                 if not check_mode:
-                    retval = remove_resources(wafv2, arn)
+                    retval = remove_resources(wafv2, arn, module.fail_json_aws)
 
     module.exit_json(changed=change, **camel_dict_to_snake_dict(retval))
 

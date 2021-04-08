@@ -13,8 +13,7 @@ author:
   - "Markus Bergholz (@markuman)"
 short_description: wafv2_web_acl
 description:
-  - Create, modify and delete CloudWatch log group metric filter.
-  - CloudWatch log group metric filter can be use with M(community.aws.ec2_metric_alarm).
+  - Create, modify and delete wafv2 rule groups.
 requirements:
   - boto3
   - botocore
@@ -209,16 +208,17 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_t
 from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_list_rule_groups, compare_priority_rules, wafv2_snake_dict_to_camel_dict
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError, WaiterError
+    from botocore.exceptions import ClientError, BotoCoreError
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
 
 class RuleGroup:
-    def __init__(self, wafv2, name, scope):
+    def __init__(self, wafv2, name, scope, fail_json_aws):
         self.wafv2 = wafv2
         self.name = name
         self.scope = scope
+        self.fail_json_aws = fail_json_aws
         self.existing_group, self.id, self.locktoken = self.get_group()
 
     def update(self, description, rules, sampled_requests, cloudwatch_metrics, metric_name):
@@ -238,7 +238,10 @@ class RuleGroup:
         if description:
             req_obj['Description'] = description
 
-        response = self.wafv2.update_rule_group(**req_obj)
+        try:
+            response = self.wafv2.update_rule_group(**req_obj)
+        except (BotoCoreError, ClientError) as e:
+            self.fail_json_aws(e, msg="Failed to update wafv2 rule group.")
         return response
 
     def get_group(self):
@@ -255,16 +258,19 @@ class RuleGroup:
 
         existing_group = None
         if id:
-            existing_group = self.wafv2.get_rule_group(
-                Name=self.name,
-                Scope=self.scope,
-                Id=id
-            )
+            try:
+                existing_group = self.wafv2.get_rule_group(
+                    Name=self.name,
+                    Scope=self.scope,
+                    Id=id
+                )
+            except (BotoCoreError, ClientError) as e:
+                self.fail_json_aws(e, msg="Failed to get wafv2 rule group.")
 
         return existing_group, id, locktoken
 
     def list(self):
-        return wafv2_list_rule_groups(self.wafv2, self.scope)
+        return wafv2_list_rule_groups(self.wafv2, self.scope, self.fail_json_aws)
 
     def get(self):
         if self.existing_group:
@@ -272,12 +278,15 @@ class RuleGroup:
         return None
 
     def remove(self):
-        response = self.wafv2.delete_rule_group(
-            Name=self.name,
-            Scope=self.scope,
-            Id=self.id,
-            LockToken=self.locktoken
-        )
+        try:
+            response = self.wafv2.delete_rule_group(
+                Name=self.name,
+                Scope=self.scope,
+                Id=self.id,
+                LockToken=self.locktoken
+            )
+        except (BotoCoreError, ClientError) as e:
+            self.fail_json_aws(e, msg="Failed to delete wafv2 rule group.")
         return response
 
     def create(self, capacity, description, rules, sampled_requests, cloudwatch_metrics, metric_name, tags):
@@ -299,7 +308,11 @@ class RuleGroup:
         if tags:
             req_obj['Tags'] = ansible_dict_to_boto3_tag_list(tags)
 
-        response = self.wafv2.create_rule_group(**req_obj)
+        try:
+            response = self.wafv2.create_rule_group(**req_obj)
+        except (BotoCoreError, ClientError) as e:
+            self.fail_json_aws(e, msg="Failed to create wafv2 rule group.")
+
         self.existing_group, self.id, self.locktoken = self.get_group()
 
         return self.existing_group
@@ -348,7 +361,7 @@ def main():
     if not metric_name:
         metric_name = name
 
-    rule_group = RuleGroup(module.client('wafv2'), name, scope)
+    rule_group = RuleGroup(module.client('wafv2'), name, scope, module.fail_json_aws)
 
     change = False
     retval = {}
