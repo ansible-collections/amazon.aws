@@ -83,17 +83,20 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_t
 from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_list_web_acls
 
 try:
-    from botocore.exceptions import ClientError, BotoCoreError, WaiterError
+    from botocore.exceptions import ClientError, BotoCoreError
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
 
-def get_web_acl(wafv2, name, scope, id):
-    response = wafv2.get_web_acl(
-        Name=name,
-        Scope=scope,
-        Id=id
-    )
+def get_web_acl(wafv2, name, scope, id, fail_json_aws):
+    try:
+        response = wafv2.get_web_acl(
+            Name=name,
+            Scope=scope,
+            Id=id
+        )
+    except (BotoCoreError, ClientError) as e:
+        fail_json_aws(e, msg="Failed to get wafv2 web acl.")
     return response
 
 
@@ -114,7 +117,7 @@ def main():
 
     wafv2 = module.client('wafv2')
     # check if web acl exists
-    response = wafv2_list_web_acls(wafv2, scope)
+    response = wafv2_list_web_acls(wafv2, scope, module.fail_json_aws)
 
     id = None
     retval = {}
@@ -124,7 +127,7 @@ def main():
             id = item.get('Id')
 
     if id:
-        existing_acl = get_web_acl(wafv2, name, scope, id)
+        existing_acl = get_web_acl(wafv2, name, scope, id, module.fail_json_aws)
         retval = camel_dict_to_snake_dict(existing_acl.get('WebACL'))
 
     module.exit_json(**retval)

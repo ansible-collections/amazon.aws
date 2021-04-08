@@ -2,7 +2,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-def wafv2_list_web_acls(wafv2, scope, Nextmarker=None):
+def wafv2_list_web_acls(wafv2, scope, fail_json_aws, Nextmarker=None):
     # there is currently no paginator for wafv2
     req_obj = {
         'Scope': scope,
@@ -10,22 +10,33 @@ def wafv2_list_web_acls(wafv2, scope, Nextmarker=None):
     }
     if Nextmarker:
         req_obj['NextMarker'] = Nextmarker
-    response = wafv2.list_web_acls(**req_obj)
+
+    try:
+        response = wafv2.list_web_acls(**req_obj)
+    except (BotoCoreError, ClientError) as e:
+        fail_json_aws(e, msg="Failed to list wafv2 web acl.")
+
     if response.get('NextMarker'):
-        response['WebACLs'] += wafv2_list_web_acls(wafv2, scope, Nextmarker=response.get('NextMarker')).get('WebACLs')
+        response['WebACLs'] += wafv2_list_web_acls(wafv2, scope, fail_json_aws, Nextmarker=response.get('NextMarker')).get('WebACLs')
     return response
 
 
-def wafv2_list_rule_groups(wafv2, scope, Nextmarker=None):
+def wafv2_list_rule_groups(wafv2, scope, fail_json_aws, Nextmarker=None):
+    # there is currently no paginator for wafv2
     req_obj = {
         'Scope': scope,
         'Limit': 100
     }
     if Nextmarker:
         req_obj['NextMarker'] = Nextmarker
-    response = wafv2.list_rule_groups(**req_obj)
+
+    try:
+        response = wafv2.list_rule_groups(**req_obj)
+    except (BotoCoreError, ClientError) as e:
+        fail_json_aws(e, msg="Failed to list wafv2 rule group.")
+
     if response.get('NextMarker'):
-        response['RuleGroups'] += wafv2_list_rule_groups(wafv2, scope, Nextmarker=response.get('NextMarker')).get('RuleGroups')
+        response['RuleGroups'] += wafv2_list_rule_groups(wafv2, scope, fail_json_aws, Nextmarker=response.get('NextMarker')).get('RuleGroups')
     return response
 
 
