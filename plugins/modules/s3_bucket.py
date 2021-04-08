@@ -767,6 +767,8 @@ def get_bucket_ownership_cntrl(s3_client, bucket_name):
     '''
     Get current bucket public access block
     '''
+    if not module.botocore_at_least('1.8.11'):
+        return None
     try:
         bucket_ownership = s3_client.get_bucket_ownership_controls(Bucket=bucket_name)
         return bucket_ownership['OwnershipControls']['Rules'][0]['ObjectOwnership']
