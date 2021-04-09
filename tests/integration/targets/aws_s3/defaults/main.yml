@@ -1,5 +1,4 @@
 ---
 # defaults file for s3
-bucket_name: '{{resource_prefix}}'
-
-bucket_name_acl: '{{ bucket_name }}_with_acl'
+bucket_name: '{{ resource_prefix }}'
+bucket_name_acl: '{{ bucket_name }}-with-acl'
