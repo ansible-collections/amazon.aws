@@ -216,10 +216,144 @@ EXAMPLES = '''
 
 '''
 RETURN = '''
-task:
-  description: The result of the create, accept, reject or delete action.
+peering_id:
+  description: The id of the VPC peering connection created/deleted.
+  returned: always
+  type: str
+  sample: pcx-034223d7c0aec3cde
+vpc_peering_connection:
+  description: The details of the VPC peering connection as returned by Boto3 (snake cased).
   returned: success
-  type: dict
+  type: complex
+  contains:
+    accepter_vpc_info:
+      description: Information about the VPC which accepted the connection.
+      returned: success
+      type: complex
+      contains:
+        cidr_block:
+          description: The primary CIDR for the VPC.
+          returned: when connection is in the accepted state.
+          type: str
+          example: '10.10.10.0/23'
+        cidr_block_set:
+          description: A list of all CIDRs for the VPC.
+          returned: when connection is in the accepted state.
+          type: complex
+          contains:
+            cidr_block:
+              description: A CIDR block used by the VPC.
+              returned: success
+              type: str
+              example: '10.10.10.0/23'
+        owner_id:
+          description: The AWS account that owns the VPC.
+          returned: success
+          type: str
+          example: 012345678901
+        peering_options:
+          description: Additional peering configuration.
+          returned: when connection is in the accepted state.
+          type: dict
+          contains:
+            allow_dns_resolution_from_remote_vpc:
+              description: Indicates whether a VPC can resolve public DNS hostnames to private IP addresses when queried from instances in a peer VPC.
+              returned: success
+              type: bool
+            allow_egress_from_local_classic_link_to_remote_vpc:
+              description: Indicates whether a local ClassicLink connection can communicate with the peer VPC over the VPC peering connection.
+              returned: success
+              type: bool
+            allow_egress_from_local_vpc_to_remote_classic_link:
+              description: Indicates whether a local VPC can communicate with a ClassicLink connection in the peer VPC over the VPC peering connection.
+              returned: success
+              type: bool
+        region:
+          description: The AWS region that the VPC is in.
+          returned: success
+          type: str
+          example: us-east-1
+        vpc_id:
+          description: The ID of the VPC
+          returned: success
+          type: str
+          example: vpc-0123456789abcdef0
+    requester_vpc_info:
+      description: Information about the VPC which requested the connection.
+      returned: success
+      type: complex
+      contains:
+        cidr_block:
+          description: The primary CIDR for the VPC.
+          returned: when connection is not in the deleted state.
+          type: str
+          example: '10.10.10.0/23'
+        cidr_block_set:
+          description: A list of all CIDRs for the VPC.
+          returned: when connection is not in the deleted state.
+          type: complex
+          contains:
+            cidr_block:
+              description: A CIDR block used by the VPC
+              returned: success
+              type: str
+              example: '10.10.10.0/23'
+        owner_id:
+          description: The AWS account that owns the VPC.
+          returned: success
+          type: str
+          example: 012345678901
+        peering_options:
+          description: Additional peering configuration.
+          returned: when connection is not in the deleted state.
+          type: dict
+          contains:
+            allow_dns_resolution_from_remote_vpc:
+              description: Indicates whether a VPC can resolve public DNS hostnames to private IP addresses when queried from instances in a peer VPC.
+              returned: success
+              type: bool
+            allow_egress_from_local_classic_link_to_remote_vpc:
+              description: Indicates whether a local ClassicLink connection can communicate with the peer VPC over the VPC peering connection.
+              returned: success
+              type: bool
+            allow_egress_from_local_vpc_to_remote_classic_link:
+              description: Indicates whether a local VPC can communicate with a ClassicLink connection in the peer VPC over the VPC peering connection.
+              returned: success
+              type: bool
+        region:
+          description: The AWS region that the VPC is in.
+          returned: success
+          type: str
+          example: us-east-1
+        vpc_id:
+          description: The ID of the VPC
+          returned: success
+          type: str
+          example: vpc-0123456789abcdef0
+    status:
+      description: Details of the current status of the connection.
+      returned: success
+      type: complex
+      contains:
+        code:
+          description: A short code describing the status of the connection.
+          returned: success
+          type: str
+          example: active
+        message:
+          description: Additional information about the status of the connection.
+          returned: success
+          type: str
+          example: Pending Acceptance by 012345678901
+    tags:
+      description: Tags applied to the connection.
+      returned: success
+      type: dict
+    vpc_peering_connection_id:
+      description: The ID of the VPC peering connection.
+      returned: success
+      type: str
+      example: "pcx-0123456789abcdef0"
 '''
 
 try:
@@ -231,6 +365,8 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSM
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
 def wait_for_state(client, module, state, pcx_id):
@@ -254,9 +390,9 @@ def tags_changed(pcx_id, client, module):
     tags = dict()
     if module.params.get('tags'):
         tags = module.params.get('tags')
-    pcx = find_pcx_by_id(pcx_id, client, module)
-    if pcx['VpcPeeringConnections']:
-        pcx_values = [t.values() for t in pcx['VpcPeeringConnections'][0]['Tags']]
+    peering_connection = get_peering_connection_by_id(pcx_id, client, module)
+    if peering_connection['Tags']:
+        pcx_values = [t.values() for t in peering_connection['Tags']]
         pcx_tags = [item for sublist in pcx_values for item in sublist]
         tag_values = [[key, str(value)] for key, value in tags.items()]
         tags = [item for sublist in tag_values for item in sublist]
@@ -283,6 +419,7 @@ def describe_peering_connections(params, client):
             aws_retry=True,
             Filters=ansible_dict_to_boto3_filter_list(peer_filter),
         )
+
     return result
 
 
@@ -311,9 +448,9 @@ def create_peer_connection(client, module):
         if tags_changed(pcx_id, client, module):
             changed = True
         if is_active(peering_conn):
-            return (changed, peering_conn['VpcPeeringConnectionId'])
+            return (changed, peering_conn)
         if is_pending(peering_conn):
-            return (changed, peering_conn['VpcPeeringConnectionId'])
+            return (changed, peering_conn)
     try:
         peering_conn = client.create_vpc_peering_connection(aws_retry=True, **params)
         pcx_id = peering_conn['VpcPeeringConnection']['VpcPeeringConnectionId']
@@ -322,7 +459,7 @@ def create_peer_connection(client, module):
         if module.params.get('tags'):
             create_tags(pcx_id, client, module)
         changed = True
-        return (changed, peering_conn['VpcPeeringConnection']['VpcPeeringConnectionId'])
+        return (changed, peering_conn['VpcPeeringConnection'])
     except botocore.exceptions.ClientError as e:
         module.fail_json(msg=str(e))
 
@@ -330,7 +467,7 @@ def create_peer_connection(client, module):
 def remove_peer_connection(client, module):
     pcx_id = module.params.get('peering_id')
     if pcx_id:
-        peering_conns = client.describe_vpc_peering_connections(aws_retry=True, VpcPeeringConnectionIds=[pcx_id])
+        peering_conn = get_peering_connection_by_id(pcx_id, client, module)
     else:
         params = dict()
         params['VpcId'] = module.params.get('vpc_id')
@@ -338,17 +475,21 @@ def remove_peer_connection(client, module):
         params['PeerRegion'] = module.params.get('peer_region')
         if module.params.get('peer_owner_id'):
             params['PeerOwnerId'] = str(module.params.get('peer_owner_id'))
-        peering_conns = describe_peering_connections(params, client)
+        peering_conn = describe_peering_connections(params, client)['VpcPeeringConnections'][0]
 
-    if not peering_conns:
+    if not peering_conn:
         module.exit_json(changed=False)
     else:
-        pcx_id = pcx_id or peering_conns['VpcPeeringConnections'][0]['VpcPeeringConnectionId']
+        pcx_id = pcx_id or peering_conn['VpcPeeringConnectionId']
 
-    if peering_conns['VpcPeeringConnections'][0]['Status']['Code'] == 'deleted':
-        module.exit_json(msg='Connection in deleted state.', changed=False)
-    if peering_conns['VpcPeeringConnections'][0]['Status']['Code'] == 'rejected':
-        module.exit_json(msg='Connection has been rejected.  State cannot be changed and will be removed automatically by AWS', changed=False)
+    if peering_conn['Status']['Code'] == 'deleted':
+        module.exit_json(msg='Connection in deleted state.', changed=False, peering_id=pcx_id)
+    if peering_conn['Status']['Code'] == 'rejected':
+        module.exit_json(
+            msg='Connection has been rejected. State cannot be changed and will be removed automatically by AWS',
+            changed=False,
+            peering_id=pcx_id
+        )
 
     try:
         params = dict()
@@ -356,17 +497,17 @@ def remove_peer_connection(client, module):
         client.delete_vpc_peering_connection(aws_retry=True, **params)
         if module.params.get('wait'):
             wait_for_state(client, module, 'deleted', pcx_id)
-        module.exit_json(changed=True)
+        module.exit_json(changed=True, peering_id=pcx_id)
     except botocore.exceptions.ClientError as e:
         module.fail_json(msg=str(e))
 
 
-def peer_status(client, module):
+def get_peering_connection_by_id(peering_id, client, module):
     params = dict()
-    params['VpcPeeringConnectionIds'] = [module.params.get('peering_id')]
+    params['VpcPeeringConnectionIds'] = [peering_id]
     try:
         vpc_peering_connection = client.describe_vpc_peering_connections(aws_retry=True, **params)
-        return vpc_peering_connection['VpcPeeringConnections'][0]['Status']['Code']
+        return vpc_peering_connection['VpcPeeringConnections'][0]
     except is_boto3_error_code('InvalidVpcPeeringConnectionId.Malformed') as e:
         module.fail_json_aws(e, msg='Malformed connection ID')
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
@@ -376,10 +517,12 @@ def peer_status(client, module):
 def accept_reject(state, client, module):
     changed = False
     params = dict()
-    pcx_id = module.params.get('peering_id')
-    params['VpcPeeringConnectionId'] = pcx_id
-    current_state = peer_status(client, module)
-    if current_state not in ['active', 'rejected']:
+    peering_id = module.params.get('peering_id')
+    params['VpcPeeringConnectionId'] = peering_id
+    vpc_peering_connection = get_peering_connection_by_id(peering_id, client, module)
+    peering_status = vpc_peering_connection['Status']['Code']
+
+    if peering_status not in ['active', 'rejected']:
         try:
             if state == 'accept':
                 client.accept_vpc_peering_connection(aws_retry=True, **params)
@@ -388,15 +531,18 @@ def accept_reject(state, client, module):
                 client.reject_vpc_peering_connection(aws_retry=True, **params)
                 target_state = 'rejected'
             if module.params.get('tags'):
-                create_tags(params['VpcPeeringConnectionId'], client, module)
+                create_tags(peering_id, client, module)
             changed = True
             if module.params.get('wait'):
-                wait_for_state(client, module, target_state, pcx_id)
+                wait_for_state(client, module, target_state, peering_id)
         except botocore.exceptions.ClientError as e:
             module.fail_json(msg=str(e))
-    if tags_changed(params['VpcPeeringConnectionId'], client, module):
+    if tags_changed(peering_id, client, module):
         changed = True
-    return changed, params['VpcPeeringConnectionId']
+
+    # Relaod peering conection infos to return latest state/params
+    vpc_peering_connection = get_peering_connection_by_id(peering_id, client, module)
+    return (changed, vpc_peering_connection)
 
 
 def load_tags(module):
@@ -418,13 +564,6 @@ def create_tags(pcx_id, client, module):
 def delete_tags(pcx_id, client, module):
     try:
         client.delete_tags(aws_retry=True, Resources=[pcx_id])
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg=str(e))
-
-
-def find_pcx_by_id(pcx_id, client, module):
-    try:
-        return client.describe_vpc_peering_connections(aws_retry=True, VpcPeeringConnectionIds=[pcx_id])
     except botocore.exceptions.ClientError as e:
         module.fail_json(msg=str(e))
 
@@ -460,7 +599,6 @@ def main():
 
     if state == 'present':
         (changed, results) = create_peer_connection(client, module)
-        module.exit_json(changed=changed, peering_id=results)
     elif state == 'absent':
         if not peering_id and (not vpc_id or not peer_vpc_id):
             module.fail_json(msg='state is absent but one of the following is missing: peering_id or [vpc_id, peer_vpc_id]')
@@ -468,7 +606,12 @@ def main():
         remove_peer_connection(client, module)
     else:
         (changed, results) = accept_reject(state, client, module)
-        module.exit_json(changed=changed, peering_id=results)
+
+    formatted_results = camel_dict_to_snake_dict(results)
+    # Turn the resource tags from boto3 into an ansible friendly tag dictionary
+    formatted_results['tags'] = boto3_tag_list_to_ansible_dict(formatted_results.get('tags', []))
+
+    module.exit_json(changed=changed, vpc_peering_connection=formatted_results, peering_id=results['VpcPeeringConnectionId'])
 
 
 if __name__ == '__main__':
