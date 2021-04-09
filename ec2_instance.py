@@ -1647,6 +1647,18 @@ def ensure_present(existing_matches, changed, ec2, state):
         instance_ids = [i['InstanceId'] for i in instances]
 
         for ins in instances:
+            # Wait for instances to exist (don't check state)
+            try:
+                AWSRetry.jittered_backoff(
+                    catch_extra_error_codes=['InvalidInstanceID.NotFound'],
+                )(
+                    ec2.describe_instance_status
+                )(
+                    InstanceIds=[ins['InstanceId']],
+                    IncludeAllInstances=True,
+                )
+            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                module.fail_json_aws(e, msg="Failed to fetch status of new EC2 instance")
             changes = diff_instance_and_params(ins, module.params, ec2, skip=['UserData', 'EbsOptimized'])
             for c in changes:
                 try:
