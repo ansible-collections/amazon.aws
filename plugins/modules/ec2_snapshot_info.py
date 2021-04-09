@@ -201,6 +201,7 @@ next_token:
     - Contains the value returned from a previous paginated request where C(max_results) was used and the results exceeded the value of that parameter.
     - This value is null when there are no more results to return.
     type: str
+    returned: when option C(max_results) is set in input
 '''
 
 try:
