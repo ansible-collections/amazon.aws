@@ -119,8 +119,9 @@ RETURN = '''
 snapshots:
     description: snapshots retrieved
     type: list
+    returned: success
     elements: dict
-    suboptions:
+    contains:
         snapshot_id:
             description: The ID of the snapshot. Each snapshot receives a unique identifier when it is created.
             type: str
