@@ -8,6 +8,14 @@
       region: "{{ aws_region }}"
 
   block:
+    - name: get ARN of calling user
+      aws_caller_info:
+      register: aws_caller_info
+
+    - name: register account id
+      set_fact:
+        aws_account: "{{ aws_caller_info.account }}"
+
     - name: Create temporary directory
       tempfile:
         state: directory

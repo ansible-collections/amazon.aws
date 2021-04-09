@@ -4,7 +4,7 @@
     {
       "Sid": "Only allow writes to my bucket with bucket owner full control",
       "Effect": "Allow",
-      "Principal": "*",
+      "Principal": { "AWS":"{{ aws_account }}" },
       "Action": [
         "s3:PutObject"
       ],
