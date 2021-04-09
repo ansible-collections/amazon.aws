@@ -153,6 +153,34 @@
             - '"db_instance_class" in result.pending_modified_values or result.db_instance_class == "db.t2.medium"'
             - '"engine_version" in result.pending_modified_values or result.engine_version == "10.2.21"'
 
+      - name: Idempotence modifying several pending attributes - preferred_maintenance_window not lowercase
+        rds_instance:
+          id: '{{ instance_id }}'
+          state: present
+          allocated_storage: 30
+          db_instance_class: "{{ modified_db_instance_class }}"
+          backup_retention_period: 2
+          preferred_backup_window: "05:00-06:00"
+          preferred_maintenance_window: "Mon:06:20-Mon:06:50"
+          engine_version: "10.2.21"
+          allow_major_version_upgrade: true
+          auto_minor_version_upgrade: false
+          port: 1150
+          max_allocated_storage: 100
+        register: result
+        retries: 30
+        delay: 10
+        until: result is not failed
+
+      - assert:
+          that:
+            - not result.changed
+            - '"allocated_storage" in result.pending_modified_values or result.allocated_storage == 30'
+            - '"max_allocated_storage" in result.pending_modified_values or result.max_allocated_storage == 100'
+            - '"port" in result.pending_modified_values or result.endpoint.port == 1150'
+            - '"db_instance_class" in result.pending_modified_values or result.db_instance_class == "db.t2.medium"'
+            - '"engine_version" in result.pending_modified_values or result.engine_version == "10.2.21"'
+
       - name: Delete the instance
         rds_instance:
           id: '{{ instance_id }}'
