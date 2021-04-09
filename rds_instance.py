@@ -1214,6 +1214,10 @@ def main():
     if module.params['processor_features'] is not None:
         module.params['processor_features'] = dict((k, to_text(v)) for k, v in module.params['processor_features'].items())
 
+    # Ensure dates are in lowercase
+    if module.params['preferred_maintenance_window']:
+        module.params['preferred_maintenance_window'] = module.params['preferred_maintenance_window'].lower()
+
     client = module.client('rds')
     changed = False
     state = module.params['state']
