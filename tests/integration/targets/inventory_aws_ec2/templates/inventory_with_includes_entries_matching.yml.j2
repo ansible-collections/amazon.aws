@@ -1,0 +1,19 @@
+plugin: amazon.aws.aws_ec2
+aws_access_key_id: '{{ aws_access_key }}'
+aws_secret_access_key: '{{ aws_secret_key }}'
+{% if security_token | default(false) %}
+aws_security_token: '{{ security_token }}'
+{% endif %}
+regions:
+- '{{ aws_region }}'
+filters:
+  tag:Name:
+  - '{{ resource_prefix }}_1'
+includes_entries_matching:
+- tag:Name:
+  - '{{ resource_prefix }}_2'
+- tag:Name:
+  - '{{ resource_prefix }}_3'
+hostnames:
+- tag:Name
+- dns-name
