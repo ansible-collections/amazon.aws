@@ -522,14 +522,19 @@ class Connection(ConnectionBase):
             aws_secret_access_key = os.environ.get("AWS_SECRET_ACCESS_KEY", None)
         if aws_session_token is None:
             aws_session_token = os.environ.get("AWS_SESSION_TOKEN", None)
+        if not profile_name:
+            profile_name = os.environ.get("AWS_PROFILE", None)
 
-        session = boto3.session.Session(
+        session_args = dict(
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,
             aws_session_token=aws_session_token,
             region_name=region_name,
-            profile_name=profile_name
         )
+        if profile_name:
+            session_args['profile_name'] = profile_name
+        session = boto3.session.Session(**session_args)
+
         client = session.client(
             service,
             config=Config(signature_version="s3v4")
