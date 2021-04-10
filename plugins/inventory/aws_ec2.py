@@ -51,6 +51,12 @@ DOCUMENTATION = '''
               - Available filters are listed here U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
           type: dict
           default: {}
+        includes_entries_matching:
+          description:
+              - A list of filters. The instances matching the filters will be included in the result.
+              - Available filters are listed here U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
+          type: list
+          default: []
         include_extra_api_calls:
           description:
               - Add two additional API calls for every instance to include 'persistent' and 'events' host variables.
@@ -456,7 +462,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
             all_instances.extend(instances)
 
-        return sorted(all_instances, key=lambda x: x['InstanceId'])
+        return all_instances
 
     def _get_reservation_details(self, reservation):
         return {
@@ -537,14 +543,23 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             else:
                 return to_text(hostname)
 
-    def _query(self, regions, filters, strict_permissions):
+    def _query(self, regions, filters, includes_entries_matching, strict_permissions):
         '''
             :param regions: a list of regions to query
             :param filters: a list of boto3 filter dictionaries
             :param hostnames: a list of hostname destination variables in order of preference
+            :param includes_entries_matching: a list of filters, instances matching these filters are included in the result
             :param strict_permissions: a boolean determining whether to fail or ignore 403 error codes
+
         '''
-        return {'aws_ec2': self._get_instances_by_region(regions, filters, strict_permissions)}
+        instances = self._get_instances_by_region(regions, filters, strict_permissions)
+        for includes in includes_entries_matching:
+            filter = ansible_dict_to_boto3_filter_list(includes)
+            instances += self._get_instances_by_region(regions, filter, strict_permissions)
+
+        instances = sorted(instances, key=lambda x: x['InstanceId'])
+
+        return {'aws_ec2': instances}
 
     def _populate(self, groups, hostnames):
         for group in groups:
@@ -650,6 +665,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         # get user specifications
         regions = self.get_option('regions')
         filters = ansible_dict_to_boto3_filter_list(self.get_option('filters'))
+        includes_entries_matching = self.get_option('includes_entries_matching')
         hostnames = self.get_option('hostnames')
         strict_permissions = self.get_option('strict_permissions')
 
@@ -669,7 +685,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 cache_needs_update = True
 
         if not cache or cache_needs_update:
-            results = self._query(regions, filters, strict_permissions)
+            results = self._query(regions, filters, includes_entries_matching, strict_permissions)
 
         self._populate(results, hostnames)
 
