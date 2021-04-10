@@ -12,10 +12,6 @@ ansible-playbook playbooks/test_invalid_aws_ec2_inventory_config.yml "$@"
 
 export ANSIBLE_INVENTORY=test.aws_ec2.yml
 
-# generate inventory config with includes_entries_matching and prepare the tests
-ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_includes_entries_matching.yml.j2'" "$@"
-ansible-playbook playbooks/test_populating_inventory_with_includes_entries_matching.yml "$@"
-
 # test empty inventory config
 ansible-playbook playbooks/test_invalid_aws_ec2_inventory_config.yml "$@"
 
