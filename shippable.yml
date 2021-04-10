@@ -5,54 +5,8 @@ env:
     - T=none
 
 matrix:
-  exclude:
-    - env: T=none
   include:
-    - env: T=devel/sanity/1
-    - env: T=2.9/sanity/1
-    - env: T=2.10/sanity/1
-
-    - env: T=devel/units/2.7/1
-    - env: T=devel/units/3.6/1
-    - env: T=devel/units/3.7/1
-    - env: T=devel/units/3.8/1
-    - env: T=devel/units/3.9/1
-    - env: T=2.9/units/2.7/1
-    - env: T=2.9/units/3.6/1
-    - env: T=2.9/units/3.7/1
-    - env: T=2.9/units/3.8/1
-    - env: T=2.10/units/2.7/1
-    - env: T=2.10/units/3.6/1
-    - env: T=2.10/units/3.7/1
-    - env: T=2.10/units/3.8/1
-    - env: T=2.10/units/3.9/1
-    - env: T=devel/aws/2.7/1
-    - env: T=devel/aws/3.7/1
-    - env: T=2.9/aws/2.7/1
-    - env: T=2.9/aws/3.7/1
-    - env: T=2.10/aws/2.7/1
-    - env: T=2.10/aws/3.7/1
-
-    - env: T=devel/aws/2.7/2
-    - env: T=devel/aws/3.7/2
-    - env: T=2.9/aws/2.7/2
-    - env: T=2.9/aws/3.7/2
-    - env: T=2.10/aws/2.7/2
-    - env: T=2.10/aws/3.7/2
-
-    - env: T=devel/aws/2.7/3
-    - env: T=devel/aws/3.7/3
-    - env: T=2.9/aws/2.7/3
-    - env: T=2.9/aws/3.7/3
-    - env: T=2.10/aws/2.7/3
-    - env: T=2.10/aws/3.7/3
-
-    - env: T=devel/aws/2.7/4
-    - env: T=devel/aws/3.7/4
-    - env: T=2.9/aws/2.7/4
-    - env: T=2.9/aws/3.7/4
-    - env: T=2.10/aws/2.7/4
-    - env: T=2.10/aws/3.7/4
+    - env: T=none
 branches:
   except:
     - "*-patch-*"
