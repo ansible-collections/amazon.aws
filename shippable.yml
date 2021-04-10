@@ -5,55 +5,8 @@ env:
     - T=none
 
 matrix:
-  exclude:
-    - env: T=none
   include:
-    - env: T=sanity/1 A_REV=devel
-    - env: T=sanity/1 A_REV=stable-2.9
-    - env: T=sanity/1 A_REV=stable-2.10
-
-    - env: T=units/2.7/1 A_REV=devel
-    - env: T=units/3.6/1 A_REV=devel
-    - env: T=units/3.7/1 A_REV=devel
-    - env: T=units/3.8/1 A_REV=devel
-    - env: T=units/3.9/1 A_REV=devel
-    - env: T=units/2.7/1 A_REV=stable-2.9
-    - env: T=units/3.6/1 A_REV=stable-2.9
-    - env: T=units/3.7/1 A_REV=stable-2.9
-    - env: T=units/3.8/1 A_REV=stable-2.9
-    - env: T=units/2.7/1 A_REV=stable-2.10
-    - env: T=units/3.6/1 A_REV=stable-2.10
-    - env: T=units/3.7/1 A_REV=stable-2.10
-    - env: T=units/3.8/1 A_REV=stable-2.10
-    - env: T=units/3.9/1 A_REV=stable-2.10
-
-    - env: T=aws/2.7/1 A_REV=devel
-    - env: T=aws/3.7/1 A_REV=devel
-    - env: T=aws/2.7/1 A_REV=stable-2.9
-    - env: T=aws/3.7/1 A_REV=stable-2.9
-    - env: T=aws/2.7/1 A_REV=stable-2.10
-    - env: T=aws/3.7/1 A_REV=stable-2.10
-
-    - env: T=aws/2.7/2 A_REV=devel
-    - env: T=aws/3.7/2 A_REV=devel
-    - env: T=aws/2.7/2 A_REV=stable-2.9
-    - env: T=aws/3.7/2 A_REV=stable-2.9
-    - env: T=aws/2.7/2 A_REV=stable-2.10
-    - env: T=aws/3.7/2 A_REV=stable-2.10
-
-    - env: T=aws/2.7/3 A_REV=devel
-    - env: T=aws/3.7/3 A_REV=devel
-    - env: T=aws/2.7/3 A_REV=stable-2.9
-    - env: T=aws/3.7/3 A_REV=stable-2.9
-    - env: T=aws/2.7/3 A_REV=stable-2.10
-    - env: T=aws/3.7/3 A_REV=stable-2.10
-
-    - env: T=aws/2.7/4 A_REV=devel
-    - env: T=aws/3.7/4 A_REV=devel
-    - env: T=aws/2.7/4 A_REV=stable-2.9
-    - env: T=aws/3.7/4 A_REV=stable-2.9
-    - env: T=aws/2.7/4 A_REV=stable-2.10
-    - env: T=aws/3.7/4 A_REV=stable-2.10
+    - env: T=none
 branches:
   except:
     - "*-patch-*"
