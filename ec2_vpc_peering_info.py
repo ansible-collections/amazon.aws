@@ -210,6 +210,7 @@ except ImportError:
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import normalize_boto3_result
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
@@ -221,7 +222,7 @@ def get_vpc_peers(client, module):
     if module.params.get('peer_connection_ids'):
         params['VpcPeeringConnectionIds'] = module.params.get('peer_connection_ids')
     try:
-        result = client.describe_vpc_peering_connections(**params)
+        result = client.describe_vpc_peering_connections(aws_retry=True, **params)
         result = normalize_boto3_result(result)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe peering connections")
@@ -241,7 +242,7 @@ def main():
         module.deprecate("The 'ec2_vpc_peering_facts' module has been renamed to 'ec2_vpc_peering_info'", date='2021-12-01', collection_name='community.aws')
 
     try:
-        ec2 = module.client('ec2')
+        ec2 = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to connect to AWS')
 
