@@ -1,0 +1,2 @@
+minor_changes:
+- aws_ssm connection plugin - add support for specifying a profile to be used when connecting (https://github.com/ansible-collections/community.aws/pull/278).
