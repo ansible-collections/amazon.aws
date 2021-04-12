@@ -1,3 +1,3 @@
 ---
 minor_changes:
-- ec2_snapshot_info - add the ``max_results`` along with ``next_token_pagination`` option (https://github.com/ansible-collections/amazon.aws/pull/321).
+- ec2_snapshot_info - add the ``max_results`` along with ``next_token_id`` option (https://github.com/ansible-collections/amazon.aws/pull/321).
