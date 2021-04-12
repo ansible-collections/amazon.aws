@@ -64,7 +64,7 @@ options:
     description:
     - Contains the value returned from a previous paginated request where C(max_results) was used and the results exceeded the value of that parameter.
     - Pagination continues from the end of the previous results that returned the C(next_token_id) value.
-    - This parameter is mutually exclusive with C(snapshot_ids)
+    - This parameter is mutually exclusive with I(snapshot_ids)
     required: false
     type: str
 notes:
