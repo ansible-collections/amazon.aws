@@ -53,17 +53,17 @@ options:
   max_results:
     description:
     - The maximum number of snapshot results returned in paginated output.
-    - When this parameter is used, `ec2_snapshot_facts` only returns results in a single page along with a C(next_token_pagination) response element.
-    - The remaining results of the initial request can be seen by sending another request with the returned C(next_token_pagination) value.
-    - This value can be between 5 and 1000; if C(next_token_pagination) is given a value larger than 1000, only 1000 results are returned.
+    - When this parameter is used, `ec2_snapshot_facts` only returns results in a single page along with a C(next_token_id) response element.
+    - The remaining results of the initial request can be seen by sending another request with the returned C(next_token_id) value.
+    - This value can be between 5 and 1000; if C(next_token_id) is given a value larger than 1000, only 1000 results are returned.
     - If this parameter is not used, then DescribeSnapshots returns all results.
     - This parameter is mutually exclusive with C(snapshot_ids)
     required: False
     type: int
-  next_token_pagination:
+  next_token_id:
     description:
     - Contains the value returned from a previous paginated request where C(max_results) was used and the results exceeded the value of that parameter.
-    - Pagination continues from the end of the previous results that returned the C(next_token_pagination) value.
+    - Pagination continues from the end of the previous results that returned the C(next_token_id) value.
     - This parameter is mutually exclusive with C(snapshot_ids)
     required: false
     type: str
@@ -196,7 +196,7 @@ snapshots:
             type: str
             returned: always
             sample: "arn:aws:kms:ap-southeast-2:012345678900:key/74c9742a-a1b2-45cb-b3fe-abcdef123456"
-next_token_pagination:
+next_token_id:
     description:
     - Contains the value returned from a previous paginated request where C(max_results) was used and the results exceeded the value of that parameter.
     - This value is null when there are no more results to return.
@@ -225,7 +225,7 @@ def list_ec2_snapshots(connection, module):
     restorable_by_user_ids = [str(user_id) for user_id in module.params.get("restorable_by_user_ids")]
     filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
     max_results = module.params.get('max_results')
-    next_token = module.params.get('next_token_pagination')
+    next_token = module.params.get('next_token_id')
     optional_param = {}
     if max_results:
         optional_param['MaxResults'] = max_results
@@ -259,7 +259,7 @@ def list_ec2_snapshots(connection, module):
     result['snapshots'] = snaked_snapshots
 
     if snapshots.get('NextToken'):
-        result.update(camel_dict_to_snake_dict({'NextTokenPagination': snapshots.get('NextToken')}))
+        result.update(camel_dict_to_snake_dict({'NextTokenId': snapshots.get('NextToken')}))
 
     module.exit_json(**result)
 
@@ -272,7 +272,7 @@ def main():
         restorable_by_user_ids=dict(default=[], type='list', elements='str'),
         filters=dict(default={}, type='dict'),
         max_results=dict(type='int'),
-        next_token_pagination=dict(type='str')
+        next_token_id=dict(type='str')
     )
 
     module = AnsibleAWSModule(
@@ -280,7 +280,7 @@ def main():
         mutually_exclusive=[
             ['snapshot_ids', 'owner_ids', 'restorable_by_user_ids', 'filters'],
             ['snapshot_ids', 'max_results'],
-            ['snapshot_ids', 'next_token_pagination']
+            ['snapshot_ids', 'next_token_id']
         ],
         supports_check_mode=True
     )
