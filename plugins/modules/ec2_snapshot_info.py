@@ -54,16 +54,16 @@ options:
     description:
     - The maximum number of snapshot results returned in paginated output.
     - When used only a single page along with a C(next_token_id) response element will be returned.
-    - The remaining results of the initial request can be seen by sending another request with the returned I(next_token_id) value.
+    - The remaining results of the initial request can be seen by sending another request with the returned C(next_token_id) value.
     - This value can be between 5 and 1000; if I(next_token_id) is given a value larger than 1000, only 1000 results are returned.
     - If this parameter is not used, then DescribeSnapshots returns all results.
-    - This parameter is mutually exclusive with I(snapshot_ids)
+    - This parameter is mutually exclusive with I(snapshot_ids).
     required: False
     type: int
   next_token_id:
     description:
-    - Contains the value returned from a previous paginated request where C(max_results) was used and the results exceeded the value of that parameter.
-    - Pagination continues from the end of the previous results that returned the C(next_token_id) value.
+    - Contains the value returned from a previous paginated request where I(max_results) was used and the results exceeded the value of that parameter.
+    - Pagination continues from the end of the previous results that returned the I(next_token_id) value.
     - This parameter is mutually exclusive with I(snapshot_ids)
     required: false
     type: str
