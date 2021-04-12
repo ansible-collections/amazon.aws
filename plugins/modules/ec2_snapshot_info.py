@@ -53,11 +53,11 @@ options:
   max_results:
     description:
     - The maximum number of snapshot results returned in paginated output.
-    - When this parameter is used, `ec2_snapshot_facts` only returns results in a single page along with a C(next_token_id) response element.
-    - The remaining results of the initial request can be seen by sending another request with the returned C(next_token_id) value.
-    - This value can be between 5 and 1000; if C(next_token_id) is given a value larger than 1000, only 1000 results are returned.
+    - When used only a single page along with a C(next_token_id) response element will be returned.
+    - The remaining results of the initial request can be seen by sending another request with the returned I(next_token_id) value.
+    - This value can be between 5 and 1000; if I(next_token_id) is given a value larger than 1000, only 1000 results are returned.
     - If this parameter is not used, then DescribeSnapshots returns all results.
-    - This parameter is mutually exclusive with C(snapshot_ids)
+    - This parameter is mutually exclusive with I(snapshot_ids)
     required: False
     type: int
   next_token_id:
