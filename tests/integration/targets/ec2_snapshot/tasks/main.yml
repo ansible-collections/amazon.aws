@@ -218,7 +218,7 @@
           - info_result.snapshots| length == 3
 
     # check that snapshot_ids and max_results are mutually exclusive
-    - name: Get info about all snapshots in paginated mode
+    - name: Check that max_results and snapshot_ids are mutually exclusive
       ec2_snapshot_info:
         snapshot_ids:
           - '{{ tagged_snapshot_id }}'
@@ -246,7 +246,7 @@
           - info_result is failed
 
     # Retrieve snapshots in paginated mode
-    - name: Get info about all snapshots in paginated mode
+    - name: Get snapshots in paginated mode using max_results option
       ec2_snapshot_info:
         filters:
           "tag:Name": '{{ resource_prefix }}'
