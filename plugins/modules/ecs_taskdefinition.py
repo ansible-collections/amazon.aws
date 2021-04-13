@@ -113,14 +113,13 @@ options:
                 type: str
                 required: true
             condition:
-                description: The dependency condition of the container. 
+                description: The dependency condition of the container.
                 type: str
                 required: true
                 choices: ["start", "complete", "success", "healthy"]
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
 '''
 
 EXAMPLES = r'''
@@ -350,7 +349,7 @@ def main():
         launch_type=dict(required=False, choices=['EC2', 'FARGATE']),
         cpu=dict(),
         memory=dict(required=False, type='str'),
-        depends_on=dict(required=False, type='list', elements='dict'), 
+        depends_on=dict(required=False, type='list', elements='dict'),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec,
