@@ -1,0 +1,2 @@
+bugfixes:
+- rds_instance - fixes bug preventing the use of tags when creating an RDS instance from a snapshot (https://github.com/ansible-collections/community.aws/issues/530).
