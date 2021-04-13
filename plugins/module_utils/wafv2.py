@@ -68,7 +68,7 @@ def wafv2_snake_dict_to_camel_dict(a):
     return retval
 
 
-def nestes_byte_values_to_strings(rule, keyname):
+def nested_byte_values_to_strings(rule, keyname):
     """
     currently valid nested byte values in statements array are
         - OrStatement
@@ -93,7 +93,7 @@ def byte_values_to_strings_before_compare(rules):
         else:
             for statement in ['AndStatement', 'OrStatement', 'NotStatement']:
                 if rules[idx].get('Statement', {}).get(statement):
-                    rules[idx] = nestes_byte_values_to_strings(rules[idx], statement)
+                    rules[idx] = nested_byte_values_to_strings(rules[idx], statement)
 
     return rules
 

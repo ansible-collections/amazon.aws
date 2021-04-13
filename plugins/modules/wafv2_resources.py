@@ -26,7 +26,7 @@ options:
       type: str
     name:
       description:
-        - The name web acl.
+        - The name of the web acl.
       type: str
     scope:
       description:
