@@ -38,6 +38,9 @@ ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_w
 ansible-playbook playbooks/test_populating_inventory_with_constructed.yml "$@"
 ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_concatenation.yml.j2'" "$@"
 ansible-playbook playbooks/test_populating_inventory_with_concatenation.yml "$@"
+# generate inventory config with includes_entries_matching and prepare the tests
+ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_include_or_exclude_filters.yml.j2'" "$@"
+ansible-playbook playbooks/test_populating_inventory_with_include_or_exclude_filters.yml "$@"
 
 # cleanup inventory config
 ansible-playbook playbooks/empty_inventory_config.yml "$@"
