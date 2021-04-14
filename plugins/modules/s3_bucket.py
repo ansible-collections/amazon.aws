@@ -475,7 +475,7 @@ def create_or_update_bucket(s3_client, module, location):
             result['public_access_block'] = {}
 
     # -- Bucket ownership
-    bucket_ownership = get_bucket_ownership_cntrl(s3_client, name)
+    bucket_ownership = get_bucket_ownership_cntrl(s3_client, module, name)
     result['object_ownership'] = bucket_ownership
     if delete_object_ownership or object_ownership is not None:
         if delete_object_ownership:
@@ -763,7 +763,7 @@ def get_bucket_public_access(s3_client, bucket_name):
         return {}
 
 
-def get_bucket_ownership_cntrl(s3_client, bucket_name):
+def get_bucket_ownership_cntrl(s3_client, module, bucket_name):
     '''
     Get current bucket public access block
     '''
