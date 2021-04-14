@@ -1,0 +1,2 @@
+bug_fixes:
+  - aws_ssm - Adds destructor to SSM connection plugin to ensure connections are properly cleaned up after usage.
