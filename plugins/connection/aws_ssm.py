@@ -280,6 +280,9 @@ class Connection(ConnectionBase):
             self._shell_type = 'powershell'
             self.is_windows = True
 
+    def __del__(self):
+        self.close()
+
     def _connect(self):
         ''' connect to the host via ssm '''
 
