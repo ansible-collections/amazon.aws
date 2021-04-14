@@ -1,2 +1,2 @@
 bug_fixes:
-  - aws_ssm - Adds destructor to SSM connection plugin to ensure connections are properly cleaned up after usage.
+  - aws_ssm - Adds destructor to SSM connection plugin to ensure connections are properly cleaned up after usage (https://github.com/ansible-collections/community.aws/pull/542).
