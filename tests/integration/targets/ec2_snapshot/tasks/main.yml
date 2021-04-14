@@ -217,6 +217,61 @@
         that:
           - info_result.snapshots| length == 3
 
+    # check that snapshot_ids and max_results are mutually exclusive
+    - name: Check that max_results and snapshot_ids are mutually exclusive
+      ec2_snapshot_info:
+        snapshot_ids:
+          - '{{ tagged_snapshot_id }}'
+        max_results: 1
+      ignore_errors: true
+      register: info_result
+
+    - name: assert that operation failed
+      assert:
+        that:
+          - info_result is failed
+
+    # check that snapshot_ids and next_token_id are mutually exclusive
+    - name: Check that snapshot_ids and next_token_id are mutually exclusive
+      ec2_snapshot_info:
+        snapshot_ids:
+          - '{{ tagged_snapshot_id }}'
+        next_token_id: 'random_value_token'
+      ignore_errors: true
+      register: info_result
+
+    - name: assert that operation failed
+      assert:
+        that:
+          - info_result is failed
+
+    # Retrieve snapshots in paginated mode
+    - name: Get snapshots in paginated mode using max_results option
+      ec2_snapshot_info:
+        filters:
+          "tag:Name": '{{ resource_prefix }}'
+        max_results: 1
+      register: info_result
+
+    - assert:
+        that:
+          - info_result.snapshots | length == 1
+          - info_result.next_token_id is defined
+
+    # Pagination : 2nd request
+    - name: Get snapshots for a second paginated request
+      ec2_snapshot_info:
+        filters:
+          "tag:Name": '{{ resource_prefix }}'
+        next_token_id: "{{ info_result.next_token_id }}"
+      register: info_result
+
+    - assert:
+        that:
+          - info_result.snapshots | length == 2
+          - info_result.next_token_id is defined
+
+    # delete the tagged snapshot
     - name: Delete the tagged snapshot
       ec2_snapshot:
         state: absent
