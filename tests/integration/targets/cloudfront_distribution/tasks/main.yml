@@ -25,7 +25,7 @@
   - set_fact:
       distribution_id: '{{ cf_distribution.id }}'
 
-  - name: ensure that default value of ipv6_enabled
+  - name: ensure that default value of 'ipv6_enabled' is 'false'
     assert:
       that:
         - cf_distribution.changed
