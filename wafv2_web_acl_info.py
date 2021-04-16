@@ -69,6 +69,19 @@ rules:
   description: Current rules of the web acl
   returned: Always, as long as the web acl exists
   type: list
+  sample:
+    - name: admin_protect
+      override_action:
+        none: {}
+      priority: 1
+      statement:
+        managed_rule_group_statement:
+          name: AWSManagedRulesAdminProtectionRuleSet
+          vendor_name: AWS
+      visibility_config:
+        cloud_watch_metrics_enabled: true
+        metric_name: admin_protect
+        sampled_requests_enabled: true
 visibility_config:
   description: Visibility config of the web acl
   returned: Always, as long as the web acl exists
