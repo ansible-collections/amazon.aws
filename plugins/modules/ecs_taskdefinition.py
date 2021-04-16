@@ -108,7 +108,7 @@ options:
         type: list
         elements: dict
         suboptions:
-            container_name:
+            containerName:
                 description: The name of a container.
                 type: str
                 required: true
@@ -193,6 +193,25 @@ EXAMPLES = r'''
     memory: 1024
     state: present
     network_mode: awsvpc
+
+- name: Create task definition
+  community.aws.ecs_taskdefinition:
+    family: nginx
+    containers:
+    - name: nginx
+      essential: true
+      image: "nginx"
+      portMappings:
+      - containerPort: 8080
+        hostPort:      8080
+    launch_type: FARGATE
+    cpu: 512
+    memory: 1024
+    state: present
+    network_mode: awsvpc
+    depends_on:
+    - containerName: "simple-container"
+      condition: "start"
 
 # Create Task Definition with Environment Variables and Secrets
 - name: Create task definition
@@ -288,7 +307,7 @@ class EcsTaskManager:
         if execution_role_arn:
             params['executionRoleArn'] = execution_role_arn
         if depends_on:
-            pass['dependsOn'] = depends_on
+            params['dependsOn'] = depends_on
 
         try:
             response = self.ecs.register_task_definition(**params)
@@ -385,6 +404,11 @@ def main():
         launch_type = module.params['launch_type']
         if launch_type == 'FARGATE' and network_mode != 'awsvpc':
             module.fail_json(msg="To use FARGATE launch type, network_mode must be awsvpc")
+
+        depends_on = module.params['depends_on']
+        if launch_type == 'FARGATE' and depends_on:
+            if not module.botocore_at_least('1.3.0'):
+                module.fail_json(msg='botocore needs to be version 1.3.0 or higher to use depends_on on Fargate launch_type')
 
         family = module.params['family']
         existing_definitions_in_family = task_mgr.describe_task_definitions(module.params['family'])
@@ -504,7 +528,7 @@ def main():
                                                                    module.params['launch_type'],
                                                                    module.params['cpu'],
                                                                    module.params['memory'],
-                                                                   module.params['depends_on'])
+                                                                   depends_on)
             results['changed'] = True
 
     elif module.params['state'] == 'absent':
