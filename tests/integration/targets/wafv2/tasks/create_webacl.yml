@@ -97,6 +97,10 @@
   assert:
     that:
       - ACL is changed
+      - ACL.web_acl.name == web_acl_name
+      - not ACL.web_acl.visibility_config.sampled_requests_enabled
+      - ACL.web_acl.rules | count == 2
+      - ACL.web_acl.description == 'hallo eins'
 
 - name: immutable create web acl
   wafv2_web_acl:

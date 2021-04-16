@@ -46,7 +46,7 @@ options:
       type: str
     sampled_requests:
       description:
-        - Sampled requests, true or false.
+        - Whether to store a sample of the web requests, true or false.
       type: bool
       default: false
     cloudwatch_metrics:
@@ -68,6 +68,27 @@ options:
         - The Rule statements used to identify the web requests that you want to allow, block, or count.
       type: list
       elements: dict
+      suboptions:
+        name:
+          description:
+            - The name of the wafv2 rule
+          type: str
+        priority:
+          description:
+            - The rule priority
+          type: int
+        action:
+          description:
+            - Wether a rule is blocked, allowed or counted.
+          type: dict
+        visibility_config:
+          description:
+            - Visibility of single wafv2 rule.
+          type: dict
+        statement:
+          description:
+            - Rule configuration.
+          type: dict
     purge_rules:
       description:
         - When set to C(no), keep the existing load balancer rules in place. Will modify and add, but will not delete.
@@ -150,6 +171,19 @@ rules:
   description: Current rules of the web acl
   returned: Always, as long as the web acl exists
   type: list
+  sample:
+    - name: admin_protect
+      override_action:
+        none: {}
+      priority: 1
+      statement:
+        managed_rule_group_statement:
+          name: AWSManagedRulesAdminProtectionRuleSet
+          vendor_name: AWS
+      visibility_config:
+        cloud_watch_metrics_enabled: true
+        metric_name: admin_protect
+        sampled_requests_enabled: true
 visibility_config:
   description: Visibility config of the web acl
   returned: Always, as long as the web acl exists
