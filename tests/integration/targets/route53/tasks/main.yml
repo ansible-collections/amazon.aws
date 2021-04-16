@@ -93,12 +93,70 @@
       record: 'qdn_test.{{ zone_one }}'
       type: A
     register: get_result
-  - assert:
+  - name: Check boto3 type get data
+    assert:
       that:
-        - get_result.nameservers|length > 0
-        - get_result.set.Name == 'qdn_test.{{ zone_one }}'
-        - get_result.set.ResourceRecords[0].Value == '192.0.2.1'
-        - get_result.set.Type == 'A'
+        - get_result.nameservers | length > 0
+        - get_result.resource_record_sets | length == 1
+        - '"name" in record_set'
+        - record_set.name == qdn_record
+        - '"resource_records" in record_set'
+        - record_set.resource_records | length == 1
+        - '"value" in record_set.resource_records[0]'
+        - record_set.resource_records[0].value == '192.0.2.1'
+        - '"ttl" in record_set'
+        - record_set.ttl == 3600
+        - '"type" in record_set'
+        - record_set.type == 'A'
+    vars:
+      record_set: '{{ get_result.resource_record_sets[0] }}'
+      qdn_record: 'qdn_test.{{ zone_one }}'
+
+  - name: Check boto3 compat get data
+    assert:
+      that:
+        - '"set" in get_result'
+        - '"Name" in record_set'
+        - record_set.Name == qdn_record
+        - '"ResourceRecords" in record_set'
+        - record_set.ResourceRecords | length == 1
+        - '"Value" in record_set.ResourceRecords[0]'
+        - record_set.ResourceRecords[0].Value == '192.0.2.1'
+        - '"TTL" in record_set'
+        - record_set.TTL == 3600
+        - record_set.Type == 'A'
+    vars:
+      record_set: '{{ get_result.set }}'
+      qdn_record: 'qdn_test.{{ zone_one }}'
+
+  - name: Check boto2 compat get data
+    assert:
+      that:
+        - '"set" in get_result'
+        - '"alias" in record_set'
+        - record_set.alias == False
+        - '"failover" in record_set'
+        - '"health_check" in record_set'
+        - '"hosted_zone_id" in record_set'
+        - record_set.hosted_zone_id == z1.zone_id
+        - '"identifier" in record_set'
+        - '"record" in record_set'
+        - record_set.record == qdn_record
+        - '"ttl" in record_set'
+        - record_set.ttl == "3600"
+        - '"type" in record_set'
+        - record_set.type == 'A'
+        - '"value" in record_set'
+        - record_set.value == '192.0.2.1'
+        - '"values" in record_set'
+        - record_set['values'] | length == 1
+        - record_set['values'][0] == '192.0.2.1'
+        - '"weight" in record_set'
+        - '"zone" in record_set'
+        - record_set.zone == zone_one
+    vars:
+      record_set: '{{ get_result.set }}'
+      qdn_record: 'qdn_test.{{ zone_one }}'
 
   - name: 'Create same A record using zone non-qualified domain'
     route53:
