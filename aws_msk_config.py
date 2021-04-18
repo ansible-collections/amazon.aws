@@ -1,0 +1,295 @@
+#!/usr/bin/python
+# Copyright: (c) 2021, Daniil Kupchenko (@oukooveu)
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+from __future__ import absolute_import, division, print_function
+
+__metaclass__ = type
+
+
+DOCUMENTATION = r"""
+---
+module: aws_msk_config
+short_description: Manage Amazon MSK cluster configurations.
+version_added: "1.5.0"
+requirements:
+    - botocore >= 1.17.42
+    - boto3 >= 1.17.9
+description:
+    - Create, delete and modify Amazon MSK (Managed Streaming for Apache Kafka) cluster configurations.
+author:
+    - Daniil Kupchenko (@oukooveu)
+options:
+    state:
+        description: Create (present) or delete (absent) cluster configuration.
+        choices: ['present', 'absent']
+        default: 'present'
+        type: str
+    name:
+        description: The name of the configuration.
+        required: true
+        type: str
+    description:
+        description: The description of the configuration.
+        type: str
+    config:
+        description: Contents of the server.properties file.
+        type: dict
+        aliases: ['configuration']
+    kafka_versions:
+        description:
+            - The versions of Apache Kafka with which you can use this MSK configuration.
+            - Required when I(state=present).
+        type: list
+        elements: str
+extends_documentation_fragment:
+    - amazon.aws.aws
+    - amazon.aws.ec2
+"""
+
+EXAMPLES = r"""
+# Note: These examples do not set authentication details, see the AWS Guide for details.
+
+- aws_msk_config:
+    name: kafka-cluster-configuration
+    state: present
+    kafka_versions:
+      - 2.6.0
+      - 2.6.1
+    config:
+      auto.create.topics.enable=false
+      num.partitions=1
+      default.replication.factor=3
+      zookeeper.session.timeout.ms=18000
+
+- aws_msk_config:
+    name: kafka-cluster-configuration
+    state: absent
+"""
+
+RETURN = r"""
+# These are examples of possible return values, and in general should use other names for return values.
+
+arn:
+    description: The Amazon Resource Name (ARN) of the configuration.
+    type: str
+    returned: I(state=present)
+    sample: "arn:aws:kafka:<region>:<account>:configuration/<name>/<resource-id>"
+revision:
+    description: The revision number.
+    type: int
+    returned: I(state=present)
+    sample: 1
+server_properties:
+    description: Contents of the server.properties file.
+    type: str
+    returned: I(state=present)
+    sample: "default.replication.factor=3\nnum.io.threads=8\nzookeeper.session.timeout.ms=18000"
+response:
+    description: The response from actual API call.
+    type: dict
+    returned: always
+    sample: {}
+"""
+
+try:
+    import botocore
+except ImportError:
+    pass  # handled by AnsibleAWSModule
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
+    camel_dict_to_snake_dict,
+    AWSRetry,
+)
+
+
+BOTOCORE_MIN_VERSION = "1.17.42"
+
+
+def dict_to_prop(d):
+    """convert dictionary to multi-line properties"""
+    if len(d) == 0:
+        return ""
+    return "\n".join("{0}={1}".format(k, v) for k, v in d.items())
+
+
+def prop_to_dict(p):
+    """convert properties to dictionary"""
+    if len(p) == 0:
+        return {}
+    return {
+        k.strip(): v.strip() for k, v in (i.split("=") for i in p.decode().split("\n"))
+    }
+
+
+@AWSRetry.backoff(tries=5, delay=5)
+def get_configurations_with_backoff(client):
+    paginator = client.get_paginator("list_configurations")
+    return paginator.paginate().build_full_result()
+
+
+def find_active_config(client, module):
+    """
+    looking for configuration by name
+      status is not returned for list_configurations in botocore 1.17.42
+      delete_configuration method was added in botocore 1.17.48
+    """
+
+    name = module.params["name"]
+
+    try:
+        all_configs = get_configurations_with_backoff(client)["Configurations"]
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="failed to obtain kafka configurations")
+
+    active_configs = list(
+        item
+        for item in all_configs
+        if item["Name"] == name and item["State"] == "ACTIVE"
+    )
+
+    if active_configs:
+        if len(active_configs) == 1:
+            return active_configs[0]
+        else:
+            module.fail_json_aws(
+                msg="found more than one active config with name '{0}'".format(name)
+            )
+
+    return None
+
+
+def create_config(client, module):
+    """create new or update existing configuration"""
+
+    config = find_active_config(client, module)
+
+    # create new configuration
+    if not config:
+
+        if module.check_mode:
+            return True, {}
+
+        try:
+            response = client.create_configuration(
+                Name=module.params.get("name"),
+                Description=module.params.get("description"),
+                KafkaVersions=module.params.get("kafka_versions"),
+                ServerProperties=dict_to_prop(module.params.get("config")).encode(),
+            )
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
+            module.fail_json_aws(e, "failed to create kafka configuration")
+
+    # update existing configuration (creates new revision)
+    else:
+        # it's required because 'config' doesn't contain 'ServerProperties'
+        response = client.describe_configuration_revision(
+            Arn=config["Arn"], Revision=config["LatestRevision"]["Revision"]
+        )
+
+        # compare configurations (description and properties) and update if required
+        prop_module = {str(k): str(v) for k, v in module.params.get("config").items()}
+        if prop_to_dict(response.get("ServerProperties", "")) == prop_module:
+            if response.get("Description", "") == module.params.get("description"):
+                return False, response
+
+        if module.check_mode:
+            return True, {}
+
+        try:
+            response = client.update_configuration(
+                Arn=config["Arn"],
+                Description=module.params.get("description"),
+                ServerProperties=dict_to_prop(module.params.get("config")).encode(),
+            )
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
+            module.fail_json_aws(e, "failed to update kafka configuration")
+
+    arn = response["Arn"]
+    revision = response["LatestRevision"]["Revision"]
+
+    result = client.describe_configuration_revision(Arn=arn, Revision=revision)
+
+    return True, result
+
+
+def delete_config(client, module):
+    """delete configuration"""
+
+    config = find_active_config(client, module)
+
+    if module.check_mode:
+        if config:
+            return True, config
+        else:
+            return False, {}
+
+    if config:
+        try:
+            response = client.delete_configuration(Arn=config["Arn"])
+        except (
+            botocore.exceptions.BotoCoreError,
+            botocore.exceptions.ClientError,
+        ) as e:
+            module.fail_json_aws(e, "failed to delete the kafka configuration")
+        return True, response
+
+    return False, {}
+
+
+def main():
+
+    module_args = dict(
+        name=dict(type="str", required=True),
+        description=dict(type="str", default=""),
+        state=dict(choices=["present", "absent"], default="present"),
+        config=dict(type="dict", aliases=["configuration"], default={}),
+        kafka_versions=dict(type="list", elements="str"),
+    )
+
+    module = AnsibleAWSModule(argument_spec=module_args, supports_check_mode=True)
+
+    if not module.botocore_at_least(BOTOCORE_MIN_VERSION):
+        module.fail_json(
+            msg="aws_msk_config module requires botocore >= {0}".format(
+                BOTOCORE_MIN_VERSION
+            )
+        )
+
+    client = module.client("kafka")
+
+    if module.params["state"] == "present":
+        changed, response = create_config(client, module)
+
+    elif module.params["state"] == "absent":
+        changed, response = delete_config(client, module)
+
+    # return some useless staff in check mode if configuration doesn't exists
+    # can be useful when these options are referenced by other modules during check mode run
+    if module.check_mode and not response.get("Arn"):
+        arn = "arn:aws:kafka:region:account:configuration/name/id"
+        revision = 1
+        server_properties = ""
+    else:
+        arn = response.get("Arn")
+        revision = response.get("Revision")
+        server_properties = response.get("ServerProperties", "")
+
+    module.exit_json(
+        changed=changed,
+        arn=arn,
+        revision=revision,
+        server_properties=server_properties,
+        response=camel_dict_to_snake_dict(response),
+    )
+
+
+if __name__ == "__main__":
+    main()
