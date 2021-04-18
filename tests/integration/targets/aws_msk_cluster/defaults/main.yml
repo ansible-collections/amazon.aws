@@ -1,0 +1,19 @@
+---
+vpc_name: "{{ resource_prefix }}"
+vpc_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/16'
+vpc_subnets:
+  - '10.{{ 256 | random(seed=resource_prefix) }}.100.0/24'
+  - '10.{{ 256 | random(seed=resource_prefix) }}.101.0/24'
+vpc_subnet_name_prefix: "{{ resource_prefix }}"
+
+msk_config_name: "{{ resource_prefix }}-config"
+msk_cluster_name: "{{ resource_prefix }}-cluster"
+msk_version: 2.6.0
+msk_broker_nodes: 2
+
+tags_create:
+  key1: "value1"
+  key2: "value2"
+tags_update:
+  key2: "value2"
+  key3: "value3"

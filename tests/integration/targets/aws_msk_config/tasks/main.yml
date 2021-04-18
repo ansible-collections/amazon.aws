@@ -1,0 +1,149 @@
+---
+- name: tests for community.aws.aws_msk_config
+  module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  collections:
+    - amazon.aws
+  block:
+
+    - name: create msk configuration (check mode)
+      aws_msk_config:
+        name: "{{ msk_config_name }}"
+        state: "present"
+        kafka_versions: "{{ msk_kafka_versions }}"
+        config: "{{ msk_configs[0] }}"
+      check_mode: yes
+      register: msk_config
+
+    - name: assert that the msk configuration be created
+      assert:
+        that:
+          - msk_config is changed
+
+    - name: create msk configuration
+      aws_msk_config:
+        name: "{{ msk_config_name }}"
+        state: "present"
+        kafka_versions: "{{ msk_kafka_versions }}"
+        config: "{{ msk_configs[0] }}"
+      register: msk_config
+
+    - name: assert that the msk configuration is created
+      assert:
+        that:
+          - msk_config is changed
+
+    - name: create msk configuration (idempotency)
+      aws_msk_config:
+        name: "{{ msk_config_name }}"
+        state: "present"
+        kafka_versions: "{{ msk_kafka_versions }}"
+        config: "{{ msk_configs[0] }}"
+      register: msk_config
+
+    - name: assert that the msk configuration wasn't changed
+      assert:
+        that:
+          - msk_config is not changed
+
+    - name: validate return values
+      assert:
+        that:
+          - msk_config.revision == 1
+          - "msk_config.arn.startswith('arn:aws:kafka:{{ aws_region }}:')"
+          - "'auto.create.topics.enable=True' in msk_config.server_properties"
+          - "'zookeeper.session.timeout.ms=18000' in msk_config.server_properties"
+
+    - name: update msk configuration (check mode)
+      aws_msk_config:
+        name: "{{ msk_config_name }}"
+        state: "present"
+        kafka_versions: "{{ msk_kafka_versions }}"
+        config: "{{ msk_configs[1] }}"
+      check_mode: yes
+      register: msk_config
+
+    - name: assert that the msk configuration be changed
+      assert:
+        that:
+          - msk_config is changed
+
+    - name: update msk configuration
+      aws_msk_config:
+        name: "{{ msk_config_name }}"
+        state: "present"
+        kafka_versions: "{{ msk_kafka_versions }}"
+        config: "{{ msk_configs[1] }}"
+      register: msk_config
+
+    - name: assert that the msk configuration is changed
+      assert:
+        that:
+          - msk_config is changed
+
+    - name: validate return values (update)
+      assert:
+        that:
+          - msk_config.revision == 2
+          - "'auto.create.topics.enable=True' not in msk_config.server_properties"
+          - "'num.io.threads=8' in msk_config.server_properties"
+          - "'zookeeper.session.timeout.ms=36000' in msk_config.server_properties"
+
+    - name: update msk configuration (idempotency)
+      aws_msk_config:
+        name: "{{ msk_config_name }}"
+        state: "present"
+        kafka_versions: "{{ msk_kafka_versions }}"
+        config: "{{ msk_configs[1] }}"
+      register: msk_config
+
+    - name: assert that the msk configuration wasn't changed
+      assert:
+        that:
+          - msk_config is not changed
+
+    - name: delete msk configuration (check mode)
+      aws_msk_config:
+        name: "{{ msk_config_name }}"
+        state: "absent"
+      check_mode: yes
+      register: msk_config
+
+    - name: assert that the msk configuration be changed
+      assert:
+        that:
+          - msk_config is changed
+
+    - name: delete msk configuration
+      aws_msk_config:
+        name: "{{ msk_config_name }}"
+        state: "absent"
+      register: msk_config
+
+    - name: assert that the msk configuration is changed
+      assert:
+        that:
+          - msk_config is changed
+
+    - name: delete msk configuration (idempotency)
+      aws_msk_config:
+        name: "{{ msk_config_name }}"
+        state: "absent"
+      register: msk_config
+
+    - name: assert that the msk configuration wasn't changed
+      assert:
+        that:
+          - msk_config is not changed
+
+  always:
+
+    - name: remove msk configuration
+      aws_msk_config:
+        name: "{{ msk_config_name }}"
+        state: absent
+      ignore_errors: yes

@@ -1,0 +1,37 @@
+---
+- name: delete msk cluster (check mode)
+  aws_msk_cluster:
+    name: "{{ msk_cluster_name }}"
+    state: "absent"
+    wait: true
+  check_mode: yes
+  register: msk_cluster
+
+- name: assert that the msk cluster be changed
+  assert:
+    that:
+      - msk_cluster is changed
+
+- name: delete msk cluster
+  aws_msk_cluster:
+    name: "{{ msk_cluster_name }}"
+    state: "absent"
+    wait: true
+  register: msk_cluster
+
+- name: assert that the msk cluster is changed
+  assert:
+    that:
+      - msk_cluster is changed
+
+- name: delete msk cluster (idempotency)
+  aws_msk_cluster:
+    name: "{{ msk_cluster_name }}"
+    state: "absent"
+    wait: true
+  register: msk_cluster
+
+- name: assert that the msk cluster wasn't changed
+  assert:
+    that:
+      - msk_cluster is not changed
