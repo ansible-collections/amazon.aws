@@ -118,9 +118,15 @@ def prop_to_dict(p):
     """convert properties to dictionary"""
     if len(p) == 0:
         return {}
-    return {
-        k.strip(): v.strip() for k, v in (i.split("=") for i in p.decode().split("\n"))
-    }
+    r_dict = {}
+    for s in p.decode().split("\n"):
+        kv = s.split("=")
+        r_dict[kv[0].strip()] = kv[1].strip()
+    return r_dict
+    # python >= 2.7 is required:
+    # return {
+    #     k.strip(): v.strip() for k, v in (i.split("=") for i in p.decode().split("\n"))
+    # }
 
 
 @AWSRetry.backoff(tries=5, delay=5)
@@ -192,7 +198,10 @@ def create_config(client, module):
         )
 
         # compare configurations (description and properties) and update if required
-        prop_module = {str(k): str(v) for k, v in module.params.get("config").items()}
+        # prop_module = {str(k): str(v) for k, v in module.params.get("config").items()}
+        prop_module = {}
+        for k, v in module.params.get("config").items():
+            prop_module[str(k)] = str(v)
         if prop_to_dict(response.get("ServerProperties", "")) == prop_module:
             if response.get("Description", "") == module.params.get("description"):
                 return False, response
