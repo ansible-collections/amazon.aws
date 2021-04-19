@@ -7,14 +7,14 @@ except ImportError:
     pass  # caught by AnsibleAWSModule
 
 
-def wafv2_list_web_acls(wafv2, scope, fail_json_aws, Nextmarker=None):
+def wafv2_list_web_acls(wafv2, scope, fail_json_aws, nextmarker=None):
     # there is currently no paginator for wafv2
     req_obj = {
         'Scope': scope,
         'Limit': 100
     }
-    if Nextmarker:
-        req_obj['NextMarker'] = Nextmarker
+    if nextmarker:
+        req_obj['NextMarker'] = nextmarker
 
     try:
         response = wafv2.list_web_acls(**req_obj)
@@ -22,18 +22,18 @@ def wafv2_list_web_acls(wafv2, scope, fail_json_aws, Nextmarker=None):
         fail_json_aws(e, msg="Failed to list wafv2 web acl.")
 
     if response.get('NextMarker'):
-        response['WebACLs'] += wafv2_list_web_acls(wafv2, scope, fail_json_aws, Nextmarker=response.get('NextMarker')).get('WebACLs')
+        response['WebACLs'] += wafv2_list_web_acls(wafv2, scope, fail_json_aws, nextmarker=response.get('NextMarker')).get('WebACLs')
     return response
 
 
-def wafv2_list_rule_groups(wafv2, scope, fail_json_aws, Nextmarker=None):
+def wafv2_list_rule_groups(wafv2, scope, fail_json_aws, nextmarker=None):
     # there is currently no paginator for wafv2
     req_obj = {
         'Scope': scope,
         'Limit': 100
     }
-    if Nextmarker:
-        req_obj['NextMarker'] = Nextmarker
+    if nextmarker:
+        req_obj['NextMarker'] = nextmarker
 
     try:
         response = wafv2.list_rule_groups(**req_obj)
@@ -41,7 +41,7 @@ def wafv2_list_rule_groups(wafv2, scope, fail_json_aws, Nextmarker=None):
         fail_json_aws(e, msg="Failed to list wafv2 rule group.")
 
     if response.get('NextMarker'):
-        response['RuleGroups'] += wafv2_list_rule_groups(wafv2, scope, fail_json_aws, Nextmarker=response.get('NextMarker')).get('RuleGroups')
+        response['RuleGroups'] += wafv2_list_rule_groups(wafv2, scope, fail_json_aws, nextmarker=response.get('NextMarker')).get('RuleGroups')
     return response
 
 
