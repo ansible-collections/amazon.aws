@@ -272,7 +272,7 @@ def main():
             )
         )
 
-    client = module.client("kafka")
+    client = module.client("kafka", retry_decorator=AWSRetry.jittered_backoff())
 
     if module.params["state"] == "present":
         changed, response = create_config(client, module)

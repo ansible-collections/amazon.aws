@@ -776,7 +776,7 @@ def main():
         supports_check_mode=True
     )
 
-    client = module.client("kafka")
+    client = module.client("kafka", retry_decorator=AWSRetry.jittered_backoff())
 
     if module.params["state"] == "present":
         if len(module.params["subnets"]) < 2:
