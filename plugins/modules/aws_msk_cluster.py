@@ -304,7 +304,7 @@ def find_cluster_by_name(client, module, cluster_name):
 
 def get_cluster_state(client, module, arn):
     try:
-        response = client.describe_cluster(ClusterArn=arn)
+        response = client.describe_cluster(ClusterArn=arn, aws_retry=True)
     except client.exceptions.NotFoundException:
         return "DELETED"
     except (
@@ -317,7 +317,7 @@ def get_cluster_state(client, module, arn):
 
 def get_cluster_version(client, module, arn):
     try:
-        response = client.describe_cluster(ClusterArn=arn)
+        response = client.describe_cluster(ClusterArn=arn, aws_retry=True)
     except (
         botocore.exceptions.BotoCoreError,
         botocore.exceptions.ClientError,
@@ -481,7 +481,7 @@ def create_or_update_cluster(client, module):
         create_params = prepare_create_options(module)
 
         try:
-            response = client.create_cluster(**create_params)
+            response = client.create_cluster(**create_params, aws_retry=True)
         except (
             botocore.exceptions.BotoCoreError,
             botocore.exceptions.ClientError,
@@ -627,7 +627,7 @@ def update_cluster_tags(client, module, arn):
     purge_tags = module.params.get('purge_tags')
 
     try:
-        existing_tags = client.list_tags_for_resource(ResourceArn=arn)['Tags']
+        existing_tags = client.list_tags_for_resource(ResourceArn=arn, aws_retry=True)['Tags']
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to retrieve tags for cluster '{0}'".format(arn))
 
@@ -636,9 +636,9 @@ def update_cluster_tags(client, module, arn):
     if not module.check_mode:
         try:
             if tags_to_remove:
-                client.untag_resource(ResourceArn=arn, TagKeys=tags_to_remove)
+                client.untag_resource(ResourceArn=arn, TagKeys=tags_to_remove, aws_retry=True)
             if tags_to_add:
-                client.tag_resource(ResourceArn=arn, Tags=tags_to_add)
+                client.tag_resource(ResourceArn=arn, Tags=tags_to_add, aws_retry=True)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Unable to set tags for cluster '{0}'".format(arn))
 
@@ -795,11 +795,11 @@ def main():
     bootstrap_broker_string = {}
     if response.get("ClusterArn") and module.params["state"] == "present":
         try:
-            cluster_info = client.describe_cluster(ClusterArn=response["ClusterArn"])[
+            cluster_info = client.describe_cluster(ClusterArn=response["ClusterArn"], aws_retry=True)[
                 "ClusterInfo"
             ]
             if cluster_info.get("State") == "ACTIVE":
-                brokers = client.get_bootstrap_brokers(ClusterArn=response["ClusterArn"])
+                brokers = client.get_bootstrap_brokers(ClusterArn=response["ClusterArn"], aws_retry=True)
                 if brokers.get("BootstrapBrokerString"):
                     bootstrap_broker_string["plain"] = brokers["BootstrapBrokerString"]
                 if brokers.get("BootstrapBrokerStringTls"):
