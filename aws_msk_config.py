@@ -183,6 +183,7 @@ def create_config(client, module):
                 Description=module.params.get("description"),
                 KafkaVersions=module.params.get("kafka_versions"),
                 ServerProperties=dict_to_prop(module.params.get("config")).encode(),
+                aws_retry=True
             )
         except (
             botocore.exceptions.BotoCoreError,
@@ -194,7 +195,7 @@ def create_config(client, module):
     else:
         # it's required because 'config' doesn't contain 'ServerProperties'
         response = client.describe_configuration_revision(
-            Arn=config["Arn"], Revision=config["LatestRevision"]["Revision"]
+            Arn=config["Arn"], Revision=config["LatestRevision"]["Revision"], aws_retry=True
         )
 
         # compare configurations (description and properties) and update if required
@@ -214,6 +215,7 @@ def create_config(client, module):
                 Arn=config["Arn"],
                 Description=module.params.get("description"),
                 ServerProperties=dict_to_prop(module.params.get("config")).encode(),
+                aws_retry=True
             )
         except (
             botocore.exceptions.BotoCoreError,
@@ -224,7 +226,7 @@ def create_config(client, module):
     arn = response["Arn"]
     revision = response["LatestRevision"]["Revision"]
 
-    result = client.describe_configuration_revision(Arn=arn, Revision=revision)
+    result = client.describe_configuration_revision(Arn=arn, Revision=revision, aws_retry=True)
 
     return True, result
 
@@ -242,7 +244,7 @@ def delete_config(client, module):
 
     if config:
         try:
-            response = client.delete_configuration(Arn=config["Arn"])
+            response = client.delete_configuration(Arn=config["Arn"], aws_retry=True)
         except (
             botocore.exceptions.BotoCoreError,
             botocore.exceptions.ClientError,
