@@ -57,10 +57,10 @@ EXAMPLES = r"""
       - 2.6.0
       - 2.6.1
     config:
-      auto.create.topics.enable=false
-      num.partitions=1
-      default.replication.factor=3
-      zookeeper.session.timeout.ms=18000
+      auto.create.topics.enable: false
+      num.partitions: 1
+      default.replication.factor: 3
+      zookeeper.session.timeout.ms: 18000
 
 - aws_msk_config:
     name: kafka-cluster-configuration
