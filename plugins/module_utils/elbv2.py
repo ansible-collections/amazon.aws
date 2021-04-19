@@ -71,8 +71,10 @@ class ElasticLoadBalancerV2(object):
         if self.elb is not None:
             self.elb_attributes = self.get_elb_attributes()
             self.elb['tags'] = self.get_elb_tags()
+            self.elb_ip_addr_type = self.get_elb_ip_address_type()
         else:
             self.elb_attributes = None
+            self.elb_ip_addr_type = None
 
     def wait_for_status(self, elb_arn):
         """
@@ -106,6 +108,15 @@ class ElasticLoadBalancerV2(object):
 
         # Replace '.' with '_' in attribute key names to make it more Ansibley
         return dict((k.replace('.', '_'), v) for k, v in elb_attributes.items())
+
+    def get_elb_ip_address_type(self):
+        """
+        Retrieve load balancer ip address type using describe_load_balancers
+
+        :return:
+        """
+
+        return self.elb.get('IpAddressType', None)
 
     def update_elb_attributes(self):
         """
@@ -231,6 +242,21 @@ class ElasticLoadBalancerV2(object):
 
         self.elb = get_elb(self.connection, self.module, self.module.params.get("name"))
         self.elb['tags'] = self.get_elb_tags()
+
+    def modify_ip_address_type(self, ip_addr_type):
+        """
+        Modify ELB ip address type
+        :return:
+        """
+        if self.elb_ip_addr_type != ip_addr_type:
+            try:
+                AWSRetry.jittered_backoff()(
+                    self.connection.set_ip_address_type
+                )(LoadBalancerArn=self.elb['LoadBalancerArn'], IpAddressType=ip_addr_type)
+            except (BotoCoreError, ClientError) as e:
+                self.module.fail_json_aws(e)
+
+            self.changed = True
 
 
 class ApplicationLoadBalancer(ElasticLoadBalancerV2):
