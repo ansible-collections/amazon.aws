@@ -166,6 +166,16 @@ def find_active_config(client, module):
     return None
 
 
+def get_configuration_revision(client, module, arn, revision):
+    try:
+        return client.describe_configuration_revision(Arn=arn, Revision=revision, aws_retry=True)
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:
+        module.fail_json_aws(e, "failed to describe kafka configuration revision")
+
+
 def create_config(client, module):
     """create new or update existing configuration"""
 
@@ -194,9 +204,7 @@ def create_config(client, module):
     # update existing configuration (creates new revision)
     else:
         # it's required because 'config' doesn't contain 'ServerProperties'
-        response = client.describe_configuration_revision(
-            Arn=config["Arn"], Revision=config["LatestRevision"]["Revision"], aws_retry=True
-        )
+        response = get_configuration_revision(client, module, arn=config["Arn"], revision=config["LatestRevision"]["Revision"])
 
         # compare configurations (description and properties) and update if required
         # prop_module = {str(k): str(v) for k, v in module.params.get("config").items()}
@@ -226,7 +234,7 @@ def create_config(client, module):
     arn = response["Arn"]
     revision = response["LatestRevision"]["Revision"]
 
-    result = client.describe_configuration_revision(Arn=arn, Revision=revision, aws_retry=True)
+    result = get_configuration_revision(client, module, arn=arn, revision=revision)
 
     return True, result
 
