@@ -129,7 +129,7 @@ def prop_to_dict(p):
     # }
 
 
-@AWSRetry.backoff(tries=5, delay=5)
+@AWSRetry.jittered_backoff(retries=5, delay=5)
 def get_configurations_with_backoff(client):
     paginator = client.get_paginator("list_configurations")
     return paginator.paginate().build_full_result()

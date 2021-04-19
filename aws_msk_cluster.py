@@ -281,13 +281,13 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
 )
 
 
-@AWSRetry.backoff(tries=5, delay=5)
+@AWSRetry.jittered_backoff(retries=5, delay=5)
 def list_clusters_with_backoff(client, cluster_name):
     paginator = client.get_paginator("list_clusters")
     return paginator.paginate(ClusterNameFilter=cluster_name).build_full_result()
 
 
-@AWSRetry.backoff(tries=5, delay=5)
+@AWSRetry.jittered_backoff(retries=5, delay=5)
 def list_nodes_with_backoff(client, cluster_arn):
     paginator = client.get_paginator("list_nodes")
     return paginator.paginate(ClusterArn=cluster_arn).build_full_result()
