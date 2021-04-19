@@ -481,7 +481,7 @@ def create_or_update_cluster(client, module):
         create_params = prepare_create_options(module)
 
         try:
-            response = client.create_cluster(**create_params, aws_retry=True)
+            response = client.create_cluster(aws_retry=True, **create_params)
         except (
             botocore.exceptions.BotoCoreError,
             botocore.exceptions.ClientError,
