@@ -110,9 +110,9 @@ options:
     type: int
   stickiness_app_cookie_name:
     description:
-      - The name of the application cookie. Required if stickiness_type is
+      - The name of the application cookie. Required if C(stickiness_type) is
         C(app_cookie).
-    type: string
+    type: str
   stickiness_type:
     description:
       - The type of sticky sessions.
