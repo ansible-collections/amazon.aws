@@ -176,6 +176,21 @@ def get_configuration_revision(client, module, arn, revision):
         module.fail_json_aws(e, "failed to describe kafka configuration revision")
 
 
+def is_configuration_changed(module, current):
+    """
+    compare configuration's description and properties
+    python 2.7+ version:
+    prop_module = {str(k): str(v) for k, v in module.params.get("config").items()}
+    """
+    prop_module = {}
+    for k, v in module.params.get("config").items():
+        prop_module[str(k)] = str(v)
+    if prop_to_dict(current.get("ServerProperties", "")) == prop_module:
+        if current.get("Description", "") == module.params.get("description"):
+            return False
+    return True
+
+
 def create_config(client, module):
     """create new or update existing configuration"""
 
@@ -206,14 +221,8 @@ def create_config(client, module):
         # it's required because 'config' doesn't contain 'ServerProperties'
         response = get_configuration_revision(client, module, arn=config["Arn"], revision=config["LatestRevision"]["Revision"])
 
-        # compare configurations (description and properties) and update if required
-        # prop_module = {str(k): str(v) for k, v in module.params.get("config").items()}
-        prop_module = {}
-        for k, v in module.params.get("config").items():
-            prop_module[str(k)] = str(v)
-        if prop_to_dict(response.get("ServerProperties", "")) == prop_module:
-            if response.get("Description", "") == module.params.get("description"):
-                return False, response
+        if not is_configuration_changed(module, response):
+            return False, response
 
         if module.check_mode:
             return True, {}
