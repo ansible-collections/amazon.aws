@@ -91,6 +91,13 @@
 
   # ============================================================
   always:
+    - name: delete s3 bucket ownership controls
+      s3_bucket:
+        name: '{{ bucket_name }}'
+        state: present
+        delete_object_ownership: true
+      ignore_errors: yes
+
     - name: Ensure all buckets are deleted
       s3_bucket:
         name: '{{ bucket_name }}'
