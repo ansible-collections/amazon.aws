@@ -1,0 +1,134 @@
+---
+
+- name: Integration testing for the elasticache module
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  collections:
+    - amazon.aws
+  block:
+    # == Dependency setup ==
+
+    - name: Create VPC to launch Elasticache instances into
+      ec2_vpc_net:
+        name: "{{ vpc_name }}"
+        cidr_block: "{{ vpc_cidr_prefix }}.0.0/16"
+        state: present
+      register: elasticache_vpc
+
+    - name: Create subnet 1 in this VPC to launch Elasticache instances into
+      ec2_vpc_subnet:
+        vpc_id: "{{ elasticache_vpc.vpc.id }}"
+        cidr: "{{ vpc_cidr_prefix }}.1.0/24"
+        state: present
+      register: elasticache_vpc_subnet_1
+
+    - name: Create subnet 2 in this VPC to launch Elasticache instances into
+      ec2_vpc_subnet:
+        vpc_id: "{{ elasticache_vpc.vpc.id }}"
+        cidr: "{{ vpc_cidr_prefix }}.2.0/24"
+        state: present
+      register: elasticache_vpc_subnet_2
+
+    - name: Create Elasticache Subnet Group (grouping two subnets together)
+      elasticache_subnet_group:
+        name: "{{ elasticache_subnet_group_name }}"
+        description: Subnet group grouping together both VPC subnets for Elasticache Test setup
+        subnets:
+          - "{{ elasticache_vpc_subnet_1.subnet.id }}"
+          - "{{ elasticache_vpc_subnet_2.subnet.id }}"
+        state: present
+
+    # == Actual testing of the elasticache module ==
+
+    - name: Create Redis Server on Elasticache in VPC subnets
+      elasticache:
+        name: "{{ elasticache_redis_test_name }}"
+        engine: redis
+        node_type: cache.t3.micro
+        cache_port: "{{ elasticache_redis_port }}"
+        cache_subnet_group: "{{ elasticache_subnet_group_name }}"
+        num_nodes: 1
+        state: present
+      register: elasticache_redis
+
+    - name: Assert that task worked
+      assert:
+        that:
+          - elasticache_redis is changed
+          - elasticache_redis.elasticache.data is defined
+          - elasticache_redis.elasticache.name == "{{ elasticache_redis_test_name }}"
+          - elasticache_redis.elasticache.data.CacheSubnetGroupName == "{{ elasticache_subnet_group_name }}"
+
+    - name: Add security group for Redis access in Elasticache
+      ec2_group:
+        name: "{{ elasticache_redis_sg_name }}"
+        description: Allow access to Elasticache Redis for testing EC module
+        vpc_id: "{{ elasticache_vpc.vpc.id }}"
+        rules:
+          - proto: tcp
+            from_port: "{{ elasticache_redis_port }}"
+            to_port: "{{ elasticache_redis_port }}"
+            cidr_ip: 10.31.0.0/16
+      register: elasticache_redis_sg
+
+    - name: Update Redis Elasticache config with security group (to if changes to existing setup work)
+      elasticache:
+        name: "{{ elasticache_redis.elasticache.name }}"
+        engine: redis
+        node_type: cache.t3.micro
+        num_nodes: 1
+        cache_port: "{{ elasticache_redis_port }}"
+        cache_subnet_group: "{{ elasticache_subnet_group_name }}"
+        security_group_ids: "{{ elasticache_redis_sg.group_id }}"
+        state: present
+      register: elasticache_redis_new
+
+    - name: Assert that task worked
+      assert:
+        that:
+          - elasticache_redis_new is changed
+          - elasticache_redis_new.elasticache.data is defined
+          - elasticache_redis_new.elasticache.data.Engine == "redis"
+          - elasticache_redis_new.elasticache.data.SecurityGroups.0.SecurityGroupId == elasticache_redis_sg.group_id
+
+  always:
+
+    # == Cleanup ==
+
+    - name: Make sure test Redis is deleted again from Elasticache
+      elasticache:
+        name: "{{ elasticache_redis_test_name }}"
+        engine: redis
+        state: absent
+
+    - name: Make sure Elasticache Subnet group is deleted again
+      elasticache_subnet_group:
+        name: "{{ elasticache_subnet_group_name }}"
+        state: absent
+
+    - name: Make sure Redis Security Group is deleted again
+      ec2_group:
+        name: "{{ elasticache_redis_sg_name }}"
+        state: absent
+
+    - name: Make sure VPC subnet 1 is deleted again
+      ec2_vpc_subnet:
+        vpc_id: "{{ elasticache_vpc.vpc.id }}"
+        cidr: "{{ vpc_cidr_prefix }}.1.0/24"
+        state: absent
+
+    - name: Make sure VPC subnet 2 is deleted again
+      ec2_vpc_subnet:
+        vpc_id: "{{ elasticache_vpc.vpc.id }}"
+        cidr: "{{ vpc_cidr_prefix }}.2.0/24"
+        state: absent
+
+    - name: Make sure VPC is deleted again (only works if subnets were deleted)
+      ec2_vpc_net:
+        name: "{{ vpc_name }}"
+        cidr_block: "{{ vpc_cidr_prefix }}.0.0/16"
+        state: absent

@@ -74,7 +74,8 @@ options:
     elements: str
   cache_security_groups:
     description:
-      - A list of cache security group names to associate with this cache cluster. Must be an empty list if inside a VPC.
+      - A list of cache security group names to associate with this cache cluster.
+      - Don't use if your Cache is inside a VPC. In that case use I(security_group_ids) instead!
     type: list
     elements: str
   zone:
@@ -393,7 +394,7 @@ class ElastiCacheManager(object):
         # check vpc security groups
         if self.security_group_ids:
             vpc_security_groups = []
-            security_groups = self.data['SecurityGroups'] or []
+            security_groups = self.data.get('SecurityGroups', [])
             for sg in security_groups:
                 vpc_security_groups.append(sg['SecurityGroupId'])
             if set(vpc_security_groups) != set(self.security_group_ids):

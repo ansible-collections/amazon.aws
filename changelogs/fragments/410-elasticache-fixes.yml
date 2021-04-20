@@ -1,0 +1,5 @@
+---
+bugfixes:
+  - elasticache - Fix ``KeyError`` issue when updating security group (https://github.com/ansible-collections/community.aws/pull/410).
+minor_changes:
+  - elasticache - Improve docs a little, add intgration tests (https://github.com/ansible-collections/community.aws/pull/410).

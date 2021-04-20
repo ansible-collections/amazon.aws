@@ -1,0 +1,10 @@
+---
+
+vpc_name: "{{ resource_prefix }}-elasticache-test-vpc"
+vpc_seed: '{{ resource_prefix }}'
+vpc_cidr_prefix: '10.{{ 256 | random(seed=vpc_seed) }}'
+
+elasticache_redis_sg_name: "{{ resource_prefix }}-elasticache-test-redis-sg"
+elasticache_redis_test_name: "{{ resource_prefix }}-redis-test"
+elasticache_subnet_group_name: "{{ resource_prefix }}-elasticache-test-vpc-subnet-group"
+elasticache_redis_port: 6379
