@@ -124,15 +124,9 @@ from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import compare_aws_tags
-
-
-def get_tags(ec2, module, resource):
-    filters = [{'Name': 'resource-id', 'Values': [resource]}]
-    try:
-        result = AWSRetry.jittered_backoff()(ec2.describe_tags)(Filters=filters)
-        return boto3_tag_list_to_ansible_dict(result['Tags'])
-    except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Failed to fetch tags for resource {0}'.format(resource))
+from ..module_utils.ec2 import describe_ec2_tags
+from ..module_utils.ec2 import ensure_ec2_tags
+from ..module_utils.ec2 import remove_ec2_tags
 
 
 def main():
@@ -155,44 +149,32 @@ def main():
 
     ec2 = module.client('ec2')
 
-    current_tags = get_tags(ec2, module, resource)
+    current_tags = describe_ec2_tags(ec2, module, resource)
 
     if state == 'list':
         module.deprecate(
             'Using the "list" state has been deprecated.  Please use the ec2_tag_info module instead', date='2022-06-01', collection_name='amazon.aws')
         module.exit_json(changed=False, tags=current_tags)
 
-    add_tags, remove = compare_aws_tags(current_tags, tags, purge_tags=purge_tags)
-
-    remove_tags = {}
     if state == 'absent':
+        removed_tags = {}
         for key in tags:
             if key in current_tags and (tags[key] is None or current_tags[key] == tags[key]):
-                remove_tags[key] = current_tags[key]
+                result['changed'] = True
+                removed_tags[key] = current_tags[key]
+        result['removed_tags'] = removed_tags
+        remove_ec2_tags(ec2, module, resource, removed_tags.keys())
 
-    for key in remove:
-        remove_tags[key] = current_tags[key]
+    if state == 'present':
+        tags_to_set, tags_to_unset = compare_aws_tags(current_tags, tags, purge_tags)
+        if tags_to_unset:
+            result['removed_tags'] = {}
+            for key in tags_to_unset:
+                result['removed_tags'][key] = current_tags[key]
+        result['added_tags'] = tags_to_set
+        result['changed'] = ensure_ec2_tags(ec2, module, resource, tags=tags, purge_tags=purge_tags)
 
-    if remove_tags:
-        result['changed'] = True
-        result['removed_tags'] = remove_tags
-        if not module.check_mode:
-            try:
-                AWSRetry.jittered_backoff()(ec2.delete_tags)(Resources=[resource], Tags=ansible_dict_to_boto3_tag_list(remove_tags))
-            except (BotoCoreError, ClientError) as e:
-                module.fail_json_aws(e, msg='Failed to remove tags {0} from resource {1}'.format(remove_tags, resource))
-
-    if state == 'present' and add_tags:
-        result['changed'] = True
-        result['added_tags'] = add_tags
-        current_tags.update(add_tags)
-        if not module.check_mode:
-            try:
-                AWSRetry.jittered_backoff()(ec2.create_tags)(Resources=[resource], Tags=ansible_dict_to_boto3_tag_list(add_tags))
-            except (BotoCoreError, ClientError) as e:
-                module.fail_json_aws(e, msg='Failed to set tags {0} on resource {1}'.format(add_tags, resource))
-
-    result['tags'] = get_tags(ec2, module, resource)
+    result['tags'] = describe_ec2_tags(ec2, module, resource)
     module.exit_json(**result)
 
 
