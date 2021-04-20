@@ -1,2 +1,2 @@
 minor_changes:
-- ecs_taskdefinition - Add ``depends_on`` feature (https://github.com/ansible-collections/community.aws/issues/520)
+- ecs_taskdefinition - Documentation improvement (https://github.com/ansible-collections/community.aws/issues/520)
