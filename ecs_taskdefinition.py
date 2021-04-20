@@ -46,9 +46,187 @@ options:
     containers:
         description:
             - A list of containers definitions.
+            - See U(https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecs.html) for a complete list of parameters.
         required: False
         type: list
         elements: dict
+        contains:
+            name:
+                description: The name of a container.
+                required: false
+                type: str
+            image:
+                description: The image used to start a container.
+                required: false
+                type: str
+            repositoryCredentials:
+                description: The private repository authentication credentials to use.
+                required: false
+                type: dict
+            cpu:
+                description: The number of cpu units reserved for the container.
+                required: false
+                type: int
+            memory:
+                description: The amount (in MiB) of memory to present to the container.
+                required: false
+                type: int
+            memoryReservation:
+                description: The soft limit (in MiB) of memory to reserve for the container.
+                required: false
+                type: int
+            links:
+                description:
+                    - Allows containers to communicate with each other without the need for port mappings.
+                    - This parameter is only supported if the network mode of a task definition is bridge.
+                required: false
+                type: list
+            portMappings:
+                description: The list of port mappings for the container.
+                required: false
+                type: list
+                elements: dict
+                contains:
+                    containerPort:
+                        description: The port number on the container that is bound to the user-specified or automatically assigned host port.
+                        required: false
+                        type: int
+                    hostPort:
+                        description: The port number on the container instance to reserve for your container.
+                        required: false
+                        type: int
+                    protocol:
+                        description: The protocol used for the port mapping. Valid values are tcp and udp.
+                        required: false
+                        type: str
+            essential:
+                description:
+                    - If essential is true, and the fails or stops for any reason, all other containers that are part of the task are stopped.
+                required: false
+                type: bool
+            entryPoint:
+                description: The entry point that is passed to the container.
+                required: false
+                type: str
+            command:
+                description: The command that is passed to the container.
+                required: false
+                type: list
+            environment:
+                description: The environment variables to pass to a container.
+                required: false
+                type: list
+                elements: dict
+                contains:
+                    name:
+                        description: The name of the key-value pair.
+                        required: false
+                        type: str
+                    value:
+                        description: The value of the key-value pair.
+                        required: false
+                        type: str
+            environmentFiles:
+                description: A list of files containing the environment variables to pass to a container.
+                required: false
+                type: list
+                elements: dict
+                contains:
+                    value:
+                        description: The Amazon Resource Name (ARN) of the Amazon S3 object containing the environment variable file.
+                        required: false
+                        type: str
+                    type:
+                        description: The file type to use. The only supported value is s3.
+                        required: false
+                        type: str
+            volumesFrom:
+                description: Data volumes to mount from another container.
+                required: false
+                type: list
+            linuxParameters:
+                description: Linux-specific modifications that are applied to the container, such as Linux kernel capabilities.
+                required: false
+                type: list
+            devices:
+                description: Any host devices to expose to the container.
+                required: false
+                type: list
+            initProcessEnabled:
+                description: Run an init process inside the container that forwards signals and reaps processes.
+                required: false
+                type: bool
+            sharedMemorySize:
+                description: The value for the size (in MiB) of the /dev/shm volume.
+                required: false
+                type: int
+            tmpfs:
+                description: The container path, mount options, and size (in MiB) of the tmpfs mount.
+                required: false
+                type: list
+            maxSwap:
+                description: The total amount of swap memory (in MiB) a container can use.
+                required: false
+                type: int
+            swappiness:
+                description:
+                    - This allows you to tune a container's memory swappiness behavior.
+                    - Accepted values are whole numbers between 0 and 100.
+                required: false
+                type: int
+            secrets:
+                description: The secrets to pass to the container.
+                required: false
+                type: list
+            dependsOn:
+                description:
+                    - The dependencies defined for container startup and shutdown.
+                    - When a dependency is defined for container startup, for container shutdown it is reversed.
+                required: false
+                type: list
+                elements: dict
+                suboptions:
+                    containerName:
+                        description: The name of a container.
+                        type: str
+                        required: true
+                    condition:
+                        description: The dependency condition of the container.
+                        type: str
+                        required: true
+                        choices: ["start", "complete", "success", "healthy"]
+            startTimeout:
+                description: Time duration (in seconds) to wait before giving up on resolving dependencies for a container.
+                required: false
+                type: int
+            stopTimeout:
+                description: Time duration (in seconds) to wait before the container is forcefully killed if it doesn't exit normally on its own.
+                required: false
+                type: int
+            hostname:
+                description: The hostname to use for your container.
+                required: false
+                type: str
+            user:
+                description: The user to use inside the container.
+                required: false
+                type: str
+            workingDirectory:
+                description: The working directory in which to run commands inside the container.
+                required: false
+                type: str
+            disableNetworking:
+                description: When this parameter is true, networking is disabled within the container.
+                required: false
+                type: bool
+            privileged:
+                description: When this parameter is true, the container is given elevated privileges on the host container instance (similar to the root user).
+                required: false
+                type: bool
+            readonlyRootFilesystem:
+                description: When this parameter is true, the container is given read-only access to its root file system.
+                required: false
+                type: bool
     network_mode:
         description:
             - The Docker networking mode to use for the containers in the task.
@@ -99,24 +277,6 @@ options:
             - If using the Fargate launch type, this field is required and is limited by the CPU.
         required: false
         type: str
-    depends_on:
-        version_added: 1.5.0
-        description:
-            - The dependencies defined for container startup and shutdown.
-            - When a dependency is defined for container startup, for container shutdown it is reversed.
-        required: false
-        type: list
-        elements: dict
-        suboptions:
-            containerName:
-                description: The name of a container.
-                type: str
-                required: true
-            condition:
-                description: The dependency condition of the container.
-                type: str
-                required: true
-                choices: ["start", "complete", "success", "healthy"]
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -204,14 +364,11 @@ EXAMPLES = r'''
       portMappings:
       - containerPort: 8080
         hostPort:      8080
-    launch_type: FARGATE
-    cpu: 512
-    memory: 1024
-    state: present
-    network_mode: awsvpc
-    depends_on:
-    - containerName: "simple-container"
-      condition: "start"
+      cpu: 512
+      memory: 1024
+      depends_on:
+      - containerName: "simple-app"
+        condition: "start"
 
 # Create Task Definition with Environment Variables and Secrets
 - name: Create task definition
@@ -269,7 +426,7 @@ class EcsTaskManager:
         except botocore.exceptions.ClientError:
             return None
 
-    def register_task(self, family, task_role_arn, execution_role_arn, network_mode, container_definitions, volumes, launch_type, cpu, memory, depends_on):
+    def register_task(self, family, task_role_arn, execution_role_arn, network_mode, container_definitions, volumes, launch_type, cpu, memory):
         validated_containers = []
 
         # Ensures the number parameters are int as required by boto
@@ -294,7 +451,7 @@ class EcsTaskManager:
             family=family,
             taskRoleArn=task_role_arn,
             containerDefinitions=container_definitions,
-            volumes=volumes,
+            volumes=volumes
         )
         if network_mode != 'default':
             params['networkMode'] = network_mode
@@ -306,8 +463,6 @@ class EcsTaskManager:
             params['requiresCompatibilities'] = [launch_type]
         if execution_role_arn:
             params['executionRoleArn'] = execution_role_arn
-        if depends_on:
-            params['dependsOn'] = depends_on
 
         try:
             response = self.ecs.register_task_definition(**params)
@@ -367,8 +522,7 @@ def main():
         volumes=dict(required=False, type='list', elements='dict'),
         launch_type=dict(required=False, choices=['EC2', 'FARGATE']),
         cpu=dict(),
-        memory=dict(required=False, type='str'),
-        depends_on=dict(required=False, type='list', elements='dict'),
+        memory=dict(required=False, type='str')
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec,
@@ -405,10 +559,16 @@ def main():
         if launch_type == 'FARGATE' and network_mode != 'awsvpc':
             module.fail_json(msg="To use FARGATE launch type, network_mode must be awsvpc")
 
-        depends_on = module.params['depends_on']
-        if launch_type == 'FARGATE' and depends_on:
-            if not module.botocore_at_least('1.3.0'):
-                module.fail_json(msg='botocore needs to be version 1.3.0 or higher to use depends_on on Fargate launch_type')
+        for container in module.params['containers']:
+            if container.get('links') and network_mode != 'bridge':
+                module.fail_json(msg='links parameter is only supported if the network mode of a task definition is bridge.')
+
+            if container.get('swappiness') and (container.get('swappiness') < 0 or container.get('swappiness') > 100):
+                module.fail_json(msg='Accepted values are whole numbers between 0 and 100.')
+
+            if container.get('dependsOn') and launch_type == 'FARGATE':
+                if not module.botocore_at_least('1.3.0'):
+                    module.fail_json(msg='botocore needs to be version 1.3.0 or higher to use depends_on on Fargate launch_type')
 
         family = module.params['family']
         existing_definitions_in_family = task_mgr.describe_task_definitions(module.params['family'])
@@ -527,8 +687,7 @@ def main():
                                                                    volumes,
                                                                    module.params['launch_type'],
                                                                    module.params['cpu'],
-                                                                   module.params['memory'],
-                                                                   depends_on)
+                                                                   module.params['memory'])
             results['changed'] = True
 
     elif module.params['state'] == 'absent':
