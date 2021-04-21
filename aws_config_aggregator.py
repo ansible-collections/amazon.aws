@@ -103,7 +103,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry, ca
 def resource_exists(client, module, params):
     try:
         aggregator = client.describe_configuration_aggregators(
-            ConfigurationAggregatorNames=[params['name']]
+            ConfigurationAggregatorNames=[params['ConfigurationAggregatorName']]
         )
         return aggregator['ConfigurationAggregators'][0]
     except is_boto3_error_code('NoSuchConfigurationAggregatorException'):
@@ -128,7 +128,7 @@ def create_resource(client, module, params, result):
 
 def update_resource(client, module, params, result):
     current_params = client.describe_configuration_aggregators(
-        ConfigurationAggregatorNames=[params['name']]
+        ConfigurationAggregatorNames=[params['ConfigurationAggregatorName']]
     )
 
     del current_params['ConfigurationAggregatorArn']
@@ -181,8 +181,8 @@ def main():
     params = {}
     if name:
         params['ConfigurationAggregatorName'] = name
+    params['AccountAggregationSources'] = []
     if module.params.get('account_sources'):
-        params['AccountAggregationSources'] = []
         for i in module.params.get('account_sources'):
             tmp_dict = {}
             if i.get('account_ids'):
@@ -203,7 +203,7 @@ def main():
                 'AwsRegions': module.params.get('organization_source').get('aws_regions')
             })
         if module.params.get('organization_source').get('all_aws_regions') is not None:
-            params['OrganizationAggregationSourcep'].update({
+            params['OrganizationAggregationSource'].update({
                 'AllAwsRegions': module.params.get('organization_source').get('all_aws_regions')
             })
 
