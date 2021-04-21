@@ -1,0 +1,9 @@
+cloud/aws
+shippable/aws/group1
+
+wafv2_resources
+wafv2_resources_info
+wafv2_rule_group
+wafv2_rule_group_info
+wafv2_web_acl
+wafv2_web_acl_info

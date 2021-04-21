@@ -1,0 +1,151 @@
+#######################
+## Create web acl
+#######################
+- name: check_mode create web acl
+  wafv2_web_acl:
+    name: "{{ web_acl_name }}"
+    state: present
+    description: hallo eins
+    scope: REGIONAL
+    default_action: Allow
+    sampled_requests: no
+    cloudwatch_metrics: yes
+    metric_name: blub
+    rules:
+      - name: zwei
+        priority: 2
+        action: 
+          block: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: ddos
+        statement:
+          xss_match_statement:
+            field_to_match:
+              body: {}
+            text_transformations:
+              - type: NONE
+                priority: 0
+      - name: admin_protect
+        priority: 1
+        override_action: 
+          none: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: fsd
+        statement:
+          managed_rule_group_statement:
+            vendor_name: AWS
+            name: AWSManagedRulesAdminProtectionRuleSet
+    tags:
+      A: B
+      C: D
+  register: out
+  check_mode: yes
+
+- name: check_mode verify create
+  assert:
+    that:
+      - out is changed
+
+- name: create web acl
+  wafv2_web_acl:
+    name: "{{ web_acl_name }}"
+    state: present
+    description: hallo eins
+    scope: REGIONAL
+    default_action: Allow
+    sampled_requests: no
+    cloudwatch_metrics: yes
+    metric_name: blub
+    rules:
+      - name: zwei
+        priority: 2
+        action: 
+          block: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: ddos
+        statement:
+          xss_match_statement:
+            field_to_match:
+              body: {}
+            text_transformations:
+              - type: NONE
+                priority: 0
+      - name: admin_protect
+        priority: 1
+        override_action: 
+          none: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: fsd
+        statement:
+          managed_rule_group_statement:
+            vendor_name: AWS
+            name: AWSManagedRulesAdminProtectionRuleSet
+    tags:
+      A: B
+      C: D
+  register: ACL
+
+- name: verify create
+  assert:
+    that:
+      - ACL is changed
+      - ACL.web_acl.name == web_acl_name
+      - not ACL.web_acl.visibility_config.sampled_requests_enabled
+      - ACL.web_acl.rules | count == 2
+      - ACL.web_acl.description == 'hallo eins'
+
+- name: immutable create web acl
+  wafv2_web_acl:
+    name: "{{ web_acl_name }}"
+    state: present
+    description: hallo eins
+    scope: REGIONAL
+    default_action: Allow
+    sampled_requests: no
+    cloudwatch_metrics: yes
+    metric_name: blub
+    rules:
+      - name: zwei
+        priority: 2
+        action: 
+          block: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: ddos
+        statement:
+          xss_match_statement:
+            field_to_match:
+              body: {}
+            text_transformations:
+              - type: NONE
+                priority: 0
+      - name: admin_protect
+        priority: 1
+        override_action: 
+          none: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: fsd
+        statement:
+          managed_rule_group_statement:
+            vendor_name: AWS
+            name: AWSManagedRulesAdminProtectionRuleSet
+    tags:
+      A: B
+      C: D
+  register: out
+
+- name: verify create
+  assert:
+    that:
+      - out is not changed

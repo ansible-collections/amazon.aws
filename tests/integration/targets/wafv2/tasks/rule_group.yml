@@ -1,0 +1,681 @@
+####################################
+# Create and test rule group
+####################################
+- name: check_mode create rule group
+  wafv2_rule_group:
+    name: "{{ rule_group_name }}"
+    state: present
+    description: hallo eins
+    scope: REGIONAL
+    capacity: 500
+    rules:
+      - name: eins
+        priority: 1
+        action: 
+          allow: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: fsd
+        statement:
+          byte_match_statement:
+            search_string: ansible.com
+            positional_constraint: CONTAINS
+            field_to_match:
+              single_header:
+                name: host
+            text_transformations:
+              - type: LOWERCASE
+                priority: 0
+    cloudwatch_metrics: yes
+    tags:
+      A: B
+      C: D
+  register: out
+  check_mode: yes
+
+- name: check_mode verify create
+  assert:
+    that:
+      - out is changed
+
+- name: create rule group
+  wafv2_rule_group:
+    name: "{{ rule_group_name }}"
+    state: present
+    description: hallo eins
+    scope: REGIONAL
+    capacity: 500
+    rules:
+      - name: eins
+        priority: 1
+        action: 
+          allow: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: fsd
+        statement:
+          byte_match_statement:
+            search_string: ansible.com
+            positional_constraint: CONTAINS
+            field_to_match:
+              single_header:
+                name: host
+            text_transformations:
+              - type: LOWERCASE
+                priority: 0
+    cloudwatch_metrics: yes
+    tags:
+      A: B
+      C: D
+  register: out
+
+- name: verify create
+  assert:
+    that:
+      - out is changed
+
+- name: rule group info
+  wafv2_rule_group_info:
+    name: "{{ rule_group_name }}"
+    state: present
+    scope: REGIONAL
+  register: out
+
+- name: verify one rule
+  assert:
+    that:
+      - out.rules | count == 1
+
+- name: immutable create rule group
+  wafv2_rule_group:
+    name: "{{ rule_group_name }}"
+    state: present
+    description: hallo eins
+    scope: REGIONAL
+    capacity: 500
+    rules:
+      - name: eins
+        priority: 1
+        action: 
+          allow: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: fsd
+        statement:
+          byte_match_statement:
+            search_string: ansible.com
+            positional_constraint: CONTAINS
+            field_to_match:
+              single_header:
+                name: host
+            text_transformations:
+              - type: LOWERCASE
+                priority: 0
+    cloudwatch_metrics: yes
+    tags:
+      A: B
+      C: D
+  register: out
+
+- name: verify immutable create
+  assert:
+    that:
+      - out is not changed
+
+- name: change description
+  wafv2_rule_group:
+    name: "{{ rule_group_name }}"
+    state: present
+    description: hallo eins zwei
+    scope: REGIONAL
+    capacity: 500
+    rules:
+      - name: eins
+        priority: 1
+        action: 
+          allow: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: fsd
+        statement:
+          byte_match_statement:
+            search_string: ansible.com
+            positional_constraint: CONTAINS
+            field_to_match:
+              single_header:
+                name: host
+            text_transformations:
+              - type: LOWERCASE
+                priority: 0
+    cloudwatch_metrics: yes
+    tags:
+      A: B
+      C: D
+  register: out
+
+- name: verify change
+  assert:
+    that:
+      - out is changed
+
+- name: iummutable change description
+  wafv2_rule_group:
+    name: "{{ rule_group_name }}"
+    state: present
+    description: hallo eins zwei
+    scope: REGIONAL
+    capacity: 500
+    rules:
+      - name: eins
+        priority: 1
+        action: 
+          allow: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: fsd
+        statement:
+          byte_match_statement:
+            search_string: ansible.com
+            positional_constraint: CONTAINS
+            field_to_match:
+              single_header:
+                name: host
+            text_transformations:
+              - type: LOWERCASE
+                priority: 0
+    cloudwatch_metrics: yes
+    tags:
+      A: B
+      C: D
+  register: out
+
+- name: verify no change
+  assert:
+    that:
+      - out is not changed
+
+- name: add rule
+  wafv2_rule_group:
+    name: "{{ rule_group_name }}"
+    state: present
+    description: hallo eins zwei
+    scope: REGIONAL
+    capacity: 500
+    rules:
+      - name: eins
+        priority: 1
+        action: 
+          allow: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: fsd
+        statement:
+          byte_match_statement:
+            search_string: ansible.com
+            positional_constraint: CONTAINS
+            field_to_match:
+              single_header:
+                name: host
+            text_transformations:
+              - type: LOWERCASE
+                priority: 0
+      - name: zwei
+        priority: 2
+        action: 
+          block: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: ddos
+        statement:
+          or_statement:
+            statements:
+              - byte_match_statement:
+                  search_string: ansible.com
+                  positional_constraint: CONTAINS
+                  field_to_match:
+                    single_header:
+                      name: host
+                  text_transformations:
+                    - type: LOWERCASE
+                      priority: 0
+              - xss_match_statement:
+                  field_to_match:
+                    body: {}
+                  text_transformations:
+                    - type: NONE
+                      priority: 0      
+    cloudwatch_metrics: yes
+    tags:
+      A: B
+      C: D
+  register: out
+
+- name: verify change
+  assert:
+    that:
+      - out is changed
+
+- name: immutable add rule
+  wafv2_rule_group:
+    name: "{{ rule_group_name }}"
+    state: present
+    description: hallo eins zwei
+    scope: REGIONAL
+    capacity: 500
+    rules:
+      - name: eins
+        priority: 1
+        action: 
+          allow: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: fsd
+        statement:
+          byte_match_statement:
+            search_string: ansible.com
+            positional_constraint: CONTAINS
+            field_to_match:
+              single_header:
+                name: host
+            text_transformations:
+              - type: LOWERCASE
+                priority: 0
+      - name: zwei
+        priority: 2
+        action: 
+          block: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: ddos
+        statement:
+          or_statement:
+            statements:
+              - byte_match_statement:
+                  search_string: ansible.com
+                  positional_constraint: CONTAINS
+                  field_to_match:
+                    single_header:
+                      name: host
+                  text_transformations:
+                    - type: LOWERCASE
+                      priority: 0
+              - xss_match_statement:
+                  field_to_match:
+                    body: {}
+                  text_transformations:
+                    - type: NONE
+                      priority: 0 
+    cloudwatch_metrics: yes
+    tags:
+      A: B
+      C: D
+  register: out
+
+- name: verify no change
+  assert:
+    that:
+      - out is not changed
+
+- name: change rule
+  wafv2_rule_group:
+    name: "{{ rule_group_name }}"
+    state: present
+    description: hallo eins zwei
+    scope: REGIONAL
+    capacity: 500
+    rules:
+      - name: eins
+        priority: 1
+        action: 
+          allow: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: fsd
+        statement:
+          byte_match_statement:
+            search_string: ansible.com
+            positional_constraint: CONTAINS
+            field_to_match:
+              single_header:
+                name: host
+            text_transformations:
+              - type: LOWERCASE
+                priority: 0
+      - name: zwei
+        priority: 3
+        action: 
+          block: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: ddos
+        statement:
+          or_statement:
+            statements:
+              - byte_match_statement:
+                  search_string: ansible.com
+                  positional_constraint: CONTAINS
+                  field_to_match:
+                    single_header:
+                      name: host
+                  text_transformations:
+                    - type: LOWERCASE
+                      priority: 0
+              - xss_match_statement:
+                  field_to_match:
+                    body: {}
+                  text_transformations:
+                    - type: NONE
+                      priority: 0 
+    cloudwatch_metrics: yes
+    tags:
+      A: B
+      C: D
+  register: out
+
+- name: verify change
+  assert:
+    that:
+      - out is changed
+
+- name: immutable change rule
+  wafv2_rule_group:
+    name: "{{ rule_group_name }}"
+    state: present
+    description: hallo eins zwei
+    scope: REGIONAL
+    capacity: 500
+    rules:
+      - name: eins
+        priority: 1
+        action: 
+          allow: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: fsd
+        statement:
+          byte_match_statement:
+            search_string: ansible.com
+            positional_constraint: CONTAINS
+            field_to_match:
+              single_header:
+                name: host
+            text_transformations:
+              - type: LOWERCASE
+                priority: 0
+      - name: zwei
+        priority: 3
+        action: 
+          block: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: ddos
+        statement:
+          or_statement:
+            statements:
+              - byte_match_statement:
+                  search_string: ansible.com
+                  positional_constraint: CONTAINS
+                  field_to_match:
+                    single_header:
+                      name: host
+                  text_transformations:
+                    - type: LOWERCASE
+                      priority: 0
+              - xss_match_statement:
+                  field_to_match:
+                    body: {}
+                  text_transformations:
+                    - type: NONE
+                      priority: 0 
+    cloudwatch_metrics: yes
+    tags:
+      A: B
+      C: D
+  register: out
+
+- name: verify no change
+  assert:
+    that:
+      - out is not changed
+
+- name: change rule again
+  wafv2_rule_group:
+    name: "{{ rule_group_name }}"
+    state: present
+    description: hallo eins zwei
+    scope: REGIONAL
+    capacity: 500
+    rules:
+      - name: zwei
+        priority: 1
+        action: 
+          block: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: ddos
+        statement:
+          or_statement:
+            statements:
+              - byte_match_statement:
+                  search_string: ansible.com
+                  positional_constraint: CONTAINS
+                  field_to_match:
+                    single_header:
+                      name: host
+                  text_transformations:
+                    - type: LOWERCASE
+                      priority: 0
+              - xss_match_statement:
+                  field_to_match:
+                    body: {}
+                  text_transformations:
+                    - type: NONE
+                      priority: 0
+      - name: eins
+        priority: 2
+        action: 
+          allow: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: fsd
+        statement:
+          byte_match_statement:
+            search_string: ansible.com
+            positional_constraint: CONTAINS
+            field_to_match:
+              single_header:
+                name: host
+            text_transformations:
+              - type: LOWERCASE
+                priority: 0
+    cloudwatch_metrics: yes
+    tags:
+      A: B
+      C: D
+  register: out
+
+- name: verify change
+  assert:
+    that:
+      - out is changed
+
+- name: add one rule
+  wafv2_rule_group:
+    name: "{{ rule_group_name }}"
+    state: present
+    description: hallo eins zwei
+    scope: REGIONAL
+    capacity: 500
+    purge_rules: no
+    rules:
+      - name: allow-admin-svg
+        priority: 3
+        action: 
+          allow: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: allow-admin-svg
+        statement:
+          byte_match_statement:
+            search_string: admin.svg
+            positional_constraint: CONTAINS
+            field_to_match:
+              uri_path: {}
+            text_transformations:
+              - type: LOWERCASE
+                priority: 0
+    cloudwatch_metrics: yes
+    tags:
+      A: B
+      C: D
+  register: out
+
+- name: verify change
+  assert:
+    that:
+      - out is changed
+
+- name: rule group info
+  wafv2_rule_group_info:
+    name: "{{ rule_group_name }}"
+    state: present
+    scope: REGIONAL
+  register: out
+
+- name: verify create
+  assert:
+    that:
+      - out.rules | count == 3
+
+- name: immutable add one rule
+  wafv2_rule_group:
+    name: "{{ rule_group_name }}"
+    state: present
+    description: hallo eins zwei
+    scope: REGIONAL
+    capacity: 500
+    purge_rules: no
+    rules:
+      - name: allow-admin-svg
+        priority: 3
+        action: 
+          allow: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: allow-admin-svg
+        statement:
+          byte_match_statement:
+            search_string: admin.svg
+            positional_constraint: CONTAINS
+            field_to_match:
+              uri_path: {}
+            text_transformations:
+              - type: LOWERCASE
+                priority: 0
+    cloudwatch_metrics: yes
+    tags:
+      A: B
+      C: D
+  register: out
+
+- name: verify no change
+  assert:
+    that:
+      - out is not changed
+
+- name: purge rules
+  wafv2_rule_group:
+    name: "{{ rule_group_name }}"
+    state: present
+    description: hallo eins zwei
+    scope: REGIONAL
+    capacity: 500
+    purge_rules: yes
+    rules:
+      - name: allow-admin-svg
+        priority: 3
+        action: 
+          allow: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: allow-admin-svg
+        statement:
+          byte_match_statement:
+            search_string: admin.svg
+            positional_constraint: CONTAINS
+            field_to_match:
+              uri_path: {}
+            text_transformations:
+              - type: LOWERCASE
+                priority: 0
+    cloudwatch_metrics: yes
+    tags:
+      A: B
+      C: D
+  register: out
+
+- name: verify change
+  assert:
+    that:
+      - out is changed
+
+- name: absent one rule rules
+  wafv2_rule_group:
+    name: "{{ rule_group_name }}"
+    state: absent
+    description: hallo eins zwei
+    scope: REGIONAL
+    rules:
+      - name: allow-admin-svg
+        priority: 3
+        action: 
+          allow: {}
+        visibility_config: 
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: allow-admin-svg
+        statement:
+          byte_match_statement:
+            search_string: admin.svg
+            positional_constraint: CONTAINS
+            field_to_match:
+              uri_path: {}
+            text_transformations:
+              - type: LOWERCASE
+                priority: 0
+  register: out
+
+- name: verify change
+  assert:
+    that:
+      - out is changed
+
+- name: rule group info
+  wafv2_rule_group_info:
+    name: "{{ rule_group_name }}"
+    state: present
+    scope: REGIONAL
+  register: out
+
+- name: verify change
+  assert:
+    that:
+      - out.rules | count == 0

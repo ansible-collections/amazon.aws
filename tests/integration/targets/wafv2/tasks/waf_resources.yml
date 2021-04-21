@@ -1,0 +1,59 @@
+################################
+# test wafv2 resouces
+# bind ALB to WAFv2 ACL
+################################
+- name: check_mode add test alb to test waf
+  wafv2_resources:
+    name: "{{ web_acl_name }}"
+    scope: REGIONAL
+    state: present
+    arn: "{{ alb.load_balancer_arn }}"
+  check_mode: yes
+  register: out
+
+- name: verify check_mode create
+  assert:
+    that:
+      - out is changed
+
+- name: add test alb to test waf
+  wafv2_resources:
+    name: "{{ web_acl_name }}"
+    scope: REGIONAL
+    state: present
+    arn: "{{ alb.load_balancer_arn }}"
+  register: out
+  retries: 10
+  delay: 15
+  until: out.failed == false
+
+- name: verify create
+  assert:
+    that:
+      - out is changed
+
+- name: get web acl
+  wafv2_resources_info:
+    name: "{{ web_acl_name }}"
+    scope: REGIONAL
+  register: out
+
+- name: immutable add test alb from test waf
+  wafv2_resources:
+    name: "{{ web_acl_name }}"
+    scope: REGIONAL
+    state: present
+    arn: "{{ alb.load_balancer_arn }}"
+  register: out
+
+- name: verify immutable create
+  assert:
+    that:
+      - out is not changed
+
+- name: remove test alb from test waf
+  wafv2_resources:
+    name: "{{ web_acl_name }}"
+    scope: REGIONAL
+    state: absent
+    arn: "{{ alb.load_balancer_arn }}"

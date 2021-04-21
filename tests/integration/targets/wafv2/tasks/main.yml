@@ -1,0 +1,210 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  block:
+    - include_tasks: alb.yml
+    - include_tasks: create_webacl.yml
+    - include_tasks: rule_group.yml
+    - include_tasks: test_webacl.yml
+    - include_tasks: waf_resources.yml
+
+    ##############################
+    # test delete wafv2 resources
+    ##############################
+    - name: remove rule group
+      wafv2_rule_group:
+        name: "{{ rule_group_name }}"
+        state: absent
+        scope: REGIONAL
+      register: out
+
+    - name: verify change
+      assert:
+        that:
+          - out is changed
+
+    - name: immutable remove rule group
+      wafv2_rule_group:
+        name: "{{ rule_group_name }}"
+        state: absent
+        scope: REGIONAL
+      register: out
+
+    - name: verify no change
+      assert:
+        that:
+          - out is not changed
+
+    - name: delete web acl
+      wafv2_web_acl:
+        name: "{{ web_acl_name }}"
+        state: absent
+        scope: REGIONAL
+      register: out
+
+    - name: verify change
+      assert:
+        that:
+          - out is changed
+
+
+    - name:  immutable delete web acl
+      wafv2_web_acl:
+        name: "{{ web_acl_name }}"
+        state: absent
+        scope: REGIONAL
+      register: out
+
+    - name: verify not change
+      assert:
+        that:
+          - out is not changed
+    
+  always:
+    ###################################
+    # always delete wafv2 components
+    ###################################
+    - name: remove test alb from waf web acs
+      wafv2_resources:
+        name: "{{ web_acl_name }}"
+        scope: REGIONAL
+        state: absent
+        arn: "{{ alb.load_balancer_arn }}"
+      ignore_errors: true
+
+    - name: always delete web acl
+      wafv2_web_acl:
+        name: "{{ web_acl_name }}"
+        state: absent
+        scope: REGIONAL
+      ignore_errors: true
+
+    - name: take care rule group is removed
+      wafv2_rule_group:
+        name: "{{ rule_group_name }}"
+        state: absent
+        scope: REGIONAL
+      ignore_errors: true
+
+    #########################
+    # remove alb and its deps
+    #########################
+    - name: destroy ALB
+      elb_application_lb:
+        aws_access_key: '{{ aws_access_key }}'
+        aws_secret_key: '{{ aws_secret_key }}'
+        security_token: '{{ security_token }}'
+        region: '{{ aws_region }}'
+        name: '{{ alb_name }}'
+        state: absent
+        wait: true
+        wait_timeout: 600
+      ignore_errors: true
+
+    - name: destroy target group if it was created
+      elb_target_group:
+        aws_access_key: '{{ aws_access_key }}'
+        aws_secret_key: '{{ aws_secret_key }}'
+        security_token: '{{ security_token }}'
+        region: '{{ aws_region }}'
+        name: '{{ tg_name }}'
+        protocol: http
+        port: 80
+        vpc_id: '{{ vpc.vpc.id }}'
+        state: absent
+        wait: true
+        wait_timeout: 600
+      register: remove_tg
+      retries: 5
+      delay: 3
+      until: remove_tg is success
+      when: tg is defined
+      ignore_errors: true
+
+    - name: destroy sec group
+      ec2_group:
+        aws_access_key: '{{ aws_access_key }}'
+        aws_secret_key: '{{ aws_secret_key }}'
+        security_token: '{{ security_token }}'
+        region: '{{ aws_region }}'
+        name: '{{ sec_group.group_name }}'
+        description: security group for Ansible ALB integration tests
+        state: absent
+        vpc_id: '{{ vpc.vpc.id }}'
+      register: remove_sg
+      retries: 10
+      delay: 5
+      until: remove_sg is success
+      ignore_errors: true
+
+    - name: remove route table
+      ec2_vpc_route_table:
+        aws_access_key: '{{ aws_access_key }}'
+        aws_secret_key: '{{ aws_secret_key }}'
+        security_token: '{{ security_token }}'
+        region: '{{ aws_region }}'
+        vpc_id: '{{ vpc.vpc.id }}'
+        route_table_id: '{{ route_table.route_table.route_table_id }}'
+        lookup: id
+        state: absent
+      register: remove_rt
+      retries: 10
+      delay: 5
+      until: remove_rt is success
+      ignore_errors: true
+
+    - name: destroy subnets
+      ec2_vpc_subnet:
+        aws_access_key: '{{ aws_access_key }}'
+        aws_secret_key: '{{ aws_secret_key }}'
+        security_token: '{{ security_token }}'
+        region: '{{ aws_region }}'
+        cidr: '{{ item.cidr }}'
+        vpc_id: '{{ vpc.vpc.id }}'
+        state: absent
+      register: remove_subnet
+      retries: 10
+      delay: 5
+      until: remove_subnet is success
+      with_items:
+      - cidr: 10.228.228.0/24
+      - cidr: 10.228.229.0/24
+      - cidr: 10.228.230.0/24
+      - cidr: 10.228.231.0/24
+      ignore_errors: true
+
+    - name: destroy internet gateway
+      ec2_vpc_igw:
+        aws_access_key: '{{ aws_access_key }}'
+        aws_secret_key: '{{ aws_secret_key }}'
+        security_token: '{{ security_token }}'
+        region: '{{ aws_region }}'
+        vpc_id: '{{ vpc.vpc.id }}'
+        tags:
+          Name: '{{ resource_prefix }}'
+        state: absent
+      register: remove_igw
+      retries: 10
+      delay: 5
+      until: remove_igw is success
+      ignore_errors: true
+
+    - name: destroy VPC
+      ec2_vpc_net:
+        aws_access_key: '{{ aws_access_key }}'
+        aws_secret_key: '{{ aws_secret_key }}'
+        security_token: '{{ security_token }}'
+        region: '{{ aws_region }}'
+        cidr_block: 10.228.228.0/22
+        name: '{{ resource_prefix }}_vpc'
+        state: absent
+      register: remove_vpc
+      retries: 10
+      delay: 5
+      until: remove_vpc is success
+      ignore_errors: true

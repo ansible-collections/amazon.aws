@@ -1,0 +1,11 @@
+---
+web_acl_name: '{{ resource_prefix }}-web-acl'
+rule_group_name: '{{ resource_prefix }}-rule-group'
+alb_name: "my-alb-{{ resource_prefix | regex_search('([0-9]+)$') }}"
+tg_name: "my-tg-{{ resource_prefix | regex_search('([0-9]+)$') }}"
+cidr:
+  main: 10.228.228.0/22
+  a: 10.228.228.0/24
+  b: 10.228.229.0/24
+  c: 10.228.230.0/24
+  d: 10.228.231.0/24
