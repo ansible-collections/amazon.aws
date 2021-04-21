@@ -935,10 +935,7 @@ def ensure_ec2_tags(client, module, resource_id, resource_type=None, tags=None, 
     if purge_tags and not tags:
         tags_to_unset = current_tags
 
-    if tags_to_unset:
-        changed |= remove_ec2_tags(client, module, resource_id, tags_to_unset, retry_codes)
-
-    if tags_to_set:
-        changed |= add_ec2_tags(client, module, resource_id, tags_to_set, retry_codes)
+    changed |= remove_ec2_tags(client, module, resource_id, tags_to_unset, retry_codes)
+    changed |= add_ec2_tags(client, module, resource_id, tags_to_set, retry_codes)
 
     return changed
