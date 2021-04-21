@@ -539,8 +539,6 @@
         name: "{{ bucket_name_acl }}"
         state: present
         policy: "{{ lookup('template', 'policy.json.j2') }}"
-        requester_pays: yes
-        versioning: yes
       register: bucket_with_policy
 
     - assert:
