@@ -50,7 +50,7 @@ options:
         required: False
         type: list
         elements: dict
-        contains:
+        suboptions:
             name:
                 description: The name of a container.
                 required: false
@@ -63,6 +63,11 @@ options:
                 description: The private repository authentication credentials to use.
                 required: false
                 type: dict
+                suboptions:
+                    description:
+                        - The Amazon Resource Name (ARN) of the secret containing the private repository credentials.
+                    required: if C(repositoryCredentials) specified
+                    type: str
             cpu:
                 description: The number of cpu units reserved for the container.
                 required: false
@@ -78,7 +83,7 @@ options:
             links:
                 description:
                     - Allows containers to communicate with each other without the need for port mappings.
-                    - This parameter is only supported if the network mode of a task definition is bridge.
+                    - This parameter is only supported if I(network_mode=bridge).
                 required: false
                 type: list
             portMappings:
@@ -86,7 +91,7 @@ options:
                 required: false
                 type: list
                 elements: dict
-                contains:
+                suboptions:
                     containerPort:
                         description: The port number on the container that is bound to the user-specified or automatically assigned host port.
                         required: false
@@ -99,6 +104,8 @@ options:
                         description: The protocol used for the port mapping. Valid values are tcp and udp.
                         required: false
                         type: str
+                        default: tcp
+                        choices: ['tcp', 'udp']
             essential:
                 description:
                     - If essential is true, and the fails or stops for any reason, all other containers that are part of the task are stopped.
@@ -117,7 +124,7 @@ options:
                 required: false
                 type: list
                 elements: dict
-                contains:
+                suboptions:
                     name:
                         description: The name of the key-value pair.
                         required: false
@@ -131,7 +138,7 @@ options:
                 required: false
                 type: list
                 elements: dict
-                contains:
+                suboptions:
                     value:
                         description: The Amazon Resource Name (ARN) of the Amazon S3 object containing the environment variable file.
                         required: false
@@ -140,44 +147,159 @@ options:
                         description: The file type to use. The only supported value is s3.
                         required: false
                         type: str
+            mountPoints:
+                description: The mount points for data volumes in your container.
+                required: false
+                type: list
+                elements: dict
+                suboptions:
+                    sourceVolume:
+                        description: The name of the volume to mount.
+                        required: false
+                        type: str
+                    containerPath:
+                        description: The path on the container to mount the host volume at.
+                        required: false
+                        type: str
+                    readOnly:
+                        description:
+                            - If this value is true, the container has read-only access to the volume.
+                            - If this value is false, then the container can write to the volume.
+                            - The default value is false.
+                        required: false
+                        default: false
+                        type: bool
             volumesFrom:
                 description: Data volumes to mount from another container.
                 required: false
                 type: list
+                elements: dict
+                suboptions:
+                    sourceContainer:
+                        description:
+                            - The name of another container within the same task definition from which to mount volumes.
+                        required: false
+                        type: str
+                    readOnly:
+                        description:
+                            - If this value is true, the container has read-only access to the volume.
+                            - If this value is false, then the container can write to the volume.
+                            - The default value is false.
+                        required: false
+                        default: false
+                        type: bool
             linuxParameters:
                 description: Linux-specific modifications that are applied to the container, such as Linux kernel capabilities.
                 required: false
                 type: list
-            devices:
-                description: Any host devices to expose to the container.
-                required: false
-                type: list
+                suboptions:
+                    capabilities:
+                        description:
+                            - The Linux capabilities for the container that are added to or dropped from the default configuration provided by Docker.
+                        required: false
+                        type: dict
+                        suboptions:
+                            add:
+                                description:
+                                    - The Linux capabilities for the container that have been added to the default configuration provided by Docker.
+                                    - If I(launch_type=FARGATE), this parameter is not supported.
+                                required: false
+                                type: list
+                                choices: ["ALL", "AUDIT_CONTROL", "AUDIT_WRITE", "BLOCK_SUSPEND", "CHOWN", "DAC_OVERRIDE", "DAC_READ_SEARCH", "FOWNER",
+                                          "FSETID", "IPC_LOCK", "IPC_OWNER", "KILL", "LEASE", "LINUX_IMMUTABLE", "MAC_ADMIN", "MAC_OVERRIDE", "MKNOD",
+                                          "NET_ADMIN", "NET_BIND_SERVICE", "NET_BROADCAST", "NET_RAW", "SETFCAP", "SETGID", "SETPCAP", "SETUID",
+                                          "SYS_ADMIN", "SYS_BOOT", "SYS_CHROOT", "SYS_MODULE", "SYS_NICE", "SYS_PACCT", "SYS_PTRACE", "SYS_RAWIO",
+                                          "SYS_RESOURCE", "SYS_TIME", "SYS_TTY_CONFIG", "SYSLOG", "WAKE_ALARM"]
+                            drop:
+                                description:
+                                    - The Linux capabilities for the container that have been removed from the default configuration provided by Docker.
+                                required: false
+                                type: list
+                                choices: ["ALL", "AUDIT_CONTROL", "AUDIT_WRITE", "BLOCK_SUSPEND", "CHOWN", "DAC_OVERRIDE", "DAC_READ_SEARCH", "FOWNER",
+                                          "FSETID", "IPC_LOCK", "IPC_OWNER", "KILL", "LEASE", "LINUX_IMMUTABLE", "MAC_ADMIN", "MAC_OVERRIDE", "MKNOD",
+                                          "NET_ADMIN", "NET_BIND_SERVICE", "NET_BROADCAST", "NET_RAW", "SETFCAP", "SETGID", "SETPCAP", "SETUID",
+                                          "SYS_ADMIN", "SYS_BOOT", "SYS_CHROOT", "SYS_MODULE", "SYS_NICE", "SYS_PACCT", "SYS_PTRACE", "SYS_RAWIO",
+                                          "SYS_RESOURCE", "SYS_TIME", "SYS_TTY_CONFIG", "SYSLOG", "WAKE_ALARM"]
+                    devices:
+                        description:
+                            - Any host devices to expose to the container.
+                            - If I(launch_type=FARGATE), this parameter is not supported.
+                        required: false
+                        type: list
+                        elements: dict
+                        suboptions:
+                            hostPath:
+                                description: The path for the device on the host container instance.
+                                required: if C(devices) specified
+                                type: str
+                            containerPath:
+                                description: The path inside the container at which to expose the host device.
+                                required: false
+                                type: str
+                            permissions:
+                                description: The explicit permissions to provide to the container for the device.
+                                required: false
+                                type: list
             initProcessEnabled:
                 description: Run an init process inside the container that forwards signals and reaps processes.
                 required: false
                 type: bool
             sharedMemorySize:
-                description: The value for the size (in MiB) of the /dev/shm volume.
+                description:
+                    - The value for the size (in MiB) of the /dev/shm volume.
+                    - If I(launch_type=FARGATE), this parameter is not supported.
                 required: false
                 type: int
             tmpfs:
-                description: The container path, mount options, and size (in MiB) of the tmpfs mount.
+                description:
+                    - The container path, mount options, and size (in MiB) of the tmpfs mount.
+                    - If Fargate launch type is used, this parameter is not supported.
                 required: false
                 type: list
+                elements: dict
+                suboptions:
+                    containerPath:
+                        description: The absolute file path where the tmpfs volume is to be mounted.
+                        required: if C(tmpfs) specified
+                        type: str
+                    size:
+                        description: The size (in MiB) of the tmpfs volume.
+                        required: if C(tmpfs) specified
+                        type: int
+                    mountOptions:
+                        description: The list of tmpfs volume mount options.
+                        required: false
+                        type: list
+                        choices: ["defaults", "ro", "rw", "suid", "nosuid", "dev", "nodev", "exec", "noexec", "sync", "async", "dirsync",
+                                  "remount", "mand", "nomand", "atime", "noatime", "diratime", "nodiratime", "bind", "rbind", "unbindable",
+                                  "runbindable", "private", "rprivate", "shared", "rshared", "slave", "rslave", "relatime", "norelatime",
+                                  "strictatime", "nostrictatime", "mode", "uid", "gid", "nr_inodes", "nr_blocks", "mpol"]
             maxSwap:
-                description: The total amount of swap memory (in MiB) a container can use.
+                description:
+                    - The total amount of swap memory (in MiB) a container can use.
+                    - If Fargate launch type is used, this parameter is not supported.
                 required: false
                 type: int
             swappiness:
                 description:
                     - This allows you to tune a container's memory swappiness behavior.
-                    - Accepted values are whole numbers between 0 and 100.
+                    - If Fargate launch type is used, this parameter is not supported.
                 required: false
                 type: int
             secrets:
                 description: The secrets to pass to the container.
                 required: false
                 type: list
+                elements: dict
+                subpotions:
+                    name:
+                        description: The value to set as the environment variable on the container.
+                        required: if C(secrets) specified
+                        type: str
+                    size:
+                        description: The secret to expose to the container.
+                        required: if C(secrets) specified
+                        type: str
             dependsOn:
                 description:
                     - The dependencies defined for container startup and shutdown.
@@ -204,11 +326,15 @@ options:
                 required: false
                 type: int
             hostname:
-                description: The hostname to use for your container.
+                description:
+                    - The hostname to use for your container.
+                    - This parameter is not supported if I(network_mode=awsvpc).
                 required: false
                 type: str
             user:
-                description: The user to use inside the container.
+                description:
+                    - The user to use inside the container.
+                    - This parameter is not supported for Windows containers.
                 required: false
                 type: str
             workingDirectory:
@@ -227,6 +353,116 @@ options:
                 description: When this parameter is true, the container is given read-only access to its root file system.
                 required: false
                 type: bool
+            dnsServers:
+                description:
+                    - A list of DNS servers that are presented to the container.
+                    - This parameter is not supported for Windows containers.
+                required: false
+                type: list
+            dnsSearchDomains:
+                description:
+                    - A list of DNS search domains that are presented to the container.
+                    - This parameter is not supported for Windows containers.
+                required: false
+                type: list
+            extraHosts:
+                description:
+                    - A list of hostnames and IP address mappings to append to the /etc/hosts file on the container.
+                    - This parameter is not supported for Windows containers or tasks that use I(network_mode=awsvpc).
+                required: false
+                type: list
+                elements: dict
+                suboptions:
+                    hostname:
+                        description: The hostname to use in the /etc/hosts entry.
+                        type: str
+                        required: false
+                    ipAddress:
+                        description: The IP address to use in the /etc/hosts entry.
+                        type: str
+                        required: false
+            dockerSecurityOptions:
+                description:
+                    - A list of strings to provide custom labels for SELinux and AppArmor multi-level security systems.
+                    - This parameter is not supported for Windows containers.
+                required: false
+                type: list
+            interactive:
+                description:
+                    - When it is true, it allows to deploy containerized applications that require stdin or a tty to be allocated.
+                required: false
+                type: bool
+            pseudoTerminal:
+                description: When this parameter is true, a TTY is allocated.
+                required: false
+                type: bool
+            dockerLabels:
+                description: A key/value map of labels to add to the container.
+                required: false
+                type: dict
+            ulimits:
+                description:
+                    - A list of ulimits to set in the container.
+                    - This parameter is not supported for Windows containers.
+                required: false
+                type: list
+                elements: dict
+                suboptions:
+                    name:
+                        description: The type of the ulimit .
+                        type: str
+                        required: false
+                    softLimit:
+                        description: The soft limit for the ulimit type.
+                        type: int
+                        required: false
+                    hardLimit:
+                        description: The hard limit for the ulimit type.
+                        type: int
+                        required: false
+            logConfiguration:
+                description: The log configuration specification for the container.
+                required: false
+                type: dict
+                suboptions:
+                    logDriver:
+                        description:
+                            - The log driver to use for the container.
+                            - For tasks on AWS Fargate, the supported log drivers are awslogs, splunk, and awsfirelens.
+                            - For tasks hosted on Amazon EC2 instances, the supported log drivers are awslogs, fluentd, gelf, json-file, journald, logentries, syslog, splunk, and awsfirelens.
+                        type: str
+                        required: false
+            options:
+                description: The configuration options to send to the log driver. 
+                required: false
+                type: str
+            secretOptions:
+                description: The secrets to pass to the log configuration.
+                required: false
+                type: list
+                elements: dict
+                suboptions:
+                    name:
+                        description: The name of the secret.
+                        type: str
+                        required: false
+                    valueFrom:
+                        description: The secret to expose to the container.
+                        type: str
+                        required: false
+            healthCheck:
+                description: The health check command and associated configuration parameters for the container.
+                required: false
+                type: dict
+            systemControls:
+                description: A list of namespaced kernel parameters to set in the container.
+                required: false
+                type: list
+            resourceRequirements:
+                description:
+                    - The type and amount of a resource to assign to a container. The only supported resource is a GPU.
+                required: false
+                type: list
     network_mode:
         description:
             - The Docker networking mode to use for the containers in the task.
@@ -333,7 +569,7 @@ EXAMPLES = r'''
       image: "nginx"
       portMappings:
       - containerPort: 8080
-        hostPort:      8080
+        hostPort: 8080
       cpu: 512
       memory: 1024
     state: present
@@ -347,7 +583,7 @@ EXAMPLES = r'''
       image: "nginx"
       portMappings:
       - containerPort: 8080
-        hostPort:      8080
+        hostPort: 8080
     launch_type: FARGATE
     cpu: 512
     memory: 1024
@@ -363,10 +599,10 @@ EXAMPLES = r'''
       image: "nginx"
       portMappings:
       - containerPort: 8080
-        hostPort:      8080
+        hostPort: 8080
       cpu: 512
       memory: 1024
-      depends_on:
+      dependsOn:
       - containerName: "simple-app"
         condition: "start"
 
@@ -568,7 +804,19 @@ def main():
 
             if container.get('dependsOn') and launch_type == 'FARGATE':
                 if not module.botocore_at_least('1.3.0'):
-                    module.fail_json(msg='botocore needs to be version 1.3.0 or higher to use depends_on on Fargate launch_type')
+                    module.fail_json(msg='botocore needs to be version 1.3.0 or higher to use depends_on on Fargate launch type')
+
+            if container.get('sharedMemorySize') and launch_type == 'FARGATE':
+                module.fail_json(msg='sharedMemorySize parameter is only supported withFargate launch type.')
+
+            if container.get('tmpfs') and launch_type == 'FARGATE':
+                module.fail_json(msg='tmpfs parameter is only supported with Fargate launch type.')
+
+            if container.get('hostname') and network_mode == 'awsvpc':
+                module.fail_json(msg='hostname parameter is only supported with awsvpc network mode.')
+
+            if container.get('extraHosts') and network_mode == 'awsvpc':
+                module.fail_json(msg='extraHosts parameter is only supported with awsvpc network mode.')
 
         family = module.params['family']
         existing_definitions_in_family = task_mgr.describe_task_definitions(module.params['family'])
