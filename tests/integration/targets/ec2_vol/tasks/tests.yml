@@ -6,9 +6,9 @@
       aws_secret_key: '{{ aws_secret_key | default(omit) }}'
       security_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region | default(omit) }}'
-
+  
   collections:
-    - amazon.aws
+    - community.aws
 
   block:
     - name: list available AZs
@@ -156,7 +156,7 @@
           - "volume3.volume.snapshot_id ==  vol1_snapshot.snapshot_id"
 
     - name: create an ec2 instance
-      ec2_instance:
+      ec2:
         name: "{{ resource_prefix }}"
         vpc_subnet_id: "{{ testing_subnet.subnet.id }}"
         instance_type: t3.nano
@@ -203,7 +203,7 @@
       assert:
         that:
           - "not vol_attach_result.changed"
-          - "vol_attach_result.volume.attachment_set.status == 'attached'"
+          - vol_attach_result.volume.attachment_set.status in ['attached', 'attaching']
 
     - name: attach a new volume to an instance
       ec2_vol:
@@ -271,6 +271,17 @@
       assert:
         that:
           - new_vol_attach_result.changed
+          - "'volume_id' in new_vol_attach_result"
+          - new_vol_attach_result.volume_id == "{{ new_vol_attach_result.volume_id }}"
+          - "'attachment_set' in new_vol_attach_result.volume"
+          - "'create_time' in new_vol_attach_result.volume"
+          - "'id' in new_vol_attach_result.volume"
+          - "'size' in new_vol_attach_result.volume"
+          - new_vol_attach_result.volume.size == 1
+          - "'volume_type' in new_vol_attach_result"
+          - new_vol_attach_result.volume_type == 'gp2'
+          - "'tags' in new_vol_attach_result.volume"
+          - (new_vol_attach_result.volume.tags | length) == 6
           - new_vol_attach_result.volume.tags["lowercase spaced"] == 'hello cruel world ❤️'
           - new_vol_attach_result.volume.tags["Title Case"] == 'Hello Cruel World ❤️'
           - new_vol_attach_result.volume.tags["CamelCase"] == 'SimpleCamelCase ❤️'
@@ -376,13 +387,26 @@
     - name: check that volume_type has changed
       assert:
         that:
-          - changed_gp3_volume.volume_type == 'gp3'
           - changed_gp3_volume.changed
+          - "'volume_id' in changed_gp3_volume"
+          - changed_gp3_volume.volume_id == "{{ new_vol_attach_result.volume_id }}"
+          - "'attachment_set' in changed_gp3_volume.volume"
+          - "'create_time' in changed_gp3_volume.volume"
+          - "'id' in changed_gp3_volume.volume"
+          - "'size' in changed_gp3_volume.volume"
+          - "'volume_type' in changed_gp3_volume"
+          - changed_gp3_volume.volume_type == 'gp3'
+          - "'iops' in changed_gp3_volume.volume"
+          - changed_gp3_volume.volume.iops == 3000
           # Ensure our tags are still here
+          - "'tags' in changed_gp3_volume.volume"
+          - (changed_gp3_volume.volume.tags | length) == 6
           - new_vol_attach_result.volume.tags["lowercase spaced"] == 'hello cruel world ❤️'
           - new_vol_attach_result.volume.tags["Title Case"] == 'Hello Cruel World ❤️'
           - new_vol_attach_result.volume.tags["CamelCase"] == 'SimpleCamelCase ❤️'
           - new_vol_attach_result.volume.tags["snake_case"] == 'simple_snake_case ❤️'
+          - new_vol_attach_result.volume.tags["ResourcePrefix"] == resource_prefix
+          - new_vol_attach_result.volume.tags["Name"] == '{{ resource_prefix }} - sdh'
 
     - name: volume must be from type gp3 (idempotent)
       ec2_vol:
@@ -399,8 +423,26 @@
     - name: must not changed (idempotent)
       assert:
         that:
-          - changed_gp3_volume.volume_type == 'gp3'
           - not changed_gp3_volume.changed
+          - "'volume_id' in changed_gp3_volume"
+          - changed_gp3_volume.volume_id == "{{ new_vol_attach_result.volume_id }}"
+          - "'attachment_set' in changed_gp3_volume.volume"
+          - "'create_time' in changed_gp3_volume.volume"
+          - "'id' in changed_gp3_volume.volume"
+          - "'size' in changed_gp3_volume.volume"
+          - "'volume_type' in changed_gp3_volume"
+          - changed_gp3_volume.volume_type == 'gp3'
+          - "'iops' in changed_gp3_volume.volume"
+          - changed_gp3_volume.volume.iops == 3000
+          - "'throughput' in changed_gp3_volume.volume"
+          - "'tags' in changed_gp3_volume.volume"
+          - (changed_gp3_volume.volume.tags | length) == 6
+          - new_vol_attach_result.volume.tags["lowercase spaced"] == 'hello cruel world ❤️'
+          - new_vol_attach_result.volume.tags["Title Case"] == 'Hello Cruel World ❤️'
+          - new_vol_attach_result.volume.tags["CamelCase"] == 'SimpleCamelCase ❤️'
+          - new_vol_attach_result.volume.tags["snake_case"] == 'simple_snake_case ❤️'
+          - new_vol_attach_result.volume.tags["ResourcePrefix"] == resource_prefix
+          - new_vol_attach_result.volume.tags["Name"] == '{{ resource_prefix }} - sdh'
 
     - name: re-read volume information to validate new volume_type
       ec2_vol_info:
@@ -446,11 +488,32 @@
         volume_size: 4
         name: "{{ resource_prefix }}_delete_on_terminate"
         device_name: /dev/sdj
+        volume_type: io1
         iops: 100
         tags:
             Tag Name with Space-and-dash: Tag Value with Space-and-dash
         delete_on_termination: yes
       register: dot_volume
+    
+    - name: check task return attributes
+      assert:
+        that:
+          - dot_volume.changed
+          - "'attachment_set' in dot_volume.volume"
+          - "'deleteOnTermination' in dot_volume.volume.attachment_set"
+          - "dot_volume.volume.attachment_set.deleteOnTermination is defined"
+          - "'create_time' in dot_volume.volume"
+          - "'id' in dot_volume.volume"
+          - "'size' in dot_volume.volume"
+          - dot_volume.volume.size == 4
+          - "'volume_type' in dot_volume"
+          - dot_volume.volume_type == 'io1'
+          - "'iops' in dot_volume.volume"
+          - dot_volume.volume.iops == 100
+          - "'tags' in dot_volume.volume"
+          - (dot_volume.volume.tags | length ) == 2
+          - dot_volume.volume.tags["Name"] == "{{ resource_prefix }}_delete_on_terminate"
+          - dot_volume.volume.tags["Tag Name with Space-and-dash"] == 'Tag Value with Space-and-dash'
 
     - name: Gather volume info without any filters
       ec2_vol_info:
@@ -503,8 +566,8 @@
     - name: test create a new gp3 volume
       ec2_vol:
         volume_size: 1
-        volume_type: gp3
         zone: "{{ availability_zone }}"
+        volume_type: gp3
         throughput: 130
         tags:
           ResourcePrefix: "{{ resource_prefix }}"
@@ -513,15 +576,29 @@
     - name: check that volume_type is gp3
       assert:
         that:
-          - gp3_volume.volume_type == 'gp3'
           - gp3_volume.changed
+          - "'attachment_set' in gp3_volume.volume"
+          - "'deleteOnTermination' in gp3_volume.volume.attachment_set"
+          - gp3_volume.volume.attachment_set.deleteOnTermination == true
+          - "'create_time' in gp3_volume.volume"
+          - "'id' in gp3_volume.volume"
+          - "'size' in gp3_volume.volume"
+          - gp3_volume.volume.size == 1
+          - "'volume_type' in gp3_volume"
+          - gp3_volume.volume_type == 'gp3'
+          - "'iops' in gp3_volume.volume"
+          - gp3_volume.volume.iops == 3000
+          - "'throughput' in gp3_volume.volume"
           - gp3_volume.volume.throughput == 130
+          - "'tags' in gp3_volume.volume"
+          - (gp3_volume.tags | length ) == 1
+          - gp3_volume.volume.tags["ResourcePrefix"] == "{{ resource_prefix }}"
 
     - name: increase throughput
       ec2_vol:
         volume_size: 1
-        volume_type: gp3
         zone: "{{ availability_zone }}"
+        volume_type: gp3
         throughput: 131
         tags:
           ResourcePrefix: "{{ resource_prefix }}"
@@ -530,9 +607,23 @@
     - name: check that throughput has changed
       assert:
         that:
-          - gp3_volume.volume_type == 'gp3'
           - gp3_volume.changed
+          - "'attachment_set' in gp3_volume.volume"
+          - "'deleteOnTermination' in gp3_volume.volume.attachment_set"
+          - gp3_volume.volume.attachment_set.deleteOnTermination == true
+          - "'create_time' in gp3_volume.volume"
+          - "'id' in gp3_volume.volume"
+          - "'size' in gp3_volume.volume"
+          - gp3_volume.volume.size == 1
+          - "'volume_type' in gp3_volume"
+          - gp3_volume.volume_type == 'gp3'
+          - "'iops' in gp3_volume.volume"
+          - gp3_volume.volume.iops == 100
+          - "'throughput' in gp3_volume.volume"
           - gp3_volume.volume.throughput == 131
+          - "'tags' in gp3_volume.volume"
+          - (gp3_volume.volume.tags | length ) == 1
+          - gp3_volume.volume.tags["ResourcePrefix"] == "{{ resource_prefix }}"
 
 
     # ==== Cleanup ============================================================
@@ -549,7 +640,7 @@
         var: pre_delete
 
     - name: delete test instance
-      ec2_instance:
+      ec2:
         instance_ids:
           - "{{ test_instance.instance_ids[0] }}"
         state: terminated
