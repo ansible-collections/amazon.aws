@@ -39,5 +39,9 @@ ansible-playbook playbooks/test_populating_inventory_with_constructed.yml "$@"
 ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_concatenation.yml.j2'" "$@"
 ansible-playbook playbooks/test_populating_inventory_with_concatenation.yml "$@"
 
+# generate inventory config with caching and test using it
+ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_use_contrib_script_keys.yml.j2'" "$@"
+ANSIBLE_TRANSFORM_INVALID_GROUP_CHARS=never ansible-playbook playbooks/test_populating_inventory_with_use_contrib_script_keys.yml "$@"
+
 # cleanup inventory config
 ansible-playbook playbooks/empty_inventory_config.yml "$@"

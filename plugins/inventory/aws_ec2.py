@@ -76,6 +76,12 @@ DOCUMENTATION = '''
               which group names end up being used as.
           type: bool
           default: False
+        use_contrib_script_compatible_ec2_tag_keys:
+          description:
+            - Expose the host tags with ec2_tag_TAGNAME keys like the old ec2.py inventory script.
+            - The use of this feature is discouraged and we advise to migrate to the new ``tags`` structure.
+          type: bool
+          default: False
 '''
 
 EXAMPLES = '''
@@ -563,6 +569,10 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
             host = camel_dict_to_snake_dict(host, ignore_list=['Tags'])
             host['tags'] = boto3_tag_list_to_ansible_dict(host.get('tags', []))
+
+            if self.get_option('use_contrib_script_compatible_ec2_tag_keys'):
+                for k, v in host['tags'].items():
+                    host["ec2_tag_%s" % k] = v
 
             # Allow easier grouping by region
             host['placement']['region'] = host['placement']['availability_zone'][:-1]
