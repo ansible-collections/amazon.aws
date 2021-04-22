@@ -53,157 +53,157 @@ options:
         suboptions:
             name:
                 description: The name of a container.
-                required: false
+                required: False
                 type: str
             image:
                 description: The image used to start a container.
-                required: false
+                required: False
                 type: str
             repositoryCredentials:
                 description: The private repository authentication credentials to use.
-                required: false
+                required: False
                 type: dict
                 suboptions:
                     description:
                         - The Amazon Resource Name (ARN) of the secret containing the private repository credentials.
-                    required: if C(repositoryCredentials) specified
+                    required: True
                     type: str
             cpu:
                 description: The number of cpu units reserved for the container.
-                required: false
+                required: False
                 type: int
             memory:
                 description: The amount (in MiB) of memory to present to the container.
-                required: false
+                required: False
                 type: int
             memoryReservation:
                 description: The soft limit (in MiB) of memory to reserve for the container.
-                required: false
+                required: False
                 type: int
             links:
                 description:
                     - Allows containers to communicate with each other without the need for port mappings.
                     - This parameter is only supported if I(network_mode=bridge).
-                required: false
+                required: False
                 type: list
             portMappings:
                 description: The list of port mappings for the container.
-                required: false
+                required: False
                 type: list
                 elements: dict
                 suboptions:
                     containerPort:
                         description: The port number on the container that is bound to the user-specified or automatically assigned host port.
-                        required: false
+                        required: False
                         type: int
                     hostPort:
                         description: The port number on the container instance to reserve for your container.
-                        required: false
+                        required: False
                         type: int
                     protocol:
                         description: The protocol used for the port mapping. Valid values are tcp and udp.
-                        required: false
+                        required: False
                         type: str
                         default: tcp
                         choices: ['tcp', 'udp']
             essential:
                 description:
-                    - If essential is true, and the fails or stops for any reason, all other containers that are part of the task are stopped.
-                required: false
+                    - If C(essential) is True, and the fails or stops for any reason, all other containers that are part of the task are stopped.
+                required: False
                 type: bool
             entryPoint:
                 description: The entry point that is passed to the container.
-                required: false
+                required: False
                 type: str
             command:
                 description: The command that is passed to the container.
-                required: false
+                required: False
                 type: list
             environment:
                 description: The environment variables to pass to a container.
-                required: false
+                required: False
                 type: list
                 elements: dict
                 suboptions:
                     name:
                         description: The name of the key-value pair.
-                        required: false
+                        required: False
                         type: str
                     value:
                         description: The value of the key-value pair.
-                        required: false
+                        required: False
                         type: str
             environmentFiles:
                 description: A list of files containing the environment variables to pass to a container.
-                required: false
+                required: False
                 type: list
                 elements: dict
                 suboptions:
                     value:
                         description: The Amazon Resource Name (ARN) of the Amazon S3 object containing the environment variable file.
-                        required: false
+                        required: False
                         type: str
                     type:
                         description: The file type to use. The only supported value is s3.
-                        required: false
+                        required: False
                         type: str
             mountPoints:
                 description: The mount points for data volumes in your container.
-                required: false
+                required: False
                 type: list
                 elements: dict
                 suboptions:
                     sourceVolume:
                         description: The name of the volume to mount.
-                        required: false
+                        required: False
                         type: str
                     containerPath:
                         description: The path on the container to mount the host volume at.
-                        required: false
+                        required: False
                         type: str
                     readOnly:
                         description:
-                            - If this value is true, the container has read-only access to the volume.
-                            - If this value is false, then the container can write to the volume.
-                            - The default value is false.
-                        required: false
-                        default: false
+                            - If this value is True, the container has read-only access to the volume.
+                            - If this value is False, then the container can write to the volume.
+                            - The default value is False.
+                        required: False
+                        default: False
                         type: bool
             volumesFrom:
                 description: Data volumes to mount from another container.
-                required: false
+                required: False
                 type: list
                 elements: dict
                 suboptions:
                     sourceContainer:
                         description:
                             - The name of another container within the same task definition from which to mount volumes.
-                        required: false
+                        required: False
                         type: str
                     readOnly:
                         description:
-                            - If this value is true, the container has read-only access to the volume.
-                            - If this value is false, then the container can write to the volume.
-                            - The default value is false.
-                        required: false
-                        default: false
+                            - If this value is True, the container has read-only access to the volume.
+                            - If this value is False, then the container can write to the volume.
+                            - The default value is False.
+                        required: False
+                        default: False
                         type: bool
             linuxParameters:
                 description: Linux-specific modifications that are applied to the container, such as Linux kernel capabilities.
-                required: false
+                required: False
                 type: list
                 suboptions:
                     capabilities:
                         description:
                             - The Linux capabilities for the container that are added to or dropped from the default configuration provided by Docker.
-                        required: false
+                        required: False
                         type: dict
                         suboptions:
                             add:
                                 description:
                                     - The Linux capabilities for the container that have been added to the default configuration provided by Docker.
                                     - If I(launch_type=FARGATE), this parameter is not supported.
-                                required: false
+                                required: False
                                 type: list
                                 choices: ["ALL", "AUDIT_CONTROL", "AUDIT_WRITE", "BLOCK_SUSPEND", "CHOWN", "DAC_OVERRIDE", "DAC_READ_SEARCH", "FOWNER",
                                           "FSETID", "IPC_LOCK", "IPC_OWNER", "KILL", "LEASE", "LINUX_IMMUTABLE", "MAC_ADMIN", "MAC_OVERRIDE", "MKNOD",
@@ -213,7 +213,7 @@ options:
                             drop:
                                 description:
                                     - The Linux capabilities for the container that have been removed from the default configuration provided by Docker.
-                                required: false
+                                required: False
                                 type: list
                                 choices: ["ALL", "AUDIT_CONTROL", "AUDIT_WRITE", "BLOCK_SUSPEND", "CHOWN", "DAC_OVERRIDE", "DAC_READ_SEARCH", "FOWNER",
                                           "FSETID", "IPC_LOCK", "IPC_OWNER", "KILL", "LEASE", "LINUX_IMMUTABLE", "MAC_ADMIN", "MAC_OVERRIDE", "MKNOD",
@@ -224,51 +224,51 @@ options:
                         description:
                             - Any host devices to expose to the container.
                             - If I(launch_type=FARGATE), this parameter is not supported.
-                        required: false
+                        required: False
                         type: list
                         elements: dict
                         suboptions:
                             hostPath:
                                 description: The path for the device on the host container instance.
-                                required: if C(devices) specified
+                                required: True
                                 type: str
                             containerPath:
                                 description: The path inside the container at which to expose the host device.
-                                required: false
+                                required: False
                                 type: str
                             permissions:
                                 description: The explicit permissions to provide to the container for the device.
-                                required: false
+                                required: False
                                 type: list
             initProcessEnabled:
                 description: Run an init process inside the container that forwards signals and reaps processes.
-                required: false
+                required: False
                 type: bool
             sharedMemorySize:
                 description:
                     - The value for the size (in MiB) of the /dev/shm volume.
                     - If I(launch_type=FARGATE), this parameter is not supported.
-                required: false
+                required: False
                 type: int
             tmpfs:
                 description:
                     - The container path, mount options, and size (in MiB) of the tmpfs mount.
                     - If Fargate launch type is used, this parameter is not supported.
-                required: false
+                required: False
                 type: list
                 elements: dict
                 suboptions:
                     containerPath:
                         description: The absolute file path where the tmpfs volume is to be mounted.
-                        required: if C(tmpfs) specified
+                        required: True
                         type: str
                     size:
                         description: The size (in MiB) of the tmpfs volume.
-                        required: if C(tmpfs) specified
+                        required: True
                         type: int
                     mountOptions:
                         description: The list of tmpfs volume mount options.
-                        required: false
+                        required: False
                         type: list
                         choices: ["defaults", "ro", "rw", "suid", "nosuid", "dev", "nodev", "exec", "noexec", "sync", "async", "dirsync",
                                   "remount", "mand", "nomand", "atime", "noatime", "diratime", "nodiratime", "bind", "rbind", "unbindable",
@@ -278,190 +278,191 @@ options:
                 description:
                     - The total amount of swap memory (in MiB) a container can use.
                     - If Fargate launch type is used, this parameter is not supported.
-                required: false
+                required: False
                 type: int
             swappiness:
                 description:
                     - This allows you to tune a container's memory swappiness behavior.
                     - If Fargate launch type is used, this parameter is not supported.
-                required: false
+                required: False
                 type: int
             secrets:
                 description: The secrets to pass to the container.
-                required: false
+                required: False
                 type: list
                 elements: dict
                 subpotions:
                     name:
                         description: The value to set as the environment variable on the container.
-                        required: if C(secrets) specified
+                        required: True
                         type: str
                     size:
                         description: The secret to expose to the container.
-                        required: if C(secrets) specified
+                        required: True
                         type: str
             dependsOn:
                 description:
                     - The dependencies defined for container startup and shutdown.
                     - When a dependency is defined for container startup, for container shutdown it is reversed.
-                required: false
+                required: False
                 type: list
                 elements: dict
                 suboptions:
                     containerName:
                         description: The name of a container.
                         type: str
-                        required: true
+                        required: True
                     condition:
                         description: The dependency condition of the container.
                         type: str
-                        required: true
+                        required: True
                         choices: ["start", "complete", "success", "healthy"]
             startTimeout:
                 description: Time duration (in seconds) to wait before giving up on resolving dependencies for a container.
-                required: false
+                required: False
                 type: int
             stopTimeout:
                 description: Time duration (in seconds) to wait before the container is forcefully killed if it doesn't exit normally on its own.
-                required: false
+                required: False
                 type: int
             hostname:
                 description:
                     - The hostname to use for your container.
                     - This parameter is not supported if I(network_mode=awsvpc).
-                required: false
+                required: False
                 type: str
             user:
                 description:
                     - The user to use inside the container.
                     - This parameter is not supported for Windows containers.
-                required: false
+                required: False
                 type: str
             workingDirectory:
                 description: The working directory in which to run commands inside the container.
-                required: false
+                required: False
                 type: str
             disableNetworking:
-                description: When this parameter is true, networking is disabled within the container.
-                required: false
+                description: When this parameter is True, networking is disabled within the container.
+                required: False
                 type: bool
             privileged:
-                description: When this parameter is true, the container is given elevated privileges on the host container instance (similar to the root user).
-                required: false
+                description: When this parameter is True, the container is given elevated privileges on the host container instance (similar to the root user).
+                required: False
                 type: bool
             readonlyRootFilesystem:
-                description: When this parameter is true, the container is given read-only access to its root file system.
+                description: When this parameter is True, the container is given read-only access to its root file system.
                 required: false
                 type: bool
             dnsServers:
                 description:
                     - A list of DNS servers that are presented to the container.
                     - This parameter is not supported for Windows containers.
-                required: false
+                required: False
                 type: list
             dnsSearchDomains:
                 description:
                     - A list of DNS search domains that are presented to the container.
                     - This parameter is not supported for Windows containers.
-                required: false
+                required: False
                 type: list
             extraHosts:
                 description:
                     - A list of hostnames and IP address mappings to append to the /etc/hosts file on the container.
                     - This parameter is not supported for Windows containers or tasks that use I(network_mode=awsvpc).
-                required: false
+                required: False
                 type: list
                 elements: dict
                 suboptions:
                     hostname:
                         description: The hostname to use in the /etc/hosts entry.
                         type: str
-                        required: false
+                        required: False
                     ipAddress:
                         description: The IP address to use in the /etc/hosts entry.
                         type: str
-                        required: false
+                        required: False
             dockerSecurityOptions:
                 description:
                     - A list of strings to provide custom labels for SELinux and AppArmor multi-level security systems.
                     - This parameter is not supported for Windows containers.
-                required: false
+                required: False
                 type: list
             interactive:
                 description:
                     - When it is true, it allows to deploy containerized applications that require stdin or a tty to be allocated.
-                required: false
+                required: False
                 type: bool
             pseudoTerminal:
-                description: When this parameter is true, a TTY is allocated.
-                required: false
+                description: When this parameter is True, a TTY is allocated.
+                required: False
                 type: bool
             dockerLabels:
                 description: A key/value map of labels to add to the container.
-                required: false
+                required: False
                 type: dict
             ulimits:
                 description:
                     - A list of ulimits to set in the container.
                     - This parameter is not supported for Windows containers.
-                required: false
+                required: False
                 type: list
                 elements: dict
                 suboptions:
                     name:
                         description: The type of the ulimit .
                         type: str
-                        required: false
+                        required: False
                     softLimit:
                         description: The soft limit for the ulimit type.
                         type: int
-                        required: false
+                        required: False
                     hardLimit:
                         description: The hard limit for the ulimit type.
                         type: int
-                        required: false
+                        required: False
             logConfiguration:
                 description: The log configuration specification for the container.
-                required: false
+                required: False
                 type: dict
                 suboptions:
                     logDriver:
                         description:
                             - The log driver to use for the container.
                             - For tasks on AWS Fargate, the supported log drivers are awslogs, splunk, and awsfirelens.
-                            - For tasks hosted on Amazon EC2 instances, the supported log drivers are awslogs, fluentd, gelf, json-file, journald, logentries, syslog, splunk, and awsfirelens.
+                            - For tasks hosted on Amazon EC2 instances, the supported log drivers are awslogs, fluentd,
+                              gelf, json-file, journald, logentries, syslog, splunk, and awsfirelens.
                         type: str
-                        required: false
+                        required: False
             options:
-                description: The configuration options to send to the log driver. 
-                required: false
+                description: The configuration options to send to the log driver.
+                required: False
                 type: str
             secretOptions:
                 description: The secrets to pass to the log configuration.
-                required: false
+                required: False
                 type: list
                 elements: dict
                 suboptions:
                     name:
                         description: The name of the secret.
                         type: str
-                        required: false
+                        required: False
                     valueFrom:
                         description: The secret to expose to the container.
                         type: str
-                        required: false
+                        required: False
             healthCheck:
                 description: The health check command and associated configuration parameters for the container.
-                required: false
+                required: False
                 type: dict
             systemControls:
                 description: A list of namespaced kernel parameters to set in the container.
-                required: false
+                required: False
                 type: list
             resourceRequirements:
                 description:
                     - The type and amount of a resource to assign to a container. The only supported resource is a GPU.
-                required: false
+                required: False
                 type: list
     network_mode:
         description:
@@ -475,7 +476,7 @@ options:
         type: str
     task_role_arn:
         description:
-            - The Amazon Resource Name (ARN) of the IAM role that containers in this task can assume. All containers in this task are granted
+            - The Amazon Resource Name (ARN) of the IAM role that containers in this task can assume.All containers in this task are granted
               the permissions that are specified in this role.
         required: false
         type: str
