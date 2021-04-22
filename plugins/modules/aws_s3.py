@@ -566,6 +566,40 @@ def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, s
                                         ExpiresIn=expiry)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to generate presigned URL")
+    
+    # Tags
+    try:
+        current_tags_dict = get_current_object_tags_dict(s3, bucket, obj)
+    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
+        module.warn("GetObjectTagging is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning.")
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to get object tags.")
+    else:
+        if tags is not None:
+            # Tags are always returned as text
+            tags = dict((to_text(k), to_text(v)) for k, v in tags.items())
+            if not purge_tags:
+                # Ensure existing tags that aren't updated by desired tags remain
+                current_copy = current_tags_dict.copy()
+                current_copy.update(tags)
+                tags = current_copy
+            if current_tags_dict != tags:
+                if tags:
+                    try:
+                        put_object_tagging(s3, bucket, obj, tags)
+                    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                        module.fail_json_aws(e, msg="Failed to update object tags.")
+                else:
+                    if purge_tags:
+                        try:
+                            delete_object_tagging(s3, bucket, obj)
+                        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                            module.fail_json_aws(e, msg="Failed to delete object tags.")
+                current_tags_dict = wait_tags_are_applied(module, s3_client, name, tags)
+                changed = True
+
+        result['tags'] = current_tags_dict
+
     module.exit_json(msg="PUT operation complete", url=url, changed=True)
 
 
@@ -673,6 +707,42 @@ def get_s3_connection(module, aws_connect_kwargs, location, rgw, s3_url, sig_4=F
             else:
                 params['config'] = dualconf
     return boto3_conn(**params)
+
+
+def get_current_object_tags_dict(s3, bucket, obj):
+    try:
+        current_tags = s3.get_object_tagging(Bucket=bucket, Key=obj).get('TagSet')
+    except is_boto3_error_code('NoSuchTagSet'):
+        return {}
+    except is_boto3_error_code('NoSuchTagSetError'):  # pylint: disable=duplicate-except
+        return {}
+
+    return boto3_tag_list_to_ansible_dict(current_tags)
+
+
+@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
+def put_object_tagging(s3, bucket, obj, tags):
+    s3.put_object_tagging(Bucket=bucket, Key= obj, Tagging={'TagSet': ansible_dict_to_boto3_tag_list(tags)})
+
+
+@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
+def delete_object_tagging(s3, bucket, obj):
+    s3.delete_object_tagging(Bucket=bucket, Key=obj)
+
+
+def wait_tags_are_applied(module, s3, bucket, obj, expected_tags_dict):
+    for _ in range(0, 12):
+        try:
+            current_tags_dict = get_current_object_tags_dict(s3, bucket, obj)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg="Failed to get object tags.")
+        if current_tags_dict != expected_tags_dict:
+            time.sleep(5)
+        else:
+            return current_tags_dict
+    
+    module.fail_json(msg="Object tags failed to apply in the expected time.",
+                     requested_tags=expected_tags_dict, live_tags=current_tags_dict)
 
 
 def main():

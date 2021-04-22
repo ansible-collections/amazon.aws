@@ -687,6 +687,30 @@
     - assert:
         that:
           - binary_files.results[0].stat.checksum == binary_files.results[1].stat.checksum
+    
+    # ============================================================  
+    - name: 'Run tagging tests'
+      block:
+
+      # ============================================================
+      - name: Test putting an object in the bucket and assign tags
+        aws_s3:
+          bucket: "{{ bucket_name }}"
+          mode: put
+          src: "{{ tmpdir.path }}/upload.txt"
+          object: delete.txt
+          tags:
+            tag_one: '{{ resource_prefix }} One'
+            "Tag Two": 'two {{ resource_prefix }}'
+        register: output
+    
+      - assert:
+          that:
+            - output.changed
+            - output.name == '{{ bucket_name }}'
+            - output.tags["tag_one"] == '{{ resource_prefix }} One'
+            - output.tags.["Tag Two"] == 'two {{ resource_prefix }}'
+
 
   always:
     - name: remove uploaded files
