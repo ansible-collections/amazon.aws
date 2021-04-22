@@ -51,6 +51,23 @@ DOCUMENTATION = '''
               - Available filters are listed here U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
           type: dict
           default: {}
+        include_filters:
+          description:
+              - A list of filters. Any instances matching at least one of the filters are included in the result.
+              - Available filters are listed here U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
+              - Every entry in this list triggers a search query. As such, from a performance point of view, it's better to
+                keep the list as short as possible.
+          type: list
+          default: []
+        exclude_filters:
+          description:
+              - A list of filters. Any instances matching one of the filters are excluded from the result.
+              - The filters from C(exclude_filters) take priority over the C(include_filters) and C(filters) keys
+              - Available filters are listed here U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
+              - Every entry in this list triggers a search query. As such, from a performance point of view, it's better to
+                keep the list as short as possible.
+          type: list
+          default: []
         include_extra_api_calls:
           description:
               - Add two additional API calls for every instance to include 'persistent' and 'events' host variables.
@@ -157,6 +174,20 @@ compose:
   # Use the private IP address to connect to the host
   # (note: this does not modify inventory_hostname, which is set via I(hostnames))
   ansible_host: private_ip_address
+
+# Example using include_filters and exclude_filters to compose the inventory.
+plugin: aws_ec2
+regions:
+  - us-east-1
+  - us-west-1
+include_filters:
+- tag:Name:
+  - 'my_second_tag'
+- tag:Name:
+  - 'my_third_tag'
+exclude_filters:
+- tag:Name:
+  - 'my_first_tag'
 '''
 
 import re
@@ -462,7 +493,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
             all_instances.extend(instances)
 
-        return sorted(all_instances, key=lambda x: x['InstanceId'])
+        return all_instances
 
     def _get_reservation_details(self, reservation):
         return {
@@ -543,14 +574,34 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             else:
                 return to_text(hostname)
 
-    def _query(self, regions, filters, strict_permissions):
+    def _query(self, regions, include_filters, exclude_filters, strict_permissions):
         '''
             :param regions: a list of regions to query
-            :param filters: a list of boto3 filter dictionaries
-            :param hostnames: a list of hostname destination variables in order of preference
+            :param include_filters: a list of boto3 filter dictionaries
+            :param exclude_filters: a list of boto3 filter dictionaries
             :param strict_permissions: a boolean determining whether to fail or ignore 403 error codes
+
         '''
-        return {'aws_ec2': self._get_instances_by_region(regions, filters, strict_permissions)}
+        instances = []
+        ids_to_ignore = []
+        for filter in exclude_filters:
+            for i in self._get_instances_by_region(
+                    regions,
+                    ansible_dict_to_boto3_filter_list(filter),
+                    strict_permissions):
+                ids_to_ignore.append(i['InstanceId'])
+        for filter in include_filters:
+            for i in self._get_instances_by_region(
+                    regions,
+                    ansible_dict_to_boto3_filter_list(filter),
+                    strict_permissions):
+                if i['InstanceId'] not in ids_to_ignore:
+                    instances.append(i)
+                    ids_to_ignore.append(i['InstanceId'])
+
+        instances = sorted(instances, key=lambda x: x['InstanceId'])
+
+        return {'aws_ec2': instances}
 
     def _populate(self, groups, hostnames):
         for group in groups:
@@ -659,7 +710,8 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
         # get user specifications
         regions = self.get_option('regions')
-        filters = ansible_dict_to_boto3_filter_list(self.get_option('filters'))
+        include_filters = [self.get_option('filters')] + self.get_option('include_filters')
+        exclude_filters = self.get_option('exclude_filters')
         hostnames = self.get_option('hostnames')
         strict_permissions = self.get_option('strict_permissions')
 
@@ -679,7 +731,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 cache_needs_update = True
 
         if not cache or cache_needs_update:
-            results = self._query(regions, filters, strict_permissions)
+            results = self._query(regions, include_filters, exclude_filters, strict_permissions)
 
         self._populate(results, hostnames)
 

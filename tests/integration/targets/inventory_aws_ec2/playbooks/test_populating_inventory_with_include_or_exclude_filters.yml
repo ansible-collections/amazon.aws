@@ -1,0 +1,118 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: no
+  environment: "{{ ansible_test.environment }}"
+  tasks:
+
+    - module_defaults:
+        group/aws:
+          aws_access_key: '{{ aws_access_key }}'
+          aws_secret_key: '{{ aws_secret_key }}'
+          security_token: '{{ security_token | default(omit) }}'
+          region: '{{ aws_region }}'
+      block:
+
+        # Create VPC, subnet, security group, and find image_id to create instance
+
+        - include_tasks: setup.yml
+
+        # Create new host, refresh inventory
+        - name: create a new host (1/3)
+          ec2:
+            image: '{{ image_id }}'
+            exact_count: 1
+            count_tag:
+              Name: '{{ resource_prefix }}_1'
+            instance_tags:
+              Name: '{{ resource_prefix }}_1'
+              tag_instance1: foo
+            instance_type: t2.micro
+            wait: yes
+            group_id: '{{ sg_id }}'
+            vpc_subnet_id: '{{ subnet_id }}'
+          register: setup_instance_1
+
+        - name: create a new host (2/3)
+          ec2:
+            image: '{{ image_id }}'
+            exact_count: 1
+            count_tag:
+              Name: '{{ resource_prefix }}_2'
+            instance_tags:
+              Name: '{{ resource_prefix }}_2'
+              tag_instance2: bar
+            instance_type: t2.micro
+            wait: yes
+            group_id: '{{ sg_id }}'
+            vpc_subnet_id: '{{ subnet_id }}'
+          register: setup_instance_2
+
+        - name: create a new host (3/3)
+          ec2:
+            image: '{{ image_id }}'
+            exact_count: 1
+            count_tag:
+              Name: '{{ resource_prefix }}_3'
+            instance_tags:
+              Name: '{{ resource_prefix }}_3'
+              tag_instance2: bar
+            instance_type: t2.micro
+            wait: yes
+            group_id: '{{ sg_id }}'
+            vpc_subnet_id: '{{ subnet_id }}'
+          register: setup_instance_3
+
+        - meta: refresh_inventory
+
+        - name: assert the keyed groups and groups from constructed config were added to inventory and composite var added to hostvars
+          assert:
+            that:
+              # There are 9 groups: all, ungrouped, aws_ec2, sg keyed group, 3 tag keyed group (one per tag), arch keyed group, constructed group
+              - "groups['all'] | length == 2"
+              - "'{{ resource_prefix }}_1' in groups['all']"
+              - "'{{ resource_prefix }}_2' in groups['all']"
+              - "not ('{{ resource_prefix }}_3' in groups['all'])"
+
+      always:
+
+        - name: remove setup ec2 instance (1/3)
+          ec2:
+            instance_type: t2.micro
+            instance_ids: '{{ setup_instance_1.instance_ids }}'
+            state: absent
+            wait: yes
+            instance_tags:
+              Name: '{{ resource_prefix }}'
+            group_id: "{{ sg_id }}"
+            vpc_subnet_id: "{{ subnet_id }}"
+          ignore_errors: yes
+          when: setup_instance_1 is defined
+
+        - name: remove setup ec2 instance (2/3)
+          ec2:
+            instance_type: t2.micro
+            instance_ids: '{{ setup_instance_2.instance_ids }}'
+            state: absent
+            wait: yes
+            instance_tags:
+              Name: '{{ resource_prefix }}'
+            group_id: "{{ sg_id }}"
+            vpc_subnet_id: "{{ subnet_id }}"
+          ignore_errors: yes
+          when: setup_instance_2 is defined
+
+        - name: remove setup ec2 instance (3/3)
+          ec2:
+            instance_type: t2.micro
+            instance_ids: '{{ setup_instance_3.instance_ids }}'
+            state: absent
+            wait: yes
+            instance_tags:
+              Name: '{{ resource_prefix }}'
+            group_id: "{{ sg_id }}"
+            vpc_subnet_id: "{{ subnet_id }}"
+          ignore_errors: yes
+          when: setup_instance_3 is defined
+
+        - include_tasks: tear_down.yml
