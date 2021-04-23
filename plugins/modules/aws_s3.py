@@ -827,6 +827,7 @@ def main():
         if src is not None and not path_check(src):
             module.fail_json('Local object "%s" does not exist for PUT operation' % (src))
 
+        keyrtn = None
         if bucketrtn:
             keyrtn = key_check(module, s3, bucket, obj, version=version, validate=validate)
         else:
