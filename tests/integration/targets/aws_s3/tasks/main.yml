@@ -707,10 +707,6 @@
       - assert:
           that:
             - output.changed
-            - output.name == '{{ bucket_name }}'
-            - output.tags["tag_one"] == '{{ resource_prefix }} One'
-            - output.tags.["Tag Two"] == 'two {{ resource_prefix }}'
-
 
   always:
     - name: remove uploaded files

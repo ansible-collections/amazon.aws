@@ -155,6 +155,22 @@ options:
     description:
       - KMS key id to use when encrypting objects using I(encrypting=aws:kms). Ignored if I(encryption) is not C(aws:kms).
     type: str
+<<<<<<< HEAD
+=======
+  tags:
+    description:
+      - Tags dict to apply to the S3 object.
+    type: dict
+    version_added: 1.5.0
+  purge_tags:
+    description:
+      - Whether or not to remove tags assigned to the DB cluster if not specified in the playbook.
+      - To remove all tags set I(tags) to an empty dictionary in conjunction with this.
+    type: bool
+    default: True
+    version_added: 1.5.0
+requirements: [ "boto3", "botocore" ]
+>>>>>>> 	* Docs and logic fix
 author:
     - "Lester Wade (@lwade)"
     - "Sloane Hertel (@s-hertel)"
@@ -302,6 +318,7 @@ import os
 import io
 from ssl import SSLError
 import base64
+import time
 
 try:
     import botocore
@@ -318,6 +335,8 @@ from ..module_utils.core import is_boto3_error_message
 from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import boto3_conn
 from ..module_utils.ec2 import get_aws_connection_info
+from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.s3 import HAS_MD5
 from ..module_utils.s3 import calculate_etag
 from ..module_utils.s3 import calculate_etag_content
@@ -511,6 +530,9 @@ def option_in_extra_args(option):
 
 
 def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, src=None, content=None):
+    tags = module.params.get("tags")
+    purge_tags = module.params.get("purge_tags")
+
     if module.check_mode:
         module.exit_json(msg="PUT operation skipped - running in check mode", changed=True)
     try:
@@ -560,13 +582,7 @@ def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, s
         module.warn("PutObjectAcl is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to set object ACL")
-    try:
-        url = s3.generate_presigned_url(ClientMethod='put_object',
-                                        Params={'Bucket': bucket, 'Key': obj},
-                                        ExpiresIn=expiry)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to generate presigned URL")
-    
+
     # Tags
     try:
         current_tags_dict = get_current_object_tags_dict(s3, bucket, obj)
@@ -595,10 +611,15 @@ def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, s
                             delete_object_tagging(s3, bucket, obj)
                         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                             module.fail_json_aws(e, msg="Failed to delete object tags.")
-                current_tags_dict = wait_tags_are_applied(module, s3_client, name, tags)
+                current_tags_dict = wait_tags_are_applied(module, s3, bucket, obj, tags)
                 changed = True
 
-        result['tags'] = current_tags_dict
+    try:
+        url = s3.generate_presigned_url(ClientMethod='put_object',
+                                        Params={'Bucket': bucket, 'Key': obj},
+                                        ExpiresIn=expiry)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Unable to generate presigned URL")
 
     module.exit_json(msg="PUT operation complete", url=url, changed=True)
 
@@ -722,7 +743,7 @@ def get_current_object_tags_dict(s3, bucket, obj):
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
 def put_object_tagging(s3, bucket, obj, tags):
-    s3.put_object_tagging(Bucket=bucket, Key= obj, Tagging={'TagSet': ansible_dict_to_boto3_tag_list(tags)})
+    s3.put_object_tagging(Bucket=bucket, Key=obj, Tagging={'TagSet': ansible_dict_to_boto3_tag_list(tags)})
 
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
@@ -731,7 +752,7 @@ def delete_object_tagging(s3, bucket, obj):
 
 
 def wait_tags_are_applied(module, s3, bucket, obj, expected_tags_dict):
-    for _ in range(0, 12):
+    for dummy in range(0, 12):
         try:
             current_tags_dict = get_current_object_tags_dict(s3, bucket, obj)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -740,7 +761,7 @@ def wait_tags_are_applied(module, s3, bucket, obj, expected_tags_dict):
             time.sleep(5)
         else:
             return current_tags_dict
-    
+
     module.fail_json(msg="Object tags failed to apply in the expected time.",
                      requested_tags=expected_tags_dict, live_tags=current_tags_dict)
 
@@ -770,7 +791,9 @@ def main():
         content=dict(),
         content_base64=dict(),
         ignore_nonexistent_bucket=dict(default=False, type='bool'),
-        encryption_kms_key_id=dict()
+        encryption_kms_key_id=dict(),
+        tags=dict(type='dict'),
+        purge_tags=dict(type='bool', default=True),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
