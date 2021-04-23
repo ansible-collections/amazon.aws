@@ -798,16 +798,16 @@ def main():
 
             for environment in container.get('environment', []):
                 environment['value'] = to_text(environment['value'])
-            
+
             for environment_file in container.get('environmentFiles', []):
                 if environment_file['value'] != 's3':
                     module.fail_json(msg='The only supported value for the file type is s3.')
-            
+
             if container.get('maxSwap') and launch_type == 'FARGATE':
                 module.fail_json(msg='maxSwap parameter is only supported withFargate launch type.')
             elif container.get('maxSwap') < 0:
                 module.fail_json(msg='Accepted values are 0 or any positive integer.')
-            
+
             if container.get('swappiness') and (container.get('swappiness') < 0 or container.get('swappiness') > 100):
                 module.fail_json(msg='Accepted values are whole numbers between 0 and 100.')
 
