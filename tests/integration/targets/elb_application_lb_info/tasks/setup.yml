@@ -46,8 +46,8 @@
 
   - name: create list of subnet ids
     set_fact:
-      alb_subnets: '{{ ( vpc_subnets.subnets | selectattr('tags.Public', 'equalto', 'True') | map(attribute='id') | list ) }}'
-      private_subnets: '{{ ( vpc_subnets.subnets | rejectattr('tags.Public', 'equalto', 'True') | map(attribute='id') | list ) }}'
+      alb_subnets: "{{ ( vpc_subnets.subnets | selectattr('tags.Public', 'equalto', 'True') | map(attribute='id') | list ) }}"
+      private_subnets: "{{ ( vpc_subnets.subnets | rejectattr('tags.Public', 'equalto', 'True') | map(attribute='id') | list ) }}"
 
   - name: create a route table
     ec2_vpc_route_table:
