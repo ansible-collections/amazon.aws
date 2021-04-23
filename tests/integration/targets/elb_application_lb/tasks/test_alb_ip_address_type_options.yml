@@ -15,7 +15,7 @@
           DefaultActions:
             - Type: forward
               TargetGroupName: "{{ tg_name }}"
-      ip_address_type: "ipv6"
+      ip_address_type: "ip_addr_v4_v6"
     ignore_errors: yes
     register: elb
 
