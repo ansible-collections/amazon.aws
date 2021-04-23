@@ -8,6 +8,7 @@
       region: '{{ aws_region | default(omit) }}'
   
   collections:
+    - amazon.aws
     - community.aws
 
   block:
@@ -156,7 +157,7 @@
           - "volume3.volume.snapshot_id ==  vol1_snapshot.snapshot_id"
 
     - name: create an ec2 instance
-      ec2:
+      community.aws.ec2_instance:
         name: "{{ resource_prefix }}"
         vpc_subnet_id: "{{ testing_subnet.subnet.id }}"
         instance_type: t3.nano
@@ -630,7 +631,7 @@
 
   always:
     - name: Describe the instance before we delete it
-      ec2_instance_info:
+      community.aws.ec2_instance_info:
         instance_ids:
           - "{{ test_instance.instance_ids[0] }}"
       ignore_errors: yes
@@ -640,7 +641,7 @@
         var: pre_delete
 
     - name: delete test instance
-      ec2:
+      community.aws.ec2_instance:
         instance_ids:
           - "{{ test_instance.instance_ids[0] }}"
         state: terminated
