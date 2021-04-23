@@ -47,7 +47,7 @@ options:
         description:
             - A list of containers definitions.
             - See U(https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecs.html) for a complete list of parameters.
-        required: False
+        required: True
         type: list
         elements: dict
         suboptions:
@@ -64,10 +64,11 @@ options:
                 required: False
                 type: dict
                 suboptions:
-                    description:
-                        - The Amazon Resource Name (ARN) of the secret containing the private repository credentials.
-                    required: True
-                    type: str
+                    credentialsParameter:
+                        description:
+                            - The Amazon Resource Name (ARN) of the secret containing the private repository credentials.
+                        required: True
+                        type: str
             cpu:
                 description: The number of cpu units reserved for the container.
                 required: False
@@ -291,7 +292,7 @@ options:
                 required: False
                 type: list
                 elements: dict
-                subpotions:
+                suboptions:
                     name:
                         description: The value to set as the environment variable on the container.
                         required: True
@@ -752,7 +753,7 @@ def main():
         family=dict(required=False, type='str'),
         revision=dict(required=False, type='int'),
         force_create=dict(required=False, default=False, type='bool'),
-        containers=dict(required=False, type='list', elements='dict'),
+        containers=dict(required=True, type='list', elements='dict'),
         network_mode=dict(required=False, default='bridge', choices=['default', 'bridge', 'host', 'none', 'awsvpc'], type='str'),
         task_role_arn=dict(required=False, default='', type='str'),
         execution_role_arn=dict(required=False, default='', type='str'),
@@ -779,11 +780,6 @@ def main():
         if not module.botocore_at_least('1.10.44'):
             module.fail_json(msg='botocore needs to be version 1.10.44 or higher to use execution_role_arn')
 
-    if module.params['containers']:
-        for container in module.params['containers']:
-            for environment in container.get('environment', []):
-                environment['value'] = to_text(environment['value'])
-
     if module.params['state'] == 'present':
         if 'containers' not in module.params or not module.params['containers']:
             module.fail_json(msg="To use task definitions, a list of containers must be specified")
@@ -800,12 +796,20 @@ def main():
             if container.get('links') and network_mode != 'bridge':
                 module.fail_json(msg='links parameter is only supported if the network mode of a task definition is bridge.')
 
+            for environment in container.get('environment', []):
+                environment['value'] = to_text(environment['value'])
+            
+            for environment_file in container.get('environmentFiles', []):
+                if environment_file['value'] != 's3':
+                    module.fail_json(msg='The only supported value for the file type is s3.')
+            
+            if container.get('maxSwap') and launch_type == 'FARGATE':
+                module.fail_json(msg='maxSwap parameter is only supported withFargate launch type.')
+            elif container.get('maxSwap') < 0:
+                module.fail_json(msg='Accepted values are 0 or any positive integer.')
+            
             if container.get('swappiness') and (container.get('swappiness') < 0 or container.get('swappiness') > 100):
                 module.fail_json(msg='Accepted values are whole numbers between 0 and 100.')
-
-            if container.get('dependsOn') and launch_type == 'FARGATE':
-                if not module.botocore_at_least('1.3.0'):
-                    module.fail_json(msg='botocore needs to be version 1.3.0 or higher to use depends_on on Fargate launch type')
 
             if container.get('sharedMemorySize') and launch_type == 'FARGATE':
                 module.fail_json(msg='sharedMemorySize parameter is only supported withFargate launch type.')
