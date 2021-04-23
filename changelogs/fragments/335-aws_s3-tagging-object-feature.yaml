@@ -1,0 +1,2 @@
+minor_changes:
+- aws_s3 - add ``tags`` and ``purge_tags`` features for an S3 object (https://github.com/ansible-collections/amazon.aws/pull/335)
