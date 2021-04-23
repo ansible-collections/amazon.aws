@@ -219,6 +219,8 @@ from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import compare_aws_tags
+from ..module_utils.ec2 import describe_ec2_tags
+from ..module_utils.ec2 import ensure_ec2_tags
 from ..module_utils.waiters import get_waiter
 
 
@@ -299,46 +301,13 @@ def create_subnet(conn, module, vpc_id, cidr, ipv6_cidr=None, az=None, start_tim
 
 
 def ensure_tags(conn, module, subnet, tags, purge_tags, start_time):
-    changed = False
 
-    filters = ansible_dict_to_boto3_filter_list({'resource-id': subnet['id'], 'resource-type': 'subnet'})
-    try:
-        cur_tags = conn.describe_tags(aws_retry=True, Filters=filters)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Couldn't describe tags")
-
-    to_update, to_delete = compare_aws_tags(boto3_tag_list_to_ansible_dict(cur_tags.get('Tags')), tags, purge_tags)
-
-    if to_update:
-        try:
-            if not module.check_mode:
-                AWSRetry.jittered_backoff(
-                    retries=10,
-                    catch_extra_error_codes=['InvalidSubnetID.NotFound']
-                )(conn.create_tags)(
-                    Resources=[subnet['id']],
-                    Tags=ansible_dict_to_boto3_tag_list(to_update)
-                )
-
-            changed = True
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't create tags")
-
-    if to_delete:
-        try:
-            if not module.check_mode:
-                tags_list = []
-                for key in to_delete:
-                    tags_list.append({'Key': key})
-
-                AWSRetry.jittered_backoff(
-                    retries=10,
-                    catch_extra_error_codes=['InvalidSubnetID.NotFound']
-                )(conn.delete_tags)(Resources=[subnet['id']], Tags=tags_list)
-
-            changed = True
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't delete tags")
+    changed = ensure_ec2_tags(
+        conn, module, subnet['id'],
+        resource_type='subnet',
+        purge_tags=purge_tags,
+        tags=tags,
+        retry_codes=['InvalidSubnetID.NotFound'])
 
     if module.params['wait'] and not module.check_mode:
         # Wait for tags to be updated

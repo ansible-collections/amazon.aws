@@ -250,6 +250,8 @@ from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import compare_aws_tags
+from ..module_utils.ec2 import describe_ec2_tags
+from ..module_utils.ec2 import ensure_ec2_tags
 from ..module_utils.ec2 import AWSRetry
 from ..module_utils.core import is_boto3_error_code
 
@@ -612,57 +614,8 @@ def get_mapped_block_device(instance_dict=None, device_name=None):
 
 
 def ensure_tags(module, connection, res_id, res_type, tags, purge_tags):
-    changed = False
-
-    filters = ansible_dict_to_boto3_filter_list({'resource-id': res_id, 'resource-type': res_type})
-    cur_tags = None
-    try:
-        cur_tags = connection.describe_tags(aws_retry=True, Filters=filters)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Couldn't describe tags")
-
-    to_update, to_delete = compare_aws_tags(boto3_tag_list_to_ansible_dict(cur_tags.get('Tags')), tags, purge_tags)
-    final_tags = boto3_tag_list_to_ansible_dict(cur_tags.get('Tags'))
-
-    if to_update:
-        try:
-            if module.check_mode:
-                # update tags
-                final_tags.update(to_update)
-            else:
-                connection.create_tags(
-                    aws_retry=True,
-                    Resources=[res_id],
-                    Tags=ansible_dict_to_boto3_tag_list(to_update)
-                )
-
-            changed = True
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't create tags")
-
-    if to_delete:
-        try:
-            if module.check_mode:
-                # update tags
-                for key in to_delete:
-                    del final_tags[key]
-            else:
-                tags_list = []
-                for key in to_delete:
-                    tags_list.append({'Key': key})
-
-                connection.delete_tags(aws_retry=True, Resources=[res_id], Tags=tags_list)
-
-            changed = True
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't delete tags")
-
-    if not module.check_mode and (to_update or to_delete):
-        try:
-            response = connection.describe_tags(aws_retry=True, Filters=filters)
-            final_tags = boto3_tag_list_to_ansible_dict(response.get('Tags'))
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't describe tags")
+    changed = ensure_ec2_tags(connection, module, res_id, res_type, tags, purge_tags, ['InvalidVolume.NotFound'])
+    final_tags = describe_ec2_tags(connection, module, res_id, res_type)
 
     return final_tags, changed
 

@@ -1,0 +1,6 @@
+minor_changes:
+- module_utils/ec2 - added additional helper functions for tagging EC2 resources (https://github.com/ansible-collections/amazon.aws/pull/309).
+- ec2_tag - use common code for tagging resources (https://github.com/ansible-collections/amazon.aws/pull/309).
+- ec2_tag_info - use common code for tagging resources (https://github.com/ansible-collections/amazon.aws/pull/309).
+- ec2_vol - use common code for tagging resources (https://github.com/ansible-collections/amazon.aws/pull/309).
+- ec2_vpc_subnet - use common code for tagging resources (https://github.com/ansible-collections/amazon.aws/pull/309).
