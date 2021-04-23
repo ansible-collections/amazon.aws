@@ -199,7 +199,7 @@ def get_load_balancer_ipaddresstype(connection, module, load_balancer_arn):
     try:
         return connection.describe_load_balancers(LoadBalancerArns=[load_balancer_arn])['LoadBalancers'][0]['IpAddressType']
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to describe load balancer tags")
+        module.fail_json_aws(e, msg="Failed to describe load balancer ip address type")
 
 
 def list_load_balancers(connection, module):
