@@ -741,12 +741,12 @@ def get_current_object_tags_dict(s3, bucket, obj):
     return boto3_tag_list_to_ansible_dict(current_tags)
 
 
-@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
 def put_object_tagging(s3, bucket, obj, tags):
     s3.put_object_tagging(Bucket=bucket, Key=obj, Tagging={'TagSet': ansible_dict_to_boto3_tag_list(tags)})
 
 
-@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
+@AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
 def delete_object_tagging(s3, bucket, obj):
     s3.delete_object_tagging(Bucket=bucket, Key=obj)
 
