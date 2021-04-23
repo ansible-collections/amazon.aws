@@ -769,7 +769,7 @@ def get_sec_group_list(groups):
     # Build list of remote security groups
     remote_security_groups = []
     for group in groups:
-        remote_security_groups.append(group["GroupId"].encode())
+        remote_security_groups.append(group["GroupId"])
 
     return remote_security_groups
 
