@@ -57,7 +57,7 @@
       - _interface_0.private_dns_name is string
       - _interface_0.private_dns_name.endswith("ec2.internal")
       - '"private_ip_address" in _interface_0'
-      - _interface_0.private_ip_address | ipaddr()
+      - _interface_0.private_ip_address | ansible.netcommon.ipaddr()
       - _interface_0.private_ip_address == ip_1
       - '"private_ip_addresses" in _interface_0'
       - _interface_0.private_ip_addresses | length == 1
@@ -152,7 +152,7 @@
       - _interface_0.private_dns_name is string
       - _interface_0.private_dns_name.endswith("ec2.internal")
       - '"private_ip_address" in _interface_0'
-      - _interface_0.private_ip_address | ipaddr()
+      - _interface_0.private_ip_address | ansible.netcommon.ipaddr()
       - _interface_0.private_ip_address == ip_5
       - '"private_ip_addresses" in _interface_0'
       - _interface_0.private_ip_addresses | length == 1
