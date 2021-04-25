@@ -1,0 +1,2 @@
+minor_changes:
+  - aws_config_aggregator - Fix typos in attribute names (https://github.com/ansible-collections/community.aws/pull/553).
