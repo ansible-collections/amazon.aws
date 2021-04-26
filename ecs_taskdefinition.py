@@ -469,14 +469,14 @@ options:
             - The Docker networking mode to use for the containers in the task.
             - C(awsvpc) mode was added in Ansible 2.5
             - Windows containers must use I(network_mode=default), which will utilize docker NAT networking.
-            - Setting I(network_mode=default) for a Linux container will use bridge mode.
+            - Setting I(network_mode=default) for a Linux container will use C(bridge) mode.
         required: false
         default: bridge
         choices: [ 'default', 'bridge', 'host', 'none', 'awsvpc' ]
         type: str
     task_role_arn:
         description:
-            - The Amazon Resource Name (ARN) of the IAM role that containers in this task can assume.All containers in this task are granted
+            - The Amazon Resource Name (ARN) of the IAM role that containers in this task can assume. All containers in this task are granted
               the permissions that are specified in this role.
         required: false
         type: str
@@ -504,14 +504,14 @@ options:
         choices: ["EC2", "FARGATE"]
     cpu:
         description:
-            - The number of cpu units used by the task. If using the EC2 launch type, this field is optional and any value can be used.
-            - If using the Fargate launch type, this field is required and you must use one of C(256), C(512), C(1024), C(2048), C(4096).
+            - The number of cpu units used by the task. If I(launch_type=EC2), this field is optional and any value can be used.
+            - If I(launch_type=FARGATE), this field is required and you must use one of C(256), C(512), C(1024), C(2048), C(4096).
         required: false
         type: str
     memory:
         description:
-            - The amount (in MiB) of memory used by the task. If using the EC2 launch type, this field is optional and any value can be used.
-            - If using the Fargate launch type, this field is required and is limited by the CPU.
+            - The amount (in MiB) of memory used by the task. If I(launch_type=EC2), this field is optional and any value can be used.
+            - If I(launch_type=FARGATE), this field is required and is limited by the CPU.
         required: false
         type: str
 extends_documentation_fragment:
@@ -800,7 +800,7 @@ def main():
 
             for environment_file in container.get('environmentFiles', []):
                 if environment_file['value'] != 's3':
-                    module.fail_json(msg='The only supported value for the file type is s3.')
+                    module.fail_json(msg='The only supported value for environmentFiles is s3.')
 
             for linux_param in container.get('linuxParameters', {}):
                 if linux_param.get('devices') and launch_type == 'FARGATE':
@@ -809,10 +809,10 @@ def main():
                 if linux_param.get('maxSwap') and launch_type == 'FARGATE':
                     module.fail_json(msg='maxSwap parameter is not supported with the FARGATE launch type.')
                 elif linux_param.get('maxSwap') and linux_param['maxSwap'] < 0:
-                    module.fail_json(msg='Accepted values are 0 or any positive integer.')
+                    module.fail_json(msg='Accepted values for maxSwap are 0 or any positive integer.')
 
                 if linux_param.get('swappiness') and (linux_param['swappiness'] < 0 or linux_param['swappiness'] > 100):
-                    module.fail_json(msg='Accepted values are whole numbers between 0 and 100.')
+                    module.fail_json(msg='Accepted values for swappiness are whole numbers between 0 and 100.')
 
                 if linux_param.get('sharedMemorySize') and launch_type == 'FARGATE':
                     module.fail_json(msg='sharedMemorySize parameter is not supported with the FARGATE launch type.')
