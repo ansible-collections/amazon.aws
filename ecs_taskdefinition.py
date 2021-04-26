@@ -102,14 +102,14 @@ options:
                         required: False
                         type: int
                     protocol:
-                        description: The protocol used for the port mapping. Valid values are tcp and udp.
+                        description: The protocol used for the port mapping.
                         required: False
                         type: str
                         default: tcp
                         choices: ['tcp', 'udp']
             essential:
                 description:
-                    - If C(essential) is True, and the fails or stops for any reason, all other containers that are part of the task are stopped.
+                    - If I(essential=True), and the container fails or stops for any reason, all other containers that are part of the task are stopped.
                 required: False
                 type: bool
             entryPoint:
@@ -145,7 +145,7 @@ options:
                         required: False
                         type: str
                     type:
-                        description: The file type to use. The only supported value is s3.
+                        description: The file type to use. The only supported value is C(s3).
                         required: False
                         type: str
             mountPoints:
@@ -164,9 +164,8 @@ options:
                         type: str
                     readOnly:
                         description:
-                            - If this value is True, the container has read-only access to the volume.
-                            - If this value is False, then the container can write to the volume.
-                            - The default value is False.
+                            - If this value is C(True), the container has read-only access to the volume.
+                            - If this value is C(False), then the container can write to the volume.
                         required: False
                         default: False
                         type: bool
@@ -183,9 +182,8 @@ options:
                         type: str
                     readOnly:
                         description:
-                            - If this value is True, the container has read-only access to the volume.
-                            - If this value is False, then the container can write to the volume.
-                            - The default value is False.
+                            - If this value is C(True), the container has read-only access to the volume.
+                            - If this value is C(False), then the container can write to the volume.
                         required: False
                         default: False
                         type: bool
@@ -241,52 +239,52 @@ options:
                                 description: The explicit permissions to provide to the container for the device.
                                 required: False
                                 type: list
-            initProcessEnabled:
-                description: Run an init process inside the container that forwards signals and reaps processes.
-                required: False
-                type: bool
-            sharedMemorySize:
-                description:
-                    - The value for the size (in MiB) of the /dev/shm volume.
-                    - If I(launch_type=FARGATE), this parameter is not supported.
-                required: False
-                type: int
-            tmpfs:
-                description:
-                    - The container path, mount options, and size (in MiB) of the tmpfs mount.
-                    - If Fargate launch type is used, this parameter is not supported.
-                required: False
-                type: list
-                elements: dict
-                suboptions:
-                    containerPath:
-                        description: The absolute file path where the tmpfs volume is to be mounted.
-                        required: True
-                        type: str
-                    size:
-                        description: The size (in MiB) of the tmpfs volume.
-                        required: True
+                    initProcessEnabled:
+                        description: Run an init process inside the container that forwards signals and reaps processes.
+                        required: False
+                        type: bool
+                    sharedMemorySize:
+                        description:
+                            - The value for the size (in MiB) of the /dev/shm volume.
+                            - If I(launch_type=FARGATE), this parameter is not supported.
+                        required: False
                         type: int
-                    mountOptions:
-                        description: The list of tmpfs volume mount options.
+                    tmpfs:
+                        description:
+                            - The container path, mount options, and size (in MiB) of the tmpfs mount.
+                            - If I(launch_type=FARGATE), this parameter is not supported.
                         required: False
                         type: list
-                        choices: ["defaults", "ro", "rw", "suid", "nosuid", "dev", "nodev", "exec", "noexec", "sync", "async", "dirsync",
-                                  "remount", "mand", "nomand", "atime", "noatime", "diratime", "nodiratime", "bind", "rbind", "unbindable",
-                                  "runbindable", "private", "rprivate", "shared", "rshared", "slave", "rslave", "relatime", "norelatime",
-                                  "strictatime", "nostrictatime", "mode", "uid", "gid", "nr_inodes", "nr_blocks", "mpol"]
-            maxSwap:
-                description:
-                    - The total amount of swap memory (in MiB) a container can use.
-                    - If Fargate launch type is used, this parameter is not supported.
-                required: False
-                type: int
-            swappiness:
-                description:
-                    - This allows you to tune a container's memory swappiness behavior.
-                    - If Fargate launch type is used, this parameter is not supported.
-                required: False
-                type: int
+                        elements: dict
+                        suboptions:
+                            containerPath:
+                                description: The absolute file path where the tmpfs volume is to be mounted.
+                                required: True
+                                type: str
+                            size:
+                                description: The size (in MiB) of the tmpfs volume.
+                                required: True
+                                type: int
+                            mountOptions:
+                                description: The list of tmpfs volume mount options.
+                                required: False
+                                type: list
+                                choices: ["defaults", "ro", "rw", "suid", "nosuid", "dev", "nodev", "exec", "noexec", "sync", "async", "dirsync",
+                                          "remount", "mand", "nomand", "atime", "noatime", "diratime", "nodiratime", "bind", "rbind", "unbindable",
+                                          "runbindable", "private", "rprivate", "shared", "rshared", "slave", "rslave", "relatime", "norelatime",
+                                          "strictatime", "nostrictatime", "mode", "uid", "gid", "nr_inodes", "nr_blocks", "mpol"]
+                    maxSwap:
+                        description:
+                            - The total amount of swap memory (in MiB) a container can use.
+                            - If I(launch_type=FARGATE), this parameter is not supported.
+                        required: False
+                        type: int
+                    swappiness:
+                        description:
+                            - This allows you to tune a container's memory swappiness behavior.
+                            - If I(launch_type=FARGATE), this parameter is not supported.
+                        required: False
+                        type: int
             secrets:
                 description: The secrets to pass to the container.
                 required: False
@@ -343,15 +341,15 @@ options:
                 required: False
                 type: str
             disableNetworking:
-                description: When this parameter is True, networking is disabled within the container.
+                description: When this parameter is C(True), networking is disabled within the container.
                 required: False
                 type: bool
             privileged:
-                description: When this parameter is True, the container is given elevated privileges on the host container instance (similar to the root user).
+                description: When this parameter is C(True), the container is given elevated privileges on the host container instance.
                 required: False
                 type: bool
             readonlyRootFilesystem:
-                description: When this parameter is True, the container is given read-only access to its root file system.
+                description: When this parameter is C(True), the container is given read-only access to its root file system.
                 required: false
                 type: bool
             dnsServers:
@@ -390,11 +388,11 @@ options:
                 type: list
             interactive:
                 description:
-                    - When it is true, it allows to deploy containerized applications that require stdin or a tty to be allocated.
+                    - When I(interactive=True), it allows to deploy containerized applications that require stdin or a tty to be allocated.
                 required: False
                 type: bool
             pseudoTerminal:
-                description: When this parameter is True, a TTY is allocated.
+                description: When this parameter is C(True), a TTY is allocated.
                 required: False
                 type: bool
             dockerLabels:
@@ -410,7 +408,7 @@ options:
                 elements: dict
                 suboptions:
                     name:
-                        description: The type of the ulimit .
+                        description: The type of the ulimit.
                         type: str
                         required: False
                     softLimit:
@@ -429,9 +427,9 @@ options:
                     logDriver:
                         description:
                             - The log driver to use for the container.
-                            - For tasks on AWS Fargate, the supported log drivers are awslogs, splunk, and awsfirelens.
-                            - For tasks hosted on Amazon EC2 instances, the supported log drivers are awslogs, fluentd,
-                              gelf, json-file, journald, logentries, syslog, splunk, and awsfirelens.
+                            - For tasks on AWS Fargate, the supported log drivers are C(awslogs), C(splunk), and C(awsfirelens).
+                            - For tasks hosted on Amazon EC2 instances, the supported log drivers are C(awslogs), C(fluentd),
+                              C(gelf), C(json-file), C(journald), C(logentries), C(syslog), C(splunk), and C(awsfirelens).
                         type: str
                         required: False
             options:
@@ -462,7 +460,8 @@ options:
                 type: list
             resourceRequirements:
                 description:
-                    - The type and amount of a resource to assign to a container. The only supported resource is a GPU.
+                    - The type and amount of a resource to assign to a container.
+                    - The only supported resource is a C(GPU).
                 required: False
                 type: list
     network_mode:
@@ -793,8 +792,8 @@ def main():
             module.fail_json(msg="To use FARGATE launch type, network_mode must be awsvpc")
 
         for container in module.params['containers']:
-            if container.get('links') and network_mode != 'bridge':
-                module.fail_json(msg='links parameter is only supported if the network mode of a task definition is bridge.')
+            if container.get('links') and network_mode == 'awsvpc':
+                module.fail_json(msg='links parameter is not supported if network mode is awsvpc.')
 
             for environment in container.get('environment', []):
                 environment['value'] = to_text(environment['value'])
@@ -803,25 +802,29 @@ def main():
                 if environment_file['value'] != 's3':
                     module.fail_json(msg='The only supported value for the file type is s3.')
 
-            if container.get('maxSwap') and launch_type == 'FARGATE':
-                module.fail_json(msg='maxSwap parameter is only supported withFargate launch type.')
-            elif container.get('maxSwap') < 0:
-                module.fail_json(msg='Accepted values are 0 or any positive integer.')
+            for linux_param in container.get('linuxParameters', {}):
+                if linux_param.get('devices') and launch_type == 'FARGATE':
+                    module.fail_json(msg='devices parameter is not supported with the FARGATE launch type.')
 
-            if container.get('swappiness') and (container.get('swappiness') < 0 or container.get('swappiness') > 100):
-                module.fail_json(msg='Accepted values are whole numbers between 0 and 100.')
+                if linux_param.get('maxSwap') and launch_type == 'FARGATE':
+                    module.fail_json(msg='maxSwap parameter is not supported with the FARGATE launch type.')
+                elif linux_param.get('maxSwap') and linux_param['maxSwap'] < 0:
+                    module.fail_json(msg='Accepted values are 0 or any positive integer.')
 
-            if container.get('sharedMemorySize') and launch_type == 'FARGATE':
-                module.fail_json(msg='sharedMemorySize parameter is only supported withFargate launch type.')
+                if linux_param.get('swappiness') and (linux_param['swappiness'] < 0 or linux_param['swappiness'] > 100):
+                    module.fail_json(msg='Accepted values are whole numbers between 0 and 100.')
 
-            if container.get('tmpfs') and launch_type == 'FARGATE':
-                module.fail_json(msg='tmpfs parameter is only supported with Fargate launch type.')
+                if linux_param.get('sharedMemorySize') and launch_type == 'FARGATE':
+                    module.fail_json(msg='sharedMemorySize parameter is not supported with the FARGATE launch type.')
+
+                if linux_param.get('tmpfs') and launch_type == 'FARGATE':
+                    module.fail_json(msg='tmpfs parameter is not supported with the FARGATE launch type.')
 
             if container.get('hostname') and network_mode == 'awsvpc':
-                module.fail_json(msg='hostname parameter is only supported with awsvpc network mode.')
+                module.fail_json(msg='hostname parameter is not supported when the awsvpc network mode is used.')
 
             if container.get('extraHosts') and network_mode == 'awsvpc':
-                module.fail_json(msg='extraHosts parameter is only supported with awsvpc network mode.')
+                module.fail_json(msg='extraHosts parameter is not supported when the awsvpc network mode is used.')
 
         family = module.params['family']
         existing_definitions_in_family = task_mgr.describe_task_definitions(module.params['family'])
