@@ -108,11 +108,13 @@ options:
         should be routed to the same target. After this time period expires,
         the application-generated cookie is considered stale. The range is 1 second to 1 week (604800 seconds).
     type: int
+    version_added: 1.5.0
   stickiness_app_cookie_name:
     description:
       - The name of the application cookie. Required if C(stickiness_type) is
         C(app_cookie).
     type: str
+    version_added: 1.5.0
   stickiness_type:
     description:
       - The type of sticky sessions.
