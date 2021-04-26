@@ -1,2 +1,0 @@
-minor_changes:
-- module_utils/core - add a helper function ``normalize_boto3_result`` (https://github.com/ansible-collections/amazon.aws/pull/271).

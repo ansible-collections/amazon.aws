@@ -5,7 +5,7 @@
 amazon.aws.ec2_metadata_facts
 *****************************
 
-**Gathers facts (instance metadata) about remote hosts within ec2**
+**gathers facts (instance metadata) about remote hosts within EC2**
 
 
 Version added: 1.0.0
@@ -17,8 +17,10 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- This module fetches data from the instance metadata endpoint in ec2 as per https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html.
+- This module fetches data from the instance metadata endpoint in EC2 as per https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html.
 - The module must be called from within the EC2 instance itself.
+- The module is configured to utilize the session oriented Instance Metadata Service v2 (IMDSv2) https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html.
+- If the HttpEndpoint parameter https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifyInstanceMetadataOptions.html#API_ModifyInstanceMetadataOptions_RequestParameters is set to disabled for the EC2 instance, the module will return an error while retrieving a session token.
 
 
 
@@ -994,7 +996,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
                 </td>
                 <td></td>
                 <td>
-                            <div>Metrics.
+                            <div>Metrics; no longer available.
                             </div>
                     <br/>
                 </td>
