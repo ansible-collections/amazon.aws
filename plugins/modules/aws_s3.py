@@ -323,6 +323,7 @@ from ..module_utils.ec2 import get_aws_connection_info
 from ..module_utils.s3 import HAS_MD5
 from ..module_utils.s3 import calculate_etag
 from ..module_utils.s3 import calculate_etag_content
+from ..module_utils.s3 import validate_bucket_name
 
 IGNORE_S3_DROP_IN_EXCEPTIONS = ['XNotImplemented', 'NotImplemented']
 
@@ -730,6 +731,8 @@ def main():
 
     object_canned_acl = ["private", "public-read", "public-read-write", "aws-exec-read", "authenticated-read", "bucket-owner-read", "bucket-owner-full-control"]
     bucket_canned_acl = ["private", "public-read", "public-read-write", "authenticated-read"]
+
+    validate_bucket_name(module, bucket)
 
     if overwrite not in ['always', 'never', 'different']:
         if module.boolean(overwrite):
