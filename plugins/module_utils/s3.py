@@ -19,6 +19,9 @@ except ImportError:
         HAS_MD5 = False
 
 
+import string
+
+
 def calculate_etag(module, filename, etag, s3, bucket, obj, version=None):
     if not HAS_MD5:
         return None
@@ -81,3 +84,19 @@ def calculate_etag_content(module, content, etag, s3, bucket, obj, version=None)
         return '"{0}-{1}"'.format(digest_squared.hexdigest(), len(digests))
     else:  # Compute the MD5 sum normally
         return '"{0}"'.format(md5(content).hexdigest())
+
+
+def validate_bucket_name(module, name):
+    # See: https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
+    if len(name) < 4:
+        module.fail_json(msg='the S3 bucket name is too short')
+    if len(name) > 63:
+        module.fail_json(msg='the length of an S3 bucket cannot exceed 63 characters')
+
+    legal_characters = string.ascii_lowercase + ".-" + string.digits
+    illegal_characters = [c for c in name if c not in legal_characters]
+    if illegal_characters:
+        module.fail_json(msg='invalid character(s) found in the bucket name')
+    if name[-1] not in string.ascii_lowercase + string.digits:
+        module.fail_json(msg='bucket names must begin and end with a letter or number')
+    return True

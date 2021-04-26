@@ -30,6 +30,17 @@
           - result is failed
           - "result.msg != 'MODULE FAILURE'"
 
+    - name: test create bucket with an invalid name
+      aws_s3:
+        bucket: "{{ bucket_name }}-"
+        mode: create
+      register: result
+      ignore_errors: yes
+
+    - assert:
+        that:
+          - result is failed
+
     - name: test create bucket
       aws_s3:
         bucket: "{{ bucket_name }}"
@@ -658,6 +669,6 @@
 
     - name: delete the dot bucket
       aws_s3:
-        bucket: "{{ bucket_name + '.bucket' }}"
+        bucket: "{{ bucket_name | hash('md5') + '.bucket' }}"
         mode: delete
       ignore_errors: yes

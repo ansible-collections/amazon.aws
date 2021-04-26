@@ -226,6 +226,7 @@ from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import compare_policies
 from ..module_utils.ec2 import get_aws_connection_info
 from ..module_utils.ec2 import snake_dict_to_camel_dict
+from ..module_utils.s3 import validate_bucket_name
 
 
 def create_or_update_bucket(s3_client, module, location):
@@ -825,6 +826,7 @@ def main():
     )
 
     region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
+    validate_bucket_name(module, module.params["name"])
 
     if region in ('us-east-1', '', None):
         # default to US Standard region
