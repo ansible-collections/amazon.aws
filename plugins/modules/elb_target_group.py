@@ -102,9 +102,22 @@ options:
       - The time period, in seconds, during which requests from a client should be routed to the same target. After this time period expires, the load
         balancer-generated cookie is considered stale. The range is 1 second to 1 week (604800 seconds).
     type: int
+  stickiness_app_cookie_duration:
+    description:
+      - The time period, in seconds, during which requests from a client
+        should be routed to the same target. After this time period expires,
+        the application-generated cookie is considered stale. The range is 1 second to 1 week (604800 seconds).
+    type: int
+    version_added: 1.5.0
+  stickiness_app_cookie_name:
+    description:
+      - The name of the application cookie. Required if I(stickiness_type=app_cookie).
+    type: str
+    version_added: 1.5.0
   stickiness_type:
     description:
       - The type of sticky sessions.
+      - Valid values are C(lb_cookie), C(app_cookie) or C(source_ip).
       - If not set AWS will default to C(lb_cookie) for Application Load Balancers or C(source_ip) for Network Load Balancers.
     type: str
   successful_response_codes:
@@ -466,6 +479,8 @@ def create_or_update_target_group(connection, module):
     stickiness_enabled = module.params.get("stickiness_enabled")
     stickiness_lb_cookie_duration = module.params.get("stickiness_lb_cookie_duration")
     stickiness_type = module.params.get("stickiness_type")
+    stickiness_app_cookie_duration = module.params.get("stickiness_app_cookie_duration")
+    stickiness_app_cookie_name = module.params.get("stickiness_app_cookie_name")
 
     health_option_keys = [
         "health_check_path", "health_check_protocol", "health_check_interval", "health_check_timeout",
@@ -753,6 +768,12 @@ def create_or_update_target_group(connection, module):
     if stickiness_type is not None:
         if stickiness_type != current_tg_attributes.get('stickiness_type'):
             update_attributes.append({'Key': 'stickiness.type', 'Value': stickiness_type})
+    if stickiness_app_cookie_name is not None:
+        if stickiness_app_cookie_name != current_tg_attributes.get('stickiness_app_cookie_name'):
+            update_attributes.append({'Key': 'stickiness.app_cookie.cookie_name', 'Value': str(stickiness_app_cookie_name)})
+    if stickiness_app_cookie_duration is not None:
+        if str(stickiness_app_cookie_duration) != current_tg_attributes['stickiness_app_cookie_duration_seconds']:
+            update_attributes.append({'Key': 'stickiness.app_cookie.duration_seconds', 'Value': str(stickiness_app_cookie_duration)})
 
     if update_attributes:
         try:
@@ -833,6 +854,8 @@ def main():
         stickiness_enabled=dict(type='bool'),
         stickiness_type=dict(),
         stickiness_lb_cookie_duration=dict(type='int'),
+        stickiness_app_cookie_duration=dict(type='int'),
+        stickiness_app_cookie_name=dict(),
         state=dict(required=True, choices=['present', 'absent']),
         successful_response_codes=dict(),
         tags=dict(default={}, type='dict'),
