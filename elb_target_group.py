@@ -111,14 +111,13 @@ options:
     version_added: 1.5.0
   stickiness_app_cookie_name:
     description:
-      - The name of the application cookie. Required if C(stickiness_type) is
-        C(app_cookie).
+      - The name of the application cookie. Required if I(stickiness_type=app_cookie).
     type: str
     version_added: 1.5.0
   stickiness_type:
     description:
       - The type of sticky sessions.
-      - C(lb_cookie), C(app_cookie) or C(source_ip)
+      - Valid values are C(lb_cookie), C(app_cookie) or C(source_ip).
       - If not set AWS will default to C(lb_cookie) for Application Load Balancers or C(source_ip) for Network Load Balancers.
     type: str
   successful_response_codes:
