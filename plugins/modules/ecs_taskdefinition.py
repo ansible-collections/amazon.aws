@@ -46,15 +46,430 @@ options:
     containers:
         description:
             - A list of containers definitions.
-        required: False
+            - See U(https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecs.html) for a complete list of parameters.
+        required: True
         type: list
         elements: dict
+        suboptions:
+            name:
+                description: The name of a container.
+                required: False
+                type: str
+            image:
+                description: The image used to start a container.
+                required: False
+                type: str
+            repositoryCredentials:
+                description: The private repository authentication credentials to use.
+                required: False
+                type: dict
+                suboptions:
+                    credentialsParameter:
+                        description:
+                            - The Amazon Resource Name (ARN) of the secret containing the private repository credentials.
+                        required: True
+                        type: str
+            cpu:
+                description: The number of cpu units reserved for the container.
+                required: False
+                type: int
+            memory:
+                description: The amount (in MiB) of memory to present to the container.
+                required: False
+                type: int
+            memoryReservation:
+                description: The soft limit (in MiB) of memory to reserve for the container.
+                required: False
+                type: int
+            links:
+                description:
+                    - Allows containers to communicate with each other without the need for port mappings.
+                    - This parameter is only supported if I(network_mode=bridge).
+                required: False
+                type: list
+            portMappings:
+                description: The list of port mappings for the container.
+                required: False
+                type: list
+                elements: dict
+                suboptions:
+                    containerPort:
+                        description: The port number on the container that is bound to the user-specified or automatically assigned host port.
+                        required: False
+                        type: int
+                    hostPort:
+                        description: The port number on the container instance to reserve for your container.
+                        required: False
+                        type: int
+                    protocol:
+                        description: The protocol used for the port mapping.
+                        required: False
+                        type: str
+                        default: tcp
+                        choices: ['tcp', 'udp']
+            essential:
+                description:
+                    - If I(essential=True), and the container fails or stops for any reason, all other containers that are part of the task are stopped.
+                required: False
+                type: bool
+            entryPoint:
+                description: The entry point that is passed to the container.
+                required: False
+                type: str
+            command:
+                description: The command that is passed to the container.
+                required: False
+                type: list
+            environment:
+                description: The environment variables to pass to a container.
+                required: False
+                type: list
+                elements: dict
+                suboptions:
+                    name:
+                        description: The name of the key-value pair.
+                        required: False
+                        type: str
+                    value:
+                        description: The value of the key-value pair.
+                        required: False
+                        type: str
+            environmentFiles:
+                description: A list of files containing the environment variables to pass to a container.
+                required: False
+                type: list
+                elements: dict
+                suboptions:
+                    value:
+                        description: The Amazon Resource Name (ARN) of the Amazon S3 object containing the environment variable file.
+                        required: False
+                        type: str
+                    type:
+                        description: The file type to use. The only supported value is C(s3).
+                        required: False
+                        type: str
+            mountPoints:
+                description: The mount points for data volumes in your container.
+                required: False
+                type: list
+                elements: dict
+                suboptions:
+                    sourceVolume:
+                        description: The name of the volume to mount.
+                        required: False
+                        type: str
+                    containerPath:
+                        description: The path on the container to mount the host volume at.
+                        required: False
+                        type: str
+                    readOnly:
+                        description:
+                            - If this value is C(True), the container has read-only access to the volume.
+                            - If this value is C(False), then the container can write to the volume.
+                        required: False
+                        default: False
+                        type: bool
+            volumesFrom:
+                description: Data volumes to mount from another container.
+                required: False
+                type: list
+                elements: dict
+                suboptions:
+                    sourceContainer:
+                        description:
+                            - The name of another container within the same task definition from which to mount volumes.
+                        required: False
+                        type: str
+                    readOnly:
+                        description:
+                            - If this value is C(True), the container has read-only access to the volume.
+                            - If this value is C(False), then the container can write to the volume.
+                        required: False
+                        default: False
+                        type: bool
+            linuxParameters:
+                description: Linux-specific modifications that are applied to the container, such as Linux kernel capabilities.
+                required: False
+                type: list
+                suboptions:
+                    capabilities:
+                        description:
+                            - The Linux capabilities for the container that are added to or dropped from the default configuration provided by Docker.
+                        required: False
+                        type: dict
+                        suboptions:
+                            add:
+                                description:
+                                    - The Linux capabilities for the container that have been added to the default configuration provided by Docker.
+                                    - If I(launch_type=FARGATE), this parameter is not supported.
+                                required: False
+                                type: list
+                                choices: ["ALL", "AUDIT_CONTROL", "AUDIT_WRITE", "BLOCK_SUSPEND", "CHOWN", "DAC_OVERRIDE", "DAC_READ_SEARCH", "FOWNER",
+                                          "FSETID", "IPC_LOCK", "IPC_OWNER", "KILL", "LEASE", "LINUX_IMMUTABLE", "MAC_ADMIN", "MAC_OVERRIDE", "MKNOD",
+                                          "NET_ADMIN", "NET_BIND_SERVICE", "NET_BROADCAST", "NET_RAW", "SETFCAP", "SETGID", "SETPCAP", "SETUID",
+                                          "SYS_ADMIN", "SYS_BOOT", "SYS_CHROOT", "SYS_MODULE", "SYS_NICE", "SYS_PACCT", "SYS_PTRACE", "SYS_RAWIO",
+                                          "SYS_RESOURCE", "SYS_TIME", "SYS_TTY_CONFIG", "SYSLOG", "WAKE_ALARM"]
+                            drop:
+                                description:
+                                    - The Linux capabilities for the container that have been removed from the default configuration provided by Docker.
+                                required: False
+                                type: list
+                                choices: ["ALL", "AUDIT_CONTROL", "AUDIT_WRITE", "BLOCK_SUSPEND", "CHOWN", "DAC_OVERRIDE", "DAC_READ_SEARCH", "FOWNER",
+                                          "FSETID", "IPC_LOCK", "IPC_OWNER", "KILL", "LEASE", "LINUX_IMMUTABLE", "MAC_ADMIN", "MAC_OVERRIDE", "MKNOD",
+                                          "NET_ADMIN", "NET_BIND_SERVICE", "NET_BROADCAST", "NET_RAW", "SETFCAP", "SETGID", "SETPCAP", "SETUID",
+                                          "SYS_ADMIN", "SYS_BOOT", "SYS_CHROOT", "SYS_MODULE", "SYS_NICE", "SYS_PACCT", "SYS_PTRACE", "SYS_RAWIO",
+                                          "SYS_RESOURCE", "SYS_TIME", "SYS_TTY_CONFIG", "SYSLOG", "WAKE_ALARM"]
+                    devices:
+                        description:
+                            - Any host devices to expose to the container.
+                            - If I(launch_type=FARGATE), this parameter is not supported.
+                        required: False
+                        type: list
+                        elements: dict
+                        suboptions:
+                            hostPath:
+                                description: The path for the device on the host container instance.
+                                required: True
+                                type: str
+                            containerPath:
+                                description: The path inside the container at which to expose the host device.
+                                required: False
+                                type: str
+                            permissions:
+                                description: The explicit permissions to provide to the container for the device.
+                                required: False
+                                type: list
+                    initProcessEnabled:
+                        description: Run an init process inside the container that forwards signals and reaps processes.
+                        required: False
+                        type: bool
+                    sharedMemorySize:
+                        description:
+                            - The value for the size (in MiB) of the /dev/shm volume.
+                            - If I(launch_type=FARGATE), this parameter is not supported.
+                        required: False
+                        type: int
+                    tmpfs:
+                        description:
+                            - The container path, mount options, and size (in MiB) of the tmpfs mount.
+                            - If I(launch_type=FARGATE), this parameter is not supported.
+                        required: False
+                        type: list
+                        elements: dict
+                        suboptions:
+                            containerPath:
+                                description: The absolute file path where the tmpfs volume is to be mounted.
+                                required: True
+                                type: str
+                            size:
+                                description: The size (in MiB) of the tmpfs volume.
+                                required: True
+                                type: int
+                            mountOptions:
+                                description: The list of tmpfs volume mount options.
+                                required: False
+                                type: list
+                                choices: ["defaults", "ro", "rw", "suid", "nosuid", "dev", "nodev", "exec", "noexec", "sync", "async", "dirsync",
+                                          "remount", "mand", "nomand", "atime", "noatime", "diratime", "nodiratime", "bind", "rbind", "unbindable",
+                                          "runbindable", "private", "rprivate", "shared", "rshared", "slave", "rslave", "relatime", "norelatime",
+                                          "strictatime", "nostrictatime", "mode", "uid", "gid", "nr_inodes", "nr_blocks", "mpol"]
+                    maxSwap:
+                        description:
+                            - The total amount of swap memory (in MiB) a container can use.
+                            - If I(launch_type=FARGATE), this parameter is not supported.
+                        required: False
+                        type: int
+                    swappiness:
+                        description:
+                            - This allows you to tune a container's memory swappiness behavior.
+                            - If I(launch_type=FARGATE), this parameter is not supported.
+                        required: False
+                        type: int
+            secrets:
+                description: The secrets to pass to the container.
+                required: False
+                type: list
+                elements: dict
+                suboptions:
+                    name:
+                        description: The value to set as the environment variable on the container.
+                        required: True
+                        type: str
+                    size:
+                        description: The secret to expose to the container.
+                        required: True
+                        type: str
+            dependsOn:
+                description:
+                    - The dependencies defined for container startup and shutdown.
+                    - When a dependency is defined for container startup, for container shutdown it is reversed.
+                required: False
+                type: list
+                elements: dict
+                suboptions:
+                    containerName:
+                        description: The name of a container.
+                        type: str
+                        required: True
+                    condition:
+                        description: The dependency condition of the container.
+                        type: str
+                        required: True
+                        choices: ["start", "complete", "success", "healthy"]
+            startTimeout:
+                description: Time duration (in seconds) to wait before giving up on resolving dependencies for a container.
+                required: False
+                type: int
+            stopTimeout:
+                description: Time duration (in seconds) to wait before the container is forcefully killed if it doesn't exit normally on its own.
+                required: False
+                type: int
+            hostname:
+                description:
+                    - The hostname to use for your container.
+                    - This parameter is not supported if I(network_mode=awsvpc).
+                required: False
+                type: str
+            user:
+                description:
+                    - The user to use inside the container.
+                    - This parameter is not supported for Windows containers.
+                required: False
+                type: str
+            workingDirectory:
+                description: The working directory in which to run commands inside the container.
+                required: False
+                type: str
+            disableNetworking:
+                description: When this parameter is C(True), networking is disabled within the container.
+                required: False
+                type: bool
+            privileged:
+                description: When this parameter is C(True), the container is given elevated privileges on the host container instance.
+                required: False
+                type: bool
+            readonlyRootFilesystem:
+                description: When this parameter is C(True), the container is given read-only access to its root file system.
+                required: false
+                type: bool
+            dnsServers:
+                description:
+                    - A list of DNS servers that are presented to the container.
+                    - This parameter is not supported for Windows containers.
+                required: False
+                type: list
+            dnsSearchDomains:
+                description:
+                    - A list of DNS search domains that are presented to the container.
+                    - This parameter is not supported for Windows containers.
+                required: False
+                type: list
+            extraHosts:
+                description:
+                    - A list of hostnames and IP address mappings to append to the /etc/hosts file on the container.
+                    - This parameter is not supported for Windows containers or tasks that use I(network_mode=awsvpc).
+                required: False
+                type: list
+                elements: dict
+                suboptions:
+                    hostname:
+                        description: The hostname to use in the /etc/hosts entry.
+                        type: str
+                        required: False
+                    ipAddress:
+                        description: The IP address to use in the /etc/hosts entry.
+                        type: str
+                        required: False
+            dockerSecurityOptions:
+                description:
+                    - A list of strings to provide custom labels for SELinux and AppArmor multi-level security systems.
+                    - This parameter is not supported for Windows containers.
+                required: False
+                type: list
+            interactive:
+                description:
+                    - When I(interactive=True), it allows to deploy containerized applications that require stdin or a tty to be allocated.
+                required: False
+                type: bool
+            pseudoTerminal:
+                description: When this parameter is C(True), a TTY is allocated.
+                required: False
+                type: bool
+            dockerLabels:
+                description: A key/value map of labels to add to the container.
+                required: False
+                type: dict
+            ulimits:
+                description:
+                    - A list of ulimits to set in the container.
+                    - This parameter is not supported for Windows containers.
+                required: False
+                type: list
+                elements: dict
+                suboptions:
+                    name:
+                        description: The type of the ulimit.
+                        type: str
+                        required: False
+                    softLimit:
+                        description: The soft limit for the ulimit type.
+                        type: int
+                        required: False
+                    hardLimit:
+                        description: The hard limit for the ulimit type.
+                        type: int
+                        required: False
+            logConfiguration:
+                description: The log configuration specification for the container.
+                required: False
+                type: dict
+                suboptions:
+                    logDriver:
+                        description:
+                            - The log driver to use for the container.
+                            - For tasks on AWS Fargate, the supported log drivers are C(awslogs), C(splunk), and C(awsfirelens).
+                            - For tasks hosted on Amazon EC2 instances, the supported log drivers are C(awslogs), C(fluentd),
+                              C(gelf), C(json-file), C(journald), C(logentries), C(syslog), C(splunk), and C(awsfirelens).
+                        type: str
+                        required: False
+            options:
+                description: The configuration options to send to the log driver.
+                required: False
+                type: str
+            secretOptions:
+                description: The secrets to pass to the log configuration.
+                required: False
+                type: list
+                elements: dict
+                suboptions:
+                    name:
+                        description: The name of the secret.
+                        type: str
+                        required: False
+                    valueFrom:
+                        description: The secret to expose to the container.
+                        type: str
+                        required: False
+            healthCheck:
+                description: The health check command and associated configuration parameters for the container.
+                required: False
+                type: dict
+            systemControls:
+                description: A list of namespaced kernel parameters to set in the container.
+                required: False
+                type: list
+            resourceRequirements:
+                description:
+                    - The type and amount of a resource to assign to a container.
+                    - The only supported resource is a C(GPU).
+                required: False
+                type: list
     network_mode:
         description:
             - The Docker networking mode to use for the containers in the task.
             - C(awsvpc) mode was added in Ansible 2.5
             - Windows containers must use I(network_mode=default), which will utilize docker NAT networking.
-            - Setting I(network_mode=default) for a Linux container will use bridge mode.
+            - Setting I(network_mode=default) for a Linux container will use C(bridge) mode.
         required: false
         default: bridge
         choices: [ 'default', 'bridge', 'host', 'none', 'awsvpc' ]
@@ -89,20 +504,19 @@ options:
         choices: ["EC2", "FARGATE"]
     cpu:
         description:
-            - The number of cpu units used by the task. If using the EC2 launch type, this field is optional and any value can be used.
-            - If using the Fargate launch type, this field is required and you must use one of C(256), C(512), C(1024), C(2048), C(4096).
+            - The number of cpu units used by the task. If I(launch_type=EC2), this field is optional and any value can be used.
+            - If I(launch_type=FARGATE), this field is required and you must use one of C(256), C(512), C(1024), C(2048), C(4096).
         required: false
         type: str
     memory:
         description:
-            - The amount (in MiB) of memory used by the task. If using the EC2 launch type, this field is optional and any value can be used.
-            - If using the Fargate launch type, this field is required and is limited by the CPU.
+            - The amount (in MiB) of memory used by the task. If I(launch_type=EC2), this field is optional and any value can be used.
+            - If I(launch_type=FARGATE), this field is required and is limited by the CPU.
         required: false
         type: str
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
 '''
 
 EXAMPLES = r'''
@@ -156,7 +570,7 @@ EXAMPLES = r'''
       image: "nginx"
       portMappings:
       - containerPort: 8080
-        hostPort:      8080
+        hostPort: 8080
       cpu: 512
       memory: 1024
     state: present
@@ -170,12 +584,28 @@ EXAMPLES = r'''
       image: "nginx"
       portMappings:
       - containerPort: 8080
-        hostPort:      8080
+        hostPort: 8080
     launch_type: FARGATE
     cpu: 512
     memory: 1024
     state: present
     network_mode: awsvpc
+
+- name: Create task definition
+  community.aws.ecs_taskdefinition:
+    family: nginx
+    containers:
+    - name: nginx
+      essential: true
+      image: "nginx"
+      portMappings:
+      - containerPort: 8080
+        hostPort: 8080
+      cpu: 512
+      memory: 1024
+      dependsOn:
+      - containerName: "simple-app"
+        condition: "start"
 
 # Create Task Definition with Environment Variables and Secrets
 - name: Create task definition
@@ -322,7 +752,7 @@ def main():
         family=dict(required=False, type='str'),
         revision=dict(required=False, type='int'),
         force_create=dict(required=False, default=False, type='bool'),
-        containers=dict(required=False, type='list', elements='dict'),
+        containers=dict(required=True, type='list', elements='dict'),
         network_mode=dict(required=False, default='bridge', choices=['default', 'bridge', 'host', 'none', 'awsvpc'], type='str'),
         task_role_arn=dict(required=False, default='', type='str'),
         execution_role_arn=dict(required=False, default='', type='str'),
@@ -349,11 +779,6 @@ def main():
         if not module.botocore_at_least('1.10.44'):
             module.fail_json(msg='botocore needs to be version 1.10.44 or higher to use execution_role_arn')
 
-    if module.params['containers']:
-        for container in module.params['containers']:
-            for environment in container.get('environment', []):
-                environment['value'] = to_text(environment['value'])
-
     if module.params['state'] == 'present':
         if 'containers' not in module.params or not module.params['containers']:
             module.fail_json(msg="To use task definitions, a list of containers must be specified")
@@ -365,6 +790,41 @@ def main():
         launch_type = module.params['launch_type']
         if launch_type == 'FARGATE' and network_mode != 'awsvpc':
             module.fail_json(msg="To use FARGATE launch type, network_mode must be awsvpc")
+
+        for container in module.params['containers']:
+            if container.get('links') and network_mode == 'awsvpc':
+                module.fail_json(msg='links parameter is not supported if network mode is awsvpc.')
+
+            for environment in container.get('environment', []):
+                environment['value'] = to_text(environment['value'])
+
+            for environment_file in container.get('environmentFiles', []):
+                if environment_file['value'] != 's3':
+                    module.fail_json(msg='The only supported value for environmentFiles is s3.')
+
+            for linux_param in container.get('linuxParameters', {}):
+                if linux_param.get('devices') and launch_type == 'FARGATE':
+                    module.fail_json(msg='devices parameter is not supported with the FARGATE launch type.')
+
+                if linux_param.get('maxSwap') and launch_type == 'FARGATE':
+                    module.fail_json(msg='maxSwap parameter is not supported with the FARGATE launch type.')
+                elif linux_param.get('maxSwap') and linux_param['maxSwap'] < 0:
+                    module.fail_json(msg='Accepted values for maxSwap are 0 or any positive integer.')
+
+                if linux_param.get('swappiness') and (linux_param['swappiness'] < 0 or linux_param['swappiness'] > 100):
+                    module.fail_json(msg='Accepted values for swappiness are whole numbers between 0 and 100.')
+
+                if linux_param.get('sharedMemorySize') and launch_type == 'FARGATE':
+                    module.fail_json(msg='sharedMemorySize parameter is not supported with the FARGATE launch type.')
+
+                if linux_param.get('tmpfs') and launch_type == 'FARGATE':
+                    module.fail_json(msg='tmpfs parameter is not supported with the FARGATE launch type.')
+
+            if container.get('hostname') and network_mode == 'awsvpc':
+                module.fail_json(msg='hostname parameter is not supported when the awsvpc network mode is used.')
+
+            if container.get('extraHosts') and network_mode == 'awsvpc':
+                module.fail_json(msg='extraHosts parameter is not supported when the awsvpc network mode is used.')
 
         family = module.params['family']
         existing_definitions_in_family = task_mgr.describe_task_definitions(module.params['family'])
