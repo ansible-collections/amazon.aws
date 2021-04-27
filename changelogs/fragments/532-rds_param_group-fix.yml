@@ -1,4 +1,0 @@
-minor_changes:
-- rds_param_group - Add AWSRetry (https://github.com/ansible-collections/community.aws/pull/532).
-- rds_param_group - Fix integration tests (https://github.com/ansible-collections/community.aws/pull/532).
-- rds_param_group - Support check_mode (https://github.com/ansible-collections/community.aws/pull/532).

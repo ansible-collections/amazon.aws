@@ -329,6 +329,27 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>tier</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.5.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>Standard</b>&nbsp;&larr;</div></li>
+                                    <li>Advanced</li>
+                                    <li>Intelligent-Tiering</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Parameter store tier type.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>validate_certs</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -413,6 +434,13 @@ Examples
         value: "Test1234"
         overwrite_value: "always"
 
+    - name: Create or update key/value pair in aws parameter store with tier
+      community.aws.aws_ssm_parameter_store:
+        name: "Hello"
+        description: "This is your first key"
+        value: "World"
+        tier: "Advanced"
+
     - name: recommend to use with aws_ssm lookup plugin
       ansible.builtin.debug:
         msg: "{{ lookup('amazon.aws.aws_ssm', 'hello') }}"
@@ -472,6 +500,7 @@ Status
 Authors
 ~~~~~~~
 
+- Davinder Pal (@116davinder) <dpsangwal@gmail.com>
 - Nathan Webster (@nathanwebsterdotme)
 - Bill Wang (@ozbillwang) <ozbillwang@gmail.com>
 - Michael De La Rue (@mikedlr)

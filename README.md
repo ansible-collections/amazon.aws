@@ -58,7 +58,7 @@ Name | Description
 [community.aws.aws_kms](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_kms_module.rst)|Perform various KMS management tasks.
 [community.aws.aws_kms_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_kms_info_module.rst)|Gather information about AWS KMS keys
 [community.aws.aws_region_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_region_info_module.rst)|Gather information about AWS regions.
-[community.aws.aws_s3_bucket_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_s3_bucket_info_module.rst)|Lists S3 buckets in AWS
+[community.aws.aws_s3_bucket_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_s3_bucket_info_module.rst)|lists S3 buckets in AWS
 [community.aws.aws_s3_cors](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_s3_cors_module.rst)|Manage CORS for S3 buckets in AWS
 [community.aws.aws_secret](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_secret_module.rst)|Manage secrets stored in AWS Secrets Manager.
 [community.aws.aws_ses_identity](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_ses_identity_module.rst)|Manages SES email and domain identity
@@ -114,6 +114,7 @@ Name | Description
 [community.aws.ec2_vpc_egress_igw](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_egress_igw_module.rst)|Manage an AWS VPC Egress Only Internet gateway
 [community.aws.ec2_vpc_endpoint](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_endpoint_module.rst)|Create and delete AWS VPC Endpoints.
 [community.aws.ec2_vpc_endpoint_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_endpoint_info_module.rst)|Retrieves AWS VPC endpoints details using AWS methods.
+[community.aws.ec2_vpc_endpoint_service_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_endpoint_service_info_module.rst)|retrieves AWS VPC endpoint service details
 [community.aws.ec2_vpc_igw](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_igw_module.rst)|Manage an AWS VPC Internet gateway
 [community.aws.ec2_vpc_igw_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_igw_info_module.rst)|Gather information about internet gateways in AWS
 [community.aws.ec2_vpc_nacl](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_nacl_module.rst)|create and delete Network ACLs.
@@ -194,7 +195,7 @@ Name | Description
 [community.aws.route53_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.route53_info_module.rst)|Retrieves route53 details using AWS methods
 [community.aws.route53_zone](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.route53_zone_module.rst)|add or delete Route53 zones
 [community.aws.s3_bucket_notification](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.s3_bucket_notification_module.rst)|Creates, updates or deletes S3 Bucket notification for lambda
-[community.aws.s3_lifecycle](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.s3_lifecycle_module.rst)|Manage s3 bucket lifecycle rules in AWS
+[community.aws.s3_lifecycle](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.s3_lifecycle_module.rst)|Manage S3 bucket lifecycle rules in AWS
 [community.aws.s3_logging](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.s3_logging_module.rst)|Manage logging facility of an s3 bucket in AWS
 [community.aws.s3_metrics_configuration](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.s3_metrics_configuration_module.rst)|Manage s3 bucket metrics configuration in AWS
 [community.aws.s3_sync](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.s3_sync_module.rst)|Efficiently upload multiple files to S3
@@ -204,6 +205,14 @@ Name | Description
 [community.aws.sqs_queue](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.sqs_queue_module.rst)|Creates or deletes AWS SQS queues
 [community.aws.sts_assume_role](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.sts_assume_role_module.rst)|Assume a role using AWS Security Token Service and obtain temporary credentials
 [community.aws.sts_session_token](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.sts_session_token_module.rst)|Obtain a session token from the AWS Security Token Service
+[community.aws.wafv2_ip_set](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.wafv2_ip_set_module.rst)|wafv2_ip_set
+[community.aws.wafv2_ip_set_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.wafv2_ip_set_info_module.rst)|Get information about wafv2 ip sets
+[community.aws.wafv2_resources](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.wafv2_resources_module.rst)|wafv2_web_acl
+[community.aws.wafv2_resources_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.wafv2_resources_info_module.rst)|wafv2_resources_info
+[community.aws.wafv2_rule_group](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.wafv2_rule_group_module.rst)|wafv2_web_acl
+[community.aws.wafv2_rule_group_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.wafv2_rule_group_info_module.rst)|wafv2_web_acl_info
+[community.aws.wafv2_web_acl](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.wafv2_web_acl_module.rst)|wafv2_web_acl
+[community.aws.wafv2_web_acl_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.wafv2_web_acl_info_module.rst)|wafv2_web_acl
 
 <!--end collection content-->
 

@@ -509,6 +509,23 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>lifecycle_hooks</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>List of lifecycle hooks for the ASG.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[{&#x27;AutoScalingGroupName&#x27;: &#x27;public-webapp-production-1&#x27;, &#x27;DefaultResult&#x27;: &#x27;ABANDON&#x27;, &#x27;GlobalTimeout&#x27;: 172800, &#x27;HeartbeatTimeout&#x27;: 3600, &#x27;LifecycleHookName&#x27;: &#x27;instance-launch&#x27;, &#x27;LifecycleTransition&#x27;: &#x27;autoscaling:EC2_INSTANCE_LAUNCHING&#x27;}, {&#x27;AutoScalingGroupName&#x27;: &#x27;public-webapp-production-1&#x27;, &#x27;DefaultResult&#x27;: &#x27;ABANDON&#x27;, &#x27;GlobalTimeout&#x27;: 172800, &#x27;HeartbeatTimeout&#x27;: 3600, &#x27;LifecycleHookName&#x27;: &#x27;instance-terminate&#x27;, &#x27;LifecycleTransition&#x27;: &#x27;autoscaling:EC2_INSTANCE_TERMINATING&#x27;}]</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>load_balancer_names</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">

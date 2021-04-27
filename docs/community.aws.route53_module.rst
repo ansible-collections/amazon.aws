@@ -59,6 +59,7 @@ Parameters
                 </td>
                 <td>
                         <div>Indicates if this is an alias record.</div>
+                        <div>Mutually exclusive with <em>ttl</em>.</div>
                         <div>Defaults to <code>false</code>.</div>
                 </td>
             </tr>
@@ -218,6 +219,7 @@ Parameters
                 </td>
                 <td>
                         <div>Failover resource record sets only. Whether this is the primary or secondary resource record set. Allowed values are PRIMARY and SECONDARY</div>
+                        <div>Mutually exclusive with <em>weight</em> and <em>region</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -352,6 +354,7 @@ Parameters
                 </td>
                 <td>
                         <div>Latency-based resource record sets only Among resource record sets that have the same combination of DNS name and type, a value that determines which region this should be associated with for the latency-based routing</div>
+                        <div>Mutually exclusive with <em>weight</em> and <em>failover</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -426,6 +429,7 @@ Parameters
                 </td>
                 <td>
                         <div>The TTL, in second, to give the new record.</div>
+                        <div>Mutually exclusive with <em>alias</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -557,6 +561,7 @@ Parameters
                 </td>
                 <td>
                         <div>Weighted resource record sets only. Among resource record sets that have the same combination of DNS name and type, a value that determines what portion of traffic for the current resource record set is routed to the associated location.</div>
+                        <div>Mutually exclusive with <em>region</em> and <em>failover</em>.</div>
                 </td>
             </tr>
             <tr>

@@ -1,2 +1,0 @@
-minor_changes:
-  - ec2_asg_info - gather information about asg lifecycle hooks (https://github.com/ansible-collections/community.aws/pull/233).

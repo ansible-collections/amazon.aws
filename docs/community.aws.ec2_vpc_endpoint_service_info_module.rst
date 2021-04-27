@@ -1,14 +1,14 @@
-.. _community.aws.ec2_vpc_igw_info_module:
+.. _community.aws.ec2_vpc_endpoint_service_info_module:
 
 
-******************************
-community.aws.ec2_vpc_igw_info
-******************************
+*******************************************
+community.aws.ec2_vpc_endpoint_service_info
+*******************************************
 
-**Gather information about internet gateways in AWS**
+**retrieves AWS VPC endpoint service details**
 
 
-Version added: 1.0.0
+Version added: 1.5.0
 
 .. contents::
    :local:
@@ -17,8 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Gather information about internet gateways in AWS.
-- This module was called ``ec2_vpc_igw_facts`` before Ansible 2.9. The usage did not change.
+- Gets details related to AWS VPC Endpoint Services.
 
 
 
@@ -115,27 +114,6 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>convert_tags</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
-                    </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0</div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
-                                    <li>yes</li>
-                        </ul>
-                </td>
-                <td>
-                        <div>Convert tags from boto3 format (list of dictionaries) to the standard dictionary format.</div>
-                        <div>This currently defaults to <code>False</code>.  The default will be changed to <code>True</code> after 2022-06-22.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>debug_botocore_endpoint_logs</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -180,23 +158,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A dict of filters to apply. Each dict item consists of a filter key and a filter value. See <a href='https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInternetGateways.html'>https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInternetGateways.html</a> for possible filters.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>internet_gateway_ids</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>Get details of specific Internet Gateway ID. Provide this value as a list.</div>
+                        <div>A dict of filters to apply.</div>
+                        <div>Each dict item consists of a filter key and a filter value. See <a href='https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVpcEndpointServices.html'>https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVpcEndpointServices.html</a> for possible filters.</div>
                 </td>
             </tr>
             <tr>
@@ -254,6 +217,22 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>service_names</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>A list of service names which can be used to narrow the search results.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>validate_certs</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -289,28 +268,11 @@ Examples
 
 .. code-block:: yaml
 
-    # # Note: These examples do not set authentication details, see the AWS Guide for details.
-
-    - name: Gather information about all Internet Gateways for an account or profile
-      community.aws.ec2_vpc_igw_info:
+    # Simple example of listing all supported AWS services for VPC endpoints
+    - name: List supported AWS endpoint services
+      community.aws.ec2_vpc_endpoint_service_info:
         region: ap-southeast-2
-        profile: production
-      register: igw_info
-
-    - name: Gather information about a filtered list of Internet Gateways
-      community.aws.ec2_vpc_igw_info:
-        region: ap-southeast-2
-        profile: production
-        filters:
-            "tag:Name": "igw-123"
-      register: igw_info
-
-    - name: Gather information about a specific internet gateway by InternetGatewayId
-      community.aws.ec2_vpc_igw_info:
-        region: ap-southeast-2
-        profile: production
-        internet_gateway_ids: igw-c1231234
-      register: igw_info
+      register: supported_endpoint_services
 
 
 
@@ -322,118 +284,205 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
 
     <table border=0 cellpadding=0 class="documentation-table">
         <tr>
-            <th colspan="3">Key</th>
+            <th colspan="2">Key</th>
             <th>Returned</th>
             <th width="100%">Description</th>
         </tr>
             <tr>
-                <td colspan="3">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>changed</b>
+                    <b>service_details</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">complex</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>Detailed information about the AWS VPC endpoint services.</div>
+                    <br/>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>acceptance_required</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">boolean</span>
                     </div>
                 </td>
-                <td>always</td>
+                <td>success</td>
                 <td>
-                            <div>True if listing the internet gateways succeeds.</div>
+                            <div>Whether VPC endpoint connection requests to the service must be accepted by the service owner.</div>
                     <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">false</div>
                 </td>
             </tr>
             <tr>
-                <td colspan="3">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>internet_gateways</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">complex</span>
-                    </div>
-                </td>
-                <td>always</td>
-                <td>
-                            <div>The internet gateways for the account.</div>
-                    <br/>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>attachments</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">complex</span>
-                    </div>
-                </td>
-                <td><em>state=present</em></td>
-                <td>
-                            <div>Any VPCs attached to the internet gateway</div>
-                    <br/>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
                     <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>state</b>
+                    <b>availability_zones</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">string</span>
+                      <span style="color: purple">list</span>
                     </div>
                 </td>
-                <td><em>state=present</em></td>
+                <td>success</td>
                 <td>
-                            <div>The current state of the attachment</div>
+                            <div>The Availability Zones in which the service is available.</div>
                     <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">available</div>
                 </td>
             </tr>
             <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
                     <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>vpc_id</b>
+                    <b>base_endpoint_dns_names</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">string</span>
+                      <span style="color: purple">list</span>
                     </div>
                 </td>
-                <td><em>state=present</em></td>
+                <td>success</td>
                 <td>
-                            <div>The ID of the VPC.</div>
+                            <div>The DNS names for the service.</div>
                     <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">vpc-02123b67</div>
                 </td>
             </tr>
-
             <tr>
                     <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="2">
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>internet_gateway_id</b>
+                    <b>manages_vpc_endpoints</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>Whether the service manages its VPC endpoints.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>owner</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td><em>state=present</em></td>
+                <td>success</td>
                 <td>
-                            <div>The ID of the internet gateway</div>
+                            <div>The AWS account ID of the service owner.</div>
                     <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">igw-2123634d</div>
                 </td>
             </tr>
             <tr>
                     <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="2">
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>private_dns_name</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The private DNS name for the service.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>private_dns_name_verification_state</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The verification state of the VPC endpoint service.</div>
+                            <div>Consumers of an endpoint service cannot use the private name when the state is not <code>verified</code>.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>private_dns_names</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The private DNS names assigned to the VPC endpoint service.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>service_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The ID of the endpoint service.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>service_name</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The ARN of the endpoint service.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>service_type</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The type of the service</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>tags</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
@@ -441,15 +490,46 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                       <span style="color: purple">dictionary</span>
                     </div>
                 </td>
-                <td><em>state=present</em></td>
+                <td>success</td>
                 <td>
-                            <div>Any tags assigned to the internet gateway</div>
+                            <div>A dict of tags associated with the service</div>
                     <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;tags&#x27;: {&#x27;Ansible&#x27;: &#x27;Test&#x27;}}</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>vpc_endpoint_policy_supported</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>Whether the service supports endpoint policies.</div>
+                    <br/>
                 </td>
             </tr>
 
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>service_names</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>List of supported AWS VPC endpoint service names.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;service_names&#x27;: [&#x27;com.amazonaws.ap-southeast-2.s3&#x27;]}</div>
+                </td>
+            </tr>
     </table>
     <br/><br/>
 
@@ -461,4 +541,4 @@ Status
 Authors
 ~~~~~~~
 
-- Nick Aslanidis (@naslanidis)
+- Mark Chappell (@tremble)
