@@ -233,3 +233,62 @@ releases:
     - 25-aws_ec2-hostname-options-concatenation.yaml
     - 273-vendor-ipaddress-utility.yml
     release_date: '2021-03-05'
+  1.5.0:
+    changes:
+      bugfixes:
+      - ec2_vol - create or update now preserves the existing tags, including Name
+        (https://github.com/ansible-collections/amazon.aws/issues/229)
+      - ec2_vol - fix exception when platform information isn't available (https://github.com/ansible-collections/amazon.aws/issues/305).
+      minor_changes:
+      - AWS inventory plugins - use shared HAS_BOTO3 helper rather than copying code
+        (https://github.com/ansible-collections/amazon.aws/pull/288).
+      - AWS lookup plugins - use shared HAS_BOTO3 helper rather than copying code
+        (https://github.com/ansible-collections/amazon.aws/pull/288).
+      - aws_account_attribute - add retries on common AWS failures (https://github.com/ansible-collections/amazon.aws/pull/295).
+      - aws_ec2 inventory - expose a new configuration key ``use_contrib_script_compatible_ec2_tag_keys``
+        to reproduce a behavior of the old ``ec2.py`` inventory script. With this
+        option enabled, each tag is exposed using a ``ec2_tag_TAGNAME`` key (https://github.com/ansible-collections/amazon.aws/pull/331).
+      - aws_ec2 inventory - expose to new keys called ``include_filters`` and ``exclude_filters``
+        to give the user the ability to compose an inventory with multiple queries
+        (https://github.com/ansible-collections/amazon.aws/pull/328).
+      - aws_ec2 inventory plugin - Added support for using Jinja2 templates in the
+        authentication fields (https://github.com/ansible-collections/amazon.aws/pull/57).
+      - cloudformation - added support for StackPolicyDuringUpdateBody (https://github.com/ansible-collections/amazon.aws/pull/155).
+      - ec2_metadata_facts - add support for IMDSv2 (https://github.com/ansible-collections/amazon.aws/pull/43).
+      - ec2_snapshot_info - add the ``max_results`` along with ``next_token_id`` option
+        (https://github.com/ansible-collections/amazon.aws/pull/321).
+      - ec2_tag - use common code for tagging resources (https://github.com/ansible-collections/amazon.aws/pull/309).
+      - ec2_tag_info - use common code for tagging resources (https://github.com/ansible-collections/amazon.aws/pull/309).
+      - ec2_vol - add the ``purge_tags`` option (https://github.com/ansible-collections/amazon.aws/pull/242).
+      - ec2_vol - use common code for tagging resources (https://github.com/ansible-collections/amazon.aws/pull/309).
+      - ec2_vpc_net - use a custom waiter which can handle API rate limiting (https://github.com/ansible-collections/amazon.aws/pull/270).
+      - ec2_vpc_subnet - use AWSRetry decorator to more consistently handle API rate
+        limiting (https://github.com/ansible-collections/amazon.aws/pull/270).
+      - ec2_vpc_subnet - use common code for tagging resources (https://github.com/ansible-collections/amazon.aws/pull/309).
+      - module_utils.cloudfront_facts - linting cleanup (https://github.com/ansible-collections/amazon.aws/pull/291).
+      - module_utils.ec2 - linting cleanup (https://github.com/ansible-collections/amazon.aws/pull/291).
+      - module_utils/core - add a helper function ``normalize_boto3_result`` (https://github.com/ansible-collections/amazon.aws/pull/271).
+      - module_utils/core - add parameter ``descend_into_lists`` to ``scrub_none_parameters``
+        helper function (https://github.com/ansible-collections/amazon.aws/pull/262).
+      - module_utils/ec2 - added additional helper functions for tagging EC2 resources
+        (https://github.com/ansible-collections/amazon.aws/pull/309).
+      - sanity tests - add ignore.txt for 2.12 (https://github.com/ansible-collections/amazon.aws/pull/315).
+    fragments:
+    - 155-support-for-StackPolicyDuringUpdateBody.yaml
+    - 241_ec2_vol-add_purge_tags_parameter.yaml
+    - 242_ec2_vol-preset-the-name-tag-of-the-volume.yaml
+    - 261-scrub-params-descend-into-lists.yml
+    - 270-vpc-waiters.yaml
+    - 271-normalize_boto3_result.yml
+    - 288-has_boto3.yml
+    - 291-lint-cleanup.yml
+    - 295-aws_account_attribute-awsretry.yml
+    - 305-ec2_vol-no-platform.yml
+    - 309-ec2_tags.yml
+    - 321-ec2_snapshot_info-add_max_results_and_next_token_parameters.yaml
+    - 328_aws_ec2_inventory_includes_entries_matching.yaml
+    - 331_aws_ec2_inventory_use_contrib_script_compatible_ec2_tag_keys.yaml
+    - 43-ec2_metadata_facts-IMDSv2.yml
+    - 57-aws_ec2-support-for-templates.yml
+    - ignore_212.yml
+    release_date: '2021-04-27'

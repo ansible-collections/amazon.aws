@@ -17,7 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Maintains ec2 security groups. This module has a dependency on python-boto >= 2.5.
+- Maintains ec2 security groups.
 
 
 

@@ -1,3 +1,0 @@
----
-minor_changes:
-  - module_utils/core - add parameter ``descend_into_lists`` to ``scrub_none_parameters`` helper function (https://github.com/ansible-collections/amazon.aws/pull/262).

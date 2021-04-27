@@ -166,6 +166,43 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>max_results</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The maximum number of snapshot results returned in paginated output.</div>
+                        <div>When used only a single page along with a <code>next_token_id</code> response element will be returned.</div>
+                        <div>The remaining results of the initial request can be seen by sending another request with the returned <code>next_token_id</code> value.</div>
+                        <div>This value can be between 5 and 1000; if <em>next_token_id</em> is given a value larger than 1000, only 1000 results are returned.</div>
+                        <div>If this parameter is not used, then DescribeSnapshots returns all results.</div>
+                        <div>This parameter is mutually exclusive with <em>snapshot_ids</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>next_token_id</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Contains the value returned from a previous paginated request where <em>max_results</em> was used and the results exceeded the value of that parameter.</div>
+                        <div>Pagination continues from the end of the previous results that returned the <em>next_token_id</em> value.</div>
+                        <div>This parameter is mutually exclusive with <em>snapshot_ids</em></div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>owner_ids</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -350,11 +387,44 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
 
     <table border=0 cellpadding=0 class="documentation-table">
         <tr>
-            <th colspan="1">Key</th>
+            <th colspan="2">Key</th>
             <th>Returned</th>
             <th width="100%">Description</th>
         </tr>
             <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>next_token_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>when option <code>max_results</code> is set in input</td>
+                <td>
+                            <div>Contains the value returned from a previous paginated request where <code>max_results</code> was used and the results exceeded the value of that parameter.</div>
+                            <div>This value is null when there are no more results to return.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>snapshots</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                       / <span style="color: purple">elements=dictionary</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>snapshots retrieved</div>
+                    <br/>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>data_encryption_key_id</b>
@@ -365,13 +435,14 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>The data encryption key identifier for the snapshot. This value is a unique identifier that     corresponds to the data encryption key that was used to encrypt the original volume or snapshot copy.</div>
+                            <div>The data encryption key identifier for the snapshot. This value is a unique identifier that             corresponds to the data encryption key that was used to encrypt the original volume or snapshot copy.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">arn:aws:kms:ap-southeast-2:012345678900:key/74c9742a-a1b2-45cb-b3fe-abcdef123456</div>
                 </td>
             </tr>
             <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>description</b>
@@ -389,6 +460,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
             </tr>
             <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>encrypted</b>
@@ -406,6 +478,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
             </tr>
             <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>kms_key_id</b>
@@ -416,13 +489,14 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>The full ARN of the AWS Key Management Service (AWS KMS) customer master key (CMK) that was used to     protect the volume encryption key for the parent volume.</div>
+                            <div>The full ARN of the AWS Key Management Service (AWS KMS) customer master key (CMK) that was used to             protect the volume encryption key for the parent volume.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">74c9742a-a1b2-45cb-b3fe-abcdef123456</div>
                 </td>
             </tr>
             <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>owner_alias</b>
@@ -440,6 +514,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
             </tr>
             <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>owner_id</b>
@@ -457,6 +532,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
             </tr>
             <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>progress</b>
@@ -474,6 +550,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
             </tr>
             <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>snapshot_id</b>
@@ -491,6 +568,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
             </tr>
             <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>start_time</b>
@@ -508,6 +586,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
             </tr>
             <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>state</b>
@@ -525,6 +604,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
             </tr>
             <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>state_message</b>
@@ -540,6 +620,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
             </tr>
             <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>tags</b>
@@ -557,6 +638,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
             </tr>
             <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>volume_id</b>
@@ -574,6 +656,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
             </tr>
             <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>volume_size</b>
@@ -590,6 +673,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">8</div>
                 </td>
             </tr>
+
     </table>
     <br/><br/>
 
@@ -602,3 +686,4 @@ Authors
 ~~~~~~~
 
 - Rob White (@wimnat)
+- Aubin Bikouo (@abikouo)
