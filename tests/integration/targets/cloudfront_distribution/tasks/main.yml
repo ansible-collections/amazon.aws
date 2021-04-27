@@ -25,6 +25,67 @@
   - set_fact:
       distribution_id: '{{ cf_distribution.id }}'
 
+  - name: ensure that default value of 'ipv6_enabled' is 'false'
+    assert:
+      that:
+        - cf_distribution.changed
+        - not cf_distribution.is_ipv6_enabled
+
+  - name: Update the distribution with tags
+    cloudfront_distribution:
+      state: present
+      distribution_id: "{{ distribution_id }}"
+      tags:
+        property: ansible
+    register: cf_update_tags
+
+  - name: ensure the 'ipv6_enabled' value has not changed
+    assert:
+      that:
+        - cf_update_tags.changed
+        - not cf_update_tags.is_ipv6_enabled
+
+  - name: Update the distribution ipv6_enabled set to true
+    cloudfront_distribution:
+      state: present
+      distribution_id: "{{ distribution_id }}"
+      ipv6_enabled: True
+    register: cf_update_ipv6
+
+  - name: ensure the 'ipv6_enabled' value has changed (new value is true)
+    assert:
+      that:
+        - cf_update_ipv6.changed
+        - cf_update_ipv6.is_ipv6_enabled
+
+  - name: Update the distribution with tags
+    cloudfront_distribution:
+      state: present
+      distribution_id: "{{ distribution_id }}"
+      tags:
+        test: integration
+    register: cf_update_tags
+
+  - name: ensure the 'ipv6_enabled' value has not changed (value remains true)
+    assert:
+      that:
+        - cf_update_tags.changed
+        - cf_update_tags.is_ipv6_enabled
+
+  - name: Test idempotency updating cloudfront_distribution with same value of ipv6_enabled
+    cloudfront_distribution:
+      state: present
+      distribution_id: "{{ distribution_id }}"
+      ipv6_enabled: True
+    register: cf_update_ipv6
+
+  - name: ensure the 'ipv6_enabled' value has changed (new value is true)
+    assert:
+      that:
+        # FixMe : idempotency issues
+        # - not cf_update_ipv6.changed
+        - cf_update_ipv6.is_ipv6_enabled
+  
   - name: re-run cloudfront distribution with same defaults
     cloudfront_distribution:
       distribution_id: "{{ distribution_id }}"
