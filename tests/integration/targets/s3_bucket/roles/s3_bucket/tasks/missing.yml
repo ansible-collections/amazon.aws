@@ -1,6 +1,8 @@
 ---
 - name: 'Attempt to delete non-existent buckets'
   block:
+    - set_fact:
+        local_bucket_name: "{{ bucket_name | hash('md5')}}-missing"
     # ============================================================
     #
     # While in theory the 'simple' test case covers this there are
@@ -8,7 +10,7 @@
     #
     - name: 'Delete non-existstent s3_bucket (never created)'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: absent
       register: output
 
@@ -21,6 +23,6 @@
   always:
     - name: 'Ensure all buckets are deleted'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: absent
       ignore_errors: yes
