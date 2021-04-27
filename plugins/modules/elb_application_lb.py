@@ -179,6 +179,11 @@ options:
       - When set to C(no), keep the existing load balancer rules in place. Will modify and add, but will not delete.
     default: yes
     type: bool
+  ip_address_type:
+    description:
+      - Sets the type of IP addresses used by the subnets of the specified Application Load Balancer.
+    choices: [ 'ipv4', 'dualstack' ]
+    type: str
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -476,7 +481,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import get_el
 
 def create_or_update_elb(elb_obj):
     """Create ELB or modify main attributes. json_exit here"""
-
     if elb_obj.elb:
         # ELB exists so check subnets, security groups and tags match what has been passed
 
@@ -562,6 +566,9 @@ def create_or_update_elb(elb_obj):
                 rule_obj.modify()
                 elb_obj.changed = True
 
+    # Update ELB ip address type only if option has been provided
+    if elb_obj.module.params.get('ip_address_type') is not None:
+        elb_obj.modify_ip_address_type(elb_obj.module.params.get('ip_address_type'))
     # Get the ELB again
     elb_obj.update()
 
@@ -582,6 +589,9 @@ def create_or_update_elb(elb_obj):
 
     # Change tags to ansible friendly dict
     snaked_elb['tags'] = boto3_tag_list_to_ansible_dict(snaked_elb['tags'])
+
+    # ip address type
+    snaked_elb['ip_address_type'] = elb_obj.get_elb_ip_address_type()
 
     elb_obj.module.exit_json(changed=elb_obj.changed, **snaked_elb)
 
@@ -629,7 +639,8 @@ def main():
         tags=dict(type='dict'),
         wait_timeout=dict(type='int'),
         wait=dict(default=False, type='bool'),
-        purge_rules=dict(default=True, type='bool')
+        purge_rules=dict(default=True, type='bool'),
+        ip_address_type=dict(type='str', choices=['ipv4', 'dualstack'])
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec,

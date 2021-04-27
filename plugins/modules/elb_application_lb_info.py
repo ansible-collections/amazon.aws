@@ -70,94 +70,76 @@ load_balancers:
     contains:
         access_logs_s3_bucket:
             description: The name of the S3 bucket for the access logs.
-            returned: when status is present
             type: str
             sample: mys3bucket
         access_logs_s3_enabled:
             description: Indicates whether access logs stored in Amazon S3 are enabled.
-            returned: when status is present
             type: str
             sample: true
         access_logs_s3_prefix:
             description: The prefix for the location in the S3 bucket.
-            returned: when status is present
             type: str
             sample: /my/logs
         availability_zones:
             description: The Availability Zones for the load balancer.
-            returned: when status is present
             type: list
             sample: "[{'subnet_id': 'subnet-aabbccddff', 'zone_name': 'ap-southeast-2a'}]"
         canonical_hosted_zone_id:
             description: The ID of the Amazon Route 53 hosted zone associated with the load balancer.
-            returned: when status is present
             type: str
             sample: ABCDEF12345678
         created_time:
             description: The date and time the load balancer was created.
-            returned: when status is present
             type: str
             sample: "2015-02-12T02:14:02+00:00"
         deletion_protection_enabled:
             description: Indicates whether deletion protection is enabled.
-            returned: when status is present
             type: str
             sample: true
         dns_name:
             description: The public DNS name of the load balancer.
-            returned: when status is present
             type: str
             sample: internal-my-elb-123456789.ap-southeast-2.elb.amazonaws.com
         idle_timeout_timeout_seconds:
             description: The idle timeout value, in seconds.
-            returned: when status is present
             type: str
             sample: 60
         ip_address_type:
             description:  The type of IP addresses used by the subnets for the load balancer.
-            returned: when status is present
             type: str
             sample: ipv4
         load_balancer_arn:
             description: The Amazon Resource Name (ARN) of the load balancer.
-            returned: when status is present
             type: str
             sample: arn:aws:elasticloadbalancing:ap-southeast-2:0123456789:loadbalancer/app/my-elb/001122334455
         load_balancer_name:
             description: The name of the load balancer.
-            returned: when status is present
             type: str
             sample: my-elb
         scheme:
             description: Internet-facing or internal load balancer.
-            returned: when status is present
             type: str
             sample: internal
         security_groups:
             description: The IDs of the security groups for the load balancer.
-            returned: when status is present
             type: list
             sample: ['sg-0011223344']
         state:
             description: The state of the load balancer.
-            returned: when status is present
             type: dict
             sample: "{'code': 'active'}"
         tags:
             description: The tags attached to the load balancer.
-            returned: when status is present
             type: dict
             sample: "{
                 'Tag': 'Example'
             }"
         type:
             description: The type of load balancer.
-            returned: when status is present
             type: str
             sample: application
         vpc_id:
             description: The ID of the VPC for the load balancer.
-            returned: when status is present
             type: str
             sample: vpc-0011223344
 '''
@@ -213,8 +195,14 @@ def get_load_balancer_tags(connection, module, load_balancer_arn):
         module.fail_json_aws(e, msg="Failed to describe load balancer tags")
 
 
-def list_load_balancers(connection, module):
+def get_load_balancer_ipaddresstype(connection, module, load_balancer_arn):
+    try:
+        return connection.describe_load_balancers(LoadBalancerArns=[load_balancer_arn])['LoadBalancers'][0]['IpAddressType']
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to describe load balancer ip address type")
 
+
+def list_load_balancers(connection, module):
     load_balancer_arns = module.params.get("load_balancer_arns")
     names = module.params.get("names")
 
@@ -241,6 +229,9 @@ def list_load_balancers(connection, module):
         # For each listener, get listener rules
         for listener in load_balancer['listeners']:
             listener['rules'] = get_listener_rules(connection, module, listener['ListenerArn'])
+
+        # Get ELB ip address type
+        load_balancer['IpAddressType'] = get_load_balancer_ipaddresstype(connection, module, load_balancer['LoadBalancerArn'])
 
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_load_balancers = [camel_dict_to_snake_dict(load_balancer) for load_balancer in load_balancers['LoadBalancers']]

@@ -1,0 +1,93 @@
+- block:
+  - name: set elb name for ipv6
+    set_fact:
+      elb_name_ipv6: "{{ alb_name ~ 'ipv6' }}"
+
+  - name: test creating an ELB with invalid ip address type
+    elb_application_lb:
+      name: "{{ elb_name_ipv6 }}"
+      subnets: "{{ alb_subnets }}"
+      security_groups: "{{ sec_group.group_id }}"
+      state: present
+      listeners:
+        - Protocol: HTTP
+          Port: 80
+          DefaultActions:
+            - Type: forward
+              TargetGroupName: "{{ tg_name }}"
+      ip_address_type: "ip_addr_v4_v6"
+    ignore_errors: yes
+    register: elb
+
+  - assert:
+      that:
+        - elb is failed
+
+  - name: test creating an ELB with dualstack ip adress type
+    elb_application_lb:
+      name: "{{ elb_name_ipv6 }}"
+      subnets: "{{ alb_subnets }}"
+      security_groups: "{{ sec_group.group_id }}"
+      state: present
+      listeners:
+        - Protocol: HTTP
+          Port: 80
+          DefaultActions:
+            - Type: forward
+              TargetGroupName: "{{ tg_name }}"
+      ip_address_type: "dualstack"
+    register: elb
+
+  - assert:
+      that:
+        - elb.ip_address_type == "dualstack"
+
+  - name: test updating an ELB with ipv4 adress type
+    elb_application_lb:
+      name: "{{ elb_name_ipv6 }}"
+      subnets: "{{ alb_subnets }}"
+      security_groups: "{{ sec_group.group_id }}"
+      state: present
+      listeners:
+        - Protocol: HTTP
+          Port: 80
+          DefaultActions:
+            - Type: forward
+              TargetGroupName: "{{ tg_name }}"
+      ip_address_type: "ipv4"
+    register: elb
+
+  - assert:
+      that:
+        - elb.changed
+        - elb.ip_address_type == "ipv4"
+
+  - name: test idempotence updating an ELB with ipv4 adress type
+    elb_application_lb:
+      name: "{{ elb_name_ipv6 }}"
+      subnets: "{{ alb_subnets }}"
+      security_groups: "{{ sec_group.group_id }}"
+      state: present
+      listeners:
+        - Protocol: HTTP
+          Port: 80
+          DefaultActions:
+            - Type: forward
+              TargetGroupName: "{{ tg_name }}"
+      ip_address_type: "ipv4"
+    register: elb
+
+  - assert:
+      that:
+        - not elb.changed
+        - elb.ip_address_type == "ipv4"
+
+  always:
+  # Cleanup
+  - name: destroy ALB if created
+    elb_application_lb:
+      name: '{{ elb_name_ipv6 }}'
+      state: absent
+      wait: true
+      wait_timeout: 600
+    ignore_errors: true
