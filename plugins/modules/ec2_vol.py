@@ -102,14 +102,13 @@ options:
       - Volume throughput in MB/s.
       - This parameter is only valid for gp3 volumes.
       - Valid range is from 125 to 1000.
+      - Requires at least botocore version 1.19.27.
     type: int
     version_added: 1.4.0
 author: "Lester Wade (@lwade)"
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
-requirements: [ boto3>=1.16.33 ]
 '''
 
 EXAMPLES = '''
@@ -401,7 +400,8 @@ def update_volume(module, ec2_conn, volume):
             volume['size'] = response.get('VolumeModification').get('TargetSize')
             volume['volume_type'] = response.get('VolumeModification').get('TargetVolumeType')
             volume['iops'] = response.get('VolumeModification').get('TargetIops')
-            volume['throughput'] = response.get('VolumeModification').get('TargetThroughput')
+            if module.botocore_at_least("1.19.27"):
+                volume['throughput'] = response.get('VolumeModification').get('TargetThroughput')
 
     return volume, changed
 
@@ -584,7 +584,6 @@ def get_volume_info(volume, tags=None):
         'status': volume.get('state'),
         'type': volume.get('volume_type'),
         'zone': volume.get('availability_zone'),
-        'throughput': volume.get('throughput'),
         'attachment_set': {
             'attach_time': attachment_data.get('attach_time', None),
             'device': attachment_data.get('device', None),
@@ -594,6 +593,9 @@ def get_volume_info(volume, tags=None):
         },
         'tags': tags
     }
+
+    if module.botocore_at_least("1.19.27"):
+        volume_info['throughput'] = volume.get('throughput')
 
     return volume_info
 
@@ -656,6 +658,10 @@ def main():
     if state == 'list':
         module.deprecate(
             'Using the "list" state has been deprecated.  Please use the ec2_vol_info module instead', date='2022-06-01', collection_name='amazon.aws')
+
+    if module.params.get('throughput'):
+        if not module.botocore_at_least("1.19.27"):
+            module.fail_json(msg="botocore >= 1.19.27 is required to set the throughput for a volume")
 
     # Ensure we have the zone or can get the zone
     if instance is None and zone is None and state == 'present':
