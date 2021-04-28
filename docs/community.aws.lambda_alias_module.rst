@@ -462,6 +462,23 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">dev</div>
                 </td>
             </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>revision_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>A unique identifier that changes when you update the alias.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">12345678-1234-1234-1234-123456789abc</div>
+                </td>
+            </tr>
     </table>
     <br/><br/>
 

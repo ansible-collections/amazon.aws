@@ -990,6 +990,27 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>purge_security_groups</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.5.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Set to False to retain any enabled security groups that aren&#x27;t specified in the task and are associated with the instance.</div>
+                        <div>Can be applied to <em>vpc_security_group_ids</em> and <em>db_security_groups</em></div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>purge_tags</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -1471,6 +1492,15 @@ Examples
         id: "{{ instance_id }}"
         state: absent
         final_snapshot_identifier: "{{ snapshot_id }}"
+
+    - name: Add a new security group without purge
+      community.aws.rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        vpc_security_group_ids:
+          - sg-0be17ba10c9286b0b
+        purge_security_groups: false
+        register: result
 
 
 

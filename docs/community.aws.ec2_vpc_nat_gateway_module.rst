@@ -366,7 +366,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A dict of tags to apply to the internet gateway.</div>
+                        <div>A dict of tags to apply to the NAT gateway.</div>
                         <div>To remove all tags set <em>tags={}</em> and <em>purge_tags=true</em>.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: resource_tags</div>
                 </td>
@@ -516,16 +516,27 @@ Examples
         wait_timeout: 300
         region: ap-southeast-2
 
-    - name: Create new nat gateway using an allocation-id and tags.
+    - name: Create new nat gateway using allocation-id and tags.
       community.aws.ec2_vpc_nat_gateway:
         state: present
         subnet_id: subnet-12345678
         allocation_id: eipalloc-12345678
         region: ap-southeast-2
         tags:
-          Tag1: tag1
-          Tag2: tag2
+            Tag1: tag1
+            Tag2: tag2
       register: new_nat_gateway
+
+    - name: Update tags without purge
+      community.aws.ec2_vpc_nat_gateway:
+        subnet_id: subnet-12345678
+        allocation_id: eipalloc-12345678
+        region: ap-southeast-2
+        purge_tags: no
+        tags:
+            Tag3: tag3
+        wait: yes
+      register: update_tags_nat_gateway
 
 
 
@@ -674,3 +685,4 @@ Authors
 - Allen Sanabria (@linuxdynasty)
 - Jon Hadfield (@jonhadfield)
 - Karen Cheng (@Etherdaemon)
+- Alina Buzachis (@alinabuzachis)

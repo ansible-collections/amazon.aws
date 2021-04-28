@@ -162,7 +162,7 @@ Parameters
                         <b>Default:</b><br/><div style="color: blue">[]</div>
                 </td>
                 <td>
-                        <div>A list of rules for outgoing traffic. Each rule must be specified as a list. Each rule may contain the rule number (integer 1-32766), protocol (one of [&#x27;tcp&#x27;, &#x27;udp&#x27;, &#x27;icmp&#x27;, &#x27;-1&#x27;, &#x27;all&#x27;]), the rule action (&#x27;allow&#x27; or &#x27;deny&#x27;) the CIDR of the IPv4 network range to allow or deny, the ICMP type (-1 means all types), the ICMP code (-1 means all codes), the last port in the range for TCP or UDP protocols, and the first port in the range for TCP or UDP protocols. See examples.</div>
+                        <div>A list of rules for outgoing traffic. Each rule must be specified as a list. Each rule may contain the rule number (integer 1-32766), protocol (one of [&#x27;tcp&#x27;, &#x27;udp&#x27;, &#x27;icmp&#x27;, &#x27;ipv6-icmp&#x27;, &#x27;-1&#x27;, &#x27;all&#x27;]), the rule action (&#x27;allow&#x27; or &#x27;deny&#x27;) the CIDR of the IPv4 or IPv6 network range to allow or deny, the ICMP type (-1 means all types), the ICMP code (-1 means all codes), the last port in the range for TCP or UDP protocols, and the first port in the range for TCP or UDP protocols. See examples.</div>
                 </td>
             </tr>
             <tr>
@@ -179,7 +179,7 @@ Parameters
                         <b>Default:</b><br/><div style="color: blue">[]</div>
                 </td>
                 <td>
-                        <div>List of rules for incoming traffic. Each rule must be specified as a list. Each rule may contain the rule number (integer 1-32766), protocol (one of [&#x27;tcp&#x27;, &#x27;udp&#x27;, &#x27;icmp&#x27;, &#x27;-1&#x27;, &#x27;all&#x27;]), the rule action (&#x27;allow&#x27; or &#x27;deny&#x27;) the CIDR of the IPv4 network range to allow or deny, the ICMP type (-1 means all types), the ICMP code (-1 means all codes), the last port in the range for TCP or UDP protocols, and the first port in the range for TCP or UDP protocols. See examples.</div>
+                        <div>List of rules for incoming traffic. Each rule must be specified as a list. Each rule may contain the rule number (integer 1-32766), protocol (one of [&#x27;tcp&#x27;, &#x27;udp&#x27;, &#x27;icmp&#x27;, &#x27;ipv6-icmp&#x27;, &#x27;-1&#x27;, &#x27;all&#x27;]), the rule action (&#x27;allow&#x27; or &#x27;deny&#x27;) the CIDR of the IPv4 or IPv6 network range to allow or deny, the ICMP type (-1 means all types), the ICMP code (-1 means all codes), the last port in the range for TCP or UDP protocols, and the first port in the range for TCP or UDP protocols. See examples.</div>
                 </td>
             </tr>
             <tr>
@@ -390,9 +390,12 @@ Examples
             #                                             port from, port to
             - [100, 'tcp', 'allow', '0.0.0.0/0', null, null, 22, 22]
             - [200, 'tcp', 'allow', '0.0.0.0/0', null, null, 80, 80]
+            - [205, 'tcp', 'allow', '::/0', null, null, 80, 80]
             - [300, 'icmp', 'allow', '0.0.0.0/0', 0, 8]
+            - [305, 'ipv6-icmp', 'allow', '::/0', 0, 8]
         egress:
             - [100, 'all', 'allow', '0.0.0.0/0', null, null, null, null]
+            - [105, 'all', 'allow', '::/0', null, null, null, null]
         state: 'present'
 
     - name: "Remove the ingress and egress rules - defaults to deny all"

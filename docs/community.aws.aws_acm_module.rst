@@ -479,7 +479,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                       <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td>when <em>state=present</em></td>
+                <td>when <em>state=present</em> and not in check mode</td>
                 <td>
                             <div>The ARN of the certificate in ACM</div>
                     <br/>

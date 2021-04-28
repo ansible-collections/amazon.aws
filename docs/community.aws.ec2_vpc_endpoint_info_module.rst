@@ -17,7 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Gets various details related to AWS VPC Endpoints.
+- Gets various details related to AWS VPC endpoints.
 - This module was called ``ec2_vpc_endpoint_facts`` before Ansible 2.9. The usage did not change.
 
 
@@ -187,7 +187,6 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
@@ -197,7 +196,11 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Specifies the query action to take. Services returns the supported AWS services that can be specified when creating an endpoint.</div>
+                        <div>Defaults to <code>endpoints</code>.</div>
+                        <div>Specifies the query action to take.</div>
+                        <div><em>query=endpoints</em> returns information about AWS VPC endpoints.</div>
+                        <div>Retrieving information about services using <em>query=services</em> has been deprecated in favour of the <span class='module'>ec2_vpc_endpoint_service_info</span> module.</div>
+                        <div>The <em>query</em> option has been deprecated and will be removed after 2022-12-01.</div>
                 </td>
             </tr>
             <tr>
@@ -266,7 +269,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Get details of specific endpoint IDs</div>
+                        <div>The IDs of specific endpoints to retrieve the details of.</div>
                 </td>
             </tr>
     </table>

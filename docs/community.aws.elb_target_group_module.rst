@@ -440,6 +440,38 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>stickiness_app_cookie_duration</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.5.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The time period, in seconds, during which requests from a client should be routed to the same target. After this time period expires, the application-generated cookie is considered stale. The range is 1 second to 1 week (604800 seconds).</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>stickiness_app_cookie_name</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.5.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The name of the application cookie. Required if <em>stickiness_type=app_cookie</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>stickiness_enabled</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -468,37 +500,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The time period, in seconds, during which requests from a client should be routed to the same target. After this time period expires, the load balancer-generated cookie is considered stale. The range is 1 second to 1 week (604800 seconds). Assumes <code>stickiness_type</code> is set to <code>lb_cookie</code>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>stickiness_app_cookie_duration</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">integer</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The time period, in seconds, during which requests from a client should be routed to the same target. After this time period expires, the load application-generated cookie is considered stale. The range is 1 second to 1 week (604800 seconds). Assumes <code>stickiness_type</code> is <code>app_cookie</code>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>stickiness_app_cookie_name</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The name of the application session cookie.  Assumes <code>stickiness_type</code> is set to <code>app_cookie</code>.</div>
+                        <div>The time period, in seconds, during which requests from a client should be routed to the same target. After this time period expires, the load balancer-generated cookie is considered stale. The range is 1 second to 1 week (604800 seconds).</div>
                 </td>
             </tr>
             <tr>
@@ -511,16 +513,11 @@ Parameters
                     </div>
                 </td>
                 <td>
-
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>lb_cookie</b>&nbsp;&larr;</div></li>
-                                    <li>app_cookie</li>
-                                    <li>source_ip</li>
-                        </ul>
                 </td>
                 <td>
                         <div>The type of sticky sessions.</div>
-                        <div>If not set AWS will default to <code>lb_cookie</code> for Application Load Balancers or <code>source_ip</code> for Network Load Balancers. For Application Load Balancers it is also possible to specify <code>app_cookie</code> for application managed cookies. Assumes <code>stickiness_enabled</code> is set to <code>yes</code>.</div>
+                        <div>Valid values are <code>lb_cookie</code>, <code>app_cookie</code> or <code>source_ip</code>.</div>
+                        <div>If not set AWS will default to <code>lb_cookie</code> for Application Load Balancers or <code>source_ip</code> for Network Load Balancers.</div>
                 </td>
             </tr>
             <tr>

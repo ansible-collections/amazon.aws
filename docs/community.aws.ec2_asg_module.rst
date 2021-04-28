@@ -39,12 +39,12 @@ Parameters
 
     <table  border=0 cellpadding=0 class="documentation-table">
         <tr>
-            <th colspan="2">Parameter</th>
+            <th colspan="3">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
             <th width="100%">Comments</th>
         </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>availability_zones</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -61,7 +61,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>aws_access_key</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -79,7 +79,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>aws_ca_bundle</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -96,7 +96,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>aws_config</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -113,7 +113,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>aws_secret_key</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -131,7 +131,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>debug_botocore_endpoint_logs</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -150,7 +150,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>default_cooldown</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -166,7 +166,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>desired_capacity</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -181,7 +181,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>ec2_url</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -197,7 +197,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>health_check_period</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -213,7 +213,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>health_check_type</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -232,7 +232,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>launch_config_name</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -248,7 +248,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>launch_template</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -264,7 +264,7 @@ Parameters
             </tr>
                                 <tr>
                     <td class="elbow-placeholder"></td>
-                <td colspan="1">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>launch_template_id</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -280,7 +280,7 @@ Parameters
             </tr>
             <tr>
                     <td class="elbow-placeholder"></td>
-                <td colspan="1">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>launch_template_name</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -296,7 +296,7 @@ Parameters
             </tr>
             <tr>
                     <td class="elbow-placeholder"></td>
-                <td colspan="1">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>version</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -313,7 +313,7 @@ Parameters
             </tr>
 
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>lc_check</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -332,7 +332,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>load_balancers</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -348,7 +348,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>lt_check</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -367,7 +367,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>max_instance_lifetime</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -384,7 +384,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>max_size</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -399,7 +399,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>metrics_collection</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -418,7 +418,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>metrics_granularity</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -434,7 +434,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>metrics_list</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -451,7 +451,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>min_size</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -466,7 +466,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>mixed_instances_policy</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -484,7 +484,7 @@ Parameters
             </tr>
                                 <tr>
                     <td class="elbow-placeholder"></td>
-                <td colspan="1">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>instance_types</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -499,9 +499,143 @@ Parameters
                         <div>A list of instance_types.</div>
                 </td>
             </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>instances_distribution</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.5.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Specifies the distribution of On-Demand Instances and Spot Instances, the maximum price to pay for Spot Instances, and how the Auto Scaling group allocates instance types to fulfill On-Demand and Spot capacity.</div>
+                        <div>See also <a href='https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstancesDistribution.html'>https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstancesDistribution.html</a></div>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder"></td>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>on_demand_allocation_strategy</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.5.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Indicates how to allocate instance types to fulfill On-Demand capacity.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>on_demand_base_capacity</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.5.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The minimum amount of the Auto Scaling group&#x27;s capacity that must be fulfilled by On-Demand Instances. This base portion is provisioned first as your group scales.</div>
+                        <div>Default if not set is 0. If you leave it set to 0, On-Demand Instances are launched as a percentage of the Auto Scaling group&#x27;s desired capacity, per the OnDemandPercentageAboveBaseCapacity setting.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>on_demand_percentage_above_base_capacity</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.5.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Controls the percentages of On-Demand Instances and Spot Instances for your additional capacity beyond OnDemandBaseCapacity.</div>
+                        <div>Default if not set is 100. If you leave it set to 100, the percentages are 100% for On-Demand Instances and 0% for Spot Instances.</div>
+                        <div>Valid range: 0 to 100</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>spot_allocation_strategy</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.5.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Indicates how to allocate instances across Spot Instance pools.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>spot_instance_pools</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.5.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The number of Spot Instance pools across which to allocate your Spot Instances. The Spot pools are determined from the different instance types in the Overrides array of LaunchTemplate. Default if not set is 2.</div>
+                        <div>Used only when the Spot allocation strategy is lowest-price.</div>
+                        <div>Valid Range: Minimum value of 1. Maximum value of 20.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>spot_max_price</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.5.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The maximum price per unit hour that you are willing to pay for a Spot Instance.</div>
+                        <div>If you leave the value of this parameter blank (which is the default), the maximum Spot price is set at the On-Demand price.</div>
+                        <div>To remove a value that you previously set, include the parameter but leave the value blank.</div>
+                </td>
+            </tr>
+
 
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>name</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -517,7 +651,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>notification_topic</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -532,7 +666,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>notification_types</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -549,7 +683,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>placement_group</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -564,7 +698,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>profile</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -582,7 +716,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>region</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -598,7 +732,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>replace_all_instances</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -617,7 +751,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>replace_batch_size</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -633,7 +767,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>replace_instances</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -649,7 +783,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>security_token</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -667,7 +801,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>state</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -686,7 +820,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>suspend_processes</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -707,7 +841,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>tags</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -725,7 +859,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>target_group_arns</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -741,7 +875,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>termination_policies</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -762,7 +896,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>validate_certs</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -781,7 +915,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>vpc_zone_identifier</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -797,7 +931,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>wait_for_instances</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -816,7 +950,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>wait_timeout</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -947,6 +1081,9 @@ Examples
                 - t3a.large
                 - t3.large
                 - t2.large
+            instances_distribution:
+                on_demand_percentage_above_base_capacity: 0
+                spot_allocation_strategy: capacity-optimized
         min_size: 1
         max_size: 10
         desired_capacity: 5
@@ -1278,7 +1415,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>mixed_instance_policy</b>
+                    <b>mixed_instances_policy</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">list</span>
@@ -1286,10 +1423,27 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>success</td>
                 <td>
-                            <div>Returns the list of instance types if a mixed instance policy is set.</div>
+                            <div>Returns the list of instance types if a mixed instances policy is set.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[&#x27;t3.micro&#x27;, &#x27;t3a.micro&#x27;]</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>mixed_instances_policy_full</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>Returns the full dictionary representation of the mixed instances policy if a mixed instances policy is set.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;instances_distribution&#x27;: {&#x27;on_demand_allocation_strategy&#x27;: &#x27;prioritized&#x27;, &#x27;on_demand_base_capacity&#x27;: 0, &#x27;on_demand_percentage_above_base_capacity&#x27;: 0, &#x27;spot_allocation_strategy&#x27;: &#x27;capacity-optimized&#x27;}, &#x27;launch_template&#x27;: {&#x27;launch_template_specification&#x27;: {&#x27;launch_template_id&#x27;: &#x27;lt-53c2425cffa544c23&#x27;, &#x27;launch_template_name&#x27;: &#x27;random-LaunchTemplate&#x27;, &#x27;version&#x27;: &#x27;2&#x27;}, &#x27;overrides&#x27;: [{&#x27;instance_type&#x27;: &#x27;m5.xlarge&#x27;}, {&#x27;instance_type&#x27;: &#x27;m5a.xlarge&#x27;}]}}</div>
                 </td>
             </tr>
             <tr>

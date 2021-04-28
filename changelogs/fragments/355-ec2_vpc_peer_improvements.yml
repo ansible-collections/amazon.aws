@@ -1,2 +1,0 @@
-minor_changes:
-- ec2_vpc_peer - More return info added, also simplified module code a bit and extended tests (https://github.com/ansible-collections/community.aws/pull/355)

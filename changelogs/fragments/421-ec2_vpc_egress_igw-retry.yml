@@ -1,2 +1,0 @@
-minor_changes:
-- ec2_vpc_egress_igw - Add retries on common AWS failures (https://github.com/ansible-collections/community.aws/pull/421).

@@ -44,6 +44,23 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>availability_zone</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.5.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Availability Zone used by the connection</div>
+                        <div>Required when <em>connection_type=NETWORK</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>aws_access_key</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -153,12 +170,16 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>CUSTOM</li>
                                     <li><div style="color: blue"><b>JDBC</b>&nbsp;&larr;</div></li>
-                                    <li>SFTP</li>
+                                    <li>KAFKA</li>
+                                    <li>MARKETPLACE</li>
+                                    <li>MONGODB</li>
+                                    <li>NETWORK</li>
                         </ul>
                 </td>
                 <td>
-                        <div>The type of the connection. Currently, only JDBC is supported; SFTP is not supported.</div>
+                        <div>The type of the connection. Currently, SFTP is not supported.</div>
                 </td>
             </tr>
             <tr>
@@ -291,6 +312,7 @@ Parameters
                 </td>
                 <td>
                         <div>A list of security groups to be used by the connection. Use either security group name or ID.</div>
+                        <div>Required when <em>connection_type=NETWORK</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -344,6 +366,7 @@ Parameters
                 </td>
                 <td>
                         <div>The subnet ID used by the connection.</div>
+                        <div>Required when <em>connection_type=NETWORK</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -393,6 +416,19 @@ Examples
           JDBC_CONNECTION_URL: jdbc:mysql://mydb:3306/databasename
           USERNAME: my-username
           PASSWORD: my-password
+        state: present
+
+    # Create an AWS Glue network connection
+    - community.aws.aws_glue_connection:
+        name: my-glue-network-connection
+        availability_zone: us-east-1a
+        connection_properties:
+          JDBC_ENFORCE_SSL: "false"
+        connection_type: NETWORK
+        description: Test connection
+        security_groups:
+          - sg-glue
+        subnet_id: subnet-123abc
         state: present
 
     # Delete an AWS Glue connection

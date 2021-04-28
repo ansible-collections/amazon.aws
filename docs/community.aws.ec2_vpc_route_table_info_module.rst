@@ -273,6 +273,484 @@ Examples
 
 
 
+Return Values
+-------------
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
+
+.. raw:: html
+
+    <table border=0 cellpadding=0 class="documentation-table">
+        <tr>
+            <th colspan="4">Key</th>
+            <th>Returned</th>
+            <th width="100%">Description</th>
+        </tr>
+            <tr>
+                <td colspan="4">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>route_tables</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">complex</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>A list of dictionarys describing route tables</div>
+                            <div>See also <a href='https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.describe_route_tables'>https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.describe_route_tables</a></div>
+                    <br/>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>associations</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">complex</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>List of subnets associated with the route table</div>
+                    <br/>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>association_state</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">complex</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>The state of the association</div>
+                    <br/>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>state</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>The state of the association</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">associated</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>state_message</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>when available</td>
+                <td>
+                            <div>Additional information about the state of the association</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">Creating association</div>
+                </td>
+            </tr>
+
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>ID of association between route table and subnet</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">rtbassoc-ab47cfc3</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>main</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>Whether this is the main route table</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>route_table_association_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>ID of association between route table and subnet</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">rtbassoc-ab47cfc3</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>route_table_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>ID of the route table</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">rtb-bf779ed7</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>subnet_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>ID of the subnet</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">subnet-82055af9</div>
+                </td>
+            </tr>
+
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>ID of the route table (same as route_table_id for backwards compatibility)</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">rtb-bf779ed7</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>owner_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>ID of the account which owns the route table</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">012345678912</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>propagating_vgws</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>List of Virtual Private Gateways propagating routes</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>route_table_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>ID of the route table</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">rtb-bf779ed7</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>routes</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">complex</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>List of routes in the route table</div>
+                    <br/>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>destination_cidr_block</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>CIDR block of destination</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">10.228.228.0/22</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>gateway_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>when gateway is local or internet gateway</td>
+                <td>
+                            <div>ID of the gateway</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">local</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>instance_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>ID of a NAT instance.</div>
+                            <div>Empty unless the route is via an EC2 instance</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">i-abcd123456789</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>instance_owner_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>AWS account owning the NAT instance</div>
+                            <div>Empty unless the route is via an EC2 instance</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">123456789012</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>nat_gateway_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>when the route is via a NAT gateway</td>
+                <td>
+                            <div>ID of the NAT gateway</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">local</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>network_interface_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>The ID of the network interface</div>
+                            <div>Empty unless the route is via an EC2 instance</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">123456789012</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>origin</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>mechanism through which the route is in the table</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">CreateRouteTable</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>state</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>state of the route</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">active</div>
+                </td>
+            </tr>
+
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>tags</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>Tags applied to the route table</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;Name&#x27;: &#x27;Public route table&#x27;, &#x27;Public&#x27;: &#x27;true&#x27;}</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>vpc_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>ID for the VPC in which the route lives</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">vpc-6e2d2407</div>
+                </td>
+            </tr>
+
+    </table>
+    <br/><br/>
+
 
 Status
 ------
@@ -282,3 +760,4 @@ Authors
 ~~~~~~~
 
 - Rob White (@wimnat)
+- Mark Chappell (@tremble)

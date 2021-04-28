@@ -5,7 +5,7 @@
 community.aws.s3_lifecycle
 **************************
 
-**Manage s3 bucket lifecycle rules in AWS**
+**Manage S3 bucket lifecycle rules in AWS**
 
 
 Version added: 1.0.0
@@ -17,7 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Manage s3 bucket lifecycle rules in AWS
+- Manage S3 bucket lifecycle rules in AWS.
 
 
 
@@ -157,7 +157,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Indicates the lifetime of the objects that are subject to the rule by the date they will expire. The value must be ISO-8601 format, the time must be midnight and a GMT timezone must be specified.</div>
+                        <div>Indicates the lifetime of the objects that are subject to the rule by the date they will expire.</div>
+                        <div>The value must be ISO-8601 format, the time must be midnight and a GMT timezone must be specified.</div>
                 </td>
             </tr>
             <tr>
@@ -172,7 +173,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Indicates the lifetime, in days, of the objects that are subject to the rule. The value must be a non-zero positive integer.</div>
+                        <div>Indicates the lifetime, in days, of the objects that are subject to the rule.</div>
+                        <div>The value must be a non-zero positive integer.</div>
                 </td>
             </tr>
             <tr>
@@ -188,7 +190,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Name of the s3 bucket</div>
+                        <div>Name of the S3 bucket.</div>
                 </td>
             </tr>
             <tr>
@@ -203,7 +205,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Delete noncurrent versions this many days after they become noncurrent</div>
+                        <div>The number of days after which non-current versions should be deleted.</div>
                 </td>
             </tr>
             <tr>
@@ -225,7 +227,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Transition noncurrent versions to this storage class</div>
+                        <div>The storage class to which non-current versions are transitioned.</div>
                 </td>
             </tr>
             <tr>
@@ -240,7 +242,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Transition noncurrent versions this many days after they become noncurrent</div>
+                        <div>The number of days after which non-current versions will be transitioned to the storage class specified in <em>noncurrent_version_storage_class</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -256,9 +258,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A list of transition behaviors to be applied to noncurrent versions for the rule. Each storage class may be used only once. Each transition behavior contains these elements
-      <em>transition_days</em>
-      <em>storage_class</em></div>
+                        <div>A list of transition behaviors to be applied to noncurrent versions for the rule.</div>
+                        <div>Each storage class may be used only once. Each transition behavior contains these elements <em>transition_days</em> <em>storage_class</em></div>
                 </td>
             </tr>
             <tr>
@@ -273,7 +274,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Prefix identifying one or more objects to which the rule applies.  If no prefix is specified, the rule will apply to the whole bucket.</div>
+                        <div>Prefix identifying one or more objects to which the rule applies.</div>
+                        <div>If no prefix is specified, the rule will apply to the whole bucket.</div>
                 </td>
             </tr>
             <tr>
@@ -310,7 +312,8 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>&quot;Whether to replace all the current transition(s) with the new transition(s). When false, the provided transition(s) will be added, replacing transitions with the same storage_class. When true, existing transitions will be removed and replaced with the new transition(s)</div>
+                        <div>Whether to replace all the current transition(s) with the new transition(s).</div>
+                        <div>When <code>false</code>, the provided transition(s) will be added, replacing transitions with the same storage_class. When true, existing transitions will be removed and replaced with the new transition(s)</div>
                 </td>
             </tr>
             <tr>
@@ -360,7 +363,9 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Unique identifier for the rule. The value cannot be longer than 255 characters. A unique value for the rule will be generated if no value is provided.</div>
+                        <div>Unique identifier for the rule.</div>
+                        <div>The value cannot be longer than 255 characters.</div>
+                        <div>A unique value for the rule will be generated if no value is provided.</div>
                 </td>
             </tr>
             <tr>
@@ -397,7 +402,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Create or remove the lifecycle rule</div>
+                        <div>Create or remove the lifecycle rule.</div>
                 </td>
             </tr>
             <tr>
@@ -416,7 +421,8 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>If &#x27;enabled&#x27;, the rule is currently being applied. If &#x27;disabled&#x27;, the rule is not currently being applied.</div>
+                        <div>If <code>enabled</code>, the rule is currently being applied.</div>
+                        <div>If <code>disabled</code>, the rule is not currently being applied.</div>
                 </td>
             </tr>
             <tr>
@@ -439,7 +445,6 @@ Parameters
                 </td>
                 <td>
                         <div>The storage class to transition to.</div>
-                        <div>The &#x27;standard_ia&#x27; class is only being available from Ansible version 2.2.</div>
                 </td>
             </tr>
             <tr>
@@ -454,7 +459,9 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Indicates the lifetime of the objects that are subject to the rule by the date they will transition to a different storage class. The value must be ISO-8601 format, the time must be midnight and a GMT timezone must be specified. If transition_days is not specified, this parameter is required.&quot;</div>
+                        <div>Indicates the lifetime of the objects that are subject to the rule by the date they will transition to a different storage class.</div>
+                        <div>The value must be ISO-8601 format, the time must be midnight and a GMT timezone must be specified.</div>
+                        <div>If (transition_days) is not specified, this parameter is required.</div>
                 </td>
             </tr>
             <tr>
@@ -469,7 +476,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Indicates when, in days, an object transitions to a different storage class. If transition_date is not specified, this parameter is required.</div>
+                        <div>Indicates when, in days, an object transitions to a different storage class.</div>
+                        <div>If <em>transition_date</em> is not specified, this parameter is required.</div>
                 </td>
             </tr>
             <tr>
@@ -485,7 +493,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A list of transition behaviors to be applied to the rule. Each storage class may be used only once. Each transition behavior may contain these elements <em>transition_days</em> <em>transition_date</em> <em>storage_class</em></div>
+                        <div>A list of transition behaviors to be applied to the rule.</div>
+                        <div>Each storage class may be used only once. Each transition behavior may contain these elements <em>transition_days</em> <em>transition_date</em> <em>storage_class</em></div>
                 </td>
             </tr>
             <tr>
@@ -507,6 +516,26 @@ Parameters
                         <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                 </td>
             </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>wait</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.5.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Wait for the configuration to complete before returning.</div>
+                </td>
+            </tr>
     </table>
     <br/>
 
@@ -515,8 +544,8 @@ Notes
 -----
 
 .. note::
-   - If specifying expiration time as days then transition time must also be specified in days
-   - If specifying expiration time as a date then transition time must also be specified as a date
+   - If specifying expiration time as days then transition time must also be specified in days.
+   - If specifying expiration time as a date then transition time must also be specified as a date.
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
    - Ansible uses the boto configuration file (typically ~/.boto) if no credentials are provided. See https://boto.readthedocs.io/en/latest/boto_config_tut.html
    - ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be configured in the boto config file

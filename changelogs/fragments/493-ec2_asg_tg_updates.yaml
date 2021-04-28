@@ -1,2 +1,0 @@
-bugfixes:
-  - ec2_asg - fix target group update logic (https://github.com/ansible-collections/community.aws/pull/493).

@@ -1,14 +1,14 @@
-.. _community.aws.elasticache_module:
+.. _community.aws.wafv2_resources_module:
 
 
-*************************
-community.aws.elasticache
-*************************
+*****************************
+community.aws.wafv2_resources
+*****************************
 
-**Manage cache clusters in Amazon ElastiCache**
+**wafv2_web_acl**
 
 
-Version added: 1.0.0
+Version added: 1.5.0
 
 .. contents::
    :local:
@@ -17,8 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Manage cache clusters in Amazon ElastiCache.
-- Returns information about the specified cache cluster.
+- Apply or remove wafv2 to other aws resources.
 
 
 
@@ -28,6 +27,7 @@ The below requirements are needed on the host that executes this module.
 
 - boto
 - boto3
+- botocore
 - python >= 2.6
 
 
@@ -42,6 +42,22 @@ Parameters
             <th>Choices/<font color="blue">Defaults</font></th>
             <th width="100%">Comments</th>
         </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>arn</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>AWS resources (ALB, API Gateway or AppSync GraphQL API) ARN</div>
+                </td>
+            </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
@@ -115,85 +131,6 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>cache_engine_version</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The version number of the cache engine.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>cache_parameter_group</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The name of the cache parameter group to associate with this cache cluster. If this argument is omitted, the default cache parameter group for the specified engine will be used.</div>
-                        <div style="font-size: small; color: darkgreen"><br/>aliases: parameter_group</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>cache_port</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">integer</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The port number on which each of the cache nodes will accept connections.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>cache_security_groups</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>A list of cache security group names to associate with this cache cluster.</div>
-                        <div>Don&#x27;t use if your Cache is inside a VPC. In that case use <em>security_group_ids</em> instead!</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>cache_subnet_group</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The subnet group name to associate with. Only use if inside a VPC.</div>
-                        <div>Required if inside a VPC.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>debug_botocore_endpoint_logs</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -229,87 +166,16 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>engine</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">"memcached"</div>
-                </td>
-                <td>
-                        <div>Name of the cache engine to be used.</div>
-                        <div>Supported values are <code>redis</code> and <code>memcached</code>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>hard_modify</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
-                                    <li>yes</li>
-                        </ul>
-                </td>
-                <td>
-                        <div>Whether to destroy and recreate an existing cache cluster if necessary in order to modify its state.</div>
-                        <div>Defaults to <code>false</code>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>name</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
                 </td>
                 <td>
-                        <div>The cache cluster identifier.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>node_type</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">"cache.t2.small"</div>
-                </td>
-                <td>
-                        <div>The compute and memory capacity of the nodes in the cache cluster.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>num_nodes</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">integer</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">1</div>
-                </td>
-                <td>
-                        <div>The initial number of cache nodes that the cache cluster will have.</div>
-                        <div>Required when <em>state=present</em>.</div>
+                        <div>The name of the web acl.</div>
                 </td>
             </tr>
             <tr>
@@ -349,17 +215,20 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>security_group_ids</b>
+                    <b>scope</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>
+                        <span style="color: purple">string</span>
                     </div>
                 </td>
                 <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>CLOUDFRONT</li>
+                                    <li>REGIONAL</li>
+                        </ul>
                 </td>
                 <td>
-                        <div>A list of VPC security group IDs to associate with this cache cluster. Only use if inside a VPC.</div>
+                        <div>Scope of waf</div>
                 </td>
             </tr>
             <tr>
@@ -394,12 +263,10 @@ Parameters
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
                                     <li>present</li>
                                     <li>absent</li>
-                                    <li>rebooted</li>
                         </ul>
                 </td>
                 <td>
-                        <div><code>absent</code> or <code>present</code> are idempotent actions that will create or destroy a cache cluster as needed.</div>
-                        <div><code>rebooted</code> will reboot the cluster, resulting in a momentary outage.</div>
+                        <div>Whether the rule is present or absent.</div>
                 </td>
             </tr>
             <tr>
@@ -421,40 +288,6 @@ Parameters
                         <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
                 </td>
             </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>wait</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
-                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
-                        </ul>
-                </td>
-                <td>
-                        <div>Wait for cache cluster result before returning.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>zone</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The EC2 Availability Zone in which the cache cluster will be created.</div>
-                </td>
-            </tr>
     </table>
     <br/>
 
@@ -474,34 +307,46 @@ Examples
 
 .. code-block:: yaml
 
-    # Note: None of these examples set aws_access_key, aws_secret_key, or region.
-    # It is assumed that their matching environment variables are set.
-
-    - name: Basic example
-      community.aws.elasticache:
-        name: "test-please-delete"
+    - name: add test alb to waf string03
+      community.aws.wafv2_resources:
+        name: string03
+        scope: REGIONAL
         state: present
-        engine: memcached
-        cache_engine_version: 1.4.14
-        node_type: cache.m1.small
-        num_nodes: 1
-        cache_port: 11211
-        cache_security_groups:
-          - default
-        zone: us-east-1d
+        arn: "arn:aws:elasticloadbalancing:eu-central-1:111111111:loadbalancer/app/test03/dd83ea041ba6f933"
 
 
-    - name: Ensure cache cluster is gone
-      community.aws.elasticache:
-        name: "test-please-delete"
-        state: absent
 
-    - name: Reboot cache cluster
-      community.aws.elasticache:
-        name: "test-please-delete"
-        state: rebooted
+Return Values
+-------------
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
+.. raw:: html
 
+    <table border=0 cellpadding=0 class="documentation-table">
+        <tr>
+            <th colspan="1">Key</th>
+            <th>Returned</th>
+            <th width="100%">Description</th>
+        </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>resource_arns</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                    </div>
+                </td>
+                <td>Always, as long as the wafv2 exists</td>
+                <td>
+                            <div>Current resources where the wafv2 is applied on</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[&#x27;arn:aws:elasticloadbalancing:eu-central-1:111111111:loadbalancer/app/test03/dd83ea041ba6f933&#x27;]</div>
+                </td>
+            </tr>
+    </table>
+    <br/><br/>
 
 
 Status
@@ -511,4 +356,4 @@ Status
 Authors
 ~~~~~~~
 
-- Jim Dalton (@jsdalton)
+- Markus Bergholz (@markuman)

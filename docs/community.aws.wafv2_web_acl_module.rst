@@ -1,14 +1,14 @@
-.. _community.aws.ec2_vpc_igw_info_module:
+.. _community.aws.wafv2_web_acl_module:
 
 
-******************************
-community.aws.ec2_vpc_igw_info
-******************************
+***************************
+community.aws.wafv2_web_acl
+***************************
 
-**Gather information about internet gateways in AWS**
+**wafv2_web_acl**
 
 
-Version added: 1.0.0
+Version added: 1.5.0
 
 .. contents::
    :local:
@@ -17,8 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Gather information about internet gateways in AWS.
-- This module was called ``ec2_vpc_igw_facts`` before Ansible 2.9. The usage did not change.
+- Create, modify or delete a wafv2 web acl.
 
 
 
@@ -28,6 +27,7 @@ The below requirements are needed on the host that executes this module.
 
 - boto
 - boto3
+- botocore
 - python >= 2.6
 
 
@@ -38,12 +38,12 @@ Parameters
 
     <table  border=0 cellpadding=0 class="documentation-table">
         <tr>
-            <th colspan="1">Parameter</th>
+            <th colspan="2">Parameter</th>
             <th>Choices/<font color="blue">Defaults</font></th>
             <th width="100%">Comments</th>
         </tr>
             <tr>
-                <td colspan="1">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>aws_access_key</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -61,7 +61,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="1">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>aws_ca_bundle</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -78,7 +78,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="1">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>aws_config</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -95,7 +95,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="1">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>aws_secret_key</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -113,28 +113,26 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="1">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>convert_tags</b>
+                    <b>cloudwatch_metrics</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">boolean</span>
                     </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0</div>
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
                                     <li>no</li>
-                                    <li>yes</li>
+                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                         </ul>
                 </td>
                 <td>
-                        <div>Convert tags from boto3 format (list of dictionaries) to the standard dictionary format.</div>
-                        <div>This currently defaults to <code>False</code>.  The default will be changed to <code>True</code> after 2022-06-22.</div>
+                        <div>Enable cloudwatch metric for wafv2 web acl.</div>
                 </td>
             </tr>
             <tr>
-                <td colspan="1">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>debug_botocore_endpoint_logs</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -153,7 +151,41 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="1">
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>default_action</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>Block</li>
+                                    <li>Allow</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Default action of the wafv2 web acl.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>description</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Description of wafv2 web acl.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>ec2_url</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -169,38 +201,39 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="1">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>filters</b>
+                    <b>metric_name</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
+                        <span style="color: purple">string</span>
                     </div>
                 </td>
                 <td>
                 </td>
                 <td>
-                        <div>A dict of filters to apply. Each dict item consists of a filter key and a filter value. See <a href='https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInternetGateways.html'>https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInternetGateways.html</a> for possible filters.</div>
+                        <div>Name of cloudwatch metrics.</div>
+                        <div>If not given and cloudwatch_metrics is enabled, the name of the web acl itself will be taken.</div>
                 </td>
             </tr>
             <tr>
-                <td colspan="1">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>internet_gateway_ids</b>
+                    <b>name</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>
+                        <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
                 </td>
                 <td>
-                        <div>Get details of specific Internet Gateway ID. Provide this value as a list.</div>
+                        <div>The name of the web acl.</div>
                 </td>
             </tr>
             <tr>
-                <td colspan="1">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>profile</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -218,7 +251,26 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="1">
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>purge_rules</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
+                        </ul>
+                </td>
+                <td>
+                        <div>When set to <code>no</code>, keep the existing load balancer rules in place. Will modify and add, but will not delete.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>region</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -234,7 +286,143 @@ Parameters
                 </td>
             </tr>
             <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>rules</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=dictionary</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The Rule statements used to identify the web requests that you want to allow, block, or count.</div>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder"></td>
                 <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>action</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Wether a rule is blocked, allowed or counted.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>name</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The name of the wafv2 rule</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>priority</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The rule priority</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>statement</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Rule configuration.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>visibility_config</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Visibility of single wafv2 rule.</div>
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>sampled_requests</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Whether to store a sample of the web requests, true or false.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>scope</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>CLOUDFRONT</li>
+                                    <li>REGIONAL</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Scope of wafv2 web acl.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>security_token</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -252,7 +440,42 @@ Parameters
                 </td>
             </tr>
             <tr>
-                <td colspan="1">
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>state</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>present</li>
+                                    <li>absent</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Whether the rule is present or absent.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>tags</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>tags for wafv2 web acl.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>validate_certs</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
@@ -289,28 +512,48 @@ Examples
 
 .. code-block:: yaml
 
-    # # Note: These examples do not set authentication details, see the AWS Guide for details.
-
-    - name: Gather information about all Internet Gateways for an account or profile
-      community.aws.ec2_vpc_igw_info:
-        region: ap-southeast-2
-        profile: production
-      register: igw_info
-
-    - name: Gather information about a filtered list of Internet Gateways
-      community.aws.ec2_vpc_igw_info:
-        region: ap-southeast-2
-        profile: production
-        filters:
-            "tag:Name": "igw-123"
-      register: igw_info
-
-    - name: Gather information about a specific internet gateway by InternetGatewayId
-      community.aws.ec2_vpc_igw_info:
-        region: ap-southeast-2
-        profile: production
-        internet_gateway_ids: igw-c1231234
-      register: igw_info
+    - name: create web acl
+      community.aws.wafv2_web_acl:
+        name: test05
+        state: present
+        description: hallo eins
+        scope: REGIONAL
+        default_action: Allow
+        sampled_requests: no
+        cloudwatch_metrics: yes
+        metric_name: blub
+        rules:
+          - name: zwei
+            priority: 2
+            action:
+              block: {}
+            visibility_config:
+              sampled_requests_enabled: yes
+              cloud_watch_metrics_enabled: yes
+              metric_name: ddos
+            statement:
+              xss_match_statement:
+                field_to_match:
+                  body: {}
+                text_transformations:
+                  - type: NONE
+                    priority: 0
+          - name: admin_protect
+            priority: 1
+            override_action:
+              none: {}
+            visibility_config:
+              sampled_requests_enabled: yes
+              cloud_watch_metrics_enabled: yes
+              metric_name: fsd
+            statement:
+              managed_rule_group_statement:
+                vendor_name: AWS
+                name: AWSManagedRulesAdminProtectionRuleSet
+        tags:
+          A: B
+          C: D
+      register: out
 
 
 
@@ -322,134 +565,112 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
 
     <table border=0 cellpadding=0 class="documentation-table">
         <tr>
-            <th colspan="3">Key</th>
+            <th colspan="1">Key</th>
             <th>Returned</th>
             <th width="100%">Description</th>
         </tr>
             <tr>
-                <td colspan="3">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>changed</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">boolean</span>
-                    </div>
-                </td>
-                <td>always</td>
-                <td>
-                            <div>True if listing the internet gateways succeeds.</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">false</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>internet_gateways</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">complex</span>
-                    </div>
-                </td>
-                <td>always</td>
-                <td>
-                            <div>The internet gateways for the account.</div>
-                    <br/>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>attachments</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">complex</span>
-                    </div>
-                </td>
-                <td><em>state=present</em></td>
-                <td>
-                            <div>Any VPCs attached to the internet gateway</div>
-                    <br/>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>state</b>
+                    <b>arn</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td><em>state=present</em></td>
+                <td>Always, as long as the web acl exists</td>
                 <td>
-                            <div>The current state of the attachment</div>
+                            <div>web acl arn</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">available</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">arn:aws:wafv2:eu-central-1:11111111:regional/webacl/test05/318c1ab9-fa74-4b3b-a974-f92e25106f61</div>
                 </td>
             </tr>
             <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>vpc_id</b>
+                    <b>capacity</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td>Always, as long as the web acl exists</td>
+                <td>
+                            <div>Current capacity of the web acl</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">140</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>description</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td><em>state=present</em></td>
+                <td>Always, as long as the web acl exists</td>
                 <td>
-                            <div>The ID of the VPC.</div>
+                            <div>Description of the web acl</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">vpc-02123b67</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">Some web acl description</div>
                 </td>
             </tr>
-
             <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="2">
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>internet_gateway_id</b>
+                    <b>name</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td><em>state=present</em></td>
+                <td>Always, as long as the web acl exists</td>
                 <td>
-                            <div>The ID of the internet gateway</div>
+                            <div>Web acl name</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">igw-2123634d</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">test02</div>
                 </td>
             </tr>
             <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="2">
+                <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>tags</b>
+                    <b>rules</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                    </div>
+                </td>
+                <td>Always, as long as the web acl exists</td>
+                <td>
+                            <div>Current rules of the web acl</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[{&#x27;name&#x27;: &#x27;admin_protect&#x27;, &#x27;override_action&#x27;: {&#x27;none&#x27;: {}}, &#x27;priority&#x27;: 1, &#x27;statement&#x27;: {&#x27;managed_rule_group_statement&#x27;: {&#x27;name&#x27;: &#x27;AWSManagedRulesAdminProtectionRuleSet&#x27;, &#x27;vendor_name&#x27;: &#x27;AWS&#x27;}}, &#x27;visibility_config&#x27;: {&#x27;cloud_watch_metrics_enabled&#x27;: True, &#x27;metric_name&#x27;: &#x27;admin_protect&#x27;, &#x27;sampled_requests_enabled&#x27;: True}}]</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>visibility_config</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">dictionary</span>
                     </div>
                 </td>
-                <td><em>state=present</em></td>
+                <td>Always, as long as the web acl exists</td>
                 <td>
-                            <div>Any tags assigned to the internet gateway</div>
+                            <div>Visibility config of the web acl</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;tags&#x27;: {&#x27;Ansible&#x27;: &#x27;Test&#x27;}}</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;cloud_watch_metrics_enabled&#x27;: True, &#x27;metric_name&#x27;: &#x27;blub&#x27;, &#x27;sampled_requests_enabled&#x27;: False}</div>
                 </td>
             </tr>
-
     </table>
     <br/><br/>
 
@@ -461,4 +682,4 @@ Status
 Authors
 ~~~~~~~
 
-- Nick Aslanidis (@naslanidis)
+- Markus Bergholz (@markuman)

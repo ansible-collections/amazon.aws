@@ -1,2 +1,0 @@
-minor_changes:
-- aws_ssm_parameter_store - added tier parameter option (https://github.com/ansible/ansible/issues/59738).

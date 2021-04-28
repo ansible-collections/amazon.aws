@@ -1,3 +1,0 @@
-minor_changes:
-  - aws_glue_connection - Added multple connection types (https://github.com/ansible-collections/community.aws/pull/503).
-  - aws_glue_connection - Added support for check mode (https://github.com/ansible-collections/community.aws/pull/503).

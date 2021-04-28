@@ -1,7 +1,7 @@
 integration_tests_dependencies:
-- amazon.aws >= 1.4.0
+- amazon.aws >= 1.5.0
 - ansible.windows
 - community.crypto
 - community.general
 unit_tests_dependencies:
-- amazon.aws >= 1.4.0
+- amazon.aws >= 1.5.0

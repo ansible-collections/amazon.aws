@@ -227,9 +227,31 @@ Parameters
                 </td>
                 <td>
                         <div>Network configuration of the service. Only applicable for task definitions created with <em>network_mode=awsvpc</em>.</div>
+                        <div><em>assign_public_ip</em> requires botocore &gt;= 1.8.4</div>
                 </td>
             </tr>
                                 <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>assign_public_ip</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.5.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Whether the task&#x27;s elastic network interface receives a public IP address.</div>
+                </td>
+            </tr>
+            <tr>
                     <td class="elbow-placeholder"></td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
@@ -501,6 +523,21 @@ Examples
             security_groups:
             - sg-aaaa1111
             - my_security_group
+      register: task_output
+
+    - name: RUN a task on Fargate with public ip assigned
+      community.aws.ecs_task:
+          operation: run
+          count: 2
+          cluster: console-sample-app-static-cluster
+          task_definition: console-sample-app-static-taskdef
+          task: "arn:aws:ecs:us-west-2:172139249013:task/3f8353d1-29a8-4689-bbf6-ad79937ffe8a"
+          started_by: ansible_user
+          launch_type: FARGATE
+          network_configuration:
+            assign_public_ip: yes
+            subnets:
+            - subnet-abcd1234
       register: task_output
 
     - name: Stop a task

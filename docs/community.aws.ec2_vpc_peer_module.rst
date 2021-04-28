@@ -330,6 +330,25 @@ Parameters
                         <div>VPC id of the requesting VPC.</div>
                 </td>
             </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>wait</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Wait for peering state changes to complete.</div>
+                </td>
+            </tr>
     </table>
     <br/>
 
@@ -507,14 +526,484 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
 
     <table border=0 cellpadding=0 class="documentation-table">
         <tr>
-            <th colspan="1">Key</th>
+            <th colspan="4">Key</th>
             <th>Returned</th>
             <th width="100%">Description</th>
         </tr>
             <tr>
+                <td colspan="4">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>peering_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>The id of the VPC peering connection created/deleted.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">pcx-034223d7c0aec3cde</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>vpc_peering_connection</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">complex</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The details of the VPC peering connection as returned by Boto3 (snake cased).</div>
+                    <br/>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>accepter_vpc_info</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">complex</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>Information about the VPC which accepted the connection.</div>
+                    <br/>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>cidr_block</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>when connection is in the accepted state.</td>
+                <td>
+                            <div>The primary CIDR for the VPC.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>cidr_block_set</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">complex</span>
+                    </div>
+                </td>
+                <td>when connection is in the accepted state.</td>
+                <td>
+                            <div>A list of all CIDRs for the VPC.</div>
+                    <br/>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>task</b>
+                    <b>cidr_block</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>A CIDR block used by the VPC.</div>
+                    <br/>
+                </td>
+            </tr>
+
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>owner_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The AWS account that owns the VPC.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>peering_options</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>when connection is in the accepted state.</td>
+                <td>
+                            <div>Additional peering configuration.</div>
+                    <br/>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>allow_dns_resolution_from_remote_vpc</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>Indicates whether a VPC can resolve public DNS hostnames to private IP addresses when queried from instances in a peer VPC.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>allow_egress_from_local_classic_link_to_remote_vpc</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>Indicates whether a local ClassicLink connection can communicate with the peer VPC over the VPC peering connection.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>allow_egress_from_local_vpc_to_remote_classic_link</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>Indicates whether a local VPC can communicate with a ClassicLink connection in the peer VPC over the VPC peering connection.</div>
+                    <br/>
+                </td>
+            </tr>
+
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>region</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The AWS region that the VPC is in.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>vpc_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The ID of the VPC</div>
+                    <br/>
+                </td>
+            </tr>
+
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>requester_vpc_info</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">complex</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>Information about the VPC which requested the connection.</div>
+                    <br/>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>cidr_block</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>when connection is not in the deleted state.</td>
+                <td>
+                            <div>The primary CIDR for the VPC.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>cidr_block_set</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">complex</span>
+                    </div>
+                </td>
+                <td>when connection is not in the deleted state.</td>
+                <td>
+                            <div>A list of all CIDRs for the VPC.</div>
+                    <br/>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>cidr_block</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>A CIDR block used by the VPC</div>
+                    <br/>
+                </td>
+            </tr>
+
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>owner_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The AWS account that owns the VPC.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>peering_options</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>when connection is not in the deleted state.</td>
+                <td>
+                            <div>Additional peering configuration.</div>
+                    <br/>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>allow_dns_resolution_from_remote_vpc</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>Indicates whether a VPC can resolve public DNS hostnames to private IP addresses when queried from instances in a peer VPC.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>allow_egress_from_local_classic_link_to_remote_vpc</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>Indicates whether a local ClassicLink connection can communicate with the peer VPC over the VPC peering connection.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>allow_egress_from_local_vpc_to_remote_classic_link</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>Indicates whether a local VPC can communicate with a ClassicLink connection in the peer VPC over the VPC peering connection.</div>
+                    <br/>
+                </td>
+            </tr>
+
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>region</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The AWS region that the VPC is in.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>vpc_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The ID of the VPC</div>
+                    <br/>
+                </td>
+            </tr>
+
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>status</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">complex</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>Details of the current status of the connection.</div>
+                    <br/>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>code</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>A short code describing the status of the connection.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>message</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>Additional information about the status of the connection.</div>
+                    <br/>
+                </td>
+            </tr>
+
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>tags</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">dictionary</span>
@@ -522,10 +1011,27 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>success</td>
                 <td>
-                            <div>The result of the create, accept, reject or delete action.</div>
+                            <div>Tags applied to the connection.</div>
                     <br/>
                 </td>
             </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>vpc_peering_connection_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The ID of the VPC peering connection.</div>
+                    <br/>
+                </td>
+            </tr>
+
     </table>
     <br/><br/>
 

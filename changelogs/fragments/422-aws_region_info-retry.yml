@@ -1,2 +1,0 @@
-minor_changes:
-- aws_region_info - Add retries on common AWS failures (https://github.com/ansible-collections/community.aws/pull/422).
