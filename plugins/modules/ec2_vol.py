@@ -570,7 +570,7 @@ def detach_volume(module, ec2_conn, volume_dict):
     return volume_dict, changed
 
 
-def get_volume_info(volume, tags=None):
+def get_volume_info(module, volume, tags=None):
     if not tags:
         tags = boto3_tag_list_to_ansible_dict(volume.get('tags'))
     attachment_data = get_attachment_data(volume)
@@ -684,7 +684,7 @@ def main():
         vols = get_volumes(module, ec2_conn)
 
         for v in vols:
-            returned_volumes.append(get_volume_info(v))
+            returned_volumes.append(get_volume_info(module, v))
 
         module.exit_json(changed=False, volumes=returned_volumes)
 
@@ -751,7 +751,7 @@ def main():
             volume, changed = attach_volume(module, ec2_conn, volume_dict=volume, instance_dict=inst, device_name=device_name)
 
         # Add device, volume_id and volume_type parameters separately to maintain backward compatibility
-        volume_info = get_volume_info(volume, tags=final_tags)
+        volume_info = get_volume_info(module, volume, tags=final_tags)
 
         if tags_changed:
             changed = True
