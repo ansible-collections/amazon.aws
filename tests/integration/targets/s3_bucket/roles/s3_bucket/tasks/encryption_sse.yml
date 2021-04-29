@@ -6,18 +6,19 @@
       security_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-
+    - set_fact:
+        local_bucket_name: "{{ bucket_name | hash('md5')}}e-sse"
     # ============================================================
 
     - name: 'Create a simple bucket'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: present
       register: output
 
     - name: 'Enable AES256 encryption'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: present
         encryption: 'AES256'
       register: output
@@ -30,7 +31,7 @@
 
     - name: 'Re-enable AES256 encryption (idempotency)'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: present
         encryption: 'AES256'
       register: output
@@ -45,7 +46,7 @@
 
     - name: Disable encryption from bucket
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: present
         encryption: "none"
       register: output
@@ -57,7 +58,7 @@
 
     - name: Disable encryption from bucket
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: present
         encryption: "none"
       register: output
@@ -71,7 +72,7 @@
 
     - name: Delete encryption test s3 bucket
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: absent
       register: output
 
@@ -83,6 +84,6 @@
   always:
     - name: Ensure all buckets are deleted
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: absent
       ignore_errors: yes

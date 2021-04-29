@@ -6,12 +6,13 @@
       security_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-
+    - set_fact:
+        local_bucket_name: "{{ bucket_name | hash('md5')}}-public"
     # ============================================================
 
     - name: 'Create a simple bucket with public access block configuration'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: present
         public_access:
           block_public_acls: true
@@ -31,7 +32,7 @@
 
     - name: 'Re-configure public access block configuration'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: present
         public_access:
           block_public_acls: true
@@ -51,7 +52,7 @@
 
     - name: 'Re-configure public access block configuration (idempotency)'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: present
         public_access:
           block_public_acls: true
@@ -71,7 +72,7 @@
 
     - name: 'Delete public access block configuration'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: present
         delete_public_access: true
       register: output
@@ -83,7 +84,7 @@
 
     - name: 'Delete public access block configuration (idempotency)'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: present
         delete_public_access: true
       register: output
@@ -97,7 +98,7 @@
 
     - name: Delete testing s3 bucket
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: absent
       register: output
 
@@ -109,6 +110,6 @@
   always:
     - name: Ensure all buckets are deleted
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: absent
       ignore_errors: yes
