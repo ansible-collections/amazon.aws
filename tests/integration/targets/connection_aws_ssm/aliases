@@ -3,7 +3,6 @@
 unstable
 
 cloud/aws
-shippable/aws/group4
 
 destructive
 non_local

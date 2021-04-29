@@ -1,6 +1,4 @@
 # Community AWS Collection
-[![Shippable build status](https://api.shippable.com/projects//5e5ed2ae0fcc0d0006d2c037badge?branch=main)](https://api.shippable.com/projects/i5e5ed2ae0fcc0d0006d2c037/badge?branch=main)
-<!--[![Codecov](https://img.shields.io/codecov/c/github/ansible-collections/community.aws)](https://codecov.io/gh/ansible-collections/community.aws)-->
 
 The Ansible Community AWS collection includes a variety of Ansible content to help automate the management of AWS instances. This collection is maintained by the Ansible community.
 
