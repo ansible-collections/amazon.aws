@@ -668,7 +668,7 @@ def main():
                     Id=change_resource_record_sets['ChangeInfo']['Id'],
                     WaiterConfig=dict(
                         Delay=WAIT_RETRY,
-                        MaxAttemps=wait_timeout_in // WAIT_RETRY,
+                        MaxAttempts=wait_timeout_in // WAIT_RETRY,
                     )
                 )
         except is_boto3_error_message('but it already exists'):
