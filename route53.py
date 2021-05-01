@@ -574,12 +574,15 @@ def main():
         if (weight_in is None and region_in is None and failover_in is None) and identifier_in is not None:
             module.fail_json(msg="You have specified identifier which makes sense only if you specify one of: weight, region or failover.")
 
+    retry_decorator = AWSRetry.jittered_backoff(
+        retries=MAX_AWS_RETRIES,
+        delay=retry_interval_in,
+        catch_extra_error_codes=['PriorRequestNotComplete'],
+    )
+
     # connect to the route53 endpoint
     try:
-        route53 = module.client(
-            'route53',
-            retry_decorator=AWSRetry.jittered_backoff(retries=MAX_AWS_RETRIES, delay=retry_interval_in)
-        )
+        route53 = module.client('route53', retry_decorator=retry_decorator)
     except botocore.exceptions.HTTPClientError as e:
         module.fail_json_aws(e, msg='Failed to connect to AWS')
 
