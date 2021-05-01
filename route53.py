@@ -578,6 +578,7 @@ def main():
         retries=MAX_AWS_RETRIES,
         delay=retry_interval_in,
         catch_extra_error_codes=['PriorRequestNotComplete'],
+        max_delay=max(60, retry_interval_in),
     )
 
     # connect to the route53 endpoint
