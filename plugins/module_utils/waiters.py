@@ -469,6 +469,26 @@ rds_data = {
 }
 
 
+route53_data = {
+    "version": 2,
+    "waiters": {
+        "ResourceRecordSetsChanged": {
+            "delay": 30,
+            "maxAttempts": 60,
+            "operation": "GetChange",
+            "acceptors": [
+                {
+                    "matcher": "path",
+                    "expected": "INSYNC",
+                    "argument": "ChangeInfo.Status",
+                    "state": "success"
+                }
+            ]
+        }
+    }
+}
+
+
 def _inject_limit_retries(model):
 
     extra_retries = [
@@ -506,6 +526,11 @@ def eks_model(name):
 def rds_model(name):
     rds_models = core_waiter.WaiterModel(waiter_config=_inject_limit_retries(rds_data))
     return rds_models.get_waiter(name)
+
+
+def route53_model(name):
+    route53_models = core_waiter.WaiterModel(waiter_config=_inject_limit_retries(route53_data))
+    return route53_models.get_waiter(name)
 
 
 waiters_by_name = {
@@ -670,6 +695,12 @@ waiters_by_name = {
         rds_model('DBInstanceStopped'),
         core_waiter.NormalizedOperationMethod(
             rds.describe_db_instances
+        )),
+    ('Route53', 'resource_record_sets_changed'): lambda route53: core_waiter.Waiter(
+        'resource_record_sets_changed',
+        route53_model('ResourceRecordSetsChanged'),
+        core_waiter.NormalizedOperationMethod(
+            route53.get_change
         )),
 }
 
