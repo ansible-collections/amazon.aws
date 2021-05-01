@@ -369,6 +369,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSM
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
 from ansible_collections.amazon.aws.plugins.module_utils.core import scrub_none_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 MAX_AWS_RETRIES = 10  # How many retries to perform when an API call is failing
 WAIT_RETRY = 5  # how many seconds to wait between propagation status polls
@@ -667,7 +668,7 @@ def main():
             )
 
             if wait_in:
-                waiter = route53.get_waiter('resource_record_sets_changed')
+                waiter = get_waiter(route53, 'resource_record_sets_changed')
                 waiter.wait(
                     Id=change_resource_record_sets['ChangeInfo']['Id'],
                     WaiterConfig=dict(
