@@ -1,0 +1,5 @@
+---
+- project:
+    templates:
+      - network-ee-container-image-jobs
+      - network-ee-tests
