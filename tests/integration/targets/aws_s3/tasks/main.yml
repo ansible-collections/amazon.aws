@@ -444,7 +444,7 @@
 
     - name: test create a bucket with a dot in the name
       aws_s3:
-        bucket: "{{ bucket_name + '.bucket' }}"
+        bucket: "{{ bucket_name | hash('md5') + '.bucket' }}"
         mode: create
       register: result
 
@@ -454,7 +454,7 @@
 
     - name: test delete a bucket with a dot in the name
       aws_s3:
-        bucket: "{{ bucket_name + '.bucket' }}"
+        bucket: "{{ bucket_name | hash('md5') + '.bucket' }}"
         mode: delete
       register: result
 
@@ -464,7 +464,7 @@
 
     - name: test delete a nonexistent bucket
       aws_s3:
-        bucket: "{{ bucket_name + '.bucket' }}"
+        bucket: "{{ bucket_name | hash('md5') + '.bucket' }}"
         mode: delete
       register: result
 

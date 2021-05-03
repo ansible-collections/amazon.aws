@@ -58,13 +58,7 @@ except Exception:
     pass    # Handled by AnsibleAWSModule
 
 from ..module_utils.core import AnsibleAWSModule
-from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict, AWSRetry
-
-
-@AWSRetry.jittered_backoff()
-def get_tags(ec2, module, resource):
-    filters = [{'Name': 'resource-id', 'Values': [resource]}]
-    return boto3_tag_list_to_ansible_dict(ec2.describe_tags(Filters=filters)['Tags'])
+from ..module_utils.ec2 import describe_ec2_tags
 
 
 def main():
@@ -76,10 +70,7 @@ def main():
     resource = module.params['resource']
     ec2 = module.client('ec2')
 
-    try:
-        current_tags = get_tags(ec2, module, resource)
-    except (BotoCoreError, ClientError) as e:
-        module.fail_json_aws(e, msg='Failed to fetch tags for resource {0}'.format(resource))
+    current_tags = describe_ec2_tags(ec2, module, resource)
 
     module.exit_json(changed=False, tags=current_tags)
 

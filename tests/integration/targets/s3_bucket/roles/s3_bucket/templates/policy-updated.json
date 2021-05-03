@@ -6,7 +6,7 @@
       "Effect":"Deny",
       "Principal": {"AWS": "*"},
       "Action":["s3:GetObject"],
-      "Resource":["arn:aws:s3:::{{bucket_name}}/*"]
+      "Resource":["arn:aws:s3:::{{local_bucket_name}}/*"]
     }
   ]
 }

@@ -2,20 +2,21 @@
 - block:
     - name: 'Ensure bucket_name contains a .'
       set_fact:
-        bucket_name: '{{ bucket_name }}.something'
+        local_bucket_name: "{{ bucket_name | hash('md5')}}.dotted"
+
 
     # ============================================================
     #
     - name: 'Create bucket with dot in name'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: present
       register: output
 
     - assert:
         that:
           - output is changed
-          - output.name == '{{ bucket_name }}'
+          - output.name == '{{ local_bucket_name }}'
 
 
     # ============================================================
@@ -27,7 +28,7 @@
 
     - name: 'Delete s3_bucket with dot in name'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: absent
       register: output
 
@@ -37,7 +38,7 @@
 
     - name: 'Re-delete s3_bucket with dot in name'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: absent
       register: output
 
@@ -49,6 +50,6 @@
   always:
     - name: 'Ensure all buckets are deleted'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: absent
       ignore_errors: yes

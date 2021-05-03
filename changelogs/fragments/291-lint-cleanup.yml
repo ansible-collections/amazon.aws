@@ -1,3 +1,0 @@
-minor_changes:
-- module_utils.cloudfront_facts - linting cleanup (https://github.com/ansible-collections/amazon.aws/pull/291).
-- module_utils.ec2 - linting cleanup (https://github.com/ansible-collections/amazon.aws/pull/291).

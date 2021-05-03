@@ -1,2 +1,0 @@
-minor_changes:
-- aws_account_attribute - add retries on common AWS failures (https://github.com/ansible-collections/amazon.aws/pull/295).

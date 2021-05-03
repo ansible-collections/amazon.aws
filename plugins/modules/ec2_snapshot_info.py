@@ -15,7 +15,9 @@ description:
     - Gather information about ec2 volume snapshots in AWS.
     - This module was called C(ec2_snapshot_facts) before Ansible 2.9. The usage did not change.
 requirements: [ boto3 ]
-author: "Rob White (@wimnat)"
+author:
+    - "Rob White (@wimnat)"
+    - Aubin Bikouo (@abikouo)
 options:
   snapshot_ids:
     description:
@@ -48,6 +50,23 @@ options:
     required: false
     type: dict
     default: {}
+  max_results:
+    description:
+    - The maximum number of snapshot results returned in paginated output.
+    - When used only a single page along with a C(next_token_id) response element will be returned.
+    - The remaining results of the initial request can be seen by sending another request with the returned C(next_token_id) value.
+    - This value can be between 5 and 1000; if I(next_token_id) is given a value larger than 1000, only 1000 results are returned.
+    - If this parameter is not used, then DescribeSnapshots returns all results.
+    - This parameter is mutually exclusive with I(snapshot_ids).
+    required: False
+    type: int
+  next_token_id:
+    description:
+    - Contains the value returned from a previous paginated request where I(max_results) was used and the results exceeded the value of that parameter.
+    - Pagination continues from the end of the previous results that returned the I(next_token_id) value.
+    - This parameter is mutually exclusive with I(snapshot_ids)
+    required: false
+    type: str
 notes:
   - By default, the module will return all snapshots, including public ones. To limit results to snapshots owned by
     the account use the filter 'owner-id'.
@@ -97,81 +116,92 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
-snapshot_id:
-    description: The ID of the snapshot. Each snapshot receives a unique identifier when it is created.
+snapshots:
+    description: snapshots retrieved
+    type: list
+    returned: success
+    elements: dict
+    contains:
+        snapshot_id:
+            description: The ID of the snapshot. Each snapshot receives a unique identifier when it is created.
+            type: str
+            returned: always
+            sample: snap-01234567
+        volume_id:
+            description: The ID of the volume that was used to create the snapshot.
+            type: str
+            returned: always
+            sample: vol-01234567
+        state:
+            description: The snapshot state (completed, pending or error).
+            type: str
+            returned: always
+            sample: completed
+        state_message:
+            description: Encrypted Amazon EBS snapshots are copied asynchronously. If a snapshot copy operation fails (for example, if the proper
+                         AWS Key Management Service (AWS KMS) permissions are not obtained) this field displays error state details to help you diagnose why the
+                         error occurred.
+            type: str
+            returned: always
+            sample:
+        start_time:
+            description: The time stamp when the snapshot was initiated.
+            type: str
+            returned: always
+            sample: "2015-02-12T02:14:02+00:00"
+        progress:
+            description: The progress of the snapshot, as a percentage.
+            type: str
+            returned: always
+            sample: "100%"
+        owner_id:
+            description: The AWS account ID of the EBS snapshot owner.
+            type: str
+            returned: always
+            sample: "099720109477"
+        description:
+            description: The description for the snapshot.
+            type: str
+            returned: always
+            sample: "My important backup"
+        volume_size:
+            description: The size of the volume, in GiB.
+            type: int
+            returned: always
+            sample: 8
+        owner_alias:
+            description: The AWS account alias (for example, amazon, self) or AWS account ID that owns the snapshot.
+            type: str
+            returned: always
+            sample: "033440102211"
+        tags:
+            description: Any tags assigned to the snapshot.
+            type: dict
+            returned: always
+            sample: "{ 'my_tag_key': 'my_tag_value' }"
+        encrypted:
+            description: Indicates whether the snapshot is encrypted.
+            type: bool
+            returned: always
+            sample: "True"
+        kms_key_id:
+            description: The full ARN of the AWS Key Management Service (AWS KMS) customer master key (CMK) that was used to \
+            protect the volume encryption key for the parent volume.
+            type: str
+            returned: always
+            sample: "74c9742a-a1b2-45cb-b3fe-abcdef123456"
+        data_encryption_key_id:
+            description: The data encryption key identifier for the snapshot. This value is a unique identifier that \
+            corresponds to the data encryption key that was used to encrypt the original volume or snapshot copy.
+            type: str
+            returned: always
+            sample: "arn:aws:kms:ap-southeast-2:012345678900:key/74c9742a-a1b2-45cb-b3fe-abcdef123456"
+next_token_id:
+    description:
+    - Contains the value returned from a previous paginated request where C(max_results) was used and the results exceeded the value of that parameter.
+    - This value is null when there are no more results to return.
     type: str
-    returned: always
-    sample: snap-01234567
-volume_id:
-    description: The ID of the volume that was used to create the snapshot.
-    type: str
-    returned: always
-    sample: vol-01234567
-state:
-    description: The snapshot state (completed, pending or error).
-    type: str
-    returned: always
-    sample: completed
-state_message:
-    description: Encrypted Amazon EBS snapshots are copied asynchronously. If a snapshot copy operation fails (for example, if the proper
-                 AWS Key Management Service (AWS KMS) permissions are not obtained) this field displays error state details to help you diagnose why the
-                 error occurred.
-    type: str
-    returned: always
-    sample:
-start_time:
-    description: The time stamp when the snapshot was initiated.
-    type: str
-    returned: always
-    sample: "2015-02-12T02:14:02+00:00"
-progress:
-    description: The progress of the snapshot, as a percentage.
-    type: str
-    returned: always
-    sample: "100%"
-owner_id:
-    description: The AWS account ID of the EBS snapshot owner.
-    type: str
-    returned: always
-    sample: "099720109477"
-description:
-    description: The description for the snapshot.
-    type: str
-    returned: always
-    sample: "My important backup"
-volume_size:
-    description: The size of the volume, in GiB.
-    type: int
-    returned: always
-    sample: 8
-owner_alias:
-    description: The AWS account alias (for example, amazon, self) or AWS account ID that owns the snapshot.
-    type: str
-    returned: always
-    sample: "033440102211"
-tags:
-    description: Any tags assigned to the snapshot.
-    type: dict
-    returned: always
-    sample: "{ 'my_tag_key': 'my_tag_value' }"
-encrypted:
-    description: Indicates whether the snapshot is encrypted.
-    type: bool
-    returned: always
-    sample: "True"
-kms_key_id:
-    description: The full ARN of the AWS Key Management Service (AWS KMS) customer master key (CMK) that was used to \
-    protect the volume encryption key for the parent volume.
-    type: str
-    returned: always
-    sample: "74c9742a-a1b2-45cb-b3fe-abcdef123456"
-data_encryption_key_id:
-    description: The data encryption key identifier for the snapshot. This value is a unique identifier that \
-    corresponds to the data encryption key that was used to encrypt the original volume or snapshot copy.
-    type: str
-    returned: always
-    sample: "arn:aws:kms:ap-southeast-2:012345678900:key/74c9742a-a1b2-45cb-b3fe-abcdef123456"
-
+    returned: when option C(max_results) is set in input
 '''
 
 try:
@@ -194,12 +224,20 @@ def list_ec2_snapshots(connection, module):
     owner_ids = [str(owner_id) for owner_id in module.params.get("owner_ids")]
     restorable_by_user_ids = [str(user_id) for user_id in module.params.get("restorable_by_user_ids")]
     filters = ansible_dict_to_boto3_filter_list(module.params.get("filters"))
+    max_results = module.params.get('max_results')
+    next_token = module.params.get('next_token_id')
+    optional_param = {}
+    if max_results:
+        optional_param['MaxResults'] = max_results
+    if next_token:
+        optional_param['NextToken'] = next_token
 
     try:
         snapshots = connection.describe_snapshots(
             aws_retry=True,
             SnapshotIds=snapshot_ids, OwnerIds=owner_ids,
-            RestorableByUserIds=restorable_by_user_ids, Filters=filters)
+            RestorableByUserIds=restorable_by_user_ids, Filters=filters,
+            **optional_param)
     except is_boto3_error_code('InvalidSnapshot.NotFound') as e:
         if len(snapshot_ids) > 1:
             module.warn("Some of your snapshots may exist, but %s" % str(e))
@@ -207,6 +245,7 @@ def list_ec2_snapshots(connection, module):
     except ClientError as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg='Failed to describe snapshots')
 
+    result = {}
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_snapshots = []
     for snapshot in snapshots['Snapshots']:
@@ -217,7 +256,12 @@ def list_ec2_snapshots(connection, module):
         if 'tags' in snapshot:
             snapshot['tags'] = boto3_tag_list_to_ansible_dict(snapshot['tags'], 'key', 'value')
 
-    module.exit_json(snapshots=snaked_snapshots)
+    result['snapshots'] = snaked_snapshots
+
+    if snapshots.get('NextToken'):
+        result.update(camel_dict_to_snake_dict({'NextTokenId': snapshots.get('NextToken')}))
+
+    module.exit_json(**result)
 
 
 def main():
@@ -226,13 +270,17 @@ def main():
         snapshot_ids=dict(default=[], type='list', elements='str'),
         owner_ids=dict(default=[], type='list', elements='str'),
         restorable_by_user_ids=dict(default=[], type='list', elements='str'),
-        filters=dict(default={}, type='dict')
+        filters=dict(default={}, type='dict'),
+        max_results=dict(type='int'),
+        next_token_id=dict(type='str')
     )
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         mutually_exclusive=[
-            ['snapshot_ids', 'owner_ids', 'restorable_by_user_ids', 'filters']
+            ['snapshot_ids', 'owner_ids', 'restorable_by_user_ids', 'filters'],
+            ['snapshot_ids', 'max_results'],
+            ['snapshot_ids', 'next_token_id']
         ],
         supports_check_mode=True
     )

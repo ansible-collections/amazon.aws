@@ -1,8 +1,10 @@
 ---
 - block:
+    - set_fact:
+        local_bucket_name: "{{ bucket_name | hash('md5')}}complex"
     - name: 'Create more complex s3_bucket'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: "{{ local_bucket_name }}"
         state: present
         policy: "{{ lookup('template','policy.json') }}"
         requester_pays: yes
@@ -15,7 +17,7 @@
     - assert:
         that:
           - output is changed
-          - output.name == '{{ bucket_name }}'
+          - output.name == '{{ local_bucket_name }}'
           - output.requester_pays
           - output.versioning.MfaDelete == 'Disabled'
           - output.versioning.Versioning == 'Enabled'
@@ -24,7 +26,7 @@
           - output.policy.Statement[0].Action == 's3:GetObject'
           - output.policy.Statement[0].Effect == 'Allow'
           - output.policy.Statement[0].Principal == '*'
-          - output.policy.Statement[0].Resource == 'arn:aws:s3:::{{ bucket_name }}/*'
+          - output.policy.Statement[0].Resource == 'arn:aws:s3:::{{ local_bucket_name }}/*'
           - output.policy.Statement[0].Sid == 'AddPerm'
 
     # ============================================================
@@ -36,7 +38,7 @@
 
     - name: 'Try to update the same complex s3_bucket'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: present
         policy: "{{ lookup('template','policy.json') }}"
         requester_pays: yes
@@ -49,7 +51,7 @@
     - assert:
         that:
           - output is not changed
-          - output.name == '{{ bucket_name }}'
+          - output.name == '{{ local_bucket_name }}'
           - output.requester_pays
           - output.versioning.MfaDelete == 'Disabled'
           - output.versioning.Versioning == 'Enabled'
@@ -58,13 +60,13 @@
           - output.policy.Statement[0].Action == 's3:GetObject'
           - output.policy.Statement[0].Effect == 'Allow'
           - output.policy.Statement[0].Principal == '*'
-          - output.policy.Statement[0].Resource == 'arn:aws:s3:::{{ bucket_name }}/*'
+          - output.policy.Statement[0].Resource == 'arn:aws:s3:::{{ local_bucket_name }}/*'
           - output.policy.Statement[0].Sid == 'AddPerm'
 
     # ============================================================
     - name: 'Update bucket policy on complex bucket'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: present
         policy: "{{ lookup('template','policy-updated.json') }}"
         requester_pays: yes
@@ -80,7 +82,7 @@
           - output.policy.Statement[0].Action == 's3:GetObject'
           - output.policy.Statement[0].Effect == 'Deny'
           - output.policy.Statement[0].Principal.AWS == '*'
-          - output.policy.Statement[0].Resource == 'arn:aws:s3:::{{ bucket_name }}/*'
+          - output.policy.Statement[0].Resource == 'arn:aws:s3:::{{ local_bucket_name }}/*'
           - output.policy.Statement[0].Sid == 'AddPerm'
 
     # ============================================================
@@ -92,7 +94,7 @@
 
     - name: Update attributes for s3_bucket
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: present
         policy: "{{ lookup('template','policy.json') }}"
         requester_pays: no
@@ -105,7 +107,7 @@
     - assert:
         that:
           - output is changed
-          - output.name == '{{ bucket_name }}'
+          - output.name == '{{ local_bucket_name }}'
           - not output.requester_pays
           - output.versioning.MfaDelete == 'Disabled'
           - output.versioning.Versioning in ['Suspended', 'Disabled']
@@ -114,12 +116,12 @@
           - output.policy.Statement[0].Action == 's3:GetObject'
           - output.policy.Statement[0].Effect == 'Allow'
           - output.policy.Statement[0].Principal == '*'
-          - output.policy.Statement[0].Resource == 'arn:aws:s3:::{{ bucket_name }}/*'
+          - output.policy.Statement[0].Resource == 'arn:aws:s3:::{{ local_bucket_name }}/*'
           - output.policy.Statement[0].Sid == 'AddPerm'
 
     - name: 'Delete complex test bucket'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: absent
       register: output
 
@@ -129,7 +131,7 @@
 
     - name: 'Re-delete complex test bucket'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: absent
       register: output
 
@@ -141,6 +143,6 @@
   always:
     - name: 'Ensure all buckets are deleted'
       s3_bucket:
-        name: '{{ bucket_name }}'
+        name: '{{ local_bucket_name }}'
         state: absent
       ignore_errors: yes

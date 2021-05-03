@@ -54,7 +54,7 @@ Name | Description
 [amazon.aws.ec2_group](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_group_module.rst)|maintain an ec2 VPC security group.
 [amazon.aws.ec2_group_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_group_info_module.rst)|Gather information about ec2 security groups in AWS.
 [amazon.aws.ec2_key](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_key_module.rst)|create or delete an ec2 key pair
-[amazon.aws.ec2_metadata_facts](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_metadata_facts_module.rst)|Gathers facts (instance metadata) about remote hosts within ec2
+[amazon.aws.ec2_metadata_facts](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_metadata_facts_module.rst)|gathers facts (instance metadata) about remote hosts within EC2
 [amazon.aws.ec2_snapshot](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_snapshot_module.rst)|Creates a snapshot from an existing volume
 [amazon.aws.ec2_snapshot_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_snapshot_info_module.rst)|Gather information about ec2 volume snapshots in AWS
 [amazon.aws.ec2_tag](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_tag_module.rst)|create and remove tags on ec2 resources

@@ -1,0 +1,62 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: no
+  environment: "{{ ansible_test.environment }}"
+  tasks:
+
+    - module_defaults:
+        group/aws:
+          aws_access_key: '{{ aws_access_key }}'
+          aws_secret_key: '{{ aws_secret_key }}'
+          security_token: '{{ security_token | default(omit) }}'
+          region: '{{ aws_region }}'
+      block:
+
+        # Create VPC, subnet, security group, and find image_id to create instance
+        - include_tasks: setup.yml
+
+        # Create new host, refresh inventory
+        - name: create a new host
+          ec2:
+            image: '{{ image_id }}'
+            exact_count: 1
+            count_tag:
+              Name: '{{ resource_prefix }}:/aa'
+            instance_tags:
+              Name: '{{ resource_prefix }}:/aa'
+              OtherTag: value
+            instance_type: t2.micro
+            wait: yes
+            group_id: '{{ sg_id }}'
+            vpc_subnet_id: '{{ subnet_id }}'
+          register: setup_instance
+
+        - meta: refresh_inventory
+
+        - name: "register the current hostname, the : and / a replaced with _"
+          set_fact:
+            expected_hostname: "{{ resource_prefix }}__aa"
+
+        - name: "Ensure we've got a hostvars entry for the new host"
+          assert:
+            that:
+              - expected_hostname in hostvars
+              - hostvars[expected_hostname].ec2_tag_OtherTag == "value"
+
+      always:
+
+        - name: remove setup ec2 instance
+          ec2:
+            instance_type: t2.micro
+            instance_ids: '{{ setup_instance.instance_ids }}'
+            state: absent
+            wait: yes
+            instance_tags:
+              Name: '{{ resource_prefix }}'
+            group_id: "{{ sg_id }}"
+            vpc_subnet_id: "{{ subnet_id }}"
+          ignore_errors: yes
+          when: setup_instance is defined
+
+        - include_tasks: tear_down.yml

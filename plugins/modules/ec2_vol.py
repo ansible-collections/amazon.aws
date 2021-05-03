@@ -102,14 +102,13 @@ options:
       - Volume throughput in MB/s.
       - This parameter is only valid for gp3 volumes.
       - Valid range is from 125 to 1000.
+      - Requires at least botocore version 1.19.27.
     type: int
     version_added: 1.4.0
 author: "Lester Wade (@lwade)"
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
-requirements: [ boto3>=1.16.33 ]
 '''
 
 EXAMPLES = '''
@@ -250,6 +249,8 @@ from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import compare_aws_tags
+from ..module_utils.ec2 import describe_ec2_tags
+from ..module_utils.ec2 import ensure_ec2_tags
 from ..module_utils.ec2 import AWSRetry
 from ..module_utils.core import is_boto3_error_code
 
@@ -399,7 +400,8 @@ def update_volume(module, ec2_conn, volume):
             volume['size'] = response.get('VolumeModification').get('TargetSize')
             volume['volume_type'] = response.get('VolumeModification').get('TargetVolumeType')
             volume['iops'] = response.get('VolumeModification').get('TargetIops')
-            volume['throughput'] = response.get('VolumeModification').get('TargetThroughput')
+            if module.botocore_at_least("1.19.27"):
+                volume['throughput'] = response.get('VolumeModification').get('TargetThroughput')
 
     return volume, changed
 
@@ -568,7 +570,7 @@ def detach_volume(module, ec2_conn, volume_dict):
     return volume_dict, changed
 
 
-def get_volume_info(volume, tags=None):
+def get_volume_info(module, volume, tags=None):
     if not tags:
         tags = boto3_tag_list_to_ansible_dict(volume.get('tags'))
     attachment_data = get_attachment_data(volume)
@@ -582,7 +584,6 @@ def get_volume_info(volume, tags=None):
         'status': volume.get('state'),
         'type': volume.get('volume_type'),
         'zone': volume.get('availability_zone'),
-        'throughput': volume.get('throughput'),
         'attachment_set': {
             'attach_time': attachment_data.get('attach_time', None),
             'device': attachment_data.get('device', None),
@@ -592,6 +593,9 @@ def get_volume_info(volume, tags=None):
         },
         'tags': tags
     }
+
+    if module.botocore_at_least("1.19.27"):
+        volume_info['throughput'] = volume.get('throughput')
 
     return volume_info
 
@@ -612,57 +616,8 @@ def get_mapped_block_device(instance_dict=None, device_name=None):
 
 
 def ensure_tags(module, connection, res_id, res_type, tags, purge_tags):
-    changed = False
-
-    filters = ansible_dict_to_boto3_filter_list({'resource-id': res_id, 'resource-type': res_type})
-    cur_tags = None
-    try:
-        cur_tags = connection.describe_tags(aws_retry=True, Filters=filters)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Couldn't describe tags")
-
-    to_update, to_delete = compare_aws_tags(boto3_tag_list_to_ansible_dict(cur_tags.get('Tags')), tags, purge_tags)
-    final_tags = boto3_tag_list_to_ansible_dict(cur_tags.get('Tags'))
-
-    if to_update:
-        try:
-            if module.check_mode:
-                # update tags
-                final_tags.update(to_update)
-            else:
-                connection.create_tags(
-                    aws_retry=True,
-                    Resources=[res_id],
-                    Tags=ansible_dict_to_boto3_tag_list(to_update)
-                )
-
-            changed = True
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't create tags")
-
-    if to_delete:
-        try:
-            if module.check_mode:
-                # update tags
-                for key in to_delete:
-                    del final_tags[key]
-            else:
-                tags_list = []
-                for key in to_delete:
-                    tags_list.append({'Key': key})
-
-                connection.delete_tags(aws_retry=True, Resources=[res_id], Tags=tags_list)
-
-            changed = True
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't delete tags")
-
-    if not module.check_mode and (to_update or to_delete):
-        try:
-            response = connection.describe_tags(aws_retry=True, Filters=filters)
-            final_tags = boto3_tag_list_to_ansible_dict(response.get('Tags'))
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't describe tags")
+    changed = ensure_ec2_tags(connection, module, res_id, res_type, tags, purge_tags, ['InvalidVolume.NotFound'])
+    final_tags = describe_ec2_tags(connection, module, res_id, res_type)
 
     return final_tags, changed
 
@@ -704,6 +659,10 @@ def main():
         module.deprecate(
             'Using the "list" state has been deprecated.  Please use the ec2_vol_info module instead', date='2022-06-01', collection_name='amazon.aws')
 
+    if module.params.get('throughput'):
+        if not module.botocore_at_least("1.19.27"):
+            module.fail_json(msg="botocore >= 1.19.27 is required to set the throughput for a volume")
+
     # Ensure we have the zone or can get the zone
     if instance is None and zone is None and state == 'present':
         module.fail_json(msg="You must specify either instance or zone")
@@ -725,7 +684,7 @@ def main():
         vols = get_volumes(module, ec2_conn)
 
         for v in vols:
-            returned_volumes.append(get_volume_info(v))
+            returned_volumes.append(get_volume_info(module, v))
 
         module.exit_json(changed=False, volumes=returned_volumes)
 
@@ -792,7 +751,7 @@ def main():
             volume, changed = attach_volume(module, ec2_conn, volume_dict=volume, instance_dict=inst, device_name=device_name)
 
         # Add device, volume_id and volume_type parameters separately to maintain backward compatibility
-        volume_info = get_volume_info(volume, tags=final_tags)
+        volume_info = get_volume_info(module, volume, tags=final_tags)
 
         if tags_changed:
             changed = True
