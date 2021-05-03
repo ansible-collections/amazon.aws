@@ -5,7 +5,6 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-
 DOCUMENTATION = '''
 module: route53_zone
 short_description: add or delete Route53 zones
@@ -47,6 +46,18 @@ options:
             - The reusable delegation set ID to be associated with the zone.
             - Note that you can't associate a reusable delegation set with a private hosted zone.
         type: str
+    tags:
+        description:
+            - A hash/dictionary of tags to add to the new instance or to add/remove from an existing one.
+        type: dict
+        version_added: 2.1.0
+    purge_tags:
+        description:
+            - Delete any tags not specified in the task that are on the zone.
+              This means you have to specify all the desired tags on each task affecting a zone.
+        default: false
+        type: bool
+        version_added: 2.1.0
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -77,6 +88,21 @@ EXAMPLES = '''
     zone: example.com
     comment: reusable delegation set example
     delegation_set_id: A1BCDEF2GHIJKL
+
+- name: create a public zone with tags
+  community.aws.route53_zone:
+    zone: example.com
+    comment: this is an example
+    tags:
+        Owner: Ansible Team
+
+- name: modify a public zone, removing all previous tags and adding a new one
+  community.aws.route53_zone:
+    zone: example.com
+    comment: this is an example
+    tags:
+        Support: Ansible Community
+    purge_tags: true
 '''
 
 RETURN = '''
@@ -115,10 +141,15 @@ delegation_set_id:
     returned: for public hosted zones, if they have been associated with a reusable delegation set
     type: str
     sample: "A1BCDEF2GHIJKL"
+tags:
+    description: tags associated with the zone
+    returned: when tags are defined
+    type: dict
 '''
 
 import time
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.community.aws.plugins.module_utils.route53 import manage_tags
 
 try:
     from botocore.exceptions import BotoCoreError, ClientError
@@ -150,6 +181,8 @@ def create(module, client, matching_zones):
     vpc_region = module.params.get('vpc_region')
     comment = module.params.get('comment')
     delegation_set_id = module.params.get('delegation_set_id')
+    tags = module.params.get('tags')
+    purge_tags = module.params.get('purge_tags')
 
     if not zone_in.endswith('.'):
         zone_in += "."
@@ -164,6 +197,8 @@ def create(module, client, matching_zones):
         'name': zone_in,
         'delegation_set_id': delegation_set_id,
         'zone_id': None,
+        'tags': tags,
+        'purge_tags': purge_tags,
     }
 
     if private_zone:
@@ -287,6 +322,9 @@ def create_or_update_public(module, client, matching_zones, record):
         record['name'] = zone_details['Name']
         record['delegation_set_id'] = zone_delegation_set_details.get('Id', '').replace('/delegationset/', '')
 
+        if record['tags'] or record['purge_tags']:
+            changed = manage_tags(module, client, 'hostedzone', record, zone_details['Id'].replace('/hostedzone/', ''))
+
     return changed, record
 
 
@@ -394,6 +432,8 @@ def main():
         comment=dict(default=''),
         hosted_zone_id=dict(),
         delegation_set_id=dict(),
+        tags=dict(type='dict'),
+        purge_tags=dict(type='bool', default=False),
     )
 
     mutually_exclusive = [
