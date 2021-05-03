@@ -944,6 +944,12 @@ def main():
     state = module.params.get("state")
     encryption = module.params.get("encryption")
     encryption_key_id = module.params.get("encryption_key_id")
+    delete_object_ownership = module.params.get('delete_object_ownership')
+    object_ownership = module.params.get('object_ownership')
+
+    if delete_object_ownership is not None or object_ownership is not None:
+        if not module.botocore_at_least('1.8.11'):
+            module.fail_json(msg="Managing bucket ownership controls requires botocore version >= 1.8.11")
 
     if not hasattr(s3_client, "get_bucket_encryption"):
         if encryption is not None:
