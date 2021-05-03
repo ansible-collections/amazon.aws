@@ -15,5 +15,3 @@ plugins/modules/ec2_vpc_subnet_info.py pylint:ansible-deprecated-no-version  # W
 plugins/module_utils/compat/_ipaddress.py no-assert  # Vendored library
 plugins/module_utils/compat/_ipaddress.py no-unicode-literals  # Vendored library
 plugins/module_utils/ec2.py pylint:ansible-deprecated-no-version  # We use dates for deprecations, Ansible 2.9 only supports this for compatability
-tests/utils/shippable/check_matrix.py replace-urlopen  # Standalone script used as part of testing
-tests/utils/shippable/timing.py shebang  # Standalone script used as part of testing
