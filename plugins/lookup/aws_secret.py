@@ -1,4 +1,5 @@
 # Copyright: (c) 2018, Aaron Smith <ajsmith10381@gmail.com>
+# Copyright: (c) 2021, Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import (absolute_import, division, print_function)
@@ -8,6 +9,7 @@ DOCUMENTATION = r'''
 lookup: aws_secret
 author:
   - Aaron Smith <ajsmith10381@gmail.com>
+  - Aubin Bikouo (@abikouo)
 requirements:
   - python >= 3.6
   - boto3
@@ -115,6 +117,7 @@ from ansible.errors import AnsibleError
 from ansible.module_utils.six import string_types
 from ansible.module_utils._text import to_native
 from ansible.plugins.lookup import LookupBase
+from ansible.utils.listify import listify_lookup_plugin_terms
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
@@ -137,6 +140,12 @@ def _boto3_conn(region, credentials):
 
 
 class LookupModule(LookupBase):
+    def _lookup_variable(self, var):
+        local = listify_lookup_plugin_terms(var, templar=self._templar, loader=self._loader, fail_on_undefined=True)
+        if isinstance(local, list):
+            return local[0]
+        return local
+
     def run(self, terms, variables=None, boto_profile=None, aws_profile=None,
             aws_secret_key=None, aws_access_key=None, aws_security_token=None, region=None,
             bypath=False, nested=False, join=False, version_stage=None, version_id=None, on_missing='error',
@@ -162,22 +171,22 @@ class LookupModule(LookupBase):
         if not HAS_BOTO3:
             raise AnsibleError('botocore and boto3 are required for aws_ssm lookup.')
 
-        missing = on_missing.lower()
+        missing = self._lookup_variable(on_missing).lower()
         if not isinstance(missing, string_types) or missing not in ['error', 'warn', 'skip']:
             raise AnsibleError('"on_missing" must be a string and one of "error", "warn" or "skip", not %s' % missing)
 
-        denied = on_denied.lower()
+        denied = self._lookup_variable(on_denied).lower()
         if not isinstance(denied, string_types) or denied not in ['error', 'warn', 'skip']:
             raise AnsibleError('"on_denied" must be a string and one of "error", "warn" or "skip", not %s' % denied)
 
         credentials = {}
         if aws_profile:
-            credentials['aws_profile'] = aws_profile
+            credentials['aws_profile'] = self._lookup_variable(aws_profile)
         else:
-            credentials['aws_profile'] = boto_profile
-        credentials['aws_secret_access_key'] = aws_secret_key
-        credentials['aws_access_key_id'] = aws_access_key
-        credentials['aws_session_token'] = aws_security_token
+            credentials['aws_profile'] = self._lookup_variable(boto_profile)
+        credentials['aws_secret_access_key'] = self._lookup_variable(aws_secret_key)
+        credentials['aws_access_key_id'] = self._lookup_variable(aws_access_key)
+        credentials['aws_session_token'] = self._lookup_variable(aws_security_token)
 
         # fallback to IAM role credentials
         if not credentials['aws_profile'] and not (
@@ -188,28 +197,33 @@ class LookupModule(LookupBase):
                 credentials['aws_secret_access_key'] = session.get_credentials().secret_key
                 credentials['aws_session_token'] = session.get_credentials().token
 
-        client = _boto3_conn(region, credentials)
+        client = _boto3_conn(self._lookup_variable(region), credentials)
 
         if bypath:
             secrets = {}
-            for term in terms:
+            for item in terms:
                 try:
+                    term = self._lookup_variable(item)
                     response = client.list_secrets(Filters=[{'Key': 'name', 'Values': [term]}])
 
                     if 'SecretList' in response:
                         for secret in response['SecretList']:
                             secrets.update({secret['Name']: self.get_secret_value(secret['Name'], client,
-                                                                                  on_missing=missing,
-                                                                                  on_denied=denied)})
+                                                                                  on_missing=self._lookup_variable(missing),
+                                                                                  on_denied=self._lookup_variable(denied))})
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
             secrets = [secrets]
         else:
             secrets = []
-            for term in terms:
+            for item in terms:
+                term = self._lookup_variable(item)
                 value = self.get_secret_value(term, client,
-                                              version_stage=version_stage, version_id=version_id,
-                                              on_missing=missing, on_denied=denied, nested=nested)
+                                              version_stage=self._lookup_variable(version_stage),
+                                              version_id=self._lookup_variable(version_id),
+                                              on_missing=self._lookup_variable(missing),
+                                              on_denied=self._lookup_variable(denied),
+                                              nested=self._lookup_variable(nested))
                 if value:
                     secrets.append(value)
             if join:
