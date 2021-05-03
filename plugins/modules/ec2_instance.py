@@ -120,7 +120,7 @@ options:
   vpc_subnet_id:
     description:
       - The subnet ID in which to launch the instance (VPC)
-        If none is provided, M(community.aws.ec2_instance) will chose the default zone of the default VPC.
+        If none is provided, M(amazon.aws.ec2_instance) will chose the default zone of the default VPC.
     aliases: ['subnet_id']
     type: str
   network:
@@ -287,19 +287,19 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Terminate every running instance in a region. Use with EXTREME caution.
-  community.aws.ec2_instance:
+  amazon.aws.ec2_instance:
     state: absent
     filters:
       instance-state-name: running
 
 - name: restart a particular instance by its ID
-  community.aws.ec2_instance:
+  amazon.aws.ec2_instance:
     state: restarted
     instance_ids:
       - i-12345678
 
 - name: start an instance with a public IP address
-  community.aws.ec2_instance:
+  amazon.aws.ec2_instance:
     name: "public-compute-instance"
     key_name: "prod-ssh-key"
     vpc_subnet_id: subnet-5ca1ab1e
@@ -312,7 +312,7 @@ EXAMPLES = '''
       Environment: Testing
 
 - name: start an instance and Add EBS
-  community.aws.ec2_instance:
+  amazon.aws.ec2_instance:
     name: "public-withebs-instance"
     vpc_subnet_id: subnet-5ca1ab1e
     instance_type: t2.micro
@@ -325,7 +325,7 @@ EXAMPLES = '''
           delete_on_termination: true
 
 - name: start an instance with a cpu_options
-  community.aws.ec2_instance:
+  amazon.aws.ec2_instance:
     name: "public-cpuoption-instance"
     vpc_subnet_id: subnet-5ca1ab1e
     tags:
@@ -340,7 +340,7 @@ EXAMPLES = '''
         threads_per_core: 1
 
 - name: start an instance and have it begin a Tower callback on boot
-  community.aws.ec2_instance:
+  amazon.aws.ec2_instance:
     name: "tower-callback-test"
     key_name: "prod-ssh-key"
     vpc_subnet_id: subnet-5ca1ab1e
@@ -358,7 +358,7 @@ EXAMPLES = '''
       SomeThing: "A value"
 
 - name: start an instance with ENI (An existing ENI ID is required)
-  community.aws.ec2_instance:
+  amazon.aws.ec2_instance:
     name: "public-eni-instance"
     key_name: "prod-ssh-key"
     vpc_subnet_id: subnet-5ca1ab1e
@@ -375,7 +375,7 @@ EXAMPLES = '''
     image_id: ami-123456
 
 - name: add second ENI interface
-  community.aws.ec2_instance:
+  amazon.aws.ec2_instance:
     name: "public-eni-instance"
     network:
       interfaces:

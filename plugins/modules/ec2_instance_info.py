@@ -51,30 +51,30 @@ EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all instances
-  community.aws.ec2_instance_info:
+  amazon.aws.ec2_instance_info:
 
 - name: Gather information about all instances in AZ ap-southeast-2a
-  community.aws.ec2_instance_info:
+  amazon.aws.ec2_instance_info:
     filters:
       availability-zone: ap-southeast-2a
 
 - name: Gather information about a particular instance using ID
-  community.aws.ec2_instance_info:
+  amazon.aws.ec2_instance_info:
     instance_ids:
       - i-12345678
 
 - name: Gather information about any instance with a tag key Name and value Example
-  community.aws.ec2_instance_info:
+  amazon.aws.ec2_instance_info:
     filters:
       "tag:Name": Example
 
 - name: Gather information about any instance in states "shutting-down", "stopping", "stopped"
-  community.aws.ec2_instance_info:
+  amazon.aws.ec2_instance_info:
     filters:
       instance-state-name: [ "shutting-down", "stopping", "stopped" ]
 
 - name: Gather information about any instance with Name beginning with RHEL and an uptime of at least 60 minutes
-  community.aws.ec2_instance_info:
+  amazon.aws.ec2_instance_info:
     region: "{{ ec2_region }}"
     uptime: 60
     filters:
@@ -577,7 +577,7 @@ def main():
         supports_check_mode=True,
     )
     if module._name == 'ec2_instance_facts':
-        module.deprecate("The 'ec2_instance_facts' module has been renamed to 'ec2_instance_info'", date='2021-12-01', collection_name='community.aws')
+        module.deprecate("The 'ec2_instance_facts' module has been renamed to 'ec2_instance_info'", date='2021-12-01', collection_name='amazon.aws')
 
     try:
         connection = module.client('ec2')

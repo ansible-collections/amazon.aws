@@ -33,6 +33,8 @@ action_groups:
   - ec2_eni_info
   - ec2_group
   - ec2_group_info
+  - ec2_instance
+  - ec2_instance_info
   - ec2_key
   - ec2_snapshot
   - ec2_snapshot_info
