@@ -5,7 +5,7 @@
       aws_access_key: "{{ aws_access_key }}"
       aws_secret_key: "{{ aws_secret_key }}"
       aws_security_token: "{{ security_token | default(omit) }}"
-  # no_log: True
+  no_log: True
 
 - module_defaults:
     group/aws:
@@ -16,20 +16,18 @@
   block:
   - name: define secret name
     set_fact:
-      secret_name: "aws-lookup-secret"
-      secret_value: "{{ lookup('password', '/dev/null chars=ascii_lowercase,digits length=8') }}"
+      secret_name: "ansible-test-{{ resource_prefix | hash('md5') }}-secret"
+      secret_value: "{{ lookup('password', '/dev/null chars=ascii_lowercase,digits,punctuation length=16') }}"
       on_missing_secret: "skip"
 
-  
-  # we really need to test templating at plugin level (for that reason parameters are not passed using **connection_args)
   - name: lookup missing secret
     set_fact:
-      missing_secret: "{{ lookup('amazon.aws.aws_secret', '{{ secret_name }}', region='{{ connection_args.region }}', aws_access_key='{{ connection_args.aws_access_key }}', aws_secret_key='{{ connection_args.aws_secret_key }}', aws_security_token='{{ connection_args.aws_security_token }}', on_missing='{{ on_missing_secret }}') }}"
+      missing_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, region=connection_args.region, aws_access_key=connection_args.aws_access_key, aws_secret_key=connection_args.aws_secret_key, aws_security_token=connection_args.aws_security_token, on_missing=on_missing_secret) }}"
     when: connection_args.aws_security_token is defined
   
   - name: lookup missing secret
     set_fact:
-      missing_secret: "{{ lookup('amazon.aws.aws_secret', '{{ secret_name }}', region='{{ connection_args.region }}', aws_access_key='{{ connection_args.aws_access_key }}', aws_secret_key='{{ connection_args.aws_secret_key }}', on_missing='{{ on_missing_secret }}') }}"
+      missing_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, region=connection_args.region, aws_access_key=connection_args.aws_access_key, aws_secret_key=connection_args.aws_secret_key, on_missing=on_missing_secret) }}"
     when: connection_args.aws_security_token is undefined
   
   - name: assert that missing_secret is defined
@@ -52,12 +50,12 @@
   
   - name: read secret value
     set_fact:
-      look_secret: "{{ lookup('amazon.aws.aws_secret', '{{ secret_name }}', region='{{ connection_args.region }}', aws_access_key='{{ connection_args.aws_access_key }}', aws_secret_key='{{ connection_args.aws_secret_key }}', aws_security_token='{{ connection_args.aws_security_token }}') }}"
+      look_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, region=connection_args.region, aws_access_key=connection_args.aws_access_key, aws_secret_key=connection_args.aws_secret_key, aws_security_token=connection_args.aws_security_token) }}"
     when: connection_args.aws_security_token is defined
   
   - name: read secret value
     set_fact:
-      look_secret: "{{ lookup('amazon.aws.aws_secret', '{{ secret_name }}', region='{{ connection_args.region }}', aws_access_key='{{ connection_args.aws_access_key }}', aws_secret_key='{{ connection_args.aws_secret_key }}') }}"
+      look_secret: "{{ lookup('amazon.aws.aws_secret',secret_name, region=connection_args.region, aws_access_key=connection_args.aws_access_key, aws_secret_key=connection_args.aws_secret_key) }}"
     when: connection_args.aws_security_token is undefined
   
   - name: assert that secret was successfully retrieved
@@ -66,7 +64,7 @@
         - look_secret == secret_value
       
   always:
-    # delete secret create
+    # delete secret created
     - name: delete secret
       community.aws.aws_secret:
         region: "{{ aws_region }}"
