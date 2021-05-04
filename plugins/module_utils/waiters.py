@@ -162,6 +162,19 @@ ec2_data = {
                 },
             ]
         },
+        "SnapshotCompleted": {
+            "delay": 15,
+            "operation": "DescribeSnapshots",
+            "maxAttempts": 40,
+            "acceptors": [
+                {
+                    "expected": "completed",
+                    "matcher": "pathAll",
+                    "state": "success",
+                    "argument": "Snapshots[].State"
+                }
+            ]
+        },
         "SubnetAvailable": {
             "delay": 15,
             "operation": "DescribeSubnets",
@@ -556,6 +569,12 @@ waiters_by_name = {
         ec2_model('SecurityGroupExists'),
         core_waiter.NormalizedOperationMethod(
             ec2.describe_security_groups
+        )),
+    ('EC2', 'snapshot_completed'): lambda ec2: core_waiter.Waiter(
+        'snapshot_completed',
+        ec2_model('SnapshotCompleted'),
+        core_waiter.NormalizedOperationMethod(
+            ec2.describe_snapshots
         )),
     ('EC2', 'subnet_available'): lambda ec2: core_waiter.Waiter(
         'subnet_available',
