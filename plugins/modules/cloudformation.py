@@ -408,7 +408,7 @@ def create_stack(module, stack_params, cfn, events_limit):
     try:
         response = cfn.create_stack(**stack_params)
         # Use stack ID to follow stack state in case of on_create_failure = DELETE
-        result = stack_operation(cfn, response['StackId'], 'CREATE', events_limit, stack_params.get('ClientRequestToken', None))
+        result = stack_operation(module, cfn, response['StackId'], 'CREATE', events_limit, stack_params.get('ClientRequestToken', None))
     except Exception as err:
         module.fail_json_aws(err, msg="Failed to create stack {0}".format(stack_params.get('StackName')))
     if not result:
@@ -461,7 +461,7 @@ def create_changeset(module, stack_params, cfn, events_limit):
                     break
                 # Lets not hog the cpu/spam the AWS API
                 time.sleep(1)
-            result = stack_operation(cfn, stack_params['StackName'], 'CREATE_CHANGESET', events_limit)
+            result = stack_operation(module, cfn, stack_params['StackName'], 'CREATE_CHANGESET', events_limit)
             result['change_set_id'] = cs['Id']
             result['warnings'] = ['Created changeset named %s for stack %s' % (changeset_name, stack_params['StackName']),
                                   'You can execute it using: aws cloudformation execute-change-set --change-set-name %s' % cs['Id'],
@@ -488,7 +488,7 @@ def update_stack(module, stack_params, cfn, events_limit):
     # don't need to be updated.
     try:
         cfn.update_stack(**stack_params)
-        result = stack_operation(cfn, stack_params['StackName'], 'UPDATE', events_limit, stack_params.get('ClientRequestToken', None))
+        result = stack_operation(module, cfn, stack_params['StackName'], 'UPDATE', events_limit, stack_params.get('ClientRequestToken', None))
     except is_boto3_error_message('No updates are to be performed.'):
         result = dict(changed=False, output='Stack is already up-to-date.')
     except Exception as err:
@@ -502,7 +502,7 @@ def update_termination_protection(module, cfn, stack_name, desired_termination_p
     '''updates termination protection of a stack'''
     if not boto_supports_termination_protection(cfn):
         module.fail_json(msg="termination_protection parameter requires botocore >= 1.7.18")
-    stack = get_stack_facts(cfn, stack_name)
+    stack = get_stack_facts(module, cfn, stack_name)
     if stack:
         if stack['EnableTerminationProtection'] is not desired_termination_protection_state:
             try:
@@ -518,12 +518,12 @@ def boto_supports_termination_protection(cfn):
     return hasattr(cfn, "update_termination_protection")
 
 
-def stack_operation(cfn, stack_name, operation, events_limit, op_token=None):
+def stack_operation(module, cfn, stack_name, operation, events_limit, op_token=None):
     '''gets the status of a stack while it is created/updated/deleted'''
     existed = []
     while True:
         try:
-            stack = get_stack_facts(cfn, stack_name)
+            stack = get_stack_facts(module, cfn, stack_name, raise_errors=True)
             existed.append('yes')
         except Exception:
             # If the stack previously existed, and now can't be found then it's
@@ -609,12 +609,16 @@ def check_mode_changeset(module, stack_params, cfn):
         module.fail_json_aws(err)
 
 
-def get_stack_facts(cfn, stack_name):
+def get_stack_facts(module, cfn, stack_name, raise_errors=False):
     try:
         stack_response = cfn.describe_stacks(StackName=stack_name)
         stack_info = stack_response['Stacks'][0]
     except is_boto3_error_message('does not exist'):
         return None
+    except (botocore.exceptions.ValidationError, botocore.exceptions.ClientError) as err:  # pylint: disable=duplicate-except
+        if raise_errors:
+            raise err
+        module.fail_json_aws(err, msg="Failed to describe stack")
 
     if stack_response and stack_response.get('Stacks', None):
         stacks = stack_response['Stacks']
@@ -745,7 +749,7 @@ def main():
     if boto_supports_termination_protection(cfn):
         cfn.update_termination_protection = backoff_wrapper(cfn.update_termination_protection)
 
-    stack_info = get_stack_facts(cfn, stack_params['StackName'])
+    stack_info = get_stack_facts(module, cfn, stack_params['StackName'])
 
     if module.check_mode:
         if state == 'absent' and stack_info:
@@ -770,7 +774,7 @@ def main():
 
         # format the stack output
 
-        stack = get_stack_facts(cfn, stack_params['StackName'])
+        stack = get_stack_facts(module, cfn, stack_params['StackName'])
         if stack is not None:
             if result.get('stack_outputs') is None:
                 # always define stack_outputs, but it may be empty
@@ -796,7 +800,7 @@ def main():
         # so must describe the stack first
 
         try:
-            stack = get_stack_facts(cfn, stack_params['StackName'])
+            stack = get_stack_facts(module, cfn, stack_params['StackName'])
             if not stack:
                 result = {'changed': False, 'output': 'Stack not found.'}
             else:
@@ -804,7 +808,7 @@ def main():
                     cfn.delete_stack(StackName=stack_params['StackName'])
                 else:
                     cfn.delete_stack(StackName=stack_params['StackName'], RoleARN=stack_params['RoleARN'])
-                result = stack_operation(cfn, stack_params['StackName'], 'DELETE', module.params.get('events_limit'),
+                result = stack_operation(module, cfn, stack_params['StackName'], 'DELETE', module.params.get('events_limit'),
                                          stack_params.get('ClientRequestToken', None))
         except Exception as err:
             module.fail_json_aws(err)
