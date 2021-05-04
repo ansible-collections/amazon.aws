@@ -132,14 +132,14 @@ options:
       - This option cannot be used together with a I(delete_object_ownership) definition.
     choices: [ 'BucketOwnerPreferred', 'ObjectWriter' ]
     type: str
-    version_added: 1.5.0
+    version_added: 2.0.0
   delete_object_ownership:
     description:
       - Delete bucket's ownership controls.
       - This option cannot be used together with a I(object_ownership) definition.
     default: false
     type: bool
-    version_added: 1.5.0
+    version_added: 2.0.0
 
 extends_documentation_fragment:
 - amazon.aws.aws
