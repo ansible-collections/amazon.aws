@@ -40,6 +40,14 @@ Bugfixes
 - ec2_vol - create or update now preserves the existing tags, including Name (https://github.com/ansible-collections/amazon.aws/issues/229)
 - ec2_vol - fix exception when platform information isn't available (https://github.com/ansible-collections/amazon.aws/issues/305).
 
+v1.4.1
+======
+
+Minor Changes
+-------------
+
+- module_utils - the ipaddress module utility has been vendored into this collection. This eliminates the collection dependency on ansible.netcommon (which had removed the library in its 2.0 release). The ipaddress library is provided for internal use in this collection only. (https://github.com/ansible-collections/amazon.aws/issues/273)-
+
 v1.4.0
 ======
 
@@ -52,7 +60,6 @@ Minor Changes
 - aws_secret - add ``bypath`` functionality (https://github.com/ansible-collections/amazon.aws/pull/192).
 - ec2_key - add AWSRetry decorator to automatically retry on common temporary failures (https://github.com/ansible-collections/amazon.aws/pull/213).
 - ec2_vol - Add support for gp3 volumes and support for modifying existing volumes (https://github.com/ansible-collections/amazon.aws/issues/55).
-- module_utils - the ipaddress module utility has been vendored into this collection.  This eliminates the collection dependency on ansible.netcommon (which had removed the library in its 2.0 release).  The ipaddress library is provided for internal use in this collection only. (https://github.com/ansible-collections/amazon.aws/issues/273)-
 - module_utils/elbv2 - add logic to compare_rules to suit Values list nested within dicts unique to each field type. Fixes issue (https://github.com/ansible-collections/amazon.aws/issues/187)
 - various AWS plugins and module_utils - Cleanup unused imports (https://github.com/ansible-collections/amazon.aws/pull/217).
 
