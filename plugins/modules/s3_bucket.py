@@ -25,7 +25,9 @@ short_description: Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 
 description:
     - Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID.
 requirements: [ boto3 ]
-author: "Rob White (@wimnat)"
+author:
+    - Rob White (@wimnat)
+    - Aubin Bikouo (@abikouo)
 options:
   force:
     description:
@@ -120,6 +122,24 @@ options:
     default: false
     type: bool
     version_added: 1.3.0
+  object_ownership:
+    description:
+      - Allow bucket's ownership controls.
+      - C(BucketOwnerPreferred) - Objects uploaded to the bucket change ownership to the bucket owner
+        if the objects are uploaded with the bucket-owner-full-control canned ACL.
+      - C(ObjectWriter) - The uploading account will own the object
+        if the object is uploaded with the bucket-owner-full-control canned ACL.
+      - This option cannot be used together with a I(delete_object_ownership) definition.
+    choices: [ 'BucketOwnerPreferred', 'ObjectWriter' ]
+    type: str
+    version_added: 2.0.0
+  delete_object_ownership:
+    description:
+      - Delete bucket's ownership controls.
+      - This option cannot be used together with a I(object_ownership) definition.
+    default: false
+    type: bool
+    version_added: 2.0.0
 
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -202,6 +222,18 @@ EXAMPLES = '''
     name: mys3bucket
     state: present
     delete_public_access: true
+
+# Create a bucket with object ownership controls set to ObjectWriter
+- amazon.aws.s3_bucket:
+    name: mys3bucket
+    state: present
+    object_ownership: ObjectWriter
+
+# Delete onwership controls from bucket
+- amazon.aws.s3_bucket:
+    name: mys3bucket
+    state: present
+    delete_object_ownership: true
 '''
 
 import json
@@ -240,6 +272,8 @@ def create_or_update_bucket(s3_client, module, location):
     encryption_key_id = module.params.get("encryption_key_id")
     public_access = module.params.get("public_access")
     delete_public_access = module.params.get("delete_public_access")
+    delete_object_ownership = module.params.get("delete_object_ownership")
+    object_ownership = module.params.get("object_ownership")
     changed = False
     result = {}
 
@@ -440,6 +474,23 @@ def create_or_update_bucket(s3_client, module, location):
             changed = True
             result['public_access_block'] = {}
 
+    # -- Bucket ownership
+    bucket_ownership = get_bucket_ownership_cntrl(s3_client, module, name)
+    result['object_ownership'] = bucket_ownership
+    if delete_object_ownership or object_ownership is not None:
+        if delete_object_ownership:
+            # delete S3 buckect ownership
+            if bucket_ownership is not None:
+                delete_bucket_ownership(s3_client, name)
+                changed = True
+                result['object_ownership'] = None
+        else:
+            # update S3 bucket ownership
+            if bucket_ownership != object_ownership:
+                put_bucket_ownership(s3_client, name, object_ownership)
+                changed = True
+                result['object_ownership'] = object_ownership
+
     # Module exit
     module.exit_json(changed=changed, name=name, **result)
 
@@ -588,6 +639,26 @@ def delete_bucket_public_access(s3_client, bucket_name):
     s3_client.delete_public_access_block(Bucket=bucket_name)
 
 
+@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
+def delete_bucket_ownership(s3_client, bucket_name):
+    '''
+    Delete bucket ownership controls from S3 bucket
+    '''
+    s3_client.delete_bucket_ownership_controls(Bucket=bucket_name)
+
+
+@AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
+def put_bucket_ownership(s3_client, bucket_name, target):
+    '''
+    Put bucket ownership controls for S3 bucket
+    '''
+    s3_client.put_bucket_ownership_controls(
+        Bucket=bucket_name,
+        OwnershipControls={
+            'Rules': [{'ObjectOwnership': target}]
+        })
+
+
 def wait_policy_is_applied(module, s3_client, bucket_name, expected_policy, should_fail=True):
     for dummy in range(0, 12):
         try:
@@ -690,6 +761,19 @@ def get_bucket_public_access(s3_client, bucket_name):
         return bucket_public_access_block['PublicAccessBlockConfiguration']
     except is_boto3_error_code('NoSuchPublicAccessBlockConfiguration'):
         return {}
+
+
+def get_bucket_ownership_cntrl(s3_client, module, bucket_name):
+    '''
+    Get current bucket public access block
+    '''
+    if not module.botocore_at_least('1.8.11'):
+        return None
+    try:
+        bucket_ownership = s3_client.get_bucket_ownership_controls(Bucket=bucket_name)
+        return bucket_ownership['OwnershipControls']['Rules'][0]['ObjectOwnership']
+    except is_boto3_error_code(['OwnershipControlsNotFoundError', 'NoSuchOwnershipControls']):
+        return None
 
 
 def paginated_list(s3_client, **pagination_params):
@@ -809,7 +893,9 @@ def main():
             ignore_public_acls=dict(type='bool', default=False),
             block_public_policy=dict(type='bool', default=False),
             restrict_public_buckets=dict(type='bool', default=False))),
-        delete_public_access=dict(type='bool', default=False)
+        delete_public_access=dict(type='bool', default=False),
+        object_ownership=dict(type='str', choices=['BucketOwnerPreferred', 'ObjectWriter']),
+        delete_object_ownership=dict(type='bool', default=False),
     )
 
     required_by = dict(
@@ -817,7 +903,8 @@ def main():
     )
 
     mutually_exclusive = [
-        ['public_access', 'delete_public_access']
+        ['public_access', 'delete_public_access'],
+        ['delete_object_ownership', 'object_ownership']
     ]
 
     module = AnsibleAWSModule(
@@ -857,6 +944,12 @@ def main():
     state = module.params.get("state")
     encryption = module.params.get("encryption")
     encryption_key_id = module.params.get("encryption_key_id")
+    delete_object_ownership = module.params.get('delete_object_ownership')
+    object_ownership = module.params.get('object_ownership')
+
+    if delete_object_ownership is not None or object_ownership is not None:
+        if not module.botocore_at_least('1.8.11'):
+            module.fail_json(msg="Managing bucket ownership controls requires botocore version >= 1.8.11")
 
     if not hasattr(s3_client, "get_bucket_encryption"):
         if encryption is not None:
