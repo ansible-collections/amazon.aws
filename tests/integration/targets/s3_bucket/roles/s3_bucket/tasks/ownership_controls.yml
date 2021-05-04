@@ -90,6 +90,18 @@
         that:
           - output.changed
           - not output.object_ownership|bool
+    
+    - name: 'delete s3 bucket ownership controls once again (idempotency)'
+      s3_bucket:
+        name: '{{ local_bucket_name }}'
+        state: present
+        delete_object_ownership: true
+      register: idempotency
+
+    - assert:
+        that:
+          - not idempotency.changed
+          - not idempotency.object_ownership|bool
 
   # ============================================================
   always:
