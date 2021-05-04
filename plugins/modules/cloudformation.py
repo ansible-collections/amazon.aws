@@ -344,6 +344,7 @@ from ansible.module_utils._text import to_bytes
 from ansible.module_utils._text import to_native
 
 from ..module_utils.core import AnsibleAWSModule
+from ..module_utils.core import is_boto3_error_message
 from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import boto_exception
@@ -366,12 +367,11 @@ def get_stack_events(cfn, stack_name, events_limit, token_filter=None):
             ))
         else:
             events = list(pg.search("StackEvents[*]"))
-    except (botocore.exceptions.ValidationError, botocore.exceptions.ClientError) as err:
+    except is_boto3_error_message('does not exist'):
+        ret['log'].append('Stack does not exist.')
+        return ret
+    except (botocore.exceptions.ValidationError, botocore.exceptions.ClientError) as err:  # pylint: disable=duplicate-except
         error_msg = boto_exception(err)
-        if 'does not exist' in error_msg:
-            # missing stack, don't bail.
-            ret['log'].append('Stack does not exist.')
-            return ret
         ret['log'].append('Unknown error: ' + str(error_msg))
         return ret
 
@@ -466,12 +466,10 @@ def create_changeset(module, stack_params, cfn, events_limit):
             result['warnings'] = ['Created changeset named %s for stack %s' % (changeset_name, stack_params['StackName']),
                                   'You can execute it using: aws cloudformation execute-change-set --change-set-name %s' % cs['Id'],
                                   'NOTE that dependencies on this stack might fail due to pending changes!']
+    except is_boto3_error_message('No updates are to be performed.'):
+        result = dict(changed=False, output='Stack is already up-to-date.')
     except Exception as err:
-        error_msg = boto_exception(err)
-        if 'No updates are to be performed.' in error_msg:
-            result = dict(changed=False, output='Stack is already up-to-date.')
-        else:
-            module.fail_json_aws(err, msg='Failed to create change set')
+        module.fail_json_aws(err, msg='Failed to create change set')
 
     if not result:
         module.fail_json(msg="empty result")
@@ -491,12 +489,10 @@ def update_stack(module, stack_params, cfn, events_limit):
     try:
         cfn.update_stack(**stack_params)
         result = stack_operation(cfn, stack_params['StackName'], 'UPDATE', events_limit, stack_params.get('ClientRequestToken', None))
+    except is_boto3_error_message('No updates are to be performed.'):
+        result = dict(changed=False, output='Stack is already up-to-date.')
     except Exception as err:
-        error_msg = boto_exception(err)
-        if 'No updates are to be performed.' in error_msg:
-            result = dict(changed=False, output='Stack is already up-to-date.')
-        else:
-            module.fail_json_aws(err, msg="Failed to update stack {0}".format(stack_params.get('StackName')))
+        module.fail_json_aws(err, msg="Failed to update stack {0}".format(stack_params.get('StackName')))
     if not result:
         module.fail_json(msg="empty result")
     return result
@@ -617,14 +613,8 @@ def get_stack_facts(cfn, stack_name):
     try:
         stack_response = cfn.describe_stacks(StackName=stack_name)
         stack_info = stack_response['Stacks'][0]
-    except (botocore.exceptions.ValidationError, botocore.exceptions.ClientError) as err:
-        error_msg = boto_exception(err)
-        if 'does not exist' in error_msg:
-            # missing stack, don't bail.
-            return None
-
-        # other error, bail.
-        raise err
+    except is_boto3_error_message('does not exist'):
+        return None
 
     if stack_response and stack_response.get('Stacks', None):
         stacks = stack_response['Stacks']
