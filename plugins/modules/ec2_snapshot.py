@@ -225,6 +225,9 @@ def _describe_snapshots(ec2, **params):
     return paginator.paginate(**params).build_full_result()
 
 
+# Handle SnapshotCreationPerVolumeRateExceeded separately because we need a much
+# longer delay than normal
+@AWSRetry.jittered_backoff(catch_extra_error_codes=['SnapshotCreationPerVolumeRateExceeded'], delay=15)
 def _create_snapshot(ec2, **params):
     # Fast retry on common failures ('global' rate limits)
     return ec2.create_snapshot(aws_retry=True, **params)

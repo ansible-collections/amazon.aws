@@ -178,11 +178,6 @@
 #        that:
 #          - result is changed
 
-    #  Wait at least 15 seconds between concurrent volume snapshots.
-    - name: Prevent SnapshotCreationPerVolumeRateExceeded errors
-      pause:
-        seconds: 15
-
     - name: Take snapshot and tag it
       ec2_snapshot:
         volume_id: '{{ volume_id }}'
@@ -223,6 +218,9 @@
           ResourcePrefix: '{{ resource_prefix }}'
       loop: '{{ range(1, 6, 1) | list }}'
       loop_control:
+        # Anything under 15 will trigger SnapshotCreationPerVolumeRateExceeded,
+        # this should now be automatically handled, but pause a little anyway to
+        # avoid being aggressive
         pause: 10
         label: "Generate extra snapshots - {{ item }}"
 
