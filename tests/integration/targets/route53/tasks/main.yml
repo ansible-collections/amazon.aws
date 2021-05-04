@@ -29,12 +29,15 @@
     route53_zone:
       zone: '{{ zone_one }}'
       comment: 'Created in Ansible test {{ resource_prefix }}'
+      tags:
+        TestTag: '{{ resource_prefix }}.z1'
     register: z1
   - assert:
       that:
         - z1 is success
         - z1 is changed
         - "z1.comment == 'Created in Ansible test {{ resource_prefix }}'"
+        - "z1.tags.TestTag == '{{ resource_prefix }}.z1'"
 
   - name: 'Get zone details'
     route53_info:
@@ -53,12 +56,15 @@
       vpc_id: '{{ vpc.vpc.id }}'
       vpc_region: '{{ aws_region }}'
       comment: Created in Ansible test {{ resource_prefix }}
+      tags:
+        TestTag: '{{ resource_prefix }}.z2'
     register: z2
   - assert:
       that:
         - z2 is success
         - z2 is changed
         - "z2.comment == 'Created in Ansible test {{ resource_prefix }}'"
+        - "z2.tags.TestTag == '{{ resource_prefix }}.z2'"
 
   - name: Get zone details
     route53_info:
