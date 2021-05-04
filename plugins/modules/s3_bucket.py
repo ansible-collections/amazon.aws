@@ -509,10 +509,15 @@ def create_or_update_bucket(s3_client, module, location):
 
 
 def bucket_exists(s3_client, bucket_name):
-    # head_bucket appeared to be really inconsistent, so we use list_buckets instead,
-    # and loop over all the buckets, even if we know it's less performant :(
-    all_buckets = s3_client.list_buckets(Bucket=bucket_name)['Buckets']
-    return any(bucket['Name'] == bucket_name for bucket in all_buckets)
+    try:
+        s3_client.head_bucket(Bucket=bucket_name)
+        bucket_exists = True
+    except ClientError as e:
+        if e.response['Error']['Code'] == '404':
+            bucket_exists = False
+        else:
+            raise
+    return bucket_exists
 
 
 @AWSRetry.exponential_backoff(max_delay=120)
