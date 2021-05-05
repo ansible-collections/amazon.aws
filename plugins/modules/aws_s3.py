@@ -530,8 +530,7 @@ def option_in_extra_args(option):
 
 
 def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, src=None, content=None):
-    tags = module.params.get("tags")
-    purge_tags = module.params.get("purge_tags")
+    result = {}
 
     if module.check_mode:
         module.exit_json(msg="PUT operation skipped - running in check mode", changed=True)
@@ -584,35 +583,7 @@ def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, s
         module.fail_json_aws(e, msg="Unable to set object ACL")
 
     # Tags
-    try:
-        current_tags_dict = get_current_object_tags_dict(s3, bucket, obj)
-    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
-        module.warn("GetObjectTagging is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning.")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to get object tags.")
-    else:
-        if tags is not None:
-            # Tags are always returned as text
-            tags = dict((to_text(k), to_text(v)) for k, v in tags.items())
-            if not purge_tags:
-                # Ensure existing tags that aren't updated by desired tags remain
-                current_copy = current_tags_dict.copy()
-                current_copy.update(tags)
-                tags = current_copy
-            if current_tags_dict != tags:
-                if tags:
-                    try:
-                        put_object_tagging(s3, bucket, obj, tags)
-                    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                        module.fail_json_aws(e, msg="Failed to update object tags.")
-                else:
-                    if purge_tags:
-                        try:
-                            delete_object_tagging(s3, bucket, obj)
-                        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                            module.fail_json_aws(e, msg="Failed to delete object tags.")
-                current_tags_dict = wait_tags_are_applied(module, s3, bucket, obj, tags)
-                changed = True
+    tags, changed = ensure_tags(s3, module, bucket, obj)
 
     try:
         url = s3.generate_presigned_url(ClientMethod='put_object',
@@ -621,7 +592,7 @@ def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, s
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to generate presigned URL")
 
-    module.exit_json(msg="PUT operation complete", url=url, changed=True)
+    module.exit_json(msg="PUT operation complete", url=url, tags=tags, changed=True)
 
 
 def download_s3file(module, s3, bucket, obj, dest, retries, version=None):
@@ -679,12 +650,12 @@ def download_s3str(module, s3, bucket, obj, version=None, validate=True):
         module.fail_json_aws(e, msg="Failed while getting contents of object %s as a string." % obj)
 
 
-def get_download_url(module, s3, bucket, obj, expiry, changed=True):
+def get_download_url(module, s3, bucket, obj, expiry, tags=None, changed=True):
     try:
         url = s3.generate_presigned_url(ClientMethod='get_object',
                                         Params={'Bucket': bucket, 'Key': obj},
                                         ExpiresIn=expiry)
-        module.exit_json(msg="Download url:", url=url, expiry=expiry, changed=changed)
+        module.exit_json(msg="Download url:", url=url, tags=tags, expiry=expiry, changed=changed)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed while getting download url.")
 
@@ -730,9 +701,12 @@ def get_s3_connection(module, aws_connect_kwargs, location, rgw, s3_url, sig_4=F
     return boto3_conn(**params)
 
 
-def get_current_object_tags_dict(s3, bucket, obj):
+def get_current_object_tags_dict(s3, bucket, obj, version=None):
     try:
-        current_tags = s3.get_object_tagging(Bucket=bucket, Key=obj).get('TagSet')
+        if version:
+            current_tags = s3.get_object_tagging(Bucket=bucket, Key=obj, VersionId=version).get('TagSet')
+        else:
+            current_tags = s3.get_object_tagging(Bucket=bucket, Key=obj).get('TagSet')
     except is_boto3_error_code('NoSuchTagSet'):
         return {}
     except is_boto3_error_code('NoSuchTagSetError'):  # pylint: disable=duplicate-except
@@ -751,10 +725,10 @@ def delete_object_tagging(s3, bucket, obj):
     s3.delete_object_tagging(Bucket=bucket, Key=obj)
 
 
-def wait_tags_are_applied(module, s3, bucket, obj, expected_tags_dict):
+def wait_tags_are_applied(module, s3, bucket, obj, expected_tags_dict, version=None):
     for dummy in range(0, 12):
         try:
-            current_tags_dict = get_current_object_tags_dict(s3, bucket, obj)
+            current_tags_dict = get_current_object_tags_dict(s3, bucket, obj, version)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Failed to get object tags.")
         if current_tags_dict != expected_tags_dict:
@@ -764,6 +738,41 @@ def wait_tags_are_applied(module, s3, bucket, obj, expected_tags_dict):
 
     module.fail_json(msg="Object tags failed to apply in the expected time.",
                      requested_tags=expected_tags_dict, live_tags=current_tags_dict)
+
+
+def ensure_tags(client, module, bucket, obj):
+    tags = module.params.get("tags")
+    purge_tags = module.params.get("purge_tags")
+    changed = False
+
+    try:
+        current_tags_dict = get_current_object_tags_dict(client, bucket, obj)
+    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
+        module.warn("GetObjectTagging is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning.")
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to get object tags.")
+    else:
+        if tags is not None:
+            if not purge_tags:
+                # Ensure existing tags that aren't updated by desired tags remain
+                current_copy = current_tags_dict.copy()
+                current_copy.update(tags)
+                tags = current_copy
+            if current_tags_dict != tags:
+                if tags:
+                    try:
+                        put_object_tagging(client, bucket, obj, tags)
+                    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                        module.fail_json_aws(e, msg="Failed to update object tags.")
+                else:
+                    if purge_tags:
+                        try:
+                            delete_object_tagging(client, bucket, obj)
+                        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                            module.fail_json_aws(e, msg="Failed to delete object tags.")
+                current_tags_dict = wait_tags_are_applied(module, client, bucket, obj, tags)
+                changed = True
+    return current_tags_dict, changed
 
 
 def main():
@@ -924,9 +933,9 @@ def main():
         # these were separated into the variables bucket_acl and object_acl above
 
         if content is None and content_base64 is None and src is None:
-            module.fail_json('Either content, content_base64 or src must be specified for PUT operations')
+            module.fail_json(msg='Either content, content_base64 or src must be specified for PUT operations')
         if src is not None and not path_check(src):
-            module.fail_json('Local object "%s" does not exist for PUT operation' % (src))
+            module.fail_json(msg='Local object "%s" does not exist for PUT operation' % (src))
 
         keyrtn = None
         if bucketrtn:
@@ -946,8 +955,9 @@ def main():
 
         if keyrtn and overwrite != 'always':
             if overwrite == 'never' or etag_compare(module, s3, bucket, obj, version=version, local_file=src, content=bincontent):
-                # Return the download URL for the existing object
-                get_download_url(module, s3, bucket, obj, expiry, changed=False)
+                # Return the download URL for the existing object and ensure tags are updated
+                tags, tags_update = ensure_tags(s3, module, bucket, obj)
+                get_download_url(module, s3, bucket, obj, expiry, tags, changed=tags_update)
 
         # only use valid object acls for the upload_s3file function
         module.params['permission'] = object_acl
@@ -1024,7 +1034,8 @@ def main():
 
         keyrtn = key_check(module, s3, bucket, obj, version=version, validate=validate)
         if keyrtn:
-            get_download_url(module, s3, bucket, obj, expiry)
+            tags = get_current_object_tags_dict(s3, bucket, obj, version=version)
+            get_download_url(module, s3, bucket, obj, expiry, tags)
         else:
             module.fail_json(msg="Key %s does not exist." % obj)
 
