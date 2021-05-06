@@ -51,9 +51,6 @@ options:
     required: false
     choices: ['automated', 'manual', 'shared', 'public']
     type: str
-requirements:
-    - "python >= 2.6"
-    - "boto3"
 author:
     - "Will Thames (@willthames)"
 extends_documentation_fragment:
