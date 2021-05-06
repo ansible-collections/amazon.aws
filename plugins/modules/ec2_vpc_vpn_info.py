@@ -14,7 +14,6 @@ short_description: Gather information about VPN Connections in AWS.
 description:
     - Gather information about VPN Connections in AWS.
     - This module was called C(ec2_vpc_vpn_facts) before Ansible 2.9. The usage did not change.
-requirements: [ boto3 ]
 author: Madhura Naniwadekar (@Madhura-CSI)
 options:
   filters:
