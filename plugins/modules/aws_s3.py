@@ -530,8 +530,6 @@ def option_in_extra_args(option):
 
 
 def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, src=None, content=None):
-    result = {}
-
     if module.check_mode:
         module.exit_json(msg="PUT operation skipped - running in check mode", changed=True)
     try:
