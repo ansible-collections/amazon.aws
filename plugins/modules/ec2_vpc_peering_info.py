@@ -13,7 +13,6 @@ version_added: 1.0.0
 description:
   - Gets various details related to AWS VPC Peers
   - This module was called C(ec2_vpc_peering_facts) before Ansible 2.9. The usage did not change.
-requirements: [ boto3 ]
 options:
   peer_connection_ids:
     description:

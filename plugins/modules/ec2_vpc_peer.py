@@ -61,8 +61,6 @@ author: Mike Mochan (@mmochan)
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
-requirements: [ botocore, boto3, json ]
 '''
 
 EXAMPLES = '''
