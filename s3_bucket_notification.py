@@ -81,8 +81,6 @@ options:
       - Optional suffix to limit the notifications to objects with keys that end with matching
         characters.
     type: str
-requirements:
-    - boto3
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2

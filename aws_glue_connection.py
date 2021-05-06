@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: Manage an AWS Glue connection
 description:
     - Manage an AWS Glue connection. See U(https://aws.amazon.com/glue/) for details.
-requirements: [ boto3 ]
 author: "Rob White (@wimnat)"
 options:
   availability_zone:

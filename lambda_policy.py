@@ -97,8 +97,6 @@ options:
       -  Token string representing source ARN or account. Mutually exclusive with I(source_arn) or I(source_account).
     type: str
 
-requirements:
-    - boto3
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2

@@ -34,8 +34,6 @@ options:
       - When I(query=mappings), this is the Amazon Resource Name (ARN) of the Amazon Kinesis or DynamoDB stream.
     type: str
 author: Pierre Jodouin (@pjodouin)
-requirements:
-    - boto3
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2

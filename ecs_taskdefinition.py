@@ -14,7 +14,6 @@ short_description: register a task definition in ecs
 description:
     - Registers or deregisters task definitions in the Amazon Web Services (AWS) EC2 Container Service (ECS).
 author: Mark Chance (@Java1Guy)
-requirements: [ json, botocore, boto3 ]
 options:
     state:
         description:

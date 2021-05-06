@@ -17,8 +17,10 @@ description:
   - Returns the status of the specified table.
 author: Alan Loi (@loia)
 requirements:
-  - "boto >= 2.37.0"
-  - "boto3 >= 1.4.4 (for tagging)"
+- python >= 3.6
+- boto >= 2.49.0
+- boto3 >= 1.13.0
+- botocore >= 1.16.0
 options:
   state:
     description:

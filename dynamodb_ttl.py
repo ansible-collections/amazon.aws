@@ -12,8 +12,7 @@ module: dynamodb_ttl
 version_added: 1.0.0
 short_description: Set TTL for a given DynamoDB table
 description:
-- Uses boto3 to set TTL.
-- Requires botocore version 1.5.24 or higher.
+- Sets the TTL for a given DynamoDB table.
 options:
   state:
     description:
@@ -37,8 +36,6 @@ author: Ted Timmons (@tedder)
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
-requirements: [ botocore>=1.5.24, boto3 ]
 '''
 
 EXAMPLES = '''

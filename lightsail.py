@@ -67,9 +67,6 @@ options:
     default: 300
     type: int
 
-requirements:
-  - boto3
-
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2

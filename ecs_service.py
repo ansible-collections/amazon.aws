@@ -22,8 +22,6 @@ author:
     - "Darek Kaczynski (@kaczynskid)"
     - "Stephane Maarek (@simplesteph)"
     - "Zac Blazic (@zacblazic)"
-
-requirements: [ json, botocore, boto3 ]
 options:
     state:
         description:

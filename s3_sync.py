@@ -129,11 +129,6 @@ options:
       - The I(retries) option does nothing and will be removed after 2022-06-01
     type: str
 
-requirements:
-  - boto3 >= 1.4.4
-  - botocore
-  - python-dateutil
-
 author: Ted Timmons (@tedder)
 extends_documentation_fragment:
 - amazon.aws.aws

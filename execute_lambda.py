@@ -19,9 +19,6 @@ extends_documentation_fragment:
 - amazon.aws.ec2
 
 author: "Ryan Scott Brown (@ryansb) <ryansb@redhat.com>"
-requirements:
-  - python >= 2.6
-  - boto3
 notes:
   - Async invocation will always return an empty C(output) key.
   - Synchronous invocation may result in a function timeout, resulting in an

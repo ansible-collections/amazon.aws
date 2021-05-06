@@ -13,10 +13,6 @@ version_added: 1.0.0
 short_description: Manage RDS instances
 description:
     - Create, modify, and delete RDS instances.
-
-requirements:
-    - botocore
-    - boto3 >= 1.5.0
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2

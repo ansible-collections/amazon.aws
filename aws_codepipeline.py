@@ -18,7 +18,6 @@ description:
     - Create or delete a CodePipeline on AWS.
 author:
     - Stefan Horning (@stefanhorning) <horning@mediapeers.com>
-requirements: [ botocore, boto3 ]
 options:
     name:
         description:

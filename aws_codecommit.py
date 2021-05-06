@@ -16,12 +16,6 @@ description:
   - Supports creation and deletion of CodeCommit repositories.
   - See U(https://aws.amazon.com/codecommit/) for more information about CodeCommit.
 author: Shuang Wang (@ptux)
-
-requirements:
-  - botocore
-  - boto3
-  - python >= 2.6
-
 options:
   name:
     description:

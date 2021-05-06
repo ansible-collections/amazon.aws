@@ -15,7 +15,6 @@ description:
   - Retrieve the attributes of a server certificate.
   - This module was called C(iam_server_certificate_facts) before Ansible 2.9. The usage did not change.
 author: "Allen Sanabria (@linuxdynasty)"
-requirements: [boto3, botocore]
 options:
   name:
     description:

@@ -14,9 +14,6 @@ author:
 short_description: Get information about wafv2 ip sets
 description:
   - Get information about existing wafv2 ip sets.
-requirements:
-  - boto3
-  - botocore
 options:
     name:
       description:

@@ -81,10 +81,6 @@ options:
 extends_documentation_fragment:
 - amazon.aws.ec2
 - amazon.aws.aws
-
-requirements:
-  - boto3
-  - botocore
 '''
 
 EXAMPLES = """

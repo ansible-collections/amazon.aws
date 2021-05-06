@@ -54,8 +54,6 @@ options:
       to 1200 seconds (20 minutes).
     default: 1200
     type: int
-
-requirements: [ 'botocore', 'boto3' ]
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2

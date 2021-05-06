@@ -14,9 +14,6 @@ author:
 short_description: wafv2_web_acl
 description:
   - Info about web acl
-requirements:
-  - boto3
-  - botocore
 options:
     name:
       description:

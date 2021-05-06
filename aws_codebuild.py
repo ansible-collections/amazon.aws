@@ -18,7 +18,6 @@ description:
     - Create or delete a CodeBuild projects on AWS, used for building code artifacts from source code.
 author:
     - Stefan Horning (@stefanhorning) <horning@mediapeers.com>
-requirements: [ botocore, boto3 ]
 options:
     name:
         description:

@@ -25,7 +25,6 @@ version_added: 1.0.0
 short_description: Manage an Application Load Balancer
 description:
     - Manage an AWS Application Elastic Load Balancer. See U(https://aws.amazon.com/blogs/aws/new-aws-application-load-balancer/) for details.
-requirements: [ boto3 ]
 author: "Rob White (@wimnat)"
 options:
   access_logs_enabled:

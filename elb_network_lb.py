@@ -15,7 +15,6 @@ short_description: Manage a Network Load Balancer
 description:
     - Manage an AWS Network Elastic Load Balancer. See
       U(https://aws.amazon.com/blogs/aws/new-network-load-balancer-effortless-scaling-to-millions-of-requests-per-second/) for details.
-requirements: [ boto3 ]
 author: "Rob White (@wimnat)"
 options:
   cross_zone_load_balancing:

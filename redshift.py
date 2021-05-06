@@ -179,7 +179,6 @@ options:
     type: bool
     default: 'yes'
     version_added: "1.3.0"
-requirements: [ 'boto3' ]
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2

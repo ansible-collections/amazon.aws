@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: create and maintain EFS file systems
 description:
     - Module allows create, search and destroy Amazon EFS file systems.
-requirements: [ boto3 ]
 author:
     - "Ryan Sydnor (@ryansydnor)"
     - "Artem Kazakov (@akazakov)"

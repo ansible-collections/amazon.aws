@@ -14,7 +14,6 @@ short_description: Gather information about virtual gateways in AWS
 description:
     - Gather information about virtual gateways in AWS.
     - This module was called C(ec2_vpc_vgw_facts) before Ansible 2.9. The usage did not change.
-requirements: [ boto3 ]
 options:
   filters:
     description:

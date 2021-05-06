@@ -18,7 +18,6 @@ description:
     - Create or delete log_group in CloudWatchLogs.
 author:
     - Willian Ricardo (@willricardo) <willricardo@gmail.com>
-requirements: [ json, botocore, boto3 ]
 options:
     state:
       description:

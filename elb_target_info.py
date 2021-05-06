@@ -26,10 +26,6 @@ options:
       - Whether or not to get target groups not used by any load balancers.
     type: bool
     default: true
-
-requirements:
-    - boto3
-    - botocore
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2

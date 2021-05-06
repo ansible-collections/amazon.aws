@@ -16,7 +16,6 @@ short_description: Gather information about Redshift cluster(s)
 description:
   - Gather information about Redshift cluster(s).
   - This module was called C(redshift_facts) before Ansible 2.9. The usage did not change.
-requirements: [ boto3 ]
 options:
   cluster_identifier:
     description:

@@ -17,7 +17,6 @@ description:
     - This module was called C(cloudwatchlogs_log_group_facts) before Ansible 2.9. The usage did not change.
 author:
     - Willian Ricardo (@willricardo) <willricardo@gmail.com>
-requirements: [ botocore, boto3 ]
 options:
     log_group_name:
       description:

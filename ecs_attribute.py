@@ -14,7 +14,6 @@ short_description: manage ecs attributes
 description:
     - Create, update or delete ECS container instance attributes.
 author: Andrej Svenke (@anryko)
-requirements: [ botocore, boto3 ]
 options:
     cluster:
         description:

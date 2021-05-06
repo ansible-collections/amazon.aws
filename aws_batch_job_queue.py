@@ -59,8 +59,6 @@ options:
         compute_environment:
             type: str
             description: The name of the compute environment.
-requirements:
-    - boto3
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2

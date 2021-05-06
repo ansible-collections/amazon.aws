@@ -85,7 +85,6 @@ options:
             - This can only be false if both I(bounce_notifications) and I(complaint_notifications) specify SNS topics.
         type: 'bool'
         default: True
-requirements: [ 'botocore', 'boto3' ]
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2

@@ -55,9 +55,6 @@ options:
       - whether to remove tags not present in the C(tags) parameter.
     default: True
     type: bool
-requirements:
-    - "python >= 2.6"
-    - "boto3"
 author:
     - "Will Thames (@willthames)"
     - "Michael De La Rue (@mikedlr)"

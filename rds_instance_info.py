@@ -29,9 +29,6 @@ options:
       - A filter that specifies one or more DB instances to describe.
         See U(https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_DescribeDBInstances.html)
     type: dict
-requirements:
-    - "python >= 2.7"
-    - "boto3"
 author:
     - "Will Thames (@willthames)"
     - "Michael De La Rue (@mikedlr)"

@@ -15,7 +15,6 @@ description:
     - Manage an AWS Elastic Load Balancer target group. See
       U(https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html) or
       U(https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html) for details.
-requirements: [ boto3 ]
 author: "Rob White (@wimnat)"
 options:
   deregistration_delay_timeout:

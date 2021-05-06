@@ -14,7 +14,6 @@ short_description: Gather information about internet gateways in AWS
 description:
     - Gather information about internet gateways in AWS.
     - This module was called C(ec2_vpc_igw_facts) before Ansible 2.9. The usage did not change.
-requirements: [ boto3 ]
 author: "Nick Aslanidis (@naslanidis)"
 options:
   filters:

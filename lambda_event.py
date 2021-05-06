@@ -78,8 +78,6 @@ options:
         type: str
     required: true
     type: dict
-requirements:
-    - boto3
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2

@@ -17,7 +17,6 @@ description:
     - Resources are referenced by their cluster name.
 author:
   - Michael Pechner (@mpechner)
-requirements: [ boto3, botocore ]
 options:
   cluster_name:
     description:

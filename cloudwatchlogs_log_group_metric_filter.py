@@ -15,9 +15,6 @@ short_description: Manage CloudWatch log group metric filter
 description:
   - Create, modify and delete CloudWatch log group metric filter.
   - CloudWatch log group metric filter can be use with M(community.aws.ec2_metric_alarm).
-requirements:
-  - boto3
-  - botocore
 options:
     state:
       description:

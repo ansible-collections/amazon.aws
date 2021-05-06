@@ -16,7 +16,6 @@ description:
 author:
   - "Ben Tomasik (@tomislacker)"
   - "Ed Costello (@orthanc)"
-requirements: [ boto3, botocore ]
 options:
   name:
     description:

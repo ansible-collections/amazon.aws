@@ -17,7 +17,6 @@ notes:
 description:
     - Creates or terminates ecs clusters.
 author: Mark Chance (@Java1Guy)
-requirements: [ boto3 ]
 options:
     state:
         description:

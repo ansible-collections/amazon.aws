@@ -14,9 +14,6 @@ short_description: Manage Direct Connect virtual interfaces
 description:
   - Create, delete, or modify a Direct Connect public or private virtual interface.
 author: "Sloane Hertel (@s-hertel)"
-requirements:
-  - boto3
-  - botocore
 options:
   state:
     description:

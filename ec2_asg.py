@@ -15,7 +15,6 @@ description:
   - Can create or delete AWS AutoScaling Groups.
   - Can be used with the M(community.aws.ec2_lc) module to manage Launch Configurations.
 author: "Gareth Rushgrove (@garethr)"
-requirements: [ "boto3", "botocore" ]
 options:
   state:
     description:

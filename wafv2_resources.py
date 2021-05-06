@@ -14,9 +14,6 @@ author:
 short_description: wafv2_web_acl
 description:
   - Apply or remove wafv2 to other aws resources.
-requirements:
-  - boto3
-  - botocore
 options:
     state:
       description:

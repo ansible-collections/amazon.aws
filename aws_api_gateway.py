@@ -26,7 +26,6 @@ description:
      - swagger_file and swagger_text are passed directly on to AWS
        transparently whilst swagger_dict is an ansible dict which is
        converted to JSON before the API definitions are uploaded.
-requirements: [ boto3 ]
 options:
   api_id:
     description:
@@ -114,7 +113,6 @@ notes:
      ID so that an API can be created only once.
    - As an early work around an intermediate version will probably do
      the same using a tag embedded in the API name.
-
 '''
 
 EXAMPLES = '''

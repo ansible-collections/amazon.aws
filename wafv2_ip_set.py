@@ -14,9 +14,6 @@ author:
 short_description: wafv2_ip_set
 description:
   - Create, modify and delete IP sets for WAFv2.
-requirements:
-  - boto3
-  - botocore
 options:
     state:
       description:

@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: Manage AWS VPC NAT Gateways.
 description:
   - Ensure the state of AWS VPC NAT Gateways based on their id, allocation and subnet ids.
-requirements: [boto3, botocore]
 options:
   state:
     description:

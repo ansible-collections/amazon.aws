@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: Manage an AWS Glue job
 description:
     - Manage an AWS Glue job. See U(https://aws.amazon.com/glue/) for details.
-requirements: [ boto3 ]
 author:
   - "Rob White (@wimnat)"
   - "Vijayanand Sharma (@vijayanandsharma)"

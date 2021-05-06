@@ -56,9 +56,6 @@ author: Deepak Kothandan (@Deepakkothandan) <deepak.kdy@gmail.com>
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
-requirements:
-    - boto3
 '''
 
 EXAMPLES = '''

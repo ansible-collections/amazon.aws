@@ -46,8 +46,6 @@ options:
          A value of 0 (or omitted parameter) sets the alias to the $LATEST version.
     aliases: ['version']
     type: int
-requirements:
-    - boto3
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2

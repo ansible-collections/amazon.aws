@@ -38,9 +38,6 @@ options:
       - How many results to show.
       - Corresponds to Python slice notation like list[:limit].
     type: int
-requirements:
-  - "python >= 2.6"
-  - boto3
 extends_documentation_fragment:
 - amazon.aws.ec2
 - amazon.aws.aws

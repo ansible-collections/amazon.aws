@@ -16,7 +16,6 @@ description:
     - Update the retention period of a Kinesis Stream.
     - Update Tags on a Kinesis Stream.
     - Enable/disable server side encryption on a Kinesis Stream.
-requirements: [ boto3 ]
 author: Allen Sanabria (@linuxdynasty)
 options:
   name:

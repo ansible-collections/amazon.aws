@@ -24,8 +24,6 @@ DOCUMENTATION = '''
 module: iam_saml_federation
 version_added: 1.0.0
 short_description: Maintain IAM SAML federation configuration.
-requirements:
-    - boto3
 description:
     - Provides a mechanism to manage AWS IAM SAML Identity Federation providers (create/update/delete metadata).
 options:

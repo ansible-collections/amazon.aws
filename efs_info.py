@@ -15,7 +15,6 @@ description:
     - This module can be used to search Amazon EFS file systems.
     - This module was called C(efs_facts) before Ansible 2.9, returning C(ansible_facts).
       Note that the M(community.aws.efs_info) module no longer returns C(ansible_facts)!
-requirements: [ boto3 ]
 author:
     - "Ryan Sydnor (@ryansydnor)"
 options:

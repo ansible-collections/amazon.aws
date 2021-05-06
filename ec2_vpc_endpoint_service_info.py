@@ -11,7 +11,6 @@ short_description: retrieves AWS VPC endpoint service details
 version_added: 1.5.0
 description:
   - Gets details related to AWS VPC Endpoint Services.
-requirements: [ boto3 ]
 options:
   filters:
     description:
