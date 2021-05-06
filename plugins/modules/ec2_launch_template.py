@@ -16,9 +16,6 @@ description:
   - The M(amazon.aws.ec2_instance) and M(community.aws.ec2_asg) modules can, instead of specifying all
     parameters on those tasks, be passed a Launch Template which contains
     settings like instance size, disk type, subnet, and more.
-requirements:
-  - botocore
-  - boto3 >= 1.6.0
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
