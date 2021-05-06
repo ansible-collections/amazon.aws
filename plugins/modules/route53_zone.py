@@ -12,7 +12,6 @@ short_description: add or delete Route53 zones
 version_added: 1.0.0
 description:
     - Creates and deletes Route53 private and public zones.
-requirements: [ boto3 ]
 options:
     zone:
         description:
