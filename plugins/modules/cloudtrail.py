@@ -17,9 +17,6 @@ author:
     - Ansible Core Team
     - Ted Timmons (@tedder)
     - Daniel Shepherd (@shepdelacreme)
-requirements:
-  - boto3
-  - botocore
 options:
   state:
     description:
