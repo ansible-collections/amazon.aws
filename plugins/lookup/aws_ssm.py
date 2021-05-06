@@ -16,7 +16,7 @@ author:
 requirements:
   - python >= 3.6
   - boto3
-  - botocore
+  - botocore >= 1.16.0
 short_description: Get the value for a SSM parameter or all parameters under a path.
 description:
   - Get the value for an Amazon Simple Systems Manager parameter or a hierarchy of parameters.

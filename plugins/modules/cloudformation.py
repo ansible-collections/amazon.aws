@@ -128,7 +128,7 @@ options:
     type: str
   termination_protection:
     description:
-    - Enable or disable termination protection on the stack. Only works with botocore >= 1.7.18.
+    - Enable or disable termination protection on the stack.
     type: bool
   template_body:
     description:
@@ -174,11 +174,6 @@ author: "James S. Martin (@jsmartin)"
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
-requirements:
-- python >= 3.6
-- boto3
-- botocore >= 1.5.45
 '''
 
 EXAMPLES = '''
