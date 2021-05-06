@@ -15,7 +15,6 @@ description:
   - Deletes AWS VPN Virtual Gateways
   - Attaches Virtual Gateways to VPCs
   - Detaches Virtual Gateways from VPCs
-requirements: [ boto3 ]
 options:
   state:
     description:
