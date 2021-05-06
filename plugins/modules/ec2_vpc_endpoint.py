@@ -14,7 +14,6 @@ description:
   - Creates AWS VPC endpoints.
   - Deletes AWS VPC endpoints.
   - This module supports check mode.
-requirements: [ boto3 ]
 options:
   vpc_id:
     description:
