@@ -14,7 +14,6 @@ description:
     - Gather information about Network ACLs in an AWS VPC
     - This module was called C(ec2_vpc_nacl_facts) before Ansible 2.9. The usage did not change.
 author: "Brad Davidson (@brandond)"
-requirements: [ boto3 ]
 options:
   nacl_ids:
     description:
