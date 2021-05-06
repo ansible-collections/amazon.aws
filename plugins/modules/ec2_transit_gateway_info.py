@@ -14,9 +14,6 @@ version_added: 1.0.0
 description:
     - Gather information about ec2 transit gateways in AWS
 author: "Bob Boldin (@BobBoldin)"
-requirements:
-  - botocore
-  - boto3
 options:
   transit_gateway_ids:
     description:
