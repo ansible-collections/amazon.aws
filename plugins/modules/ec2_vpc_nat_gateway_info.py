@@ -13,7 +13,6 @@ version_added: 1.0.0
 description:
   - Gets various details related to AWS VPC Managed Nat Gateways
   - This module was called C(ec2_vpc_nat_gateway_facts) before Ansible 2.9. The usage did not change.
-requirements: [ boto3 ]
 options:
   nat_gateway_ids:
     description:

@@ -172,8 +172,6 @@ author: "Ryan Scott Brown (@ryansb)"
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
-requirements: [ boto3>=1.6, botocore>=1.10.26 ]
 '''
 
 EXAMPLES = r'''

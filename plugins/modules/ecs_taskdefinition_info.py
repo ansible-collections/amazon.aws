@@ -21,7 +21,6 @@ author:
     - Gustavo Maia (@gurumaia)
     - Mark Chance (@Java1Guy)
     - Darek Kaczynski (@kaczynskid)
-requirements: [ json, botocore, boto3 ]
 options:
     task_definition:
         description:

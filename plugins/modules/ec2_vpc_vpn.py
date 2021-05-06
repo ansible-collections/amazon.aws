@@ -17,8 +17,6 @@ description:
 extends_documentation_fragment:
 - amazon.aws.ec2
 - amazon.aws.aws
-
-requirements: ['boto3', 'botocore']
 author: "Sloane Hertel (@s-hertel)"
 options:
   state:

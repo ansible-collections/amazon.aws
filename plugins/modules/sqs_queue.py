@@ -19,8 +19,6 @@ author:
   - Fernando Jose Pando (@nand0p)
   - Nadir Lloret (@nadirollo)
   - Dennis Podkovyrin (@sbj-ss)
-requirements:
-  - boto3
 options:
   state:
     description:

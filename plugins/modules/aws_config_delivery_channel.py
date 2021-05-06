@@ -14,7 +14,6 @@ version_added: 1.0.0
 short_description: Manage AWS Config delivery channels
 description:
     - This module manages AWS Config delivery locations for rule checks and configuration info.
-requirements: [ 'botocore', 'boto3' ]
 author:
     - "Aaron Smith (@slapula)"
 options:

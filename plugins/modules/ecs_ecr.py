@@ -16,7 +16,6 @@ version_added: 1.0.0
 short_description: Manage Elastic Container Registry repositories
 description:
     - Manage Elastic Container Registry repositories.
-requirements: [ boto3 ]
 options:
     name:
         description:

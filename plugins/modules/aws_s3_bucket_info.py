@@ -14,9 +14,6 @@ module: aws_s3_bucket_info
 version_added: 1.0.0
 author: "Gerben Geijteman (@hyperized)"
 short_description: lists S3 buckets in AWS
-requirements:
-  - boto3 >= 1.4.4
-  - python >= 2.6
 description:
     - Lists S3 buckets and details about those buckets.
     - This module was called C(aws_s3_bucket_facts) before Ansible 2.9, returning C(ansible_facts).

@@ -14,9 +14,6 @@ author:
 short_description: wafv2_resources_info
 description:
   - List web acl resources.
-requirements:
-  - boto3
-  - botocore
 options:
     name:
       description:

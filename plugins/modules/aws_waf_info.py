@@ -13,7 +13,6 @@ version_added: 1.0.0
 description:
   - Retrieve information for WAF ACLs, Rule , Conditions and Filters.
   - This module was called C(aws_waf_facts) before Ansible 2.9. The usage did not change.
-requirements: [ boto3 ]
 options:
   name:
     description:

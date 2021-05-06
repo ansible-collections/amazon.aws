@@ -97,7 +97,9 @@ author:
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
+requirements:
+- python >= 2.6
+- boto >= 2.49.0
 '''
 
 EXAMPLES = r'''

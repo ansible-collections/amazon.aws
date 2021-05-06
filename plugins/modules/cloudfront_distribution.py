@@ -17,11 +17,6 @@ short_description: Create, update and delete AWS CloudFront distributions.
 description:
     - Allows for easy creation, updating and deletion of CloudFront distributions.
 
-requirements:
-  - boto3 >= 1.0.0
-  - python >= 2.6
-
-
 author:
   - Willem van Ketwich (@wilvk)
   - Will Thames (@willthames)

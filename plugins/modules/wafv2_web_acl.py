@@ -14,9 +14,6 @@ author:
 short_description: wafv2_web_acl
 description:
   - Create, modify or delete a wafv2 web acl.
-requirements:
-  - boto3
-  - botocore
 options:
     state:
       description:

@@ -21,10 +21,6 @@ author: "Matt Traynham (@mtraynham)"
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
-requirements:
-  - boto3
-  - botocore
 options:
   name:
     description:

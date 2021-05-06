@@ -67,7 +67,6 @@ options:
     required: false
     default: false
     type: bool
-requirements: [ botocore, boto3 ]
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2

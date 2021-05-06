@@ -12,7 +12,6 @@ version_added: 1.0.0
 description:
   - Gets various details related to AWS VPC endpoints.
   - This module was called C(ec2_vpc_endpoint_facts) before Ansible 2.9. The usage did not change.
-requirements: [ boto3 ]
 options:
   query:
     description:

@@ -19,11 +19,6 @@ description:
     - Allows for easy creation, updating and deletion of origin access
       identities.
 
-requirements:
-  - boto3 >= 1.0.0
-  - python >= 2.6
-
-
 author: Willem van Ketwich (@wilvk)
 
 extends_documentation_fragment:

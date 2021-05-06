@@ -221,16 +221,15 @@ options:
       - Used with I(command=create), I(command=replicate), I(command=restore).
       - Requires boto >= 2.26.0
     type: dict
-requirements:
-    - "python >= 2.6"
-    - "boto"
 author:
     - "Bruce Pennypacker (@bpennypacker)"
     - "Will Thames (@willthames)"
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
+requirements:
+- python >= 2.6
+- boto >= 2.49.0
 '''
 
 # FIXME: the command stuff needs a 'state' like alias to make things consistent -- MPD

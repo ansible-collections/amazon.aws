@@ -16,7 +16,6 @@ description:
     - Gather information about AWS Autoscaling Launch Configurations.
     - This module was called C(ec2_lc_facts) before Ansible 2.9. The usage did not change.
 author: "Loïc Latreille (@psykotox)"
-requirements: [ boto3 ]
 options:
   name:
     description:

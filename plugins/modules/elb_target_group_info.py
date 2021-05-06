@@ -14,7 +14,6 @@ short_description: Gather information about ELB target groups in AWS
 description:
     - Gather information about ELB target groups in AWS
     - This module was called C(elb_target_group_facts) before Ansible 2.9. The usage did not change.
-requirements: [ boto3 ]
 author: Rob White (@wimnat)
 options:
   load_balancer_arn:

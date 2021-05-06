@@ -18,9 +18,6 @@ extends_documentation_fragment:
 - amazon.aws.ec2
 
 author: "Jim Dalton (@jsdalton) <jim.dalton@gmail.com>"
-requirements:
-  - python >= 2.6
-  - boto3
 notes:
   - A rule must contain at least an I(event_pattern) or I(schedule_expression). A
     rule can have both an I(event_pattern) and a I(schedule_expression), in which

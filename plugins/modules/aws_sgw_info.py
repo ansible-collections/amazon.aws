@@ -16,7 +16,6 @@ short_description: Fetch AWS Storage Gateway information
 description:
     - Fetch AWS Storage Gateway information
     - This module was called C(aws_sgw_facts) before Ansible 2.9. The usage did not change.
-requirements: [ boto3 ]
 author: Loic Blot (@nerzhul) <loic.blot@unix-experience.fr>
 options:
   gather_local_disks:

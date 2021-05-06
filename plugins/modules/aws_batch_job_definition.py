@@ -169,8 +169,6 @@ options:
         attempts. If attempts is greater than one, the job is retried if it fails until it has moved to RUNNABLE that
         many times.
     type: int
-requirements:
-    - boto3
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
