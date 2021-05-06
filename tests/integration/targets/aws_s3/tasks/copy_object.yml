@@ -68,11 +68,7 @@
         - "copy_idempotency.msg == 'ETag from source and destination are the same'"
 
   always:
-    - name: delete bucket created
-      aws_s3:
-        bucket: "{{ item }}"
-        mode: delete
+    - include_tasks: delete_bucket.yml
       with_items:
-        - "{{ copy_bucket.src }}"
         - "{{ copy_bucket.dst }}"
-      ignore_errors: yes
+        - "{{ copy_bucket.src }}"

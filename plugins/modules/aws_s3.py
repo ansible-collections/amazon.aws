@@ -195,7 +195,6 @@ author:
         description:
         - version ID of the source object.
 requirements: [ "boto3", "botocore" ]
->>>>>>> 0176b7e (s3 copy_object)
 author:
     - "Lester Wade (@lwade)"
     - "Sloane Hertel (@s-hertel)"
@@ -347,13 +346,6 @@ s3_keys:
   - prefix1/
   - prefix1/key1
   - prefix1/key2
-copy_object_result:
-  description: result of the copy operation.
-  returned: (for copy operation)
-  type: dict
-  sample:
-    e_tag: "\"eb354219cd15668c7a70221cda545c82\""
-    last_modified: "2021-05-06T15:42:32+00:00"
 '''
 
 import mimetypes
@@ -371,7 +363,6 @@ except ImportError:
 from ansible.module_utils.basic import to_text
 from ansible.module_utils.basic import to_native
 from ansible.module_utils.six.moves.urllib.parse import urlparse
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.core import is_boto3_error_code
@@ -757,8 +748,7 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
         module.warn("PutObjectAcl is not implemented by your storage provider. Set the permissions parameters to the empty list to avoid this warning")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed while copying object %s from bucket %s." % (obj, module.params['copy_src'].get('Bucket')))
-    module.exit_json(msg="COPY operation complete", changed=True, copy_object_result=camel_dict_to_snake_dict(copy_result['CopyObjectResult']))
->>>>>>> bbce073 (rebase)
+    module.exit_json(msg="Object copied from bucket %s to bucket %s." % (bucketsrc['Bucket'], bucket), changed=True)
 
 
 def is_fakes3(s3_url):

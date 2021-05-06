@@ -1,2 +1,0 @@
-minor_changes:
-- aws_s3 - new mode to copy existing on another bucket (https://github.com/ansible-collections/amazon.aws/pull/356).
