@@ -89,7 +89,6 @@ options:
       - Remove tags not listed in I(tags) when tags is specified.
     default: true
     type: bool
-requirements: [ botocore, boto3 ]
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
