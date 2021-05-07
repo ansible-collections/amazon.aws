@@ -8,6 +8,14 @@
       region: "{{ aws_region }}"
 
   block:
+    - name: get ARN of calling user
+      aws_caller_info:
+      register: aws_caller_info
+
+    - name: register account id
+      set_fact:
+        aws_account: "{{ aws_caller_info.account }}"
+
     - name: Create temporary directory
       tempfile:
         state: directory
@@ -537,6 +545,47 @@
               - result is not changed
       when: ansible_system == 'Linux' or ansible_distribution == 'MacOSX'
 
+    - name: make a bucket with the bucket-owner-full-control ACL
+      s3_bucket:
+        name: "{{ bucket_name_acl }}"
+        state: present
+        policy: "{{ lookup('template', 'policy.json.j2') }}"
+      register: bucket_with_policy
+
+    - assert:
+        that:
+          - bucket_with_policy is changed
+
+    - name: fail to upload the file to the bucket with an ACL
+      aws_s3:
+        bucket: "{{ bucket_name_acl }}"
+        mode: put
+        src: "{{ tmpdir.path }}/upload.txt"
+        object: file-with-permissions.txt
+        permission: private
+        ignore_nonexistent_bucket: True
+      register: upload_private
+      ignore_errors: True
+
+    # XXX Doesn't fail...
+    # - assert:
+    #     that:
+    #       - upload_private is failed
+
+    - name: upload the file to the bucket with an ACL
+      aws_s3:
+        bucket: "{{ bucket_name_acl }}"
+        mode: put
+        src: "{{ tmpdir.path }}/upload.txt"
+        object: file-with-permissions.txt
+        permission: bucket-owner-full-control
+        ignore_nonexistent_bucket: True
+      register: upload_owner
+
+    - assert:
+        that:
+          - upload_owner is changed
+
     - name: create an object from static content
       aws_s3:
         bucket: "{{ bucket_name }}"
@@ -650,9 +699,22 @@
         - delete.txt
         - delete_encrypt.txt
         - delete_encrypt_kms.txt
+        - multipart.txt
         - put-content.txt
         - put-template.txt
         - put-binary.txt
+        - foo/bar/baz
+        - foo/bar
+        - foo
+      ignore_errors: yes
+
+    - name: remove uploaded files (bucket with ACL)
+      aws_s3:
+        bucket: "{{ bucket_name_acl }}"
+        mode: delobj
+        object: "{{ item }}"
+      loop:
+        - file-with-permissions.txt
       ignore_errors: yes
 
     - name: delete temporary files
@@ -670,5 +732,11 @@
     - name: delete the dot bucket
       aws_s3:
         bucket: "{{ bucket_name | hash('md5') + '.bucket' }}"
+        mode: delete
+      ignore_errors: yes
+
+    - name: delete the acl bucket
+      aws_s3:
+        bucket: "{{ bucket_name_acl }}"
         mode: delete
       ignore_errors: yes

@@ -78,7 +78,8 @@ options:
       - This option lets the user set the canned permissions on the object/bucket that are created.
         The permissions that can be set are C(private), C(public-read), C(public-read-write), C(authenticated-read) for a bucket or
         C(private), C(public-read), C(public-read-write), C(aws-exec-read), C(authenticated-read), C(bucket-owner-read),
-        C(bucket-owner-full-control) for an object. Multiple permissions can be specified as a list.
+        C(bucket-owner-full-control) for an object. Multiple permissions can be specified as a list; although only the first one
+        will be used during the initial upload of the file
     default: ['private']
     type: list
     elements: str
@@ -531,6 +532,13 @@ def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, s
                     extra[extra_args_option] = metadata[option]
                 else:
                     extra['Metadata'][option] = metadata[option]
+
+        if module.params.get('permission'):
+            permissions = module.params['permission']
+            if isinstance(permissions, str):
+                extra['ACL'] = permissions
+            elif isinstance(permissions, list):
+                extra['ACL'] = permissions[0]
 
         if 'ContentType' not in extra:
             content_type = None
