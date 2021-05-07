@@ -14,9 +14,6 @@
       security_token: "{{ security_token | default('') }}"
       region: "{{ aws_region }}"
 
-  collections:
-    - community.general
-
   block:
 
   # DHCP option set can be attached to multiple VPCs, we don't want to use any that
@@ -26,7 +23,7 @@
     register: result
 
   - set_fact:
-      preexisting_option_sets: "{{ result | community.general.json_query('dhcp_options[*].dhcp_options_id') | list }}"
+      preexisting_option_sets: "{{ result.dhcp_options | map(attribute='dhcp_options_id') | list }}"
 
   - name: create a VPC with a default DHCP option set to test inheritance and delete_old
     ec2_vpc_net:
@@ -183,8 +180,8 @@
         - dhcp_options.new_options['domain-name'] == ['{{ aws_domain_name }}']
         - dhcp_options.new_options['domain-name-servers'] == ['AmazonProvidedDNS']
         # We return the list of dicts that boto gives us, in addition to the user-friendly config dict
-        - dhcp_options_config['ntp-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.2', '10.0.1.2']
-        - dhcp_options_config['netbios-name-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.1', '10.0.1.1']
+        - dhcp_options_config['ntp-servers'] | map(attribute='value') | list | sort == ['10.0.0.2', '10.0.1.2']
+        - dhcp_options_config['netbios-name-servers'] | map(attribute='value') | list | sort == ['10.0.0.1', '10.0.1.1']
         - dhcp_options_config['netbios-node-type'][0]['value'] == '2'
         - dhcp_options_config['domain-name'][0]['value'] == '{{ aws_domain_name }}'
         - dhcp_options_config['domain-name-servers'][0]['value'] == 'AmazonProvidedDNS'
@@ -206,8 +203,8 @@
         - new_config.keys() | list | sort == ['domain-name', 'domain-name-servers', 'netbios-name-servers', 'netbios-node-type', 'ntp-servers']
         - new_config['domain-name'][0]['value'] == '{{ aws_domain_name }}'
         - new_config['domain-name-servers'][0]['value'] == 'AmazonProvidedDNS'
-        - new_config['ntp-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.2', '10.0.1.2']
-        - new_config['netbios-name-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.1', '10.0.1.1']
+        - new_config['ntp-servers'] | map(attribute='value') | list | sort == ['10.0.0.2', '10.0.1.2']
+        - new_config['netbios-name-servers'] | map(attribute='value') | list | sort == ['10.0.0.1', '10.0.1.1']
         - new_config['netbios-node-type'][0]['value'] == '2'
         # We return the list of dicts that boto gives us, in addition to the user-friendly config dict
         - new_dhcp_options.dhcp_config[0]['ntp-servers'] | sort == ['10.0.0.2', '10.0.1.2']
@@ -305,8 +302,8 @@
   - assert:
       that:
         - new_config.keys() | list | sort == ['netbios-name-servers', 'netbios-node-type', 'ntp-servers']
-        - new_config['ntp-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.2', '10.0.1.2']
-        - new_config['netbios-name-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.1', '10.0.1.1']
+        - new_config['ntp-servers'] | map(attribute='value') | list | sort == ['10.0.0.2', '10.0.1.2']
+        - new_config['netbios-name-servers'] | map(attribute='value') | list | sort == ['10.0.0.1', '10.0.1.1']
         - new_config['netbios-node-type'][0]['value'] == '2'
 
   - name: disassociate the new DHCP option set so it can be deleted
@@ -384,8 +381,8 @@
       that:
         - new_config.keys() | list | sort == ['domain-name', 'domain-name-servers', 'netbios-name-servers', 'netbios-node-type', 'ntp-servers']
         - new_config['domain-name'][0]['value'] == '{{ aws_domain_name }}'
-        - new_config['ntp-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.2', '10.0.1.2']
-        - new_config['netbios-name-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.1', '10.0.1.1']
+        - new_config['ntp-servers'] | map(attribute='value') | list | sort == ['10.0.0.2', '10.0.1.2']
+        - new_config['netbios-name-servers'] | map(attribute='value') | list | sort == ['10.0.0.1', '10.0.1.1']
         - new_config['netbios-node-type'][0]['value'] == '1'
 
   - name: verify the original set was deleted
@@ -533,8 +530,8 @@
         - dhcp_options.new_options['netbios-name-servers'] | sort == ['10.0.0.1', '10.0.1.1']
         - original_dhcp_options_id != dhcp_options.dhcp_options_id
         # We return the list of dicts that boto gives us, in addition to the user-friendly config dict
-        - dhcp_options_config['ntp-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.2', '10.0.1.2']
-        - dhcp_options_config['netbios-name-servers'] | community.general.json_query('[*].value') | list | sort == ['10.0.0.1', '10.0.1.1']
+        - dhcp_options_config['ntp-servers'] | map(attribute='value') | list | sort == ['10.0.0.2', '10.0.1.2']
+        - dhcp_options_config['netbios-name-servers'] | map(attribute='value') | list | sort == ['10.0.0.1', '10.0.1.1']
         - dhcp_options.dhcp_options.tags.keys() | length == 2
         - dhcp_options.dhcp_options.tags['CreatedBy'] == 'ansible-test'
         - dhcp_options.dhcp_options.tags['Collection'] == 'amazon.aws'

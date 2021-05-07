@@ -1,5 +1,4 @@
 integration_tests_dependencies:
 - ansible.windows
-- community.general
 - ansible.netcommon  # ipv6 filter
 unit_tests_dependencies: []

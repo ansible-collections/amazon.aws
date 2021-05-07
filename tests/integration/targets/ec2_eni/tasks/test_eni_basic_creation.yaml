@@ -61,7 +61,7 @@
       - _interface_0.private_ip_address == ip_1
       - '"private_ip_addresses" in _interface_0'
       - _interface_0.private_ip_addresses | length == 1
-      - ip_1 in ( eni_info | community.general.json_query("network_interfaces[].private_ip_addresses[].private_ip_address") | list )
+      - ip_1 in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
       - '"requester_id" in _interface_0'
       - _interface_0.requester_id is string
       - '"requester_managed" in _interface_0'
@@ -156,7 +156,7 @@
       - _interface_0.private_ip_address == ip_5
       - '"private_ip_addresses" in _interface_0'
       - _interface_0.private_ip_addresses | length == 1
-      - ip_5 in ( eni_info | community.general.json_query("network_interfaces[].private_ip_addresses[].private_ip_address") | list )
+      - ip_5 in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
       - '"requester_id" in _interface_0'
       - _interface_0.requester_id is string
       - '"requester_managed" in _interface_0'
@@ -181,8 +181,8 @@
     that:
       - '"network_interfaces" in eni_info'
       - eni_info.network_interfaces | length >= 2
-      - eni_id_1 in ( eni_info | community.general.json_query("network_interfaces[].id") | list )
-      - eni_id_2 in ( eni_info | community.general.json_query("network_interfaces[].id") | list )
+      - eni_id_1 in ( eni_info.network_interfaces | selectattr('id') | map(attribute='id') | list )
+      - eni_id_2 in ( eni_info.network_interfaces | selectattr('id') | map(attribute='id') | list )
 
 # ============================================================
 # Run some VPC filter based tests of ec2_eni_info
@@ -199,8 +199,8 @@
     that:
       - '"network_interfaces" in eni_info'
       - eni_info.network_interfaces | length == 2
-      - eni_id_1 in ( eni_info | community.general.json_query("network_interfaces[].id") | list )
-      - eni_id_2 in ( eni_info | community.general.json_query("network_interfaces[].id") | list )
+      - eni_id_1 in ( eni_info.network_interfaces | selectattr('id') | map(attribute='id') | list )
+      - eni_id_2 in ( eni_info.network_interfaces | selectattr('id') | map(attribute='id') | list )
 
 - name: Fetch ENI info with VPC filters - VPC
   ec2_eni_info:
@@ -213,7 +213,7 @@
     that:
       - '"network_interfaces" in eni_info'
       - eni_info.network_interfaces | length == 4
-      - eni_id_1 in ( eni_info | community.general.json_query("network_interfaces[].id") | list )
-      - eni_id_2 in ( eni_info | community.general.json_query("network_interfaces[].id") | list )
-      - ec2_ips[0] in ( eni_info | community.general.json_query("network_interfaces[].private_ip_addresses[].private_ip_address") | list )
-      - ec2_ips[1] in ( eni_info | community.general.json_query("network_interfaces[].private_ip_addresses[].private_ip_address") | list )
+      - eni_id_1 in ( eni_info.network_interfaces | selectattr('id') | map(attribute='id') | list )
+      - eni_id_2 in ( eni_info.network_interfaces | selectattr('id') | map(attribute='id') | list )
+      - ec2_ips[0] in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
+      - ec2_ips[1] in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )

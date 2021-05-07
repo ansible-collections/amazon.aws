@@ -174,7 +174,7 @@
     - name: Test that our new VPC shows up in the results
       assert:
         that:
-          - vpc_1 in ( vpc_info | community.general.json_query("vpcs[].vpc_id") | list )
+          - vpc_1 in ( vpc_info.vpcs | map(attribute="vpc_id") | list )
 
     - name: VPC info (Simple tag filter)
       ec2_vpc_net_info:
@@ -789,17 +789,17 @@
     #      - result.vpc.id == vpc_1
     #      - vpc_info.vpcs | length == 1
     #      - vpc_info.vpcs[0].cidr_block == vpc_cidr
-    #      - vpc_cidr in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-    #      - vpc_cidr_a not in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-    #      - vpc_cidr_b not in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+    #      - vpc_cidr in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+    #      - vpc_cidr_a not in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+    #      - vpc_cidr_b not in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
     #      - vpc_info.vpcs[0].cidr_block_association_set | length == 1
     #      - vpc_info.vpcs[0].cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
     #      - vpc_info.vpcs[0].cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
     #      - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
     #      - vpc_info.vpcs[0].cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
-    #      - vpc_cidr in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-    #      - vpc_cidr_a not in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-    #      - vpc_cidr_b not in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+    #      - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+    #      - vpc_cidr_a not in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+    #      - vpc_cidr_b not in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR
       ec2_vpc_net:
@@ -828,17 +828,17 @@
           - result.vpc.cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
           - result.vpc.cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
           - result.vpc.cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
-          - vpc_cidr in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_a in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_b not in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+          - vpc_cidr in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b not in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
           - vpc_info.vpcs[0].cidr_block_association_set | length == 2
           - vpc_info.vpcs[0].cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
           - vpc_info.vpcs[0].cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
           - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
           - vpc_info.vpcs[0].cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
-          - vpc_cidr in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_a in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_b not in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+          - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b not in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR (no change)
       ec2_vpc_net:
@@ -867,17 +867,17 @@
           - result.vpc.cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
           - result.vpc.cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
           - result.vpc.cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
-          - vpc_cidr in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_a in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_b not in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+          - vpc_cidr in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b not in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
           - vpc_info.vpcs[0].cidr_block_association_set | length == 2
           - vpc_info.vpcs[0].cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
           - vpc_info.vpcs[0].cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
           - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
           - vpc_info.vpcs[0].cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
-          - vpc_cidr in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_a in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_b not in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+          - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b not in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     # #62678
     #- name: modify CIDR - no purge (check mode)
@@ -901,17 +901,17 @@
     #      - result is changed
     #      - vpc_info.vpcs | length == 1
     #      - vpc_info.vpcs[0].cidr_block == vpc_cidr
-    #      - vpc_cidr in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-    #      - vpc_cidr_a in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-    #      - vpc_cidr_b not in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+    #      - vpc_cidr in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+    #      - vpc_cidr_a in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+    #      - vpc_cidr_b not in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
     #      - vpc_info.vpcs[0].cidr_block_association_set | length == 2
     #      - vpc_info.vpcs[0].cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
     #      - vpc_info.vpcs[0].cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
     #      - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
     #      - vpc_info.vpcs[0].cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
-    #      - vpc_cidr in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-    #      - vpc_cidr_a in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-    #      - vpc_cidr_b not in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+    #      - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+    #      - vpc_cidr_a in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+    #      - vpc_cidr_b not in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR - no purge
       ec2_vpc_net:
@@ -942,9 +942,9 @@
           - result.vpc.cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
           - result.vpc.cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
           - result.vpc.cidr_block_association_set[2].cidr_block_state.state in ["associated", "associating"]
-          - vpc_cidr in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_a in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_b in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+          - vpc_cidr in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
           - vpc_info.vpcs[0].cidr_block_association_set | length == 3
           - vpc_info.vpcs[0].cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
           - vpc_info.vpcs[0].cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
@@ -952,9 +952,9 @@
           - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
           - vpc_info.vpcs[0].cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
           - vpc_info.vpcs[0].cidr_block_association_set[2].cidr_block_state.state in ["associated", "associating"]
-          - vpc_cidr in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_a in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_b in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+          - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR - no purge (no change)
       ec2_vpc_net:
@@ -984,9 +984,9 @@
           - result.vpc.cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
           - result.vpc.cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
           - result.vpc.cidr_block_association_set[2].cidr_block_state.state in ["associated", "associating"]
-          - vpc_cidr in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_a in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_b in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+          - vpc_cidr in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
           - vpc_info.vpcs[0].cidr_block_association_set | length == 3
           - vpc_info.vpcs[0].cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
           - vpc_info.vpcs[0].cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
@@ -994,9 +994,9 @@
           - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
           - vpc_info.vpcs[0].cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
           - vpc_info.vpcs[0].cidr_block_association_set[2].cidr_block_state.state in ["associated", "associating"]
-          - vpc_cidr in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_a in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_b in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+          - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR - no purge (no change - list all - check mode)
       ec2_vpc_net:
@@ -1027,9 +1027,9 @@
           - result.vpc.cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
           - result.vpc.cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
           - result.vpc.cidr_block_association_set[2].cidr_block_state.state in ["associated", "associating"]
-          - vpc_cidr in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_a in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_b in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+          - vpc_cidr in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
           - vpc_info.vpcs[0].cidr_block_association_set | length == 3
           - vpc_info.vpcs[0].cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
           - vpc_info.vpcs[0].cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
@@ -1037,9 +1037,9 @@
           - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
           - vpc_info.vpcs[0].cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
           - vpc_info.vpcs[0].cidr_block_association_set[2].cidr_block_state.state in ["associated", "associating"]
-          - vpc_cidr in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_a in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_b in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+          - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR - no purge (no change - list all)
       ec2_vpc_net:
@@ -1070,9 +1070,9 @@
           - result.vpc.cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
           - result.vpc.cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
           - result.vpc.cidr_block_association_set[2].cidr_block_state.state in ["associated", "associating"]
-          - vpc_cidr in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_a in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_b in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+          - vpc_cidr in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
           - vpc_info.vpcs[0].cidr_block_association_set | length == 3
           - vpc_info.vpcs[0].cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
           - vpc_info.vpcs[0].cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
@@ -1080,9 +1080,9 @@
           - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
           - vpc_info.vpcs[0].cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
           - vpc_info.vpcs[0].cidr_block_association_set[2].cidr_block_state.state in ["associated", "associating"]
-          - vpc_cidr in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_a in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_b in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+          - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR - no purge (no change - different order - check mode)
       ec2_vpc_net:
@@ -1113,9 +1113,9 @@
           - result.vpc.cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
           - result.vpc.cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
           - result.vpc.cidr_block_association_set[2].cidr_block_state.state in ["associated", "associating"]
-          - vpc_cidr in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_a in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_b in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+          - vpc_cidr in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
           - vpc_info.vpcs[0].cidr_block_association_set | length == 3
           - vpc_info.vpcs[0].cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
           - vpc_info.vpcs[0].cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
@@ -1123,9 +1123,9 @@
           - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
           - vpc_info.vpcs[0].cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
           - vpc_info.vpcs[0].cidr_block_association_set[2].cidr_block_state.state in ["associated", "associating"]
-          - vpc_cidr in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_a in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_b in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+          - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR - no purge (no change - different order)
       ec2_vpc_net:
@@ -1156,9 +1156,9 @@
           - result.vpc.cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
           - result.vpc.cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
           - result.vpc.cidr_block_association_set[2].cidr_block_state.state in ["associated", "associating"]
-          - vpc_cidr in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_a in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_b in (result.vpc | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+          - vpc_cidr in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
           - vpc_info.vpcs[0].cidr_block_association_set | length == 3
           - vpc_info.vpcs[0].cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
           - vpc_info.vpcs[0].cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
@@ -1166,9 +1166,9 @@
           - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
           - vpc_info.vpcs[0].cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
           - vpc_info.vpcs[0].cidr_block_association_set[2].cidr_block_state.state in ["associated", "associating"]
-          - vpc_cidr in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_a in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-          - vpc_cidr_b in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+          - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     # #62678
     #- name: modify CIDR - purge (check mode)
@@ -1200,9 +1200,9 @@
     #      - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
     #      - vpc_info.vpcs[0].cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
     #      - vpc_info.vpcs[0].cidr_block_association_set[2].cidr_block_state.state in ["associated", "associating"]
-    #      - vpc_cidr in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-    #      - vpc_cidr_a in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
-    #      - vpc_cidr_b in (vpc_info.vpcs[0] | community.general.json_query("cidr_block_association_set[*].cidr_block") | list)
+    #      - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+    #      - vpc_cidr_a in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+    #      - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR - purge
       ec2_vpc_net:
@@ -1219,8 +1219,6 @@
       register: vpc_info
 
     - name: assert the CIDRs changed
-      vars:
-        cidr_query: 'cidr_block_association_set[?cidr_block_state.state == `associated`].cidr_block'
       assert:
         that:
           - result is successful
@@ -1229,14 +1227,14 @@
           - vpc_info.vpcs | length == 1
           - result.vpc.cidr_block == vpc_cidr
           - vpc_info.vpcs[0].cidr_block == vpc_cidr
-          - result.vpc | community.general.json_query(cidr_query) | list | length == 2
-          - vpc_cidr in (result.vpc | community.general.json_query(cidr_query) | list)
-          - vpc_cidr_a not in (result.vpc | community.general.json_query(cidr_query) | list)
-          - vpc_cidr_b in (result.vpc | community.general.json_query(cidr_query) | list)
-          - vpc_info.vpcs[0] | community.general.json_query(cidr_query) | list | length == 2
-          - vpc_cidr in (vpc_info.vpcs[0] | community.general.json_query(cidr_query) | list)
-          - vpc_cidr_a not in (vpc_info.vpcs[0] | community.general.json_query(cidr_query) | list)
-          - vpc_cidr_b in (vpc_info.vpcs[0] | community.general.json_query(cidr_query) | list)
+          - result.vpc.cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list | length == 2
+          - vpc_cidr in (result.vpc.cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
+          - vpc_cidr_a not in (result.vpc.cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block'))
+          - vpc_cidr_b in (result.vpc.cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block'))
+          - vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list | length == 2
+          - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
+          - vpc_cidr_a not in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
+          - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
 
     - name: modify CIDR - purge (no change)
       ec2_vpc_net:
@@ -1253,8 +1251,6 @@
       register: vpc_info
 
     - name: assert the CIDRs didn't change
-      vars:
-        cidr_query: 'cidr_block_association_set[?cidr_block_state.state == `associated`].cidr_block'
       assert:
         that:
           - result is successful
@@ -1263,14 +1259,14 @@
           - vpc_info.vpcs | length == 1
           - result.vpc.cidr_block == vpc_cidr
           - vpc_info.vpcs[0].cidr_block == vpc_cidr
-          - result.vpc | community.general.json_query(cidr_query) | list | length == 2
-          - vpc_cidr in (result.vpc | community.general.json_query(cidr_query) | list)
-          - vpc_cidr_a not in (result.vpc | community.general.json_query(cidr_query) | list)
-          - vpc_cidr_b in (result.vpc | community.general.json_query(cidr_query) | list)
-          - vpc_info.vpcs[0] | community.general.json_query(cidr_query) | list | length == 2
-          - vpc_cidr in (vpc_info.vpcs[0] | community.general.json_query(cidr_query) | list)
-          - vpc_cidr_a not in (vpc_info.vpcs[0] | community.general.json_query(cidr_query) | list)
-          - vpc_cidr_b in (vpc_info.vpcs[0] | community.general.json_query(cidr_query) | list)
+          - result.vpc.cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list | length == 2
+          - vpc_cidr in (result.vpc.cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
+          - vpc_cidr_a not in (result.vpc.cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
+          - vpc_cidr_b in (result.vpc.cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
+          - vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list | length == 2
+          - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
+          - vpc_cidr_a not in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
+          - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
 
     # ============================================================
 

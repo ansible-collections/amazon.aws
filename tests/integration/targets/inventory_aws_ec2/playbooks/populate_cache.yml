@@ -3,8 +3,6 @@
   connection: local
   gather_facts: no
   environment: "{{ ansible_test.environment }}"
-  collections:
-    - community.general
   tasks:
 
     - module_defaults:
