@@ -24,13 +24,7 @@
 
   - name: lookup missing secret
     set_fact:
-      missing_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, region=connection_args.region, aws_access_key=connection_args.aws_access_key, aws_secret_key=connection_args.aws_secret_key, aws_security_token=connection_args.aws_security_token, on_missing=on_missing_secret) }}"
-    when: connection_args.aws_security_token is defined
-  
-  - name: lookup missing secret
-    set_fact:
-      missing_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, region=connection_args.region, aws_access_key=connection_args.aws_access_key, aws_secret_key=connection_args.aws_secret_key, on_missing=on_missing_secret) }}"
-    when: connection_args.aws_security_token is undefined
+      missing_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, on_missing=on_missing_secret, **connection_args) }}"
   
   - name: assert that missing_secret is defined
     assert:
