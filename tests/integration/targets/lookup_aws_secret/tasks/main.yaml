@@ -42,13 +42,7 @@
   
   - name: read secret value
     set_fact:
-      look_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, region=connection_args.region, aws_access_key=connection_args.aws_access_key, aws_secret_key=connection_args.aws_secret_key, aws_security_token=connection_args.aws_security_token) }}"
-    when: connection_args.aws_security_token is defined
-  
-  - name: read secret value
-    set_fact:
-      look_secret: "{{ lookup('amazon.aws.aws_secret',secret_name, region=connection_args.region, aws_access_key=connection_args.aws_access_key, aws_secret_key=connection_args.aws_secret_key) }}"
-    when: connection_args.aws_security_token is undefined
+      look_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, **connection_args) }}"
   
   - name: assert that secret was successfully retrieved
     assert:
