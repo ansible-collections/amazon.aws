@@ -161,14 +161,14 @@ options:
     description:
       - Tags dict to apply to the S3 object.
     type: dict
-    version_added: 1.5.0
+    version_added: 2.0.0
   purge_tags:
     description:
-      - Whether or not to remove tags assigned to the DB cluster if not specified in the playbook.
+      - Whether or not to remove tags assigned to the S3 object if not specified in the playbook.
       - To remove all tags set I(tags) to an empty dictionary in conjunction with this.
     type: bool
     default: True
-    version_added: 1.5.0
+    version_added: 2.0.0
 requirements: [ "boto3", "botocore" ]
 >>>>>>> 	* Docs and logic fix
 author:
@@ -487,7 +487,7 @@ def delete_key(module, s3, bucket, obj):
         module.fail_json_aws(e, msg="Failed while trying to delete %s." % obj)
 
 
-def create_dirkey(module, s3, bucket, obj, encrypt):
+def create_dirkey(module, s3, bucket, obj, encrypt, expiry):
     if module.check_mode:
         module.exit_json(msg="PUT operation skipped - running in check mode", changed=True)
     try:
@@ -504,7 +504,20 @@ def create_dirkey(module, s3, bucket, obj, encrypt):
         module.warn("PutObjectAcl is not implemented by your storage provider. Set the permissions parameters to the empty list to avoid this warning")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed while creating object %s." % obj)
-    module.exit_json(msg="Virtual directory %s created in bucket %s" % (obj, bucket), changed=True)
+
+    # Tags
+    tags, changed = ensure_tags(s3, module, bucket, obj)
+
+    try:
+        url = s3.generate_presigned_url(ClientMethod='put_object',
+                                        Params={'Bucket': bucket, 'Key': obj},
+                                        ExpiresIn=expiry)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Unable to generate presigned URL")
+
+    url = put_download_url(module, s3, bucket, obj, expiry)
+
+    module.exit_json(msg="Virtual directory %s created in bucket %s" % (obj, bucket), url=url, tags=tags, changed=True)
 
 
 def path_check(path):
@@ -583,12 +596,7 @@ def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, s
     # Tags
     tags, changed = ensure_tags(s3, module, bucket, obj)
 
-    try:
-        url = s3.generate_presigned_url(ClientMethod='put_object',
-                                        Params={'Bucket': bucket, 'Key': obj},
-                                        ExpiresIn=expiry)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to generate presigned URL")
+    url = put_download_url(module, s3, bucket, obj, expiry)
 
     module.exit_json(msg="PUT operation complete", url=url, tags=tags, changed=True)
 
@@ -656,6 +664,16 @@ def get_download_url(module, s3, bucket, obj, expiry, tags=None, changed=True):
         module.exit_json(msg="Download url:", url=url, tags=tags, expiry=expiry, changed=changed)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed while getting download url.")
+
+
+def put_download_url(module, s3, bucket, obj, expiry):
+    try:
+        url = s3.generate_presigned_url(ClientMethod='put_object',
+                                        Params={'Bucket': bucket, 'Key': obj},
+                                        ExpiresIn=expiry)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Unable to generate presigned URL")
+    return url
 
 
 def is_fakes3(s3_url):
@@ -1016,14 +1034,14 @@ def main():
                 else:
                     # setting valid object acls for the create_dirkey function
                     module.params['permission'] = object_acl
-                    create_dirkey(module, s3, bucket, dirobj, encrypt)
+                    create_dirkey(module, s3, bucket, dirobj, encrypt, expiry)
             else:
                 # only use valid bucket acls for the create_bucket function
                 module.params['permission'] = bucket_acl
                 created = create_bucket(module, s3, bucket, location)
                 # only use valid object acls for the create_dirkey function
                 module.params['permission'] = object_acl
-                create_dirkey(module, s3, bucket, dirobj, encrypt)
+                create_dirkey(module, s3, bucket, dirobj, encrypt, expiry)
 
     # Support for grabbing the time-expired URL for an object in S3/Walrus.
     if mode == 'geturl':
