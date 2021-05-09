@@ -577,6 +577,305 @@ EXAMPLES = '''
 
 '''
 
+RETURN = r'''
+changed:
+    description: If the EC2 instance has changed.
+    type: bool
+    returned: always
+    sample: true
+instances:
+    description: The instances.
+    type: list
+    returned: always
+    contains:
+        ami_launch_index:
+            description: The AMI launch index, which can be used to find this instance in the launch group.
+            type: int
+            returned: always
+            sample: 0
+        architecture:
+            description: The architecture of the image.
+            type: str
+            returned: always
+            sample: "x86_64"
+        block_device_mapping:
+            description: Any block device mapping entries for the instance.
+            type: dict
+            returned: always
+            sample: {
+                "/dev/xvda": {
+                    "delete_on_termination": true,
+                    "status": "attached",
+                    "volume_id": "vol-06d364586f5550b62"
+                }
+            }
+        dns_name:
+            description: If the EC2 instance has changed.
+            type: str
+            returned: always
+            sample: ""
+        ebs_optimized:
+            description: Indicates whether the instance is optimized for Amazon EBS I/O.
+            type: bool
+            returned: always
+            sample: false
+        groups:
+            description: One or more security groups.
+            type: dict
+            returned: always
+            sample: {
+                "sg-0c6562ab3d435619f": "ansible-test--88312190_setup"
+            }
+        hypervisor:
+            description: The hypervisor type of the instance.
+            type: str
+            returned: always
+            sample: "xen"
+        image_id:
+            description: The ID of the AMI used to launch the instance.
+            type: str
+            returned: always
+            sample: "ami-0d5eff06f840b45e9"
+        instance_id:
+            description: The ID of the instance.
+            type: str
+            returned: always
+            sample: "i-0250719204c428be1"
+        instance_type:
+            description: The instance type.
+            type: str
+            returned: always
+            sample: "t2.micro"
+        kernel:
+            description: The kernel associated with this instance, if applicable.
+            type: str
+            returned: always
+            sample: ""
+        key_name:
+            description: The name of the key pair, if this instance was launched with an associated key pair.
+            type: str
+            returned: always
+            sample: "ansible-test-88312190_setup"
+        launch_time:
+            description: The time the instance was launched.
+            type: str
+            returned: always
+            sample: "2021-05-09T19:30:26.000Z"
+        placement:
+            description: The location where the instance launched, if applicable.
+            type: dict
+            returned: always
+            sample:  {
+                "availability_zone": "us-east-1a",
+                "group_name": "",
+                "tenancy": "default"
+            }
+        private_dns_name:
+            description: The private DNS hostname name assigned to the instance.
+            type: str
+            returned: always
+            sample: "ip-10-176-1-249.ec2.internal"
+        private_ip:
+            description: The private IPv4 address assigned to the instance.
+            type: str
+            returned: always
+            sample: "10.176.1.249"
+        public_dns_name:
+            description: The public DNS name assigned to the instance.
+            type: str
+            returned: always
+            sample: ""
+        public_ip:
+            description: The public IPv4 address, or the Carrier IP address assigned to the instance, if applicable.
+            type: str
+            returned: always
+            sample: ""
+        ramdisk:
+            description: The RAM disk associated with this instance, if applicable.
+            type: str
+            returned: always
+            sample: ""
+        root_device_name:
+            description: The device name of the root device volume.
+            type: str
+            returned: always
+            sample: "/dev/xvda"
+        root_device_type:
+            description: The root device type used by the AMI.
+            type: str
+            returned: always
+            sample: "ebs"
+        state:
+            description: The current state of the instance.
+            type: dict
+            returned: always
+            sample: {
+                "code": 80,
+                "name": "stopped"
+            }
+        tags:
+            description: Any tags assigned to the instance.
+            type: dict
+            returned: always
+            sample: {
+                "ResourcePrefix": "ansible-test-88312190-integration_tests"
+            }
+        tenancy:
+            description: The tenancy of the instance (if the instance is running in a VPC).
+            type: str
+            returned: always
+            sample: "default"
+        virtualization_type:
+            description: The virtualization type of the instance.
+            type: str
+            returned: always
+            sample: "hvm"
+        monitoring:
+            description: The monitoring for the instance.
+            type: dict
+            returned: always
+            sample: {
+                "state": "disabled"
+            }
+        capacity_reservation_specification:
+            description: Information about the Capacity Reservation targeting option.
+            type: dict
+            returned: always
+            sample: {
+                "capacity_reservation_preference": "open"
+            }
+        client_token:
+            description: The idempotency token you provided when you launched the instance, if applicable.
+            type: str
+            returned: always
+            sample: ""
+        cpu_options:
+            description: The idempotency token you provided when you launched the instance, if applicable.
+            type: dict
+            returned: always
+            sample: {
+                "core_count": 1,
+                "threads_per_core": 1
+            }
+        ena_support:
+            description: Specifies whether enhanced networking with ENA is enabled.
+            type: bool
+            returned: always
+            sample: true
+        enclave_options:
+            description: Indicates whether the instance is enabled for AWS Nitro Enclaves.
+            type: dict
+            returned: always
+            sample: {
+                "enabled": false
+            }
+        hibernation_options:
+            description: Indicates whether the instance is enabled for hibernation.
+            type: dict
+            returned: always
+            sample:  {
+                "configured": false
+            }
+        network_interfaces:
+            description: The network interfaces for the instance.
+            type: list
+            returned: always
+            sample:  [
+                {
+                    "attachment": {
+                        "attach_time": "2021-05-09T19:30:57+00:00",
+                        "attachment_id": "eni-attach-07341f2560be6c8fc",
+                        "delete_on_termination": true,
+                        "device_index": 0,
+                        "network_card_index": 0,
+                        "status": "attached"
+                    },
+                    "description": "",
+                    "groups": [
+                        {
+                            "group_id": "sg-0c6562ab3d435619f",
+                            "group_name": "ansible-test-88312190_setup"
+                        }
+                    ],
+                    "interface_type": "interface",
+                    "ipv6_addresses": [],
+                    "mac_address": "0e:0e:36:60:67:cf",
+                    "network_interface_id": "eni-061dee20eba3b445a",
+                    "owner_id": "721066863947",
+                    "private_dns_name": "ip-10-176-1-178.ec2.internal",
+                    "private_ip_address": "10.176.1.178",
+                    "private_ip_addresses": [
+                        {
+                            "primary": true,
+                            "private_dns_name": "ip-10-176-1-178.ec2.internal",
+                            "private_ip_address": "10.176.1.178"
+                        }
+                    ],
+                    "source_dest_check": true,
+                    "status": "in-use",
+                    "subnet_id": "subnet-069d3e2eab081955d",
+                    "vpc_id": "vpc-0b6879b6ca2e9be2b"
+                }
+            ]
+        vpc_id:
+            description: The ID of the VPC in which the instance is running.
+            type: str
+            returned: always
+            sample: "vpc-0b6879b6ca2e9be2b"
+        subnet_id:
+            description: The ID of the subnet in which the instance is running.
+            type: str
+            returned: always
+            sample: "subnet-069d3e2eab081955d"
+        state_transition_reason:
+            description: The reason for the most recent state transition. This might be an empty string.
+            type: str
+            returned: always
+            sample: "User initiated (2021-05-09 19:31:28 GMT)"
+        state_reason:
+            description: The reason for the most recent state transition.
+            type: dict
+            returned: always
+            sample: {
+                "code": "Client.UserInitiatedShutdown",
+                "message": "Client.UserInitiatedShutdown: User initiated shutdown"
+            }
+        security_groups:
+            description: The security groups for the instance.
+            type: list
+            returned: always
+            sample: [
+                {
+                    "group_id": "sg-0c6562ab3d435619f",
+                    "group_name": "ansible-test-alinas-mbp-88312190_setup"
+                }
+            ]
+        source_dest_check:
+            description: Indicates whether source/destination checking is enabled.
+            type: bool
+            returned: always
+            sample: true
+        cpu_options:
+            description: The CPU options for the instance.
+            type: dict
+            returned: always
+            sample: {
+                "core_count": 1,
+                "threads_per_core": 1
+            }
+        metadata:
+            description: The metadata options for the instance.
+            type: dict
+            returned: always
+            sample: {
+                "http_endpoint": "enabled",
+                "http_put_response_hop_limit": 1,
+                "http_tokens": "optional",
+                "state": "applied"
+            }
+'''
+
+
 import time
 import datetime
 from ast import literal_eval
