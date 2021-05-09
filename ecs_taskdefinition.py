@@ -189,7 +189,7 @@ options:
             linuxParameters:
                 description: Linux-specific modifications that are applied to the container, such as Linux kernel capabilities.
                 required: False
-                type: list
+                type: dict
                 suboptions:
                     capabilities:
                         description:
@@ -410,6 +410,8 @@ options:
                         description: The type of the ulimit.
                         type: str
                         required: False
+                        choices: ['core', 'cpu', 'data', 'fsize', 'locks', 'memlock', 'msgqueue', 'nice', 'nofile', 'nproc', 'rss',
+                                  'rtprio', 'rttime', 'sigpending', 'stack']
                     softLimit:
                         description: The soft limit for the ulimit type.
                         type: int
@@ -667,7 +669,7 @@ class EcsTaskManager:
 
         # Ensures the number parameters are int as required by boto
         for container in container_definitions:
-            for param in ('memory', 'cpu', 'memoryReservation'):
+            for param in ('memory', 'cpu', 'memoryReservation', 'startTimeout', 'stopTimeout'):
                 if param in container:
                     container[param] = int(container[param])
 
@@ -680,6 +682,23 @@ class EcsTaskManager:
                         if port_mapping['hostPort'] != port_mapping.get('containerPort'):
                             self.module.fail_json(msg="In awsvpc network mode, host port must be set to the same as "
                                                   "container port or not be set")
+
+            if 'linuxParameters' in container:
+                for linux_param in container.get('linuxParameters'):
+                    if linux_param == 'tmpfs':
+                        for tmpfs_param in container['linuxParameters']['tmpfs']:
+                            if 'size' in tmpfs_param:
+                                tmpfs_param['size'] = int(tmpfs_param['size'])
+
+                    for param in ('maxSwap', 'swappiness', 'sharedMemorySize'):
+                        if param in linux_param:
+                            container['linuxParameters'][param] = int(container['linuxParameters'][param])
+
+            if 'ulimits' in container:
+                for limits_mapping in container['ulimits']:
+                    for limit in ('softLimit', 'hardLimit'):
+                        if limit in limits_mapping:
+                            limits_mapping[limit] = int(limits_mapping[limit])
 
             validated_containers.append(container)
 
@@ -794,21 +813,24 @@ def main():
                     module.fail_json(msg='The only supported value for environmentFiles is s3.')
 
             for linux_param in container.get('linuxParameters', {}):
-                if linux_param.get('devices') and launch_type == 'FARGATE':
+                if linux_param == 'maxSwap' and launch_type == 'FARGATE':
                     module.fail_json(msg='devices parameter is not supported with the FARGATE launch type.')
 
-                if linux_param.get('maxSwap') and launch_type == 'FARGATE':
+                if linux_param == 'maxSwap' and launch_type == 'FARGATE':
                     module.fail_json(msg='maxSwap parameter is not supported with the FARGATE launch type.')
-                elif linux_param.get('maxSwap') and linux_param['maxSwap'] < 0:
+                elif linux_param == 'maxSwap' and container['linuxParameters']['maxSwap'] < 0:
                     module.fail_json(msg='Accepted values for maxSwap are 0 or any positive integer.')
 
-                if linux_param.get('swappiness') and (linux_param['swappiness'] < 0 or linux_param['swappiness'] > 100):
+                if (
+                    linux_param == 'swappiness' and
+                    (container['linuxParameters']['swappiness'] < 0 or container['linuxParameters']['swappiness'] > 100)
+                ):
                     module.fail_json(msg='Accepted values for swappiness are whole numbers between 0 and 100.')
 
-                if linux_param.get('sharedMemorySize') and launch_type == 'FARGATE':
+                if linux_param == 'sharedMemorySize' and launch_type == 'FARGATE':
                     module.fail_json(msg='sharedMemorySize parameter is not supported with the FARGATE launch type.')
 
-                if linux_param.get('tmpfs') and launch_type == 'FARGATE':
+                if linux_param == 'tmpfs' and launch_type == 'FARGATE':
                     module.fail_json(msg='tmpfs parameter is not supported with the FARGATE launch type.')
 
             if container.get('hostname') and network_mode == 'awsvpc':
