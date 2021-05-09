@@ -7,6 +7,8 @@ ecs_service_name: "{{ resource_prefix }}-service"
 ecs_task_image_path: nginx
 ecs_task_name: "{{ resource_prefix }}-task"
 ecs_task_memory: 128
+target_swap_mb: 0
+target_swappiness: 80
 ecs_task_containers:
 - name: "{{ ecs_task_name }}"
   image: "{{ ecs_task_image_path }}"
@@ -15,6 +17,9 @@ ecs_task_containers:
   portMappings:
   - containerPort: "{{ ecs_task_container_port }}"
     hostPort: "{{ ecs_task_host_port|default(0) }}"
+  linuxParameters:
+    maxSwap: "{{ target_swap_mb }}"
+    swappiness: "{{ target_swappiness }}"
   mountPoints: "{{ ecs_task_mount_points|default([]) }}"
 ecs_service_deployment_configuration:
   minimum_healthy_percent: 0
