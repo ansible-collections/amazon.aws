@@ -594,7 +594,7 @@ def get_attachment_data(volume_dict, wanted_state=None):
     if wanted_state:
         # filter 'state', return attachment matching wanted state
         resource = [data for data in resource if data['state'] == wanted_state]
-
+    
     for data in resource:
         attachment_data.append({
             'attach_time': data.get('attach_time', None),
@@ -603,7 +603,7 @@ def get_attachment_data(volume_dict, wanted_state=None):
             'status': data.get('state', None),
             'deleteOnTermination': data.get('delete_on_termination', None)
         })
-
+    
     return attachment_data
 
 
