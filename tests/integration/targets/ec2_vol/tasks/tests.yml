@@ -52,7 +52,7 @@
       set_fact:
         ec2_ami_image: '{{ latest_ami.image_id }}'
 
-    # ==== ec2_vol tests ===============================================
+    # # ==== ec2_vol tests ===============================================
 
     - name: create a volume (validate module defaults)
       ec2_vol:
@@ -187,9 +187,7 @@
           - vol_attach_result.volume.attachment_set[0].status in ['attached', 'attaching']
           - vol_attach_result.volume.attachment_set[0].instance_id == test_instance.instance_ids[0]
           - vol_attach_result.volume.attachment_set[0].device == '/dev/sdg'
-
-#          Failing
-#          - "vol_attach_result.volume.attachment_set.deleteOnTermination"
+          - not vol_attach_result.volume.attachment_set[0].delete_on_termination
 
     - name: attach existing volume to an instance (idempotent)
       ec2_vol:
@@ -625,10 +623,65 @@
           - gp3_volume.volume.iops == 3001
           - "'throughput' in gp3_volume.volume"
           - gp3_volume.volume.throughput == 131
-          - "'tags' in gp3_volume.volume"
-          - (gp3_volume.volume.tags | length ) == 2
-          - gp3_volume.volume.tags["ResourcePrefix"] == "{{ resource_prefix }}"
+    
+    # Multi-Attach disk
+    - name: create disk with multi-attach enabled
+      ec2_vol:
+        volume_size: 4
+        volume_type: io1
+        iops: 102
+        zone: "{{ availability_zone }}"
+        multi_attach: yes
+        tags:
+          ResourcePrefix: "{{ resource_prefix }}"
+      register: multi_attach_disk
+    
+    - name: check volume creation
+      assert:
+        that:
+          - multi_attach_disk.changed
+          - "'volume' in multi_attach_disk"
+          - multi_attach_disk.volume.multi_attach_enabled
+    
+    - name: attach existing volume to an instance
+      ec2_vol:
+        id: "{{ multi_attach_disk.volume_id }}"
+        instance: "{{ test_instance.instance_ids[0] }}"
+        device_name: /dev/sdk
+        delete_on_termination: no
+      register: vol_attach_result
+    
+    - name: create another ec2 instance
+      ec2_instance:
+        name: "{{ resource_prefix }}-2"
+        vpc_subnet_id: "{{ testing_subnet.subnet.id }}"
+        instance_type: t3.nano
+        image_id: "{{ ec2_ami_image }}"
+        tags:
+          ResourcePrefix: "{{ resource_prefix }}"
+      register: test_instance_2
 
+    - name: check task return attributes
+      assert:
+        that:
+          - test_instance_2.changed
+    
+    - name: attach existing volume to second instance
+      ec2_vol:
+        id: "{{ multi_attach_disk.volume_id }}"
+        instance: "{{ test_instance_2.instance_ids[0] }}"
+        device_name: /dev/sdg
+        delete_on_termination: no
+      register: vol_attach_result
+
+    - name: check task return attributes
+      assert:
+        that:
+          - vol_attach_result.changed
+          - "'volume' in vol_attach_result"
+          - vol_attach_result.volume.attachment_set | length == 2
+          - 'test_instance.instance_ids[0] in vol_attach_result.volume.attachment_set | map(attribute="instance_id") | list'
+          - 'test_instance_2.instance_ids[0] in vol_attach_result.volume.attachment_set | map(attribute="instance_id") | list'
 
     # ==== Cleanup ============================================================
 
@@ -636,8 +689,11 @@
     - name: Describe the instance before we delete it
       ec2_instance_info:
         instance_ids:
-          - "{{ test_instance.instance_ids[0] }}"
+          - "{{ item }}"
       ignore_errors: yes
+      with_items:
+        - "{{ test_instance.instance_ids[0] }}"
+        - "{{ test_instance_2.instance_ids[0] }}"
       register: pre_delete
 
     - debug:
@@ -646,8 +702,11 @@
     - name: delete test instance
       ec2_instance:
         instance_ids:
-          - "{{ test_instance.instance_ids[0] }}"
+          - "{{ item }}"
         state: terminated
+      with_items:
+        - "{{ test_instance.instance_ids[0] }}"
+        - "{{ test_instance_2.instance_ids[0] }}"
       ignore_errors: yes
 
     - name: delete volumes
@@ -663,6 +722,7 @@
         - "{{ attach_new_vol_from_snapshot_result }}"
         - "{{ dot_volume }}"
         - "{{ gp3_volume }}"
+        - "{{ multi_attach_disk }}"
 
     - name: delete snapshot
       ec2_snapshot:

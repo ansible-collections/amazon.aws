@@ -423,11 +423,14 @@ def update_volume(module, ec2_conn, volume):
 
         target_multi_attach = module.params.get('multi_attach')
         multi_attach_changed = False
-        if target_multi_attach:
-            original_multi_attach = volume['multi_attach_enabled']
-            if target_multi_attach != original_multi_attach:
-                multi_attach_changed = True
-                req_obj['MultiAttachEnabled'] = target_multi_attach
+        if target_multi_attach is not None:
+            if "io1" in [target_type, original_type] or "io2" in [target_type, original_type]:
+                original_multi_attach = volume['multi_attach_enabled']
+                if target_multi_attach != original_multi_attach:
+                    multi_attach_changed = True
+                    req_obj['MultiAttachEnabled'] = target_multi_attach
+            else:
+                module.warn("multi_attach is supported with io1 and io2 volumes only.")
 
         changed = iops_changed or size_changed or type_changed or throughput_changed or multi_attach_changed
 
@@ -483,9 +486,15 @@ def create_volume(module, ec2_conn, zone):
                 additional_params['Iops'] = 3000
 
             if throughput:
-                additional_params['Throughput'] = int(throughput)
-            if multi_attach:
-                additional_params['MultiAttachEnabled'] = multi_attach
+                if volume_type != "gp3":
+                    module.warn("throughput parameter is valid only for gp3 volumes.")
+                else:
+                    additional_params['Throughput'] = throughput
+            if multi_attach is True:
+                if volume_type not in ("io1", "io2"):
+                    module.warn("multi_attach is supported with io1 and io2 volumes only.")
+                else:
+                    additional_params['MultiAttachEnabled'] = multi_attach
 
             create_vol_response = ec2_conn.create_volume(
                 aws_retry=True,
@@ -517,7 +526,7 @@ def attach_volume(module, ec2_conn, volume_dict, instance_dict, device_name):
 
     attachment_data = get_attachment_data(volume_dict, wanted_state='attached')
     if attachment_data:
-        if not volume_dict['multi_attach']:
+        if not volume_dict['multi_attach_enabled']:
             # volumes without MultiAttach Enabled can be attached to 1 instance only
             if attachment_data[0].get('instance_id', None) != instance_dict['instance_id']:
                 module.fail_json(msg="Volume {0} is already attached to another instance: {1}".format(volume_dict['volume_id'],
@@ -594,16 +603,16 @@ def get_attachment_data(volume_dict, wanted_state=None):
     if wanted_state:
         # filter 'state', return attachment matching wanted state
         resource = [data for data in resource if data['state'] == wanted_state]
-    
+
     for data in resource:
         attachment_data.append({
             'attach_time': data.get('attach_time', None),
             'device': data.get('device', None),
             'instance_id': data.get('instance_id', None),
             'status': data.get('state', None),
-            'deleteOnTermination': data.get('delete_on_termination', None)
+            'delete_on_termination': data.get('delete_on_termination', None)
         })
-    
+
     return attachment_data
 
 
@@ -639,6 +648,7 @@ def get_volume_info(module, volume, tags=None):
         'type': volume.get('volume_type'),
         'zone': volume.get('availability_zone'),
         'attachment_set': attachment_data,
+        'multi_attach_enabled': volume.get('multi_attach_enabled'),
         'tags': tags
     }
 
