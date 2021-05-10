@@ -855,14 +855,6 @@ instances:
             type: bool
             returned: always
             sample: true
-        cpu_options:
-            description: The CPU options for the instance.
-            type: dict
-            returned: always
-            sample: {
-                "core_count": 1,
-                "threads_per_core": 1
-            }
         metadata:
             description: The metadata options for the instance.
             type: dict
