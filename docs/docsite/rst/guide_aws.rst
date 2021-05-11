@@ -1,7 +1,7 @@
+.. _ansible_collections.amazon.aws.docsite.aws_intro:
+
 Amazon Web Services Guide
 =========================
-
-.. _aws_intro:
 
 Introduction
 ````````````
@@ -22,7 +22,7 @@ In your playbook steps we'll typically be using the following pattern for provis
       tasks:
         - ...
 
-.. _aws_authentication:
+.. _ansible_collections.amazon.aws.docsite.aws_authentication:
 
 Authentication
 ``````````````
@@ -48,7 +48,7 @@ Note that if you store your credentials in vars_file, you need to refer to them 
       aws_secret_key: "{{ec2_secret_key}}"
       image: "..."
 
-.. _aws_provisioning:
+.. _ansible_collections.amazon.aws.docsite.aws_provisioning:
 
 Provisioning
 ````````````
@@ -132,7 +132,7 @@ With the host group now created, a second play at the bottom of the same provisi
          - name: Check NTP service
            service: name=ntpd state=started
 
-.. _aws_security_groups:
+.. _ansible_collections.amazon.aws.docsite.aws_security_groups:
 
 Security Groups
 ```````````````
@@ -163,7 +163,7 @@ In case you only want allow traffic with AWS S3 service, you need to fetch the c
         tags:
           Name: aws_s3_ip_ranges
 
-.. _aws_host_inventory:
+.. _ansible_collections.amazon.aws.docsite.aws_host_inventory:
 
 Host Inventory
 ``````````````
@@ -173,7 +173,7 @@ in text files.  Rather, the best way to handle this is to use the aws_ec2 invent
 
 The plugin will also return instances that were created outside of Ansible and allow Ansible to manage them.
 
-.. _aws_tags_and_groups:
+.. _ansible_collections.amazon.aws.docsite.aws_tags_and_groups:
 
 Tags And Groups And Variables
 `````````````````````````````
@@ -196,7 +196,7 @@ You can then target all instances with a "class" tag where the value is "webserv
 
 You can also use these groups with 'group_vars' to set variables that are automatically applied to matching instances.  See :ref:`splitting_out_vars`.
 
-.. _aws_pull:
+.. _ansible_collections.amazon.aws.docsite.aws_pull:
 
 Autoscaling with Ansible Pull
 `````````````````````````````
@@ -213,7 +213,7 @@ For this reason, the autoscaling solution provided below in the next section can
 
 Read :ref:`ansible-pull` for more information on pull-mode playbooks.
 
-.. _aws_autoscale:
+.. _ansible_collections.amazon.aws.docsite.aws_autoscale:
 
 Autoscaling with Ansible Tower
 ``````````````````````````````
@@ -225,7 +225,7 @@ to reconfigure ephemeral nodes.  See the Tower install and product documentation
 A benefit of using the callback in Tower over pull mode is that job results are still centrally recorded and less information has to be shared
 with remote hosts.
 
-.. _aws_cloudformation_example:
+.. _ansible_collections.amazon.aws.docsite.aws_cloudformation_example:
 
 Ansible With (And Versus) CloudFormation
 ````````````````````````````````````````
@@ -243,7 +243,7 @@ those images, or ansible will be invoked through user data once the image comes 
 
 Please see the examples in the Ansible CloudFormation module for more details.
 
-.. _aws_image_build:
+.. _ansible_collections.amazon.aws.docsite.aws_image_build:
 
 AWS Image Building With Ansible
 ```````````````````````````````
@@ -259,7 +259,7 @@ See the Packer documentation of the `Ansible local Packer provisioner <https://w
 
 If you do not want to adopt Packer at this time, configuring a base-image with Ansible after provisioning (as shown above) is acceptable.
 
-.. _aws_next_steps:
+.. _ansible_collections.amazon.aws.docsite.aws_next_steps:
 
 Next Steps: Explore Modules
 ```````````````````````````
