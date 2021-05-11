@@ -821,12 +821,12 @@ def main():
 
                 if linux_param == 'maxSwap' and launch_type == 'FARGATE':
                     module.fail_json(msg='maxSwap parameter is not supported with the FARGATE launch type.')
-                elif linux_param == 'maxSwap' and container['linuxParameters']['maxSwap'] < 0:
+                elif linux_param == 'maxSwap' and int(container['linuxParameters']['maxSwap']) < 0:
                     module.fail_json(msg='Accepted values for maxSwap are 0 or any positive integer.')
 
                 if (
                     linux_param == 'swappiness' and
-                    (container['linuxParameters']['swappiness'] < 0 or container['linuxParameters']['swappiness'] > 100)
+                    (int(container['linuxParameters']['swappiness']) < 0 or int(container['linuxParameters']['swappiness']) > 100)
                 ):
                     module.fail_json(msg='Accepted values for swappiness are whole numbers between 0 and 100.')
 
