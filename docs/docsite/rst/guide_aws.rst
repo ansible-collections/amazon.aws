@@ -1,13 +1,13 @@
 .. _ansible_collections.amazon.aws.docsite.aws_intro:
 
+*************************
 Amazon Web Services Guide
-=========================
+*************************
 
-Introduction
-````````````
+Then ``amazon.aws`` collection contains a number of modules and plugins for controlling Amazon Web Services (AWS). This guide explains how to use the modules and inventory scripts to automate your AWS resources with Ansible.
 
-Ansible contains a number of modules for controlling Amazon Web Services (AWS).  The purpose of this
-section is to explain how to put Ansible modules together (and use inventory scripts) to use Ansible in AWS context.
+.. contents::
+   :local:
 
 Requirements for the AWS modules are minimal.
 
