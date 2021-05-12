@@ -28,6 +28,22 @@ options:
     choices: [ "Interface", "Gateway", "GatewayLoadBalancer" ]
     type: str
     version_added: 1.5.0
+  vpc_endpoint_subnets:
+    description:
+      - The list of subnets to attach to the endpoint.
+      - Requires I(vpc_endpoint_type=GatewayLoadBalancer) or I(vpc_endpoint_type=Interface).
+    required: false
+    type: list
+    elements: str
+    version_added: 2.1.0
+  vpc_endpoint_security_groups:
+    description:
+      - The list of security groups to attach to the endpoint.
+      - Requires I(vpc_endpoint_type=GatewayLoadBalancer) or I(vpc_endpoint_type=Interface).
+    required: false
+    type: list
+    elements: str
+    version_added: 2.1.0
   service:
     description:
       - An AWS supported vpc endpoint service. Use the M(amazon.aws.ec2_vpc_endpoint_info)
@@ -301,6 +317,12 @@ def create_vpc_endpoint(client, module):
     if module.params.get('route_table_ids'):
         params['RouteTableIds'] = module.params.get('route_table_ids')
 
+    if module.params.get('vpc_endpoint_subnets'):
+        params['SubnetIds'] = module.params.get('vpc_endpoint_subnets')
+
+    if module.params.get('vpc_endpoint_security_groups'):
+        params['SecurityGroupIds'] = module.params.get('vpc_endpoint_security_groups')
+
     if module.params.get('client_token'):
         token_provided = True
         request_time = datetime.datetime.utcnow()
@@ -398,6 +420,8 @@ def main():
     argument_spec = dict(
         vpc_id=dict(),
         vpc_endpoint_type=dict(default='Gateway', choices=['Interface', 'Gateway', 'GatewayLoadBalancer']),
+        vpc_endpoint_security_groups=dict(type='list', elements='str'),
+        vpc_endpoint_subnets=dict(type='list', elements='str'),
         service=dict(),
         policy=dict(type='json'),
         policy_file=dict(type='path', aliases=['policy_path']),
@@ -427,6 +451,21 @@ def main():
         module.deprecate('The policy_file option has been deprecated and'
                          ' will be removed after 2022-12-01',
                          date='2022-12-01', collection_name='amazon.aws')
+
+    if module.params.get('vpc_endpoint_type'):
+        if module.params.get('vpc_endpoint_type') == 'Gateway':
+            if module.params.get('vpc_endpoint_subnets') or module.params.get('vpc_endpoint_security_groups'):
+                module.fail_json(msg="Parameter vpc_endpoint_subnets and/or vpc_endpoint_security_groups can't be used with Gateway endpoint type")
+
+        if module.params.get('vpc_endpoint_type') == 'GatewayLoadBalancer':
+            if module.params.get('vpc_endpoint_security_groups'):
+                module.fail_json(msg="Parameter vpc_endpoint_security_groups can't be used with GatewayLoadBalancer endpoint type")
+
+        if module.params.get('vpc_endpoint_type') == 'Interface':
+            if module.params.get('vpc_endpoint_subnets') and not module.params.get('vpc_endpoint_security_groups'):
+                module.fail_json(msg="Parameter vpc_endpoint_security_groups must be set when endpoint type is Interface and vpc_endpoint_subnets is defined")
+            if not module.params.get('vpc_endpoint_subnets') and module.params.get('vpc_endpoint_security_groups'):
+                module.fail_json(msg="Parameter vpc_endpoint_subnets must be set when endpoint type is Interface and vpc_endpoint_security_groups is defined")
 
     try:
         ec2 = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
