@@ -11,7 +11,7 @@ DOCUMENTATION = r"""
 ---
 module: aws_msk_cluster
 short_description: Manage Amazon MSK clusters.
-version_added: "1.5.0"
+version_added: "2.0.0"
 requirements:
     - botocore >= 1.17.42
     - boto3 >= 1.17.9
