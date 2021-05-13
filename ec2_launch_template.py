@@ -13,7 +13,7 @@ short_description: Manage EC2 launch templates
 description:
   - Create, modify, and delete EC2 Launch Templates, which can be used to
     create individual instances or with Autoscaling Groups.
-  - The M(community.aws.ec2_instance) and M(community.aws.ec2_asg) modules can, instead of specifying all
+  - The M(amazon.aws.ec2_instance) and M(community.aws.ec2_asg) modules can, instead of specifying all
     parameters on those tasks, be passed a Launch Template which contains
     settings like instance size, disk type, subnet, and more.
 requirements:
