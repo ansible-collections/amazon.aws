@@ -2,7 +2,7 @@
   - name: "Create IAM role for test"
     iam_role:
       state: present
-      name: "ansible-test-sts-{{ resource_prefix }}-test-policy"
+      name: '{{ first_iam_role }}'
       assume_role_policy_document: "{{ lookup('file','assume-role-policy.json') }}"
       create_instance_profile: yes
       managed_policy:
@@ -12,7 +12,7 @@
   - name: "Create second IAM role for test"
     iam_role:
       state: present
-      name: "ansible-test-sts-{{ resource_prefix }}-test-policy-2"
+      name: '{{ second_iam_role }}'
       assume_role_policy_document: "{{ lookup('file','assume-role-policy.json') }}"
       create_instance_profile: yes
       managed_policy:
@@ -119,8 +119,8 @@
       managed_policy:
       - AmazonEC2ContainerServiceRole
     loop:
-      - "ansible-test-sts-{{ resource_prefix }}-test-policy"
-      - "ansible-test-sts-{{ resource_prefix }}-test-policy-2"
+      - '{{ first_iam_role }}'
+      - '{{ second_iam_role }}'
     register: removed
     until: removed is not failed
     ignore_errors: yes
