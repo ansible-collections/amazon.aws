@@ -17,7 +17,6 @@ action_groups:
   - cloudwatchlogs_log_group_facts
   - ec2_asg_facts
   - ec2_customer_gateway_facts
-  - ec2_instance_facts
   - ec2_eip_facts
   - ec2_elb_facts
   - ec2_lc_facts
