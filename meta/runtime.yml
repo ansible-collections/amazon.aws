@@ -112,8 +112,6 @@ action_groups:
   - ec2_eip_info
   - ec2_elb
   - ec2_elb_info
-  - ec2_instance
-  - ec2_instance_info
   - ec2_launch_template
   - ec2_lc
   - ec2_lc_find
@@ -297,11 +295,6 @@ plugin_routing:
     ec2_instance:
       redirect: amazon.aws.ec2_instance
     ec2_instance_facts:
-      deprecation:
-        removal_date: 2021-12-01
-        warning_text: >-
-          ec2_instance_facts was renamed in Ansible 2.9 to ec2_instance_info.
-          Please update your tasks.
         redirect: amazon.aws.ec2_instance_info
     ec2_instance_info:
       redirect: amazon.aws.ec2_instance_info
