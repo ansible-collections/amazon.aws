@@ -11,7 +11,6 @@ plugins/modules/ec2_asg_info.py pylint:ansible-deprecated-no-version
 plugins/modules/ec2_customer_gateway_info.py pylint:ansible-deprecated-no-version
 plugins/modules/ec2_eip_info.py pylint:ansible-deprecated-no-version
 plugins/modules/ec2_elb_info.py pylint:ansible-deprecated-no-version
-plugins/modules/ec2_instance_info.py pylint:ansible-deprecated-no-version
 plugins/modules/ec2_lc_info.py pylint:ansible-deprecated-no-version
 plugins/modules/ec2_metric_alarm.py pylint:ansible-deprecated-no-version
 plugins/modules/ec2_placement_group_info.py pylint:ansible-deprecated-no-version
