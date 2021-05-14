@@ -153,10 +153,12 @@ def get_volume_info(volume, region):
         'type': volume["volume_type"],
         'zone': volume["availability_zone"],
         'region': region,
-        'throughput': volume["throughput"],
         'attachment_set': attachment_data,
         'tags': boto3_tag_list_to_ansible_dict(volume['tags']) if "tags" in volume else None
     }
+
+    if 'throughput' in volume:
+        volume_info['throughput'] = volume["throughput"]
 
     return volume_info
 
