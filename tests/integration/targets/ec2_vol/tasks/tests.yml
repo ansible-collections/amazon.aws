@@ -451,7 +451,7 @@
     - name: volume type must be gp3
       assert:
         that:
-          - v.type == 'gp3'
+          - v.type == 'gp3' 
       vars:
         v: "{{ verify_gp3_change.volumes[0] }}"
 
@@ -593,6 +593,23 @@
           - "'tags' in gp3_volume.volume"
           - (gp3_volume.volume.tags | length ) == 2
           - gp3_volume.volume.tags["ResourcePrefix"] == "{{ resource_prefix }}"
+
+    - name: Read volume information to validate throughput
+      ec2_vol_info:
+        filters:
+          volume-id: "{{ gp3_volume.volume_id }}"
+      register: verify_throughput
+
+    - name: throughput must be equal to 130
+      assert:
+        that:
+          - v.throughput == 130
+      vars:
+        v: "{{ verify_throughput.volumes[0] }}"
+
+    - name: print out facts
+      debug:
+        var: vol_facts
 
     - name: increase throughput
       ec2_vol:

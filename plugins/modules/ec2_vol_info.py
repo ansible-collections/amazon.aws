@@ -109,6 +109,10 @@ volumes:
             description: The Availability Zone of the volume.
             type: str
             sample: "us-east-1b"
+        throughput:
+            description: The throughput that the volume supports, in MiB/s.
+            type: int
+            sample: 131
 '''
 
 try:
@@ -149,6 +153,7 @@ def get_volume_info(volume, region):
         'type': volume["volume_type"],
         'zone': volume["availability_zone"],
         'region': region,
+        'throughput': volume["throughput"],
         'attachment_set': attachment_data,
         'tags': boto3_tag_list_to_ansible_dict(volume['tags']) if "tags" in volume else None
     }
