@@ -12,6 +12,9 @@ import pytest
 # Magic...
 from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import maybe_sleep, placeboify  # pylint: disable=unused-import
 
+import ansible_collections.amazon.aws.plugins.module_utils.core as aws_core
+import ansible_collections.amazon.aws.plugins.module_utils.ec2 as aws_ec2
+
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto_exception
 from ansible_collections.amazon.aws.plugins.modules import cloudformation as cfn_module
 
@@ -78,8 +81,15 @@ class FakeModule(object):
         raise Exception('EXIT')
 
 
-def test_invalid_template_json(placeboify):
+def _create_wrapped_client(placeboify):
     connection = placeboify.client('cloudformation')
+    retry_decorator = aws_ec2.AWSRetry.jittered_backoff()
+    wrapped_conn = aws_core._RetryingBotoClientWrapper(connection, retry_decorator)
+    return wrapped_conn
+
+
+def test_invalid_template_json(placeboify):
+    connection = _create_wrapped_client(placeboify)
     params = {
         'StackName': 'ansible-test-wrong-json',
         'TemplateBody': bad_json_tpl,
@@ -94,7 +104,7 @@ def test_invalid_template_json(placeboify):
 
 
 def test_client_request_token_s3_stack(maybe_sleep, placeboify):
-    connection = placeboify.client('cloudformation')
+    connection = _create_wrapped_client(placeboify)
     params = {
         'StackName': 'ansible-test-client-request-token-yaml',
         'TemplateBody': basic_yaml_tpl,
@@ -111,7 +121,7 @@ def test_client_request_token_s3_stack(maybe_sleep, placeboify):
 
 
 def test_basic_s3_stack(maybe_sleep, placeboify):
-    connection = placeboify.client('cloudformation')
+    connection = _create_wrapped_client(placeboify)
     params = {
         'StackName': 'ansible-test-basic-yaml',
         'TemplateBody': basic_yaml_tpl
@@ -127,15 +137,19 @@ def test_basic_s3_stack(maybe_sleep, placeboify):
 
 
 def test_delete_nonexistent_stack(maybe_sleep, placeboify):
-    connection = placeboify.client('cloudformation')
-    result = cfn_module.stack_operation(connection, 'ansible-test-nonexist', 'DELETE', default_events_limit)
+    connection = _create_wrapped_client(placeboify)
+    # module is only used if we threw an unexpected error
+    module = None
+    result = cfn_module.stack_operation(module, connection, 'ansible-test-nonexist', 'DELETE', default_events_limit)
     assert result['changed']
     assert 'Stack does not exist.' in result['log']
 
 
 def test_get_nonexistent_stack(placeboify):
-    connection = placeboify.client('cloudformation')
-    assert cfn_module.get_stack_facts(connection, 'ansible-test-nonexist') is None
+    connection = _create_wrapped_client(placeboify)
+    # module is only used if we threw an unexpected error
+    module = None
+    assert cfn_module.get_stack_facts(module, connection, 'ansible-test-nonexist') is None
 
 
 def test_missing_template_body():
@@ -159,7 +173,7 @@ def test_on_create_failure_delete(maybe_sleep, placeboify):
         on_create_failure='DELETE',
         disable_rollback=False,
     )
-    connection = placeboify.client('cloudformation')
+    connection = _create_wrapped_client(placeboify)
     params = {
         'StackName': 'ansible-test-on-create-failure-delete',
         'TemplateBody': failing_yaml_tpl
@@ -178,7 +192,7 @@ def test_on_create_failure_rollback(maybe_sleep, placeboify):
         on_create_failure='ROLLBACK',
         disable_rollback=False,
     )
-    connection = placeboify.client('cloudformation')
+    connection = _create_wrapped_client(placeboify)
     params = {
         'StackName': 'ansible-test-on-create-failure-rollback',
         'TemplateBody': failing_yaml_tpl
@@ -198,7 +212,7 @@ def test_on_create_failure_do_nothing(maybe_sleep, placeboify):
         on_create_failure='DO_NOTHING',
         disable_rollback=False,
     )
-    connection = placeboify.client('cloudformation')
+    connection = _create_wrapped_client(placeboify)
     params = {
         'StackName': 'ansible-test-on-create-failure-do-nothing',
         'TemplateBody': failing_yaml_tpl
