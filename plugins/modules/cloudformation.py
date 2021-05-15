@@ -347,6 +347,10 @@ from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import boto_exception
 
+# Set a default, mostly for our integration tests.  This will be overridden in
+# the main() loop to match the parameters we're passed
+retry_decorator = AWSRetry.jittered_backoff()
+
 
 def get_stack_events(cfn, stack_name, events_limit, token_filter=None):
     '''This event data was never correct, it worked as a side effect. So the v2.3 format is different.'''
@@ -730,7 +734,6 @@ def main():
 
     # Wrap the cloudformation client methods that this module uses with
     # automatic backoff / retry for throttling error codes
-    global retry_decorator
     retry_decorator = AWSRetry.jittered_backoff(
         retries=module.params.get('backoff_retries'),
         delay=module.params.get('backoff_delay'),
