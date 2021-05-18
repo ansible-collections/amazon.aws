@@ -18,7 +18,9 @@ PEP440 is the schema used to describe the versions of Ansible.
 
 ## Python version compatibility
 
-This collection depends on the AWS SDK for Python (Boto3 and Botocore). As AWS has [ceased supporting Python 2.6](https://aws.amazon.com/blogs/developer/deprecation-of-python-2-6-and-python-3-3-in-botocore-boto3-and-the-aws-cli/), this collection requires Python 2.7 or greater.
+This collection depends on the AWS SDK for Python (Boto3 and Botocore). Starting with the 2.0 releases of both collections, it is generally the collection's policy to support the versions of `botocore` and `boto3` that were released 12 months prior to the most recent major collection release, following semantic versioning (for example, 2.0.0, 3.0.0).
+
+As AWS has [ceased supporting Python 2.7](https://aws.amazon.com/blogs/developer/announcing-end-of-support-for-python-2-7-in-aws-sdk-for-python-and-aws-cli-v1/), this collection requires Python 3.6 or greater.
 
 ## Included content
 <!--start collection content-->
