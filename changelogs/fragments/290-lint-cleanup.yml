@@ -1,0 +1,2 @@
+breaking_changes:
+- module_utils.core - The boto3 switch has been removed from the region parameter (https://github.com/ansible-collections/amazon.aws/pull/287).
