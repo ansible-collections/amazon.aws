@@ -83,6 +83,6 @@ scrub_none_test_data = [
 
 @pytest.mark.parametrize("input_params, output_params_no_descend, output_params_descend", scrub_none_test_data)
 def test_scrub_none_parameters(input_params, output_params_no_descend, output_params_descend):
-    assert scrub_none_parameters(input_params) == output_params_no_descend
+    assert scrub_none_parameters(input_params) == output_params_descend
     assert scrub_none_parameters(input_params, descend_into_lists=False) == output_params_no_descend
     assert scrub_none_parameters(input_params, descend_into_lists=True) == output_params_descend
