@@ -15,7 +15,6 @@ description:
     - Creates, modifies and removes tags for any EC2 resource.
     - Resources are referenced by their resource id (for example, an instance being i-XXXXXXX, a VPC being vpc-XXXXXXX).
     - This module is designed to be used with complex args (tags), see the examples.
-requirements: [ "boto3", "botocore" ]
 options:
   resource:
     description:

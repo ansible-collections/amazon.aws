@@ -15,9 +15,6 @@ description:
   - Gets information about an AWS CloudFormation stack.
   - This module was called C(amazon.aws.cloudformation_facts) before Ansible 2.9, returning C(ansible_facts).
     Note that the M(amazon.aws.cloudformation_info) module no longer returns C(ansible_facts)!
-requirements:
-  - boto3 >= 1.0.0
-  - python >= 2.6
 author:
     - Justin Menga (@jmenga)
     - Kevin Coming (@waffie1)

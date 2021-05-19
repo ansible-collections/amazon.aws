@@ -53,17 +53,17 @@ options:
   aws_ca_bundle:
     description:
       - "The location of a CA Bundle to use when validating SSL certificates."
-      - "Only used for boto3 based modules."
+      - "Not used by boto 2 based modules."
       - "Note: The CA Bundle is read 'module' side and may need to be explicitly copied from the controller if not run locally."
     type: path
   validate_certs:
     description:
-      - When set to "no", SSL certificates will not be validated for boto versions >= 2.6.0.
+      - When set to "no", SSL certificates will not be validated for
+        communication with the AWS APIs.
     type: bool
     default: yes
   profile:
     description:
-      - Uses a boto profile. Only works with boto >= 2.24.0.
       - Using I(profile) will override I(aws_access_key), I(aws_secret_key) and I(security_token)
         and support for passing them at the same time as I(profile) has been deprecated.
       - I(aws_access_key), I(aws_secret_key) and I(security_token) will be made mutually exclusive with I(profile) after 2022-06-01.
@@ -76,8 +76,9 @@ options:
       - Only the 'user_agent' key is used for boto modules. See U(http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto) for more boto configuration.
     type: dict
 requirements:
-  - python >= 2.6
-  - boto
+  - python >= 3.6
+  - boto3 >= 1.13.0
+  - botocore >= 1.16.0
 notes:
   - If parameters are not set within the module, the following
     environment variables can be used in decreasing order of precedence

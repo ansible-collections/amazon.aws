@@ -14,7 +14,6 @@ short_description: manage objects in S3.
 description:
     - This module allows the user to manage S3 buckets and the objects within them. Includes support for creating and
       deleting both objects and buckets, retrieving objects as files or strings and generating download links.
-      This module has a dependency on boto3 and botocore.
 options:
   bucket:
     description:
@@ -118,7 +117,6 @@ options:
   dualstack:
     description:
       - Enables Amazon S3 Dual-Stack Endpoints, allowing S3 communications using both IPv4 and IPv6.
-      - Requires at least botocore version 1.4.45.
     type: bool
     default: false
   rgw:
@@ -157,7 +155,6 @@ options:
     description:
       - KMS key id to use when encrypting objects using I(encrypting=aws:kms). Ignored if I(encryption) is not C(aws:kms).
     type: str
-requirements: [ "boto3", "botocore" ]
 author:
     - "Lester Wade (@lwade)"
     - "Sloane Hertel (@s-hertel)"

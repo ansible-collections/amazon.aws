@@ -14,7 +14,6 @@ short_description: Gather information about ec2 security groups in AWS.
 description:
     - Gather information about ec2 security groups in AWS.
     - This module was called C(amazon.aws.ec2_group_facts) before Ansible 2.9. The usage did not change.
-requirements: [ boto3 ]
 author:
 - Henrique Rodrigues (@Sodki)
 options:
