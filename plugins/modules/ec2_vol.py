@@ -754,7 +754,7 @@ def main():
 
     if throughput:
         if volume_type != 'gp3':
-            module.fail_json(msg='For a gp3 volume type, IOPS values must be between 3000 and 16000.')
+            module.fail_json(msg='Throughput is only supported for gp3 volume.')
         if throughput < 125 or throughput > 1000:
             module.fail_json(msg='Throughput values must be between 125 and 1000.')
 

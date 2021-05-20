@@ -157,7 +157,7 @@
           - "volume3.volume.snapshot_id ==  vol1_snapshot.snapshot_id"
 
     - name: create an ec2 instance
-      community.aws.ec2_instance:
+      ec2_instance:
         name: "{{ resource_prefix }}"
         vpc_subnet_id: "{{ testing_subnet.subnet.id }}"
         instance_type: t3.nano
@@ -566,10 +566,12 @@
 
     - name: test create a new gp3 volume
       ec2_vol:
-        volume_size: 1
+        volume_size: 7
         zone: "{{ availability_zone }}"
         volume_type: gp3
         throughput: 130
+        iops: 3001
+        name: "GP3-TEST-{{ resource_prefix }}"
         tags:
           ResourcePrefix: "{{ resource_prefix }}"
       register: gp3_volume
@@ -580,27 +582,29 @@
           - gp3_volume.changed
           - "'attachment_set' in gp3_volume.volume"
           - "'deleteOnTermination' in gp3_volume.volume.attachment_set"
-          - gp3_volume.volume.attachment_set.deleteOnTermination == true
+          - gp3_volume.volume.attachment_set.deleteOnTermination == none
           - "'create_time' in gp3_volume.volume"
           - "'id' in gp3_volume.volume"
           - "'size' in gp3_volume.volume"
-          - gp3_volume.volume.size == 1
+          - gp3_volume.volume.size == 7
           - "'volume_type' in gp3_volume"
           - gp3_volume.volume_type == 'gp3'
           - "'iops' in gp3_volume.volume"
-          - gp3_volume.volume.iops == 3000
+          - gp3_volume.volume.iops == 3001
           - "'throughput' in gp3_volume.volume"
           - gp3_volume.volume.throughput == 130
           - "'tags' in gp3_volume.volume"
-          - (gp3_volume.tags | length ) == 1
+          - (gp3_volume.volume.tags | length ) == 2
           - gp3_volume.volume.tags["ResourcePrefix"] == "{{ resource_prefix }}"
 
     - name: increase throughput
       ec2_vol:
-        volume_size: 1
+        volume_size: 7
         zone: "{{ availability_zone }}"
         volume_type: gp3
         throughput: 131
+        modify_volume: yes
+        name: "GP3-TEST-{{ resource_prefix }}"
         tags:
           ResourcePrefix: "{{ resource_prefix }}"
       register: gp3_volume
@@ -611,19 +615,19 @@
           - gp3_volume.changed
           - "'attachment_set' in gp3_volume.volume"
           - "'deleteOnTermination' in gp3_volume.volume.attachment_set"
-          - gp3_volume.volume.attachment_set.deleteOnTermination == true
+          - gp3_volume.volume.attachment_set.deleteOnTermination == none
           - "'create_time' in gp3_volume.volume"
           - "'id' in gp3_volume.volume"
           - "'size' in gp3_volume.volume"
-          - gp3_volume.volume.size == 1
+          - gp3_volume.volume.size == 7
           - "'volume_type' in gp3_volume"
           - gp3_volume.volume_type == 'gp3'
           - "'iops' in gp3_volume.volume"
-          - gp3_volume.volume.iops == 100
+          - gp3_volume.volume.iops == 3001
           - "'throughput' in gp3_volume.volume"
           - gp3_volume.volume.throughput == 131
           - "'tags' in gp3_volume.volume"
-          - (gp3_volume.volume.tags | length ) == 1
+          - (gp3_volume.volume.tags | length ) == 2
           - gp3_volume.volume.tags["ResourcePrefix"] == "{{ resource_prefix }}"
 
 
@@ -631,7 +635,7 @@
 
   always:
     - name: Describe the instance before we delete it
-      community.aws.ec2_instance_info:
+      ec2_instance_info:
         instance_ids:
           - "{{ test_instance.instance_ids[0] }}"
       ignore_errors: yes
@@ -641,7 +645,7 @@
         var: pre_delete
 
     - name: delete test instance
-      community.aws.ec2_instance:
+      ec2_instance:
         instance_ids:
           - "{{ test_instance.instance_ids[0] }}"
         state: terminated
