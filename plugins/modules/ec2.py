@@ -610,10 +610,10 @@ instances:
                 }
             }
         dns_name:
-            description: If the EC2 instance has changed.
+            description: The public DNS name assigned to the instance.
             type: str
             returned: always
-            sample: ""
+            sample: "ec2-203-0-113-1.z-2.compute-1.amazonaws.com"
         ebs_optimized:
             description: Indicates whether the instance is optimized for Amazon EBS I/O.
             type: bool
@@ -684,12 +684,12 @@ instances:
             description: The public DNS name assigned to the instance.
             type: str
             returned: always
-            sample: ""
+            sample: "ec2-203-0-113-1.z-2.compute-1.amazonaws.com"
         public_ip:
             description: The public IPv4 address, or the Carrier IP address assigned to the instance, if applicable.
             type: str
             returned: always
-            sample: ""
+            sample: "203.0.113.1"
         ramdisk:
             description: The RAM disk associated with this instance, if applicable.
             type: str
@@ -750,7 +750,7 @@ instances:
             returned: always
             sample: ""
         cpu_options:
-            description: The idempotency token you provided when you launched the instance, if applicable.
+            description: The CPU options for the instance.
             type: dict
             returned: always
             sample: {
