@@ -18,7 +18,7 @@
       - result.interface.id == eni_id_1
       - result.interface.private_ip_addresses | length == 3
       - _interface_0.private_ip_addresses | length == 3
-      - ip_1 in ( eni_info | community.general.json_query("network_interfaces[].private_ip_addresses[].private_ip_address") | list )
+      - ip_1 in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
   vars:
     _interface_0: '{{ eni_info.network_interfaces[0] }}'
 
@@ -40,7 +40,7 @@
       - result.interface.id == eni_id_1
       - result.interface.private_ip_addresses | length == 3
       - _interface_0.private_ip_addresses | length == 3
-      - ip_1 in ( eni_info | community.general.json_query("network_interfaces[].private_ip_addresses[].private_ip_address") | list )
+      - ip_1 in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
   vars:
     _interface_0: '{{ eni_info.network_interfaces[0] }}'
 
@@ -64,7 +64,7 @@
       - result.interface.id == eni_id_1
       - result.interface.private_ip_addresses | length == 3
       - _interface_0.private_ip_addresses | length == 3
-      - ip_1 in ( eni_info | community.general.json_query("network_interfaces[].private_ip_addresses[].private_ip_address") | list )
+      - ip_1 in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
   vars:
     _interface_0: '{{ eni_info.network_interfaces[0] }}'
 
@@ -106,7 +106,7 @@
       - new_secondary_ip in _private_ips
   vars:
     _interface_0: '{{ eni_info.network_interfaces[0] }}'
-    _private_ips: '{{ eni_info | community.general.json_query("network_interfaces[].private_ip_addresses[].private_ip_address") | list }}'
+    _private_ips: "{{ eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list }}"
 
 # ============================================================
 - name: remove secondary address
@@ -128,7 +128,7 @@
       - result.interface.id == eni_id_1
       - result.interface.private_ip_addresses | length == 1
       - _interface_0.private_ip_addresses | length == 1
-      - ip_1 in ( eni_info | community.general.json_query("network_interfaces[].private_ip_addresses[].private_ip_address") | list )
+      - ip_1 in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
   vars:
     _interface_0: '{{ eni_info.network_interfaces[0] }}'
 
@@ -152,7 +152,7 @@
       - result.interface.private_ip_addresses | length == 1
       - result.interface.private_ip_addresses | length == 1
       - _interface_0.private_ip_addresses | length == 1
-      - ip_1 in ( eni_info | community.general.json_query("network_interfaces[].private_ip_addresses[].private_ip_address") | list )
+      - ip_1 in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
   vars:
     _interface_0: '{{ eni_info.network_interfaces[0] }}'
 
@@ -177,8 +177,8 @@
       - result.interface.id == eni_id_2
       - result.interface.private_ip_addresses | length == 2
       - _interface_0.private_ip_addresses | length == 2
-      - ip_5 in ( eni_info | community.general.json_query("network_interfaces[].private_ip_addresses[].private_ip_address") | list )
-      - ip_4 in ( eni_info | community.general.json_query("network_interfaces[].private_ip_addresses[].private_ip_address") | list )
+      - ip_5 in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
+      - ip_4 in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
   vars:
     _interface_0: '{{ eni_info.network_interfaces[0] }}'
 
@@ -262,6 +262,6 @@
     that:
       - result.changed
       - _interface_0.private_ip_addresses | length == 1
-      - ip_1 in ( eni_info | community.general.json_query("network_interfaces[].private_ip_addresses[].private_ip_address") | list )
+      - ip_1 in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
   vars:
     _interface_0: '{{ eni_info.network_interfaces[0] }}'

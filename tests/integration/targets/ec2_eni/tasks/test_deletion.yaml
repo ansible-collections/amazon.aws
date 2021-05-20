@@ -16,7 +16,7 @@
       - result.changed
       - result.interface is undefined
       - '"network_interfaces" in eni_info'
-      - eni_id_1 not in ( eni_info | community.general.json_query("network_interfaces[].id") | list )
+      - eni_id_1 not in ( eni_info.network_interfaces | selectattr('id') | map(attribute='id') | list )
 
 - name: test removing the network interface by ID is idempotent
   ec2_eni:
@@ -53,7 +53,7 @@
       - result.changed
       - result.interface is undefined
       - '"network_interfaces" in eni_info'
-      - eni_id_2 not in ( eni_info | community.general.json_query("network_interfaces[].id") | list )
+      - eni_id_2 not in ( eni_info.network_interfaces | selectattr('id') | map(attribute='id') | list )
 
 - name: test removing the network interface by name is idempotent
   ec2_eni:
@@ -88,5 +88,5 @@
   assert:
     that:
       - '"network_interfaces" in eni_info'
-      - eni_id_1 not in ( eni_info | community.general.json_query("network_interfaces[].id") | list )
-      - eni_id_2 not in ( eni_info | community.general.json_query("network_interfaces[].id") | list )
+      - eni_id_1 not in ( eni_info.network_interfaces | selectattr('id') | map(attribute='id') | list )
+      - eni_id_2 not in ( eni_info.network_interfaces | selectattr('id') | map(attribute='id') | list )

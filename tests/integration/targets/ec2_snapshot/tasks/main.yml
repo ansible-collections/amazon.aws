@@ -165,7 +165,7 @@
         that:
           - result is changed
           - info_result.snapshots| length == 2
-          - '"{{ result.snapshot_id }}" in "{{ info_result| community.general.json_query("snapshots[].snapshot_id") }}"'
+          - result.snapshot_id in ( info_result.snapshots | map(attribute='snapshot_id') | list )
 
 #    JR: Check mode not supported
 #    - name: Take snapshot with a tag (check mode)
@@ -296,7 +296,7 @@
     - assert:
         that:
           - info_result.snapshots| length == 7
-          - '"{{ tagged_snapshot_id }}" not in "{{ info_result| community.general.json_query("snapshots[].snapshot_id") }}"'
+          - tagged_snapshot_id not in ( info_result.snapshots | map(attribute='snapshot_id') | list )
 
     - name: Delete snapshots
       ec2_snapshot:

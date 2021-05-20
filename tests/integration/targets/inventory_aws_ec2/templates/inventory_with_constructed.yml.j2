@@ -10,7 +10,7 @@ filters:
   tag:Name:
   - '{{ resource_prefix }}'
 keyed_groups:
-- key: 'security_groups|community.general.json_query("[].group_id")'
+- key: 'security_groups|map(attribute="group_id")'
   prefix: security_groups
 - key: tags
   prefix: tag

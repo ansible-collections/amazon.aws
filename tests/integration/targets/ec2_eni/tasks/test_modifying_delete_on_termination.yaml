@@ -149,8 +149,8 @@
       - not result.changed
       - '"network_interfaces" in eni_info'
       - eni_info.network_interfaces | length >= 1
-      - eni_id_1 not in ( eni_info | community.general.json_query("network_interfaces[].id") | list )
-      - eni_id_2 in ( eni_info | community.general.json_query("network_interfaces[].id") | list )
+      - eni_id_1 not in ( eni_info.network_interfaces | selectattr('id') | map(attribute='id') | list )
+      - eni_id_2 in ( eni_info.network_interfaces | selectattr('id') | map(attribute='id') | list )
 
 # ============================================================
 
