@@ -1,4 +1,4 @@
 ---
 # defaults file for s3
 bucket_name: '{{ resource_prefix }}'
-bucket_name_acl: '{{ bucket_name }}-with-acl'
+bucket_name_acl: "{{ resource_prefix | hash('md5') + '-with-acl' }}"
