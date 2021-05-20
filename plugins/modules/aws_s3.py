@@ -155,8 +155,6 @@ options:
     description:
       - KMS key id to use when encrypting objects using I(encrypting=aws:kms). Ignored if I(encryption) is not C(aws:kms).
     type: str
-<<<<<<< HEAD
-=======
   tags:
     description:
       - Tags dict to apply to the S3 object.
@@ -170,10 +168,10 @@ options:
     default: True
     version_added: 2.0.0
 requirements: [ "boto3", "botocore" ]
->>>>>>> 	* Docs and logic fix
 author:
     - "Lester Wade (@lwade)"
     - "Sloane Hertel (@s-hertel)"
+    - "Alina Buzachis (@linabuzachis)"
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
