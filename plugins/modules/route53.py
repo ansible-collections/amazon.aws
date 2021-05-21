@@ -369,6 +369,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSM
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
 from ansible_collections.amazon.aws.plugins.module_utils.core import scrub_none_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 MAX_AWS_RETRIES = 10  # How many retries to perform when an API call is failing
 WAIT_RETRY = 5  # how many seconds to wait between propagation status polls
@@ -574,12 +575,16 @@ def main():
         if (weight_in is None and region_in is None and failover_in is None) and identifier_in is not None:
             module.fail_json(msg="You have specified identifier which makes sense only if you specify one of: weight, region or failover.")
 
+    retry_decorator = AWSRetry.jittered_backoff(
+        retries=MAX_AWS_RETRIES,
+        delay=retry_interval_in,
+        catch_extra_error_codes=['PriorRequestNotComplete'],
+        max_delay=max(60, retry_interval_in),
+    )
+
     # connect to the route53 endpoint
     try:
-        route53 = module.client(
-            'route53',
-            retry_decorator=AWSRetry.jittered_backoff(retries=MAX_AWS_RETRIES, delay=retry_interval_in)
-        )
+        route53 = module.client('route53', retry_decorator=retry_decorator)
     except botocore.exceptions.HTTPClientError as e:
         module.fail_json_aws(e, msg='Failed to connect to AWS')
 
@@ -663,12 +668,12 @@ def main():
             )
 
             if wait_in:
-                waiter = route53.get_waiter('resource_record_sets_changed')
+                waiter = get_waiter(route53, 'resource_record_sets_changed')
                 waiter.wait(
                     Id=change_resource_record_sets['ChangeInfo']['Id'],
                     WaiterConfig=dict(
                         Delay=WAIT_RETRY,
-                        MaxAttemps=wait_timeout_in // WAIT_RETRY,
+                        MaxAttempts=wait_timeout_in // WAIT_RETRY,
                     )
                 )
         except is_boto3_error_message('but it already exists'):
