@@ -347,6 +347,10 @@ from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import boto_exception
 
+# Set a default, mostly for our integration tests.  This will be overridden in
+# the main() loop to match the parameters we're passed
+retry_decorator = AWSRetry.jittered_backoff()
+
 
 def get_stack_events(cfn, stack_name, events_limit, token_filter=None):
     '''This event data was never correct, it worked as a side effect. So the v2.3 format is different.'''
@@ -360,7 +364,7 @@ def get_stack_events(cfn, stack_name, events_limit, token_filter=None):
             PaginationConfig={'MaxItems': events_limit}
         )
         if token_filter is not None:
-            events = list(pg.search(
+            events = list(retry_decorator(pg.search)(
                 "StackEvents[?ClientRequestToken == '{0}']".format(token_filter)
             ))
         else:
@@ -404,7 +408,7 @@ def create_stack(module, stack_params, cfn, events_limit):
             module.fail_json(msg="termination_protection parameter requires botocore >= 1.7.18")
 
     try:
-        response = cfn.create_stack(**stack_params)
+        response = cfn.create_stack(aws_retry=True, **stack_params)
         # Use stack ID to follow stack state in case of on_create_failure = DELETE
         result = stack_operation(module, cfn, response['StackId'], 'CREATE', events_limit, stack_params.get('ClientRequestToken', None))
     except Exception as err:
@@ -415,7 +419,7 @@ def create_stack(module, stack_params, cfn, events_limit):
 
 
 def list_changesets(cfn, stack_name):
-    res = cfn.list_change_sets(StackName=stack_name)
+    res = cfn.list_change_sets(aws_retry=True, StackName=stack_name)
     return [cs['ChangeSetName'] for cs in res['Summaries']]
 
 
@@ -438,18 +442,18 @@ def create_changeset(module, stack_params, cfn, events_limit):
             warning = 'WARNING: %d pending changeset(s) exist(s) for this stack!' % len(pending_changesets)
             result = dict(changed=False, output='ChangeSet %s already exists.' % changeset_name, warnings=[warning])
         else:
-            cs = cfn.create_change_set(**stack_params)
+            cs = cfn.create_change_set(aws_retry=True, **stack_params)
             # Make sure we don't enter an infinite loop
             time_end = time.time() + 600
             while time.time() < time_end:
                 try:
-                    newcs = cfn.describe_change_set(ChangeSetName=cs['Id'])
+                    newcs = cfn.describe_change_set(aws_retry=True, ChangeSetName=cs['Id'])
                 except botocore.exceptions.BotoCoreError as err:
                     module.fail_json_aws(err)
                 if newcs['Status'] == 'CREATE_PENDING' or newcs['Status'] == 'CREATE_IN_PROGRESS':
                     time.sleep(1)
                 elif newcs['Status'] == 'FAILED' and "The submitted information didn't contain changes" in newcs['StatusReason']:
-                    cfn.delete_change_set(ChangeSetName=cs['Id'])
+                    cfn.delete_change_set(aws_retry=True, ChangeSetName=cs['Id'])
                     result = dict(changed=False,
                                   output='The created Change Set did not contain any changes to this stack and was deleted.')
                     # a failed change set does not trigger any stack events so we just want to
@@ -485,7 +489,7 @@ def update_stack(module, stack_params, cfn, events_limit):
     # AWS will tell us if the stack template and parameters are the same and
     # don't need to be updated.
     try:
-        cfn.update_stack(**stack_params)
+        cfn.update_stack(aws_retry=True, **stack_params)
         result = stack_operation(module, cfn, stack_params['StackName'], 'UPDATE', events_limit, stack_params.get('ClientRequestToken', None))
     except is_boto3_error_message('No updates are to be performed.'):
         result = dict(changed=False, output='Stack is already up-to-date.')
@@ -505,6 +509,7 @@ def update_termination_protection(module, cfn, stack_name, desired_termination_p
         if stack['EnableTerminationProtection'] is not desired_termination_protection_state:
             try:
                 cfn.update_termination_protection(
+                    aws_retry=True,
                     EnableTerminationProtection=desired_termination_protection_state,
                     StackName=stack_name)
             except botocore.exceptions.ClientError as e:
@@ -585,9 +590,9 @@ def check_mode_changeset(module, stack_params, cfn):
     stack_params.pop('ClientRequestToken', None)
 
     try:
-        change_set = cfn.create_change_set(**stack_params)
+        change_set = cfn.create_change_set(aws_retry=True, **stack_params)
         for i in range(60):  # total time 5 min
-            description = cfn.describe_change_set(ChangeSetName=change_set['Id'])
+            description = cfn.describe_change_set(aws_retry=True, ChangeSetName=change_set['Id'])
             if description['Status'] in ('CREATE_COMPLETE', 'FAILED'):
                 break
             time.sleep(5)
@@ -595,7 +600,7 @@ def check_mode_changeset(module, stack_params, cfn):
             # if the changeset doesn't finish in 5 mins, this `else` will trigger and fail
             module.fail_json(msg="Failed to create change set %s" % stack_params['ChangeSetName'])
 
-        cfn.delete_change_set(ChangeSetName=change_set['Id'])
+        cfn.delete_change_set(aws_retry=True, ChangeSetName=change_set['Id'])
 
         reason = description.get('StatusReason')
 
@@ -609,7 +614,7 @@ def check_mode_changeset(module, stack_params, cfn):
 
 def get_stack_facts(module, cfn, stack_name, raise_errors=False):
     try:
-        stack_response = cfn.describe_stacks(StackName=stack_name)
+        stack_response = cfn.describe_stacks(aws_retry=True, StackName=stack_name)
         stack_info = stack_response['Stacks'][0]
     except is_boto3_error_message('does not exist'):
         return None
@@ -727,25 +732,14 @@ def main():
 
     result = {}
 
-    cfn = module.client('cloudformation')
-
     # Wrap the cloudformation client methods that this module uses with
     # automatic backoff / retry for throttling error codes
-    backoff_wrapper = AWSRetry.jittered_backoff(
+    retry_decorator = AWSRetry.jittered_backoff(
         retries=module.params.get('backoff_retries'),
         delay=module.params.get('backoff_delay'),
         max_delay=module.params.get('backoff_max_delay')
     )
-    cfn.describe_stack_events = backoff_wrapper(cfn.describe_stack_events)
-    cfn.create_stack = backoff_wrapper(cfn.create_stack)
-    cfn.list_change_sets = backoff_wrapper(cfn.list_change_sets)
-    cfn.create_change_set = backoff_wrapper(cfn.create_change_set)
-    cfn.update_stack = backoff_wrapper(cfn.update_stack)
-    cfn.describe_stacks = backoff_wrapper(cfn.describe_stacks)
-    cfn.list_stack_resources = backoff_wrapper(cfn.list_stack_resources)
-    cfn.delete_stack = backoff_wrapper(cfn.delete_stack)
-    if boto_supports_termination_protection(cfn):
-        cfn.update_termination_protection = backoff_wrapper(cfn.update_termination_protection)
+    cfn = module.client('cloudformation', retry_decorator=retry_decorator)
 
     stack_info = get_stack_facts(module, cfn, stack_params['StackName'])
 
@@ -780,7 +774,7 @@ def main():
             for output in stack.get('Outputs', []):
                 result['stack_outputs'][output['OutputKey']] = output['OutputValue']
             stack_resources = []
-            reslist = cfn.list_stack_resources(StackName=stack_params['StackName'])
+            reslist = cfn.list_stack_resources(aws_retry=True, StackName=stack_params['StackName'])
             for res in reslist.get('StackResourceSummaries', []):
                 stack_resources.append({
                     "logical_resource_id": res['LogicalResourceId'],
@@ -803,9 +797,9 @@ def main():
                 result = {'changed': False, 'output': 'Stack not found.'}
             else:
                 if stack_params.get('RoleARN') is None:
-                    cfn.delete_stack(StackName=stack_params['StackName'])
+                    cfn.delete_stack(aws_retry=True, StackName=stack_params['StackName'])
                 else:
-                    cfn.delete_stack(StackName=stack_params['StackName'], RoleARN=stack_params['RoleARN'])
+                    cfn.delete_stack(aws_retry=True, StackName=stack_params['StackName'], RoleARN=stack_params['RoleARN'])
                 result = stack_operation(module, cfn, stack_params['StackName'], 'DELETE', module.params.get('events_limit'),
                                          stack_params.get('ClientRequestToken', None))
         except Exception as err:
