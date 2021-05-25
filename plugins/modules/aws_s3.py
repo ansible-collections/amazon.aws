@@ -13,7 +13,8 @@ version_added: 1.0.0
 short_description: manage objects in S3.
 description:
     - This module allows the user to manage S3 buckets and the objects within them. Includes support for creating and
-      deleting both objects and buckets, retrieving objects as files or strings and generating download links.
+      deleting both objects and buckets, retrieving objects as files or strings, generating download links and
+      copy of an object that is already stored in Amazon S3. This module has a dependency on boto3 and botocore.
 options:
   bucket:
     description:
@@ -26,7 +27,7 @@ options:
     type: path
   encrypt:
     description:
-      - When set for PUT mode, asks for server-side encryption.
+      - When set for PUT/COPY mode, asks for server-side encryption.
     default: true
     type: bool
   encryption_mode:
@@ -58,15 +59,15 @@ options:
     type: int
   metadata:
     description:
-      - Metadata for PUT operation, as a dictionary of C(key=value) and C(key=value,key=value).
+      - Metadata for PUT/COPY operation, as a dictionary of C(key=value) and C(key=value,key=value).
     type: dict
   mode:
     description:
       - Switches the module behaviour between C(put) (upload), C(get) (download), C(geturl) (return download url, Ansible 1.3+),
         C(getstr) (download object as string (1.3+)), C(list) (list keys, Ansible 2.0+), C(create) (bucket), C(delete) (bucket),
-        and delobj (delete object, Ansible 2.0+).
+        delobj (delete object, Ansible 2.0+) and C(copy) object that is already stored in another (bucket).
     required: true
-    choices: ['get', 'put', 'delete', 'create', 'geturl', 'getstr', 'delobj', 'list']
+    choices: ['get', 'put', 'delete', 'create', 'geturl', 'getstr', 'delobj', 'list', 'copy']
     type: str
   object:
     description:
@@ -172,6 +173,34 @@ author:
     - "Lester Wade (@lwade)"
     - "Sloane Hertel (@s-hertel)"
     - "Alina Buzachis (@linabuzachis)"
+  copy_src:
+    description:
+    - The source details of the object to copy.
+    - Required if I(mode) is C(copy).
+    type: dict
+    version_added: 2.0.0
+    suboptions:
+      bucket:
+        type: str
+        description:
+        - The name of the source bucket.
+        required: true
+      object:
+        type: str
+        description:
+        - key name of the source object.
+        required: true
+      version_id:
+        type: str
+        description:
+        - version ID of the source object.
+requirements: [ "boto3", "botocore" ]
+>>>>>>> 0176b7e (s3 copy_object)
+author:
+    - "Lester Wade (@lwade)"
+    - "Sloane Hertel (@s-hertel)"
+    - "Aubin Bikouo (@abikouo)"
+>>>>>>> bbce073 (rebase)
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -277,6 +306,15 @@ EXAMPLES = '''
     bucket: mybucket
     object: /my/desired/key.txt
     mode: delobj
+
+- name: Copy an object already stored in another bucket
+  amazon.aws.aws_s3:
+    bucket: mybucket
+    object: /my/desired/key.txt
+    mode: copy
+    copy_src:
+        bucket: srcbucket
+        object: /source/key.txt
 '''
 
 RETURN = '''
@@ -309,6 +347,13 @@ s3_keys:
   - prefix1/
   - prefix1/key1
   - prefix1/key2
+copy_object_result:
+  description: result of the copy operation.
+  returned: (for copy operation)
+  type: dict
+  sample:
+    e_tag: "\"eb354219cd15668c7a70221cda545c82\""
+    last_modified: "2021-05-06T15:42:32+00:00"
 '''
 
 import mimetypes
@@ -326,6 +371,7 @@ except ImportError:
 from ansible.module_utils.basic import to_text
 from ansible.module_utils.basic import to_native
 from ansible.module_utils.six.moves.urllib.parse import urlparse
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.core import is_boto3_error_code
@@ -674,6 +720,47 @@ def put_download_url(module, s3, bucket, obj, expiry):
     return url
 
 
+def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, d_etag):
+    if module.check_mode:
+        module.exit_json(msg="COPY operation skipped - running in check mode", changed=True)
+    try:
+        params = {'Bucket': bucket, 'Key': obj}
+        bucketsrc = {'Bucket': module.params['copy_src'].get('bucket'), 'Key': module.params['copy_src'].get('object')}
+        version = None
+        if module.params['copy_src'].get('version_id') is not None:
+            version = module.params['copy_src'].get('version_id')
+            bucketsrc.update({'VersionId': version})
+        keyrtn = key_check(module, s3, bucketsrc['Bucket'], bucketsrc['Key'], version=version, validate=validate)
+        if keyrtn:
+            s_etag = get_etag(s3, bucketsrc['Bucket'], bucketsrc['Key'], version=version)
+            if s_etag == d_etag:
+                module.exit_json(msg="ETag from source and destination are the same", changed=False)
+            params.update({'CopySource': bucketsrc})
+            if encrypt:
+                params['ServerSideEncryption'] = module.params['encryption_mode']
+            if module.params['encryption_kms_key_id'] and module.params['encryption_mode'] == 'aws:kms':
+                params['SSEKMSKeyId'] = module.params['encryption_kms_key_id']
+            if metadata:
+                params['Metadata'] = {}
+                # determine object metadata and extra arguments
+                for option in metadata:
+                    extra_args_option = option_in_extra_args(option)
+                    if extra_args_option is not None:
+                        params[extra_args_option] = metadata[option]
+                    else:
+                        params['Metadata'][option] = metadata[option]
+
+            copy_result = s3.copy_object(**params)
+            for acl in module.params.get('permission'):
+                s3.put_object_acl(ACL=acl, Bucket=bucket, Key=obj)
+    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
+        module.warn("PutObjectAcl is not implemented by your storage provider. Set the permissions parameters to the empty list to avoid this warning")
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed while copying object %s from bucket %s." % (obj, module.params['copy_src'].get('Bucket')))
+    module.exit_json(msg="COPY operation complete", changed=True, copy_object_result=camel_dict_to_snake_dict(copy_result['CopyObjectResult']))
+>>>>>>> bbce073 (rebase)
+
+
 def is_fakes3(s3_url):
     """ Return True if s3_url has scheme fakes3:// """
     if s3_url is not None:
@@ -800,7 +887,7 @@ def main():
         marker=dict(default=""),
         max_keys=dict(default=1000, type='int', no_log=False),
         metadata=dict(type='dict'),
-        mode=dict(choices=['get', 'put', 'delete', 'create', 'geturl', 'getstr', 'delobj', 'list'], required=True),
+        mode=dict(choices=['get', 'put', 'delete', 'create', 'geturl', 'getstr', 'delobj', 'list', 'copy'], required=True),
         object=dict(),
         permission=dict(type='list', elements='str', default=['private']),
         version=dict(default=None),
@@ -817,6 +904,7 @@ def main():
         encryption_kms_key_id=dict(),
         tags=dict(type='dict'),
         purge_tags=dict(type='bool', default=True),
+        copy_src=dict(type='dict', options=dict(bucket=dict(required=True), object=dict(required=True), version_id=dict())),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
@@ -824,7 +912,8 @@ def main():
         required_if=[['mode', 'put', ['object']],
                      ['mode', 'get', ['dest', 'object']],
                      ['mode', 'getstr', ['object']],
-                     ['mode', 'geturl', ['object']]],
+                     ['mode', 'geturl', ['object']],
+                     ['mode', 'copy', ['copy_src']]],
         mutually_exclusive=[['content', 'content_base64', 'src']],
     )
 
@@ -918,7 +1007,7 @@ def main():
     # First, we check to see if the bucket exists, we get "bucket" returned.
     bucketrtn = bucket_check(module, s3, bucket, validate=validate)
 
-    if validate and mode not in ('create', 'put', 'delete') and not bucketrtn:
+    if validate and mode not in ('create', 'put', 'delete', 'copy') and not bucketrtn:
         module.fail_json(msg="Source bucket cannot be found.")
 
     if mode == 'get':
@@ -1066,6 +1155,21 @@ def main():
                 module.fail_json(msg="Key %s with version id %s does not exist." % (obj, version))
             else:
                 module.fail_json(msg="Key %s does not exist." % obj)
+
+    if mode == 'copy':
+        # if copying an object in a bucket yet to be created, acls for the bucket and/or the object may be specified
+        # these were separated into the variables bucket_acl and object_acl above
+        d_etag = None
+        if bucketrtn:
+            d_etag = get_etag(s3, bucket, obj)
+        else:
+            # If the bucket doesn't exist we should create it.
+            # only use valid bucket acls for create_bucket function
+            module.params['permission'] = bucket_acl
+            create_bucket(module, s3, bucket, location)
+        # only use valid object acls for the copy operation
+        module.params['permission'] = object_acl
+        copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, d_etag)
 
     module.exit_json(failed=False)
 

@@ -687,13 +687,13 @@
     - assert:
         that:
           - binary_files.results[0].stat.checksum == binary_files.results[1].stat.checksum
-    
+
+    - include_tasks: copy_object.yml
+
     # ============================================================  
     - name: 'Run tagging tests'
       block:
-
-      # ============================================================
-      
+    # ============================================================  
       - name: create an object from static content
         aws_s3:
           bucket: "{{ bucket_name }}"
@@ -935,33 +935,6 @@
             - (result.tags | length) == 0
   
   always:
-    - name: remove uploaded files
-      aws_s3:
-        bucket: "{{ bucket_name }}"
-        mode: delobj
-        object: "{{ item }}"
-      loop:
-        - hello.txt
-        - delete.txt
-        - delete_encrypt.txt
-        - delete_encrypt_kms.txt
-        - multipart.txt
-        - put-content.txt
-        - put-template.txt
-        - put-binary.txt
-        - foo/bar/baz
-        - foo/bar
-        - foo
-      ignore_errors: yes
-
-    - name: remove uploaded files (bucket with ACL)
-      aws_s3:
-        bucket: "{{ bucket_name_acl }}"
-        mode: delobj
-        object: "{{ item }}"
-      loop:
-        - file-with-permissions.txt
-      ignore_errors: yes
 
     - name: delete temporary files
       file:
@@ -969,20 +942,8 @@
         path: "{{ tmpdir.path }}"
       ignore_errors: yes
 
-    - name: delete the bucket
-      aws_s3:
-        bucket: "{{ bucket_name }}"
-        mode: delete
-      ignore_errors: yes
-
-    - name: delete the dot bucket
-      aws_s3:
-        bucket: "{{ bucket_name | hash('md5') + '.bucket' }}"
-        mode: delete
-      ignore_errors: yes
-
-    - name: delete the acl bucket
-      aws_s3:
-        bucket: "{{ bucket_name_acl }}"
-        mode: delete
-      ignore_errors: yes
+    - include_tasks: delete_bucket.yml
+      with_items:
+        - "{{ bucket_name }}"
+        - "{{ bucket_name | hash('md5') + '.bucket' }}"
+        - "{{ bucket_name_acl }}"
