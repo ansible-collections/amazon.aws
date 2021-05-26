@@ -2,8 +2,8 @@
   - name: define bucket name used for tests
     set_fact:
       copy_bucket:
-        src: "{{ bucket_name | hash('md5')}}copysrc"
-        dst: "{{ bucket_name | hash('md5')}}copydst"
+        src: "{{ bucket_name }}-copysrc"
+        dst: "{{ bucket_name }}-copydst"
   
   - name: create bucket source
     aws_s3:
