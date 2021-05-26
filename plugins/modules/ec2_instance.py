@@ -1536,7 +1536,6 @@ def change_instance_state(filters, desired_state, ec2):
     unchanged = set()
     failure_reason = ""
 
-    # TODO: better check_moding in here https://github.com/ansible-collections/community.aws/issues/16
     for inst in instances:
         try:
             if desired_state == 'TERMINATED':
@@ -1611,8 +1610,6 @@ def handle_existing(existing_matches, changed, ec2, state):
     elif state in ('restarted', 'rebooted'):
         to_change_state = True
     if to_change_state:
-        # TODO: this breaks check_mode, because change_instance_state handles checkmode but not ensure
-        # because ensure passes off to change...
         state_results = ensure_instance_state(state, ec2)
 
     changes = diff_instance_and_params(existing_matches[0], module.params, ec2)
