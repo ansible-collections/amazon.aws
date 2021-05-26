@@ -108,6 +108,7 @@ options:
     description:
       - If set to C(yes), Multi-Attach will be enabled when creating the volume.
       - When you create a new volume, Multi-Attach is disabled by default.
+      - This parameter is supported with io1 and io2 volumes only.
     type: bool
     version_added: 2.0.0
 author: "Lester Wade (@lwade)"
@@ -197,10 +198,11 @@ EXAMPLES = '''
 
 # Create new volume with multi-attach enabled
 - amazon.aws.ec2_vol:
-    instance: XXXXXX
-    volume_size: 50
-    device_name: sdd
+    zone: XXXXXX
     multi_attach: true
+    volume_size: 4
+    volume_type: io1
+    iops: 102
 
 # Attach an existing volume to instance. The volume will be deleted upon instance termination.
 - amazon.aws.ec2_vol:
