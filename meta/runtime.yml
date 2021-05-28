@@ -427,6 +427,8 @@ plugin_routing:
           elb_application_lb_facts was renamed in Ansible 2.9 to
           elb_application_lb_info.
           Please update your tasks.
+    elb_classic_lb:
+      redirect: amazon.aws.ec2_elb_lb
     elb_classic_lb_facts:
       deprecation:
         removal_date: 2021-12-01
