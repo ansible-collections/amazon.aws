@@ -13,17 +13,6 @@
 # remove listeners
 # remove elb
 
-# __ec2-common__
-# test environment variable EC2_REGION
-# test with no parameters
-# test with only instance_id
-# test invalid region parameter
-# test valid region parameter
-# test invalid ec2_url parameter
-# test valid ec2_url parameter
-# test credentials from environment
-# test credential parameters
-
 - module_defaults:
     group/aws:
       region: "{{ aws_region }}"
@@ -236,86 +225,6 @@
         that:
            - 'result.failed'
            - 'result.msg == "missing required arguments: state"'
-
-
-    # ============================================================
-    - name: test invalid region parameter
-      ec2_elb_lb:
-        name: "{{ elb_name }}"
-        state: present
-        region: 'asdf querty 1234'
-        zones:
-          - "{{ aws_region }}a"
-          - "{{ aws_region }}b"
-          - "{{ aws_region }}c"
-        listeners:
-          - protocol: http
-            load_balancer_port: 80
-            instance_port: 80
-      register: result
-      ignore_errors: true
-
-    - name: assert invalid region parameter
-      assert:
-        that:
-           - 'result.failed'
-           - '"Region asdf querty 1234 does not seem to be available" in result.msg'
-
-
-    # ============================================================
-    - name: test no authentication parameters
-      ec2_elb_lb:
-        name: "{{ elb_name }}"
-        state: present
-        aws_access_key: '{{ omit }}'
-        aws_secret_key: '{{ omit }}'
-        security_token: '{{ omit }}'
-        zones:
-          - "{{ aws_region }}a"
-          - "{{ aws_region }}b"
-          - "{{ aws_region }}c"
-        listeners:
-          - protocol: http
-            load_balancer_port: 80
-            instance_port: 80
-      register: result
-      ignore_errors: true
-
-    - name: assert valid region parameter
-      assert:
-        that:
-           - 'result.failed'
-           - '"No handler was ready to authenticate" in result.msg'
-
-
-    # ============================================================
-    - name: test credentials from environment
-      ec2_elb_lb:
-        name: "{{ elb_name }}"
-        state: present
-        aws_access_key: "{{ omit }}"
-        aws_secret_key: "{{ omit }}"
-        security_token: "{{ omit }}"
-        zones:
-          - "{{ aws_region }}a"
-          - "{{ aws_region }}b"
-          - "{{ aws_region }}c"
-        listeners:
-          - protocol: http
-            load_balancer_port: 80
-            instance_port: 81
-      environment:
-        EC2_ACCESS_KEY: bogus_access_key
-        EC2_SECRET_KEY: bogus_secret_key
-      register: result
-      ignore_errors: true
-
-    - name: assert credentials from environment
-      assert:
-        that:
-           - 'result.failed'
-           - '"InvalidClientTokenId" in result.exception'
-
 
   always:
 
