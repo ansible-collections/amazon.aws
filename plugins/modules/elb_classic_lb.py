@@ -1238,7 +1238,14 @@ def main():
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         check_boto3=False,
-        mutually_exclusive=[['security_group_ids', 'security_group_names']]
+        mutually_exclusive=[
+            ['security_group_ids', 'security_group_names'],
+            ['zones', 'subnets'],
+        ],
+        required_if=[
+            ['state', 'present', ['listeners']],
+            ['state', 'present', ['zones', 'subnets'], True],
+        ],
     )
 
     if not HAS_BOTO:
@@ -1270,12 +1277,6 @@ def main():
     wait = module.params['wait']
     wait_timeout = module.params['wait_timeout']
     tags = module.params['tags']
-
-    if state == 'present' and not listeners:
-        module.fail_json(msg="At least one listener is required for ELB creation")
-
-    if state == 'present' and not (zones or subnets):
-        module.fail_json(msg="At least one availability zone or subnet is required for ELB creation")
 
     if wait_timeout > 600:
         module.fail_json(msg='wait_timeout maximum is 600 seconds')
