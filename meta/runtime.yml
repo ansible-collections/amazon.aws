@@ -316,9 +316,17 @@ plugin_routing:
           Please update your tasks.
     ec2_elb_facts:
       deprecation:
-        removal_date: 2021-12-01
+        removal_version: 3.0.0
         warning_text: >-
-          ec2_elb_facts was renamed in Ansible 2.9 to ec2_elb_info.
+          The ec2_elb_info module has been deprecated and replaced by
+          the elb_classic_lb_info module.
+          Please update your tasks.
+    ec2_elb_info:
+      deprecation:
+        removal_version: 3.0.0
+        warning_text: >-
+          The ec2_elb_info module has been deprecated and replaced by
+          the elb_classic_lb_info module.
           Please update your tasks.
     ec2_lc_facts:
       deprecation:

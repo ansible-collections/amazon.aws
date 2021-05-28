@@ -21,6 +21,10 @@ DOCUMENTATION = r'''
 ---
 module: ec2_elb_info
 version_added: 1.0.0
+deprecated:
+  removed_in: 3.0.0
+  why: The ec2_elb_info is based upon a deprecated version of the AWS SDK.
+  alternative: Use M(elb_classic_lb_info).
 short_description: Gather information about EC2 Elastic Load Balancers in AWS
 description:
     - Gather information about EC2 Elastic Load Balancers in AWS
@@ -225,8 +229,14 @@ def main():
     )
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               supports_check_mode=True)
+
     if module._name == 'ec2_elb_facts':
-        module.deprecate("The 'ec2_elb_facts' module has been renamed to 'ec2_elb_info'", date='2021-12-01', collection_name='community.aws')
+        # The ec2_elb_facts alias was already deprecated
+        module.deprecate("The 'ec2_elb_facts' module has been deprecated and replaced by the 'elb_classic_lb_info' module'",
+                         version='3.0.0', collection_name='community.aws')
+    if module._name == 'ec2_elb_info':
+        module.deprecate("The 'ec2_elb_info' module has been deprecated and replaced by the 'elb_classic_lb_info' module'",
+                         version='3.0.0', collection_name='community.aws')
 
     if not HAS_BOTO:
         module.fail_json(msg='boto required for this module')
