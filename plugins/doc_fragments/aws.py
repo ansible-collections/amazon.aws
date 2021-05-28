@@ -91,12 +91,12 @@ notes:
     C(AWS_CA_BUNDLE)
   - When no credentials are explicitly provided the AWS SDK (boto3) that
     Ansible uses will fall back to its configuration files (typically
-    ~/.aws/credentials).
-    See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html
+    C(~/.aws/credentials)).
+    See U(https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html)
     for more information.
   - Modules based on the original AWS SDK (boto) may read their default
     configuration from different files.
-    See https://boto.readthedocs.io/en/latest/boto_config_tut.html for more
+    See U(https://boto.readthedocs.io/en/latest/boto_config_tut.html) for more
     information.
   - C(AWS_REGION) or C(EC2_REGION) can be typically be used to specify the
     AWS region, when required, but this can also be defined in the
