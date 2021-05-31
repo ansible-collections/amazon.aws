@@ -54,6 +54,26 @@ options:
     description: Indicates whether to return the name only without path if using a parameter hierarchy.
     default: false
     type: boolean
+  on_missing:
+    description:
+        - Action to take if the SSM parameter is missing.
+        - C(error) will raise a fatal error when the SSM parameter is missing.
+        - C(skip) will silently ignore the missing SSM parameter.
+        - C(warn) will skip over the missing SSM parameter but issue a warning.
+    default: error
+    type: string
+    choices: ['error', 'skip', 'warn']
+    version_added: 2.0.0
+  on_denied:
+    description:
+        - Action to take if access to the SSM parameter is denied.
+        - C(error) will raise a fatal error when access to the SSM parameter is denied.
+        - C(skip) will silently ignore the denied SSM parameter.
+        - C(warn) will skip over the denied SSM parameter but issue a warning.
+    default: error
+    type: string
+    choices: ['error', 'skip', 'warn']
+    version_added: 2.0.0
 '''
 
 EXAMPLES = '''
@@ -104,6 +124,11 @@ EXAMPLES = '''
   debug: msg='Path contains {{ item }}'
   loop: '{{ lookup("aws_ssm", "/demo/", "/demo1/", bypath=True)}}'
 
+- name: lookup ssm parameter and fail if missing
+  debug: msg="{{ lookup('aws_ssm', 'missing-parameter', on_missing="error" ) }}"
+
+- name: lookup ssm parameter warn if access is denied
+  debug: msg="{{ lookup('aws_ssm', 'missing-parameter', on_denied="warn" ) }}"
 '''
 
 try:
@@ -116,9 +141,11 @@ from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_native
 from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
+from ansible.module_utils.six import string_types
 
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 display = Display()
 
@@ -146,7 +173,8 @@ def _boto3_conn(region, credentials):
 class LookupModule(LookupBase):
     def run(self, terms, variables=None, boto_profile=None, aws_profile=None,
             aws_secret_key=None, aws_access_key=None, aws_security_token=None, region=None,
-            bypath=False, shortnames=False, recursive=False, decrypt=True):
+            bypath=False, shortnames=False, recursive=False, decrypt=True, on_missing="skip",
+            on_denied="skip"):
         '''
             :arg terms: a list of lookups to run.
                 e.g. ['parameter_name', 'parameter_name_too' ]
@@ -158,14 +186,21 @@ class LookupModule(LookupBase):
             :kwarg region: AWS region in which to do the lookup
             :kwarg bypath: Set to True to do a lookup of variables under a path
             :kwarg recursive: Set to True to recurse below the path (requires bypath=True)
+            :kwarg on_missing: Action to take if the SSM parameter is missing
+            :kwarg on_denied: Action to take if access to the SSM parameter is denied
             :returns: A list of parameter values or a list of dictionaries if bypath=True.
         '''
 
         if not HAS_BOTO3:
             raise AnsibleError('botocore and boto3 are required for aws_ssm lookup.')
 
+        # validate arguments 'on_missing' and 'on_denied'
+        if on_missing is not None and (not isinstance(on_missing, string_types) or on_missing.lower() not in ['error', 'warn', 'skip']):
+            raise AnsibleError('"on_missing" must be a string and one of "error", "warn" or "skip", not %s' % on_missing)
+        if on_denied is not None and (not isinstance(on_denied, string_types) or on_denied.lower() not in ['error', 'warn', 'skip']):
+            raise AnsibleError('"on_denied" must be a string and one of "error", "warn" or "skip", not %s' % on_denied)
+
         ret = []
-        response = {}
         ssm_dict = {}
 
         credentials = {}
@@ -214,21 +249,26 @@ class LookupModule(LookupBase):
             # Lookup by parameter name - always returns a list with one or no entry.
         else:
             display.vvv("AWS_ssm name lookup term: %s" % terms)
-            ssm_dict["Names"] = terms
-            try:
-                response = client.get_parameters(**ssm_dict)
-            except botocore.exceptions.ClientError as e:
-                raise AnsibleError("SSM lookup exception: {0}".format(to_native(e)))
-            params = boto3_tag_list_to_ansible_dict(response['Parameters'], tag_name_key_name="Name",
-                                                    tag_value_key_name="Value")
-            for i in terms:
-                if i.split(':', 1)[0] in params:
-                    ret.append(params[i])
-                elif i in response['InvalidParameters']:
-                    ret.append(None)
-                else:
-                    raise AnsibleError("Ansible internal error: aws_ssm lookup failed to understand boto3 return value: {0}".format(str(response)))
-            return ret
-
+            for term in terms:
+                ret.append(self.get_parameter_value(client, ssm_dict, term, on_missing.lower(), on_denied.lower()))
         display.vvvv("AWS_ssm path lookup returning: %s " % str(ret))
         return ret
+
+    def get_parameter_value(self, client, ssm_dict, term, on_missing, on_denied):
+        ssm_dict["Name"] = term
+        try:
+            response = client.get_parameter(**ssm_dict)
+            return response['Parameter']['Value']
+        except is_boto3_error_code('ParameterNotFound'):
+            if on_missing == 'error':
+                raise AnsibleError("Failed to find SSM parameter %s (ResourceNotFound)" % term)
+            elif on_missing == 'warn':
+                self._display.warning('Skipping, did not find SSM parameter %s' % term)
+        except is_boto3_error_code('AccessDeniedException'):  # pylint: disable=duplicate-except
+            if on_denied == 'error':
+                raise AnsibleError("Failed to access SSM parameter %s (AccessDenied)" % term)
+            elif on_denied == 'warn':
+                self._display.warning('Skipping, access denied for SSM parameter %s' % term)
+        except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
+            raise AnsibleError("SSM lookup exception: {0}".format(to_native(e)))
+        return None
