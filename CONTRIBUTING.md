@@ -62,8 +62,7 @@ Where modules have multiple parameters we recommend running through the 4-step m
 
 For general information on running the integration tests see the
 [Integration Tests page of the Module Development Guide](https://docs.ansible.com/ansible/devel/dev_guide/testing_integration.html#testing-integration),
-especially the section on configuration for cloud tests.  For questions about writing tests the Ansible AWS community can
-be found on Freenode IRC as detailed below.
+especially the section on configuration for cloud tests.  For questions about writing tests the Ansible AWS community can be found on [libera.chat](https://libera.chat/) IRC as detailed below.
 
 
 ### Code of Conduct
@@ -72,8 +71,6 @@ The `community.aws` collection follows the Ansible project's
 Please read and familiarize yourself with this document.
 
 ### IRC
-Our IRC channels may require you to register your nickname. If you receive an error when you connect, see 
-[Freenode's Nickname Registration guide](https://freenode.net/kb/answer/registration) for instructions
+Our IRC channels may require you to register your nickname. If you receive an error when you connect, see [Libera.Chat's Nickname Registration guide](https://libera.chat/guides/registration) for instructions.
 
-The `#ansible-aws` channel on Freenode irc is the main and official place to discuss use and development
-of the `community.aws` collection.
+The `#ansible-aws` channel on [irc.libera.chat](https://libera.chat/) is the main and official place to discuss use and development of the `community.aws` collection.
