@@ -1,0 +1,58 @@
+- set_fact:
+    # As a lookup plugin we don't have access to module_defaults
+    connection_args:
+      region: "{{ aws_region }}"
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      aws_security_token: "{{ security_token | default(omit) }}"
+  no_log: True
+
+- module_defaults:
+    group/aws:
+      region: "{{ aws_region }}"
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+  collections:
+    - community.aws
+  block:
+  - name: define secret name
+    set_fact:
+      secret_name: "ansible-test-{{ resource_prefix | hash('md5') }}-secret"
+      secret_value: "{{ lookup('password', '/dev/null chars=ascii_lowercase,digits,punctuation length=16') }}"
+      on_missing_secret: "skip"
+
+  - name: lookup missing secret
+    set_fact:
+      missing_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, on_missing=on_missing_secret, **connection_args) }}"
+  
+  - name: assert that missing_secret is defined
+    assert:
+      that:
+        - missing_secret is defined
+        - missing_secret | list | length == 0
+  
+  - name: create secret "{{ secret_name }}"
+    aws_secret:
+      name: "{{ secret_name }}"
+      secret: "{{ secret_value }}"
+      tags:
+        ansible-test: "aws-tests-integration"
+      state: present
+  
+  - name: read secret value
+    set_fact:
+      look_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, **connection_args) }}"
+  
+  - name: assert that secret was successfully retrieved
+    assert:
+      that:
+        - look_secret == secret_value
+      
+  always:
+    # delete secret created
+    - name: delete secret
+      aws_secret:
+        name: "{{ secret_name }}"
+        state: absent
+      ignore_errors: yes
