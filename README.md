@@ -130,7 +130,7 @@ We welcome community contributions to this collection. If you find problems, ple
 
 You can also join us on:
 
-- Freenode IRC - ``#ansible-aws`` Freenode channel
+- IRC - the ``#ansible-aws`` [irc.libera.chat](https://libera.chat/) channel
 
 ### More information about contributing
 
