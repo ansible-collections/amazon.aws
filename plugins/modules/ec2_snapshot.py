@@ -260,7 +260,8 @@ def create_snapshot(module, ec2, description=None, wait=None,
         volume_id = volume['VolumeId']
     else:
         volume = get_volume_by_id(module, ec2, volume_id)
-
+    if 'Tags' not in volume:
+        volume['Tags'] = {}
     if last_snapshot_min_age > 0:
         current_snapshots = get_snapshots_by_volume(module, ec2, volume_id)
         last_snapshot_min_age = last_snapshot_min_age * 60  # Convert to seconds
