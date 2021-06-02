@@ -43,7 +43,6 @@ options:
   iops:
     description:
       - The provisioned IOPs you want to associate with this volume (integer).
-      - By default AWS will set this to 100.
     type: int
   encrypted:
     description:
@@ -358,14 +357,32 @@ def update_volume(module, ec2_conn, volume):
     req_obj = {'VolumeId': volume['volume_id']}
 
     if module.params.get('modify_volume'):
+        target_type = module.params.get('volume_type')
+        original_type = None
+        type_changed = False
+        if target_type:
+            original_type = volume['volume_type']
+            if target_type != original_type:
+                type_changed = True
+                req_obj['VolumeType'] = target_type
+
         iops_changed = False
-        if volume['volume_type'] != 'standard':
-            target_iops = module.params.get('iops')
-            if target_iops:
-                original_iops = volume['iops']
-                if target_iops != original_iops:
+        target_iops = module.params.get('iops')
+        if target_iops:
+            original_iops = volume['iops']
+            if target_iops != original_iops:
+                iops_changed = True
+                req_obj['Iops'] = target_iops
+        else:
+            # If no IOPS value is specified and there was a volume_type update to gp3,
+            # the existing value is retained, unless a volume type is modified that supports different values,
+            # otherwise, the default iops value is applied.
+            if type_changed and target_type == 'gp3':
+                if (
+                    (volume['iops'] and (int(volume['iops']) < 3000 or int(volume['iops']) > 16000)) or not volume['iops']
+                ):
+                    req_obj['Iops'] = 3000
                     iops_changed = True
-                    req_obj['iops'] = target_iops
 
         target_size = module.params.get('volume_size')
         size_changed = False
@@ -373,7 +390,7 @@ def update_volume(module, ec2_conn, volume):
             original_size = volume['size']
             if target_size != original_size:
                 size_changed = True
-                req_obj['size'] = target_size
+                req_obj['Size'] = target_size
 
         target_type = module.params.get('volume_type')
         original_type = None
@@ -386,12 +403,11 @@ def update_volume(module, ec2_conn, volume):
 
         target_throughput = module.params.get('throughput')
         throughput_changed = False
-        if 'gp3' in [target_type, original_type]:
-            if target_throughput:
-                original_throughput = volume.get('throughput')
-                if target_throughput != original_throughput:
-                    throughput_changed = True
-                    req_obj['Throughput'] = target_throughput
+        if target_throughput:
+            original_throughput = volume.get('throughput')
+            if target_throughput != original_throughput:
+                throughput_changed = True
+                req_obj['Throughput'] = target_throughput
 
         changed = iops_changed or size_changed or type_changed or throughput_changed
 
@@ -415,9 +431,6 @@ def create_volume(module, ec2_conn, zone):
     volume_type = module.params.get('volume_type')
     snapshot = module.params.get('snapshot')
     throughput = module.params.get('throughput')
-    # If custom iops is defined we use volume_type "io1" rather than the default of "standard"
-    if iops:
-        volume_type = 'io1'
 
     volume = get_volume(module, ec2_conn)
 
@@ -438,6 +451,10 @@ def create_volume(module, ec2_conn, zone):
 
             if iops:
                 additional_params['Iops'] = int(iops)
+
+            # Use the default value if any iops has been specified when volume_type=gp3
+            if volume_type == 'gp3' and not iops:
+                additional_params['Iops'] = 3000
 
             if throughput:
                 additional_params['Throughput'] = int(throughput)
@@ -493,6 +510,7 @@ def attach_volume(module, ec2_conn, volume_dict, instance_dict, device_name):
     modify_dot_attribute(module, ec2_conn, instance_dict, device_name)
 
     volume = get_volume(module, ec2_conn, vol_id=volume_dict['volume_id'])
+
     return volume, changed
 
 
@@ -641,7 +659,13 @@ def main():
         purge_tags=dict(type='bool', default=False),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        required_if=[
+            ['volume_type', 'io1', ['iops']],
+            ['volume_type', 'io2', ['iops']],
+        ],
+    )
 
     param_id = module.params.get('id')
     name = module.params.get('name')
@@ -652,6 +676,9 @@ def main():
     snapshot = module.params.get('snapshot')
     state = module.params.get('state')
     tags = module.params.get('tags')
+    iops = module.params.get('iops')
+    volume_type = module.params.get('volume_type')
+    throughput = module.params.get('throughput')
 
     if state == 'list':
         module.deprecate(
@@ -667,6 +694,22 @@ def main():
         detach_vol_flag = True
     else:
         detach_vol_flag = False
+
+    if iops:
+        if volume_type in ('gp2', 'st1', 'sc1', 'standard'):
+            module.fail_json(msg='IOPS is not supported for gp2, st1, sc1, or standard volumes.')
+
+        if volume_type == 'gp3' and (int(iops) < 3000 or int(iops) > 16000):
+            module.fail_json(msg='For a gp3 volume type, IOPS values must be between 3000 and 16000.')
+
+        if volume_type in ('io1', 'io2') and (int(iops) < 100 or int(iops) > 64000):
+            module.fail_json(msg='For io1 and io2 volume types, IOPS values must be between 100 and 64000.')
+
+    if throughput:
+        if volume_type != 'gp3':
+            module.fail_json(msg='Throughput is only supported for gp3 volume.')
+        if throughput < 125 or throughput > 1000:
+            module.fail_json(msg='Throughput values must be between 125 and 1000.')
 
     # Set changed flag
     changed = False
