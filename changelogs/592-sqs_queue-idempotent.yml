@@ -1,0 +1,2 @@
+bugfixes:
+- sqs_queue - fix queue attribute comparison to make module idempotent (https://github.com/ansible-collections/community.aws/pull/592).
