@@ -67,6 +67,50 @@
             - create_result.policy.Version == "2012-10-17"
             - create_result.policy.Statement[0].Effect == "Allow"
             - create_result.policy.Statement[0].Action == "*"
+      - name: Test idempotentcy
+        sqs_queue:
+          name: "{{ create_result.name }}"
+          default_visibility_timeout: 900
+          delivery_delay: 900
+          maximum_message_size: 9009
+          message_retention_period: 900
+          receive_message_wait_time: 10
+          policy:
+            Version: "2012-10-17"
+            Statement:
+              Effect: Allow
+              Action: "*"
+        register: create_result
+      - name: Assert nothing changed
+        assert:
+          that:
+            - not create_result.changed
+      - name: Test update
+        sqs_queue:
+          name: "{{ create_result.name }}"
+          default_visibility_timeout: 899
+          delivery_delay: 899
+          maximum_message_size: 9008
+          message_retention_period: 899
+          receive_message_wait_time: 9
+          policy:
+            Version: "2012-10-17"
+            Statement:
+              Effect: Allow
+              Action: "*"
+        register: create_result
+      - name: Assert queue updated with configuration
+        assert:
+          that:
+            - create_result.changed
+            - create_result.default_visibility_timeout == 899
+            - create_result.delivery_delay == 899
+            - create_result.maximum_message_size == 9008
+            - create_result.message_retention_period == 899
+            - create_result.receive_message_wait_time == 9
+            - create_result.policy.Version == "2012-10-17"
+            - create_result.policy.Statement[0].Effect == "Allow"
+            - create_result.policy.Statement[0].Action == "*"
     always:
       - name: Cleaning up queue
         sqs_queue:
