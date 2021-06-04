@@ -12,6 +12,7 @@ termination_protection_wrapper
 tags_and_vpc_settings
 checkmode_tests
 security_group
+state_config_updates
 
 [all:vars]
 ansible_connection=local

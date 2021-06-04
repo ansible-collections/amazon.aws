@@ -1443,16 +1443,19 @@ def get_default_subnet(ec2, vpc, availability_zone=None):
 
 
 def ensure_instance_state(state, ec2):
+    """
+    Sets return keys depending on the desired instance state
+    """
+    results = dict()
     if state in ('running', 'started'):
         changed, failed, instances, failure_reason = change_instance_state(filters=module.params.get('filters'), desired_state='RUNNING', ec2=ec2)
-
         if failed:
             module.fail_json(
                 msg="Unable to start instances: {0}".format(failure_reason),
                 reboot_success=list(changed),
                 reboot_failed=failed)
 
-        module.exit_json(
+        results = dict(
             msg='Instances started',
             reboot_success=list(changed),
             changed=bool(len(changed)),
@@ -1460,7 +1463,10 @@ def ensure_instance_state(state, ec2):
             instances=[pretty_instance(i) for i in instances],
         )
     elif state in ('restarted', 'rebooted'):
-        changed, failed, instances, failure_reason = change_instance_state(
+        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-reboot.html
+        # The Ansible behaviour of issuing a stop/start has a minor impact on user billing
+        # This will need to be changelogged if we ever change to ec2.reboot_instance
+        _changed, _failed, _instances, _failure_reason = change_instance_state(
             filters=module.params.get('filters'),
             desired_state='STOPPED',
             ec2=ec2)
@@ -1475,7 +1481,7 @@ def ensure_instance_state(state, ec2):
                 reboot_success=list(changed),
                 reboot_failed=failed)
 
-        module.exit_json(
+        results = dict(
             msg='Instances restarted',
             reboot_success=list(changed),
             changed=bool(len(changed)),
@@ -1487,14 +1493,13 @@ def ensure_instance_state(state, ec2):
             filters=module.params.get('filters'),
             desired_state='STOPPED',
             ec2=ec2)
-
         if failed:
             module.fail_json(
                 msg="Unable to stop instances: {0}".format(failure_reason),
                 stop_success=list(changed),
                 stop_failed=failed)
 
-        module.exit_json(
+        results = dict(
             msg='Instances stopped',
             stop_success=list(changed),
             changed=bool(len(changed)),
@@ -1512,13 +1517,14 @@ def ensure_instance_state(state, ec2):
                 msg="Unable to terminate instances: {0}".format(failure_reason),
                 terminate_success=list(terminated),
                 terminate_failed=terminate_failed)
-        module.exit_json(
+        results = dict(
             msg='Instances terminated',
             terminate_success=list(terminated),
             changed=bool(len(terminated)),
             terminate_failed=[],
             instances=[pretty_instance(i) for i in instances],
         )
+    return results
 
 
 def change_instance_state(filters, desired_state, ec2):
@@ -1530,7 +1536,6 @@ def change_instance_state(filters, desired_state, ec2):
     unchanged = set()
     failure_reason = ""
 
-    # TODO: better check_moding in here https://github.com/ansible-collections/community.aws/issues/16
     for inst in instances:
         try:
             if desired_state == 'TERMINATED':
@@ -1550,7 +1555,6 @@ def change_instance_state(filters, desired_state, ec2):
                 if module.check_mode:
                     changed.add(inst['InstanceId'])
                     continue
-
                 resp = ec2.stop_instances(aws_retry=True, InstanceIds=[inst['InstanceId']])
                 [changed.add(i['InstanceId']) for i in resp['StoppingInstances']]
             if desired_state == 'RUNNING':
@@ -1596,16 +1600,20 @@ def determine_iam_role(name_or_arn):
 
 
 def handle_existing(existing_matches, changed, ec2, state):
+    to_change_state = False
+    state_results = []
+    alter_config_result = []
     if state in ('running', 'started') and [i for i in existing_matches if i['State']['Name'] != 'running']:
-        ins_changed, failed, instances, failure_reason = change_instance_state(filters=module.params.get('filters'), desired_state='RUNNING', ec2=ec2)
-        if failed:
-            module.fail_json(msg="Couldn't start instances: {0}. Failure reason: {1}".format(instances, failure_reason))
-        module.exit_json(
-            changed=bool(len(ins_changed)) or changed,
-            instances=[pretty_instance(i) for i in instances],
-            instance_ids=[i['InstanceId'] for i in instances],
-        )
+        to_change_state = True
+    elif state == 'stopped' and [i for i in existing_matches if i['State']['Name'] != 'stopped']:
+        to_change_state = True
+    elif state in ('restarted', 'rebooted'):
+        to_change_state = True
+    if to_change_state:
+        state_results = ensure_instance_state(state, ec2)
+
     changes = diff_instance_and_params(existing_matches[0], module.params, ec2)
+
     for c in changes:
         if not module.check_mode:
             try:
@@ -1616,24 +1624,21 @@ def handle_existing(existing_matches, changed, ec2, state):
     changed |= add_or_update_instance_profile(existing_matches[0], module.params.get('instance_role'), ec2)
     changed |= change_network_attachments(existing_matches[0], module.params, ec2)
     altered = find_instances(ec2, ids=[i['InstanceId'] for i in existing_matches])
-    module.exit_json(
+    alter_config_result = dict(
         changed=bool(len(changes)) or changed,
         instances=[pretty_instance(i) for i in altered],
         instance_ids=[i['InstanceId'] for i in altered],
         changes=changes,
     )
 
+    if len(state_results):
+        result = {**state_results, **alter_config_result}
+    else:
+        result = alter_config_result
+    return result
+
 
 def ensure_present(existing_matches, changed, ec2, state):
-    if len(existing_matches):
-        try:
-            handle_existing(existing_matches, changed, ec2, state)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json_aws(
-                e, msg="Failed to handle existing instances {0}".format(', '.join([i['InstanceId'] for i in existing_matches])),
-                # instances=[pretty_instance(i) for i in existing_matches],
-                # instance_ids=[i['InstanceId'] for i in existing_matches],
-            )
     try:
         instance_spec = build_run_instance_spec(module.params, ec2)
         # If check mode is enabled,suspend 'ensure function'.
@@ -1745,6 +1750,7 @@ def main():
         ],
         supports_check_mode=True
     )
+    result = dict()
 
     if module.params.get('network'):
         if module.params.get('network').get('interfaces'):
@@ -1760,10 +1766,6 @@ def main():
             # all states except shutting-down and terminated
             'instance-state-name': ['pending', 'running', 'stopping', 'stopped']
         }
-        if state == 'stopped':
-            # only need to change instances that aren't already stopped
-            filters['instance-state-name'] = ['stopping', 'pending', 'running']
-
         if isinstance(module.params.get('instance_ids'), string_types):
             filters['instance-id'] = [module.params.get('instance_ids')]
         elif isinstance(module.params.get('instance_ids'), list) and len(module.params.get('instance_ids')):
@@ -1811,11 +1813,15 @@ def main():
                 tags['Name'] = name
             changed |= manage_tags(match, tags, module.params.get('purge_tags', False), ec2)
 
-    if state in ('present', 'running', 'started'):
-        ensure_present(existing_matches=existing_matches, changed=changed, ec2=ec2, state=state)
-    elif state in ('restarted', 'rebooted', 'stopped', 'absent', 'terminated'):
+    if state in ('present', 'running', 'started', 'restarted', 'rebooted', 'stopped'):
+        # If we're not removing the instance, handle any config changes and update state
+        if len(existing_matches):
+            result = handle_existing(existing_matches, changed, ec2, state)
+        else:
+            ensure_present(existing_matches=existing_matches, changed=changed, ec2=ec2, state=state)
+    elif state in ('absent', 'terminated'):
         if existing_matches:
-            ensure_instance_state(state, ec2)
+            result = ensure_instance_state(state, ec2)
         else:
             module.exit_json(
                 msg='No matching instances found',
@@ -1824,6 +1830,8 @@ def main():
             )
     else:
         module.fail_json(msg="We don't handle the state {0}".format(state))
+
+    module.exit_json(**result)
 
 
 if __name__ == '__main__':

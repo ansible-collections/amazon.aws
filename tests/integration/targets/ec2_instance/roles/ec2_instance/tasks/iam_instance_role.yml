@@ -31,7 +31,7 @@
       image_id: "{{ ec2_ami_image }}"
       security_groups: "{{ sg.group_id }}"
       instance_type: "{{ ec2_instance_type }}"
-      instance_role: "ansible-test-sts-{{ resource_prefix }}-test-policy"
+      instance_role: "ansible-test-sts-{{ unique_id }}-test-policy"
       vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
