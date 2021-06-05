@@ -25,6 +25,29 @@
 
 
   block:
+    - name: Gather availability zones
+      aws_az_facts:
+      register: azs
+
+    # Create a new volume in detached mode without tags
+    - name: Create a detached volume without tags
+      ec2_vol:
+        volume_size: 1
+        zone: '{{ azs.availability_zones[0].zone_name }}'
+      register: volume_detached
+
+    # Capture snapshot of this detached volume and assert the results
+    - name: Create a snapshot of detached volume without tags and store results
+      ec2_snapshot:
+        volume_id: '{{ volume_detached.volume_id }}'
+      register: untagged_snapshot
+
+    - assert:
+        that:
+          - untagged_snapshot is changed
+          - untagged_snapshot.snapshots| length == 1
+          - untagged_snapshot.snapshots[0].volume_id == volume_detached.volume_id
+
     - ec2_ami_info:
         owners: amazon
         filters:
@@ -339,4 +362,16 @@
       ec2_vol:
         id: '{{ volume_id }}'
         state: absent
+      ignore_errors: true
+
+    - name: Delete detached and untagged volume
+      ec2_vol:
+        id: '{{ volume_detached.volume_id}}'
+        state: absent
+      ignore_errors: true
+
+    - name: Delete untagged snapshot
+      ec2_snapshot:
+        state: absent
+        snapshot_id: '{{ untagged_snapshot.snapshot_id }}'
       ignore_errors: true
