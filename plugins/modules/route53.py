@@ -606,6 +606,7 @@ def main():
         'TTL': ttl_in,
         'ResourceRecords': [dict(Value=value) for value in value_in],
         'HealthCheckId': health_check_in,
+        'SetIdentifier': identifier_in,
     })
 
     if alias_in:
