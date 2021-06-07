@@ -1,2 +1,2 @@
 deprecated_features:
-- script_inventory_ec2 - The ec2.py inventory script us being moved to a new repository. The script can now be downloaded from https://github.com/ansible-community/contrib-scripts/blob/main/inventory/ec2.py and will be removed from this collection in the 3.0 release. We recommend migrating from the script to the `amazon.aws.ec2` inventory plugin.
+- script_inventory_ec2 - The ec2.py inventory script is being moved to a new repository. The script can now be downloaded from https://github.com/ansible-community/contrib-scripts/blob/main/inventory/ec2.py and will be removed from this collection in the 3.0 release. We recommend migrating from the script to the `amazon.aws.ec2` inventory plugin.
