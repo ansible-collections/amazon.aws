@@ -1,6 +1,7 @@
 ---
 name_pattern: "testbucket-ansible-integration"
+unique_id: "{{ resource_prefix | hash('md5') | truncate(24, True, '')  }}"
 
 testing_buckets:
-  - "{{ resource_prefix }}-{{ name_pattern }}-1"
-  - "{{ resource_prefix }}-{{ name_pattern }}-2"
+  - "{{ unique_id }}-{{ name_pattern }}-1"
+  - "{{ unique_id }}-{{ name_pattern }}-2"

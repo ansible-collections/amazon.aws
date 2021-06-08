@@ -3,5 +3,5 @@
 
 # IAM role names have to be less than 64 characters
 # we hash the resource_prefix to get a shorter, unique string
-unique_id: "{{ resource_prefix | hash('md5') }}"
+unique_id: "{{ resource_prefix | hash('md5') | truncate(8, True, '') }}"
 iam_role_name: "ansible-test-sts-{{ unique_id }}-codebuild-service-role"
