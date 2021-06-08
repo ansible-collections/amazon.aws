@@ -21,7 +21,7 @@ author: "John Jarvis (@jarv)"
 options:
   state:
     description:
-      - register or deregister the instance
+      - Register or deregister the instance.
     required: true
     choices: ['present', 'absent']
     type: str
@@ -32,13 +32,15 @@ options:
     type: str
   ec2_elbs:
     description:
-      - List of ELB names, required for registration. The ec2_elbs fact should be used if there was a previous de-register.
+      - List of ELB names, required for registration.
+      - The ec2_elbs fact should be used if there was a previous de-register.
     type: list
     elements: str
   enable_availability_zone:
     description:
       - Whether to enable the availability zone of the instance on the target ELB if the availability zone has not already
-        been enabled. If set to no, the task will fail if the availability zone is not enabled on the ELB.
+        been enabled.
+      - If I(enable_availability_zone=no), the task will fail if the availability zone is not enabled on the ELB.
     type: bool
     default: 'yes'
   wait:
@@ -46,15 +48,12 @@ options:
       - Wait for instance registration or deregistration to complete successfully before returning.
     type: bool
     default: 'yes'
-  validate_certs:
-    description:
-      - When set to "no", SSL certificates will not be validated for boto versions >= 2.6.0.
-    type: bool
-    default: 'yes'
   wait_timeout:
     description:
-      - Number of seconds to wait for an instance to change state. If 0 then this module may return an error if a transient error occurs.
-        If non-zero then any transient errors are ignored until the timeout is reached. Ignored when wait=no.
+      - Number of seconds to wait for an instance to change state.
+      - If I(wait_timeout=0) then this module may return an error if a transient error occurs.
+      - If non-zero then any transient errors are ignored until the timeout is reached.
+      - Ignored when I(wait=no).
     default: 0
     type: int
 extends_documentation_fragment:
