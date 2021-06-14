@@ -132,6 +132,12 @@
       set_fact:
         ec2_ami_no_device_true_image_id: "{{ result_no_device_true.image_id }}"
 
+    - name: assert that image with no_device option yes has been created
+      assert:
+        that:
+          - "result_no_device_true.changed"
+          - "'/dev/sdf' not in result_no_device_true.block_device_mapping"
+
     - name: create an image from the instance with attached devices with no_device false
       ec2_ami:
         name: '{{ ec2_ami_name }}_no_device_false_ami'
@@ -151,11 +157,11 @@
       set_fact:
         ec2_ami_no_device_false_image_id: "{{ result_no_device_false.image_id }}"
 
-    - name: assert that image with no_device option yes and no_device option no has been created
+    - name: assert that image with no_device option no has been created
       assert:
         that:
-          - "result_no_device_true.changed"
           - "result_no_device_false.changed"
+          - "'/dev/sda1' in result_no_device_false.block_device_mapping"
 
     # ============================================================
 
