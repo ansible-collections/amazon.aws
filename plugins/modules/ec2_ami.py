@@ -457,7 +457,6 @@ def create_image(module, connection):
         }
 
         block_device_mapping = None
-
         # Remove empty values injected by using options
         if device_mapping:
             block_device_mapping = []
@@ -474,6 +473,12 @@ def create_image(module, connection):
                 device = rename_item_if_exists(device, 'volume_size', 'VolumeSize', 'Ebs', attribute_type=int)
                 device = rename_item_if_exists(device, 'iops', 'Iops', 'Ebs')
                 device = rename_item_if_exists(device, 'encrypted', 'Encrypted', 'Ebs')
+
+                if 'NoDevice' in device:
+                    if device['NoDevice'] is True:
+                        device['NoDevice'] = ""
+                    else:
+                        del device['NoDevice']
                 block_device_mapping.append(device)
         if block_device_mapping:
             params['BlockDeviceMappings'] = block_device_mapping
