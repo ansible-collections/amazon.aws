@@ -474,6 +474,8 @@ def create_image(module, connection):
                 device = rename_item_if_exists(device, 'iops', 'Iops', 'Ebs')
                 device = rename_item_if_exists(device, 'encrypted', 'Encrypted', 'Ebs')
 
+                # The NoDevice parameter in Boto3 is a string. Empty string omits the device from block device mapping
+                # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.create_image
                 if 'NoDevice' in device:
                     if device['NoDevice'] is True:
                         device['NoDevice'] = ""
