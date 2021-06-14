@@ -798,7 +798,7 @@ def main():
                 environment['value'] = to_text(environment['value'])
 
             for environment_file in container.get('environmentFiles', []):
-                if environment_file['value'] != 's3':
+                if environment_file['type'] != 's3':
                     module.fail_json(msg='The only supported value for environmentFiles is s3.')
 
             for linux_param in container.get('linuxParameters', {}):
