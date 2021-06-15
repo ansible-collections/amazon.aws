@@ -457,7 +457,6 @@ def create_image(module, connection):
         }
 
         block_device_mapping = None
-
         # Remove empty values injected by using options
         if device_mapping:
             block_device_mapping = []
@@ -474,6 +473,14 @@ def create_image(module, connection):
                 device = rename_item_if_exists(device, 'volume_size', 'VolumeSize', 'Ebs', attribute_type=int)
                 device = rename_item_if_exists(device, 'iops', 'Iops', 'Ebs')
                 device = rename_item_if_exists(device, 'encrypted', 'Encrypted', 'Ebs')
+
+                # The NoDevice parameter in Boto3 is a string. Empty string omits the device from block device mapping
+                # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.create_image
+                if 'NoDevice' in device:
+                    if device['NoDevice'] is True:
+                        device['NoDevice'] = ""
+                    else:
+                        del device['NoDevice']
                 block_device_mapping.append(device)
         if block_device_mapping:
             params['BlockDeviceMappings'] = block_device_mapping

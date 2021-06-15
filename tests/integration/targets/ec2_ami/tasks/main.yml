@@ -112,6 +112,59 @@
 
     # ============================================================
 
+    - name: create an image from the instance with attached devices with no_device true
+      ec2_ami:
+        name: '{{ ec2_ami_name }}_no_device_true_ami'
+        instance_id: '{{ setup_instance.instance_ids[0] }}'
+        device_mapping:
+          - device_name: /dev/sda1
+            volume_size: 10
+            delete_on_termination: true
+            volume_type: gp2
+          - device_name: /dev/sdf
+            no_device: yes
+        state: present
+        wait: yes
+        root_device_name: /dev/xvda
+      register: result_no_device_true
+
+    - name: set image id fact for deletion later
+      set_fact:
+        ec2_ami_no_device_true_image_id: "{{ result_no_device_true.image_id }}"
+
+    - name: assert that image with no_device option yes has been created
+      assert:
+        that:
+          - "result_no_device_true.changed"
+          - "'/dev/sdf' not in result_no_device_true.block_device_mapping"
+
+    - name: create an image from the instance with attached devices with no_device false
+      ec2_ami:
+        name: '{{ ec2_ami_name }}_no_device_false_ami'
+        instance_id: '{{ setup_instance.instance_ids[0] }}'
+        device_mapping:
+          - device_name: /dev/sda1
+            volume_size: 10
+            delete_on_termination: true
+            volume_type: gp2
+            no_device: no
+        state: present
+        wait: yes
+        root_device_name: /dev/xvda
+      register: result_no_device_false
+
+    - name: set image id fact for deletion later
+      set_fact:
+        ec2_ami_no_device_false_image_id: "{{ result_no_device_false.image_id }}"
+
+    - name: assert that image with no_device option no has been created
+      assert:
+        that:
+          - "result_no_device_false.changed"
+          - "'/dev/sda1' in result_no_device_false.block_device_mapping"
+
+    # ============================================================
+
     - name: gather facts about the image created
       ec2_ami_info:
         image_ids: '{{ ec2_ami_image_id }}'
@@ -434,6 +487,20 @@
         state: absent
         image_id: "{{ ec2_ami_image_id }}"
         name: '{{ ec2_ami_name }}_ami'
+        wait: yes
+      ignore_errors: yes
+
+    - name: delete ami
+      ec2_ami:
+        state: absent
+        image_id: "{{ ec2_ami_no_device_true_image_id }}"
+        wait: yes
+      ignore_errors: yes
+
+    - name: delete ami
+      ec2_ami:
+        state: absent
+        image_id: "{{ ec2_ami_no_device_false_image_id }}"
         wait: yes
       ignore_errors: yes
 
