@@ -95,6 +95,20 @@ def test_lookup_variable(mocker):
     assert(retval[0] == "simplevalue")
     boto3_client_double.assert_called_with('ssm', 'eu-west-1', aws_access_key_id='notakey',
                                            aws_secret_access_key="notasecret", aws_session_token=None)
+    
+def test_lookup_versioned_variable(mocker):
+    lookup = aws_ssm.LookupModule()
+    lookup._load_name = "aws_ssm"
+
+    boto3_double = mocker.MagicMock()
+    boto3_double.Session.return_value.client.return_value.get_parameters.return_value = simple_variable_success_response
+    boto3_client_double = boto3_double.Session.return_value.client
+
+    mocker.patch.object(boto3, 'session', boto3_double)
+    retval = lookup.run(["simple_variable:1"], {}, **dummy_credentials)
+    assert(retval[0] == "simplevalue")
+    boto3_client_double.assert_called_with('ssm', 'eu-west-1', aws_access_key_id='notakey',
+                                           aws_secret_access_key="notasecret", aws_session_token=None)
 
 
 def test_path_lookup_variable(mocker):
