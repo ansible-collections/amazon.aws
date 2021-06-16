@@ -95,7 +95,7 @@ def test_lookup_variable(mocker):
     assert(retval[0] == "simplevalue")
     boto3_client_double.assert_called_with('ssm', 'eu-west-1', aws_access_key_id='notakey',
                                            aws_secret_access_key="notasecret", aws_session_token=None)
-    
+
 def test_lookup_versioned_variable(mocker):
     lookup = aws_ssm.LookupModule()
     lookup._load_name = "aws_ssm"
