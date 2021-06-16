@@ -223,6 +223,7 @@ class LookupModule(LookupBase):
                                                     tag_value_key_name="Value")
             for i in terms:
                 if i.split(':', 1)[0] in params:
+                    i = i.split(':', 1)[0]
                     ret.append(params[i])
                 elif i in response['InvalidParameters']:
                     ret.append(None)
