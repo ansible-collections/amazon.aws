@@ -61,6 +61,9 @@ EXAMPLES = '''
 - name: lookup ssm parameter store in the current region
   debug: msg="{{ lookup('aws_ssm', 'Hello' ) }}"
 
+- name: lookup versioned ssm parameter store in the current region
+  debug: msg="{{ lookup('aws_ssm', 'Hello:3' ) }}"
+
 - name: lookup ssm parameter store in nominated region
   debug: msg="{{ lookup('aws_ssm', 'Hello', region='us-east-2' ) }}"
 
