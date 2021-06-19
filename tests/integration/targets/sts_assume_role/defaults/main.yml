@@ -1,0 +1,2 @@
+unique_id: "{{ resource_prefix | hash('md5') }}"
+iam_role_name: "ansible-test-sts-{{ unique_id }}"

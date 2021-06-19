@@ -23,7 +23,7 @@
     # ============================================================
     - name: create test iam role
       iam_role:
-        name: "ansible-test-sts-{{ resource_prefix }}"
+        name: "{{ iam_role_name }}"
         assume_role_policy_document:  "{{ lookup('template','policy.json.j2') }}"
         create_instance_profile: False
         managed_policy:
@@ -278,7 +278,7 @@
         aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
         aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
         security_token: "{{ assumed_role.sts_creds.session_token }}"
-        name: "ansible-test-sts-{{ resource_prefix }}"
+        name: "{{ iam_role_name }}"
         assume_role_policy_document: "{{ lookup('template','policy.json.j2') }}"
         create_instance_profile: False
         state: present
@@ -297,7 +297,7 @@
         aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
         aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
         security_token: "{{ assumed_role.sts_creds.session_token }}"
-        name: "ansible-test-sts-{{ resource_prefix }}-new"
+        name: "{{ iam_role_name }}-new"
         assume_role_policy_document: "{{ lookup('template','policy.json.j2') }}"
         state: present
       register: result
@@ -324,7 +324,7 @@
 
     - name: delete test iam role
       iam_role:
-        name: "ansible-test-sts-{{ resource_prefix }}"
+        name: "{{ iam_role_name }}"
         assume_role_policy_document:  "{{ lookup('template','policy.json.j2') }}"
         delete_instance_profile: True
         managed_policy:
