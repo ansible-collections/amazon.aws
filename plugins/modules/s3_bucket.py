@@ -41,7 +41,7 @@ options:
     type: str
   policy:
     description:
-      - The JSON policy as a string.
+      - The JSON policy as a string. Set to the string C("null") to force the absence of a policy.
     type: json
   s3_url:
     description:
@@ -212,7 +212,7 @@ EXAMPLES = '''
     public_access:
         block_public_acls: true
         ignore_public_acls: true
-        ## keys == 'false' can be ommited, undefined keys defaults to 'false'
+        ## keys == 'false' can be omitted, undefined keys defaults to 'false'
         # block_public_policy: false
         # restrict_public_buckets: false
 
@@ -233,6 +233,12 @@ EXAMPLES = '''
     name: mys3bucket
     state: present
     delete_object_ownership: true
+
+# Delete a bucket policy from bucket
+- amazon.aws.s3_bucket:
+    name: mys3bucket
+    state: present
+    policy: "null"
 '''
 
 import json
