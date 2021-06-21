@@ -488,10 +488,7 @@ def create_volume(module, ec2_conn, zone):
                 additional_params['Iops'] = 3000
 
             if throughput:
-                if volume_type != "gp3":
-                    module.warn("throughput parameter is valid only for gp3 volumes.")
-                else:
-                    additional_params['Throughput'] = throughput
+                additional_params['Throughput'] = int(throughput)
             if multi_attach is True:
                 if volume_type not in ("io1", "io2"):
                     module.warn("multi_attach is supported with io1 and io2 volumes only.")
