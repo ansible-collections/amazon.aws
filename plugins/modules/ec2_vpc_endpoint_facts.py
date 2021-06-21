@@ -1,1 +1,1 @@
-plugins/modules/ec2_vpc_endpoint_info.py
+ec2_vpc_endpoint_info.py
