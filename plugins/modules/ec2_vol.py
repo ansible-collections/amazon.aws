@@ -104,6 +104,12 @@ options:
       - Requires at least botocore version 1.19.27.
     type: int
     version_added: 1.4.0
+  multi_attach:
+    description:
+      - If set to C(yes), Multi-Attach will be enabled when creating the volume.
+      - When you create a new volume, Multi-Attach is disabled by default.
+    type: bool
+    version_added: 2.0.0
 author: "Lester Wade (@lwade)"
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -189,6 +195,13 @@ EXAMPLES = '''
     volume_type: gp2
     device_name: /dev/xvdf
 
+# Create new volume with multi-attach enabled
+- amazon.aws.ec2_vol:
+    instance: XXXXXX
+    volume_size: 50
+    device_name: sdd
+    multi_attach: true
+
 # Attach an existing volume to instance. The volume will be deleted upon instance termination.
 - amazon.aws.ec2_vol:
     instance: XXXXXX
@@ -218,13 +231,13 @@ volume:
     returned: when success
     type: str
     sample: {
-        "attachment_set": {
+        "attachment_set": [{
             "attach_time": "2015-10-23T00:22:29.000Z",
             "deleteOnTermination": "false",
             "device": "/dev/sdf",
             "instance_id": "i-8356263c",
             "status": "attached"
-        },
+        }],
         "create_time": "2015-10-21T14:36:08.870Z",
         "encrypted": false,
         "id": "vol-35b333d9",
@@ -408,7 +421,15 @@ def update_volume(module, ec2_conn, volume):
                 throughput_changed = True
                 req_obj['Throughput'] = target_throughput
 
-        changed = iops_changed or size_changed or type_changed or throughput_changed
+        target_multi_attach = module.params.get('multi_attach')
+        multi_attach_changed = False
+        if target_multi_attach:
+            original_multi_attach = volume['multi_attach_enabled']
+            if target_multi_attach != original_multi_attach:
+                multi_attach_changed = True
+                req_obj['MultiAttachEnabled'] = target_multi_attach
+
+        changed = iops_changed or size_changed or type_changed or throughput_changed or multi_attach_changed
 
         if changed:
             response = ec2_conn.modify_volume(**req_obj)
@@ -416,6 +437,7 @@ def update_volume(module, ec2_conn, volume):
             volume['size'] = response.get('VolumeModification').get('TargetSize')
             volume['volume_type'] = response.get('VolumeModification').get('TargetVolumeType')
             volume['iops'] = response.get('VolumeModification').get('TargetIops')
+            volume['multi_attach_enabled'] = response.get('VolumeModification').get('TargetMultiAttachEnabled')
             if module.botocore_at_least("1.19.27"):
                 volume['throughput'] = response.get('VolumeModification').get('TargetThroughput')
 
@@ -431,6 +453,10 @@ def create_volume(module, ec2_conn, zone):
     volume_type = module.params.get('volume_type')
     snapshot = module.params.get('snapshot')
     throughput = module.params.get('throughput')
+    multi_attach = module.params.get('multi_attach')
+    # If custom iops is defined we use volume_type "io1" rather than the default of "standard"
+    if iops:
+        volume_type = 'io1'
 
     volume = get_volume(module, ec2_conn)
 
@@ -458,6 +484,8 @@ def create_volume(module, ec2_conn, zone):
 
             if throughput:
                 additional_params['Throughput'] = int(throughput)
+            if multi_attach:
+                additional_params['MultiAttachEnabled'] = multi_attach
 
             create_vol_response = ec2_conn.create_volume(
                 aws_retry=True,
@@ -489,11 +517,13 @@ def attach_volume(module, ec2_conn, volume_dict, instance_dict, device_name):
 
     attachment_data = get_attachment_data(volume_dict, wanted_state='attached')
     if attachment_data:
-        if attachment_data.get('instance_id', None) != instance_dict['instance_id']:
-            module.fail_json(msg="Volume {0} is already attached to another instance: {1}".format(volume_dict['volume_id'],
-                             attachment_data.get('instance_id', None)))
-        else:
-            return volume_dict, changed
+        if not volume_dict['multi_attach']:
+            # volumes without MultiAttach Enabled can be attached to 1 instance only
+            if attachment_data[0].get('instance_id', None) != instance_dict['instance_id']:
+                module.fail_json(msg="Volume {0} is already attached to another instance: {1}".format(volume_dict['volume_id'],
+                                 attachment_data[0].get('instance_id', None)))
+            else:
+                return volume_dict, changed
 
     try:
         attach_response = ec2_conn.attach_volume(aws_retry=True, Device=device_name,
@@ -557,17 +587,22 @@ def modify_dot_attribute(module, ec2_conn, instance_dict, device_name):
 def get_attachment_data(volume_dict, wanted_state=None):
     changed = False
 
-    attachment_data = {}
+    attachment_data = []
     if not volume_dict:
         return attachment_data
-    for data in volume_dict.get('attachments', []):
-        if wanted_state and wanted_state == data['state']:
-            attachment_data = data
-            break
-        else:
-            # No filter, return first
-            attachment_data = data
-            break
+    resource = volume_dict.get('attachments', [])
+    if wanted_state:
+        # filter 'state', return attachment matching wanted state
+        resource = [data for data in resource if data['state'] == wanted_state]
+
+    for data in resource:
+        attachment_data.append({
+            'attach_time': data.get('attach_time', None),
+            'device': data.get('device', None),
+            'instance_id': data.get('instance_id', None),
+            'status': data.get('state', None),
+            'deleteOnTermination': data.get('delete_on_termination', None)
+        })
 
     return attachment_data
 
@@ -576,8 +611,9 @@ def detach_volume(module, ec2_conn, volume_dict):
     changed = False
 
     attachment_data = get_attachment_data(volume_dict, wanted_state='attached')
-    if attachment_data:
-        ec2_conn.detach_volume(aws_retry=True, VolumeId=volume_dict['volume_id'])
+    # The ID of the instance must be specified iff you are detaching a Multi-Attach enabled volume.
+    for attachment in attachment_data:
+        ec2_conn.detach_volume(aws_retry=True, InstanceId=attachment['instance_id'], VolumeId=volume_dict['volume_id'])
         waiter = ec2_conn.get_waiter('volume_available')
         waiter.wait(
             VolumeIds=[volume_dict['volume_id']],
@@ -602,13 +638,7 @@ def get_volume_info(module, volume, tags=None):
         'status': volume.get('state'),
         'type': volume.get('volume_type'),
         'zone': volume.get('availability_zone'),
-        'attachment_set': {
-            'attach_time': attachment_data.get('attach_time', None),
-            'device': attachment_data.get('device', None),
-            'instance_id': attachment_data.get('instance_id', None),
-            'status': attachment_data.get('state', None),
-            'deleteOnTermination': attachment_data.get('delete_on_termination', None)
-        },
+        'attachment_set': attachment_data,
         'tags': tags
     }
 
@@ -659,6 +689,7 @@ def main():
         modify_volume=dict(default=False, type='bool'),
         throughput=dict(type='int'),
         purge_tags=dict(type='bool', default=False),
+        multi_attach=dict(type='bool'),
     )
 
     module = AnsibleAWSModule(
@@ -799,7 +830,7 @@ def main():
         if tags_changed:
             changed = True
 
-        module.exit_json(changed=changed, volume=volume_info, device=volume_info['attachment_set']['device'],
+        module.exit_json(changed=changed, volume=volume_info, device=device_name,
                          volume_id=volume_info['id'], volume_type=volume_info['type'])
     elif state == 'absent':
         if not name and not param_id:
