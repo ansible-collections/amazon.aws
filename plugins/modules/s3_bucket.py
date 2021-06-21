@@ -328,7 +328,7 @@ def create_or_update_bucket(s3_client, module, location):
     # Requester pays
     try:
         requester_pays_status = get_bucket_request_payment(s3_client, name)
-    except is_boto3_error_code(['NotImplemented', 'XNotImplemented']):
+    except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
         if requester_pays is not None:
             module.fail_json_aws(e, msg="Failed to get bucket request payment")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
@@ -351,7 +351,7 @@ def create_or_update_bucket(s3_client, module, location):
     # Policy
     try:
         current_policy = get_bucket_policy(s3_client, name)
-    except is_boto3_error_code(['NotImplemented', 'XNotImplemented']):
+    except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
         if policy is not None:
             module.fail_json_aws(e, msg="Failed to get bucket policy")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
@@ -386,7 +386,7 @@ def create_or_update_bucket(s3_client, module, location):
     # Tags
     try:
         current_tags_dict = get_current_bucket_tags_dict(s3_client, name)
-    except is_boto3_error_code(['NotImplemented', 'XNotImplemented']):
+    except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
         if tags is not None:
             module.fail_json_aws(e, msg="Failed to get bucket tags")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
@@ -420,7 +420,7 @@ def create_or_update_bucket(s3_client, module, location):
     # Encryption
     try:
         current_encryption = get_bucket_encryption(s3_client, name)
-    except is_boto3_error_code(['NotImplemented', 'XNotImplemented']):
+    except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
         if encryption is not None:
             module.fail_json_aws(e, msg="Failed to get bucket encryption settings")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
