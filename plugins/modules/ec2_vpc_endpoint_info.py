@@ -48,19 +48,19 @@ extends_documentation_fragment:
 EXAMPLES = r'''
 # Simple example of listing all support AWS services for VPC endpoints
 - name: List supported AWS endpoint services
-  community.aws.ec2_vpc_endpoint_info:
+  amazon.aws.ec2_vpc_endpoint_info:
     query: services
     region: ap-southeast-2
   register: supported_endpoint_services
 
 - name: Get all endpoints in ap-southeast-2 region
-  community.aws.ec2_vpc_endpoint_info:
+  amazon.aws.ec2_vpc_endpoint_info:
     query: endpoints
     region: ap-southeast-2
   register: existing_endpoints
 
 - name: Get all endpoints with specific filters
-  community.aws.ec2_vpc_endpoint_info:
+  amazon.aws.ec2_vpc_endpoint_info:
     query: endpoints
     region: ap-southeast-2
     filters:
@@ -73,7 +73,7 @@ EXAMPLES = r'''
   register: existing_endpoints
 
 - name: Get details on specific endpoint
-  community.aws.ec2_vpc_endpoint_info:
+  amazon.aws.ec2_vpc_endpoint_info:
     query: endpoints
     region: ap-southeast-2
     vpc_endpoint_ids:
@@ -174,7 +174,7 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
     if module._name == 'ec2_vpc_endpoint_facts':
-        module.deprecate("The 'ec2_vpc_endpoint_facts' module has been renamed to 'ec2_vpc_endpoint_info'", date='2021-12-01', collection_name='community.aws')
+        module.deprecate("The 'ec2_vpc_endpoint_facts' module has been renamed to 'ec2_vpc_endpoint_info'", date='2021-12-01', collection_name='amazon.aws')
 
     # Validate Requirements
     try:
@@ -189,14 +189,14 @@ def main():
                          ' `endpoints` is now the default and after'
                          ' 2022-12-01 this module will only support fetching'
                          ' endpoints.',
-                         date='2022-12-01', collection_name='community.aws')
+                         date='2022-12-01', collection_name='amazon.aws')
     elif query == 'services':
         module.deprecate('Support for fetching service information with this '
                          'module has been deprecated and will be removed after'
                          ' 2022-12-01.  '
                          'Please use the ec2_vpc_endpoint_service_info module '
                          'instead.', date='2022-12-01',
-                         collection_name='community.aws')
+                         collection_name='amazon.aws')
     else:
         query = 'endpoints'
 

@@ -31,7 +31,7 @@ options:
     version_added: 1.5.0
   service:
     description:
-      - An AWS supported vpc endpoint service. Use the M(community.aws.ec2_vpc_endpoint_info)
+      - An AWS supported vpc endpoint service. Use the M(amazon.aws.ec2_vpc_endpoint_info)
         module to describe the supported endpoint services.
       - Required when creating an endpoint.
     required: false
@@ -124,7 +124,7 @@ EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create new vpc endpoint with a json template for policy
-  community.aws.ec2_vpc_endpoint:
+  amazon.aws.ec2_vpc_endpoint:
     state: present
     region: ap-southeast-2
     vpc_id: vpc-12345678
@@ -136,7 +136,7 @@ EXAMPLES = r'''
   register: new_vpc_endpoint
 
 - name: Create new vpc endpoint with the default policy
-  community.aws.ec2_vpc_endpoint:
+  amazon.aws.ec2_vpc_endpoint:
     state: present
     region: ap-southeast-2
     vpc_id: vpc-12345678
@@ -147,7 +147,7 @@ EXAMPLES = r'''
   register: new_vpc_endpoint
 
 - name: Create new vpc endpoint with json file
-  community.aws.ec2_vpc_endpoint:
+  amazon.aws.ec2_vpc_endpoint:
     state: present
     region: ap-southeast-2
     vpc_id: vpc-12345678
@@ -159,7 +159,7 @@ EXAMPLES = r'''
   register: new_vpc_endpoint
 
 - name: Delete newly created vpc endpoint
-  community.aws.ec2_vpc_endpoint:
+  amazon.aws.ec2_vpc_endpoint:
     state: absent
     vpc_endpoint_id: "{{ new_vpc_endpoint.result['VpcEndpointId'] }}"
     region: ap-southeast-2
@@ -462,7 +462,7 @@ def main():
     if module.params.get('policy_file'):
         module.deprecate('The policy_file option has been deprecated and'
                          ' will be removed after 2022-12-01',
-                         date='2022-12-01', collection_name='community.aws')
+                         date='2022-12-01', collection_name='amazon.aws')
 
     try:
         ec2 = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
