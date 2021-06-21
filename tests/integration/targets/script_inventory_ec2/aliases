@@ -1,1 +1,3 @@
-needs/file/contrib/inventory/ec2.py
+needs/file/scripts/inventory/ec2.py
+# Unsupported, runme.sh is currently broken, and script is deprecated https://github.com/ansible-collections/community.aws/pull/596
+disabled
