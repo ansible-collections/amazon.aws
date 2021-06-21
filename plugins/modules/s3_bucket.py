@@ -420,25 +420,28 @@ def create_or_update_bucket(s3_client, module, location):
     # Encryption
     try:
         current_encryption = get_bucket_encryption(s3_client, name)
-    except (ClientError, BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to get bucket encryption")
-
-    if encryption is not None:
-        current_encryption_algorithm = current_encryption.get('SSEAlgorithm') if current_encryption else None
-        current_encryption_key = current_encryption.get('KMSMasterKeyID') if current_encryption else None
-        if encryption == 'none' and current_encryption_algorithm is not None:
-            try:
-                delete_bucket_encryption(s3_client, name)
-            except (BotoCoreError, ClientError) as e:
-                module.fail_json_aws(e, msg="Failed to delete bucket encryption")
-            current_encryption = wait_encryption_is_applied(module, s3_client, name, None)
-            changed = True
-        elif encryption != 'none' and (encryption != current_encryption_algorithm) or (encryption == 'aws:kms' and current_encryption_key != encryption_key_id):
-            expected_encryption = {'SSEAlgorithm': encryption}
-            if encryption == 'aws:kms' and encryption_key_id is not None:
-                expected_encryption.update({'KMSMasterKeyID': encryption_key_id})
-            current_encryption = put_bucket_encryption_with_retry(module, s3_client, name, expected_encryption)
-            changed = True
+    except is_boto3_error_code(['NotImplemented', 'XNotImplemented']):
+        if encryption is not None:
+            module.fail_json_aws(exp, msg="Failed to get bucket encryption settings")
+    except (BotoCoreError, ClientError) as exp:  # pylint: disable=duplicate-except
+        module.fail_json_aws(exp, msg="Failed to get bucket encryption settings")
+    else:
+        if encryption is not None:
+            current_encryption_algorithm = current_encryption.get('SSEAlgorithm') if current_encryption else None
+            current_encryption_key = current_encryption.get('KMSMasterKeyID') if current_encryption else None
+            if encryption == 'none' and current_encryption_algorithm is not None:
+                try:
+                    delete_bucket_encryption(s3_client, name)
+                except (BotoCoreError, ClientError) as e:
+                    module.fail_json_aws(e, msg="Failed to delete bucket encryption")
+                current_encryption = wait_encryption_is_applied(module, s3_client, name, None)
+                changed = True
+            elif encryption != 'none' and (encryption != current_encryption_algorithm) or (encryption == 'aws:kms' and current_encryption_key != encryption_key_id):
+                expected_encryption = {'SSEAlgorithm': encryption}
+                if encryption == 'aws:kms' and encryption_key_id is not None:
+                    expected_encryption.update({'KMSMasterKeyID': encryption_key_id})
+                current_encryption = put_bucket_encryption_with_retry(module, s3_client, name, expected_encryption)
+                changed = True
 
         result['encryption'] = current_encryption
 
