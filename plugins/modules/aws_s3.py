@@ -14,7 +14,7 @@ short_description: manage objects in S3.
 description:
     - This module allows the user to manage S3 buckets and the objects within them. Includes support for creating and
       deleting both objects and buckets, retrieving objects as files or strings, generating download links and
-      copy of an object that is already stored in Amazon S3. This module has a dependency on boto3 and botocore.
+      copy of an object that is already stored in Amazon S3.
 options:
   bucket:
     description:
@@ -168,11 +168,6 @@ options:
     type: bool
     default: True
     version_added: 2.0.0
-requirements: [ "boto3", "botocore" ]
-author:
-    - "Lester Wade (@lwade)"
-    - "Sloane Hertel (@s-hertel)"
-    - "Alina Buzachis (@linabuzachis)"
   copy_src:
     description:
     - The source details of the object to copy.
@@ -194,12 +189,10 @@ author:
         type: str
         description:
         - version ID of the source object.
-requirements: [ "boto3", "botocore" ]
 author:
     - "Lester Wade (@lwade)"
     - "Sloane Hertel (@s-hertel)"
-    - "Aubin Bikouo (@abikouo)"
->>>>>>> bbce073 (rebase)
+    - "Alina Buzachis (@linabuzachis)"
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
