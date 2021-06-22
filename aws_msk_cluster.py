@@ -21,7 +21,7 @@ author:
     - Daniil Kupchenko (@oukooveu)
 options:
     state:
-        description: Create (present) or delete (absent) cluster.
+        description: Create (C(present)) or delete (C(absent)) cluster.
         choices: ['present', 'absent']
         type: str
         default: 'present'
