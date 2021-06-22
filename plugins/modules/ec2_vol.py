@@ -426,13 +426,10 @@ def update_volume(module, ec2_conn, volume):
         target_multi_attach = module.params.get('multi_attach')
         multi_attach_changed = False
         if target_multi_attach is not None:
-            if "io1" in [target_type, original_type] or "io2" in [target_type, original_type]:
-                original_multi_attach = volume['multi_attach_enabled']
-                if target_multi_attach != original_multi_attach:
-                    multi_attach_changed = True
-                    req_obj['MultiAttachEnabled'] = target_multi_attach
-            else:
-                module.warn("multi_attach is supported with io1 and io2 volumes only.")
+            original_multi_attach = volume['multi_attach_enabled']
+            if target_multi_attach != original_multi_attach:
+                multi_attach_changed = True
+                req_obj['MultiAttachEnabled'] = target_multi_attach
 
         changed = iops_changed or size_changed or type_changed or throughput_changed or multi_attach_changed
 
@@ -489,11 +486,8 @@ def create_volume(module, ec2_conn, zone):
 
             if throughput:
                 additional_params['Throughput'] = int(throughput)
-            if multi_attach is True:
-                if volume_type not in ("io1", "io2"):
-                    module.warn("multi_attach is supported with io1 and io2 volumes only.")
-                else:
-                    additional_params['MultiAttachEnabled'] = multi_attach
+            if multi_attach is not None:
+                additional_params['MultiAttachEnabled'] = multi_attach
 
             create_vol_response = ec2_conn.create_volume(
                 aws_retry=True,
@@ -721,6 +715,7 @@ def main():
     iops = module.params.get('iops')
     volume_type = module.params.get('volume_type')
     throughput = module.params.get('throughput')
+    multi_attach = module.params.get('multi_attach')
 
     if state == 'list':
         module.deprecate(
@@ -756,6 +751,9 @@ def main():
             module.fail_json(msg='Throughput is only supported for gp3 volume.')
         if throughput < 125 or throughput > 1000:
             module.fail_json(msg='Throughput values must be between 125 and 1000.')
+
+    if multi_attach is True and volume_type not in ('io1', 'io2'):
+        module.fail_json(msg='multi_attach is only supported for io1 and io2 volumes.')
 
     # Set changed flag
     changed = False

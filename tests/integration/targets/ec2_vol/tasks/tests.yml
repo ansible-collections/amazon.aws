@@ -563,7 +563,7 @@
 
     - name: test create a new gp3 volume
       ec2_vol:
-        volume_size: 7
+        volume_size: 70
         zone: "{{ availability_zone }}"
         volume_type: gp3
         throughput: 130
@@ -583,7 +583,7 @@
           - "'create_time' in gp3_volume.volume"
           - "'id' in gp3_volume.volume"
           - "'size' in gp3_volume.volume"
-          - gp3_volume.volume.size == 7
+          - gp3_volume.volume.size == 70
           - "'volume_type' in gp3_volume"
           - gp3_volume.volume_type == 'gp3'
           - "'iops' in gp3_volume.volume"
@@ -630,7 +630,7 @@
 
     - name: increase throughput
       ec2_vol:
-        volume_size: 7
+        volume_size: 70
         zone: "{{ availability_zone }}"
         volume_type: gp3
         throughput: 131
@@ -650,7 +650,7 @@
           - "'create_time' in gp3_volume.volume"
           - "'id' in gp3_volume.volume"
           - "'size' in gp3_volume.volume"
-          - gp3_volume.volume.size == 7
+          - gp3_volume.volume.size == 70
           - "'volume_type' in gp3_volume"
           - gp3_volume.volume_type == 'gp3'
           - "'iops' in gp3_volume.volume"
