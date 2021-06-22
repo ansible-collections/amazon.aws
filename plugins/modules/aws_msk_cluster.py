@@ -70,7 +70,7 @@ options:
             - The list of subnets to connect to in the client virtual private cloud (VPC).
               AWS creates elastic network interfaces inside these subnets. Client applications use
               elastic network interfaces to produce and consume data.
-              Client subnets can't be in Availability Zone us-east-1e.
+            - Client subnets can't be in Availability Zone us-east-1e.
             - This parameter is required when I(state=present).
         type: list
         elements: str
