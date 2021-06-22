@@ -498,8 +498,7 @@
         that:
           - dot_volume.changed
           - "'attachment_set' in dot_volume.volume"
-          - "'deleteOnTermination' in dot_volume.volume.attachment_set"
-          - "dot_volume.volume.attachment_set.deleteOnTermination is defined"
+          - "'delete_on_termination' in dot_volume.volume.attachment_set[0]"
           - "'create_time' in dot_volume.volume"
           - "'id' in dot_volume.volume"
           - "'size' in dot_volume.volume"
@@ -578,8 +577,6 @@
         that:
           - gp3_volume.changed
           - "'attachment_set' in gp3_volume.volume"
-          - "'deleteOnTermination' in gp3_volume.volume.attachment_set"
-          - gp3_volume.volume.attachment_set.deleteOnTermination == none
           - "'create_time' in gp3_volume.volume"
           - "'id' in gp3_volume.volume"
           - "'size' in gp3_volume.volume"
@@ -644,9 +641,6 @@
       assert:
         that:
           - gp3_volume.changed
-          - "'attachment_set' in gp3_volume.volume"
-          - "'deleteOnTermination' in gp3_volume.volume.attachment_set"
-          - gp3_volume.volume.attachment_set.deleteOnTermination == none
           - "'create_time' in gp3_volume.volume"
           - "'id' in gp3_volume.volume"
           - "'size' in gp3_volume.volume"

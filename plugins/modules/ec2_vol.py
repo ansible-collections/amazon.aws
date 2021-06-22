@@ -456,9 +456,6 @@ def create_volume(module, ec2_conn, zone):
     snapshot = module.params.get('snapshot')
     throughput = module.params.get('throughput')
     multi_attach = module.params.get('multi_attach')
-    # If custom iops is defined we use volume_type "io1" rather than the default of "standard"
-    if iops:
-        volume_type = 'io1'
 
     volume = get_volume(module, ec2_conn)
 
@@ -486,8 +483,8 @@ def create_volume(module, ec2_conn, zone):
 
             if throughput:
                 additional_params['Throughput'] = int(throughput)
-            if multi_attach is not None:
-                additional_params['MultiAttachEnabled'] = multi_attach
+            if multi_attach:
+                additional_params['MultiAttachEnabled'] = True
 
             create_vol_response = ec2_conn.create_volume(
                 aws_retry=True,
@@ -814,8 +811,6 @@ def main():
                         device=device_name,
                         changed=False
                     )
-
-        attach_state_changed = False
 
         if volume:
             volume, changed = update_volume(module, ec2_conn, volume)
