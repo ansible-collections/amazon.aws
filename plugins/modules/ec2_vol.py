@@ -610,7 +610,7 @@ def detach_volume(module, ec2_conn, volume_dict):
     changed = False
 
     attachment_data = get_attachment_data(volume_dict, wanted_state='attached')
-    # The ID of the instance must be specified iff you are detaching a Multi-Attach enabled volume.
+    # The ID of the instance must be specified if you are detaching a Multi-Attach enabled volume.
     for attachment in attachment_data:
         ec2_conn.detach_volume(aws_retry=True, InstanceId=attachment['instance_id'], VolumeId=volume_dict['volume_id'])
         waiter = ec2_conn.get_waiter('volume_available')
