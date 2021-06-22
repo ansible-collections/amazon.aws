@@ -294,7 +294,13 @@ def list_nodes_with_backoff(client, cluster_arn):
 
 
 def find_cluster_by_name(client, module, cluster_name):
-    cluster_list = list_clusters_with_backoff(client, cluster_name).get("ClusterInfoList", [])
+    try:
+        cluster_list = list_clusters_with_backoff(client, cluster_name).get("ClusterInfoList", [])
+    except (
+        botocore.exceptions.BotoCoreError,
+        botocore.exceptions.ClientError,
+    ) as e:
+        module.fail_json_aws(e, "Failed to find kafka cluster by name")
     if cluster_list:
         if len(cluster_list) != 1:
             module.fail_json(msg="Found more than one cluster with name '{0}'".format(cluster_name))
