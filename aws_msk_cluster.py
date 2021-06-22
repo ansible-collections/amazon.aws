@@ -327,6 +327,7 @@ def get_cluster_version(client, module, arn):
 
 
 def wait_for_cluster_state(client, module, arn, state="ACTIVE"):
+    # As of 2021-06 boto3 doesn't offer any built in waiters
     start = time.time()
     timeout = int(module.params.get("wait_timeout"))
     check_interval = 60
