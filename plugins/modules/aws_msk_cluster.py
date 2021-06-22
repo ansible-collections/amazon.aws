@@ -198,7 +198,7 @@ options:
         type: bool
         default: false
     wait_timeout:
-        description: How long to wait, seconds. Cluster creation can take up to 20-30 minutes.
+        description: How many seconds to wait. Cluster creation can take up to 20-30 minutes.
         type: int
         default: 3600
     tags:
