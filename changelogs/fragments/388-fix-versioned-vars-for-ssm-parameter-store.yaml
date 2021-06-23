@@ -1,2 +1,2 @@
 bugfixes:
-- Fixes the AWS SSM Parameter Store functionality to allow versioned parameters to look up properly (https://github.com/ansible-collections/amazon.aws/issues/389)
+- Fixes the AWS SSM Parameter Store functionality to allow versioned parameters to look up properly. (https://github.com/ansible-collections/amazon.aws/issues/389).
