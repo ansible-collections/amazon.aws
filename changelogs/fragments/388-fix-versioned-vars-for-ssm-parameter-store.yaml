@@ -1,0 +1,2 @@
+bugfixes:
+- Fixes the AWS SSM Parameter Store functionality to allow versioned parameters to look up properly
