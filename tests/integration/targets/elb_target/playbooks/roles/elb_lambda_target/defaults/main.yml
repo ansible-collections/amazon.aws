@@ -2,4 +2,4 @@ unique_id: "ansible-test-{{ resource_prefix | hash('md5') }}"
 lambda_role_name: '{{ unique_id }}-elb-target'
 #lambda_role_name: '{{ resource_prefix }}-elb-target'
 lambda_name: '{{ unique_id }}-elb-target'
-elb_target_group_name: '{{ unique_id | truncate(8, True, '') }}-elb-tg'
+elb_target_group_name: "{{ unique_id | truncate(8, True, '') }}-elb-tg"
