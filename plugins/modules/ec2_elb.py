@@ -54,7 +54,6 @@ options:
     default: 0
     type: int
 requirements:
-- python >= 2.6
 - boto >= 2.49.0
 extends_documentation_fragment:
 - amazon.aws.aws
