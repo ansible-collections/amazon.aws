@@ -1,9 +1,9 @@
 ---
 ec2_ami_name: 'amzn2-ami-hvm-2.0.20190612-x86_64-gp2'
 
-unique_id: "ansible-test-{{ resource_prefix | hash('md5') }}"
-tg_name: "{{ unique_id | truncate(8, True, '') }}-tg"
-tg_tcpudp_name: "{{ unique_id | truncate(8, True, '') }}-tgtcpudp"
+unique_id: "ansible-test-{{ resource_prefix | hash('md5') | truncate(8, True, '') }}"
+tg_name: "{{ unique_id }}-tg"
+tg_tcpudp_name: "{{ unique_id }}-tgtcpudp"
 lb_name: "{{ unique_id }}-lb"
 
 healthy_state:
