@@ -794,6 +794,10 @@ def main():
             module.fail_json(
                 msg="The number of broker nodes must be a multiple of availability zones in the subnets parameter"
             )
+        if len(module.params["name"]) > 64:
+            module.fail_json(
+                module.fail_json(msg='Cluster name "{0}" exceeds 64 character limit'.format(module.params["name"]))
+            )
         changed, response = create_or_update_cluster(client, module)
     elif module.params["state"] == "absent":
         changed, response = delete_cluster(client, module)

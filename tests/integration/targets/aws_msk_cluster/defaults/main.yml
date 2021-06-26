@@ -7,7 +7,7 @@ vpc_subnets:
 vpc_subnet_name_prefix: "{{ resource_prefix }}"
 
 msk_config_name: "{{ resource_prefix }}-config"
-msk_cluster_name: "{{ resource_prefix }}-cluster"
+msk_cluster_name: "ansible-test-{{ (resource_prefix | hash('md5'))[:7] }}-msk-cluster"
 msk_version: 2.6.0
 msk_broker_nodes: 2
 
