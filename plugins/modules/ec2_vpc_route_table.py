@@ -703,7 +703,9 @@ def main():
                                            ['state', 'present', ['vpc_id']]],
                               supports_check_mode=True)
 
-    retry_decorator = AWSRetry.jittered_backoff(retries=10)
+    # The tests for RouteTable existing uses its own decorator, we can safely
+    # retry on InvalidRouteTableID.NotFound
+    retry_decorator = AWSRetry.jittered_backoff(retries=10, catch_extra_error_codes=['InvalidRouteTableID.NotFound'])
     connection = module.client('ec2', retry_decorator=retry_decorator)
 
     state = module.params.get('state')
