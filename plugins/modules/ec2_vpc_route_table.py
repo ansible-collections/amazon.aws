@@ -238,10 +238,9 @@ from ansible.module_utils.common.dict_transformations import snake_dict_to_camel
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
@@ -255,14 +254,6 @@ def describe_subnets_with_backoff(connection, **params):
 def describe_igws_with_backoff(connection, **params):
     paginator = connection.get_paginator('describe_internet_gateways')
     return paginator.paginate(**params).build_full_result()['InternetGateways']
-
-
-@AWSRetry.jittered_backoff()
-def describe_tags_with_backoff(connection, resource_id):
-    filters = ansible_dict_to_boto3_filter_list({'resource-id': resource_id})
-    paginator = connection.get_paginator('describe_tags')
-    tags = paginator.paginate(Filters=filters).build_full_result()['Tags']
-    return boto3_tag_list_to_ansible_dict(tags)
 
 
 @AWSRetry.jittered_backoff()
@@ -349,45 +340,6 @@ def tags_match(match_tags, candidate_tags):
                 for k, v in match_tags.items()))
 
 
-def ensure_tags(connection=None, module=None, resource_id=None, tags=None, purge_tags=None, check_mode=None):
-    try:
-        cur_tags = describe_tags_with_backoff(connection, resource_id)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Unable to list tags for VPC')
-
-    to_add, to_delete = compare_aws_tags(cur_tags, tags, purge_tags)
-
-    if not to_add and not to_delete:
-        return {'changed': False, 'tags': cur_tags}
-    if check_mode:
-        if not purge_tags:
-            tags = cur_tags.update(tags)
-        return {'changed': True, 'tags': tags}
-
-    if to_delete:
-        try:
-            connection.delete_tags(
-                aws_retry=True,
-                Resources=[resource_id],
-                Tags=[{'Key': k} for k in to_delete])
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't delete tags")
-    if to_add:
-        try:
-            connection.create_tags(
-                aws_retry=True,
-                Resources=[resource_id],
-                Tags=ansible_dict_to_boto3_tag_list(to_add))
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't create tags")
-
-    try:
-        latest_tags = describe_tags_with_backoff(connection, resource_id)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Unable to list tags for VPC')
-    return {'changed': True, 'tags': latest_tags}
-
-
 def get_route_table_by_id(connection, module, route_table_id):
 
     route_table = None
@@ -410,7 +362,7 @@ def get_route_table_by_tags(connection, module, vpc_id, tags):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't get route table")
     for table in route_tables:
-        this_tags = describe_tags_with_backoff(connection, table['RouteTableId'])
+        this_tags = describe_ec2_tags(connection, module, table['RouteTableId'])
         if tags_match(tags, this_tags):
             route_table = table
             count += 1
@@ -625,7 +577,7 @@ def ensure_route_table_absent(connection, module):
 def get_route_table_info(connection, module, route_table):
     result = get_route_table_by_id(connection, module, route_table['RouteTableId'])
     try:
-        result['Tags'] = describe_tags_with_backoff(connection, route_table['RouteTableId'])
+        result['Tags'] = describe_ec2_tags(connection, module, route_table['RouteTableId'])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't get tags for route table")
     result = camel_dict_to_snake_dict(result, ignore_list=['Tags'])
@@ -711,10 +663,10 @@ def ensure_route_table_present(connection, module):
         changed = changed or result['changed']
 
     if not tags_valid and tags is not None:
-        result = ensure_tags(connection=connection, module=module, resource_id=route_table['RouteTableId'], tags=tags,
-                             purge_tags=purge_tags, check_mode=module.check_mode)
-        route_table['Tags'] = result['tags']
-        changed = changed or result['changed']
+        changed |= ensure_ec2_tags(connection, module, route_table['RouteTableId'],
+                                   tags=tags, purge_tags=purge_tags,
+                                   retry_codes=['InvalidRouteTableID.NotFound'])
+        route_table['Tags'] = describe_ec2_tags(connection, module, route_table['RouteTableId'])
 
     if subnets is not None:
         associated_subnets = find_subnets(connection, module, vpc_id, subnets)
