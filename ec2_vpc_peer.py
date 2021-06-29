@@ -44,6 +44,12 @@ options:
       - Dictionary of tags to look for and apply when creating a Peering Connection.
     required: false
     type: dict
+  purge_tags:
+    description:
+      - Remove tags not listed in I(tags).
+    type: bool
+    default: true
+    version_added: 2.0.0
   state:
     description:
       - Create, delete, accept, reject a peering connection.
@@ -367,6 +373,8 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import add_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 
 
 def wait_for_state(client, module, state, pcx_id):
@@ -383,26 +391,6 @@ def wait_for_state(client, module, state, pcx_id):
         module.fail_json_aws(e, "Failed to wait for state change")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, "Enable to describe Peerig Connection while waiting for state to change")
-
-
-def tags_changed(pcx_id, client, module):
-    changed = False
-    tags = dict()
-    if module.params.get('tags'):
-        tags = module.params.get('tags')
-    peering_connection = get_peering_connection_by_id(pcx_id, client, module)
-    if peering_connection['Tags']:
-        pcx_values = [t.values() for t in peering_connection['Tags']]
-        pcx_tags = [item for sublist in pcx_values for item in sublist]
-        tag_values = [[key, str(value)] for key, value in tags.items()]
-        tags = [item for sublist in tag_values for item in sublist]
-        if sorted(pcx_tags) == sorted(tags):
-            changed = False
-        elif tags:
-            delete_tags(pcx_id, client, module)
-            create_tags(pcx_id, client, module)
-            changed = True
-    return changed
 
 
 def describe_peering_connections(params, client):
@@ -445,7 +433,10 @@ def create_peer_connection(client, module):
     peering_conns = describe_peering_connections(params, client)
     for peering_conn in peering_conns['VpcPeeringConnections']:
         pcx_id = peering_conn['VpcPeeringConnectionId']
-        if tags_changed(pcx_id, client, module):
+        if ensure_ec2_tags(client, module, pcx_id,
+                           purge_tags=module.params.get('purge_tags'),
+                           tags=module.params.get('tags'),
+                           ):
             changed = True
         if is_active(peering_conn):
             return (changed, peering_conn)
@@ -454,10 +445,14 @@ def create_peer_connection(client, module):
     try:
         peering_conn = client.create_vpc_peering_connection(aws_retry=True, **params)
         pcx_id = peering_conn['VpcPeeringConnection']['VpcPeeringConnectionId']
+        if module.params.get('tags'):
+            # Once the minimum botocore version is bumped to > 1.17.24
+            # (hopefully community.aws 3.0.0) we can add the tags to the
+            # creation parameters
+            add_ec2_tags(client, module, pcx_id, module.params.get('tags'),
+                         retry_codes=['InvalidVpcPeeringConnectionID.NotFound'])
         if module.params.get('wait'):
             wait_for_state(client, module, 'pending-acceptance', pcx_id)
-        if module.params.get('tags'):
-            create_tags(pcx_id, client, module)
         changed = True
         return (changed, peering_conn['VpcPeeringConnection'])
     except botocore.exceptions.ClientError as e:
@@ -531,41 +526,22 @@ def accept_reject(state, client, module):
                 client.reject_vpc_peering_connection(aws_retry=True, **params)
                 target_state = 'rejected'
             if module.params.get('tags'):
-                create_tags(peering_id, client, module)
+                add_ec2_tags(client, module, peering_id, module.params.get('tags'),
+                             retry_codes=['InvalidVpcPeeringConnectionID.NotFound'])
             changed = True
             if module.params.get('wait'):
                 wait_for_state(client, module, target_state, peering_id)
         except botocore.exceptions.ClientError as e:
             module.fail_json(msg=str(e))
-    if tags_changed(peering_id, client, module):
+    if ensure_ec2_tags(client, module, peering_id,
+                       purge_tags=module.params.get('purge_tags'),
+                       tags=module.params.get('tags'),
+                       ):
         changed = True
 
     # Relaod peering conection infos to return latest state/params
     vpc_peering_connection = get_peering_connection_by_id(peering_id, client, module)
     return (changed, vpc_peering_connection)
-
-
-def load_tags(module):
-    tags = []
-    if module.params.get('tags'):
-        for name, value in module.params.get('tags').items():
-            tags.append({'Key': name, 'Value': str(value)})
-    return tags
-
-
-def create_tags(pcx_id, client, module):
-    try:
-        delete_tags(pcx_id, client, module)
-        client.create_tags(aws_retry=True, Resources=[pcx_id], Tags=load_tags(module))
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg=str(e))
-
-
-def delete_tags(pcx_id, client, module):
-    try:
-        client.delete_tags(aws_retry=True, Resources=[pcx_id])
-    except botocore.exceptions.ClientError as e:
-        module.fail_json(msg=str(e))
 
 
 def main():
@@ -576,6 +552,7 @@ def main():
         peering_id=dict(),
         peer_owner_id=dict(),
         tags=dict(required=False, type='dict'),
+        purge_tags=dict(default=True, type='bool'),
         state=dict(default='present', choices=['present', 'absent', 'accept', 'reject']),
         wait=dict(default=False, type='bool'),
     )
