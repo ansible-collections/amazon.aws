@@ -52,7 +52,7 @@
   - name: Create a FIFO topic (not providing .fifo suffix, should be done automatically)
     sns_topic:
       name: '{{ sns_topic_topic_name }}-fifo'
-      type: fifo
+      topic_type: fifo
       display_name: My FIFO topic
     register: sns_fifo_topic
 
@@ -66,7 +66,7 @@
   - name: Run create a FIFO topic again for idempotence test
     sns_topic:
       name: '{{ sns_topic_topic_name }}-fifo.fifo'
-      type: fifo
+      topic_type: fifo
       display_name: My FIFO topic
     register: sns_fifo_topic
 
