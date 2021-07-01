@@ -718,30 +718,36 @@ def copy_object_to_bucket(module, s3, bucket, obj, encrypt, metadata, validate, 
         if keyrtn:
             s_etag = get_etag(s3, bucketsrc['Bucket'], bucketsrc['Key'], version=version)
             if s_etag == d_etag:
-                module.exit_json(msg="ETag from source and destination are the same", changed=False)
-            params.update({'CopySource': bucketsrc})
-            if encrypt:
-                params['ServerSideEncryption'] = module.params['encryption_mode']
-            if module.params['encryption_kms_key_id'] and module.params['encryption_mode'] == 'aws:kms':
-                params['SSEKMSKeyId'] = module.params['encryption_kms_key_id']
-            if metadata:
-                params['Metadata'] = {}
-                # determine object metadata and extra arguments
-                for option in metadata:
-                    extra_args_option = option_in_extra_args(option)
-                    if extra_args_option is not None:
-                        params[extra_args_option] = metadata[option]
-                    else:
-                        params['Metadata'][option] = metadata[option]
+                # Tags
+                tags, changed = ensure_tags(s3, module, bucket, obj)
+                if not changed:
+                    module.exit_json(msg="ETag from source and destination are the same", changed=False)
+            else:
+                params.update({'CopySource': bucketsrc})
+                if encrypt:
+                    params['ServerSideEncryption'] = module.params['encryption_mode']
+                if module.params['encryption_kms_key_id'] and module.params['encryption_mode'] == 'aws:kms':
+                    params['SSEKMSKeyId'] = module.params['encryption_kms_key_id']
+                if metadata:
+                    params['Metadata'] = {}
+                    # determine object metadata and extra arguments
+                    for option in metadata:
+                        extra_args_option = option_in_extra_args(option)
+                        if extra_args_option is not None:
+                            params[extra_args_option] = metadata[option]
+                        else:
+                            params['Metadata'][option] = metadata[option]
 
-            copy_result = s3.copy_object(**params)
-            for acl in module.params.get('permission'):
-                s3.put_object_acl(ACL=acl, Bucket=bucket, Key=obj)
+                copy_result = s3.copy_object(**params)
+                for acl in module.params.get('permission'):
+                    s3.put_object_acl(ACL=acl, Bucket=bucket, Key=obj)
+                # Tags
+                tags, changed = ensure_tags(s3, module, bucket, obj)
     except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
         module.warn("PutObjectAcl is not implemented by your storage provider. Set the permissions parameters to the empty list to avoid this warning")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed while copying object %s from bucket %s." % (obj, module.params['copy_src'].get('Bucket')))
-    module.exit_json(msg="Object copied from bucket %s to bucket %s." % (bucketsrc['Bucket'], bucket), changed=True)
+    module.exit_json(msg="Object copied from bucket %s to bucket %s." % (bucketsrc['Bucket'], bucket), tags=tags, changed=True)
 
 
 def is_fakes3(s3_url):
