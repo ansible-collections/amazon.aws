@@ -58,7 +58,7 @@ options:
     vars:
     - name: ansible_aws_ssm_profile
     version_added: 1.5.0
-  retries:
+  reconnection_retries:
     description: Number of attempts to connect.
     default: 3
     type: integer
@@ -206,7 +206,7 @@ def _ssm_retry(func):
     """
     @wraps(func)
     def wrapped(self, *args, **kwargs):
-        remaining_tries = int(self.get_option('retries')) + 1
+        remaining_tries = int(self.get_option('reconnection_retries')) + 1
         cmd_summary = "%s..." % args[0]
         for attempt in range(remaining_tries):
             cmd = args[0]
