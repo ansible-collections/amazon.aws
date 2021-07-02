@@ -71,6 +71,8 @@ action_groups:
   - aws_inspector_target
   - aws_kms
   - aws_kms_info
+  - aws_msk_cluster
+  - aws_msk_config
   - aws_region_info
   - aws_s3_bucket_info
   - aws_s3_cors

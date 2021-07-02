@@ -1,0 +1,72 @@
+---
+- name: update msk cluster (check mode)
+  aws_msk_cluster:
+    name: "{{ msk_cluster_name }}"
+    state: "present"
+    version: "{{ msk_version }}"
+    nodes: "{{ msk_broker_nodes }}"
+    ebs_volume_size: 20
+    open_monitoring:
+      jmx_exporter: True
+    subnets: "{{ subnet_ids }}"
+    wait: true
+    tags: "{{ tags_update }}"
+    configuration_arn: "{{ msk_config.arn }}"
+    configuration_revision: "{{ msk_config.revision }}"
+  check_mode: yes
+  register: msk_cluster
+
+- name: assert that the msk cluster be changed
+  assert:
+    that:
+      - msk_cluster is changed
+
+- name: update msk cluster
+  aws_msk_cluster:
+    name: "{{ msk_cluster_name }}"
+    state: "present"
+    version: "{{ msk_version }}"
+    nodes: "{{ msk_broker_nodes }}"
+    ebs_volume_size: 20
+    open_monitoring:
+      jmx_exporter: True
+    subnets: "{{ subnet_ids }}"
+    wait: true
+    tags: "{{ tags_update }}"
+    configuration_arn: "{{ msk_config.arn }}"
+    configuration_revision: "{{ msk_config.revision }}"
+  register: msk_cluster
+
+- name: assert that the msk cluster is changed
+  assert:
+    that:
+      - msk_cluster is changed
+
+- name: validate return values
+  assert:
+    that:
+      - "msk_cluster.cluster_info.broker_node_group_info.storage_info.ebs_storage_info.volume_size == 20"
+      - "msk_cluster.cluster_info.open_monitoring.prometheus.jmx_exporter.enabled_in_broker == true"
+      - "'key-1' not in msk_cluster.cluster_info.tags"
+      - "msk_cluster.cluster_info.tags.key3 == 'value3'"
+
+- name: update msk cluster (idempotency)
+  aws_msk_cluster:
+    name: "{{ msk_cluster_name }}"
+    state: "present"
+    version: "{{ msk_version }}"
+    nodes: "{{ msk_broker_nodes }}"
+    ebs_volume_size: 20
+    open_monitoring:
+      jmx_exporter: True
+    subnets: "{{ subnet_ids }}"
+    wait: true
+    tags: "{{ tags_update }}"
+    configuration_arn: "{{ msk_config.arn }}"
+    configuration_revision: "{{ msk_config.revision }}"
+  register: msk_cluster
+
+- name: assert that the msk cluster wasn't changed
+  assert:
+    that:
+      - msk_cluster is not changed

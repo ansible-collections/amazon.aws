@@ -1,0 +1,97 @@
+---
+- name: aws_msk_cluster integration tests
+  module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  collections:
+    - amazon.aws
+  block:
+
+    - name: collect availability zone info
+      aws_az_info:
+      register: az_info
+
+    - name: assert there are at least two zones
+      assert:
+        that: az_info.availability_zones | length >= 2
+
+    - name: create vpc
+      ec2_vpc_net:
+        state: present
+        cidr_block: '{{ vpc_cidr }}'
+        name: '{{ vpc_name }}'
+      register: vpc
+
+    - name: create subnets
+      ec2_vpc_subnet:
+        state: present
+        cidr: '{{ item }}'
+        az: '{{ az_info.availability_zones[index].zone_name }}'
+        vpc_id: '{{ vpc.vpc.id }}'
+        tags:
+          Name: '{{ vpc_subnet_name_prefix }}-subnet-{{ index }}'
+      loop: "{{ vpc_subnets }}"
+      loop_control:
+        index_var: index
+      register: subnets
+
+    - set_fact:
+        subnet_ids: '{{ subnets | community.general.json_query("results[].subnet.id") | list }}'
+
+    - name: create msk configuration
+      aws_msk_config:
+        name: "{{ msk_config_name }}"
+        state: "present"
+        kafka_versions:
+          - "{{ msk_version }}"
+      register: msk_config
+
+    - name: create tests
+      include_tasks: test_create.yml
+
+    - name: update tests
+      include_tasks: test_update.yml
+
+    - name: delete tests
+      include_tasks: test_delete.yml
+
+  always:
+
+    - name: delete msk cluster
+      aws_msk_cluster:
+        name: "{{ msk_cluster_name }}"
+        state: absent
+        wait: true
+      ignore_errors: yes
+
+    - name: remove msk configuration
+      aws_msk_config:
+        name: "{{ msk_config_name }}"
+        state: absent
+      ignore_errors: yes
+
+    - name: remove subnets
+      ec2_vpc_subnet:
+        state: absent
+        cidr: '{{ item }}'
+        vpc_id: '{{ vpc.vpc.id }}'
+      loop: "{{ vpc_subnets }}"
+      ignore_errors: yes
+      register: removed_subnets
+      until: removed_subnets is succeeded
+      retries: 5
+      delay: 5
+
+    - name: remove the vpc
+      ec2_vpc_net:
+        state: absent
+        cidr_block: '{{ vpc_cidr }}'
+        name: '{{ vpc_name }}'
+      ignore_errors: yes
+      register: removed_vpc
+      until: removed_vpc is success
+      retries: 5
+      delay: 5

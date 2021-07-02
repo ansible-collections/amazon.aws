@@ -1,0 +1,10 @@
+---
+msk_config_name: "{{ resource_prefix }}-config"
+msk_configs:
+  - auto.create.topics.enable: true
+    zookeeper.session.timeout.ms: 18000
+  - num.io.threads: 8
+    zookeeper.session.timeout.ms: 36000
+msk_kafka_versions:
+  - 2.6.0
+  - 2.6.1
