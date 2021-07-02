@@ -1,0 +1,2 @@
+bugfixes:
+- ecs_taskdefinition - fix typo in ecs task defination for env file validations (https://github.com/ansible-collections/community.aws/pull/600).
