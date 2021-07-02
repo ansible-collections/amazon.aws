@@ -1,4 +1,5 @@
 # the random_num is generated in a set_fact task at the start of the testsuite
-state_machine_name: "{{ resource_prefix }}_step_function_{{ random_num }}"
-step_functions_role_name: "ansible-test-{{ resource_prefix }}-step-function"
+state_machine_name: "{{ resource_prefix | hash('md5') }}_step_function_{{ random_num }}"
+unique_id: "{{ resource_prefix | hash('md5') }}"
+step_functions_role_name: "ansible-test-{{ unique_id }}-step-function"
 execution_name: "{{ resource_prefix }}_sfn_execution"

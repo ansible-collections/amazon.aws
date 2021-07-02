@@ -3,6 +3,5 @@
 unstable
 
 cloud/aws
-shippable/aws/group1
 
 elasticache_subnet_group

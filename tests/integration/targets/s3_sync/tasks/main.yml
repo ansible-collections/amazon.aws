@@ -13,14 +13,14 @@
     # ============================================================
     - name: Create simple s3_bucket
       s3_bucket:
-        name: "{{ resource_prefix }}-testbucket-ansible"
+        name: "{{ test_bucket }}"
         state: present
       register: output
 
     - assert:
         that:
           - output.changed
-          - output.name == '{{ resource_prefix }}-testbucket-ansible'
+          - output.name == "{{ test_bucket }}"
           - not output.requester_pays
     # ============================================================
     - name: Prepare fixtures folder
@@ -47,7 +47,7 @@
    
     - name: Sync files with remote bucket
       s3_sync:
-        bucket: "{{ resource_prefix }}-testbucket-ansible"
+        bucket: "{{ test_bucket }}"
         file_root: "{{ output_dir }}/s3_sync"
       register: output
     - assert:
@@ -57,19 +57,19 @@
     # ============================================================
     - name: Create a second s3_bucket
       s3_bucket:
-        name: "{{ resource_prefix }}-testbucket-ansible-2"
+        name: "{{ test_bucket_2 }}"
         state: present
       register: output
 
     - assert:
         that:
           - output.changed
-          - output.name == '{{ resource_prefix }}-testbucket-ansible-2'
+          - output.name == "{{ test_bucket_2 }}"
           - not output.requester_pays
     
     - name: Sync files with remote bucket using glacier storage class
       s3_sync:
-        bucket: "{{ resource_prefix }}-testbucket-ansible-2"
+        bucket: "{{ test_bucket_2 }}"
         file_root: "{{ output_dir }}/s3_sync"
         storage_class: "GLACIER"
       register: output
@@ -81,7 +81,7 @@
 
     - name: Sync files already present
       s3_sync:
-        bucket: "{{ resource_prefix }}-testbucket-ansible"
+        bucket: "{{ test_bucket }}"
         file_root: "{{ output_dir }}/s3_sync"
       register: output
     - assert:
@@ -91,7 +91,7 @@
     # ============================================================
     - name: Sync files with etag calculation
       s3_sync:
-        bucket: "{{ resource_prefix }}-testbucket-ansible"
+        bucket: "{{ test_bucket }}"
         file_root: "{{ output_dir }}/s3_sync"
         file_change_strategy: checksum
       register: output
@@ -105,7 +105,7 @@
     # ============================================================
     - name: all the options
       s3_sync:
-        bucket: "{{ resource_prefix }}-testbucket-ansible"
+        bucket: "{{ test_bucket }}"
         file_root: "{{ output_dir }}/s3_sync"
         mime_map:
           .yml: application/text
@@ -130,5 +130,5 @@
         force: true
       ignore_errors: yes
       with_items:
-        - "{{ resource_prefix }}-testbucket-ansible"
-        - "{{ resource_prefix }}-testbucket-ansible-2"
+        - "{{ test_bucket }}"
+        - "{{ test_bucket_2 }}"

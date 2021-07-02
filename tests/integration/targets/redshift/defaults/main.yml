@@ -1,6 +1,7 @@
 ---
 # defaults file for test_redshift
-redshift_cluster_name: '{{ resource_prefix }}'
+unique_id: "{{ resource_prefix | hash('md5') }}"
+redshift_cluster_name: 'ansible-test-{{ unique_id }}'
 reshift_master_password: "th1s_is_A_test"
 redshift_master_username: "master_user"
 node_type: "dc2.large"

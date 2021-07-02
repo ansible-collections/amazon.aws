@@ -14,7 +14,7 @@
       - name: set up testing target group (type=ip)
         elb_target_group:
           state: present
-          #name: "{{ resource_shortprefix }}-tg"
+          #name: "{{ unique_id }}-tg"
           name: "ansible-test-{{ resource_prefix | regex_search('([0-9]+)$') }}-tg"
           health_check_port: 80
           protocol: http
@@ -37,5 +37,5 @@
       - name: Remove testing target group (type=ip)
         elb_target_group:
           state: absent
-          #name: "{{ resource_shortprefix }}-tg"
+          #name: "{{ unique_id }}-tg"
           name: "ansible-test-{{ resource_prefix | regex_search('([0-9]+)$') }}-tg"

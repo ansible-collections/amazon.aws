@@ -2228,5 +2228,3 @@ plugins/modules/wafv2_web_acl_info.py import-3.6!skip
 plugins/modules/wafv2_web_acl_info.py import-3.7!skip
 plugins/modules/wafv2_web_acl_info.py metaclass-boilerplate!skip
 tests/sanity/refresh_ignore_files shebang!skip
-tests/utils/shippable/check_matrix.py replace-urlopen
-tests/utils/shippable/timing.py shebang

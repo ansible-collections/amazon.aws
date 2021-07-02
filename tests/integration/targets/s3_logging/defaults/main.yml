@@ -1,4 +1,5 @@
 ---
-test_bucket: '{{ resource_prefix }}-s3-logging'
-log_bucket_1: '{{ resource_prefix }}-logs-1'
-log_bucket_2: '{{ resource_prefix }}-logs-2'
+unique_id: "{{ resource_prefix | hash('md5') |truncate(8, True, '') }}"                                               
+test_bucket: '{{ unique_id }}-s3-logging'
+log_bucket_1: '{{ unique_id }}-logs-1'
+log_bucket_2: '{{ unique_id }}-logs-2'

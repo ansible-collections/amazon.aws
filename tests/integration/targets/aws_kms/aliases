@@ -3,6 +3,5 @@
 unstable
 
 cloud/aws
-shippable/aws/group2
 
 aws_kms_info

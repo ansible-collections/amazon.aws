@@ -1,2 +1,3 @@
 ---
-test_bucket: '{{ resource_prefix }}-testbucket'
+unique_id: "{{ resource_prefix | hash('md5') |truncate(8, True, '') }}"
+test_bucket: '{{ unique_id }}-testbucket'
