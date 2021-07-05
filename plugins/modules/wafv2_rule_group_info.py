@@ -14,9 +14,6 @@ author:
 short_description: wafv2_web_acl_info
 description:
   - Get informations about existing wafv2 rule groups.
-requirements:
-  - boto3
-  - botocore
 options:
     state:
       description:

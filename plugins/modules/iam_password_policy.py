@@ -14,7 +14,6 @@ version_added: 1.0.0
 short_description: Update an IAM Password Policy
 description:
     - Module updates an IAM Password Policy on a given AWS account
-requirements: [ 'botocore', 'boto3' ]
 author:
     - "Aaron Smith (@slapula)"
 options:

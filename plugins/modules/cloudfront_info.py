@@ -15,9 +15,6 @@ description:
   - Gets information about an AWS CloudFront distribution.
   - This module was called C(cloudfront_facts) before Ansible 2.9, returning C(ansible_facts).
     Note that the M(community.aws.cloudfront_info) module no longer returns C(ansible_facts)!
-requirements:
-  - boto3 >= 1.0.0
-  - python >= 2.6
 author: Willem van Ketwich (@wilvk)
 options:
     distribution_id:

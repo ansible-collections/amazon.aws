@@ -14,7 +14,6 @@ description:
   - Creates AWS Transit Gateways.
   - Deletes AWS Transit Gateways.
   - Updates tags on existing transit gateways.
-requirements: [ 'botocore', 'boto3' ]
 options:
   asn:
     description:

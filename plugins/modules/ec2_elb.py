@@ -53,10 +53,11 @@ options:
         If non-zero then any transient errors are ignored until the timeout is reached. Ignored when wait=no.
     default: 0
     type: int
+requirements:
+- boto >= 2.49.0
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
 '''
 
 EXAMPLES = r"""

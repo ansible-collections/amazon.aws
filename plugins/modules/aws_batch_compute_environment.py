@@ -118,9 +118,6 @@ options:
     description:
       - The Amazon Resource Name (ARN) of the Amazon EC2 Spot Fleet IAM role applied to a SPOT compute environment.
     type: str
-
-requirements:
-    - boto3
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2

@@ -14,7 +14,6 @@ version_added: 1.0.0
 short_description: Manage AWS Config resources
 description:
     - Module manages AWS Config rules
-requirements: [ 'botocore', 'boto3' ]
 author:
     - "Aaron Smith (@slapula)"
 options:

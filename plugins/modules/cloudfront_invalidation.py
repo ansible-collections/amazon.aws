@@ -16,11 +16,6 @@ short_description: create invalidations for AWS CloudFront distributions
 description:
     - Allows for invalidation of a batch of paths for a CloudFront distribution.
 
-requirements:
-  - boto3 >= 1.0.0
-  - python >= 2.6
-
-
 author: Willem van Ketwich (@wilvk)
 
 extends_documentation_fragment:

@@ -75,12 +75,12 @@ options:
       - Defaults to C(false).
     type: bool
 
-requirements: [ "boto" ]
 author: Jonathan I. Davila (@defionscode)
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
+requirements:
+- boto >= 2.49.0
 '''
 
 EXAMPLES = '''

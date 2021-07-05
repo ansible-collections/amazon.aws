@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: manage RDS parameter groups
 description:
      - Creates, modifies, and deletes RDS parameter groups.
-requirements: [ boto3 ]
 options:
   state:
     description:

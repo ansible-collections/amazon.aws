@@ -14,7 +14,6 @@ short_description: Manage an AWS customer gateway
 description:
     - Manage an AWS customer gateway.
 author: Michael Baydoun (@MichaelBaydoun)
-requirements: [ botocore, boto3 ]
 notes:
     - You cannot create more than one customer gateway with the same IP address. If you run an identical request more than one time, the
       first request creates the customer gateway, and subsequent requests return information about the existing customer gateway. The subsequent

@@ -14,7 +14,6 @@ short_description: Gather information about ec2 Auto Scaling Groups (ASGs) in AW
 description:
   - Gather information about ec2 Auto Scaling Groups (ASGs) in AWS
   - This module was called C(ec2_asg_facts) before Ansible 2.9. The usage did not change.
-requirements: [ boto3 ]
 author: "Rob White (@wimnat)"
 options:
   name:

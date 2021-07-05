@@ -34,11 +34,6 @@ notes:
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
-requirements:
-    - boto3
-    - botocore
-    - python >= 2.6
 '''
 
 RETURN = """

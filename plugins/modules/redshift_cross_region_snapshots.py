@@ -53,7 +53,6 @@ options:
     required: true
     aliases: [ "retention_period" ]
     type: int
-requirements: [ "botocore", "boto3" ]
 extends_documentation_fragment:
 - amazon.aws.ec2
 - amazon.aws.aws

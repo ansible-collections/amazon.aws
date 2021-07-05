@@ -19,7 +19,6 @@ description:
 author:
     - Gustavo Maia (@gurumaia)
     - Chen Leibovich (@chenl87)
-requirements: [ json, botocore, boto3 ]
 options:
     state:
         description: Whether a policy should be C(present) or C(absent).
@@ -105,7 +104,6 @@ options:
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
 '''
 
 EXAMPLES = '''

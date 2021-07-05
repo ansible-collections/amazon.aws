@@ -40,11 +40,11 @@ options:
     aliases: ['subnets']
     type: list
     elements: str
-requirements: [ 'boto' ]
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
+requirements:
+- boto >= 2.49.0
 '''
 
 EXAMPLES = r'''

@@ -41,7 +41,6 @@ options:
     default: false
     type: bool
     aliases: ['purge_policy', 'purge_managed_policies']
-requirements: [ botocore, boto3 ]
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2

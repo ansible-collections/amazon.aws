@@ -53,10 +53,9 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 
-
 requirements:
-    - cryptography
-
+- cryptography
+- boto >= 2.49.0
 notes:
     - As of Ansible 2.4, this module requires the python cryptography module rather than the
       older pycrypto module.

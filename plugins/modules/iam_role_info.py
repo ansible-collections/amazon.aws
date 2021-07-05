@@ -14,7 +14,6 @@ short_description: Gather information on IAM roles
 description:
     - Gathers information about IAM roles.
     - This module was called C(iam_role_facts) before Ansible 2.9. The usage did not change.
-requirements: [ boto3 ]
 author:
     - "Will Thames (@willthames)"
 options:

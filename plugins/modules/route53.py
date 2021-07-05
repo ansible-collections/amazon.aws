@@ -13,7 +13,6 @@ DOCUMENTATION = r'''
 ---
 module: route53
 version_added: 1.0.0
-requirements: [ "boto3", "botocore" ]
 short_description: add or delete entries in Amazons Route 53 DNS service
 description:
      - Creates and deletes DNS records in Amazons Route 53 service.

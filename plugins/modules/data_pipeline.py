@@ -14,7 +14,6 @@ version_added: 1.0.0
 author:
   - Raghu Udiyar (@raags) <raghusiddarth@gmail.com>
   - Sloane Hertel (@s-hertel) <shertel@redhat.com>
-requirements: [ "boto3" ]
 short_description: Create and manage AWS Datapipelines
 extends_documentation_fragment:
 - amazon.aws.aws
