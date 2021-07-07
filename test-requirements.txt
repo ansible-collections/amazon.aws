@@ -4,3 +4,5 @@ mock
 pytest-xdist
 # We should avoid these two modules with py3
 pytest-mock
+# Needed for ansible.netcommon.ipaddr in tests
+netaddr
