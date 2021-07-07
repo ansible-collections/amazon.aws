@@ -34,15 +34,12 @@ except ImportError:
     pytestmark = pytest.mark.skip("This test requires the boto3 and botocore Python libraries")
 
 simple_variable_success_response = {
-    'Parameters': [
-        {
-            'Name': 'simple_variable',
-            'Type': 'String',
-            'Value': 'simplevalue',
-            'Version': 1
-        }
-    ],
-    'InvalidParameters': [],
+    'Parameter': {
+        'Name': 'simple_variable',
+        'Type': 'String',
+        'Value': 'simplevalue',
+        'Version': 1
+    },
     'ResponseMetadata': {
         'RequestId': '12121212-3434-5656-7878-9a9a9a9a9a9a',
         'HTTPStatusCode': 200,
@@ -62,17 +59,21 @@ path_success_response['Parameters'] = [
     {'Name': '/testpath/won', 'Type': 'String', 'Value': 'simple_value_won', 'Version': 1}
 ]
 
-missing_variable_response = copy(simple_variable_success_response)
-missing_variable_response['Parameters'] = []
-missing_variable_response['InvalidParameters'] = ['missing_variable']
+simple_response = copy(simple_variable_success_response)
+simple_response['Parameter'] = {
+    'Name': 'simple',
+    'Type': 'String',
+    'Value': 'simple_value',
+    'Version': 1
+}
 
-some_missing_variable_response = copy(simple_variable_success_response)
-some_missing_variable_response['Parameters'] = [
-    {'Name': 'simple', 'Type': 'String', 'Value': 'simple_value', 'Version': 1},
-    {'Name': '/testpath/won', 'Type': 'String', 'Value': 'simple_value_won', 'Version': 1}
-]
-some_missing_variable_response['InvalidParameters'] = ['missing_variable']
-
+simple_won_response = copy(simple_variable_success_response)
+simple_won_response['Parameter'] = {
+    'Name': '/testpath/won',
+    'Type': 'String',
+    'Value': 'simple_value_won',
+    'Version': 1
+}
 
 dummy_credentials = {}
 dummy_credentials['boto_profile'] = None
@@ -82,16 +83,41 @@ dummy_credentials['aws_security_token'] = None
 dummy_credentials['region'] = 'eu-west-1'
 
 
+def mock_get_parameter(**kwargs):
+    if kwargs.get('Name') == 'simple':
+        return simple_response
+    elif kwargs.get('Name') == '/testpath/won':
+        return simple_won_response
+    elif kwargs.get('Name') == 'missing_variable':
+        warn_response = {'Error': {'Code': 'ParameterNotFound', 'Message': 'Parameter not found'}}
+        operation_name = 'FakeOperation'
+        raise ClientError(warn_response, operation_name)
+    elif kwargs.get('Name') == 'denied_variable':
+        error_response = {'Error': {'Code': 'AccessDeniedException', 'Message': 'Fake Testing Error'}}
+        operation_name = 'FakeOperation'
+        raise ClientError(error_response, operation_name)
+    elif kwargs.get('Name') == 'notfound_variable':
+        error_response = {'Error': {'Code': 'ResourceNotFoundException', 'Message': 'Fake Testing Error'}}
+        operation_name = 'FakeOperation'
+        raise ClientError(error_response, operation_name)
+    else:
+        warn_response = {'Error': {'Code': 'ParameterNotFound', 'Message': 'Parameter not found'}}
+        operation_name = 'FakeOperation'
+        raise ClientError(warn_response, operation_name)
+
+
 def test_lookup_variable(mocker):
     lookup = aws_ssm.LookupModule()
     lookup._load_name = "aws_ssm"
 
     boto3_double = mocker.MagicMock()
-    boto3_double.Session.return_value.client.return_value.get_parameters.return_value = simple_variable_success_response
+    boto3_double.Session.return_value.client.return_value.get_parameter.return_value = simple_variable_success_response
     boto3_client_double = boto3_double.Session.return_value.client
 
     mocker.patch.object(boto3, 'session', boto3_double)
     retval = lookup.run(["simple_variable"], {}, **dummy_credentials)
+    assert(isinstance(retval, list))
+    assert(len(retval) == 1)
     assert(retval[0] == "simplevalue")
     boto3_client_double.assert_called_with('ssm', 'eu-west-1', aws_access_key_id='notakey',
                                            aws_secret_access_key="notasecret", aws_session_token=None)
@@ -127,10 +153,11 @@ def test_return_none_for_missing_variable(mocker):
     lookup._load_name = "aws_ssm"
 
     boto3_double = mocker.MagicMock()
-    boto3_double.Session.return_value.client.return_value.get_parameters.return_value = missing_variable_response
+    boto3_double.Session.return_value.client.return_value.get_parameter.side_effect = mock_get_parameter
 
     mocker.patch.object(boto3, 'session', boto3_double)
     retval = lookup.run(["missing_variable"], {}, **dummy_credentials)
+    assert(isinstance(retval, list))
     assert(retval[0] is None)
 
 
@@ -143,24 +170,145 @@ def test_match_retvals_to_call_params_even_with_some_missing_variables(mocker):
     lookup._load_name = "aws_ssm"
 
     boto3_double = mocker.MagicMock()
-    boto3_double.Session.return_value.client.return_value.get_parameters.return_value = some_missing_variable_response
+
+    boto3_double.Session.return_value.client.return_value.get_parameter.side_effect = mock_get_parameter
 
     mocker.patch.object(boto3, 'session', boto3_double)
     retval = lookup.run(["simple", "missing_variable", "/testpath/won", "simple"], {}, **dummy_credentials)
+    assert(isinstance(retval, list))
     assert(retval == ["simple_value", None, "simple_value_won", "simple_value"])
 
 
-error_response = {'Error': {'Code': 'ResourceNotFoundException', 'Message': 'Fake Testing Error'}}
-operation_name = 'FakeOperation'
-
-
-def test_warn_denied_variable(mocker):
+def test_warn_notfound_resource(mocker):
     lookup = aws_ssm.LookupModule()
     lookup._load_name = "aws_ssm"
 
     boto3_double = mocker.MagicMock()
-    boto3_double.Session.return_value.client.return_value.get_parameters.side_effect = ClientError(error_response, operation_name)
+    boto3_double.Session.return_value.client.return_value.get_parameter.side_effect = mock_get_parameter
 
     with pytest.raises(AnsibleError):
         mocker.patch.object(boto3, 'session', boto3_double)
-        lookup.run(["denied_variable"], {}, **dummy_credentials)
+        lookup.run(["notfound_variable"], {}, **dummy_credentials)
+
+
+def test_on_missing_wrong_value(mocker):
+    lookup = aws_ssm.LookupModule()
+    lookup._load_name = "aws_ssm"
+
+    boto3_double = mocker.MagicMock()
+    boto3_double.Session.return_value.client.return_value.get_parameter.side_effect = mock_get_parameter
+
+    with pytest.raises(AnsibleError) as exc:
+        missing_credentials = copy(dummy_credentials)
+        missing_credentials['on_missing'] = "fake_value_on_missing"
+        mocker.patch.object(boto3, 'session', boto3_double)
+        lookup.run(["simple"], {}, **missing_credentials)
+
+    assert exc.match('"on_missing" must be a string and one of "error", "warn" or "skip"')
+
+
+def test_error_on_missing_variable(mocker):
+    lookup = aws_ssm.LookupModule()
+    lookup._load_name = "aws_ssm"
+
+    boto3_double = mocker.MagicMock()
+    boto3_double.Session.return_value.client.return_value.get_parameter.side_effect = mock_get_parameter
+
+    with pytest.raises(AnsibleError) as exc:
+        missing_credentials = copy(dummy_credentials)
+        missing_credentials['on_missing'] = "error"
+        mocker.patch.object(boto3, 'session', boto3_double)
+        lookup.run(["missing_variable"], {}, **missing_credentials)
+
+    assert exc.match(r"Failed to find SSM parameter missing_variable \(ResourceNotFound\)")
+
+
+def test_warn_on_missing_variable(mocker):
+    lookup = aws_ssm.LookupModule()
+    lookup._load_name = "aws_ssm"
+
+    boto3_double = mocker.MagicMock()
+    boto3_double.Session.return_value.client.return_value.get_parameter.side_effect = mock_get_parameter
+
+    missing_credentials = copy(dummy_credentials)
+    missing_credentials['on_missing'] = "warn"
+    mocker.patch.object(boto3, 'session', boto3_double)
+    retval = lookup.run(["missing_variable"], {}, **missing_credentials)
+    assert(isinstance(retval, list))
+    assert(retval[0] is None)
+
+
+def test_skip_on_missing_variable(mocker):
+    lookup = aws_ssm.LookupModule()
+    lookup._load_name = "aws_ssm"
+
+    boto3_double = mocker.MagicMock()
+    boto3_double.Session.return_value.client.return_value.get_parameter.side_effect = mock_get_parameter
+
+    missing_credentials = copy(dummy_credentials)
+    missing_credentials['on_missing'] = "warn"
+    mocker.patch.object(boto3, 'session', boto3_double)
+    retval = lookup.run(["missing_variable"], {}, **missing_credentials)
+    assert(isinstance(retval, list))
+    assert(retval[0] is None)
+
+
+def test_on_denied_wrong_value(mocker):
+    lookup = aws_ssm.LookupModule()
+    lookup._load_name = "aws_ssm"
+
+    boto3_double = mocker.MagicMock()
+    boto3_double.Session.return_value.client.return_value.get_parameter.side_effect = mock_get_parameter
+
+    with pytest.raises(AnsibleError) as exc:
+        denied_credentials = copy(dummy_credentials)
+        denied_credentials['on_denied'] = "fake_value_on_denied"
+        mocker.patch.object(boto3, 'session', boto3_double)
+        lookup.run(["simple"], {}, **denied_credentials)
+
+    assert exc.match('"on_denied" must be a string and one of "error", "warn" or "skip"')
+
+
+def test_error_on_denied_variable(mocker):
+    lookup = aws_ssm.LookupModule()
+    lookup._load_name = "aws_ssm"
+
+    boto3_double = mocker.MagicMock()
+    boto3_double.Session.return_value.client.return_value.get_parameter.side_effect = mock_get_parameter
+
+    with pytest.raises(AnsibleError) as exc:
+        denied_credentials = copy(dummy_credentials)
+        denied_credentials['on_denied'] = "error"
+        mocker.patch.object(boto3, 'session', boto3_double)
+        lookup.run(["denied_variable"], {}, **denied_credentials)
+    assert exc.match(r"Failed to access SSM parameter denied_variable \(AccessDenied\)")
+
+
+def test_warn_on_denied_variable(mocker):
+    lookup = aws_ssm.LookupModule()
+    lookup._load_name = "aws_ssm"
+
+    boto3_double = mocker.MagicMock()
+    boto3_double.Session.return_value.client.return_value.get_parameter.side_effect = mock_get_parameter
+
+    denied_credentials = copy(dummy_credentials)
+    denied_credentials['on_denied'] = "warn"
+    mocker.patch.object(boto3, 'session', boto3_double)
+    retval = lookup.run(["denied_variable"], {}, **denied_credentials)
+    assert(isinstance(retval, list))
+    assert(retval[0] is None)
+
+
+def test_skip_on_denied_variable(mocker):
+    lookup = aws_ssm.LookupModule()
+    lookup._load_name = "aws_ssm"
+
+    boto3_double = mocker.MagicMock()
+    boto3_double.Session.return_value.client.return_value.get_parameter.side_effect = mock_get_parameter
+
+    denied_credentials = copy(dummy_credentials)
+    denied_credentials['on_denied'] = "warn"
+    mocker.patch.object(boto3, 'session', boto3_double)
+    retval = lookup.run(["denied_variable"], {}, **denied_credentials)
+    assert(isinstance(retval, list))
+    assert(retval[0] is None)
