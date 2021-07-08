@@ -357,4 +357,4 @@ files:
 macros:
   connection: plugins/connection
   modules: plugins/modules
-  team_aws: jillr s-hertel tremble
+  team_aws: jillr s-hertel tremble markuman
