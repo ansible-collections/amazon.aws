@@ -826,6 +826,8 @@ plugins/modules/ec2_elb_info.py import-3.5!skip
 plugins/modules/ec2_elb_info.py import-3.6!skip
 plugins/modules/ec2_elb_info.py import-3.7!skip
 plugins/modules/ec2_elb_info.py metaclass-boilerplate!skip
+plugins/modules/ec2_elb_info.py validate-modules:deprecation-mismatch  # Ansible 2.9 docs don't support deprecation properly
+plugins/modules/ec2_elb_info.py validate-modules:invalid-documentation  # Ansible 2.9 docs don't support deprecation properly
 plugins/modules/ec2_launch_template.py compile-2.6!skip
 plugins/modules/ec2_launch_template.py compile-2.7!skip
 plugins/modules/ec2_launch_template.py compile-3.5!skip
