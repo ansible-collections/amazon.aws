@@ -1,0 +1,119 @@
+- block:
+  - name: define bucket name used for tests
+    set_fact:
+      copy_bucket:
+        src: "{{ bucket_name }}-copysrc"
+        dst: "{{ bucket_name }}-copydst"
+
+  - name: create bucket source
+    aws_s3:
+      bucket: "{{ copy_bucket.src }}"
+      mode: create
+
+  - name: Create content
+    set_fact:
+      content: "{{ lookup('password', '/dev/null chars=ascii_letters,digits,hexdigits,punctuation') }}"
+
+  - name: Put a content in the source bucket
+    aws_s3:
+      bucket: "{{ copy_bucket.src }}"
+      mode: put
+      content: "{{ content }}"
+      object: source.txt
+      tags:
+        ansible_release: '2.0.0'
+        ansible_team: cloud
+    retries: 3
+    delay: 3
+    register: put_result
+    until: "put_result.msg == 'PUT operation complete'"
+
+  - name: Copy the content of the source bucket into dest bucket
+    aws_s3:
+      bucket: "{{ copy_bucket.dst }}"
+      mode: copy
+      object: destination.txt
+      copy_src:
+        bucket: "{{ copy_bucket.src }}"
+        object: source.txt
+
+  - name: Get the content copied into {{ copy_bucket.dst }}
+    aws_s3:
+      bucket: "{{ copy_bucket.dst }}"
+      mode: getstr
+      object: destination.txt
+    register: copy_content
+
+  - name: assert that the content is matching with the source
+    assert:
+      that:
+        - content == copy_content.contents
+
+  - name: Get the download url for object copied into {{ copy_bucket.dst }}
+    aws_s3:
+      bucket: "{{ copy_bucket.dst }}"
+      mode: geturl
+      object: destination.txt
+    register: copy_url
+
+  - name: assert that tags are the same in the destination bucket
+    assert:
+      that:
+        - put_result.tags == copy_url.tags
+
+  - name: Copy the same content from the source bucket into dest bucket (idempotency)
+    aws_s3:
+      bucket: "{{ copy_bucket.dst }}"
+      mode: copy
+      object: destination.txt
+      copy_src:
+        bucket: "{{ copy_bucket.src }}"
+        object: source.txt
+    register: copy_idempotency
+
+  - name: assert that no change was made
+    assert:
+      that:
+        - copy_idempotency is not changed
+        - "copy_idempotency.msg == 'ETag from source and destination are the same'"
+
+  - name: Copy object with tags
+    aws_s3:
+      bucket: "{{ copy_bucket.dst }}"
+      mode: copy
+      object: destination.txt
+      tags:
+        ansible_release: "2.0.1"
+      copy_src:
+        bucket: "{{ copy_bucket.src }}"
+        object: source.txt
+    register: copy_result
+
+  - name: assert that tags were updated
+    assert:
+      that:
+        - copy_result is changed
+        - copy_result.tags['ansible_release'] == '2.0.1'
+
+  - name: Copy object with tags (idempotency)
+    aws_s3:
+      bucket: "{{ copy_bucket.dst }}"
+      mode: copy
+      object: destination.txt
+      tags:
+        ansible_release: "2.0.1"
+      copy_src:
+        bucket: "{{ copy_bucket.src }}"
+        object: source.txt
+    register: copy_result
+
+  - name: assert that no change was made
+    assert:
+      that:
+        - copy_result is not changed
+
+  always:
+    - include_tasks: delete_bucket.yml
+      with_items:
+        - "{{ copy_bucket.dst }}"
+        - "{{ copy_bucket.src }}"

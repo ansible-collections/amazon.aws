@@ -2,3 +2,4 @@
 # defaults file for s3
 bucket_name: '{{ resource_prefix | hash("md5") }}'
 bucket_name_acl: "{{ bucket_name + '-with-acl' }}"
+bucket_name_with_dot: "{{ bucket_name + '.bucket' }}"
