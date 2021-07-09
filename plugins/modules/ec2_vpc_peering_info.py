@@ -200,8 +200,6 @@ result:
   type: list
 '''
 
-import json
-
 try:
     import botocore
 except ImportError:
