@@ -183,7 +183,7 @@ tags:
 import time
 
 try:
-    import botocore.exceptions
+    import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 

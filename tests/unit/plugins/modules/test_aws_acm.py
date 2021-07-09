@@ -17,9 +17,12 @@
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
-from ansible_collections.community.aws.plugins.modules.aws_acm import pem_chain_split, chain_compare
 from ansible.module_utils._text import to_text
+
 from pprint import pprint
+
+from ansible_collections.community.aws.plugins.modules.aws_acm import chain_compare
+from ansible_collections.community.aws.plugins.modules.aws_acm import pem_chain_split
 
 
 def test_chain_compare():
