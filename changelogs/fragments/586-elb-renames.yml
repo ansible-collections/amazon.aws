@@ -1,0 +1,8 @@
+minor_changes:
+- elb_instance - make elb_instance idempotent when deregistering instances.  Merged from ec2_elb U(https://github.com/ansible/ansible/pull/31660).
+deprecated_features:
+- ec2_elb - the ``ec2_elb`` module has been removed and redirected to the ``elb_instance`` module which functions identically.
+  The original ``ec2_elb`` name is now deprecated and will be removed in release 3.0.0 (https://github.com/ansible-collections/community.aws/pull/586).
+- ec2_elb_info - the boto based ``ec2_elb_info`` module has been deprecated in favour of the boto3 based ``elb_classic_lb_info`` module.
+  The ``ec2_elb_info`` module will be removed in release 3.0.0 (https://github.com/ansible-collections/community.aws/pull/586).
+- elb_classic_lb - the ``elb_classic_lb`` module has been removed and redirected to the ``amazon.aws.ec2_elb_lb`` module which functions identically.

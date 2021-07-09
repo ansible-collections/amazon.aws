@@ -294,6 +294,14 @@ plugin_routing:
           ec2_customer_gateway_facts was renamed in Ansible 2.9 to
           ec2_customer_gateway_info.
           Please update your tasks.
+    ec2_elb:
+      redirect: community.aws.elb_instance
+      deprecation:
+        removal_version: 3.0.0
+        warning_text: >-
+          ec2_elb was renamed in community.aws 2.0.0 to
+          elb_instance.
+          Please update your tasks.
     ec2_instance:
       redirect: amazon.aws.ec2_instance
     ec2_instance_facts:
@@ -308,9 +316,17 @@ plugin_routing:
           Please update your tasks.
     ec2_elb_facts:
       deprecation:
-        removal_date: 2021-12-01
+        removal_version: 3.0.0
         warning_text: >-
-          ec2_elb_facts was renamed in Ansible 2.9 to ec2_elb_info.
+          The ec2_elb_info module has been deprecated and replaced by
+          the elb_classic_lb_info module.
+          Please update your tasks.
+    ec2_elb_info:
+      deprecation:
+        removal_version: 3.0.0
+        warning_text: >-
+          The ec2_elb_info module has been deprecated and replaced by
+          the elb_classic_lb_info module.
           Please update your tasks.
     ec2_lc_facts:
       deprecation:
@@ -411,6 +427,8 @@ plugin_routing:
           elb_application_lb_facts was renamed in Ansible 2.9 to
           elb_application_lb_info.
           Please update your tasks.
+    elb_classic_lb:
+      redirect: amazon.aws.ec2_elb_lb
     elb_classic_lb_facts:
       deprecation:
         removal_date: 2021-12-01
