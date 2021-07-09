@@ -69,13 +69,14 @@ name:
   returned: Always, as long as the ip set exists
   type: str
 """
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule, is_boto3_error_code, get_boto3_client_method_parameters
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 try:
     from botocore.exceptions import ClientError, BotoCoreError
 except ImportError:
     pass  # caught by AnsibleAWSModule
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
 def list_ip_sets(wafv2, scope, fail_json_aws, Nextmarker=None):

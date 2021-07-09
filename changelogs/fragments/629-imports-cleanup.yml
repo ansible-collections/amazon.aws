@@ -1,0 +1,2 @@
+minor_changes:
+- various community.aws modules - remove unused imports (https://github.com/ansible-collections/community.aws/pull/629)

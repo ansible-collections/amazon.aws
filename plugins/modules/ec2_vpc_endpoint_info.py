@@ -109,8 +109,6 @@ vpc_endpoints:
       vpc_id: "vpc-1111ffff"
 '''
 
-import json
-
 try:
     import botocore
 except ImportError:

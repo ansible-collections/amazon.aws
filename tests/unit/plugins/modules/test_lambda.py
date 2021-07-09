@@ -11,15 +11,12 @@ __metaclass__ = type
 import copy
 import pytest
 
-from ansible.module_utils import basic
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
-from ansible_collections.community.aws.tests.unit.compat.mock import MagicMock
-from ansible_collections.community.aws.tests.unit.compat.mock import Mock
 from ansible_collections.community.aws.tests.unit.compat.mock import patch
 from ansible_collections.community.aws.tests.unit.plugins.modules.utils import AnsibleExitJson
-from ansible_collections.community.aws.tests.unit.plugins.modules.utils import AnsibleFailJson
 from ansible_collections.community.aws.tests.unit.plugins.modules.utils import ModuleTestCase
 from ansible_collections.community.aws.tests.unit.plugins.modules.utils import set_module_args
+
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("lambda.py requires the `boto3` and `botocore` modules")

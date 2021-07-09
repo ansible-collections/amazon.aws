@@ -4,10 +4,12 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import pytest
 import os
-from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify
-from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import maybe_sleep
+import pytest
+
+# Magic...  Incorrectly identified by pylint as unused
+from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify  # pylint: disable=unused-import
+from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import maybe_sleep  # pylint: disable=unused-import
 
 import ansible_collections.amazon.aws.plugins.module_utils.core as aws_core
 import ansible_collections.amazon.aws.plugins.module_utils.ec2 as aws_ec2
