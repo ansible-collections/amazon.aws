@@ -7,17 +7,18 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
+import collections
 import os
 import json
-import collections
-
 import pytest
+
+from ansible.module_utils._text import to_text
+
 # Magic...  Incorrectly identified by pylint as unused
 from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import maybe_sleep  # pylint: disable=unused-import
 from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify  # pylint: disable=unused-import
 
 from ansible_collections.community.aws.plugins.modules import data_pipeline
-from ansible.module_utils._text import to_text
 
 # test_api_gateway.py requires the `boto3` and `botocore` modules
 boto3 = pytest.importorskip('boto3')

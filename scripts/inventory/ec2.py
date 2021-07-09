@@ -140,23 +140,22 @@ These settings would produce a destination_format as the following:
 'webserver-ansible-blue-172.31.0.1'
 '''
 
-import sys
-import os
 import argparse
+import json
+import os
 import re
-from time import time
+import sys
+from collections import defaultdict
 from copy import deepcopy
 from datetime import date, datetime
+from time import time
+
 import boto
 from boto import ec2
-from boto import rds
 from boto import elasticache
+from boto import rds
 from boto import route53
 from boto import sts
-
-from ansible.module_utils import six
-from ansible_collections.amazon.aws.plugins.module_utils import ec2 as ec2_utils
-from ansible.module_utils.six.moves import configparser
 
 HAS_BOTO3 = False
 try:
@@ -166,9 +165,10 @@ try:
 except ImportError:
     pass
 
-from collections import defaultdict
+from ansible.module_utils import six
+from ansible.module_utils.six.moves import configparser
+from ansible_collections.amazon.aws.plugins.module_utils import ec2 as ec2_utils
 
-import json
 
 DEFAULTS = {
     'all_elasticache_clusters': 'False',

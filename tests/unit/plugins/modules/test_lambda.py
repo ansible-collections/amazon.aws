@@ -17,6 +17,7 @@ from ansible_collections.community.aws.tests.unit.plugins.modules.utils import A
 from ansible_collections.community.aws.tests.unit.plugins.modules.utils import ModuleTestCase
 from ansible_collections.community.aws.tests.unit.plugins.modules.utils import set_module_args
 
+
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("lambda.py requires the `boto3` and `botocore` modules")
 

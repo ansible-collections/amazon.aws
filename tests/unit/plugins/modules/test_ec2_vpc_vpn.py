@@ -4,8 +4,8 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import pytest
 import os
+import pytest
 
 # Magic...  Incorrectly identified by pylint as unused
 from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify  # pylint: disable=unused-import
