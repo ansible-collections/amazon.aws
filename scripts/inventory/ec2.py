@@ -160,7 +160,8 @@ from ansible.module_utils.six.moves import configparser
 
 HAS_BOTO3 = False
 try:
-    import boto3  # noqa
+    # Used so that we can cleanly fail, some of our (optional) dependencies need this
+    import boto3  # pylint: disable=unused-import
     HAS_BOTO3 = True
 except ImportError:
     pass
