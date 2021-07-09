@@ -191,14 +191,18 @@ visibility_config:
     sampled_requests_enabled: false
 """
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict, camel_dict_to_snake_dict, ansible_dict_to_boto3_tag_list
-from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_list_web_acls, compare_priority_rules, wafv2_snake_dict_to_camel_dict
-
 try:
     from botocore.exceptions import ClientError, BotoCoreError
 except ImportError:
     pass  # caught by AnsibleAWSModule
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict
+from ansible_collections.community.aws.plugins.module_utils.wafv2 import compare_priority_rules
+from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_list_web_acls
+from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_snake_dict_to_camel_dict
 
 
 class WebACL:
