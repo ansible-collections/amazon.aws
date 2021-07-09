@@ -375,7 +375,7 @@ def update_sqs_queue(module, client, queue_url):
             new_value = str(new_value).lower()
             value = str(value).lower()
 
-        if new_value == value:
+        if str(new_value) == str(value):
             continue
 
         # Boto3 expects strings
