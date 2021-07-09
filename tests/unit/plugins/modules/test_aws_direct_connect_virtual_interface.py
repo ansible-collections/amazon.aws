@@ -7,7 +7,8 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify, maybe_sleep
+# Magic...  Incorrectly identified by pylint as unused
+from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify, maybe_sleep  # pylint: disable=unused-import
 from ansible_collections.community.aws.plugins.modules import aws_direct_connect_virtual_interface
 
 
