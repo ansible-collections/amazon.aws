@@ -89,14 +89,14 @@ visibility_config:
     sampled_requests_enabled: false
 """
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_list_web_acls
-
 try:
     from botocore.exceptions import ClientError, BotoCoreError
 except ImportError:
     pass  # caught by AnsibleAWSModule
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_list_web_acls
 
 
 def get_web_acl(wafv2, name, scope, id, fail_json_aws):
