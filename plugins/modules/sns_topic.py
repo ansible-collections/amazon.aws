@@ -24,6 +24,13 @@ options:
       - The name or ARN of the SNS topic to manage.
     required: true
     type: str
+  topic_type:
+    description:
+      - The type of topic that should be created. Either Standard for FIFO (first-in, first-out)
+    choices: ['standard', 'fifo']
+    default: 'standard'
+    type: str
+    version_added: 2.0.0
   state:
     description:
       - Whether to create or destroy an SNS topic.
@@ -228,6 +235,7 @@ class SnsTopicManager(object):
     def __init__(self,
                  module,
                  name,
+                 topic_type,
                  state,
                  display_name,
                  policy,
@@ -239,6 +247,7 @@ class SnsTopicManager(object):
         self.connection = module.client('sns')
         self.module = module
         self.name = name
+        self.topic_type = topic_type
         self.state = state
         self.display_name = display_name
         self.policy = policy
@@ -285,9 +294,17 @@ class SnsTopicManager(object):
                 return topic
 
     def _create_topic(self):
+        attributes = {'FifoTopic': 'false'}
+        tags = []
+
+        if self.topic_type == 'fifo':
+            attributes['FifoTopic'] = 'true'
+            if not self.name.endswith('.fifo'):
+                self.name = self.name + '.fifo'
+
         if not self.check_mode:
             try:
-                response = self.connection.create_topic(Name=self.name)
+                response = self.connection.create_topic(Name=self.name, Attributes=attributes, Tags=tags)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 self.module.fail_json_aws(e, msg="Couldn't create topic %s" % self.name)
             self.topic_arn = response['TopicArn']
@@ -456,6 +473,7 @@ class SnsTopicManager(object):
     def get_info(self):
         info = {
             'name': self.name,
+            'topic_type': self.topic_type,
             'state': self.state,
             'subscriptions_new': self.subscriptions,
             'subscriptions_existing': self.subscriptions_existing,
@@ -479,6 +497,7 @@ class SnsTopicManager(object):
 def main():
     argument_spec = dict(
         name=dict(required=True),
+        topic_type=dict(type='str', default='standard', choices=['standard', 'fifo']),
         state=dict(default='present', choices=['present', 'absent']),
         display_name=dict(),
         policy=dict(type='dict'),
@@ -491,6 +510,7 @@ def main():
                               supports_check_mode=True)
 
     name = module.params.get('name')
+    topic_type = module.params.get('topic_type')
     state = module.params.get('state')
     display_name = module.params.get('display_name')
     policy = module.params.get('policy')
@@ -501,6 +521,7 @@ def main():
 
     sns_topic = SnsTopicManager(module,
                                 name,
+                                topic_type,
                                 state,
                                 display_name,
                                 policy,
