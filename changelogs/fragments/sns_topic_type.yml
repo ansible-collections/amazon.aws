@@ -1,2 +1,2 @@
 minor_changes:
-  - sns_topic - Added ``topic_type`` parameter to select type of SNS topic (either FIFO or Standard)
+  - sns_topic - Added ``topic_type`` parameter to select type of SNS topic (either FIFO or Standard) (https://github.com/ansible-collections/community.aws/pull/599).
