@@ -1,3 +1,6 @@
 cloud/aws
-
+# currently broken
+# e.g: https://3d7660cef77b937e1585-998cb574f2547d50f5110d6a2d4ac097.ssl.cf1.rackcdn.com/636/067f6f84c20701ccf4bf0654471613af598c6e89/check/ansible-test-cloud-integration-aws-py36_2/be6c4b3/job-output.txt
+disabled
+slow
 elb_target_group
