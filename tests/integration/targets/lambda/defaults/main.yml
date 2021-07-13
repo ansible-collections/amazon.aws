@@ -2,6 +2,5 @@
 # defaults file for lambda integration test
 # IAM role names have to be less than 64 characters
 # we hash the resource_prefix to get a shorter, unique string
-unique_id: "{{ resource_prefix | hash('md5') }}"
-lambda_function_name: '{{ unique_id }}'
-lambda_role_name: 'ansible-test-{{ unique_id }}-lambda'
+lambda_function_name: '{{ tiny_prefix }}'
+lambda_role_name: 'ansible-test-{{ tiny_prefix }}-lambda'
