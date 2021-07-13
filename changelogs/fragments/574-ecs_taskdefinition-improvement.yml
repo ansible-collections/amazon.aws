@@ -1,0 +1,3 @@
+bugfixes:
+- ecs_taskdefinition - ensure cast to integer (https://github.com/ansible-collections/community.aws/pull/574).
+- ecs_taskdefinition - fix idempotency (https://github.com/ansible-collections/community.aws/pull/574).
