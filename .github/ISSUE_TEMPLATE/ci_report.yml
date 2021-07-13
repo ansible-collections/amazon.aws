@@ -1,0 +1,76 @@
+---
+name: CI Bug Report
+description: Create a report to help us improve our CI
+
+body:
+- type: markdown
+  attributes:
+    value: |
+      ⚠
+      Verify first that your issue is not [already reported on GitHub][issue search].
+      *Complete **all** sections as described, this form is processed automatically.*
+
+      [issue search]: https://github.com/ansible-collections/amazon.aws/search?q=is%3Aissue&type=issues
+
+- type: textarea
+  attributes:
+    label: Summary
+    description: |
+      Describe the new issue briefly below.
+    placeholder: >-
+      I opened a Pull Request and CI failed to run.  I believe this is due to a problem with the CI rather than my code.
+  validations:
+    required: true
+
+- type: dropdown
+  attributes:
+    label: Issue Type
+    # FIXME: Once GitHub allows defining the default choice, update this
+    options:
+    - CI Bug Report
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: CI Jobs
+    description: >-
+      Please provide a link to the failed CI tests.
+    placeholder: https://dashboard.zuul.ansible.com/t/ansible/buildset/be956faa49d84e43bc860d0cd3dc8503
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Pull Request
+    description: >-
+      Please provide a link to the Pull Request where the tests are failing
+    placeholder: https://github.com/ansible-collections/amazon.aws/runs/3040421733
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Additional Information
+    description: |
+      Please provide as much information as possible to help us understand the issue being reported.
+      Where possible, please include the specific errors that you're seeing.
+
+      **HINT:** You can paste https://gist.github.com links for larger files.
+    value: |
+      <!--- Paste example playbooks or commands between quotes below -->
+      ```yaml (paste below)
+
+      ```
+  validations:
+    required: false
+
+- type: checkboxes
+  attributes:
+    label: Code of Conduct
+    description: |
+      Read the [Ansible Code of Conduct](https://docs.ansible.com/ansible/latest/community/code_of_conduct.html?utm_medium=github&utm_source=issue_form--ansible-collections) first.
+    options:
+    - label: I agree to follow the Ansible Code of Conduct
+      required: true
+...
