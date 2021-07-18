@@ -1,3 +1,4 @@
 ---
-# defaults file for test_ec2_eip
-tag_prefix: '{{resource_prefix}}'
+# defaults file for ec2_elb_lb
+unique_id: "{{ resource_prefix | hash('md5') | truncate(16, True, '') }}"
+elb_name: 'ansible-test-{{ unique_id }}'
