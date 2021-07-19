@@ -46,6 +46,17 @@ options:
     description: Whether to get full details (tags, grants etc.) of keys pending deletion
     default: False
     type: bool
+  keys_attr:
+    description:
+      - Whether to return the results in the C(keys) attribute as well as the
+        C(kms_keys) attribute.
+      - Returning the C(keys) attribute conflicts with the builtin keys()
+        method on dictionaries and as such has been deprecated.
+      - After version C(3.0.0) this parameter will do nothing, and after
+        version C(4.0.0) this parameter will be removed.
+    type: bool
+    default: True
+    version_added: 2.0.0
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -70,7 +81,7 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
-keys:
+kms_keys:
   description: list of keys
   type: complex
   returned: always
@@ -441,6 +452,7 @@ def main():
         key_id=dict(aliases=['key_arn']),
         filters=dict(type='dict'),
         pending_deletion=dict(type='bool', default=False),
+        keys_attr=dict(type='bool', default=True),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec,
@@ -455,7 +467,17 @@ def main():
         module.fail_json_aws(e, msg='Failed to connect to AWS')
 
     all_keys = get_kms_info(connection, module)
-    module.exit_json(keys=[key for key in all_keys if key_matches_filters(key, module.params['filters'])])
+    filtered_keys = [key for key in all_keys if key_matches_filters(key, module.params['filters'])]
+    ret_params = dict(kms_keys=filtered_keys)
+
+    # We originally returned "keys"
+    if module.params['keys_attr']:
+        module.deprecate("Returning results in the 'keys' attribute conflicts with the builtin keys() method on "
+                         "dicts and as such is deprecated.  Please use the kms_keys attribute.  This warning can be "
+                         "silenced by setting keys_attr to False.",
+                         version='3.0.0', collection_name='community.aws')
+        ret_params.update(dict(keys=filtered_keys))
+    module.exit_json(**ret_params)
 
 
 if __name__ == '__main__':
