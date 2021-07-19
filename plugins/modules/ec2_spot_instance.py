@@ -8,8 +8,8 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: ec2
-version_added: 1.0.0
+module: ec2_spot_instance
+version_added: 2.0.0
 short_description: request, stop, reboot or cancel spot instance
 description:
     - Creates, stops, reboots or cancels spot instances.
@@ -163,40 +163,24 @@ options:
 '''
 import time
 import datetime
-import ast
-from ast import literal_eval
-from distutils.version import LooseVersion
 
 try:
-    import boto.ec2
-    from boto.ec2.blockdevicemapping import BlockDeviceType
-    from boto.ec2.blockdevicemapping import BlockDeviceMapping
-    from boto.exception import EC2ResponseError
-    from boto import connect_ec2_endpoint
-    from boto import connect_vpc
+    import botocore
 except ImportError:
-    pass  # Taken care of by ec2.HAS_BOTO
-
-from ansible.module_utils.six import get_function_code
-from ansible.module_utils.six import string_types
-from ansible.module_utils._text import to_bytes
-from ansible.module_utils._text import to_text
-
+    pass  # Taken care of by AnsibleAWSModule
 from ..module_utils.core import AnsibleAWSModule
-from ..module_utils.ec2 import HAS_BOTO
-from ..module_utils.ec2 import ec2_connect
-from ..module_utils.ec2 import get_aws_connection_info
+from ..module_utils.ec2 import AWSRetry
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
 
-def request_spot_instance(module, ec2):
-    launch_specification = ast.literal_eval(module.params.get('launch_specification'))
-    launch_specification['ImageId'] = launch_specification.pop('image_id')
-    # launch_specification[]
+def request_spot_instance(module, connection):
+    launch_specification = module.params.get('launch_specification')
+    launch_specification = snake_dict_to_camel_dict(launch_specification, capitalize_first=True)
     params = dict()
     params['LaunchSpecification'] = launch_specification
     import q
     q(params['LaunchSpecification'])
-    request_spot_instance_response = ec2.request_spot_instances(LaunchSpecification=params['LaunchSpecification'])
+    request_spot_instance_response = connection.request_spot_instances(**params)
     return request_spot_instance_response
 
 
@@ -257,23 +241,12 @@ def main():
         supports_check_mode=True
     )
 
-    if not HAS_BOTO:
-        module.fail_json(msg='boto required for this module')
-
-    try:
-        region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module)
-        if module.params.get('region') or not module.params.get('ec2_url'):
-            ec2 = ec2_connect(module)
-        elif module.params.get('ec2_url'):
-            ec2 = connect_ec2_endpoint(ec2_url, **aws_connect_kwargs)
-
-    except boto.exception.NoAuthHandlerFound as e:
-        module.fail_json_aws(e, msg='Failed to get connection')
+    connection = module.client('ec2', AWSRetry.jittered_backoff())
 
     state = module.params['state']
 
     if state == 'present':
-        response = request_spot_instance(module, ec2)
+        response = request_spot_instance(module, connection)
 
 
 if __name__ == '__main__':
