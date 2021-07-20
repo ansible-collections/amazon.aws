@@ -6,27 +6,28 @@ target_dir = Path('.')
 
 ignore_dir = target_dir / "tests" / "sanity"
 module_dir = target_dir / "plugins" / "modules"
-module_utils_dir = target_dir / "plugins" / "module_utilss"
+module_utils_dir = target_dir / "plugins" / "module_utils"
 ignore_dir.mkdir(parents=True, exist_ok=True)
+
+skip_list = [
+    "compile-2.6!skip",  # Py3.8+
+    "compile-2.7!skip",  # Py3.8+
+    "compile-3.5!skip",  # Py3.8+
+    "compile-3.6!skip",  # Py3.8+
+    "compile-3.7!skip",  # Py3.8+
+    "import-2.6!skip",  # Py3.8+
+    "import-2.7!skip",  # Py3.8+
+    "import-3.5!skip",  # Py3.8+
+    "import-3.6!skip",  # Py3.8+
+    "import-3.7!skip",  # Py3.8+
+    "future-import-boilerplate!skip",  # Py2 only
+    "metaclass-boilerplate!skip",  # Py2 only
+]
 
 for version in ["2.9", "2.10", "2.11", "2.12"]:
     ignore_file = ignore_dir / f"ignore-{version}.txt"
     ignore_content = ignore_file.read_text().split("\n")
     ignore_content.append(f"tests/sanity/refresh_ignore_files shebang!skip")
-    skip_list = [
-        "compile-2.6!skip",  # Py3.8+
-        "compile-2.7!skip",  # Py3.8+
-        "compile-3.5!skip",  # Py3.8+
-        "compile-3.6!skip",  # Py3.8+
-        "compile-3.7!skip",  # Py3.8+
-        "import-2.6!skip",  # Py3.8+
-        "import-2.7!skip",  # Py3.8+
-        "import-3.5!skip",  # Py3.8+
-        "import-3.6!skip",  # Py3.8+
-        "import-3.7!skip",  # Py3.8+
-        "future-import-boilerplate!skip",  # Py2 only
-        "metaclass-boilerplate!skip",  # Py2 only
-    ]
 
     for f in module_dir.glob("*.py"):
         if f.is_symlink():
