@@ -159,7 +159,17 @@ options:
       -  If the request is persistent, the request becomes active at this date and time and remains active until it expires or is canceled.      
   valid_until:
     description:
-      - The end date of the request, 
+      - The end date of the request
+  tags:
+    description:
+      - tag:value pairs to add to the volume after creation.
+    default: []
+    type: list
+  spot_instance_request_ids:
+    description:
+        - List of strings with IDs of spot requests to be cancelled
+    default: []
+    type: list
 '''
 import time
 import datetime
@@ -173,25 +183,39 @@ from ..module_utils.ec2 import AWSRetry
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
 
-def request_spot_instance(module, connection):
+def request_spot_instances(module, connection):
     launch_specification = module.params.get('launch_specification')
     launch_specification = snake_dict_to_camel_dict(launch_specification, capitalize_first=True)
     params = dict()
     params['LaunchSpecification'] = launch_specification
-    import q
-    q(params['LaunchSpecification'])
+    params['AvailabilityZoneGroup'] = module.params.get('zone_group')
+    params['InstanceCount'] = module.params.get('count')
+    params['LaunchGroup'] = module.params.get('launch_group')
+    params['SpotPrice'] = module.params.get('spot_price')
+    params['Type'] = module.params.get('spot_type')
+    # params['ValidFrom'] = module.params.get('valid_from')
+    # params['ValidUntil'] = module.params.get('valid_until')
+    params['InstanceInterruptionBehavior'] = module.params.get('interruption')
+    params['TagSpecifications'] = module.params.get('tags')
     request_spot_instance_response = connection.request_spot_instances(**params)
     return request_spot_instance_response
 
 
+def cancel_spot_instance_requests(module, connection):
+    spot_instance_request_ids = module.params.get('spot_instance_request_ids')
+    params = dict()
+    params['SpotInstanceRequestIds'] = spot_instance_request_ids
+    cancel_spot_instance_request_response = connection.cancel_spot_instance_requests(**params)
+    return cancel_spot_instance_request_response
+
+
 def main():
     argument_spec = dict(
-        zone_group=dict(type='str'),
-        block_duration=dict(type='int'),
-        count=dict(type='int', default='1'),
-        interruption=dict(type='str'),
-        launch_group=dict(type='str'),
-        launch_specification=dict(),
+        zone_group=dict(type='str', default='  '),
+        count=dict(type='int', default=1),
+        interruption=dict(type='str', default="terminate"),
+        launch_group=dict(type='str', default='  '),
+        launch_specification=dict(type='dict', default=dict()),
         price=dict(type='str'),
         request_type=dict(default='one-time', choices=["one-time", "persistent"]),
         state=dict(default='present', choices=['present', 'absent', 'running', 'restarted', 'stopped']),
@@ -208,12 +232,13 @@ def main():
         network_interfaces=dict(type='list', elements='str', aliases=['network_interface']),
         placement_group=dict(),
         ramdisk=dict(),
-        spot_price=dict(),
+        spot_price=dict(type='str', default=''),
         spot_type=dict(default='one-time', choices=["one-time", "persistent"]),
         monitoring=dict(type='bool', default=False),
-        valid_from=dict(),
-        valid_until=dict()
-
+        tags=dict(type='list', default=[]),
+        # valid_from=dict(type='datetime', default=datetime.datetime.now()),
+        # valid_until=dict(type='datetime', default=(datetime.datetime.now() + datetime.timedelta(minutes=60))
+        spot_instance_request_ids=dict(type='list',elements='str',default=[])
         # vpc_subnet_id=dict(),
         # launched_availibility_zone=dict(type='string'),
         # product_description=dict(type='string'),
@@ -246,7 +271,14 @@ def main():
     state = module.params['state']
 
     if state == 'present':
-        response = request_spot_instance(module, connection)
+        response = request_spot_instances(module, connection)
+        changed = True
+        module.exit_json(changed=changed)
+
+    if state == 'absent':
+        response = cancel_spot_instance_requests(module, connection)
+        changed = True
+        module.exit_json(changed=changed)
 
 
 if __name__ == '__main__':
