@@ -22,12 +22,6 @@ options:
       - Name for logical grouping of spot requests.
       - All spot instances in the request are launched in the same availability zone. 
     type: str
-  block_duration:
-    description:
-      - The required duration for spot instances in minutes (in multiple of 60 - 60, 120, 180, 240, 300, or 360)
-      - Zone group or Launch group cannot be specified along with this attribute.
-    type: int
-    sample: 60
   client_token:
     description: The idempotency token you provided when you launched the instance, if applicable.
     type: str
@@ -51,17 +45,76 @@ options:
     description: 
       - The launch specification.
     type: dict
-  group_id:
-    description:
-      - Security group id (or list of ids) to use with the instance.
-    type: list
-    elements: str
-  group:
-    description:
-      - Security group (or list of groups) to use with the instance.
-    aliases: [ 'groups' ]
-    type: list
-    elements: str
+    suboptions:
+      group_id:
+        description:
+          - Security group id (or list of ids) to use with the instance.
+        type: list
+        elements: str
+      group:
+        description:
+          - Security group (or list of groups) to use with the instance.
+        aliases: [ 'groups' ]
+        type: list
+        elements: str
+      key_name:
+        description:
+          - Key to use on the instance.
+          - The SSH key must already exist in AWS in order to use this argument.
+          - Keys can be created / deleted using the M(amazon.aws.ec2_key) module.
+        type: str
+      user_data:
+        description:
+          - Opaque blob of data which is made available to the EC2 instance.
+        type: str
+      volumes:
+        description:
+          - A list of hash/dictionaries of volumes to add to the new instance.
+        type: list
+        elements: dict
+      ebs_optimized:
+        description:
+          - Whether instance is using optimized EBS volumes, see U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSOptimized.html).
+        default: false
+        type: bool
+      instance_profile_name:
+        description:
+          - Name of the IAM instance profile (i.e. what the EC2 console refers to as an "IAM Role") to use. Boto library must be 2.5.0+.
+        type: str
+      image_id:
+        description:
+          -  The ID of the AMI.
+        type: str
+      instance_type:
+        description:
+          - Instance type to use for the instance, see U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html).
+          - Required when creating a new instance.
+        type: str
+      kernel:
+        description:
+          - Kernel eki to use for the instance.
+        type: str
+      network_interfaces:
+        description:
+          - A list of existing network interfaces to attach to the instance at launch. When specifying existing network interfaces,
+            none of the I(assign_public_ip), I(private_ip), I(vpc_subnet_id), I(group), or I(group_id) parameters may be used. (Those parameters are
+            for creating a new network interface at launch.)
+        aliases: ['network_interface']
+        type: list
+        elements: str
+      placement_group:
+        description:
+          - Placement group for the instance.
+        type: str
+      ramdisk:
+        description:
+          - Ramdisk eri to use for the instance.
+        type: str
+      monitoring:
+        description:
+          - Enable detailed monitoring (CloudWatch) for the instance.
+        type: bool
+        default: false
   price:
     description:
       - Maximum spot price to bid. If not set, a regular on-demand instance is requested.
@@ -76,65 +129,10 @@ options:
     type: str
   state:
     description:
-      - Create, terminate, start, stop or restart instances. The state 'restarted' was added in Ansible 2.2.
-      - When I(state=absent), I(instance_ids) is required.
-      - When I(state=running), I(state=stopped) or I(state=restarted) then either I(instance_ids) or I(instance_tags) is required.
+      - When I(state=present), I(launch_specification) is required.
+      - When I(state=absent), I(spot_instance_request_ids) is required.
     default: 'present'
-    choices: ['absent', 'present', 'restarted', 'running', 'stopped']
-    type: str
-  key_name:
-    description:
-      - Key pair to use on the instance.
-      - The SSH key must already exist in AWS in order to use this argument.
-      - Keys can be created / deleted using the M(amazon.aws.ec2_key) module.
-    aliases: ['keypair']
-    type: str
-  user_data:
-    description:
-      - Opaque blob of data which is made available to the EC2 instance.
-    type: str
-  volumes:
-    description:
-      - A list of hash/dictionaries of volumes to add to the new instance.
-    type: list
-    elements: dict
-  ebs_optimized:
-    description:
-      - Whether instance is using optimized EBS volumes, see U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSOptimized.html).
-    default: false
-    type: bool
-  instance_profile_name:
-    description:
-      - Name of the IAM instance profile (i.e. what the EC2 console refers to as an "IAM Role") to use. Boto library must be 2.5.0+.
-    type: str
-  image_id:
-    description:
-      -  The ID of the AMI.
-    type: str
-  instance_type:
-    description:
-      - Instance type to use for the instance, see U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html).
-      - Required when creating a new instance.
-    type: str
-  kernel:
-    description:
-      - Kernel eki to use for the instance.
-    type: str
-  network_interfaces:
-    description:
-      - A list of existing network interfaces to attach to the instance at launch. When specifying existing network interfaces,
-        none of the I(assign_public_ip), I(private_ip), I(vpc_subnet_id), I(group), or I(group_id) parameters may be used. (Those parameters are
-        for creating a new network interface at launch.)
-    aliases: ['network_interface']
-    type: list
-    elements: str
-  placement_group:
-    description:
-      - Placement group for the instance when using EC2 Clustered Compute.
-    type: str
-  ramdisk:
-    description:
-      - Ramdisk eri to use for the instance.
+    choices: ['absent', 'present']
     type: str
   spot_price:
     description:
@@ -148,11 +146,6 @@ options:
     default: "one-time"
     choices: [ "one-time", "persistent" ]
     type: str
-  monitoring:
-    description:
-      - Enable detailed monitoring (CloudWatch) for the instance.
-    type: bool
-    default: false
   valid_from:
     description:
       -  The start date of the request. If this is a one-time request, the request becomes active at this date and time and remains active until all instances launch, the request expires, or the request is canceled.
@@ -197,16 +190,22 @@ def request_spot_instances(module, connection):
     # params['ValidUntil'] = module.params.get('valid_until')
     params['InstanceInterruptionBehavior'] = module.params.get('interruption')
     params['TagSpecifications'] = module.params.get('tags')
-    request_spot_instance_response = connection.request_spot_instances(**params)
-    return request_spot_instance_response
+    try:
+        request_spot_instance_response = connection.request_spot_instances(**params)
+        return request_spot_instance_response
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Error while creating the spot instance request')
 
 
 def cancel_spot_instance_requests(module, connection):
     spot_instance_request_ids = module.params.get('spot_instance_request_ids')
     params = dict()
     params['SpotInstanceRequestIds'] = spot_instance_request_ids
-    cancel_spot_instance_request_response = connection.cancel_spot_instance_requests(**params)
-    return cancel_spot_instance_request_response
+    try:
+        cancel_spot_instance_request_response = connection.cancel_spot_instance_requests(**params)
+        return cancel_spot_instance_request_response
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Error while cancelling the spot instance request')
 
 
 def main():
@@ -216,25 +215,24 @@ def main():
         interruption=dict(type='str', default="terminate"),
         launch_group=dict(type='str', default='  '),
         launch_specification=dict(type='dict', default=dict()),
-        price=dict(type='str'),
         request_type=dict(default='one-time', choices=["one-time", "persistent"]),
         state=dict(default='present', choices=['present', 'absent', 'running', 'restarted', 'stopped']),
-        group_id=dict(type='list', elements='str'),
-        group=dict(type='list', elements='str'),
-        key_name=dict(aliases=['keypair']),
-        user_data=dict(),
-        volumes=dict(type='list', elements='dict'),
-        ebs_optimized=dict(type='bool', default=False),
-        instance_profile_name=dict(),
-        image_id=dict(type='string'),
-        instance_type=dict(type='string'),
-        kernel=dict(),
-        network_interfaces=dict(type='list', elements='str', aliases=['network_interface']),
-        placement_group=dict(),
-        ramdisk=dict(),
+        # group_id=dict(type='list', elements='str'),
+        # group=dict(type='list', elements='str'),
+        # key_name=dict(aliases=['keypair']),
+        # user_data=dict(),
+        # volumes=dict(type='list', elements='dict'),
+        # ebs_optimized=dict(type='bool', default=False),
+        # instance_profile_name=dict(),
+        # image_id=dict(type='string'),
+        # instance_type=dict(type='string'),
+        # kernel=dict(),
+        # network_interfaces=dict(type='list', elements='str', aliases=['network_interface']),
+        # placement_group=dict(),
+        # ramdisk=dict(),
         spot_price=dict(type='str', default=''),
         spot_type=dict(default='one-time', choices=["one-time", "persistent"]),
-        monitoring=dict(type='bool', default=False),
+        # monitoring=dict(type='bool', default=False),
         tags=dict(type='list', default=[]),
         # valid_from=dict(type='datetime', default=datetime.datetime.now()),
         # valid_until=dict(type='datetime', default=(datetime.datetime.now() + datetime.timedelta(minutes=60))
@@ -272,11 +270,15 @@ def main():
 
     if state == 'present':
         response = request_spot_instances(module, connection)
+        import q
+        q(response)
         changed = True
         module.exit_json(changed=changed)
 
     if state == 'absent':
         response = cancel_spot_instance_requests(module, connection)
+        import q
+        q(response)
         changed = True
         module.exit_json(changed=changed)
 
