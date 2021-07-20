@@ -161,6 +161,23 @@ options:
       - The identifier of the virtual private cloud (VPC). Required when I(state) is C(present).
     required: false
     type: str
+  preserve_client_ip_enabled:
+    description:
+      - Indicates whether client IP preservation is enabled.
+      - The default is disabled if the target group type is C(ip) address and the target group protocol is C(tcp) or C(tls).
+        Otherwise, the default is enabled. Client IP preservation cannot be disabled for C(udp) and C(tcp_udp) target groups.
+      - I(preserve_client_ip_enabled) is supported only by Network Load Balancers.
+    type: bool
+    required: false
+    version_added: 2.0.0
+  proxy_protocol_v2_enabled:
+    description:
+      - Indicates whether Proxy Protocol version 2 is enabled.
+      - The value is C(true) or C(false).
+      - I(proxy_protocol_v2_enabled) is supported only by Network Load Balancers.
+    type: bool
+    required: false
+    version_added: 2.0.0
   wait:
     description:
       - Whether or not to wait for the target group.
@@ -474,6 +491,8 @@ def create_or_update_target_group(connection, module):
     stickiness_type = module.params.get("stickiness_type")
     stickiness_app_cookie_duration = module.params.get("stickiness_app_cookie_duration")
     stickiness_app_cookie_name = module.params.get("stickiness_app_cookie_name")
+    preserve_client_ip_enabled = module.params.get("preserve_client_ip_enabled")
+    proxy_protocol_v2_enabled = module.params.get("proxy_protocol_v2_enabled")
 
     health_option_keys = [
         "health_check_path", "health_check_protocol", "health_check_interval", "health_check_timeout",
@@ -763,6 +782,13 @@ def create_or_update_target_group(connection, module):
     if stickiness_app_cookie_duration is not None:
         if str(stickiness_app_cookie_duration) != current_tg_attributes['stickiness_app_cookie_duration_seconds']:
             update_attributes.append({'Key': 'stickiness.app_cookie.duration_seconds', 'Value': str(stickiness_app_cookie_duration)})
+    if preserve_client_ip_enabled is not None:
+        if target_type not in ('udp', 'tcp_udp'):
+            if str(preserve_client_ip_enabled).lower() != current_tg_attributes.get('preserve_client_ip_enabled'):
+                update_attributes.append({'Key': 'preserve_client_ip.enabled', 'Value': str(preserve_client_ip_enabled).lower()})
+    if proxy_protocol_v2_enabled is not None:
+        if str(proxy_protocol_v2_enabled).lower() != current_tg_attributes.get('proxy_protocol_v2_enabled'):
+            update_attributes.append({'Key': 'proxy_protocol_v2.enabled', 'Value': str(proxy_protocol_v2_enabled).lower()})
 
     if update_attributes:
         try:
@@ -852,6 +878,8 @@ def main():
         targets=dict(type='list', elements='dict'),
         unhealthy_threshold_count=dict(type='int'),
         vpc_id=dict(),
+        preserve_client_ip_enabled=dict(type='bool'),
+        proxy_protocol_v2_enabled=dict(type='bool'),
         wait_timeout=dict(type='int', default=200),
         wait=dict(type='bool', default=False)
     )

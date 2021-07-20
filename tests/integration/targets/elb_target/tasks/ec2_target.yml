@@ -17,7 +17,6 @@
     - set_fact:
         ec2_ami_image: '{{ ec2_amis.images[0].image_id }}'
 
-
     - name: set up testing VPC
       ec2_vpc_net:
         name: "{{ resource_prefix }}-vpc"
@@ -119,6 +118,33 @@
         tags:
           Description: "Created by {{ resource_prefix }}"
 
+    - name: set up testing target group for NLB (type=instance)
+      elb_target_group:
+        name: "{{ tg_name }}-nlb"
+        health_check_port: 80
+        protocol: tcp
+        port: 80
+        vpc_id: '{{ vpc.vpc.id }}'
+        state: present
+        target_type: instance
+        tags:
+          Description: "Created by {{ resource_prefix }}"
+      register: result
+
+    - name: set up testing target group for NLB (type=instance)
+      assert:
+        that:
+          - result.changed
+          - '"health_check_port" in result'
+          - result.port == 80
+          - '"health_check_protocol" in result'
+          - result.health_check_protocol == 'TCP'
+          - '"tags" in result'
+          - '"target_group_arn" in result'
+          - result.target_group_name == "{{ tg_name }}-nlb"
+          - result.target_type == 'instance'
+          - result.vpc_id == '{{ vpc.vpc.id }}'
+
     - name: set up ec2 instance to use as a target
       ec2_instance:
         name: "{{ resource_prefix }}-inst"
@@ -160,6 +186,98 @@
               - Type: forward
                 TargetGroupName: "{{ tg_name }}-used"
         state: present
+
+    - name: create a network load balancer
+      elb_network_lb:
+        name: "{{ lb_name }}-nlb"
+        subnets:
+          - "{{ subnet_1.subnet.id }}"
+          - "{{ subnet_2.subnet.id }}"
+        listeners:
+           - Protocol: TCP
+             Port: 80
+             DefaultActions:
+              - Type: forward
+                TargetGroupName: "{{ tg_name }}-nlb"
+        state: present
+      register: result
+
+    - name: create a netwok load balancer
+      assert:
+        that:
+          - result.changed
+          - '"created_time" in result'
+          - '"load_balancer_arn" in result'
+          - '"tags" in result'
+          - result.type == 'network'
+          - result.vpc_id == '{{ vpc.vpc.id }}'
+
+    - name: modify up testing target group for NLB (preserve_client_ip_enabled=false)
+      elb_target_group:
+        name: "{{ tg_name }}-nlb"
+        health_check_port: 80
+        protocol: tcp
+        port: 80
+        vpc_id: '{{ vpc.vpc.id }}'
+        state: present
+        target_type: instance
+        modify_targets: true
+        preserve_client_ip_enabled: false
+        tags:
+          Description: "Created by {{ resource_prefix }}"
+      register: result
+
+    - name: modify up testing target group for NLB (preserve_client_ip_enabled=false)
+      assert:
+        that:
+          - result.changed
+          - result.preserve_client_ip_enabled == 'false'
+          - result.proxy_protocol_v2_enabled == 'false'
+
+    - name: modify up testing target group for NLB (proxy_protocol_v2_enabled=true)
+      elb_target_group:
+        name: "{{ tg_name }}-nlb"
+        health_check_port: 80
+        protocol: tcp
+        port: 80
+        vpc_id: '{{ vpc.vpc.id }}'
+        state: present
+        target_type: instance
+        modify_targets: true
+        proxy_protocol_v2_enabled: true
+        tags:
+          Description: "Created by {{ resource_prefix }}"
+      register: result
+
+    - name: modify up testing target group for NLB (proxy_protocol_v2_enabled=true)
+      assert:
+        that:
+          - result.changed
+          - result.proxy_protocol_v2_enabled == 'true'
+          - result.preserve_client_ip_enabled == 'false'
+
+    - name: (idempotence) modify up testing target group for NLB (preserve_client_ip_enabled=false and proxy_protocol_v2_enabled=true)
+      elb_target_group:
+        name: "{{ tg_name }}-nlb"
+        health_check_port: 80
+        protocol: tcp
+        port: 80
+        vpc_id: '{{ vpc.vpc.id }}'
+        state: present
+        target_type: instance
+        modify_targets: true
+        preserve_client_ip_enabled: false
+        proxy_protocol_v2_enabled: true
+        tags:
+          Description: "Created by {{ resource_prefix }}"
+      register: result
+
+    - name: (idempotence) modify up testing target group for NLB (preserve_client_ip_enabled=false and proxy_protocol_v2_enabled=true)
+      assert:
+        that:
+          - not result.changed
+          - result.proxy_protocol_v2_enabled == 'true'
+          - result.preserve_client_ip_enabled == 'false'
 
     # ============================================================
 
@@ -363,6 +481,26 @@
         - "{{ tg_tcpudp_name }}"
       ignore_errors: true
 
+    - name: remove tcp testing target groups
+      elb_target_group:
+        name: "{{ item }}"
+        protocol: tcp
+        port: 80
+        vpc_id: '{{ vpc.vpc.id }}'
+        state: absent
+        target_type: instance
+        tags:
+          Description: "Created by {{ resource_prefix }}"
+          Protocol: "UDP"
+        wait: true
+        wait_timeout: 400
+      register: removed
+      retries: 10
+      until: removed is not failed
+      with_items:
+        - "{{ tg_name }}-nlb"
+      ignore_errors: true
+
     - name: remove application load balancer
       elb_application_lb:
         name: "{{ lb_name }}"
@@ -377,6 +515,26 @@
             DefaultActions:
               - Type: forward
                 TargetGroupName: "{{ tg_name }}-used"
+        state: absent
+        wait: true
+        wait_timeout: 400
+      register: removed
+      retries: 10
+      until: removed is not failed
+      ignore_errors: true
+
+    - name: remove network load balancer
+      elb_network_lb:
+        name: "{{ lb_name }}-nlb"
+        subnets:
+          - "{{ subnet_1.subnet.id }}"
+          - "{{ subnet_2.subnet.id }}"
+        listeners:
+          - Protocol: TCP
+            Port: 80
+            DefaultActions:
+              - Type: forward
+                TargetGroupName: "{{ tg_name }}-nlb"
         state: absent
         wait: true
         wait_timeout: 400
