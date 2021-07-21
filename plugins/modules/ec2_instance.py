@@ -1195,6 +1195,12 @@ def build_top_level_options(params):
         spec['CpuOptions'] = {}
         spec['CpuOptions']['ThreadsPerCore'] = params.get('cpu_options').get('threads_per_core')
         spec['CpuOptions']['CoreCount'] = params.get('cpu_options').get('core_count')
+    if params.get('metadata_options'):
+        spec['MetadataOptions'] = {}
+        spec['MetadataOptions']['HttpEndpoint'] = params.get(
+            'metadata_options').get('metadata_accessible')
+        spec['MetadataOptions']['HttpTokens'] = 'optional' if params.get(
+            'metadata_options').get('metadata_version') == 'v1 and v2' else 'required'
     return spec
 
 
@@ -1737,6 +1743,7 @@ def main():
         instance_ids=dict(default=[], type='list', elements='str'),
         network=dict(default=None, type='dict'),
         volumes=dict(default=None, type='list', elements='dict'),
+        metadata_options=dict(type='dict', options=dict(metadata_accessible=dict(type='str', choices=['enabled', 'disabled'], default='enabled'), metadata_version=dict(type='str', choices=['v1 and v2', 'v2'], default='v1 and v2'))),
     )
     # running/present are synonyms
     # as are terminated/absent
