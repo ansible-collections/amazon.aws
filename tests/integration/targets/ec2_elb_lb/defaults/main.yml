@@ -1,4 +1,3 @@
 ---
 # defaults file for ec2_elb_lb
-unique_id: "{{ resource_prefix | hash('md5') | truncate(16, True, '') }}"
-elb_name: 'ansible-test-{{ unique_id }}'
+elb_name: 'ansible-test-{{ tiny_prefix }}'
