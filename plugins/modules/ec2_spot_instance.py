@@ -164,6 +164,80 @@ options:
     default: []
     type: list
 '''
+
+EXAMPLES = '''
+# Simple Spot Request Creation
+- hosts: localhost
+  tasks:
+    - name: Test EC2 spot instance module
+      amazon.aws.ec2_spot_instance:
+        launch_specification:
+          image_id: "ami-123456789"
+          key_name: "my-keypair"
+          instance_type: "t2.medium"
+
+# Simple Spot Request Termination
+- hosts: localhost
+  tasks:
+    - name: Test EC2 spot instance cancel module
+      amazon.aws.ec2_spot_instance:
+        spot_instance_request_ids: ['sir-d8468pbj', 'sir-qph6aytk']
+        state: 'absent'
+'''
+
+RETURN = '''
+spot_request_info:
+    description: The spot instance request details after creation
+    returned: when success
+    type: dict
+    sample: {
+            "CreateTime": "2021-07-21T18:33:47+00:00",
+            "InstanceInterruptionBehavior": "terminate",
+            "LaunchSpecification": {
+                "ImageId": "ami-0d5eff06f840b45e9",
+                "InstanceType": "t2.medium",
+                "KeyName": "zuul",
+                "Monitoring": {
+                    "Enabled": false
+                },
+                "Placement": {
+                    "AvailabilityZone": "us-east-1e"
+                },
+                "SecurityGroups": [
+                    {
+                        "GroupId": "sg-0fa9a734e7111af56",
+                        "GroupName": "default"
+                    }
+                ],
+                "SubnetId": "subnet-0ff1d9ce7798affb1"
+            },
+            "ProductDescription": "Linux/UNIX",
+            "SpotInstanceRequestId": "sir-d8468pbj",
+            "SpotPrice": "0.046400",
+            "State": "open",
+            "Status": {
+                "Code": "pending-evaluation",
+                "Message": "Your Spot request has been submitted for review, and is pending evaluation.",
+                "UpdateTime": "2021-07-21T18:33:47+00:00"
+            },
+            "Type": "one-time"
+        }
+
+cancelled_spot_request_info:
+    description: The spot instance request details that has been cancelled
+    returned: always
+    type: list
+    sample: [
+            {
+                "SpotInstanceRequestId": "sir-qph6aytk",
+                "State": "cancelled"
+            },
+            {
+                "SpotInstanceRequestId": "sir-d8468pbj",
+                "State": "cancelled"
+            }
+        ]
+'''
 import time
 import datetime
 
@@ -270,17 +344,15 @@ def main():
 
     if state == 'present':
         response = request_spot_instances(module, connection)
-        import q
-        q(response)
         changed = True
-        module.exit_json(changed=changed)
+        spot_request_info = response.get('SpotInstanceRequests')[0]
+        module.exit_json(changed=changed, spot_request_info=spot_request_info)
 
     if state == 'absent':
         response = cancel_spot_instance_requests(module, connection)
-        import q
-        q(response)
         changed = True
-        module.exit_json(changed=changed)
+        cancelled_spot_request_info = response.get('CancelledSpotInstanceRequests')
+        module.exit_json(changed=changed, cancelled_spot_request_info=cancelled_spot_request_info)
 
 
 if __name__ == '__main__':
