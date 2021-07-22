@@ -37,7 +37,7 @@
 
     - name: Create ELB
       ec2_elb_lb:
-        name: "{{ tag_prefix }}"
+        name: "{{ elb_name }}"
         state: present
         zones:
           - "{{ aws_region }}a"
@@ -98,7 +98,7 @@
 
     - name: Change AZ's
       ec2_elb_lb:
-        name: "{{ tag_prefix }}"
+        name: "{{ elb_name }}"
         state: present
         zones:
           - "{{ aws_region }}c"
@@ -131,7 +131,7 @@
 
     - name: Update AZ's
       ec2_elb_lb:
-        name: "{{ tag_prefix }}"
+        name: "{{ elb_name }}"
         state: present
         zones:
           - "{{ aws_region }}a"
@@ -159,7 +159,7 @@
 
     - name: Purge Listeners
       ec2_elb_lb:
-        name: "{{ tag_prefix }}"
+        name: "{{ elb_name }}"
         state: present
         zones:
           - "{{ aws_region }}a"
@@ -187,7 +187,7 @@
 
     - name: Add Listeners
       ec2_elb_lb:
-        name: "{{ tag_prefix }}"
+        name: "{{ elb_name }}"
         state: present
         zones:
           - "{{ aws_region }}a"
@@ -227,7 +227,7 @@
     # ============================================================
     - name: test with only name (state missing)
       ec2_elb_lb:
-        name: "{{ tag_prefix }}"
+        name: "{{ elb_name }}"
       register: result
       ignore_errors: true
 
@@ -241,7 +241,7 @@
     # ============================================================
     - name: test invalid region parameter
       ec2_elb_lb:
-        name: "{{ tag_prefix }}"
+        name: "{{ elb_name }}"
         state: present
         region: 'asdf querty 1234'
         zones:
@@ -265,7 +265,7 @@
     # ============================================================
     - name: test no authentication parameters
       ec2_elb_lb:
-        name: "{{ tag_prefix }}"
+        name: "{{ elb_name }}"
         state: present
         aws_access_key: '{{ omit }}'
         aws_secret_key: '{{ omit }}'
@@ -291,7 +291,7 @@
     # ============================================================
     - name: test credentials from environment
       ec2_elb_lb:
-        name: "{{ tag_prefix }}"
+        name: "{{ elb_name }}"
         state: present
         aws_access_key: "{{ omit }}"
         aws_secret_key: "{{ omit }}"
@@ -322,7 +322,7 @@
     # ============================================================
     - name: remove the test load balancer completely
       ec2_elb_lb:
-        name: "{{ tag_prefix }}"
+        name: "{{ elb_name }}"
         state: absent
       register: result
 
@@ -330,5 +330,5 @@
       assert:
         that:
            - 'result.changed'
-           - 'result.elb.name == "{{tag_prefix}}"'
+           - 'result.elb.name == "{{ elb_name }}"'
            - 'result.elb.status == "deleted"'
