@@ -276,6 +276,26 @@ options:
     description:
       - The placement group that needs to be assigned to the instance
     type: str
+  metadata_options:
+    description:
+      - Modify the metadata options for the instance.
+      - See U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html) for more information.
+      - The two suboptions metadata_accessible and metadata_version are supported.
+    type: dict
+    suboptions:
+      metadata_accessible:
+        description:
+        - Enables or disables the HTTP metadata endpoint on instances, default state is enabled.
+        - If specified a value of disabled, metadata of the instance will not be accessible.
+        choices: [enabled, disabled]
+        type: str
+      metadata_version:
+        description:
+        - Set the state of token usage for instance metadata requests, default state is v1 and v2 (optional).
+        - If the state is v1 and v2 (optional), instance metadata can be retrieved with or without a signed token header on request.
+        - If the state is v2 (required), a signed token header must be sent with any instance metadata retrieval requests.
+        choices: [v1 and v2, v2]
+        type: str
 
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -385,6 +405,17 @@ EXAMPLES = '''
     tags:
       Env: "eni_on"
     instance_type: t2.micro
+- name: start an instance with a metadata options
+    amazon.aws.ec2_instance:
+      name: "public-metadataoption-instance"
+      vpc_subnet_id: subnet-5calable
+      instance_type: t3.small
+      image_id: ami-123456
+      tags:
+        Environment: Testing
+      metadata_options:
+        metadata_accessible: enabled
+        metadata_version: v1 and v2
 '''
 
 RETURN = '''
