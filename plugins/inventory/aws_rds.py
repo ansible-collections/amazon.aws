@@ -39,6 +39,8 @@ DOCUMENTATION = '''
         iam_role_arn:
           description: The ARN of the IAM role to assume to perform the inventory lookup. You should still provide
               AWS credentials with enough privilege to perform the AssumeRole action.
+    note:
+        Ansible versions prior to 2.10 should use the fully qualified plugin name 'amazon.aws.aws_rds'.
     extends_documentation_fragment:
     - inventory_cache
     - constructed
