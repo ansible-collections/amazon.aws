@@ -151,7 +151,7 @@ network_interfaces:
       description: The ID of the entity that launched the ENI
       returned: always
       type: str
-      sample: "AIDAIONYVJQNIAZFT3ABC"
+      sample: "AIDAIONYVJQNIAEXAMPLE"
     requester_managed:
       description:  Indicates whether the network interface is being managed by an AWS service.
       returned: always

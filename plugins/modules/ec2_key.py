@@ -118,9 +118,9 @@ key:
       description: private key of a newly created keypair
       returned: when a new keypair is created by AWS (key_material is not provided)
       type: str
-      sample: '-----BEGIN RSA PRIVATE KEY-----
+      sample: '-----BEGIN RSA PRIVATE KEY EXAMPLE-----
         MIIEowIBAAKC...
-        -----END RSA PRIVATE KEY-----'
+        -----END RSA PRIVATE KEY EXAMPLE-----'
 '''
 
 import uuid
