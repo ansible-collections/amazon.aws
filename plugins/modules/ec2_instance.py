@@ -288,6 +288,7 @@ options:
         - Enables or disables the HTTP metadata endpoint on instances, default state is enabled.
         - If specified a value of disabled, metadata of the instance will not be accessible.
         choices: [enabled, disabled]
+        default: enabled
         type: str
       metadata_version:
         description:
@@ -295,6 +296,7 @@ options:
         - If the state is v1 and v2 (optional), instance metadata can be retrieved with or without a signed token header on request.
         - If the state is v2 (required), a signed token header must be sent with any instance metadata retrieval requests.
         choices: [v1 and v2, v2]
+        default: v1 and v2
         type: str
 
 extends_documentation_fragment:
@@ -405,17 +407,17 @@ EXAMPLES = '''
     tags:
       Env: "eni_on"
     instance_type: t2.micro
-- name: start an instance with a metadata options
-    amazon.aws.ec2_instance:
-      name: "public-metadataoption-instance"
-      vpc_subnet_id: subnet-5calable
-      instance_type: t3.small
-      image_id: ami-123456
-      tags:
-        Environment: Testing
-      metadata_options:
-        metadata_accessible: enabled
-        metadata_version: v1 and v2
+- name: start an instance with metadata options
+  amazon.aws.ec2_instance:
+    name: "public-metadataoptions-instance"
+    vpc_subnet_id: subnet-5calable
+    instance_type: t3.small
+    image_id: ami-123456
+    tags:
+      Environment: Testing
+    metadata_options:
+      metadata_accessible: enabled
+      metadata_version: v1 and v2
 '''
 
 RETURN = '''
@@ -1774,7 +1776,9 @@ def main():
         instance_ids=dict(default=[], type='list', elements='str'),
         network=dict(default=None, type='dict'),
         volumes=dict(default=None, type='list', elements='dict'),
-        metadata_options=dict(type='dict', options=dict(metadata_accessible=dict(type='str', choices=['enabled', 'disabled'], default='enabled'), metadata_version=dict(type='str', choices=['v1 and v2', 'v2'], default='v1 and v2'))),
+        metadata_options=dict(type='dict', options=dict(
+            metadata_accessible=dict(type='str', choices=['enabled', 'disabled'], default='enabled'),
+            metadata_version=dict(type='str', choices=['v1 and v2', 'v2'], default='v1 and v2'))),
     )
     # running/present are synonyms
     # as are terminated/absent
