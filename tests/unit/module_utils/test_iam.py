@@ -91,7 +91,7 @@ class IamUtilsTestSuite(unittest.TestCase):
     # Test the simplest case - We're permitted to call GetCallerIdentity
     def test_get_aws_account_id__caller_success(self):
         # Prepare
-        self.sts_client.get_caller_identity.side_effect = [{'UserId': 'AIDA1234567890ABCDEFG',
+        self.sts_client.get_caller_identity.side_effect = [{'UserId': 'AIDA1EXAMPLE1EXAMPLE1G',
                                                             'Account': '123456789012',
                                                             'Arn': 'arn:aws:iam::123456789012:user/ExampleUser'}]
         # Run module
@@ -106,7 +106,7 @@ class IamUtilsTestSuite(unittest.TestCase):
     # (China partition)
     def test_get_aws_account_id__caller_success_cn(self):
         # Prepare
-        self.sts_client.get_caller_identity.side_effect = [{'UserId': 'AIDA1234567890ABCDEFG',
+        self.sts_client.get_caller_identity.side_effect = [{'UserId': 'AIDA1EXAMPLE1EXAMPLE1G',
                                                             'Account': '123456789012',
                                                             'Arn': 'arn:aws-cn:iam::123456789012:user/ExampleUser'}]
         # Run module
@@ -121,7 +121,7 @@ class IamUtilsTestSuite(unittest.TestCase):
     # Test the simplest case - We're permitted to call GetCallerIdentity
     def test_get_aws_account_info__caller_success(self):
         # Prepare
-        self.sts_client.get_caller_identity.side_effect = [{'UserId': 'AIDA1234567890ABCDEFG',
+        self.sts_client.get_caller_identity.side_effect = [{'UserId': 'AIDA1EXAMPLE1EXAMPLE1G',
                                                             'Account': '123456789012',
                                                             'Arn': 'arn:aws:iam::123456789012:user/ExampleUser'}]
         # Run module
@@ -135,7 +135,7 @@ class IamUtilsTestSuite(unittest.TestCase):
     # (China partition)
     def test_get_aws_account_info__caller_success_cn(self):
         # Prepare
-        self.sts_client.get_caller_identity.side_effect = [{'UserId': 'AIDA1234567890ABCDEFG',
+        self.sts_client.get_caller_identity.side_effect = [{'UserId': 'AIDA1EXAMPLE1EXAMPLE1G',
                                                             'Account': '123456789012',
                                                             'Arn': 'arn:aws-cn:iam::123456789012:user/ExampleUser'}]
         # Run module
@@ -149,7 +149,7 @@ class IamUtilsTestSuite(unittest.TestCase):
     # (US-Gov partition)
     def test_get_aws_account_info__caller_success_gov(self):
         # Prepare
-        self.sts_client.get_caller_identity.side_effect = [{'UserId': 'AIDA1234567890ABCDEFG',
+        self.sts_client.get_caller_identity.side_effect = [{'UserId': 'AIDA1EXAMPLE1EXAMPLE1G',
                                                             'Account': '123456789012',
                                                             'Arn': 'arn:aws-us-gov:iam::123456789012:user/ExampleUser'}]
         # Run module
@@ -166,7 +166,7 @@ class IamUtilsTestSuite(unittest.TestCase):
     def test_get_aws_account_info__user_success(self):
         # Prepare
         self.sts_client.get_caller_identity.side_effect = [self._make_botocore_exception()]
-        self.iam_client.get_user.side_effect = [{"User": {"Path": "/", "UserName": "ExampleUser", "UserId": "AIDA1234567890ABCDEFG",
+        self.iam_client.get_user.side_effect = [{"User": {"Path": "/", "UserName": "ExampleUser", "UserId": "AIDA1EXAMPLE1EXAMPLE1G",
                                                           "Arn": "arn:aws:iam::123456789012:user/ExampleUser", "CreateDate": "2020-09-08T14:04:32Z"}}]
         # Run module
         return_value = utils_iam.get_aws_account_info(self.module)
@@ -181,7 +181,7 @@ class IamUtilsTestSuite(unittest.TestCase):
     def test_get_aws_account_info__user_success_cn(self):
         # Prepare
         self.sts_client.get_caller_identity.side_effect = [self._make_botocore_exception()]
-        self.iam_client.get_user.side_effect = [{"User": {"Path": "/", "UserName": "ExampleUser", "UserId": "AIDA1234567890ABCDEFG",
+        self.iam_client.get_user.side_effect = [{"User": {"Path": "/", "UserName": "ExampleUser", "UserId": "AIDA1EXAMPLE1EXAMPLE1G",
                                                           "Arn": "arn:aws-cn:iam::123456789012:user/ExampleUser", "CreateDate": "2020-09-08T14:04:32Z"}}]
         # Run module
         return_value = utils_iam.get_aws_account_info(self.module)
@@ -196,7 +196,7 @@ class IamUtilsTestSuite(unittest.TestCase):
     def test_get_aws_account_info__user_success_gov(self):
         # Prepare
         self.sts_client.get_caller_identity.side_effect = [self._make_botocore_exception()]
-        self.iam_client.get_user.side_effect = [{"User": {"Path": "/", "UserName": "ExampleUser", "UserId": "AIDA1234567890ABCDEFG",
+        self.iam_client.get_user.side_effect = [{"User": {"Path": "/", "UserName": "ExampleUser", "UserId": "AIDA1EXAMPLE1EXAMPLE1G",
                                                           "Arn": "arn:aws-us-gov:iam::123456789012:user/ExampleUser", "CreateDate": "2020-09-08T14:04:32Z"}}]
         # Run module
         return_value = utils_iam.get_aws_account_info(self.module)
