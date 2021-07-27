@@ -280,7 +280,7 @@ options:
     description:
       - Modify the metadata options for the instance.
       - See U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html) for more information.
-      - The two suboptions http_endpoint and http_tokens are supported.
+      - The two suboptions I(http_endpoint) and I(http_tokens) are supported.
     type: dict
     version_added: 2.0.0
     suboptions:
@@ -1233,7 +1233,7 @@ def build_top_level_options(params):
         spec['MetadataOptions'] = {}
         spec['MetadataOptions']['HttpEndpoint'] = params.get(
             'metadata_options').get('http_endpoint')
-        spec['MetadataOptions']['HttpTokens'] =  params.get(
+        spec['MetadataOptions']['HttpTokens'] = params.get(
             'metadata_options').get('http_tokens')
     return spec
 
