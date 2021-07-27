@@ -42,13 +42,13 @@ EXAMPLES = r'''
 # # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all Internet Gateways for an account or profile
-  community.aws.ec2_vpc_igw_info:
+  amazon.aws.ec2_vpc_igw_info:
     region: ap-southeast-2
     profile: production
   register: igw_info
 
 - name: Gather information about a filtered list of Internet Gateways
-  community.aws.ec2_vpc_igw_info:
+  amazon.aws.ec2_vpc_igw_info:
     region: ap-southeast-2
     profile: production
     filters:
@@ -56,7 +56,7 @@ EXAMPLES = r'''
   register: igw_info
 
 - name: Gather information about a specific internet gateway by InternetGatewayId
-  community.aws.ec2_vpc_igw_info:
+  amazon.aws.ec2_vpc_igw_info:
     region: ap-southeast-2
     profile: production
     internet_gateway_ids: igw-c1231234
@@ -160,13 +160,13 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
     if module._name == 'ec2_vpc_igw_facts':
-        module.deprecate("The 'ec2_vpc_igw_facts' module has been renamed to 'ec2_vpc_igw_info'", date='2021-12-01', collection_name='community.aws')
+        module.deprecate("The 'ec2_vpc_igw_facts' module has been renamed to 'ec2_vpc_igw_info'", date='2021-12-01', collection_name='amazon.aws')
 
     if module.params.get('convert_tags') is None:
         module.deprecate('This module currently returns boto3 style tags by default.  '
                          'This default has been deprecated and the module will return a simple dictionary in future.  '
                          'This behaviour can be controlled through the convert_tags parameter.',
-                         date='2021-12-01', collection_name='community.aws')
+                         date='2021-12-01', collection_name='amazon.aws')
 
     # Validate Requirements
     try:

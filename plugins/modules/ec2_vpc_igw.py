@@ -49,13 +49,13 @@ EXAMPLES = '''
 # Ensure that the VPC has an Internet Gateway.
 # The Internet Gateway ID is can be accessed via {{igw.gateway_id}} for use in setting up NATs etc.
 - name: Create Internet gateway
-  community.aws.ec2_vpc_igw:
+  amazon.aws.ec2_vpc_igw:
     vpc_id: vpc-abcdefgh
     state: present
   register: igw
 
 - name: Create Internet gateway with tags
-  community.aws.ec2_vpc_igw:
+  amazon.aws.ec2_vpc_igw:
     vpc_id: vpc-abcdefgh
     state: present
     tags:
@@ -64,7 +64,7 @@ EXAMPLES = '''
   register: igw
 
 - name: Delete Internet gateway
-  community.aws.ec2_vpc_igw:
+  amazon.aws.ec2_vpc_igw:
     state: absent
     vpc_id: vpc-abcdefgh
   register: vpc_igw_delete
