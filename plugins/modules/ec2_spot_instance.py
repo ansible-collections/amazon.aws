@@ -2,7 +2,6 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
@@ -25,8 +24,6 @@ options:
   client_token:
     description: The idempotency token you provided when you launched the instance, if applicable.
     type: str
-    returned: always
-    sample: ""
   count:
     description:
       - Number of instances to launch.
@@ -67,11 +64,28 @@ options:
         description:
           - Opaque blob of data which is made available to the EC2 instance.
         type: str
-      volumes:
+      block_device_mappings:
         description:
           - A list of hash/dictionaries of volumes to add to the new instance.
         type: list
         elements: dict
+        suboptions:
+          device_name:
+            description:
+              - The device name (for example, /dev/sdh or xvdh ).
+            type: str
+          virtual_name:
+            description:
+              - The virtual device name 
+            type: str
+          ebs:
+            description:
+              - Parameters used to automatically set up EBS volumes when the instance is launched, see U(https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.request_spot_instances)
+            type: dict
+          no_device:
+            description:
+              - To omit the device from the block device mapping, specify an empty string.
+            type: str
       ebs_optimized:
         description:
           - Whether instance is using optimized EBS volumes, see U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSOptimized.html).
@@ -96,25 +110,123 @@ options:
         type: str
       network_interfaces:
         description:
-          - A list of existing network interfaces to attach to the instance at launch. When specifying existing network interfaces,
-            none of the I(assign_public_ip), I(private_ip), I(vpc_subnet_id), I(group), or I(group_id) parameters may be used. (Those parameters are
-            for creating a new network interface at launch.)
-        aliases: ['network_interface']
+          - One or more network interfaces. If you specify a network interface, you must specify subnet IDs and security group IDs using the network interface.
         type: list
-        elements: str
-      placement_group:
+        elements: dict
+        suboptions:
+          associate_public_ip_address:
+            description:
+              - Indicates whether to assign a public IPv4 address to an instance you launch in a VPC.
+            type: bool
+          delete_on_termination:
+            description:
+              - If set to true , the interface is deleted when the instance is terminated. You can specify true only if creating a new network interface when launching an instance.
+              type: bool
+          description:
+            description:
+              - The description of the network interface. Applies only if creating a network interface when launching an instance.
+            type: str
+          device_index:
+            description:
+              - The position of the network interface in the attachment order. A primary network interface has a device index of 0. 
+              - If you specify a network interface when launching an instance, you must specify the device index.
+            type: int
+          groups:
+            description:
+              - The IDs of the security groups for the network interface. Applies only if creating a network interface when launching an instance.
+            type: list
+            elements: str
+          ipv6_address_count:
+            description:
+              - A number of IPv6 addresses to assign to the network interface
+            type: int
+          ipv6_addresses:
+            description:
+              - One or more IPv6 addresses to assign to the network interface.
+            type: list
+            elements: dict
+          network_interface_id:
+            description:
+              - The ID of the network interface.
+            type: str
+          private_ip_address:
+            description:
+              - The private IPv4 address of the network interface
+            type: str
+          private_ip_addresses:
+            description:
+              - One or more private IPv4 addresses to assign to the network interface
+            type: list
+            elements: dict
+          secondary_private_address_count:
+            description:
+              - The number of secondary private IPv4 addresses.
+            type: int
+          subnet_id:
+            description:
+              - The ID of the subnet associated with the network interface
+            type: str
+          associate_carrier_ip_address:
+            description:
+              - Indicates whether to assign a carrier IP address to the network interface.
+            type: bool
+          interface_type:
+            description:
+              - The type of network interface.
+            type: str
+            choices: ['interface', 'efa']
+          network_card_index:
+            description:
+              - The index of the network card.
+            type: int
+          ipv4_prefixes:
+            description:
+              - One or more IPv4 delegated prefixes to be assigned to the network interface.
+            type: list
+            elements: dict
+          ipv4_prefix_count:
+            description:
+              - The number of IPv4 delegated prefixes to be automatically assigned to the network interface
+              type: int
+          ipv6_prefixes:
+            description:
+              - One or more IPv6 delegated prefixes to be assigned to the network interface
+            type: list
+            elements: dict
+          ipv6_prefix_count:
+            description:
+              - The number of IPv6 delegated prefixes to be automatically assigned to the network interface
+            type: int
+      placement:
         description:
-          - Placement group for the instance.
-        type: str
+          - The placement information for the instance.
+        type: dict
+        suboptions:
+          availability_zone:
+            description:
+              - The Availability Zone.
+            type: str
+          group_name:
+            description:
+              - The name of the placement group.
+            type: str
+            tenancy:
+              - the tenancy of the host
+            type: str
+            choices: ['default'|'dedicated'|'host']
       ramdisk:
         description:
-          - Ramdisk eri to use for the instance.
+          - The ID of the RAM disk.
         type: str
-      monitoring:
+  monitoring:
+    description:
+      -Indicates whether basic or detailed monitoring is enabled for the instance.
+    type: dict
+    suboptions:
+      enabled:
         description:
-          - Enable detailed monitoring (CloudWatch) for the instance.
+          - Indicates whether detailed monitoring is enabled. Otherwise, basic monitoring is enabled.
         type: bool
-        default: false
   price:
     description:
       - Maximum spot price to bid. If not set, a regular on-demand instance is requested.
@@ -186,7 +298,7 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
-spot_request_info:
+spot_request:
     description: The spot instance request details after creation
     returned: when success
     type: dict
@@ -223,20 +335,11 @@ spot_request_info:
             "Type": "one-time"
         }
 
-cancelled_spot_request_info:
+cancelled_spot_request:
     description: The spot instance request details that has been cancelled
     returned: always
-    type: list
-    sample: [
-            {
-                "SpotInstanceRequestId": "sir-qph6aytk",
-                "State": "cancelled"
-            },
-            {
-                "SpotInstanceRequestId": "sir-d8468pbj",
-                "State": "cancelled"
-            }
-        ]
+    type: str
+    sample: 'Spot requests with IDs: sir-1w76bbrh have been cancelled'
 '''
 import time
 import datetime
@@ -253,6 +356,16 @@ from ansible.module_utils.common.dict_transformations import snake_dict_to_camel
 def request_spot_instances(module, connection):
     launch_specification = module.params.get('launch_specification')
     launch_specification = snake_dict_to_camel_dict(launch_specification, capitalize_first=True)
+
+    if 'BlockDeviceMappings' in launch_specification:
+        launch_specification['BlockDeviceMappings'] = snake_dict_to_camel_dict(launch_specification['BlockDeviceMappings'], capitalize_first=True)
+
+    if 'NetworkInterfaces' in launch_specification:
+        launch_specification['NetworkInterfaces'] = snake_dict_to_camel_dict(launch_specification['NetworkInterfaces'], capitalize_first=True)
+
+    if 'Placement' in launch_specification:
+        launch_specification['Placement'] = snake_dict_to_camel_dict(launch_specification['Placement'], capitalize_first=True)
+
     params = dict()
     params['LaunchSpecification'] = launch_specification
     params['AvailabilityZoneGroup'] = module.params.get('zone_group')
@@ -260,6 +373,7 @@ def request_spot_instances(module, connection):
     params['LaunchGroup'] = module.params.get('launch_group')
     params['SpotPrice'] = module.params.get('spot_price')
     params['Type'] = module.params.get('spot_type')
+    params['ClientToken'] = module.params.get('client_token')
     # params['ValidFrom'] = module.params.get('valid_from')
     # params['ValidUntil'] = module.params.get('valid_until')
     params['InstanceInterruptionBehavior'] = module.params.get('interruption')
@@ -285,48 +399,46 @@ def cancel_spot_instance_requests(module, connection):
 def main():
     argument_spec = dict(
         zone_group=dict(type='str', default='  '),
+        client_token=dict(type='str', default='  '),
         count=dict(type='int', default=1),
         interruption=dict(type='str', default="terminate"),
         launch_group=dict(type='str', default='  '),
         launch_specification=dict(type='dict', default=dict()),
         request_type=dict(default='one-time', choices=["one-time", "persistent"]),
         state=dict(default='present', choices=['present', 'absent', 'running', 'restarted', 'stopped']),
-        # group_id=dict(type='list', elements='str'),
-        # group=dict(type='list', elements='str'),
-        # key_name=dict(aliases=['keypair']),
-        # user_data=dict(),
-        # volumes=dict(type='list', elements='dict'),
-        # ebs_optimized=dict(type='bool', default=False),
-        # instance_profile_name=dict(),
-        # image_id=dict(type='string'),
-        # instance_type=dict(type='string'),
-        # kernel=dict(),
-        # network_interfaces=dict(type='list', elements='str', aliases=['network_interface']),
-        # placement_group=dict(),
-        # ramdisk=dict(),
+        device_name=dict(type='str'),
+        virtual_name=dict(type='str'),
+        ebs=dict(type='dict'),
+        no_device=dict(type='str'),
+        block_device_mappings=dict(type='list',elements='dict'),
+        network_interfaces=dict(type='list', elements='dict'),
+        associate_public_ip_address=dict(type='bool'),
+        delete_on_termination=dict(type='bool'),
+        description=dict(type='str'),
+        decive_index=dict(type='int'),
+        groups=dict(type='list'),
+        ipv6_address_count=dict(type='int'),
+        ipv6_addresses=dict(type=list, elements='dict'),
+        network_interface_id=dict(type='str'),
+        private_ip_address=dict(type='str'),
+        private_ip_addresses=dict(type='list', elements='dict'),
+        secondary_private_ip_address_count=dict(type='int'),
+        subnet_id=dict(type='str'),
+        associate_carrier_ip_address=dict(type='boolean'),
+        interface_type=dict(type='str', choices=['interface', 'efa']),
+        network_card_index=dict(type='int'),
+        ipv4_prefixes=dict(type='list', elements='dict'),
+        ipv4_prefix_count=dict(type='int'),
+        ipv6_prefixes=dict(type='list', elements='dict'),
+        ipv6_prefix_count=dict(type='int'),
         spot_price=dict(type='str', default=''),
         spot_type=dict(default='one-time', choices=["one-time", "persistent"]),
-        # monitoring=dict(type='bool', default=False),
         tags=dict(type='list', default=[]),
         # valid_from=dict(type='datetime', default=datetime.datetime.now()),
         # valid_until=dict(type='datetime', default=(datetime.datetime.now() + datetime.timedelta(minutes=60))
-        spot_instance_request_ids=dict(type='list',elements='str',default=[])
-        # vpc_subnet_id=dict(),
-        # launched_availibility_zone=dict(type='string'),
-        # product_description=dict(type='string'),
-        # spot_launch_group=dict(),
-        # image=dict(),
-        # wait=dict(type='bool', default=False),
-        # wait_timeout=dict(type='int', default=300),
-        # spot_wait_timeout=dict(type='int', default=600),
-        # instance_tags=dict(type='dict'),
-        # private_ip=dict(),
-        # instance_ids=dict(type='list', elements='str', aliases=['instance_id']),
-        # source_dest_check=dict(type='bool', default=None),
-        # instance_initiated_shutdown_behavior=dict(default='stop', choices=['stop', 'terminate']),
-        # exact_count=dict(type='int', default=None),
-        # count_tag=dict(type='raw'),
-        # tenancy=dict(default='default', choices=['default', 'dedicated']),
+        spot_instance_request_ids=dict(type='list', elements='str', default=[]),
+        placement=dict(type='dict'),
+        monitoring=dict(type='dict'),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
@@ -345,14 +457,18 @@ def main():
     if state == 'present':
         response = request_spot_instances(module, connection)
         changed = True
-        spot_request_info = response.get('SpotInstanceRequests')[0]
-        module.exit_json(changed=changed, spot_request_info=spot_request_info)
+        spot_request = response.get('SpotInstanceRequests')[0]
+        module.exit_json(changed=changed, spot_request=spot_request)
 
     if state == 'absent':
         response = cancel_spot_instance_requests(module, connection)
         changed = True
         cancelled_spot_request_info = response.get('CancelledSpotInstanceRequests')
-        module.exit_json(changed=changed, cancelled_spot_request_info=cancelled_spot_request_info)
+        request_msg = ""
+        for each_item in cancelled_spot_request_info:
+            request_msg = request_msg + each_item.get('SpotInstanceRequestId') + ' '
+        request_msg = 'Spot requests with IDs: ' + request_msg + 'have been cancelled'
+        module.exit_json(changed=changed, cancelled_spot_request=request_msg)
 
 
 if __name__ == '__main__':
