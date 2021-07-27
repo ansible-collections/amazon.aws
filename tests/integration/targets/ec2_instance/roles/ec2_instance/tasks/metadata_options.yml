@@ -9,8 +9,8 @@
       vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
       instance_type: t3.nano
       metadata_options:
-          metadata_accessible: enabled
-          metadata_version: v2
+          http_endpoint: enabled
+          http_tokens: required
       wait: false
     register: instance_creation
 
@@ -30,8 +30,8 @@
       vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
       instance_type: t3.nano
       metadata_options:
-          metadata_accessible: enabled
-          metadata_version: v1 and v2
+          http_endpoint: enabled
+          http_tokens: optional
       wait: false
     register: metadata_options_update
     ignore_errors: yes

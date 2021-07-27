@@ -280,23 +280,24 @@ options:
     description:
       - Modify the metadata options for the instance.
       - See U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html) for more information.
-      - The two suboptions metadata_accessible and metadata_version are supported.
+      - The two suboptions http_endpoint and http_tokens are supported.
     type: dict
+    version_added: 2.0.0
     suboptions:
-      metadata_accessible:
+      http_endpoint:
         description:
         - Enables or disables the HTTP metadata endpoint on instances, default state is enabled.
         - If specified a value of disabled, metadata of the instance will not be accessible.
         choices: [enabled, disabled]
         default: enabled
         type: str
-      metadata_version:
+      http_tokens:
         description:
-        - Set the state of token usage for instance metadata requests, default state is v1 and v2 (optional).
-        - If the state is v1 and v2 (optional), instance metadata can be retrieved with or without a signed token header on request.
-        - If the state is v2 (required), a signed token header must be sent with any instance metadata retrieval requests.
-        choices: [v1 and v2, v2]
-        default: v1 and v2
+        - Set the state of token usage for instance metadata requests, default state is optional (optional).
+        - If the state is optional (v1 and v2), instance metadata can be retrieved with or without a signed token header on request.
+        - If the state is required (v2), a signed token header must be sent with any instance metadata retrieval requests.
+        choices: [optional, required]
+        default: optional
         type: str
 
 extends_documentation_fragment:
@@ -416,8 +417,8 @@ EXAMPLES = '''
     tags:
       Environment: Testing
     metadata_options:
-      metadata_accessible: enabled
-      metadata_version: v1 and v2
+      http_endpoint: enabled
+      http_tokens: optional
 '''
 
 RETURN = '''
@@ -1231,9 +1232,9 @@ def build_top_level_options(params):
     if params.get('metadata_options'):
         spec['MetadataOptions'] = {}
         spec['MetadataOptions']['HttpEndpoint'] = params.get(
-            'metadata_options').get('metadata_accessible')
-        spec['MetadataOptions']['HttpTokens'] = 'optional' if params.get(
-            'metadata_options').get('metadata_version') == 'v1 and v2' else 'required'
+            'metadata_options').get('http_endpoint')
+        spec['MetadataOptions']['HttpTokens'] =  params.get(
+            'metadata_options').get('http_tokens')
     return spec
 
 
@@ -1777,8 +1778,8 @@ def main():
         network=dict(default=None, type='dict'),
         volumes=dict(default=None, type='list', elements='dict'),
         metadata_options=dict(type='dict', options=dict(
-            metadata_accessible=dict(type='str', choices=['enabled', 'disabled'], default='enabled'),
-            metadata_version=dict(type='str', choices=['v1 and v2', 'v2'], default='v1 and v2'))),
+            http_endpoint=dict(type='str', choices=['enabled', 'disabled'], default='enabled'),
+            http_tokens=dict(type='str', choices=['optional', 'required'], default='optional'))),
     )
     # running/present are synonyms
     # as are terminated/absent
