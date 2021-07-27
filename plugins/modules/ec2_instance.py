@@ -293,7 +293,7 @@ options:
         type: str
       http_tokens:
         description:
-        - Set the state of token usage for instance metadata requests, default state is optional (optional).
+        - Set the state of token usage for instance metadata requests, default state is optional.
         - If the state is optional (v1 and v2), instance metadata can be retrieved with or without a signed token header on request.
         - If the state is required (v2), a signed token header must be sent with any instance metadata retrieval requests.
         choices: [optional, required]
