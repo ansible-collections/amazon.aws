@@ -86,7 +86,7 @@ EXAMPLES = r'''
 
 # Basic creation example:
 - name: Set up public subnet route table
-  community.aws.ec2_vpc_route_table:
+  amazon.aws.ec2_vpc_route_table:
     vpc_id: vpc-1245678
     region: us-west-1
     tags:
@@ -101,7 +101,7 @@ EXAMPLES = r'''
   register: public_route_table
 
 - name: Set up NAT-protected route table
-  community.aws.ec2_vpc_route_table:
+  amazon.aws.ec2_vpc_route_table:
     vpc_id: vpc-1245678
     region: us-west-1
     tags:
@@ -116,7 +116,7 @@ EXAMPLES = r'''
   register: nat_route_table
 
 - name: delete route table
-  community.aws.ec2_vpc_route_table:
+  amazon.aws.ec2_vpc_route_table:
     vpc_id: vpc-1245678
     region: us-west-1
     route_table_id: "{{ route_table.id }}"

@@ -33,20 +33,20 @@ EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all VPC route tables
-  community.aws.ec2_vpc_route_table_info:
+  amazon.aws.ec2_vpc_route_table_info:
 
 - name: Gather information about a particular VPC route table using route table ID
-  community.aws.ec2_vpc_route_table_info:
+  amazon.aws.ec2_vpc_route_table_info:
     filters:
       route-table-id: rtb-00112233
 
 - name: Gather information about any VPC route table with a tag key Name and value Example
-  community.aws.ec2_vpc_route_table_info:
+  amazon.aws.ec2_vpc_route_table_info:
     filters:
       "tag:Name": Example
 
 - name: Gather information about any VPC route table within VPC with ID vpc-abcdef00
-  community.aws.ec2_vpc_route_table_info:
+  amazon.aws.ec2_vpc_route_table_info:
     filters:
       vpc-id: vpc-abcdef00
 '''
@@ -272,7 +272,7 @@ def main():
                               supports_check_mode=True)
     if module._name == 'ec2_vpc_route_table_facts':
         module.deprecate("The 'ec2_vpc_route_table_facts' module has been renamed to 'ec2_vpc_route_table_info'",
-                         date='2021-12-01', collection_name='community.aws')
+                         date='2021-12-01', collection_name='amazon.aws')
 
     connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff(retries=10))
 
