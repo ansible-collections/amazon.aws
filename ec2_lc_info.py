@@ -207,7 +207,11 @@ def main():
         sort_end=dict(required=False, type='int'),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+    )
+
     if module._name == 'ec2_lc_facts':
         module.deprecate("The 'ec2_lc_facts' module has been renamed to 'ec2_lc_info'", date='2021-12-01', collection_name='community.aws')
 
