@@ -4,7 +4,6 @@
 
 __metaclass__ = type
 
-
 DOCUMENTATION = '''
 ---
 module: ec2_spot_instance
@@ -43,15 +42,15 @@ options:
       - The launch specification.
     type: dict
     suboptions:
-      group_id:
+      security_group_ids:
         description:
           - Security group id (or list of ids) to use with the instance.
         type: list
         elements: str
-      group:
+      security_groups:
         description:
-          - Security group (or list of groups) to use with the instance.
-        aliases: [ 'groups' ]
+          - Security group name (or list of group names) to use with the instance.
+          - Only supported with EC2 Classic. To launch in a VPC, use C(group_id)
         type: list
         elements: str
       key_name:
@@ -91,10 +90,19 @@ options:
           - Whether instance is using optimized EBS volumes, see U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSOptimized.html).
         default: false
         type: bool
-      instance_profile_name:
+      iam_instance_profile:
         description:
-          - Name of the IAM instance profile (i.e. what the EC2 console refers to as an "IAM Role") to use. Boto library must be 2.5.0+.
-        type: str
+          - The IAM instance profile.
+        type: dict
+        suboptions:
+          arn:
+            description:
+              - The Amazon Resource Name (ARN) of the instance profile.
+            type: str
+          name:
+            description:
+              - The name of the instance profile.
+            type: str
       image_id:
         description:
           -  The ID of the AMI.
@@ -104,9 +112,9 @@ options:
           - Instance type to use for the instance, see U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html).
           - Required when creating a new instance.
         type: str
-      kernel:
+      kernel_id:
         description:
-          - Kernel eki to use for the instance.
+          - The ID of the kernel.
         type: str
       network_interfaces:
         description:
@@ -214,19 +222,23 @@ options:
               - the tenancy of the host
             type: str
             choices: ['default'|'dedicated'|'host']
-      ramdisk:
+      ramdisk_id:
         description:
           - The ID of the RAM disk.
         type: str
-  monitoring:
-    description:
-      -Indicates whether basic or detailed monitoring is enabled for the instance.
-    type: dict
-    suboptions:
-      enabled:
+      monitoring:
         description:
-          - Indicates whether detailed monitoring is enabled. Otherwise, basic monitoring is enabled.
-        type: bool
+          -Indicates whether basic or detailed monitoring is enabled for the instance.
+        type: dict
+        suboptions:
+          enabled:
+            description:
+              - Indicates whether detailed monitoring is enabled. Otherwise, basic monitoring is enabled.
+            type: bool
+      user_data:
+        description:
+          - The Base64-encoded user data for the instance. User data is limited to 16 KB.
+        type: str
   price:
     description:
       - Maximum spot price to bid. If not set, a regular on-demand instance is requested.
@@ -358,14 +370,19 @@ def request_spot_instances(module, connection):
     launch_specification = snake_dict_to_camel_dict(launch_specification, capitalize_first=True)
 
     if 'BlockDeviceMappings' in launch_specification:
-        launch_specification['BlockDeviceMappings'] = snake_dict_to_camel_dict(launch_specification['BlockDeviceMappings'], capitalize_first=True)
+        launch_specification['BlockDeviceMappings'] = snake_dict_to_camel_dict(
+            launch_specification['BlockDeviceMappings'], capitalize_first=True)
 
     if 'NetworkInterfaces' in launch_specification:
-        launch_specification['NetworkInterfaces'] = snake_dict_to_camel_dict(launch_specification['NetworkInterfaces'], capitalize_first=True)
+        launch_specification['NetworkInterfaces'] = snake_dict_to_camel_dict(launch_specification['NetworkInterfaces'],
+                                                                             capitalize_first=True)
 
     if 'Placement' in launch_specification:
-        launch_specification['Placement'] = snake_dict_to_camel_dict(launch_specification['Placement'], capitalize_first=True)
-
+        launch_specification['Placement'] = snake_dict_to_camel_dict(launch_specification['Placement'],
+                                                                     capitalize_first=True)
+    if 'IamInstanceProfile' in launch_specification:
+        launch_specification['IamInstanceProfile'] = snake_dict_to_camel_dict(launch_specification['IamInstanceProfile'],
+                                                                     capitalize_first=True)
     params = dict()
     params['LaunchSpecification'] = launch_specification
     params['AvailabilityZoneGroup'] = module.params.get('zone_group')
@@ -390,28 +407,38 @@ def cancel_spot_instance_requests(module, connection):
     params = dict()
     params['SpotInstanceRequestIds'] = spot_instance_request_ids
     try:
-        cancel_spot_instance_request_response = connection.cancel_spot_instance_requests(**params)
+        response = connection.cancel_spot_instance_requests(**params)
+        changed = True
+        for each_item in response['CancelledSpotInstanceRequests']:
+            if each_item['State'] != 'cancelled':
+                changed = False
+                break
+
+        module.exit_json(changed=changed,
+                         msg='Cancelled Spot request {}'.format(module.params.get('spot_instance_request_ids')))
         return cancel_spot_instance_request_response
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Error while cancelling the spot instance request')
 
 
 def main():
-    argument_spec = dict(
-        zone_group=dict(type='str', default='  '),
-        client_token=dict(type='str', default='  '),
-        count=dict(type='int', default=1),
-        interruption=dict(type='str', default="terminate"),
-        launch_group=dict(type='str', default='  '),
-        launch_specification=dict(type='dict', default=dict()),
-        request_type=dict(default='one-time', choices=["one-time", "persistent"]),
-        state=dict(default='present', choices=['present', 'absent', 'running', 'restarted', 'stopped']),
-        device_name=dict(type='str'),
-        virtual_name=dict(type='str'),
-        ebs=dict(type='dict'),
-        no_device=dict(type='str'),
-        block_device_mappings=dict(type='list',elements='dict'),
-        network_interfaces=dict(type='list', elements='dict'),
+    launch_specification_options=dict(
+        security_group_ids=dict(type='list',elements='str'),
+        security_groups=dict(type='list',elements='str'),
+        block_device_mappings=dict(type='list', elements='dict', options=block_device_mappings_options),
+        ebs_optimized=dict(type='bool'),
+        iam_instance_profie=dict(type='dict'),
+        image_id=dict(type='str'),
+        instance_type=dict(type='str'),
+        kernel_id=dict(type='str'),
+        key_name=dict(type='str'),
+        monitoring=dict(type='dict'),
+        network_interfaces=dict(type=''),
+        placement=dict(type='dict', options=placement_options),
+        ramdisk_id=dict(type='str'),
+        userdata=dict(type='str')
+    )
+    network_interface_options = dict(
         associate_public_ip_address=dict(type='bool'),
         delete_on_termination=dict(type='bool'),
         description=dict(type='str'),
@@ -430,19 +457,40 @@ def main():
         ipv4_prefixes=dict(type='list', elements='dict'),
         ipv4_prefix_count=dict(type='int'),
         ipv6_prefixes=dict(type='list', elements='dict'),
-        ipv6_prefix_count=dict(type='int'),
+        ipv6_prefix_count=dict(type='int')
+    )
+    block_device_mappings_options = dict(
+        device_name=dict(type='str'),
+        virtual_name=dict(type='str'),
+        ebs=dict(type='dict'),
+        no_device=dict(type='str'),
+    )
+    monitoring_options = dict(
+        enabled=dict(type='bool')
+    )
+    placement_options = dict(
+        availability_zone=dict(type='str'),
+        group_name=dict(type='str'),
+        tenancy=dict(type='str', choices=['default', 'dedicated', 'host'])
+    )
+    argument_spec = dict(
+        zone_group=dict(type='str', default='  '),
+        client_token=dict(type='str', default='  '),
+        count=dict(type='int', default=1),
+        interruption=dict(type='str', default="terminate"),
+        launch_group=dict(type='str', default='  '),
+        launch_specification=dict(type='dict', default=dict(), options=launch_specification_options),
+        request_type=dict(default='one-time', choices=["one-time", "persistent"]),
+        state=dict(default='present', choices=['present', 'absent', 'running', 'restarted', 'stopped']),
         spot_price=dict(type='str', default=''),
         spot_type=dict(default='one-time', choices=["one-time", "persistent"]),
         tags=dict(type='list', default=[]),
         # valid_from=dict(type='datetime', default=datetime.datetime.now()),
         # valid_until=dict(type='datetime', default=(datetime.datetime.now() + datetime.timedelta(minutes=60))
         spot_instance_request_ids=dict(type='list', elements='str', default=[]),
-        placement=dict(type='dict'),
-        monitoring=dict(type='dict'),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        check_boto3=False,
         mutually_exclusive=[
             ['block_duration', 'zone_group'],
             ['block_duration', 'launch_group'],
@@ -461,14 +509,7 @@ def main():
         module.exit_json(changed=changed, spot_request=spot_request)
 
     if state == 'absent':
-        response = cancel_spot_instance_requests(module, connection)
-        changed = True
-        cancelled_spot_request_info = response.get('CancelledSpotInstanceRequests')
-        request_msg = ""
-        for each_item in cancelled_spot_request_info:
-            request_msg = request_msg + each_item.get('SpotInstanceRequestId') + ' '
-        request_msg = 'Spot requests with IDs: ' + request_msg + 'have been cancelled'
-        module.exit_json(changed=changed, cancelled_spot_request=request_msg)
+        cancel_spot_instance_requests(module, connection)
 
 
 if __name__ == '__main__':
