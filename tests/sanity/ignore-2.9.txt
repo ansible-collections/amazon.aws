@@ -89,6 +89,8 @@ plugins/modules/ec2.py import-3.6!skip
 plugins/modules/ec2.py import-3.7!skip
 plugins/modules/ec2.py metaclass-boilerplate!skip
 plugins/modules/ec2.py pylint:ansible-deprecated-no-version  # We use dates for deprecations, Ansible 2.9 only supports this for compatability
+plugins/modules/ec2.py validate-modules:deprecation-mismatch  # Ansible 2.9 docs don't support deprecation properly
+plugins/modules/ec2.py validate-modules:invalid-documentation  # Ansible 2.9 docs don't support deprecation properly
 plugins/modules/ec2_ami.py compile-2.6!skip
 plugins/modules/ec2_ami.py compile-2.7!skip
 plugins/modules/ec2_ami.py compile-3.5!skip

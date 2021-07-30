@@ -11,6 +11,10 @@ DOCUMENTATION = '''
 module: ec2
 version_added: 1.0.0
 short_description: create, terminate, start or stop an instance in ec2
+deprecated:
+  removed_in: 4.0.0
+  why: The ec2 module is based upon a deprecated version of the AWS SDK.
+  alternative: Use M(ec2_instance).
 description:
     - Creates or terminates ec2 instances.
     - >
@@ -1958,6 +1962,9 @@ def main():
             ['network_interfaces', 'vpc_subnet_id'],
         ],
     )
+
+    module.deprecate("The 'ec2' module has been deprecated and replaced by the 'ec2_instance' module'",
+                     version='4.0.0', collection_name='amazon.aws')
 
     if module.params.get('group') and module.params.get('group_id'):
         module.deprecate(
