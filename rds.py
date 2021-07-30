@@ -10,13 +10,16 @@ DOCUMENTATION = r'''
 ---
 module: rds
 version_added: 1.0.0
+deprecated:
+  removed_in: 3.0.0
+  why: The rds module is based upon a deprecated version of the AWS SDK.
+  alternative: Use M(rds_instance), M(rds_instance_info), and M(rds_snapshot).
 short_description: create, delete, or modify Amazon rds instances, rds snapshots, and related facts
 description:
     - Creates, deletes, or modifies rds resources.
     - When creating an instance it can be either a new instance or a read-only replica of an existing instance.
-    - This module has a dependency on python-boto >= 2.5 and will soon be deprecated.
     - The 'promote' command requires boto >= 2.18.0. Certain features such as tags rely on boto.rds2 (boto >= 2.26.0).
-    - Please use boto3 based M(community.aws.rds_instance) instead.
+    - Please use the boto3 based M(community.aws.rds_instance) instead.
 options:
   command:
     description:
@@ -1353,6 +1356,9 @@ def main():
         argument_spec=argument_spec,
         check_boto3=False,
     )
+
+    module.deprecate("The 'rds' module has been deprecated and replaced by the 'rds_instance' module'",
+                     version='3.0.0', collection_name='community.aws')
 
     if not HAS_BOTO:
         module.fail_json(msg='boto required for this module')
