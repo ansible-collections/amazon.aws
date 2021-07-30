@@ -10,6 +10,11 @@ DOCUMENTATION = r'''
 ---
 module: iam
 version_added: 1.0.0
+deprecated:
+  removed_in: 3.0.0
+  why: The iam module is based upon a deprecated version of the AWS SDK.
+  alternative: Use M(iam_user), M(iam_group), M(iam_role), M(iam_policy) and M(iam_managed_policy) modules.
+
 short_description: Manage IAM users, groups, roles and keys
 description:
      - Allows for the management of IAM users, user API keys, groups, roles.
@@ -643,6 +648,9 @@ def main():
         mutually_exclusive=[['trust_policy', 'trust_policy_filepath']],
         check_boto3=False,
     )
+
+    module.deprecate("The 'iam' module has been deprecated and replaced by the 'iam_user', 'iam_group'"
+                     " and 'iam_role' modules'", version='3.0.0', collection_name='community.aws')
 
     if not HAS_BOTO:
         module.fail_json(msg='This module requires boto, please install it')
