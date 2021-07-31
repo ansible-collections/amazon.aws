@@ -42,7 +42,8 @@
     assert:
       that:
       - result.failed
-      - 'result.msg.startswith("missing required arguments: name")'
+      - 'result.msg.startswith("missing required arguments: ")'
+      - '"name" in result.msg'
 
   - name: test with no parameters except state absent
     lambda:
@@ -65,7 +66,9 @@
     assert:
       that:
       - result.failed
-      - 'result.msg.startswith("state is present but all of the following are missing: handler")'
+      - 'result.msg.startswith("state is present but all of the following are missing: ")'
+      - '"handler" in result.msg'
+      - '"role" in result.msg'
 
   - name: test state=present with security group but no vpc
     lambda:
