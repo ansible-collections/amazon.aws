@@ -5,13 +5,9 @@
       aws_secret_key: '{{ aws_secret_key }}'
       security_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region }}'
-    # Needed until added to the group in Ansible 2.9
-    ec2_vpc_endpoint_service_info:
-      aws_access_key: '{{ aws_access_key }}'
-      aws_secret_key: '{{ aws_secret_key }}'
-      security_token: '{{ security_token | default(omit) }}'
-      region: '{{ aws_region }}'
-
+  collections:
+    - amazon.aws
+    - community.aws
   block:
 
   - name: 'List all available services (Check Mode)'
