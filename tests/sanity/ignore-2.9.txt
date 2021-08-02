@@ -1804,6 +1804,8 @@ plugins/modules/rds.py import-3.5!skip
 plugins/modules/rds.py import-3.6!skip
 plugins/modules/rds.py import-3.7!skip
 plugins/modules/rds.py metaclass-boilerplate!skip
+plugins/modules/rds.py validate-modules:deprecation-mismatch  # Ansible 2.9 docs don't support deprecation properly
+plugins/modules/rds.py validate-modules:invalid-documentation  # Ansible 2.9 docs don't support deprecation properly
 plugins/modules/rds_instance.py compile-2.6!skip
 plugins/modules/rds_instance.py compile-2.7!skip
 plugins/modules/rds_instance.py compile-3.5!skip
