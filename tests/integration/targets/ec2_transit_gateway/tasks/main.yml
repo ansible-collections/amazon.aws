@@ -14,34 +14,6 @@
       set_fact:
         tgw_description: "{{ resource_prefix }}-tgw"
 
-    - name: test create transit gateway without permissions
-      ec2_transit_gateway:
-        aws_access_key: '{{ omit }}'
-        aws_secret_key: '{{ omit }}'
-        security_token: '{{ omit }}'
-        description: "{{ tgw_description }}"
-      register: result
-      ignore_errors: yes
-
-    - name: assert nice message returned
-      assert:
-        that:
-          - result is failed
-          - "result.msg != 'MODULE FAILURE'"
-
-    - name: test create transit gateway without region
-      ec2_transit_gateway:
-        description: "{{ tgw_description }}"
-        region: '{{ omit }}'
-      register: result
-      ignore_errors: yes
-
-    - name: assert failure when called with minimal parameters but no region
-      assert:
-        that:
-           - 'result.failed'
-           - 'result.msg.startswith("The ec2_transit_gateway module requires a region")'
-
     - name: test create transit gateway without tags
       ec2_transit_gateway:
         description: "{{ tgw_description }}"
