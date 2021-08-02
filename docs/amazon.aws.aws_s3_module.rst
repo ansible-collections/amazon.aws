@@ -54,7 +54,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div><code>AWS access key</code>. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
+                        <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
                         <div>If <em>profile</em> is set this parameter is ignored.</div>
                         <div>Passing the <em>aws_access_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
@@ -106,7 +106,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div><code>AWS secret key</code>. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
+                        <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
                         <div>If <em>profile</em> is set this parameter is ignored.</div>
                         <div>Passing the <em>aws_secret_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
@@ -143,7 +143,7 @@ Parameters
                 <td>
                         <div>The content to PUT into an object.</div>
                         <div>The parameter value will be treated as a string and converted to UTF-8 before sending it to S3. To send binary data, use the <em>content_base64</em> parameter instead.</div>
-                        <div>Either <em>content</em>, <em>content_base64</em> or <em>src</em> must be specified for a <code>PUT</code> operation. Ignored otherwise.</div>
+                        <div>Either <em>content</em>, <em>content_base64</em> or <em>src</em> must be specified for a PUT operation. Ignored otherwise.</div>
                 </td>
             </tr>
             <tr>
@@ -195,7 +195,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The destination file path when downloading an object/key with a <code>GET</code> operation.</div>
+                        <div>The destination file path when downloading an object/key with a GET operation.</div>
                 </td>
             </tr>
             <tr>
@@ -316,7 +316,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Custom headers for <code>PUT</code> operation, as a dictionary of <code>key=value</code> and <code>key=value,key=value</code>.</div>
+                        <div>Custom headers for PUT operation, as a dictionary of <code>key=value</code> and <code>key=value,key=value</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -335,7 +335,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Overrides initial bucket lookups in case bucket or iam policies are restrictive. Example: a user may have the <code>GetObject</code> permission but no other permissions. In this case using the option mode: get will fail without specifying <em>ignore_nonexistent_bucket=true</em>.</div>
+                        <div>Overrides initial bucket lookups in case bucket or iam policies are restrictive. Example: a user may have the GetObject permission but no other permissions. In this case using the option mode: get will fail without specifying <em>ignore_nonexistent_bucket=true</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -381,7 +381,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Metadata for <code>PUT</code> operation, as a dictionary of <code>key=value</code> and <code>key=value,key=value</code>.</div>
+                        <div>Metadata for PUT operation, as a dictionary of <code>key=value</code> and <code>key=value,key=value</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -438,7 +438,7 @@ Parameters
                         <b>Default:</b><br/><div style="color: blue">"always"</div>
                 </td>
                 <td>
-                        <div>Force overwrite either locally on the filesystem or remotely with the object/key. Used with PUT and <code>GET</code> operations.</div>
+                        <div>Force overwrite either locally on the filesystem or remotely with the object/key. Used with PUT and GET operations.</div>
                         <div>Must be a Boolean, <code>always</code>, <code>never</code> or <code>different</code>.</div>
                         <div><code>true</code> is the same as <code>always</code>.</div>
                         <div><code>false</code> is equal to <code>never</code>.</div>
@@ -577,7 +577,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div><code>AWS STS security token</code>. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
+                        <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
                         <div>If <em>profile</em> is set this parameter is ignored.</div>
                         <div>Passing the <em>security_token</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_security_token, access_token</div>
@@ -595,7 +595,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The source file path when performing a <code>PUT</code> operation.</div>
+                        <div>The source file path when performing a PUT operation.</div>
                         <div>Either <em>content</em>, <em>content_base64</em> or <em>src</em> must be specified for a PUT operation. Ignored otherwise.</div>
                 </td>
             </tr>
