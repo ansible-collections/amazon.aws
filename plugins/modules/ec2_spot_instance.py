@@ -235,6 +235,7 @@ options:
             description:
               - Indicates whether detailed monitoring is enabled. Otherwise, basic monitoring is enabled.
             type: bool
+            default:false
       user_data:
         description:
           - The Base64-encoded user data for the instance. User data is limited to 16 KB.
@@ -366,6 +367,9 @@ from ansible.module_utils.common.dict_transformations import snake_dict_to_camel
 
 
 def request_spot_instances(module, connection):
+    if module.check_mode:
+        return
+
     launch_specification = module.params.get('launch_specification')
     launch_specification = snake_dict_to_camel_dict(launch_specification, capitalize_first=True)
 
@@ -403,6 +407,9 @@ def request_spot_instances(module, connection):
 
 
 def cancel_spot_instance_requests(module, connection):
+    if module.check_mode:
+        return
+
     spot_instance_request_ids = module.params.get('spot_instance_request_ids')
     params = dict()
     params['SpotInstanceRequestIds'] = spot_instance_request_ids
@@ -422,22 +429,6 @@ def cancel_spot_instance_requests(module, connection):
 
 
 def main():
-    launch_specification_options=dict(
-        security_group_ids=dict(type='list',elements='str'),
-        security_groups=dict(type='list',elements='str'),
-        block_device_mappings=dict(type='list', elements='dict', options=block_device_mappings_options),
-        ebs_optimized=dict(type='bool'),
-        iam_instance_profie=dict(type='dict'),
-        image_id=dict(type='str'),
-        instance_type=dict(type='str'),
-        kernel_id=dict(type='str'),
-        key_name=dict(type='str'),
-        monitoring=dict(type='dict'),
-        network_interfaces=dict(type=''),
-        placement=dict(type='dict', options=placement_options),
-        ramdisk_id=dict(type='str'),
-        userdata=dict(type='str')
-    )
     network_interface_options = dict(
         associate_public_ip_address=dict(type='bool'),
         delete_on_termination=dict(type='bool'),
@@ -466,13 +457,30 @@ def main():
         no_device=dict(type='str'),
     )
     monitoring_options = dict(
-        enabled=dict(type='bool')
+        enabled=dict(type='bool',default=False)
     )
     placement_options = dict(
         availability_zone=dict(type='str'),
-        group_name=dict(type='str'),
-        tenancy=dict(type='str', choices=['default', 'dedicated', 'host'])
+        group_name=dict(type='str',default=''),
+        tenancy=dict(type='str', choices=['default', 'dedicated', 'host'],default='default')
     )
+    launch_specification_options=dict(
+        security_group_ids=dict(type='list',elements='str',default=''),
+        security_groups=dict(type='list',elements='str',default=[]),
+        block_device_mappings=dict(type='list', elements='dict', options=block_device_mappings_options,default=[]),
+        ebs_optimized=dict(type='bool',default=False),
+        iam_instance_profile=dict(type='dict',default={}),
+        image_id=dict(type='str',default=''),
+        instance_type=dict(type='str',default=''),
+        kernel_id=dict(type='str', default=''),
+        key_name=dict(type='str',default=''),
+        monitoring=dict(type='dict',options=monitoring_options,default={}),
+        network_interfaces=dict(type='list',elements='dict',options=network_interface_options,default=[]),
+        placement=dict(type='dict', options=placement_options, default={}),
+        ramdisk_id=dict(type='str',default=''),
+        user_data=dict(type='str',default='')
+    )
+
     argument_spec = dict(
         zone_group=dict(type='str', default='  '),
         client_token=dict(type='str', default='  '),
