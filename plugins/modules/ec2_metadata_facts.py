@@ -132,7 +132,7 @@ ansible_facts:
             description: IAM instance role.
             type: str
             sample: "role_name"
-        ansible_ec2_iam_security_credentials_<role name>:
+        ansible_ec2_iam_security_credentials_role_name:
             description:
                 - If there is an IAM role associated with the instance, role-name is the name of the role,
                   and role-name contains the temporary security credentials associated with the role. Otherwise, not present.
@@ -289,7 +289,7 @@ ansible_facts:
             description: The elastic network interface ID.
             type: str
             sample: "eni-12345678"
-        ansible_ec2_network_interfaces_macs_<mac address>_ipv4_associations_<ip address>:
+        ansible_ec2_network_interfaces_macs_<mac address>_ipv4_associations_ip_address:
             description: The private IPv4 addresses that are associated with each public-ip address and assigned to that interface.
             type: str
             sample: ""
