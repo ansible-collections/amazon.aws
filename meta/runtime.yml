@@ -449,6 +449,13 @@ plugin_routing:
           elb_target_group_facts was renamed in Ansible 2.9 to
           elb_target_group_info.
           Please update your tasks.
+    iam:
+      deprecation:
+        removal_version: 3.0.0
+        warning_text: >-
+            The iam module is based upon a deprecated version of the AWS SDKs
+            and is deprecated in favor of the iam_user, iam_group and iam_role modules.
+            Please update your tasks.
     iam_cert_facts:
       deprecation:
         removal_date: 2021-12-01
