@@ -119,7 +119,8 @@ def main():
     )
 
     module = AnsibleAWSModule(
-        argument_spec=arg_spec
+        argument_spec=arg_spec,
+        supports_check_mode=True,
     )
 
     state = module.params.get("state")

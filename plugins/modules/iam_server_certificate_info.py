@@ -142,7 +142,11 @@ def main():
         name=dict(type='str'),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+    )
+
     if module._name == 'iam_server_certificate_facts':
         module.deprecate("The 'iam_server_certificate_facts' module has been renamed to 'iam_server_certificate_info'",
                          date='2021-12-01', collection_name='community.aws')

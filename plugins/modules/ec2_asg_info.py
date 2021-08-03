@@ -438,7 +438,12 @@ def main():
         name=dict(type='str'),
         tags=dict(type='dict'),
     )
-    module = AnsibleAWSModule(argument_spec=argument_spec)
+
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+    )
+
     if module._name == 'ec2_asg_facts':
         module.deprecate("The 'ec2_asg_facts' module has been renamed to 'ec2_asg_info'", date='2021-12-01', collection_name='community.aws')
 
