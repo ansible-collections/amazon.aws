@@ -370,35 +370,170 @@ def request_spot_instances(module, connection):
     if module.check_mode:
         return
 
-    launch_specification = module.params.get('launch_specification')
-    launch_specification = snake_dict_to_camel_dict(launch_specification, capitalize_first=True)
+    params = {}
 
-    if 'BlockDeviceMappings' in launch_specification:
-        launch_specification['BlockDeviceMappings'] = snake_dict_to_camel_dict(
-            launch_specification['BlockDeviceMappings'], capitalize_first=True)
+    if module.params.get('launch_specification') is not None:
+        params['LaunchSpecification'] = {}
 
-    if 'NetworkInterfaces' in launch_specification:
-        launch_specification['NetworkInterfaces'] = snake_dict_to_camel_dict(launch_specification['NetworkInterfaces'],
-                                                                             capitalize_first=True)
+    if module.params.get('launch_specification').get('security_group_ids') is not None:
+        params['LaunchSpecification']['SecurityGroupIds'] = module.params.get('launch_specification').get(
+            'security_group_ids')
 
-    if 'Placement' in launch_specification:
-        launch_specification['Placement'] = snake_dict_to_camel_dict(launch_specification['Placement'],
-                                                                     capitalize_first=True)
-    if 'IamInstanceProfile' in launch_specification:
-        launch_specification['IamInstanceProfile'] = snake_dict_to_camel_dict(launch_specification['IamInstanceProfile'],
-                                                                     capitalize_first=True)
-    params = dict()
-    params['LaunchSpecification'] = launch_specification
-    params['AvailabilityZoneGroup'] = module.params.get('zone_group')
-    params['InstanceCount'] = module.params.get('count')
-    params['LaunchGroup'] = module.params.get('launch_group')
-    params['SpotPrice'] = module.params.get('spot_price')
-    params['Type'] = module.params.get('spot_type')
-    params['ClientToken'] = module.params.get('client_token')
+    if module.params.get('launch_specification').get('security_groups') is not None:
+        params['LaunchSpecification']['SecurityGroups'] = module.params.get('launch_specification').get(
+            'security_groups')
+
+    if module.params.get('launch_specification').get('ebs_optimized') is not None:
+        params['LaunchSpecification']['EbsOptimized'] = module.params.get('launch_specification').get('ebs_optimized')
+
+    if module.params.get('launch_specification').get('image_id') is not None:
+        params['LaunchSpecification']['ImageId'] = module.params.get('launch_specification').get('image_id')
+
+    import q
+    q(params['LaunchSpecification']['ImageId'])
+
+    if module.params.get('launch_specification').get('instance_type') is not None:
+        params['LaunchSpecification']['InstanceType'] = module.params.get('launch_specification').get('instance_type')
+
+    if module.params.get('launch_specification').get('kernel_id') is not None:
+        params['LaunchSpecification']['KernelId'] = module.params.get('launch_specification').get('kernel_id')
+
+    if module.params.get('launch_specification').get('key_name') is not None:
+        params['LaunchSpecification']['KeyName'] = module.params.get('launch_specification').get('key_name')
+
+    if module.params.get('launch_specification').get('ramdisk_id') is not None:
+        params['LaunchSpecification']['RamdiskId'] = module.params.get('launch_specification').get('ramdisk_id')
+
+    if module.params.get('launch_specification').get('user_data') is not None:
+        params['LaunchSpecification']['UserData'] = module.params.get('launch_specification').get('user_data')
+
+    if module.params.get('launch_specification').get('block_device_mappings') is not None:
+        params['LaunchSpecification']['BlockDeviceMappings'] = {}
+
+        if module.params.get('launch_specification').get('block_device_mappings').get('device_name') is not None:
+            params['LaunchSpecification']['BlockDeviceMappings']['DeviceName'] = module.params.get('launch_specification').get('block_device_mappings').get('device_name')
+
+        if module.params.get('launch_specification').get('block_device_mappings').get('virtual_name') is not None:
+            params['LaunchSpecification']['BlockDeviceMappings']['VirtualName'] = module.params.get('launch_specification').get('block_device_mappings').get('virtual_name')
+
+        if module.params.get('launch_specification').get('block_device_mappings').get('ebs') is not None:
+            params['LaunchSpecification']['BlockDeviceMappings']['Ebs'] = module.params.get('launch_specification').get('block_device_mappings').get('ebs')
+
+        if module.params.get('launch_specification').get('block_device_mappings').get('no_device') is not None:
+            params['LaunchSpecification']['BlockDeviceMappings']['NoDevice'] = module.params.get('launch_specification').get('block_device_mappings').get('no_device')
+
+    if module.params.get('launch_specification').get('network_interfaces') is not None:
+        params['LaunchSpecification']['NetworkInterfaces'] = []
+
+        # for each_item in module.params.get('launch_specification').get('network_interfaces'):
+
+        # if module.params.get('launch_specification').get('network_interfaces').get('associate_public_ip_address') is not None:
+        #     params['LaunchSpecification']['NetworkInterfaces']['AssociatePublicIpAddress'] = module.params.get('launch_specification').get('network_interfaces').get('associate_public_ip_address')
+        #
+        # if module.params.get('launch_specification').get('network_interfaces').get('delete_on_termination') is not None:
+        #     params['LaunchSpecification']['NetworkInterfaces']['DeleteOnTermination'] = module.params.get('launch_specification').get('network_interfaces').get('delete_on_termination')
+        #
+        # if module.params.get('launch_specification').get('network_interfaces').get('description') is not None:
+        #     params['LaunchSpecification']['NetworkInterfaces']['Description'] = module.params.get('launch_specification').get('network_interfaces').get('description')
+        #
+        # if module.params.get('launch_specification').get('network_interfaces').get('device_index') is not None:
+        #     params['LaunchSpecification']['NetworkInterfaces']['DeviceIndex'] = module.params.get('launch_specification').get('network_interfaces').get('device_index')
+        #
+        # if module.params.get('launch_specification').get('network_interfaces').get('groups') is not None:
+        #     params['LaunchSpecification']['NetworkInterfaces']['Groups'] = module.params.get('launch_specification').get('network_interfaces').get('groups')
+        #
+        # if module.params.get('launch_specification').get('network_interfaces').get('ipv6_address_count') is not None:
+        #     params['LaunchSpecification']['NetworkInterfaces']['Ipv6AddressCount'] = module.params.get('launch_specification').get('network_interfaces').get('ipv6_address_count')
+        #
+        # if module.params.get('launch_specification').get('network_interfaces').get('ipv6_addresses') is not None:
+        #     params['LaunchSpecification']['NetworkInterfaces']['Ipv6Addresses'] = module.params.get('launch_specification').get('network_interfaces').get('ipv6_addresses')
+        #
+        # if module.params.get('launch_specification').get('network_interfaces').get('network_interface_id') is not None:
+        #     params['LaunchSpecification']['NetworkInterfaces']['NetworkInterfaceId'] = module.params.get('launch_specification').get('network_interfaces').get('network_interface_id')
+        #
+        # if module.params.get('launch_specification').get('network_interfaces').get('private_ip_addresses') is not None:
+        #     params['LaunchSpecification']['NetworkInterfaces']['PrivateIpAddresses'] = module.params.get('launch_specification').get('network_interfaces').get('private_ip_addresses')
+        #
+        # if module.params.get('launch_specification').get('network_interfaces').get('secondary_private_ip_address_count') is not None:
+        #     params['LaunchSpecification']['NetworkInterfaces']['SecondaryPrivateIpAddressCount'] = module.params.get('launch_specification').get('network_interfaces').get('secondary_private_ip_address_count')
+        #
+        # if module.params.get('launch_specification').get('network_interfaces').get('subnet_id') is not None:
+        #     params['LaunchSpecification']['NetworkInterfaces']['SubnetId'] = module.params.get('launch_specification').get('network_interfaces').get('subnet_id')
+        #
+        # if module.params.get('launch_specification').get('network_interfaces').get('associate_carrier_ip_address') is not None:
+        #     params['LaunchSpecification']['NetworkInterfaces']['AssociateCarrierIpAddress'] = module.params.get('launch_specification').get('network_interfaces').get('associate_carrier_ip_address')
+        #
+        # if module.params.get('launch_specification').get('network_interfaces').get('interface_type') is not None:
+        #     params['LaunchSpecification']['NetworkInterfaces']['InterfaceType'] = module.params.get('launch_specification').get('network_interfaces').get('interface_type')
+        #
+        # if module.params.get('launch_specification').get('network_interfaces').get('network_card_index') is not None:
+        #     params['LaunchSpecification']['NetworkInterfaces']['NetworkCardIndex'] = module.params.get('launch_specification').get('network_interfaces').get('network_card_index')
+        #
+        # if module.params.get('launch_specification').get('network_interfaces').get('ipv4_prefixes') is not None:
+        #     params['LaunchSpecification']['NetworkInterfaces']['Ipv4Prefixes'] = module.params.get('launch_specification').get('network_interfaces').get('ipv4_prefixes')
+        #
+        # if module.params.get('launch_specification').get('network_interfaces').get('ipv4_prefix_count') is not None:
+        #     params['LaunchSpecification']['NetworkInterfaces']['Ipv4PrefixCount'] = module.params.get('launch_specification').get('network_interfaces').get('ipv4_prefix_count')
+        #
+        # if module.params.get('launch_specification').get('network_interfaces').get('ipv6_prefixes') is not None:
+        #     params['LaunchSpecification']['NetworkInterfaces']['Ipv6Prefixes'] = module.params.get('launch_specification').get('network_interfaces').get('ipv6_prefixes')
+        #
+        # if module.params.get('launch_specification').get('network_interfaces').get('ipv6_prefix_count') is not None:
+        #     params['LaunchSpecification']['NetworkInterfaces']['Ipv6PrefixCount'] = module.params.get('launch_specification').get('network_interfaces').get('ipv6_prefix_count')
+
+    if module.params.get('launch_specification').get('monitoring') is not None:
+        params['LaunchSpecification']['Monitoring'] = {}
+
+        if module.params.get('launch_specification').get('monitoring').get('enabled') is not None:
+            params['LaunchSpecification']['Monitoring']['Enabled'] = module.params.get('launch_specification').get('monitoring').get('enabled')
+
+    if module.params.get('launch_specification').get('placement') is not None:
+        params['LaunchSpecification']['Placement'] = {}
+
+        if module.params.get('launch_specification').get('placement').get('availability_zone') is not None:
+            params['LaunchSpecification']['Placement']['AvailabilityZone'] = module.params.get('launch_specification').get('placement').get('availability_zone')
+
+        if module.params.get('launch_specification').get('placement').get('tenancy') is not None:
+            params['LaunchSpecification']['Placement']['Tenancy'] = module.params.get('launch_specification').get('placement').get('tenancy')
+
+        if module.params.get('launch_specification').get('placement').get('group_name') is not None:
+            params['LaunchSpecification']['Placement']['GroupName'] = module.params.get('launch_specification').get('placement').get('group_name')
+
+    if module.params.get('launch_specification').get('iam_instance_profile') is not None:
+        params['LaunchSpecification']['IamInstanceProfile'] = {}
+
+        if module.params.get('launch_specification').get('iam_instance_profile').get('arn') is not None:
+            params['LaunchSpecification']['IamInstanceProfile']['Arn'] = module.params.get('launch_specification').get('iam_instance_profile').get('arn')
+
+        if module.params.get('launch_specification').get('iam_instance_profile').get('name') is not None:
+            params['LaunchSpecification']['IamInstanceProfile']['Name'] = module.params.get('launch_specification').get('iam_instance_profile').get('name')
+
+    if module.params.get('zone_group') is not None:
+        params['AvailabilityZoneGroup'] = module.params.get('zone_group')
+
+    if module.params.get('count') is not None:
+        params['InstanceCount'] = module.params.get('count')
+
+    if module.params.get('launch_group') is not None:
+        params['LaunchGroup'] = module.params.get('launch_group')
+
+    if module.params.get('spot_price') is not None:
+        params['SpotPrice'] = module.params.get('spot_price')
+
+    if module.params.get('spot_type') is not None:
+        params['Type'] = module.params.get('spot_type')
+
+    if module.params.get('client_token') is not None:
+        params['ClientToken'] = module.params.get('client_token')
+
+    if module.params.get('interruption') is not None:
+        params['InstanceInterruptionBehavior'] = module.params.get('interruption')
+
+    if module.params.get('tags') is not None:
+        params['TagSpecifications'] = module.params.get('tags')
+
     # params['ValidFrom'] = module.params.get('valid_from')
     # params['ValidUntil'] = module.params.get('valid_until')
-    params['InstanceInterruptionBehavior'] = module.params.get('interruption')
-    params['TagSpecifications'] = module.params.get('tags')
     try:
         request_spot_instance_response = connection.request_spot_instances(**params)
         return request_spot_instance_response
@@ -433,7 +568,7 @@ def main():
         associate_public_ip_address=dict(type='bool'),
         delete_on_termination=dict(type='bool'),
         description=dict(type='str'),
-        decive_index=dict(type='int'),
+        device_index=dict(type='int'),
         groups=dict(type='list'),
         ipv6_address_count=dict(type='int'),
         ipv6_addresses=dict(type=list, elements='dict'),
@@ -457,45 +592,49 @@ def main():
         no_device=dict(type='str'),
     )
     monitoring_options = dict(
-        enabled=dict(type='bool',default=False)
+        enabled=dict(type='bool', default=False)
     )
     placement_options = dict(
         availability_zone=dict(type='str'),
-        group_name=dict(type='str',default=''),
-        tenancy=dict(type='str', choices=['default', 'dedicated', 'host'],default='default')
+        group_name=dict(type='str'),
+        tenancy=dict(type='str', choices=['default', 'dedicated', 'host'], default='default')
     )
-    launch_specification_options=dict(
-        security_group_ids=dict(type='list',elements='str',default=''),
-        security_groups=dict(type='list',elements='str',default=[]),
-        block_device_mappings=dict(type='list', elements='dict', options=block_device_mappings_options,default=[]),
-        ebs_optimized=dict(type='bool',default=False),
-        iam_instance_profile=dict(type='dict',default={}),
-        image_id=dict(type='str',default=''),
-        instance_type=dict(type='str',default=''),
-        kernel_id=dict(type='str', default=''),
-        key_name=dict(type='str',default=''),
-        monitoring=dict(type='dict',options=monitoring_options,default={}),
-        network_interfaces=dict(type='list',elements='dict',options=network_interface_options,default=[]),
+    iam_instance_profile_options = dict(
+        arn=dict(type='str'),
+        name=dict(type='str')
+    )
+    launch_specification_options = dict(
+        security_group_ids=dict(type='list', elements='str'),
+        security_groups=dict(type='list', elements='str'),
+        block_device_mappings=dict(type='list', elements='dict', options=block_device_mappings_options),
+        ebs_optimized=dict(type='bool', default=False),
+        iam_instance_profile=dict(type='dict',options=iam_instance_profile_options),
+        image_id=dict(type='str'),
+        instance_type=dict(type='str'),
+        kernel_id=dict(type='str'),
+        key_name=dict(type='str'),
+        monitoring=dict(type='dict', options=monitoring_options),
+        network_interfaces=dict(type='list', elements='dict', options=network_interface_options, default=[]),
         placement=dict(type='dict', options=placement_options, default={}),
-        ramdisk_id=dict(type='str',default=''),
-        user_data=dict(type='str',default='')
+        ramdisk_id=dict(type='str', default=''),
+        user_data=dict(type='str', default='')
     )
 
     argument_spec = dict(
-        zone_group=dict(type='str', default='  '),
-        client_token=dict(type='str', default='  '),
+        zone_group=dict(type='str'),
+        client_token=dict(type='str'),
         count=dict(type='int', default=1),
         interruption=dict(type='str', default="terminate"),
-        launch_group=dict(type='str', default='  '),
-        launch_specification=dict(type='dict', default=dict(), options=launch_specification_options),
+        launch_group=dict(type='str'),
+        launch_specification=dict(type='dict', options=launch_specification_options),
         request_type=dict(default='one-time', choices=["one-time", "persistent"]),
         state=dict(default='present', choices=['present', 'absent', 'running', 'restarted', 'stopped']),
-        spot_price=dict(type='str', default=''),
+        spot_price=dict(type='str'),
         spot_type=dict(default='one-time', choices=["one-time", "persistent"]),
-        tags=dict(type='list', default=[]),
+        tags=dict(type='list'),
         # valid_from=dict(type='datetime', default=datetime.datetime.now()),
         # valid_until=dict(type='datetime', default=(datetime.datetime.now() + datetime.timedelta(minutes=60))
-        spot_instance_request_ids=dict(type='list', elements='str', default=[]),
+        spot_instance_request_ids=dict(type='list', elements='str'),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
