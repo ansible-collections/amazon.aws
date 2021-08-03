@@ -95,10 +95,10 @@ options:
             - The IP protocol name (C(tcp), C(udp), C(icmp), C(icmpv6)) or number (U(https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers))
         from_port:
             type: int
-            description: The start of the range of ports that traffic is coming from.  A value of C(-1) indicates all ports.
+            description: The start of the range of ports that traffic is coming from. A value can be between 0 to 65535. A value of C(-1) indicates all ports (only supported when I(proto=icmp)).
         to_port:
             type: int
-            description: The end of the range of ports that traffic is coming from.  A value of C(-1) indicates all ports.
+            description: The end of the range of ports that traffic is coming from. A value can be between 0 to 65535. A value of C(-1) indicates all ports (only supported when I(proto=icmp)).
         rule_desc:
             type: str
             description: A description for the rule.
@@ -156,10 +156,10 @@ options:
             - The IP protocol name (C(tcp), C(udp), C(icmp), C(icmpv6)) or number (U(https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers))
         from_port:
             type: int
-            description: The start of the range of ports that traffic is going to.  A value of C(-1) indicates all ports.
+            description: The start of the range of ports that traffic is going to. A value can be between 0 to 65535. A value of C(-1) indicates all ports (only supported when I(proto=icmp)).
         to_port:
             type: int
-            description: The end of the range of ports that traffic is going to.  A value of C(-1) indicates all ports.
+            description: The end of the range of ports that traffic is going to. A value can be between 0 to 65535. A value of C(-1) indicates all ports (only supported when I(proto=icmp)).
         rule_desc:
             type: str
             description: A description for the rule.
@@ -269,7 +269,7 @@ EXAMPLES = '''
         # the containing group name may be specified here
         group_name: example
       - proto: all
-        # in the 'proto' attribute, if you specify -1, all, or a protocol number other than tcp, udp, icmp, or 58 (ICMPv6),
+        # in the 'proto' attribute, if you specify -1 (only supported when I(proto=icmp)), all, or a protocol number other than tcp, udp, icmp, or 58 (ICMPv6),
         # traffic on all ports is allowed, regardless of any ports you specify
         from_port: 10050 # this value is ignored
         to_port: 10050 # this value is ignored
