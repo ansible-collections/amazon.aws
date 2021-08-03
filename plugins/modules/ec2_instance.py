@@ -922,6 +922,12 @@ def build_volume_spec(params):
             for int_value in ['volume_size', 'iops']:
                 if int_value in volume['ebs']:
                     volume['ebs'][int_value] = int(volume['ebs'][int_value])
+            if 'volume_type' in volume['ebs'] and volume['ebs']['volume_type'] == 'gp3':
+                if not volume['ebs'].get('iops'):
+                    volume['ebs']['iops'] = 3000
+                if 'throughput' in volume['ebs']:
+                    volume['ebs']['throughput'] = int(volume['ebs']['throughput'])
+
     return [snake_dict_to_camel_dict(v, capitalize_first=True) for v in volumes]
 
 
