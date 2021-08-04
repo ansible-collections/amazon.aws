@@ -32,6 +32,11 @@
           - result_info.tags | length == 1
           - result_info.tags.Name == '{{ resource_prefix }} ec2_tag volume'
 
+
+    - name: Make a wee tiny change to trigger test_changed.py
+      debug:
+        msg: "Hello"
+
     - name: Set some new tags on the volume
       ec2_tag:
         resource: "{{ volume.volume_id }}"
