@@ -1,2 +1,8 @@
+# reason: unstable
+# Testing of paginated results fails when fewer results are returned than
+# expected - probably a race condition
+# https://github.com/ansible-collections/amazon.aws/issues/441
+disabled
+
 cloud/aws
 ec2_snapshot_info
