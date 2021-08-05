@@ -121,9 +121,17 @@ class AnsibleAWSModule(object):
 
         self._module = AnsibleAWSModule.default_settings["module_class"](**kwargs)
 
-        if local_settings["check_boto3"] and not HAS_BOTO3:
-            self._module.fail_json(
-                msg=missing_required_lib('botocore or boto3'))
+        if local_settings["check_boto3"]:
+            if not HAS_BOTO3:
+                self._module.fail_json(
+                    msg=missing_required_lib('botocore or boto3'))
+            current_versions = self._gather_versions()
+            if not self.botocore_at_least('1.16.0'):
+                self.warn('botocore < 1.16.0 is not supported or tested.'
+                          '  Some features may not work.')
+            if not self.boto3_at_least("1.13.0"):
+                self.warn('boto3 < 1.13.0 is not supported or tested.'
+                          '  Some features may not work.')
 
         self.check_mode = self._module.check_mode
         self._diff = self._module._diff
