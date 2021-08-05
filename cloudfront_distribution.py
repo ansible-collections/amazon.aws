@@ -149,9 +149,15 @@ options:
         s3_origin_access_identity_enabled:
           description:
             - Use an origin access identity to configure the origin so that viewers can only access objects in an Amazon S3 bucket through CloudFront.
-            - Will automatically create an Identity for you.
+            - Will automatically create an Identity for you if no I(s3_origin_config) is specified.
             - See also U(https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PrivateContent.html).
           type: bool
+        s3_origin_config:
+          type: dict
+          suboptions:
+            origin_access_identity:
+              description: Existing origin access identity in the format C(origin-access-identity/cloudfront/OID_ID)
+              type: str
         custom_origin_config:
           description: Connection information about the origin.
           type: dict
@@ -1275,6 +1281,15 @@ origins:
           returned: always
           type: str
           sample: ''
+        s3_origin_config:
+          descrption: Origin access identity configuration for S3 Origin.
+          returned: when s3_origin_access_identity_enabled is true
+          type: dict
+          contains:
+            origin_access_identity:
+              type: str
+              description: The origin access id as a path
+              sample: origin-access-identity/cloudfront/EXAMPLEID
     quantity:
       description: Count of origins.
       returned: always
