@@ -59,10 +59,9 @@
         description: "Amazon Linux 2 AMI *"
     register: images_info
 
-#  - name: Get a list of keys
-#            - name: List all EC2 key pairs
-#            ec2_key_pair_info:
-#            register: result
+  - name: create a new ec2 key pair
+    ec2_key:
+      name: "{{ resource_prefix }}-keypair"
 
   - name: Set facts to simplify use of extra resources
     set_fact:
@@ -76,18 +75,27 @@
     ec2_spot_instance:
       launch_specification:
         image_id: "{{ image_id }}"
-        key_name: "zuul"
+        key_name: "{{ resource_prefix }}-keypair"
         instance_type: "t2.medium"
         subnet_id: "{{ vpc_subnet_result.subnet.id }}"
     register: result
 
-  - name: Dump the output
-    debug:
-      msg: '{{ result }}'
-
   always:
 
     # ============================================================
+      - name: Delete spot instances
+        ec2_instance:
+          state: absent
+          filters:
+            vpc-id: "{{ vpc_result.vpc.id }}"
+
+      - name: remove spot instance request
+        ec2_spot_instance:
+          spot_instance_request_ids: '{{ result.spot_request.SpotInstanceRequestId }}'
+          state: 'absent'
+        ignore_errors: true
+        retries: 5
+
       - name: remove the security group
         ec2_group:
           name: "{{ resource_prefix }}-sg"
@@ -116,9 +124,7 @@
         ignore_errors: true
         retries: 5
 
-#      - name: remove spot instance request
-#        ec2_spot_instance:
-#          spot_instance_request_ids: [  ]
-#          state: 'absent'
-#        ignore_errors: true
-#        retries: 5
+      - name: remove key pair by name
+        ec2_key:
+          name: "{{ resource_prefix }}-keypair"
+          state: absent
