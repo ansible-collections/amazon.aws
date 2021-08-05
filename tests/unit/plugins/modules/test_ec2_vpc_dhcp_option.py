@@ -6,10 +6,9 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify
+# Magic...  Incorrectly identified by pylint as unused
+from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import placeboify  # pylint: disable=unused-import
 from ansible_collections.amazon.aws.tests.unit.compat.mock import patch
-from ansible_collections.amazon.aws.tests.unit.plugins.modules.utils import set_module_args
-from ansible_collections.amazon.aws.tests.unit.plugins.modules.utils import AnsibleExitJson
 
 from ansible_collections.amazon.aws.plugins.modules import ec2_vpc_dhcp_option as dhcp_module
 from ansible_collections.amazon.aws.tests.unit.plugins.modules.utils import ModuleTestCase

@@ -2,7 +2,6 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import pytest
-import datetime
 from dateutil import parser as date_parser
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import normalize_boto3_result

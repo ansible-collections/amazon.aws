@@ -51,11 +51,6 @@ tags:
   type: dict
 '''
 
-try:
-    from botocore.exceptions import BotoCoreError, ClientError
-except Exception:
-    pass    # Handled by AnsibleAWSModule
-
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.ec2 import describe_ec2_tags
 
