@@ -1022,13 +1022,6 @@ def group_exists(client, module, vpc_id, group_id, name):
     return None, {}
 
 
-def verify_rules_with_descriptions_permitted(client, module, rules, rules_egress):
-    if not hasattr(client, "update_security_group_rule_descriptions_egress"):
-        all_rules = rules if rules else [] + rules_egress if rules_egress else []
-        if any('rule_desc' in rule for rule in all_rules):
-            module.fail_json(msg="Using rule descriptions requires botocore version >= 1.7.2.")
-
-
 def get_diff_final_resource(client, module, security_group):
     def get_account_id(security_group, module):
         try:
@@ -1208,7 +1201,6 @@ def main():
     changed = False
     client = module.client('ec2', AWSRetry.jittered_backoff())
 
-    verify_rules_with_descriptions_permitted(client, module, rules, rules_egress)
     group, groups = group_exists(client, module, vpc_id, group_id, name)
     group_created_new = not bool(group)
 

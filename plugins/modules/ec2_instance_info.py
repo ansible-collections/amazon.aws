@@ -137,7 +137,7 @@ instances:
                             sample: vol-12345678
         cpu_options:
             description: The CPU options set for the instance.
-            returned: always if botocore version >= 1.10.16
+            returned: always
             type: complex
             contains:
                 core_count:
