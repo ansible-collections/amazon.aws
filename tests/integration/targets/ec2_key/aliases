@@ -1,6 +1,7 @@
 # reason: missing-dependency
 # We need either the openssl binary, pycrpto, or a compiler on the Py36 and Py38
 # Zuul nodes
+# https://github.com/ansible-collections/amazon.aws/issues/428
 disabled
 
 cloud/aws
