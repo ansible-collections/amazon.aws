@@ -153,6 +153,7 @@ options:
             - See also U(https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PrivateContent.html).
           type: bool
         s3_origin_config:
+          description: Specify origin access identity for S3 origins
           type: dict
           suboptions:
             origin_access_identity:
@@ -1282,7 +1283,7 @@ origins:
           type: str
           sample: ''
         s3_origin_config:
-          descrption: Origin access identity configuration for S3 Origin.
+          description: Origin access identity configuration for S3 Origin.
           returned: when s3_origin_access_identity_enabled is true
           type: dict
           contains:
