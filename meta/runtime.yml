@@ -38,6 +38,7 @@ action_groups:
   - ec2_key
   - ec2_snapshot
   - ec2_snapshot_info
+  - ec2_spot_instance
   - ec2_tag
   - ec2_tag_info
   - ec2_vol

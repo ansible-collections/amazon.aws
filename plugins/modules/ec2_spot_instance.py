@@ -59,6 +59,10 @@ options:
           - The SSH key must already exist in AWS in order to use this argument.
           - Keys can be created / deleted using the M(amazon.aws.ec2_key) module.
         type: str
+      subnet_id:
+        description:
+          - The ID of the subnet in which to launch the instance.
+        type: str
       user_data:
         description:
           - Opaque blob of data which is made available to the EC2 instance.
@@ -368,6 +372,8 @@ from ansible.module_utils.common.dict_transformations import snake_dict_to_camel
 
 def request_spot_instances(module, connection):
     if module.check_mode:
+        changed = True
+        module.exit_json(changed=changed)
         return
 
     params = {}
@@ -389,9 +395,6 @@ def request_spot_instances(module, connection):
     if module.params.get('launch_specification').get('image_id') is not None:
         params['LaunchSpecification']['ImageId'] = module.params.get('launch_specification').get('image_id')
 
-    import q
-    q(params['LaunchSpecification']['ImageId'])
-
     if module.params.get('launch_specification').get('instance_type') is not None:
         params['LaunchSpecification']['InstanceType'] = module.params.get('launch_specification').get('instance_type')
 
@@ -406,6 +409,9 @@ def request_spot_instances(module, connection):
 
     if module.params.get('launch_specification').get('user_data') is not None:
         params['LaunchSpecification']['UserData'] = module.params.get('launch_specification').get('user_data')
+
+    if module.params.get('launch_specification').get('subnet_id') is not None:
+        params['LaunchSpecification']['SubnetId'] = module.params.get('launch_specification').get('subnet_id')
 
     if module.params.get('launch_specification').get('block_device_mappings') is not None:
         params['LaunchSpecification']['BlockDeviceMappings'] = {}
@@ -426,7 +432,6 @@ def request_spot_instances(module, connection):
         params['LaunchSpecification']['NetworkInterfaces'] = []
 
         # for each_item in module.params.get('launch_specification').get('network_interfaces'):
-
         # if module.params.get('launch_specification').get('network_interfaces').get('associate_public_ip_address') is not None:
         #     params['LaunchSpecification']['NetworkInterfaces']['AssociatePublicIpAddress'] = module.params.get('launch_specification').get('network_interfaces').get('associate_public_ip_address')
         #
@@ -616,8 +621,9 @@ def main():
         monitoring=dict(type='dict', options=monitoring_options),
         network_interfaces=dict(type='list', elements='dict', options=network_interface_options, default=[]),
         placement=dict(type='dict', options=placement_options, default={}),
-        ramdisk_id=dict(type='str', default=''),
-        user_data=dict(type='str', default='')
+        ramdisk_id=dict(type='str'),
+        user_data=dict(type='str'),
+        subnet_id=dict(type='str')
     )
 
     argument_spec = dict(

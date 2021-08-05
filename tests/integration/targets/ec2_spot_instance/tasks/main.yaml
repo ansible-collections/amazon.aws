@@ -1,0 +1,124 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  collections:
+  - community.aws
+
+  block:
+  - name: Get available AZs
+    aws_az_info:
+      filters:
+        region-name: "{{ aws_region }}"
+    register: az_info
+
+  - name: Pick an AZ
+    set_fact:
+      availability_zone: "{{ az_info['availability_zones'][0]['zone_name'] }}"
+
+  # ============================================================
+  - name: create a VPC
+    ec2_vpc_net:
+      name: "{{ resource_prefix }}-vpc"
+      state: present
+      cidr_block: "{{ vpc_cidr }}"
+      tags:
+        Name: "{{ resource_prefix }}-vpc"
+        Description: "Created by ansible-test"
+    register: vpc_result
+
+  - name: create a subnet
+    ec2_vpc_subnet:
+      cidr: "{{ vpc_cidr }}"
+      az: "{{ availability_zone }}"
+      vpc_id: "{{ vpc_result.vpc.id }}"
+      tags:
+        Name: "{{ resource_prefix }}-vpc"
+        Description: "Created by ansible-test"
+      state: present
+    register: vpc_subnet_result
+
+  - name: create a security group
+    ec2_group:
+      name: "{{ resource_prefix }}-sg"
+      description: "Created by {{ resource_prefix }}"
+      rules: []
+      state: present
+      vpc_id: "{{ vpc_result.vpc.id }}"
+    register: vpc_sg_result
+
+  - name: Get a list of images
+    ec2_ami_info:
+      filters:
+        owner-alias: amazon
+        name: "amzn2-ami-minimal-hvm-*"
+        description: "Amazon Linux 2 AMI *"
+    register: images_info
+
+#  - name: Get a list of keys
+#            - name: List all EC2 key pairs
+#            ec2_key_pair_info:
+#            register: result
+
+  - name: Set facts to simplify use of extra resources
+    set_fact:
+      vpc_id: "{{ vpc_result.vpc.id }}"
+      vpc_subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+      vpc_sg_id: "{{ vpc_sg_result.group_id }}"
+      image_id: "{{ images_info.images | sort(attribute='creation_date') | reverse | first | json_query('image_id') }}"
+
+  # ============================================================
+  - name: Create spot instance request
+    ec2_spot_instance:
+      launch_specification:
+        image_id: "{{ image_id }}"
+        key_name: "zuul"
+        instance_type: "t2.medium"
+        subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+    register: result
+
+  - name: Dump the output
+    debug:
+      msg: '{{ result }}'
+
+  always:
+
+    # ============================================================
+      - name: remove the security group
+        ec2_group:
+          name: "{{ resource_prefix }}-sg"
+          description: "{{ resource_prefix }}"
+          rules: []
+          state: absent
+          vpc_id: "{{ vpc_result.vpc.id }}"
+        ignore_errors: true
+        retries: 5
+
+      - name: remove the subnet
+        ec2_vpc_subnet:
+          cidr: "{{ vpc_cidr }}"
+          az: "{{ availability_zone }}"
+          vpc_id: "{{ vpc_result.vpc.id }}"
+          state: absent
+        ignore_errors: true
+        retries: 5
+        when: vpc_subnet_result is defined
+
+      - name: remove the VPC
+        ec2_vpc_net:
+          name: "{{ resource_prefix }}-vpc"
+          cidr_block: "{{ vpc_cidr }}"
+          state: absent
+        ignore_errors: true
+        retries: 5
+
+#      - name: remove spot instance request
+#        ec2_spot_instance:
+#          spot_instance_request_ids: [  ]
+#          state: 'absent'
+#        ignore_errors: true
+#        retries: 5
