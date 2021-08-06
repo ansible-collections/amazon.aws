@@ -392,3 +392,5 @@ plugins/modules/s3_bucket.py import-3.6!skip
 plugins/modules/s3_bucket.py import-3.7!skip
 plugins/modules/s3_bucket.py metaclass-boilerplate!skip
 tests/sanity/refresh_ignore_files shebang!skip
+tests/unit/module_utils/core/ansible_aws_module/test_require_at_least.py compile-2.6!skip
+tests/unit/module_utils/core/ansible_aws_module/test_require_at_least.py compile-2.7!skip
