@@ -91,11 +91,6 @@
       state: present
     register: tg
 
-  # Run tests for graceful failure with an old version of botocore
-  - include_tasks: test_multiple_actions_fail.yml
-    vars:
-      ansible_python_interpreter: "{{ virtualenv_interpreter }}"
-
   # Run main tests
   - include_tasks: test_alb_bad_listener_options.yml
   - include_tasks: test_alb_ip_address_type_options.yml

@@ -6,32 +6,6 @@
       security_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-
-    - set_fact:
-        virtualenv: "{{ remote_tmp_dir }}/virtualenv"
-        virtualenv_command: "{{ ansible_python_interpreter }} -m virtualenv"
-
-    - set_fact:
-        virtualenv_interpreter: "{{ virtualenv }}/bin/python"
-
-    - pip:
-        name: virtualenv
-
-    - pip:
-        name:
-          - 'boto3<1.6.0'
-          - botocore
-          - boto
-          - coverage<5
-          - cryptography
-        virtualenv: "{{ virtualenv }}"
-        virtualenv_command: "{{ virtualenv_command }}"
-        virtualenv_site_packages: no
-
-    - include_tasks: graceful_failure.yml
-      vars:
-        ansible_python_interpreter: "{{ virtualenv_interpreter }}"
-
     - name: Find AMI to use
       ec2_ami_info:
         owners: 'amazon'
@@ -46,9 +20,3 @@
     - include_tasks: versions.yml
     - include_tasks: instance-metadata.yml
     - include_tasks: network_interfaces.yml
-
-  always:
-
-    - file:
-        path: "{{ virtualenv }}"
-        state: absent
