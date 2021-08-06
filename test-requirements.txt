@@ -6,3 +6,5 @@ pytest-xdist
 pytest-mock
 # Needed for ansible.netcommon.ipaddr in tests
 netaddr
+# Sometimes needed where we don't have features we need in modules
+awscli

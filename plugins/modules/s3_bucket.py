@@ -571,9 +571,6 @@ def put_bucket_versioning(s3_client, bucket_name, required_versioning):
 
 @AWSRetry.exponential_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
 def get_bucket_encryption(s3_client, bucket_name):
-    if not hasattr(s3_client, "get_bucket_encryption"):
-        return None
-
     try:
         result = s3_client.get_bucket_encryption(Bucket=bucket_name)
         return result.get('ServerSideEncryptionConfiguration', {}).get('Rules', [])[0].get('ApplyServerSideEncryptionByDefault')
@@ -772,8 +769,6 @@ def get_bucket_ownership_cntrl(s3_client, module, bucket_name):
     '''
     Get current bucket public access block
     '''
-    if not module.botocore_at_least('1.8.11'):
-        return None
     try:
         bucket_ownership = s3_client.get_bucket_ownership_controls(Bucket=bucket_name)
         return bucket_ownership['OwnershipControls']['Rules'][0]['ObjectOwnership']
@@ -952,14 +947,6 @@ def main():
     encryption_key_id = module.params.get("encryption_key_id")
     delete_object_ownership = module.params.get('delete_object_ownership')
     object_ownership = module.params.get('object_ownership')
-
-    if delete_object_ownership is not None or object_ownership is not None:
-        if not module.botocore_at_least('1.8.11'):
-            module.fail_json(msg="Managing bucket ownership controls requires botocore version >= 1.8.11")
-
-    if not hasattr(s3_client, "get_bucket_encryption"):
-        if encryption is not None:
-            module.fail_json(msg="Using bucket encryption requires botocore version >= 1.7.41")
 
     # Parameter validation
     if encryption_key_id is not None and encryption != 'aws:kms':

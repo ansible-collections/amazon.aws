@@ -45,7 +45,7 @@
           - "'{{ create_instance_results.spec.DisableApiTermination }}'"
 
     - name: Get info on termination protection
-      command: '{{ aws_cli }} ec2 describe-instance-attribute --attribute disableApiTermination --instance-id {{ instance_id }}'
+      command: 'aws ec2 describe-instance-attribute --attribute disableApiTermination --instance-id {{ instance_id }}'
       environment:
         AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
         AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
@@ -128,7 +128,7 @@
           - "{{ set_termination_protectioncheck_mode_results.changed }}"
 
     - name: Get info on termination protection
-      command: '{{ aws_cli }} ec2 describe-instance-attribute --attribute disableApiTermination --instance-id {{ instance_id }}'
+      command: 'aws ec2 describe-instance-attribute --attribute disableApiTermination --instance-id {{ instance_id }}'
       environment:
         AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
         AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
@@ -161,7 +161,7 @@
           - set_termination_protection_results.changed
 
     - name: Get info on termination protection
-      command: '{{ aws_cli }} ec2 describe-instance-attribute --attribute disableApiTermination --instance-id {{ instance_id }}'
+      command: 'aws ec2 describe-instance-attribute --attribute disableApiTermination --instance-id {{ instance_id }}'
       environment:
         AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
         AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"

@@ -970,9 +970,6 @@ def main():
     if dualstack and s3_url is not None and 'amazonaws.com' not in s3_url:
         module.fail_json(msg='dualstack only applies to AWS S3')
 
-    if dualstack and not module.botocore_at_least('1.4.45'):
-        module.fail_json(msg='dualstack requires botocore >= 1.4.45')
-
     # rgw requires an explicit url
     if rgw and not s3_url:
         module.fail_json(msg='rgw flavour requires s3_url')

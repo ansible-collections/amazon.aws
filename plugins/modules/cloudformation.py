@@ -402,10 +402,7 @@ def create_stack(module, stack_params, cfn, events_limit):
     if module.params.get('create_timeout') is not None:
         stack_params['TimeoutInMinutes'] = module.params['create_timeout']
     if module.params.get('termination_protection') is not None:
-        if boto_supports_termination_protection(cfn):
-            stack_params['EnableTerminationProtection'] = bool(module.params.get('termination_protection'))
-        else:
-            module.fail_json(msg="termination_protection parameter requires botocore >= 1.7.18")
+        stack_params['EnableTerminationProtection'] = bool(module.params.get('termination_protection'))
 
     try:
         response = cfn.create_stack(aws_retry=True, **stack_params)
@@ -502,8 +499,6 @@ def update_stack(module, stack_params, cfn, events_limit):
 
 def update_termination_protection(module, cfn, stack_name, desired_termination_protection_state):
     '''updates termination protection of a stack'''
-    if not boto_supports_termination_protection(cfn):
-        module.fail_json(msg="termination_protection parameter requires botocore >= 1.7.18")
     stack = get_stack_facts(module, cfn, stack_name)
     if stack:
         if stack['EnableTerminationProtection'] is not desired_termination_protection_state:
@@ -514,11 +509,6 @@ def update_termination_protection(module, cfn, stack_name, desired_termination_p
                     StackName=stack_name)
             except botocore.exceptions.ClientError as e:
                 module.fail_json_aws(e)
-
-
-def boto_supports_termination_protection(cfn):
-    '''termination protection was added in botocore 1.7.18'''
-    return hasattr(cfn, "update_termination_protection")
 
 
 def stack_operation(module, cfn, stack_name, operation, events_limit, op_token=None):

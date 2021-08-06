@@ -250,9 +250,8 @@ def get_subnet_info(subnet):
 
 
 def waiter_params(module, params, start_time):
-    if not module.botocore_at_least("1.7.0"):
-        remaining_wait_timeout = int(module.params['wait_timeout'] + start_time - time.time())
-        params['WaiterConfig'] = {'Delay': 5, 'MaxAttempts': remaining_wait_timeout // 5}
+    remaining_wait_timeout = int(module.params['wait_timeout'] + start_time - time.time())
+    params['WaiterConfig'] = {'Delay': 5, 'MaxAttempts': remaining_wait_timeout // 5}
     return params
 
 
@@ -538,9 +537,6 @@ def main():
 
     if module.params.get('assign_instances_ipv6') and not module.params.get('ipv6_cidr'):
         module.fail_json(msg="assign_instances_ipv6 is True but ipv6_cidr is None or an empty string")
-
-    if not module.botocore_at_least("1.7.0"):
-        module.warn("botocore >= 1.7.0 is required to use wait_timeout for custom wait times")
 
     retry_decorator = AWSRetry.jittered_backoff(retries=10)
     connection = module.client('ec2', retry_decorator=retry_decorator)
