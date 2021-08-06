@@ -17,7 +17,6 @@ description:
 author:
   - Michael Schuett (@michaeljs1990)
   - Rob White (@wimnat)
-requirements: [ "boto3", "botocore" ]
 options:
   instance_ids:
     description:

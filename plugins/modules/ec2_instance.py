@@ -19,7 +19,6 @@ description:
     can create and manage spot instances.
 author:
   - Ryan Scott Brown (@ryansb)
-requirements: [ "boto3", "botocore" ]
 options:
   instance_ids:
     description:
@@ -234,7 +233,6 @@ options:
       - Reduce the number of vCPU exposed to the instance.
       - Those parameters can only be set at instance launch. The two suboptions threads_per_core and core_count are mandatory.
       - See U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-optimize-cpu.html) for combinations available.
-      - Requires botocore >= 1.10.16
     type: dict
     suboptions:
       threads_per_core:
