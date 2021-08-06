@@ -28,24 +28,6 @@
 
     # ============================================================
 
-    - name: attempt to create a VPC without providing connnection information
-      module_defaults: { group/aws: {} }
-      ec2_vpc_net:
-        state: present
-        cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
-        region: us-east-1
-      ignore_errors: yes
-      register: result
-
-    - name: assert connection failure
-      assert:
-        that:
-          - result is failed
-          - '"Unable to locate credentials" in result.msg'
-
-    # ============================================================
-
     - name: Fetch existing VPC info
       ec2_vpc_net_info:
         filters:
