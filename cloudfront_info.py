@@ -553,7 +553,7 @@ def main():
         summary=dict(required=False, default=False, type='bool'),
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=False)
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
     is_old_facts = module._name == 'cloudfront_facts'
     if is_old_facts:
         module.deprecate("The 'cloudfront_facts' module has been renamed to 'cloudfront_info', "

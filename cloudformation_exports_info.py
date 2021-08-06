@@ -67,7 +67,7 @@ def main():
         original_message=''
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=False)
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
     cloudformation_client = module.client('cloudformation')
 
     try:
