@@ -13,8 +13,8 @@ module: aws_msk_config
 short_description: Manage Amazon MSK cluster configurations.
 version_added: "2.0.0"
 requirements:
-    - botocore >= 1.17.42
-    - boto3 >= 1.17.9
+    - botocore >= 1.17.48
+    - boto3
 description:
     - Create, delete and modify Amazon MSK (Managed Streaming for Apache Kafka) cluster configurations.
 author:
@@ -104,9 +104,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
 )
 
 
-BOTOCORE_MIN_VERSION = "1.17.42"
-
-
 def dict_to_prop(d):
     """convert dictionary to multi-line properties"""
     if len(d) == 0:
@@ -138,8 +135,6 @@ def get_configurations_with_backoff(client):
 def find_active_config(client, module):
     """
     looking for configuration by name
-      status is not returned for list_configurations in botocore 1.17.42
-      delete_configuration method was added in botocore 1.17.48
     """
 
     name = module.params["name"]
@@ -284,12 +279,9 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=module_args, supports_check_mode=True)
 
-    if not module.botocore_at_least(BOTOCORE_MIN_VERSION):
-        module.fail_json(
-            msg="aws_msk_config module requires botocore >= {0}".format(
-                BOTOCORE_MIN_VERSION
-            )
-        )
+    # Support for update_configuration and delete_configuration added in 1.17.48
+    if not module.botocore_at_least("1.17.48"):
+        module.fail_json(msg="aws_msk_config module requires botocore >= 1.17.48")
 
     client = module.client("kafka", retry_decorator=AWSRetry.jittered_backoff())
 

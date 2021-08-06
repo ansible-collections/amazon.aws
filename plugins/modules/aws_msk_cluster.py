@@ -12,9 +12,6 @@ DOCUMENTATION = r"""
 module: aws_msk_cluster
 short_description: Manage Amazon MSK clusters.
 version_added: "2.0.0"
-requirements:
-    - botocore >= 1.17.42
-    - boto3 >= 1.17.9
 description:
     - Create, delete and modify Amazon MSK (Managed Streaming for Apache Kafka) clusters.
 author:
@@ -34,6 +31,7 @@ options:
             - The version of Apache Kafka.
             - This version should exist in given configuration.
             - This parameter is required when I(state=present).
+            - Update operation requires botocore version >= 1.16.19.
         type: str
     configuration_arn:
         description:
@@ -52,7 +50,7 @@ options:
     instance_type:
         description:
             - The type of Amazon EC2 instances to use for Kafka brokers.
-            - Update operation requires boto3 version >= 1.16.58
+            - Update operation requires botocore version >= 1.19.58.
         choices:
             - kafka.t3.small
             - kafka.m5.large
@@ -522,7 +520,7 @@ def create_or_update_cluster(client, module):
                 }
             },
             "broker_type": {
-                "boto3_version": "1.16.58",
+                "botocore_version": "1.19.58",
                 "current_value": cluster["BrokerNodeGroupInfo"]["InstanceType"],
                 "target_value": module.params.get("instance_type"),
                 "update_params": {
@@ -546,6 +544,7 @@ def create_or_update_cluster(client, module):
                 }
             },
             "cluster_kafka_version": {
+                "botocore_version": "1.16.19",
                 "current_value": cluster["CurrentBrokerSoftwareInfo"]["KafkaVersion"],
                 "target_value": module.params.get("version"),
                 "update_params": {
@@ -578,8 +577,8 @@ def create_or_update_cluster(client, module):
 
         for method, options in msk_cluster_changes.items():
 
-            if 'boto3_version' in options:
-                if not module.boto3_at_least(options["boto3_version"]):
+            if 'botocore_version' in options:
+                if not module.botocore_at_least(options["botocore_version"]):
                     continue
 
             try:
