@@ -71,6 +71,8 @@
       image_id: "{{ images_info.images | sort(attribute='creation_date') | reverse | first | json_query('image_id') }}"
 
   # ============================================================
+
+  # Assert that spot instance request is created
   - name: Create spot instance request
     ec2_spot_instance:
       launch_specification:
@@ -79,6 +81,32 @@
         instance_type: "t2.medium"
         subnet_id: "{{ vpc_subnet_result.subnet.id }}"
     register: result
+
+  - name: Assert that result has changed and request has been created
+    assert:
+      that:
+        - "result.changed == True"
+        - "result.spot_request is defined"
+        - "result.spot_request.SpotInstanceRequestId is defined"
+        - 'result.spot_request.LaunchSpecification.SubnetId == vpc_subnet_result.subnet.id'
+
+  # Assert check mode
+  - name: Create spot instance request (check_mode)
+    ec2_spot_instance:
+      launch_specification:
+        image_id: "{{ image_id }}"
+        key_name: "{{ resource_prefix }}-keypair"
+        instance_type: "t2.medium"
+        subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+    check_mode: True
+    register: result_check_mode
+
+  - name: Assert that result has changed and request has been created in check_mode
+    assert:
+      that:
+        - "result_check_mode.changed == True"
+
+
 
   always:
 
