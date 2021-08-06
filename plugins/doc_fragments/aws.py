@@ -44,7 +44,7 @@ options:
     aliases: [ ec2_access_key, access_key ]
   security_token:
     description:
-      - C(AWS STS security token). If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.
+      - C(AWS STS security token). If not set then the value of the C(AWS_SECURITY_TOKEN) or C(EC2_SECURITY_TOKEN) environment variable is used.
       - If I(profile) is set this parameter is ignored.
       - Passing the I(security_token) and I(profile) options at the same time has been deprecated
         and the options will be made mutually exclusive after 2022-06-01.
