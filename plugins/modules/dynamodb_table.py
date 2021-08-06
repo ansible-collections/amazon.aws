@@ -494,8 +494,6 @@ def main():
     if module.params.get('tags'):
         try:
             boto3_dynamodb = module.client('dynamodb')
-            if not hasattr(boto3_dynamodb, 'tag_resource'):
-                module.fail_json(msg='boto3 connection does not have tag_resource(), likely due to using an old version')
             boto3_sts = module.client('sts')
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg='Failed to connect to AWS')

@@ -183,9 +183,6 @@ class AnsibleEc2TgwInfo(object):
         self._connection = self._module.client('ec2')
         self._check_mode = self._module.check_mode
 
-        if not hasattr(self._connection, 'describe_transit_gateways'):
-            self._module.fail_json(msg='transit gateway module requires boto3 >= 1.9.52')
-
     @AWSRetry.exponential_backoff()
     def describe_transit_gateways(self):
         """

@@ -130,7 +130,6 @@ options:
     network_configuration:
         description:
           - Network configuration of the service. Only applicable for task definitions created with I(network_mode=awsvpc).
-          - I(assign_public_ip) requires botocore >= 1.8.4
         type: dict
         suboptions:
           subnets:
@@ -146,7 +145,6 @@ options:
           assign_public_ip:
             description:
               - Whether the task's elastic network interface receives a public IP address.
-              - This option requires botocore >= 1.8.4.
             type: bool
     launch_type:
         description:
@@ -164,7 +162,6 @@ options:
     health_check_grace_period_seconds:
         description:
           - Seconds to wait before health checking the freshly added/updated services.
-          - This option requires botocore >= 1.8.20.
         required: false
         type: int
     service_registries:
@@ -516,13 +513,10 @@ class EcsServiceManager:
                     self.module.fail_json_aws(e, msg="Couldn't look up security groups")
             result['securityGroups'] = groups
         if network_config['assign_public_ip'] is not None:
-            if self.module.botocore_at_least('1.8.4'):
-                if network_config['assign_public_ip'] is True:
-                    result['assignPublicIp'] = "ENABLED"
-                else:
-                    result['assignPublicIp'] = "DISABLED"
+            if network_config['assign_public_ip'] is True:
+                result['assignPublicIp'] = "ENABLED"
             else:
-                self.module.fail_json(msg='botocore needs to be version 1.8.4 or higher to use assign_public_ip in network_configuration')
+                result['assignPublicIp'] = "DISABLED"
         return dict(awsvpcConfiguration=result)
 
     def find_in_array(self, array_of_services, service_name, field_name='serviceArn'):
@@ -640,16 +634,9 @@ class EcsServiceManager:
     def delete_service(self, service, cluster=None):
         return self.ecs.delete_service(cluster=cluster, service=service)
 
-    def ecs_api_handles_network_configuration(self):
-        # There doesn't seem to be a nice way to inspect botocore to look
-        # for attributes (and networkConfiguration is not an explicit argument
-        # to e.g. ecs.run_task, it's just passed as a keyword argument)
-        return self.module.botocore_at_least('1.7.44')
-
     def health_check_setable(self, params):
         load_balancers = params.get('loadBalancers', [])
-        # check if botocore (and thus boto3) is new enough for using the healthCheckGracePeriodSeconds parameter
-        return len(load_balancers) > 0 and self.module.botocore_at_least('1.8.20')
+        return len(load_balancers) > 0
 
 
 def main():
@@ -710,8 +697,6 @@ def main():
 
     service_mgr = EcsServiceManager(module)
     if module.params['network_configuration']:
-        if not service_mgr.ecs_api_handles_network_configuration():
-            module.fail_json(msg='botocore needs to be version 1.7.44 or higher to use network configuration')
         network_configuration = service_mgr.format_network_configuration(module.params['network_configuration'])
     else:
         network_configuration = None
@@ -728,16 +713,6 @@ def main():
         module.fail_json(msg="Exception describing service '" + module.params['name'] + "' in cluster '" + module.params['cluster'] + "': " + str(e))
 
     results = dict(changed=False)
-
-    if module.params['launch_type']:
-        if not module.botocore_at_least('1.8.4'):
-            module.fail_json(msg='botocore needs to be version 1.8.4 or higher to use launch_type')
-    if module.params['force_new_deployment']:
-        if not module.botocore_at_least('1.8.4'):
-            module.fail_json(msg='botocore needs to be version 1.8.4 or higher to use force_new_deployment')
-    if module.params['health_check_grace_period_seconds']:
-        if not module.botocore_at_least('1.8.20'):
-            module.fail_json(msg='botocore needs to be version 1.8.20 or higher to use health_check_grace_period_seconds')
 
     if module.params['state'] == 'present':
 
@@ -773,15 +748,11 @@ def main():
                     # check various parameters and boto versions and give a helpful error in boto is not new enough for feature
 
                     if module.params['scheduling_strategy']:
-                        if not module.botocore_at_least('1.10.37'):
-                            module.fail_json(msg='botocore needs to be version 1.10.37 or higher to use scheduling_strategy')
-                        elif (existing['schedulingStrategy']) != module.params['scheduling_strategy']:
+                        if (existing['schedulingStrategy']) != module.params['scheduling_strategy']:
                             module.fail_json(msg="It is not possible to update the scheduling strategy of an existing service")
 
                     if module.params['service_registries']:
-                        if not module.botocore_at_least('1.9.15'):
-                            module.fail_json(msg='botocore needs to be version 1.9.15 or higher to use service_registries')
-                        elif (existing['serviceRegistries'] or []) != serviceRegistries:
+                        if (existing['serviceRegistries'] or []) != serviceRegistries:
                             module.fail_json(msg="It is not possible to update the service registries of an existing service")
 
                     if (existing['loadBalancers'] or []) != loadBalancers:

@@ -1825,22 +1825,6 @@ def main():
         ]
     )
 
-    if (
-        module.params.get('max_instance_lifetime') is not None
-        and not module.botocore_at_least('1.13.21')
-    ):
-        module.fail_json(
-            msg='Botocore needs to be version 1.13.21 or higher to use max_instance_lifetime.'
-        )
-
-    if (
-        module.params.get('mixed_instances_policy') is not None
-        and not module.botocore_at_least('1.12.45')
-    ):
-        module.fail_json(
-            msg='Botocore needs to be version 1.12.45 or higher to use mixed_instances_policy.'
-        )
-
     state = module.params.get('state')
     replace_instances = module.params.get('replace_instances')
     replace_all_instances = module.params.get('replace_all_instances')

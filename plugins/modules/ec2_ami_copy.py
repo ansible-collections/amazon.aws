@@ -212,7 +212,6 @@ def main():
         tag_equality=dict(type='bool', default=False))
 
     module = AnsibleAWSModule(argument_spec=argument_spec)
-    # TODO: Check botocore version
     ec2 = module.client('ec2')
     copy_image(module, ec2)
 

@@ -76,7 +76,6 @@ options:
     scan_on_push:
         description:
             - if C(true), images are scanned for known vulnerabilities after being pushed to the repository.
-            - I(scan_on_push) requires botocore >= 1.13.3
         required: false
         default: false
         type: bool
