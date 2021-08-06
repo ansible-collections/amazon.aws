@@ -28,7 +28,7 @@ options:
     aliases: [ aws_endpoint_url, endpoint_url ]
   aws_secret_key:
     description:
-      - C(AWS secret key). If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.
+      - C(AWS secret key). If not set then the value of the C(AWS_SECRET_ACCESS_KEY), C(AWS_SECRET_KEY), or C(EC2_SECRET_KEY) environment variable is used.
       - If I(profile) is set this parameter is ignored.
       - Passing the I(aws_secret_key) and I(profile) options at the same time has been deprecated
         and the options will be made mutually exclusive after 2022-06-01.
@@ -36,7 +36,7 @@ options:
     aliases: [ ec2_secret_key, secret_key ]
   aws_access_key:
     description:
-      - C(AWS access key). If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.
+      - C(AWS access key). If not set then the value of the C(AWS_ACCESS_KEY_ID), C(AWS_ACCESS_KEY) or C(EC2_ACCESS_KEY) environment variable is used.
       - If I(profile) is set this parameter is ignored.
       - Passing the I(aws_access_key) and I(profile) options at the same time has been deprecated
         and the options will be made mutually exclusive after 2022-06-01.
