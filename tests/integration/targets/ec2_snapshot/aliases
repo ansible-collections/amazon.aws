@@ -4,5 +4,7 @@
 # https://github.com/ansible-collections/amazon.aws/issues/441
 disabled
 
+slow
+
 cloud/aws
 ec2_snapshot_info
