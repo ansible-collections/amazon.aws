@@ -205,7 +205,6 @@ from ansible.plugins.inventory import BaseInventoryPlugin
 from ansible.plugins.inventory import Cacheable
 from ansible.plugins.inventory import Constructable
 from ansible.template import Templar
-from ansible.utils.display import Display
 
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
