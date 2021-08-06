@@ -34,7 +34,6 @@ options:
       - Boundaries cannot be set on Instance Profiles, as such if this option is specified then I(create_instance_profile) must be C(false).
       - This is intended for roles/users that have permissions to create new IAM objects.
       - For more information on boundaries, see U(https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html).
-      - Requires botocore 1.10.57 or above.
     aliases: [boundary_policy_arn]
     type: str
   assume_role_policy_document:
@@ -82,7 +81,6 @@ options:
   tags:
     description:
       - Tag dict to apply to the queue.
-      - Requires botocore 1.12.46 or above.
     type: dict
   purge_tags:
     description:
@@ -566,8 +564,6 @@ def get_attached_policy_list(connection, module, name):
 
 def get_role_tags(connection, module):
     role_name = module.params.get('name')
-    if not hasattr(connection, 'list_role_tags'):
-        return {}
     try:
         return boto3_tag_list_to_ansible_dict(connection.list_role_tags(RoleName=role_name, aws_retry=True)['Tags'])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -633,12 +629,6 @@ def main():
             module.fail_json(msg="When using a boundary policy, `create_instance_profile` must be set to `false`.")
         if not module.params.get('boundary').startswith('arn:aws:iam'):
             module.fail_json(msg="Boundary policy must be an ARN")
-    if module.params.get('tags') is not None and not module.botocore_at_least('1.12.46'):
-        module.fail_json(msg="When managing tags botocore must be at least v1.12.46. "
-                         "Current versions: boto3-{boto3_version} botocore-{botocore_version}".format(**module._gather_versions()))
-    if module.params.get('boundary') is not None and not module.botocore_at_least('1.10.57'):
-        module.fail_json(msg="When using a boundary policy, botocore must be at least v1.10.57. "
-                         "Current versions: boto3-{boto3_version} botocore-{botocore_version}".format(**module._gather_versions()))
     if module.params.get('max_session_duration'):
         max_session_duration = module.params.get('max_session_duration')
         if max_session_duration < 3600 or max_session_duration > 43200:
