@@ -105,7 +105,7 @@ options:
     type: str
   tags:
     description:
-      - tag dict to apply to the function (requires botocore 1.5.40 or above).
+      - Tag dict to apply to the function.
     type: dict
 author:
     - 'Steyn Huizinga (@steynovich)'
@@ -383,10 +383,6 @@ def main():
         client = module.client('lambda', retry_decorator=AWSRetry.jittered_backoff())
     except (ClientError, BotoCoreError) as e:
         module.fail_json_aws(e, msg="Trying to connect to AWS")
-
-    if tags is not None:
-        if not hasattr(client, "list_tags"):
-            module.fail_json(msg="Using tags requires botocore 1.5.40 or above")
 
     if state == 'present':
         if re.match(r'^arn:aws(-([a-z\-]+))?:iam', role):

@@ -79,13 +79,11 @@ options:
     throughput_mode:
         description:
             - The throughput_mode for the file system to be created.
-            - Requires botocore >= 1.10.57
         choices: ['bursting', 'provisioned']
         type: str
     provisioned_throughput_in_mibps:
         description:
             - If the throughput_mode is provisioned, select the amount of throughput to provisioned in Mibps.
-            - Requires botocore >= 1.10.57
         type: float
     wait:
         description:
@@ -370,12 +368,6 @@ class EFSConnection(object):
 
         return list(targets)
 
-    def supports_provisioned_mode(self):
-        """
-        Ensure boto3 includes provisioned throughput mode feature
-        """
-        return hasattr(self.connection, 'update_file_system')
-
     def get_throughput_mode(self, **kwargs):
         """
         Returns throughput mode for selected EFS instance
@@ -413,15 +405,9 @@ class EFSConnection(object):
         if kms_key_id is not None:
             params['KmsKeyId'] = kms_key_id
         if throughput_mode:
-            if self.supports_provisioned_mode():
-                params['ThroughputMode'] = throughput_mode
-            else:
-                self.module.fail_json(msg="throughput_mode parameter requires botocore >= 1.10.57")
+            params['ThroughputMode'] = throughput_mode
         if provisioned_throughput_in_mibps:
-            if self.supports_provisioned_mode():
-                params['ProvisionedThroughputInMibps'] = provisioned_throughput_in_mibps
-            else:
-                self.module.fail_json(msg="provisioned_throughput_in_mibps parameter requires botocore >= 1.10.57")
+            params['ProvisionedThroughputInMibps'] = provisioned_throughput_in_mibps
 
         if state in [self.STATE_DELETING, self.STATE_DELETED]:
             wait_for(
@@ -731,8 +717,7 @@ def main():
             module.fail_json(msg='Name parameter is required for create')
 
         changed = connection.create_file_system(name, performance_mode, encrypt, kms_key_id, throughput_mode, provisioned_throughput_in_mibps)
-        if connection.supports_provisioned_mode():
-            changed = connection.update_file_system(name, throughput_mode, provisioned_throughput_in_mibps) or changed
+        changed = connection.update_file_system(name, throughput_mode, provisioned_throughput_in_mibps) or changed
         changed = connection.converge_file_system(name=name, tags=tags, purge_tags=purge_tags, targets=targets,
                                                   throughput_mode=throughput_mode, provisioned_throughput_in_mibps=provisioned_throughput_in_mibps) or changed
         result = first_or_default(connection.get_file_systems(CreationToken=name))

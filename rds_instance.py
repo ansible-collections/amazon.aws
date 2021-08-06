@@ -1198,9 +1198,6 @@ def main():
         supports_check_mode=True
     )
 
-    if not module.boto3_at_least('1.5.0'):
-        module.fail_json(msg="rds_instance requires boto3 > 1.5.0")
-
     # Sanitize instance identifiers
     module.params['db_instance_identifier'] = module.params['db_instance_identifier'].lower()
     if module.params['new_db_instance_identifier']:

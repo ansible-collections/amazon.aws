@@ -120,10 +120,6 @@ def main():
         argument_spec=argument_spec,
     )
 
-    if not module.botocore_at_least('1.5.24'):
-        # TTL was added in 1.5.24
-        module.fail_json(msg='Found botocore in version {0}, but >= {1} is required for TTL support'.format(botocore.__version__, '1.5.24'))
-
     try:
         dbclient = module.client('dynamodb')
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:

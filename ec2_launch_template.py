@@ -719,9 +719,6 @@ def main():
         supports_check_mode=True
     )
 
-    if not module.boto3_at_least('1.6.0'):
-        module.fail_json(msg="ec2_launch_template requires boto3 >= 1.6.0")
-
     for interface in (module.params.get('network_interfaces') or []):
         if interface.get('ipv6_addresses'):
             interface['ipv6_addresses'] = [{'ipv6_address': x} for x in interface['ipv6_addresses']]

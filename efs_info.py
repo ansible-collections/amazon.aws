@@ -148,12 +148,12 @@ performance_mode:
     sample: "generalPurpose"
 throughput_mode:
     description: mode of throughput for the file system
-    returned: when botocore >= 1.10.57
+    returned: always
     type: str
     sample: "bursting"
 provisioned_throughput_in_mibps:
     description: throughput provisioned in Mibps
-    returned: when botocore >= 1.10.57 and throughput_mode is set to "provisioned"
+    returned: when throughput_mode is set to "provisioned"
     type: float
     sample: 15.0
 tags:

@@ -770,14 +770,6 @@ def main():
     task_mgr = EcsTaskManager(module)
     results = dict(changed=False)
 
-    if module.params['launch_type']:
-        if not module.botocore_at_least('1.8.4'):
-            module.fail_json(msg='botocore needs to be version 1.8.4 or higher to use launch_type')
-
-    if module.params['execution_role_arn']:
-        if not module.botocore_at_least('1.10.44'):
-            module.fail_json(msg='botocore needs to be version 1.10.44 or higher to use execution_role_arn')
-
     if module.params['state'] == 'present':
         if 'containers' not in module.params or not module.params['containers']:
             module.fail_json(msg="To use task definitions, a list of containers must be specified")
