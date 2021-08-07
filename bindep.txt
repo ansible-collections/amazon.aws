@@ -1,0 +1,4 @@
+# Needed by the ec2_key integration tests (generating EC2 format fingerprint)
+openssl [test platform:rpm]
+gcc [test platform:rpm]
+python3-devel [test platform:rpm]
