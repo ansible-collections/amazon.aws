@@ -23,7 +23,7 @@ options:
     type: str
   dest:
     description:
-      - The destination file path when downloading an object/key with a GET operation.
+      - The destination file path when downloading an object/key with a C(GET) operation.
     type: path
   encrypt:
     description:
@@ -46,7 +46,7 @@ options:
     type: int
   headers:
     description:
-      - Custom headers for PUT operation, as a dictionary of C(key=value) and C(key=value,key=value).
+      - Custom headers for C(PUT) operation, as a dictionary of C(key=value) and C(key=value,key=value).
     type: dict
   marker:
     description:
@@ -63,7 +63,7 @@ options:
     type: dict
   mode:
     description:
-      - Switches the module behaviour between C(put) (upload), C(get) (download), C(geturl) (return download url, Ansible 1.3+),
+      - Switches the module behaviour between C(PUT) (upload), C(GET) (download), C(geturl) (return download URL, Ansible 1.3+),
         C(getstr) (download object as string (1.3+)), C(list) (list keys, Ansible 2.0+), C(create) (bucket), C(delete) (bucket),
         delobj (delete object, Ansible 2.0+) and C(copy) object that is already stored in another (bucket).
     required: true
@@ -94,7 +94,7 @@ options:
     type: str
   overwrite:
     description:
-      - Force overwrite either locally on the filesystem or remotely with the object/key. Used with PUT and GET operations.
+      - Force overwrite either locally on the filesystem or remotely with the object/key. Used with C(PUT) and C(GET) operations.
       - Must be a Boolean, C(always), C(never) or C(different).
       - C(true) is the same as C(always).
       - C(false) is equal to C(never).
@@ -127,28 +127,28 @@ options:
     type: bool
   src:
     description:
-      - The source file path when performing a PUT operation.
-      - Either I(content), I(content_base64) or I(src) must be specified for a PUT operation. Ignored otherwise.
+      - The source file path when performing a C(PUT) operation.
+      - Either I(content), I(content_base64) or I(src) must be specified for a C(PUT) operation. Ignored otherwise.
     type: path
   content:
     description:
-      - The content to PUT into an object.
+      - The content to C(PUT) into an object.
       - The parameter value will be treated as a string and converted to UTF-8 before sending it to S3.
         To send binary data, use the I(content_base64) parameter instead.
-      - Either I(content), I(content_base64) or I(src) must be specified for a PUT operation. Ignored otherwise.
+      - Either I(content), I(content_base64) or I(src) must be specified for a C(PUT) operation. Ignored otherwise.
     version_added: "1.3.0"
     type: str
   content_base64:
     description:
-      - The base64-encoded binary data to PUT into an object.
+      - The base64-encoded binary data to C(PUT) into an object.
       - Use this if you need to put raw binary data, and don't forget to encode in base64.
-      - Either I(content), I(content_base64) or I(src) must be specified for a PUT operation. Ignored otherwise.
+      - Either I(content), I(content_base64) or I(src) must be specified for a C(PUT) operation. Ignored otherwise.
     version_added: "1.3.0"
     type: str
   ignore_nonexistent_bucket:
     description:
       - "Overrides initial bucket lookups in case bucket or iam policies are restrictive. Example: a user may have the
-        GetObject permission but no other permissions. In this case using the option mode: get will fail without specifying
+        C(GetObject) permission but no other permissions. In this case using the option mode: get will fail without specifying
         I(ignore_nonexistent_bucket=true)."
     type: bool
     default: false

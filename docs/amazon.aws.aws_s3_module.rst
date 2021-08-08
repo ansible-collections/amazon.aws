@@ -230,7 +230,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
+                        <div>URL to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_endpoint_url, endpoint_url</div>
                 </td>
             </tr>
@@ -407,7 +407,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Switches the module behaviour between <code>put</code> (upload), <code>get</code> (download), <code>geturl</code> (return download url, Ansible 1.3+), <code>getstr</code> (download object as string (1.3+)), <code>list</code> (list keys, Ansible 2.0+), <code>create</code> (bucket), <code>delete</code> (bucket), and delobj (delete object, Ansible 2.0+).</div>
+                        <div>Switches the module behaviour between <code>PUT</code> (upload), <code>GET</code> (download), <code>geturl</code> (return download URL, Ansible 1.3+), <code>getstr</code> (download object as string (1.3+)), <code>list</code> (list keys, Ansible 2.0+), <code>create</code> (bucket), <code>delete</code> (bucket), and delobj (delete object, Ansible 2.0+).</div>
                 </td>
             </tr>
             <tr>
