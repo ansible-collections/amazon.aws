@@ -101,7 +101,7 @@ EXAMPLES = r"""
     aws_access_key=aws_access_key, aws_secret_key=aws_secret_key, nested=true) }}"
    # The secret can be queried using the following syntax: `aws_secret_object_name.key1.key2.key3`.
    # If an object is of the form `{"key1":{"key2":{"key3":1}}}` the query would return the value `1`.
-   # Region is the aws region the aws secret is stored.
+   # Region is the AWS region where the AWS secret is stored.
    # AWS_profile is the aws profile to use, that has access to the AWS secret.
 """
 
