@@ -252,6 +252,25 @@ class AnsibleAWSModule(object):
         return dict(boto3_version=boto3.__version__,
                     botocore_version=botocore.__version__)
 
+    def require_boto3_at_least(self, desired, **kwargs):
+        """Check if the available boto3 version is greater than or equal to a desired version.
+
+        calls fail_json() when the boto3 version is less than the desired
+        version
+
+        Usage:
+            module.require_boto3_at_least("1.2.3", reason="to update tags")
+            module.require_boto3_at_least("1.1.1")
+
+        :param desired the minimum desired version
+        :param reason why the version is required (optional)
+        """
+        if not self.boto3_at_least(desired):
+            self._module.fail_json(
+                msg=missing_required_lib('boto3>={0}'.format(desired), **kwargs),
+                **self._gather_versions()
+            )
+
     def boto3_at_least(self, desired):
         """Check if the available boto3 version is greater than or equal to a desired version.
 
@@ -262,6 +281,25 @@ class AnsibleAWSModule(object):
         """
         existing = self._gather_versions()
         return LooseVersion(existing['boto3_version']) >= LooseVersion(desired)
+
+    def require_botocore_at_least(self, desired, **kwargs):
+        """Check if the available botocore version is greater than or equal to a desired version.
+
+        calls fail_json() when the botocore version is less than the desired
+        version
+
+        Usage:
+            module.require_botocore_at_least("1.2.3", reason="to update tags")
+            module.require_botocore_at_least("1.1.1")
+
+        :param desired the minimum desired version
+        :param reason why the version is required (optional)
+        """
+        if not self.botocore_at_least(desired):
+            self._module.fail_json(
+                msg=missing_required_lib('botocore>={0}'.format(desired), **kwargs),
+                **self._gather_versions()
+            )
 
     def botocore_at_least(self, desired):
         """Check if the available botocore version is greater than or equal to a desired version.

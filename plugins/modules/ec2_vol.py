@@ -717,8 +717,7 @@ def main():
             'Using the "list" state has been deprecated.  Please use the ec2_vol_info module instead', date='2022-06-01', collection_name='amazon.aws')
 
     if module.params.get('throughput'):
-        if not module.botocore_at_least("1.19.27"):
-            module.fail_json(msg="botocore >= 1.19.27 is required to set the throughput for a volume")
+        module.require_botocore_at_least('1.19.27', reason='to set the throughput for a volume')
 
     # Ensure we have the zone or can get the zone
     if instance is None and zone is None and state == 'present':
