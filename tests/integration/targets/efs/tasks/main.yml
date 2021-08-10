@@ -168,8 +168,8 @@
         provisioned_throughput_in_mibps: 5.0
       register: efs_result
 
-    - assert: 
-        that: 
+    - assert:
+        that:
           - efs_result is changed
 
     # ============================================================
@@ -186,9 +186,9 @@
         throughput_mode: 'provisioned'
         provisioned_throughput_in_mibps: 5.0
       register: efs_result
- 
+
     - assert:
-        that: 
+        that:
           - efs_result is not changed
           - efs_result.efs["throughput_mode"]  == "provisioned"
           - efs_result.efs["provisioned_throughput_in_mibps"] == 5.0
