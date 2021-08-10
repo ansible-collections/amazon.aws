@@ -1,4 +1,5 @@
 [tests]
+ownership_controls
 missing
 simple
 complex
@@ -7,7 +8,6 @@ tags
 encryption_kms
 encryption_sse
 public_access
-ownership_controls
 
 [all:vars]
 ansible_connection=local
