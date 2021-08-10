@@ -19,8 +19,8 @@ options:
     description: 'The service to filter ranges by. Options: EC2, S3, CLOUDFRONT, CODEbUILD, ROUTE53, ROUTE53_HEALTHCHECKS'
   region:
     description: 'The AWS region to narrow the ranges to. Examples: us-east-1, eu-west-2, ap-southeast-1'
-  ipv6_prefix:
-    description: 'Return only ipv6 addresses. Option: ipv6_prefix=True'
+  ipv6_prefixes:
+    description: 'Return only ipv6 addresses. Option: ipv6_prefixes=True'
 '''
 
 EXAMPLES = """
