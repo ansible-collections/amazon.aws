@@ -1,20 +1,11 @@
 ---
-  - name: set up elb_target test prerequisites
-    module_defaults:
-      group/aws:
-        aws_access_key: "{{ aws_access_key }}"
-        aws_secret_key: "{{ aws_secret_key }}"
-        security_token: "{{ security_token | default(omit) }}"
-        region: "{{ aws_region }}"
-    collections:
-      - amazon.aws
-
+  - name: set up ec2 based test prerequisites
     block:
 
     # ============================================================
 
     - name:
-      debug: msg="********** Setting up elb_target test dependencies **********"
+      debug: msg="********** Setting up elb_target EC2 test dependencies **********"
 
     # ============================================================
     - name: Find AMI to use

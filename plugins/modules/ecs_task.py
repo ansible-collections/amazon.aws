@@ -63,7 +63,6 @@ options:
     network_configuration:
         description:
           - Network configuration of the service. Only applicable for task definitions created with I(network_mode=awsvpc).
-          - I(assign_public_ip) requires botocore >= 1.8.4
         type: dict
         suboptions:
             assign_public_ip:
@@ -334,33 +333,9 @@ class EcsExecManager:
         response = self.ecs.stop_task(cluster=cluster, task=task)
         return response['task']
 
-    def ecs_api_handles_launch_type(self):
-        # There doesn't seem to be a nice way to inspect botocore to look
-        # for attributes (and networkConfiguration is not an explicit argument
-        # to e.g. ecs.run_task, it's just passed as a keyword argument)
-        return self.module.botocore_at_least('1.8.4')
-
     def ecs_task_long_format_enabled(self):
         account_support = self.ecs.list_account_settings(name='taskLongArnFormat', effectiveSettings=True)
         return account_support['settings'][0]['value'] == 'enabled'
-
-    def ecs_api_handles_tags(self):
-        # There doesn't seem to be a nice way to inspect botocore to look
-        # for attributes (and networkConfiguration is not an explicit argument
-        # to e.g. ecs.run_task, it's just passed as a keyword argument)
-        return self.module.botocore_at_least('1.12.46')
-
-    def ecs_api_handles_network_configuration(self):
-        # There doesn't seem to be a nice way to inspect botocore to look
-        # for attributes (and networkConfiguration is not an explicit argument
-        # to e.g. ecs.run_task, it's just passed as a keyword argument)
-        return self.module.botocore_at_least('1.7.44')
-
-    def ecs_api_handles_network_configuration_assignIp(self):
-        # There doesn't seem to be a nice way to inspect botocore to look
-        # for attributes (and networkConfiguration is not an explicit argument
-        # to e.g. ecs.run_task, it's just passed as a keyword argument)
-        return self.module.botocore_at_least('1.8.4')
 
 
 def main():
@@ -404,18 +379,7 @@ def main():
 
     service_mgr = EcsExecManager(module)
 
-    if module.params['network_configuration']:
-        if 'assignPublicIp' in module.params['network_configuration'] and not service_mgr.ecs_api_handles_network_configuration_assignIp():
-            module.fail_json(msg='botocore needs to be version 1.8.4 or higher to use assign_public_ip in network_configuration')
-        elif not service_mgr.ecs_api_handles_network_configuration():
-            module.fail_json(msg='botocore needs to be version 1.7.44 or higher to use network configuration')
-
-    if module.params['launch_type'] and not service_mgr.ecs_api_handles_launch_type():
-        module.fail_json(msg='botocore needs to be version 1.8.4 or higher to use launch type')
-
     if module.params['tags']:
-        if not service_mgr.ecs_api_handles_tags():
-            module.fail_json(msg=missing_required_lib("botocore >= 1.12.46", reason="to use tags"))
         if not service_mgr.ecs_task_long_format_enabled():
             module.fail_json(msg="Cannot set task tags: long format task arns are required to set tags")
 

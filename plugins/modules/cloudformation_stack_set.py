@@ -529,8 +529,6 @@ def main():
         mutually_exclusive=[['template_url', 'template', 'template_body']],
         supports_check_mode=True
     )
-    if not (module.boto3_at_least('1.6.0') and module.botocore_at_least('1.10.26')):
-        module.fail_json(msg="Boto3 or botocore version is too low. This module requires at least boto3 1.6 and botocore 1.10.26")
 
     # Wrap the cloudformation client methods that this module uses with
     # automatic backoff / retry for throttling error codes

@@ -245,9 +245,6 @@ class AnsibleEc2Tgw(object):
         self._connection = self._module.client('ec2')
         self._check_mode = self._module.check_mode
 
-        if not hasattr(self._connection, 'describe_transit_gateways'):
-            self._module.fail_json(msg='transit gateway module requires boto3 >= 1.9.52')
-
     def process(self):
         """ Process the request based on state parameter .
           state = present will search for an existing tgw based and return the object data.

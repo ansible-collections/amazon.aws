@@ -86,7 +86,7 @@ options:
       - Defaults to C(false).
   tags:
     description:
-      - Tag dict to apply to the queue (requires botocore 1.5.40 or above).
+      - Tag dict to apply to the queue.
       - To remove all tags set I(tags={}) and I(purge_tags=true).
     type: dict
   purge_tags:

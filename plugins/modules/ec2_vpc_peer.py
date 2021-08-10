@@ -423,8 +423,6 @@ def create_peer_connection(client, module):
     params['VpcId'] = module.params.get('vpc_id')
     params['PeerVpcId'] = module.params.get('peer_vpc_id')
     if module.params.get('peer_region'):
-        if not module.botocore_at_least('1.8.6'):
-            module.fail_json(msg="specifying peer_region parameter requires botocore >= 1.8.6")
         params['PeerRegion'] = module.params.get('peer_region')
     if module.params.get('peer_owner_id'):
         params['PeerOwnerId'] = str(module.params.get('peer_owner_id'))
