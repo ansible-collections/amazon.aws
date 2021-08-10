@@ -1,2 +1,4 @@
-cloud/aws
+# Needs to install recent botocore environment
 slow
+
+cloud/aws
