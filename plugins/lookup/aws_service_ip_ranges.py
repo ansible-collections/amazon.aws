@@ -72,12 +72,12 @@ def valid_cidr(Ip):
 
 class LookupModule(LookupBase):
     def run(self, terms, variables, **kwargs):
-        if "ipv6_prefix" in kwargs["ipv6_prefix"] is False:
-            prefixes_label = "prefixes"
-            ip_prefix_label = "ip_prefix"
-        else:
+        if "ipv6_prefix" in kwargs and kwargs["ipv6_prefix"]:
             prefixes_label = "ipv6_prefixes"
             ip_prefix_label = "ipv6_prefix"
+        else:
+            prefixes_label = "prefixes"
+            ip_prefix_label = "ip_prefix"
 
         try:
             resp = open_url('https://ip-ranges.amazonaws.com/ip-ranges.json')
