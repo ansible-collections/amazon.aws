@@ -153,11 +153,11 @@ options:
             - See also U(https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PrivateContent.html).
           type: bool
         s3_origin_config:
-          description: Specify origin access identity for S3 origins
+          description: Specify origin access identity for S3 origins.
           type: dict
           suboptions:
             origin_access_identity:
-              description: Existing origin access identity in the format C(origin-access-identity/cloudfront/OID_ID)
+              description: Existing origin access identity in the format C(origin-access-identity/cloudfront/OID_ID).
               type: str
         custom_origin_config:
           description: Connection information about the origin.
@@ -1289,7 +1289,7 @@ origins:
           contains:
             origin_access_identity:
               type: str
-              description: The origin access id as a path
+              description: The origin access id as a path.
               sample: origin-access-identity/cloudfront/EXAMPLEID
     quantity:
       description: Count of origins.
