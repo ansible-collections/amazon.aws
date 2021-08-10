@@ -43,7 +43,6 @@ _raw:
 """
 
 import json
-import netaddr
 
 from ansible.errors import AnsibleError
 from ansible.module_utils.six.moves.urllib.error import HTTPError
