@@ -10,8 +10,8 @@
 
 - pip:
     name:
-      - 'boto3>=1.16.33'
-      - 'botocore>=1.13.0'
+      - 'boto3>=1.13.0'
+      - 'botocore==1.19.27'
       - 'coverage<5'
       - 'boto>=2.49.0'
     virtualenv: "{{ virtualenv }}"
