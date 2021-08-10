@@ -1,0 +1,1 @@
+efs_name: "ansible-test-{{ tiny_prefix }}"
