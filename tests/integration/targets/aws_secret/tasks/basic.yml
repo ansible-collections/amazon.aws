@@ -1,0 +1,160 @@
+---
+- block:
+  # ============================================================
+  # Module parameter testing
+  # ============================================================
+  - name: test with no parameters
+    aws_secret:
+    register: result
+    ignore_errors: true
+    check_mode: true
+
+  - name: assert failure when called with no parameters
+    assert:
+      that:
+         - result.failed
+         - 'result.msg.startswith("missing required arguments:")'
+
+  # ============================================================
+  # Creation/Deletion testing
+  # ============================================================
+  - name: add secret to AWS Secrets Manager
+    aws_secret:
+      name: "{{ secret_name }}"
+      state: present
+      secret_type: 'string'
+      secret: "{{ super_secret_string }}"
+    register: result
+
+  - name: assert correct keys are returned
+    assert:
+      that:
+        - result.changed
+        - result.arn is not none
+        - result.name is not none
+        - result.tags is not none
+        - result.version_ids_to_stages is not none
+
+  - name: no changes to secret
+    aws_secret:
+      name: "{{ secret_name }}"
+      state: present
+      secret_type: 'string'
+      secret: "{{ super_secret_string }}"
+    register: result
+
+  - name: assert correct keys are returned
+    assert:
+      that:
+        - not result.changed
+        - result.arn is not none
+
+  - name: make change to secret
+    aws_secret:
+      name: "{{ secret_name }}"
+      description: 'this is a change to this secret'
+      state: present
+      secret_type: 'string'
+      secret: "{{ super_secret_string }}"
+    register: result
+
+  - debug:
+      var: result
+
+  - name: assert correct keys are returned
+    assert:
+      that:
+        - result.changed
+        - result.arn is not none
+        - result.name is not none
+        - result.tags is not none
+        - result.version_ids_to_stages is not none
+
+  - name: add tags to secret
+    aws_secret:
+      name: "{{ secret_name }}"
+      description: 'this is a change to this secret'
+      state: present
+      secret_type: 'string'
+      secret: "{{ super_secret_string }}"
+      tags:
+        Foo: 'Bar'
+        Test: 'Tag'
+    register: result
+
+  - name: assert correct keys are returned
+    assert:
+      that:
+        - result.changed
+
+  - name: remove tags from secret
+    aws_secret:
+      name: "{{ secret_name }}"
+      description: 'this is a change to this secret'
+      state: present
+      secret_type: 'string'
+      secret: "{{ super_secret_string }}"
+    register: result
+
+  - name: assert correct keys are returned
+    assert:
+      that:
+        - result.changed
+
+  - name: remove secret
+    aws_secret:
+      name: "{{ secret_name }}"
+      state: absent
+      recovery_window: 7
+    register: result
+
+  - name: assert key is deleted
+    assert:
+      that:
+        - result.changed
+
+  - name: remove secret (idempotency)
+    aws_secret:
+      name: "{{ secret_name }}"
+      state: absent
+      recovery_window: 7
+    register: result
+
+  - name: assert no change happened
+    assert:
+      that:
+        - not result.changed
+
+  - name: immediate secret removal
+    aws_secret:
+      name: "{{ secret_name }}"
+      state: absent
+      recovery_window: 0
+    register: result
+
+  - name: assert key is deleted
+    assert:
+      that:
+        - result.changed
+
+  # AWS Doesn't expose when the secret will be removed, all we can do is
+  # check that we didn't throw an error
+  - name: immediate secret removal
+    aws_secret:
+      name: "{{ secret_name }}"
+      state: absent
+      recovery_window: 0
+    register: result
+
+  - name: assert no change happened
+    assert:
+      that:
+        - not result.failed
+
+  always:
+  - name: remove secret
+    aws_secret:
+      name: "{{ secret_name }}"
+      state: absent
+      recovery_window: 0
+    ignore_errors: yes
