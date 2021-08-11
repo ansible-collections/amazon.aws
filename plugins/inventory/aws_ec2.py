@@ -709,7 +709,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
         # get user specifications
         regions = self.get_option('regions')
-        include_filters = [self.get_option('filters')] + self.get_option('include_filters')
+        include_filters = [self.get_option('filters')] if self.get_option('filters') else [] + self.get_option('include_filters')
         exclude_filters = self.get_option('exclude_filters')
         hostnames = self.get_option('hostnames')
         strict_permissions = self.get_option('strict_permissions')
