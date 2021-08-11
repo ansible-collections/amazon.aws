@@ -1,12 +1,11 @@
 ---
-
 - module_defaults:
     group/aws:
       aws_access_key: '{{ aws_access_key | default(omit) }}'
       aws_secret_key: '{{ aws_secret_key | default(omit) }}'
       security_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region | default(omit) }}'
-  
+
   collections:
     - amazon.aws
     - community.aws
@@ -104,7 +103,7 @@
           - volume2.volume_type == 'io1'
           - volume2.volume.iops == 101
           - volume2.volume.size == 4
-          - volume2.volume.tags.Name == "{{ resource_prefix }}" 
+          - volume2.volume.tags.Name == "{{ resource_prefix }}"
           - volume2.volume.encrypted
           - volume2.volume.tags.ResourcePrefix == "{{ resource_prefix }}"
 
@@ -157,7 +156,7 @@
 
     - name: create an ec2 instance
       ec2_instance:
-        name: "{{ resource_prefix }}"
+        name: "{{ instance_name }}"
         vpc_subnet_id: "{{ testing_subnet.subnet.id }}"
         instance_type: t3.nano
         image_id: "{{ ec2_ami_image }}"
@@ -231,7 +230,7 @@
           - new_vol_attach_result.volume.tags["Title Case"] == 'Hello Cruel World'
           - new_vol_attach_result.volume.tags["CamelCase"] == 'SimpleCamelCase'
           - new_vol_attach_result.volume.tags["snake_case"] == 'simple_snake_case'
-          - new_vol_attach_result.volume.tags["Name"] == '{{ resource_prefix }} - sdh'          
+          - new_vol_attach_result.volume.tags["Name"] == '{{ resource_prefix }} - sdh'
 
 
     - name: attach a new volume to an instance (idempotent)
@@ -451,7 +450,7 @@
     - name: volume type must be gp3
       assert:
         that:
-          - v.type == 'gp3' 
+          - v.type == 'gp3'
       vars:
         v: "{{ verify_gp3_change.volumes[0] }}"
 
@@ -492,7 +491,7 @@
             Tag Name with Space-and-dash: Tag Value with Space-and-dash
         delete_on_termination: yes
       register: dot_volume
-    
+
     - name: check task return attributes
       assert:
         that:
@@ -651,7 +650,7 @@
           - gp3_volume.volume.iops == 3001
           - "'throughput' in gp3_volume.volume"
           - gp3_volume.volume.throughput == 131
-    
+
     # Multi-Attach disk
     - name: create disk with multi-attach enabled
       ec2_vol:
@@ -663,14 +662,14 @@
         tags:
           ResourcePrefix: "{{ resource_prefix }}"
       register: multi_attach_disk
-    
+
     - name: check volume creation
       assert:
         that:
           - multi_attach_disk.changed
           - "'volume' in multi_attach_disk"
           - multi_attach_disk.volume.multi_attach_enabled
-    
+
     - name: attach existing volume to an instance
       ec2_vol:
         id: "{{ multi_attach_disk.volume_id }}"
@@ -678,10 +677,10 @@
         device_name: /dev/sdk
         delete_on_termination: no
       register: vol_attach_result
-    
+
     - name: create another ec2 instance
       ec2_instance:
-        name: "{{ resource_prefix }}-2"
+        name: "{{ instance_name }}-2"
         vpc_subnet_id: "{{ testing_subnet.subnet.id }}"
         instance_type: t3.nano
         image_id: "{{ ec2_ami_image }}"
@@ -693,7 +692,7 @@
       assert:
         that:
           - test_instance_2.changed
-    
+
     - name: attach existing volume to second instance
       ec2_vol:
         id: "{{ multi_attach_disk.volume_id }}"
