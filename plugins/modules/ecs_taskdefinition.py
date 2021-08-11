@@ -13,7 +13,10 @@ version_added: 1.0.0
 short_description: register a task definition in ecs
 description:
     - Registers or deregisters task definitions in the Amazon Web Services (AWS) EC2 Container Service (ECS).
-author: Mark Chance (@Java1Guy)
+author:
+    - Mark Chance (@Java1Guy)
+    - Alina Buzachis (@alinabuzachis)
+requirements: [ json, botocore, boto3 ]
 options:
     state:
         description:
@@ -189,7 +192,7 @@ options:
             linuxParameters:
                 description: Linux-specific modifications that are applied to the container, such as Linux kernel capabilities.
                 required: False
-                type: list
+                type: dict
                 suboptions:
                     capabilities:
                         description:
@@ -410,6 +413,8 @@ options:
                         description: The type of the ulimit.
                         type: str
                         required: False
+                        choices: ['core', 'cpu', 'data', 'fsize', 'locks', 'memlock', 'msgqueue', 'nice', 'nofile', 'nproc', 'rss',
+                                  'rtprio', 'rttime', 'sigpending', 'stack']
                     softLimit:
                         description: The soft limit for the ulimit type.
                         type: int
@@ -642,9 +647,9 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
-from ansible.module_utils._text import to_text
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 class EcsTaskManager:
@@ -653,13 +658,13 @@ class EcsTaskManager:
     def __init__(self, module):
         self.module = module
 
-        self.ecs = module.client('ecs')
+        self.ecs = module.client('ecs', AWSRetry.jittered_backoff())
 
     def describe_task(self, task_name):
         try:
-            response = self.ecs.describe_task_definition(taskDefinition=task_name)
+            response = self.ecs.describe_task_definition(aws_retry=True, taskDefinition=task_name)
             return response['taskDefinition']
-        except botocore.exceptions.ClientError:
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             return None
 
     def register_task(self, family, task_role_arn, execution_role_arn, network_mode, container_definitions, volumes, launch_type, cpu, memory):
@@ -667,7 +672,7 @@ class EcsTaskManager:
 
         # Ensures the number parameters are int as required by boto
         for container in container_definitions:
-            for param in ('memory', 'cpu', 'memoryReservation'):
+            for param in ('memory', 'cpu', 'memoryReservation', 'startTimeout', 'stopTimeout'):
                 if param in container:
                     container[param] = int(container[param])
 
@@ -680,6 +685,23 @@ class EcsTaskManager:
                         if port_mapping['hostPort'] != port_mapping.get('containerPort'):
                             self.module.fail_json(msg="In awsvpc network mode, host port must be set to the same as "
                                                   "container port or not be set")
+
+            if 'linuxParameters' in container:
+                for linux_param in container.get('linuxParameters'):
+                    if linux_param == 'tmpfs':
+                        for tmpfs_param in container['linuxParameters']['tmpfs']:
+                            if 'size' in tmpfs_param:
+                                tmpfs_param['size'] = int(tmpfs_param['size'])
+
+                    for param in ('maxSwap', 'swappiness', 'sharedMemorySize'):
+                        if param in linux_param:
+                            container['linuxParameters'][param] = int(container['linuxParameters'][param])
+
+            if 'ulimits' in container:
+                for limits_mapping in container['ulimits']:
+                    for limit in ('softLimit', 'hardLimit'):
+                        if limit in limits_mapping:
+                            limits_mapping[limit] = int(limits_mapping[limit])
 
             validated_containers.append(container)
 
@@ -701,8 +723,8 @@ class EcsTaskManager:
             params['executionRoleArn'] = execution_role_arn
 
         try:
-            response = self.ecs.register_task_definition(**params)
-        except botocore.exceptions.ClientError as e:
+            response = self.ecs.register_task_definition(aws_retry=True, **params)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self.module.fail_json_aws(e, msg="Failed to register task")
 
         return response['taskDefinition']
@@ -787,28 +809,31 @@ def main():
                 module.fail_json(msg='links parameter is not supported if network mode is awsvpc.')
 
             for environment in container.get('environment', []):
-                environment['value'] = to_text(environment['value'])
+                environment['value'] = environment['value']
 
             for environment_file in container.get('environmentFiles', []):
                 if environment_file['type'] != 's3':
                     module.fail_json(msg='The only supported value for environmentFiles is s3.')
 
             for linux_param in container.get('linuxParameters', {}):
-                if linux_param.get('devices') and launch_type == 'FARGATE':
+                if linux_param == 'maxSwap' and launch_type == 'FARGATE':
                     module.fail_json(msg='devices parameter is not supported with the FARGATE launch type.')
 
-                if linux_param.get('maxSwap') and launch_type == 'FARGATE':
+                if linux_param == 'maxSwap' and launch_type == 'FARGATE':
                     module.fail_json(msg='maxSwap parameter is not supported with the FARGATE launch type.')
-                elif linux_param.get('maxSwap') and linux_param['maxSwap'] < 0:
+                elif linux_param == 'maxSwap' and int(container['linuxParameters']['maxSwap']) < 0:
                     module.fail_json(msg='Accepted values for maxSwap are 0 or any positive integer.')
 
-                if linux_param.get('swappiness') and (linux_param['swappiness'] < 0 or linux_param['swappiness'] > 100):
+                if (
+                    linux_param == 'swappiness' and
+                    (int(container['linuxParameters']['swappiness']) < 0 or int(container['linuxParameters']['swappiness']) > 100)
+                ):
                     module.fail_json(msg='Accepted values for swappiness are whole numbers between 0 and 100.')
 
-                if linux_param.get('sharedMemorySize') and launch_type == 'FARGATE':
+                if linux_param == 'sharedMemorySize' and launch_type == 'FARGATE':
                     module.fail_json(msg='sharedMemorySize parameter is not supported with the FARGATE launch type.')
 
-                if linux_param.get('tmpfs') and launch_type == 'FARGATE':
+                if linux_param == 'tmpfs' and launch_type == 'FARGATE':
                     module.fail_json(msg='tmpfs parameter is not supported with the FARGATE launch type.')
 
             if container.get('hostname') and network_mode == 'awsvpc':
@@ -854,14 +879,24 @@ def main():
 
                             for list_val in left_list:
                                 if list_val not in right_list:
-                                    return False
+                                    # if list_val is the port mapping, the key 'protocol' may be absent (but defaults to 'tcp')
+                                    # fill in that default if absent and see if it is in right_list then
+                                    if isinstance(list_val, dict) and not list_val.get('protocol'):
+                                        modified_list_val = dict(list_val)
+                                        modified_list_val.update(protocol='tcp')
+                                        if modified_list_val in right_list:
+                                            continue
                         else:
                             return False
 
                 # Make sure right doesn't have anything that left doesn't
                 for k, v in right.items():
                     if v and k not in left:
-                        return False
+                        # 'essential' defaults to True when not specified
+                        if k == 'essential' and v is True:
+                            pass
+                        else:
+                            return False
 
                 return True
 

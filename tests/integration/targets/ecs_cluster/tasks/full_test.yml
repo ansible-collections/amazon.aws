@@ -72,7 +72,7 @@
 
     - name: create subnets
       ec2_vpc_subnet:
-        az: '{{ ec2_region }}{{ item.zone }}'
+        az: '{{ aws_region }}{{ item.zone }}'
         tags:
           Name: '{{ resource_prefix }}_ecs_cluster-subnet-{{ item.zone }}'
         vpc_id: '{{ setup_vpc.vpc.id }}'
@@ -116,7 +116,7 @@
     - name: provision ec2 instance to create an image
       ec2_instance:
         key_name: '{{ ec2_keypair|default(setup_key.key.name) }}'
-        instance_type: t2.micro
+        instance_type: t3.micro
         state: present
         image_id: '{{ ecs_image_id }}'
         wait: yes
@@ -156,7 +156,7 @@
         state: present
         scheme: internal
         security_groups: '{{ setup_sg.group_id }}'
-        subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
+        subnets: "{{ setup_subnet.results | map(attribute='subnet.id') | list }}"
         listeners:
           - Protocol: HTTP
             Port: 80
@@ -187,8 +187,6 @@
       assert:
         that:
           - not ecs_task_definition_again.changed
-      # FIXME: task definition should not change, will need #26752 or equivalent
-      ignore_errors: yes
 
     - name: obtain ECS task definition facts
       ecs_taskdefinition_info:
@@ -281,7 +279,7 @@
             containerName: "{{ ecs_task_name }}"
             containerPort: "{{ ecs_task_container_port }}"
         network_configuration:
-          subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
+          subnets: "{{ setup_subnet.results | map(attribute='subnet.id') | list }}"
           security_groups:
             - '{{ setup_sg.group_id }}'
       register: ecs_service_network_without_awsvpc_task
@@ -389,7 +387,7 @@
             containerName: "{{ ecs_task_name }}"
             containerPort: "{{ ecs_task_container_port }}"
         network_configuration:
-          subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
+          subnets: "{{ setup_subnet.results | map(attribute='subnet.id') | list }}"
           security_groups:
             - '{{ setup_sg.group_id }}'
       register: create_ecs_service_with_vpc
@@ -423,7 +421,7 @@
             containerName: "{{ ecs_task_name }}"
             containerPort: "{{ ecs_task_container_port }}"
         network_configuration:
-          subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
+          subnets: "{{ setup_subnet.results | map(attribute='subnet.id') | list }}"
           security_groups:
             - "{{ resource_prefix }}-ecs-vpc-test-sg"
       register: update_ecs_service_with_vpc
@@ -674,7 +672,7 @@
         deployment_configuration: "{{ ecs_service_deployment_configuration }}"
         launch_type: FARGATE
         network_configuration:
-          subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
+          subnets: "{{ setup_subnet.results | map(attribute='subnet.id') | list }}"
           security_groups:
             - '{{ setup_sg.group_id }}'
           assign_public_ip: true
@@ -693,7 +691,7 @@
         launch_type: FARGATE
         count: 1
         network_configuration:
-          subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
+          subnets: "{{ setup_subnet.results | map(attribute='subnet.id') | list }}"
           security_groups:
             - '{{ setup_sg.group_id }}'
           assign_public_ip: true
@@ -725,7 +723,7 @@
           tag_key: tag_value
           tag_key2: tag_value2
         network_configuration:
-          subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
+          subnets: "{{ setup_subnet.results | map(attribute='subnet.id') | list }}"
           security_groups:
             - '{{ setup_sg.group_id }}'
           assign_public_ip: true
@@ -752,7 +750,7 @@
           tag_key: tag_value
           tag_key2: tag_value2
         network_configuration:
-          subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
+          subnets: "{{ setup_subnet.results | map(attribute='subnet.id') | list }}"
           security_groups:
             - '{{ setup_sg.group_id }}'
           assign_public_ip: true
@@ -767,7 +765,7 @@
         launch_type: FARGATE
         count: 1
         network_configuration:
-          subnets: "{{ setup_subnet.results | community.general.json_query('[].subnet.id') }}"
+          subnets: "{{ setup_subnet.results | map(attribute='subnet.id') | list }}"
           security_groups:
             - '{{ setup_sg.group_id }}'
           assign_public_ip: false
@@ -856,8 +854,6 @@
         desired_count: 0
       ignore_errors: yes
       register: ecs_service_scale_down
-
-
 
     - name: scale down scheduling_strategy service
       ecs_service:
