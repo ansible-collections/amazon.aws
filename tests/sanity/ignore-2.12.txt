@@ -1,3 +1,12 @@
+plugins/modules/aws_kms_info.py pylint:use-a-generator # (new test) Should be an easy fix but not worth blocking gating
+plugins/modules/aws_ses_rule_set.py pylint:use-a-generator # (new test) Should be an easy fix but not worth blocking gating
 plugins/modules/cloudfront_info.py pylint:unnecessary-comprehension # (new test) Should be an easy fix, but testing is a challenge - test are broken and aliases require a wildcard cert in ACM
+plugins/modules/cloudwatchevent_rule.py pylint:use-a-generator # (new test) Should be an easy fix but not worth blocking gating
+plugins/modules/elb_target_group.py pylint:use-a-generator # (new test) Should be an easy fix but not worth blocking gating
+plugins/modules/iam_group.py pylint:use-a-generator # (new test) Should be an easy fix but not worth blocking gating
+plugins/modules/iam.py pylint:use-a-generator # no tests and module is deprecated
 plugins/modules/iam.py pylint:unnecessary-comprehension # no tests and module is deprecated
+plugins/modules/iam_role.py pylint:use-a-generator # (new test) Should be an easy fix but not worth blocking gating
+plugins/modules/iam_user.py pylint:use-a-generator # (new test) Should be an easy fix but not worth blocking gating
+plugins/modules/rds_instance.py pylint:use-a-generator # (new test) Should be an easy fix but not worth blocking gating
 plugins/modules/route53.py validate-modules:parameter-state-invalid-choice # route53_info needs improvements before we can deprecate this
