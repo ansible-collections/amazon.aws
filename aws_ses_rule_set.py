@@ -116,7 +116,7 @@ def list_rule_sets(client, module):
 
 
 def rule_set_in(name, rule_sets):
-    return any([s for s in rule_sets if s['Name'] == name])
+    return any(s for s in rule_sets if s['Name'] == name)
 
 
 def ruleset_active(client, module, name):

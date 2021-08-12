@@ -386,7 +386,7 @@ def key_matches_filters(key, filters):
     if not filters:
         return True
     else:
-        return all([key_matches_filter(key, filtr) for filtr in filters.items()])
+        return all(key_matches_filter(key, filtr) for filtr in filters.items())
 
 
 def get_key_details(connection, module, key_id, tokens=None):

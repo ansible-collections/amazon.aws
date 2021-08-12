@@ -672,7 +672,7 @@ def main():
 
     if key_state:
         key_state = key_state.lower()
-        if any([n in key_state for n in ['active', 'inactive']]) and not key_ids:
+        if any(n in key_state for n in ['active', 'inactive']) and not key_ids:
             module.fail_json(changed=False, msg="At least one access key has to be defined in order"
                                                 " to use 'active' or 'inactive'")
 
@@ -735,7 +735,7 @@ def main():
     if iam_type == 'user':
         been_updated = False
         user_groups = None
-        user_exists = any([n in [name, new_name] for n in orig_user_list])
+        user_exists = any(n in [name, new_name] for n in orig_user_list)
         if user_exists:
             current_path = iam.get_user(name).get_user_result.user['path']
             if not new_path and current_path != path:

@@ -137,7 +137,7 @@ def convert_friendly_names_to_arns(connection, module, policy_names):
     # List comprehension that looks for any policy in the 'policy_names' list
     # that does not begin with 'arn'. If there aren't any, short circuit.
     # If there are, translate friendly name to the full arn
-    if not any([not policy.startswith('arn:') for policy in policy_names if policy is not None]):
+    if not any(not policy.startswith('arn:') for policy in policy_names if policy is not None):
         return policy_names
     allpolicies = {}
     paginator = connection.get_paginator('list_policies')
