@@ -129,6 +129,7 @@ options:
       - C(ObjectWriter) - The uploading account will own the object
         if the object is uploaded with the bucket-owner-full-control canned ACL.
       - This option cannot be used together with a I(delete_object_ownership) definition.
+      - Management of bucket ownership controls requires botocore>=1.18.11.
     choices: [ 'BucketOwnerPreferred', 'ObjectWriter' ]
     type: str
     version_added: 2.0.0
@@ -136,6 +137,7 @@ options:
     description:
       - Delete bucket's ownership controls.
       - This option cannot be used together with a I(object_ownership) definition.
+      - Management of bucket ownership controls requires botocore>=1.18.11.
     default: false
     type: bool
     version_added: 2.0.0
@@ -769,6 +771,8 @@ def get_bucket_ownership_cntrl(s3_client, module, bucket_name):
     '''
     Get current bucket public access block
     '''
+    if not module.botocore_at_least('1.18.11'):
+        return None
     try:
         bucket_ownership = s3_client.get_bucket_ownership_controls(Bucket=bucket_name)
         return bucket_ownership['OwnershipControls']['Rules'][0]['ObjectOwnership']
@@ -947,6 +951,9 @@ def main():
     encryption_key_id = module.params.get("encryption_key_id")
     delete_object_ownership = module.params.get('delete_object_ownership')
     object_ownership = module.params.get('object_ownership')
+
+    if delete_object_ownership or object_ownership:
+        module.require_botocore_at_least('1.18.11', reason='to manipulate bucket ownership controls')
 
     # Parameter validation
     if encryption_key_id is not None and encryption != 'aws:kms':

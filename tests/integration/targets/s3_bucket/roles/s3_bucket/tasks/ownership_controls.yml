@@ -6,102 +6,121 @@
       security_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
+    - pip:
+        name: virtualenv
+    - set_fact:
+        virtualenv: "{{ remote_tmp_dir }}/virtualenv"
+        virtualenv_command: "{{ ansible_python_interpreter }} -m virtualenv"
+    - set_fact:
+        virtualenv_interpreter: "{{ virtualenv }}/bin/python"
+    - pip:
+        name:
+          - 'boto3>=1.13.0'
+          - 'botocore==1.18.11'
+          - 'coverage<5'
+        virtualenv: '{{ virtualenv }}'
+        virtualenv_command: '{{ virtualenv_command }}'
+        virtualenv_site_packages: no
 
     # ============================================================
-    - set_fact:
-        local_bucket_name: "{{ bucket_name | hash('md5')}}ownership"
+    - name: Wrap test in virtualenv
+      vars:
+        ansible_python_interpreter: "{{ virtualenv }}/bin/python"
+      block:
+        - set_fact:
+            local_bucket_name: "{{ bucket_name | hash('md5')}}ownership"
 
-    - name: 'Create a simple bucket bad value for ownership controls'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
-        state: present
-        object_ownership: default
-      ignore_errors: true
-      register: output
+        - name: 'Create a simple bucket bad value for ownership controls'
+          s3_bucket:
+            name: '{{ local_bucket_name }}'
+            state: present
+            object_ownership: default
+          ignore_errors: true
+          register: output
 
-    - assert:
-        that:
-          - output.failed
+        - assert:
+            that:
+              - output.failed
 
-    - name: 'Create bucket with object_ownership set to object_writer'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
-        state: present
-      ignore_errors: true
-      register: output
+        - name: 'Create bucket with object_ownership set to object_writer'
+          s3_bucket:
+            name: '{{ local_bucket_name }}'
+            state: present
+          ignore_errors: true
+          register: output
 
-    - assert:
-        that:
-          - output.changed
-          - not output.object_ownership|bool
+        - assert:
+            that:
+              - output.changed
+              - not output.object_ownership|bool
 
-    - name: delete s3 bucket
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
-        state: absent
+        - name: delete s3 bucket
+          s3_bucket:
+            name: '{{ local_bucket_name }}'
+            state: absent
 
-    - name: 'create s3 bucket with object ownership controls'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
-        state: present
-        object_ownership: ObjectWriter
-      register: output
+        - name: 'create s3 bucket with object ownership controls'
+          s3_bucket:
+            name: '{{ local_bucket_name }}'
+            state: present
+            object_ownership: ObjectWriter
+          register: output
 
-    - assert:
-        that:
-          - output.changed
-          - output.object_ownership
-          - output.object_ownership == 'ObjectWriter'
+        - assert:
+            that:
+              - output.changed
+              - output.object_ownership
+              - output.object_ownership == 'ObjectWriter'
 
-    - name: 'update s3 bucket ownership controls'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
-        state: present
-        object_ownership: BucketOwnerPreferred
-      register: output
+        - name: 'update s3 bucket ownership controls'
+          s3_bucket:
+            name: '{{ local_bucket_name }}'
+            state: present
+            object_ownership: BucketOwnerPreferred
+          register: output
 
-    - assert:
-        that:
-          - output.changed
-          - output.object_ownership
-          - output.object_ownership == 'BucketOwnerPreferred'
+        - assert:
+            that:
+              - output.changed
+              - output.object_ownership
+              - output.object_ownership == 'BucketOwnerPreferred'
 
-    - name: 'test idempotency update s3 bucket ownership controls'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
-        state: present
-        object_ownership: BucketOwnerPreferred
-      register: output
+        - name: 'test idempotency update s3 bucket ownership controls'
+          s3_bucket:
+            name: '{{ local_bucket_name }}'
+            state: present
+            object_ownership: BucketOwnerPreferred
+          register: output
 
-    - assert:
-        that:
-          - output.changed is false
-          - output.object_ownership
-          - output.object_ownership == 'BucketOwnerPreferred'
+        - assert:
+            that:
+              - output.changed is false
+              - output.object_ownership
+              - output.object_ownership == 'BucketOwnerPreferred'
 
-    - name: 'delete s3 bucket ownership controls'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
-        state: present
-        delete_object_ownership: true
-      register: output
+        - name: 'delete s3 bucket ownership controls'
+          s3_bucket:
+            name: '{{ local_bucket_name }}'
+            state: present
+            delete_object_ownership: true
+          register: output
 
-    - assert:
-        that:
-          - output.changed
-          - not output.object_ownership|bool
-    
-    - name: 'delete s3 bucket ownership controls once again (idempotency)'
-      s3_bucket:
-        name: '{{ local_bucket_name }}'
-        state: present
-        delete_object_ownership: true
-      register: idempotency
+        - assert:
+            that:
+              - output.changed
+              - not output.object_ownership|bool
 
-    - assert:
-        that:
-          - not idempotency.changed
-          - not idempotency.object_ownership|bool
+        - name: 'delete s3 bucket ownership controls once again (idempotency)'
+          s3_bucket:
+            name: '{{ local_bucket_name }}'
+            state: present
+            delete_object_ownership: true
+          register: idempotency
+
+        - assert:
+            that:
+              - not idempotency.changed
+              - not idempotency.object_ownership|bool
 
   # ============================================================
   always:
@@ -117,3 +136,7 @@
         name: '{{ local_bucket_name }}'
         state: absent
       ignore_errors: yes
+
+    - file:
+        path: "{{ virtualenv }}"
+        state: absent
