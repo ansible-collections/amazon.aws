@@ -217,7 +217,7 @@ def compare_group_members(current_group_members, new_group_members):
 
 def convert_friendly_names_to_arns(connection, module, policy_names):
 
-    if not any([not policy.startswith('arn:') for policy in policy_names if policy is not None]):
+    if not any(not policy.startswith('arn:') for policy in policy_names if policy is not None):
         return policy_names
     allpolicies = {}
     paginator = connection.get_paginator('list_policies')
