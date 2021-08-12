@@ -131,16 +131,16 @@ class VGWRetry(AWSRetry):
         return (error.response['Error']['Code'], error.response['Error']['Message'],)
 
     @staticmethod
-    def found(response_codes, catch_extra_error_codes=None):
+    def found(response_code, catch_extra_error_codes=None):
         retry_on = ['The maximum number of mutating objects has been reached.']
 
         if catch_extra_error_codes:
             retry_on.extend(catch_extra_error_codes)
-        if not isinstance(response_codes, tuple):
-            response_codes = (response_codes,)
+        if not isinstance(response_code, tuple):
+            response_code = (response_code,)
 
-        for code in response_codes:
-            if super().found(response_codes, catch_extra_error_codes):
+        for code in response_code:
+            if super().found(response_code, catch_extra_error_codes):
                 return True
 
         return False
