@@ -470,7 +470,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         for connection, region in self._boto3_conn(regions):
             try:
                 # By default find non-terminated/terminating instances
-                if not any([f['Name'] == 'instance-state-name' for f in filters]):
+                if not any(f['Name'] == 'instance-state-name' for f in filters):
                     filters.append({'Name': 'instance-state-name', 'Values': ['running', 'pending', 'stopping', 'stopped']})
                 paginator = connection.get_paginator('describe_instances')
                 reservations = paginator.paginate(Filters=filters).build_full_result().get('Reservations')
