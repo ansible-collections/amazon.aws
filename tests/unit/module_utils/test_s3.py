@@ -8,7 +8,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 from ansible_collections.amazon.aws.tests.unit.compat.mock import MagicMock
-import ansible_collections.amazon.aws.plugins.module_utils.s3 as s3
+from ansible_collections.amazon.aws.plugins.module_utils import s3
 
 
 def test_validate_bucket_name():

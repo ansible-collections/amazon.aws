@@ -7,7 +7,7 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import ansible_collections.amazon.aws.plugins.module_utils.elbv2 as elbv2
+from ansible_collections.amazon.aws.plugins.module_utils import elbv2
 from ansible_collections.amazon.aws.tests.unit.compat import unittest
 from ansible_collections.amazon.aws.tests.unit.compat.mock import MagicMock
 
