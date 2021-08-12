@@ -477,7 +477,43 @@ rds_data = {
                     "expected": "stopped"
                 },
             ]
-        }
+        },
+        "DBClusterAvailable": {
+            "delay": 20,
+            "maxAttempts": 60,
+            "operation": "DescribeDBClusters",
+            "acceptors": [
+                {
+                    "state": "success",
+                    "matcher": "pathAll",
+                    "argument": "DBClusters[].Status",
+                    "expected": "available"
+                },
+                {
+                    "state": "retry",
+                    "matcher": "error",
+                    "expected": "DBClusterNotFoundFault"
+                }
+            ]
+        },
+        "DBClusterDeleted": {
+            "delay": 20,
+            "maxAttempts": 60,
+            "operation": "DescribeDBClusters",
+            "acceptors": [
+                {
+                    "state": "success",
+                    "matcher": "pathAll",
+                    "argument": "DBClusters[].Status",
+                    "expected": "stopped"
+                },
+                {
+                    "state": "success",
+                    "matcher": "error",
+                    "expected": "DBClusterNotFoundFault"
+                }
+            ]
+        },
     }
 }
 
@@ -714,6 +750,18 @@ waiters_by_name = {
         rds_model('DBInstanceStopped'),
         core_waiter.NormalizedOperationMethod(
             rds.describe_db_instances
+        )),
+    ('RDS', 'cluster_available'): lambda rds: core_waiter.Waiter(
+        'cluster_available',
+        rds_model('DBClusterAvailable'),
+        core_waiter.NormalizedOperationMethod(
+            rds.describe_db_clusters
+        )),
+    ('RDS', 'cluster_deleted'): lambda rds: core_waiter.Waiter(
+        'cluster_deleted',
+        rds_model('DBClusterDeleted'),
+        core_waiter.NormalizedOperationMethod(
+            rds.describe_db_clusters
         )),
     ('Route53', 'resource_record_sets_changed'): lambda route53: core_waiter.Waiter(
         'resource_record_sets_changed',
