@@ -388,10 +388,10 @@ class CloudWatchEventRuleManager(object):
 
         # The rule matches AWS only if all rule data fields are equal
         # to their corresponding local value defined in the task
-        return all([
+        return all(
             getattr(self.rule, field) == aws_rule_data.get(field, None)
             for field in self.RULE_FIELDS
-        ])
+        )
 
     def _targets_to_put(self):
         """Returns a list of targets that need to be updated or added remotely"""
