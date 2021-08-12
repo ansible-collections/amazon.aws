@@ -1,0 +1,2 @@
+minor_changes:
+- ecs_task - remove unused import (https://github.com/ansible-collections/community.aws/pull/686).
