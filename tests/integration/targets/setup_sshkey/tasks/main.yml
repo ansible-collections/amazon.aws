@@ -15,41 +15,55 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-- name: create a temp file
+- name: create a temp dir
   tempfile:
-    state: file
-  register: sshkey_file
+    state: directory
+  register: sshkey_dir
   tags:
     - prepare
+
+- name: ensure script is available
+  copy:
+    src: ec2-fingerprint.py
+    dest: '{{ sshkey_dir.path }}/ec2-fingerprint.py'
+    mode: 0700
+  tags:
+    - prepare
+
+- name: Set location of SSH keys
+  set_fact:
+    sshkey: '{{ sshkey_dir.path }}/key_one'
+    another_sshkey: '{{ sshkey_dir.path }}/key_two'
+    sshkey_pub: '{{ sshkey_dir.path }}/key_one.pub'
+    another_sshkey_pub: '{{ sshkey_dir.path }}/key_two.pub'
 
 - name: generate sshkey
-  shell: echo 'y' | ssh-keygen -P '' -f {{ sshkey_file.path }}
-  tags:
-    - prepare
-
-- name: create another temp file
-  tempfile:
-    state: file
-  register: another_sshkey_file
-  tags:
-    - prepare
-
-- name: generate another_sshkey
-  shell: echo 'y' | ssh-keygen -P '' -f {{ another_sshkey_file.path }}
+  shell: echo 'y' | ssh-keygen -P '' -f '{{ sshkey }}'
   tags:
     - prepare
 
 - name: record fingerprint
-  shell: openssl rsa -in {{ sshkey_file.path }} -pubout -outform DER 2>/dev/null | openssl md5 -c
+  shell: '{{ sshkey_dir.path }}/ec2-fingerprint.py {{ sshkey_pub }}'
   register: fingerprint
+  tags:
+    - prepare
+
+- name: generate another_sshkey
+  shell: echo 'y' | ssh-keygen -P '' -f {{ another_sshkey }}
+  tags:
+    - prepare
+
+- name: record another fingerprint
+  shell: '{{ sshkey_dir.path }}/ec2-fingerprint.py {{ another_sshkey_pub }}'
+  register: another_fingerprint
   tags:
     - prepare
 
 - name: set facts for future roles
   set_fact:
-    sshkey: '{{ sshkey_file.path }}'
-    key_material: "{{ lookup('file', sshkey_file.path ~ '.pub') }}"
-    another_key_material: "{{ lookup('file', another_sshkey_file.path ~ '.pub') }}"
-    fingerprint: '{{ fingerprint.stdout.split()[1] }}'
+    key_material: "{{ lookup('file', sshkey_pub) }}"
+    another_key_material: "{{ lookup('file', another_sshkey_pub) }}"
+    fingerprint: '{{ fingerprint.stdout }}'
+    another_fingerprint: '{{ another_fingerprint.stdout }}'
   tags:
     - prepare
