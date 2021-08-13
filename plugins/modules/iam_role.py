@@ -221,7 +221,7 @@ def _list_policies(connection):
 
 
 def convert_friendly_names_to_arns(connection, module, policy_names):
-    if not any([not policy.startswith('arn:') for policy in policy_names]):
+    if not any(not policy.startswith('arn:') for policy in policy_names):
         return policy_names
     allpolicies = {}
     policies = _list_policies(connection)

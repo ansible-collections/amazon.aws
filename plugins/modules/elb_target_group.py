@@ -479,7 +479,7 @@ def create_or_update_target_group(connection, module):
         "health_check_path", "health_check_protocol", "health_check_interval", "health_check_timeout",
         "healthy_threshold_count", "unhealthy_threshold_count", "successful_response_codes"
     ]
-    health_options = any([module.params[health_option_key] is not None for health_option_key in health_option_keys])
+    health_options = any(module.params[health_option_key] is not None for health_option_key in health_option_keys)
 
     # Set health check if anything set
     if health_options:
