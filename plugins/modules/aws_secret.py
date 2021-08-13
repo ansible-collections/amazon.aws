@@ -367,6 +367,8 @@ def main():
             elif current_secret.get("DeletedDate") and recovery_window == 0:
                 result = camel_dict_to_snake_dict(secrets_mgr.delete_secret(secret.name, recovery_window=recovery_window))
                 changed = True
+            else:
+                result = "secret already scheduled for deletion"
         else:
             result = "secret does not exist"
     if state == 'present':
@@ -393,6 +395,7 @@ def main():
                 changed = True
         result = camel_dict_to_snake_dict(secrets_mgr.get_secret(secret.name))
         result.pop("response_metadata")
+
     module.exit_json(changed=changed, secret=result)
 
 
