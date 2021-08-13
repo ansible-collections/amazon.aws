@@ -255,7 +255,6 @@ EXAMPLES = """
     state: present
     name: 'New ELB'
     security_group_ids: 'sg-123456, sg-67890'
-    region: us-west-2
     subnets: 'subnet-123456,subnet-67890'
     purge_subnets: yes
     listeners:
@@ -271,7 +270,6 @@ EXAMPLES = """
     connection_draining_timeout: 60
     idle_timeout: 300
     cross_az_load_balancing: "yes"
-    region: us-east-1
     zones:
       - us-east-1a
       - us-east-1d
@@ -284,7 +282,6 @@ EXAMPLES = """
 - amazon.aws.ec2_elb_lb:
     name: "New ELB"
     state: present
-    region: us-east-1
     zones:
       - us-east-1a
       - us-east-1d
@@ -301,7 +298,6 @@ EXAMPLES = """
 - amazon.aws.ec2_elb_lb:
     name: "New ELB"
     state: present
-    region: us-east-1
     zones:
       - us-east-1a
       - us-east-1d
@@ -318,7 +314,6 @@ EXAMPLES = """
 - amazon.aws.ec2_elb_lb:
     name: "New ELB"
     state: present
-    region: us-east-1
     zones:
       - us-east-1a
       - us-east-1d
@@ -335,7 +330,6 @@ EXAMPLES = """
 - amazon.aws.ec2_elb_lb:
     name: "New ELB"
     state: present
-    region: us-east-1
     zones:
       - us-east-1a
       - us-east-1d
