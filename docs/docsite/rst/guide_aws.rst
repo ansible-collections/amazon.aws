@@ -40,31 +40,49 @@ For environment variables::
 For storing these in a vars_file, ideally encrypted with ansible-vault::
 
     ---
-    ec2_access_key: "--REMOVED--"
-    ec2_secret_key: "--REMOVED--"
+    aws_access_key: "--REMOVED--"
+    aws_secret_key: "--REMOVED--"
 
 Note that if you store your credentials in vars_file, you need to refer to them in each AWS-module. For example::
 
-    - ec2
-      aws_access_key: "{{ec2_access_key}}"
-      aws_secret_key: "{{ec2_secret_key}}"
-      image: "..."
+    - amazon.aws.ec2_instance:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        key_name: "example-ssh-key"
+        image_id: "..."
+
+Or they can be specified using "module_defaults" at the top of a playbook.::
+
+    # demo_setup.yml
+
+    - hosts: localhost
+      module_defaults:
+        group/aws:
+          aws_access_key: '{{ aws_access_key }}'
+          aws_secret_key: '{{ aws_secret_key }}'
+          region: '{{ region }}'
+      tasks:
+        - amazon.aws.ec2_instance:
+            key_name: "example-ssh-key"
+            image_id: "..."
+
+Credentials can also be accessed from a `Credentials Profile <https://docs.aws.amazon.com/sdk-for-php/v3/developer-guide/guide_credentials_profiles.html>`_.::
+
+    - amazon.aws.ec2_instance:
+        aws_profile: default
+        key_name: "example-ssh-key"
+        image_id: "..."
 
 .. _ansible_collections.amazon.aws.docsite.aws_provisioning:
 
 Provisioning
 ````````````
 
-The ec2 module provisions and de-provisions instances within EC2.
+The ec2_instance module provisions and de-provisions instances within EC2.
 
-An example of making sure there are only 5 instances tagged 'Demo' in EC2 follows.
+An example of creating an instance with a public IP assigned follows.
 
-In the example below, the "exact_count" of instances is set to 5.  This means if there are 0 instances already existing, then
-5 new instances would be created.  If there were 2 instances, only 3 would be created, and if there were 8 instances, 3 instances would
-be terminated.
-
-What is being counted is specified by the "count_tag" parameter.  The parameter "instance_tags" is used to apply tags to the newly created
-instance.::
+The "name" parameter will create a "tag:Name" on the instance. Additional tags can be specified with the "tags" parameter.::
 
     # demo_setup.yml
 
@@ -73,21 +91,21 @@ instance.::
 
       tasks:
 
-        - name: Provision a set of instances
-          ec2:
-             key_name: my_key
-             group: test
-             instance_type: t2.micro
-             image: "{{ ami_id }}"
-             wait: true
-             exact_count: 5
-             count_tag:
-                Name: Demo
-             instance_tags:
-                Name: Demo
-          register: ec2
+        - name: Provision an EC2 instance with a public IP address
+          amazon.aws.ec2_instance:
+            name: Demo
+            key_name: "example-ssh-key"
+            vpc_subnet_id: subnet-5ca1ab1e
+            instance_type: c5.large
+            security_group: default
+            network:
+              assign_public_ip: true
+            image_id: ami-123456
+            tags:
+              Environment: Testing
+          register: result
 
-The data about what instances are created is being saved by the "register" keyword in the variable named "ec2".
+The data about the instance that has been created is being saved by the "register" keyword in the variable named "result".
 
 From this, we'll use the add_host module to dynamically create a host group consisting of these new instances.  This facilitates performing configuration actions on the hosts immediately in a subsequent task.::
 
@@ -98,23 +116,23 @@ From this, we'll use the add_host module to dynamically create a host group cons
 
       tasks:
 
-        - name: Provision a set of instances
-          ec2:
-             key_name: my_key
-             group: test
-             instance_type: t2.micro
-             image: "{{ ami_id }}"
-             wait: true
-             exact_count: 5
-             count_tag:
-                Name: Demo
-             instance_tags:
-                Name: Demo
-          register: ec2
+        - name: Provision an EC2 instance with a public IP address
+          amazon.aws.ec2_instance:
+            name: Demo
+            key_name: "example-ssh-key"
+            vpc_subnet_id: subnet-5ca1ab1e
+            instance_type: c5.large
+            security_group: default
+            network:
+              assign_public_ip: true
+            image_id: ami-123456
+            tags:
+              Environment: Testing
+          register: result
 
        - name: Add all instance public IPs to host group
          add_host: hostname={{ item.public_ip }} groups=ec2hosts
-         loop: "{{ ec2.instances }}"
+         loop: "{{ result.instances }}"
 
 With the host group now created, a second play at the bottom of the same provisioning playbook file might now have some configuration steps::
 
