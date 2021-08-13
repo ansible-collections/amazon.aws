@@ -1316,7 +1316,7 @@ def main():
         if purge_rules:
             revoke_ingress = []
             for p in present_ingress:
-                if not any([rule_cmp(p, b) for b in named_tuple_ingress_list]):
+                if not any(rule_cmp(p, b) for b in named_tuple_ingress_list):
                     revoke_ingress.append(to_permission(p))
         else:
             revoke_ingress = []
@@ -1329,7 +1329,7 @@ def main():
             else:
                 revoke_egress = []
                 for p in present_egress:
-                    if not any([rule_cmp(p, b) for b in named_tuple_egress_list]):
+                    if not any(rule_cmp(p, b) for b in named_tuple_egress_list):
                         revoke_egress.append(to_permission(p))
         else:
             revoke_egress = []
