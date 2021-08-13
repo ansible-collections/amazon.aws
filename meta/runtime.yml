@@ -97,6 +97,8 @@ plugin_routing:
         warning_text: >-
           ec2_ami_facts was renamed in Ansible 2.9 to ec2_ami_info.
           Please update your tasks.
+    ec2_elb_lb:
+      redirect: amazon.aws.elb_classic_lb
     ec2_eni_facts:
       deprecation:
         removal_date: 2021-12-01
