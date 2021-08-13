@@ -13,7 +13,7 @@
     # ============================================================
     - name: Create VPC for testing
       ec2_vpc_net:
-        name: "{{ resource_prefix }}-vpc"
+        name: "{{ efs_name }}-vpc"
         cidr_block: 10.22.32.0/23
         tags:
           Name: Ansible ec2_instance Testing VPC
@@ -27,7 +27,7 @@
         cidr: 10.22.32.0/24
         az: "{{ aws_region }}a"
         resource_tags:
-          Name: "{{ resource_prefix }}-subnet-a"
+          Name: "{{ efs_name }}-subnet-a"
       register: testing_subnet_a
 
     - name: Create subnet in zone B for testing
@@ -37,7 +37,7 @@
         cidr: 10.22.33.0/24
         az: "{{ aws_region }}b"
         resource_tags:
-          Name: "{{ resource_prefix }}-subnet-b"
+          Name: "{{ efs_name }}-subnet-b"
       register: testing_subnet_b
 
     - name: Get default security group id for vpc
@@ -54,9 +54,9 @@
     - name: Create Efs for testing
       efs:
         state: present
-        name: "{{ resource_prefix }}-test-efs"
+        name: "{{ efs_name }}-test-efs"
         tags:
-            Name: "{{ resource_prefix }}-test-tag"
+            Name: "{{ efs_name }}-test-tag"
             Purpose: file-storage
         targets:
             - subnet_id: "{{testing_subnet_a.subnet.id}}"
@@ -76,19 +76,19 @@
     # ============================================================
     - name: Get EFS by creation token
       efs_info:
-        name: "{{ resource_prefix }}-test-efs"
+        name: "{{ efs_name }}-test-efs"
       register: efs_result
 
     - set_fact:
         efs_result_assertions:
           - efs_result is not changed
           - (efs_result.efs | length) == 1
-          - efs_result.efs[0].creation_token == "{{ resource_prefix }}-test-efs"
+          - efs_result.efs[0].creation_token == "{{ efs_name }}-test-efs"
           - efs_result.efs[0].file_system_id == created_efs.efs.file_system_id
           - efs_result.efs[0].number_of_mount_targets == 2
           - (efs_result.efs[0].mount_targets | length) == 2
-          - efs_result.efs[0].name == "{{ resource_prefix }}-test-tag"
-          - efs_result.efs[0].tags.Name == "{{ resource_prefix }}-test-tag"
+          - efs_result.efs[0].name == "{{ efs_name }}-test-tag"
+          - efs_result.efs[0].tags.Name == "{{ efs_name }}-test-tag"
           - efs_result.efs[0].tags.Purpose == "file-storage"
           - efs_result.efs[0].encrypted == false
           - efs_result.efs[0].life_cycle_state == "available"
@@ -113,7 +113,7 @@
     - name: Get EFS by tag
       efs_info:
         tags:
-          Name: "{{ resource_prefix }}-test-tag"
+          Name: "{{ efs_name }}-test-tag"
       register: efs_result
 
     - assert:
@@ -143,7 +143,7 @@
     - name: Get EFS by tag and target
       efs_info:
         tags:
-          Name: "{{ resource_prefix }}-test-tag"
+          Name: "{{ efs_name }}-test-tag"
         targets:
           - "{{testing_subnet_a.subnet.id}}"
       register: efs_result
@@ -157,9 +157,9 @@
     - name: Update Efs to use provisioned throughput_mode
       efs:
         state: present
-        name: "{{ resource_prefix }}-test-efs"
+        name: "{{ efs_name }}-test-efs"
         tags:
-            Name: "{{ resource_prefix }}-test-tag"
+            Name: "{{ efs_name }}-test-tag"
             Purpose: file-storage
         targets:
             - subnet_id: "{{testing_subnet_a.subnet.id}}"
@@ -176,9 +176,9 @@
     - name: Efs same value for provisioned_throughput_in_mibps
       efs:
         state: present
-        name: "{{ resource_prefix }}-test-efs"
+        name: "{{ efs_name }}-test-efs"
         tags:
-            Name: "{{ resource_prefix }}-test-tag"
+            Name: "{{ efs_name }}-test-tag"
             Purpose: file-storage
         targets:
             - subnet_id: "{{testing_subnet_a.subnet.id}}"
@@ -197,9 +197,9 @@
     - name: Efs new value for provisioned_throughput_in_mibps
       efs:
         state: present
-        name: "{{ resource_prefix }}-test-efs"
+        name: "{{ efs_name }}-test-efs"
         tags:
-            Name: "{{ resource_prefix }}-test-tag"
+            Name: "{{ efs_name }}-test-tag"
             Purpose: file-storage
         targets:
             - subnet_id: "{{testing_subnet_a.subnet.id}}"
@@ -211,12 +211,14 @@
     - assert:
         that:
           - efs_result is changed
-          - efs_result.efs["provisioned_throughput_in_mibps"] == 8.0
+    # Change of provisioned_throughput_in_mibps takes time
+    - pause:
+        seconds: 15
 
     # ============================================================
     - name: Check new facts with provisioned mode
       efs_info:
-        name: "{{ resource_prefix }}-test-efs"
+        name: "{{ efs_name }}-test-efs"
       register: efs_result
 
     - set_fact:
@@ -225,7 +227,7 @@
           - efs_result.efs[0].throughput_mode  == "provisioned"
           - efs_result.efs[0].provisioned_throughput_in_mibps == 8.0
           - (efs_result.efs | length) == 1
-          - efs_result.efs[0].creation_token == "{{ resource_prefix }}-test-efs"
+          - efs_result.efs[0].creation_token == "{{ efs_name }}-test-efs"
           - efs_result.efs[0].file_system_id == created_efs.efs.file_system_id
 
     - assert:
@@ -235,7 +237,7 @@
     - name: Query unknown EFS by tag
       efs_info:
         tags:
-          Name: "{{ resource_prefix }}-unknown"
+          Name: "{{ efs_name }}-unknown"
       register: efs_result
 
     - assert:
@@ -254,14 +256,190 @@
           - efs_result is not changed
           - (efs_result.efs | length) == 0
 
+    # ============================================================
+    # efs_tag module tests
+    - name: Add tags to EFS filesystem in check mode
+      efs_tag:
+        state: present
+        resource: "{{ created_efs.efs.file_system_id }}"
+        aws_access_key: '{{ aws_access_key }}'
+        aws_secret_key: '{{ aws_secret_key }}'
+        security_token: '{{ security_token | default(omit) }}'
+        region: "{{ aws_region }}"
+        tags:
+          check_mode_tag: 'this tag should not be applied'
+      check_mode: yes
+      register: efs_tag_result
+
+    - assert:
+        that:
+          - not efs_tag_result.tags.check_mode_tag is defined
+
+    - name: Add tags to EFS filesystem
+      efs_tag:
+        state: present
+        resource: "{{ created_efs.efs.file_system_id }}"
+        aws_access_key: '{{ aws_access_key }}'
+        aws_secret_key: '{{ aws_secret_key }}'
+        security_token: '{{ security_token | default(omit) }}'
+        region: "{{ aws_region }}"
+        tags:
+          "Title Case": 'Hello Cruel World'
+          "lowercase spaced": 'hello cruel world'
+          CamelCase: 'SimpleCamelCase'
+          Env: IntegrationTests
+          snake_case: 'simple_snake_case'
+      register: efs_tag_result
+
+    - assert:
+        that:
+          - efs_tag_result.tags.Env is defined
+          - efs_tag_result.tags.Env is search("IntegrationTests")
+          - efs_tag_result.tags.Name is defined
+          - efs_tag_result.tags.Name is search("{{ efs_name }}-test-tag")
+          - efs_tag_result.tags["CamelCase"] == 'SimpleCamelCase'
+          - efs_tag_result.tags["Title Case"] == 'Hello Cruel World'
+          - efs_tag_result.tags["lowercase spaced"] == 'hello cruel world'
+          - efs_tag_result.tags["snake_case"] == 'simple_snake_case'
+          - efs_tag_result is changed
+
+    - name: Add/Change tags on EFS filesystem - idempotency
+      efs_tag:
+        state: present
+        resource: "{{ created_efs.efs.file_system_id }}"
+        aws_access_key: '{{ aws_access_key }}'
+        aws_secret_key: '{{ aws_secret_key }}'
+        security_token: '{{ security_token | default(omit) }}'
+        region: "{{ aws_region }}"
+        tags:
+          Env: IntegrationTests
+          snake_case: 'simple_snake_case'
+      register: efs_tag_result
+
+    - assert:
+        that:
+          - not efs_tag_result is changed
+
+    - name: Remove specific EFS filesystem tag in check mode
+      efs_tag:
+        state: absent
+        resource: "{{ created_efs.efs.file_system_id }}"
+        aws_access_key: '{{ aws_access_key }}'
+        aws_secret_key: '{{ aws_secret_key }}'
+        security_token: '{{ security_token | default(omit) }}'
+        region: "{{ aws_region }}"
+        tags:
+          snake_case: 'simple_snake_case'
+      check_mode: yes
+      register: efs_tag_result
+
+    - assert:
+        that:
+          - efs_tag_result.tags["snake_case"] is defined
+          - efs_tag_result.tags["snake_case"] == 'simple_snake_case'
+
+    - name: Change tags on EFS filesystem
+      efs_tag:
+        state: present
+        resource: "{{ created_efs.efs.file_system_id }}"
+        aws_access_key: '{{ aws_access_key }}'
+        aws_secret_key: '{{ aws_secret_key }}'
+        security_token: '{{ security_token | default(omit) }}'
+        region: "{{ aws_region }}"
+        tags:
+          Env: OtherIntegrationTests
+      register: efs_tag_result
+
+    - assert:
+        that:
+          - efs_tag_result.tags.Env is defined
+          - efs_tag_result.tags.Env is search("OtherIntegrationTests")
+          - efs_tag_result is changed
+
+    - name: Change tags on EFS filesystem - idempotency
+      efs_tag:
+        state: present
+        resource: "{{ created_efs.efs.file_system_id }}"
+        aws_access_key: '{{ aws_access_key }}'
+        aws_secret_key: '{{ aws_secret_key }}'
+        security_token: '{{ security_token | default(omit) }}'
+        region: "{{ aws_region }}"
+        tags:
+          Env: OtherIntegrationTests
+      register: efs_tag_result
+
+    - assert:
+        that:
+          - efs_tag_result.tags.Env is defined
+          - efs_tag_result.tags.Env is search("OtherIntegrationTests")
+          - not efs_tag_result is changed
+
+    - name: Remove specific EFS filesystem tags
+      efs_tag:
+        state: absent
+        resource: "{{ created_efs.efs.file_system_id }}"
+        aws_access_key: '{{ aws_access_key }}'
+        aws_secret_key: '{{ aws_secret_key }}'
+        security_token: '{{ security_token | default(omit) }}'
+        region: "{{ aws_region }}"
+        tags:
+          "Title Case": 'Hello Cruel World'
+          "lowercase spaced": 'hello cruel world'
+          CamelCase: 'SimpleCamelCase'
+          snake_case: 'simple_snake_case'
+      register: efs_tag_result
+
+    - assert:
+        that:
+          - efs_tag_result.tags.Env is defined
+          - efs_tag_result.tags.Env is search("IntegrationTests")
+          - efs_tag_result.tags.Name is defined
+          - efs_tag_result.tags.Name is search("{{ efs_name }}-test-tag")
+          - not efs_tag_result.tags["CamelCase"] is defined
+          - not efs_tag_result.tags["Title Case"] is defined
+          - not efs_tag_result.tags["lowercase spaced"] is defined
+          - not efs_tag_result.tags["snake_case"] is defined
+
+    - name: Remove specific EFS filesystem tag - idempotency
+      efs_tag:
+        state: absent
+        resource: "{{ created_efs.efs.file_system_id }}"
+        aws_access_key: '{{ aws_access_key }}'
+        aws_secret_key: '{{ aws_secret_key }}'
+        security_token: '{{ security_token | default(omit) }}'
+        region: "{{ aws_region }}"
+        tags:
+          snake_case: 'simple_snake_case'
+      register: efs_tag_result
+
+    - assert:
+        that:
+          - not efs_tag_result is changed
+
+    - name: Remove all tag on EFS filesystem
+      efs_tag:
+        state: absent
+        resource: "{{ created_efs.efs.file_system_id }}"
+        region: "{{ aws_region }}"
+        aws_access_key: '{{ aws_access_key }}'
+        aws_secret_key: '{{ aws_secret_key }}'
+        security_token: '{{ security_token | default(omit) }}'
+        tags: {}
+        purge_tags: true
+      register: efs_tag_result
+
+    - assert:
+        that:
+          - efs_tag_result.tags == {}
+
   # ============================================================
   always:
     - name: Delete EFS used for tests
       efs:
         state: absent
-        name: "{{ resource_prefix }}-test-efs"
+        name: "{{ efs_name }}-test-efs"
         tags:
-          Name: "{{ resource_prefix }}-test-tag"
+          Name: "{{ efs_name }}-test-tag"
           Purpose: file-storage
       register: removed
       until: removed is not failed
@@ -275,7 +453,7 @@
         cidr: 10.22.32.0/24
         az: "{{ aws_region }}a"
         resource_tags:
-          Name: "{{ resource_prefix }}-subnet-a"
+          Name: "{{ efs_name }}-subnet-a"
       register: removed
       until: removed is not failed
       ignore_errors: yes
@@ -288,7 +466,7 @@
         cidr: 10.22.33.0/24
         az: "{{ aws_region }}b"
         resource_tags:
-          Name: "{{ resource_prefix }}-subnet-b"
+          Name: "{{ efs_name }}-subnet-b"
       register: removed
       until: removed is not failed
       ignore_errors: yes
@@ -296,7 +474,7 @@
 
     - name: remove the VPC
       ec2_vpc_net:
-        name: "{{ resource_prefix }}-vpc"
+        name: "{{ efs_name }}-vpc"
         cidr_block: 10.22.32.0/23
         state: absent
       register: removed
