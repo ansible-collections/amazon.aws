@@ -1,2 +1,1 @@
-unique_id: "{{ resource_prefix | hash('md5') |truncate(8, True, '') }}"
-bucket_name: '{{ unique_id }}-s3-lifecycle'
+bucket_name: '{{ tiny_prefix }}-s3-lifecycle'

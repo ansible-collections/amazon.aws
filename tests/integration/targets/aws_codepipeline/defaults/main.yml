@@ -1,7 +1,6 @@
 ---
 # defaults file for aws_codepipeline
-unique_id: "{{ resource_prefix | hash('md5') }}"
-codepipeline_name: "{{ unique_id }}-test-codepipeline"
+codepipeline_name: "{{ tiny_prefix }}-test-codepipeline"
 # IAM role names have to be less than 64 characters
 # we hash the resource_prefix to get a shorter, unique string
-codepipeline_service_role_name: "ansible-test-sts-{{ unique_id | truncate(6, True, '') }}-codepipeline-role"
+codepipeline_service_role_name: "ansible-test-{{ tiny_prefix | truncate(6, True, '') }}-codepipeline-role"

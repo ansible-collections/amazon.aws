@@ -3,7 +3,6 @@
 lambda_function_name: '{{ resource_prefix }}'
 # IAM role names have to be less than 64 characters
 # we hash the resource_prefix to get a shorter, unique string
-unique_id: "{{ resource_prefix | hash('md5') |truncate(8, True, '') }}"
-bucket_name: '{{ unique_id }}-bucket'
-lambda_name: '{{ unique_id }}-lambda'
-lambda_role_name: 'ansible-test-{{ unique_id }}-s3-notifications'
+bucket_name: '{{ tiny_prefix }}-bucket'
+lambda_name: '{{ tiny_prefix }}-lambda'
+lambda_role_name: 'ansible-test-{{ tiny_prefix }}-s3-notifications'
