@@ -401,12 +401,14 @@ owner_id:
   returned: on create/update
 '''
 
+import itertools
 import json
 import re
-import itertools
-from copy import deepcopy
-from time import sleep
 from collections import namedtuple
+from copy import deepcopy
+from ipaddress import IPv6Network
+from ipaddress import ip_network
+from time import sleep
 
 try:
     from botocore.exceptions import BotoCoreError, ClientError
@@ -419,8 +421,6 @@ from ansible.module_utils.common.network import to_ipv6_subnet
 from ansible.module_utils.common.network import to_subnet
 from ansible.module_utils.six import string_types
 
-from ..module_utils.compat._ipaddress import IPv6Network
-from ..module_utils.compat._ipaddress import ip_network
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.core import is_boto3_error_code
 from ..module_utils.ec2 import AWSRetry

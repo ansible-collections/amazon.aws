@@ -1,5 +1,3 @@
-plugins/module_utils/compat/_ipaddress.py no-assert  # Vendored library
-plugins/module_utils/compat/_ipaddress.py no-unicode-literals  # Vendored library
 plugins/module_utils/ec2.py pylint:ansible-deprecated-no-version  # We use dates for deprecations, Ansible 2.9 only supports this for compatability
 plugins/modules/aws_az_info.py pylint:ansible-deprecated-no-version  # We use dates for deprecations, Ansible 2.9 only supports this for compatability
 plugins/modules/aws_caller_info.py pylint:ansible-deprecated-no-version  # We use dates for deprecations, Ansible 2.9 only supports this for compatability
