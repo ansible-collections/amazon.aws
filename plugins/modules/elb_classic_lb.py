@@ -452,6 +452,8 @@ class ElbManager(object):
         if len(elbs) > 1:
             self.module.fail_json('Found multiple ELBs with name {0}'.format(self.name))
 
+        self.status = 'exists' if self.status == 'gone' else self.status
+
         return elbs[0]
 
     def _delete_elb(self):
@@ -502,27 +504,29 @@ class ElbManager(object):
                 self._create_elb()
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                 self.module.fail_json_aws(e, msg="Failed to create load balancer")
+            self._wait_created()
 
-            if self.wait:
+        # Some attributes are configured on creation, others need to be updated
+        # after creation.  Skip updates for those set on creation
+        else:
+            if self._check_scheme():
+                # XXX We should probably set 'None' parameters based on the
+                # current state prior to deletion
+
+                # the only way to change the scheme is by recreating the resource
+                self.ensure_gone()
+                # We need to wait for it to be gone-gone
+                self._wait_gone(True)
                 try:
-                    self._wait_for_elb_created()
-                    # Can take longer than creation
-                    self._wait_for_elb_interface_created()
+                    self._create_elb()
                 except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                    self.module.fail_json_aws(e, msg="Failed while waiting for load balancer deletion")
-
-#        # Some attributes are configured on creation, others need to be updated
-#        # after creation.  Skip updates for those set on creation
-#        else:
-#            if self._get_scheme():
-#                # the only way to change the scheme is by recreating the resource
-#                self.ensure_gone()
-#                self._create_elb()
+                    self.module.fail_json_aws(e, msg="Failed to recreate load balancer")
 #            else:
 #                self._set_zones()
 #                self._set_security_groups()
 #                self._set_elb_listeners()
 #                self._set_subnets()
+
 #        self._set_health_check()
 #        # boto has introduced support for some ELB attributes in
 #        # different versions, so we check first before trying to
@@ -552,15 +556,29 @@ class ElbManager(object):
                 self._delete_elb()
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                 self.module.fail_json_aws(e, msg="Failed to delete load balancer")
-            if self.wait:
-                try:
-                    elb_removed = self._wait_for_elb_removed()
-                    # Unfortunately even though the ELB itself is removed quickly
-                    # the interfaces take longer so reliant security groups cannot
-                    # be deleted until the interface has registered as removed.
-                    elb_interface_removed = self._wait_for_elb_interface_removed()
-                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                    self.module.fail_json_aws(e, msg="Failed while waiting for load balancer deletion")
+        self._wait_gone()
+
+    def _wait_gone(self, wait=None):
+        if not wait and not self.wait:
+            return
+        try:
+            elb_removed = self._wait_for_elb_removed()
+            # Unfortunately even though the ELB itself is removed quickly
+            # the interfaces take longer so reliant security groups cannot
+            # be deleted until the interface has registered as removed.
+            elb_interface_removed = self._wait_for_elb_interface_removed()
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed while waiting for load balancer deletion")
+
+    def _wait_created(self, wait=False):
+        if not wait and not self.wait:
+            return
+        try:
+            self._wait_for_elb_created()
+            # Can take longer than creation
+            self._wait_for_elb_interface_created()
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed while waiting for load balancer deletion")
 
     def get_info(self):
         try:
@@ -859,16 +877,14 @@ class ElbManager(object):
 #                self._attach_subnets(subnets_to_attach)
 #            if subnets_to_detach:
 #                self._detach_subnets(subnets_to_detach)
-#
-#    def _get_scheme(self):
-#        """Determine if the current scheme is different than the scheme of the ELB"""
-#        if self.scheme:
-#            if self.elb.scheme != self.scheme:
-#                if not self.wait:
-#                    self.module.fail_json(msg="Unable to modify scheme without using the wait option")
-#                return True
-#        return False
-#
+
+    def _check_scheme(self):
+        """Determine if the current scheme is different than the scheme of the ELB"""
+        if self.scheme:
+            if self.elb['Scheme'] != self.scheme:
+                return True
+        return False
+
 #    def _set_zones(self):
 #        """Determine which zones need to be enabled or disabled on the ELB"""
 #        if self.zones:

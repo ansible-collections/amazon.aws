@@ -28,6 +28,8 @@
     - include_tasks: setup_vpc.yml
     - include_tasks: basic_public.yml
     - include_tasks: basic_internal.yml
+    - include_tasks: schema_change.yml
+    - include_tasks: simple_changes.yml
 
   always:
 
@@ -36,8 +38,8 @@
       ec2_elb_lb:
         name: "{{ elb_name }}"
         state: absent
-        wait: True
+        wait: true
       register: result
-      ignore_errors: True
+      ignore_errors: true
 
     - include_tasks: cleanup_vpc.yml

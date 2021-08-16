@@ -3,14 +3,14 @@
   ec2_group:
     name: '{{ resource_prefix }}'
     state: absent
-  ignore_errors: True
+  ignore_errors: true
 
 - name: delete subnets
   ec2_vpc_subnet:
     vpc_id: '{{ setup_vpc.vpc.id }}'
     cidr: '{{ item }}'
     state: absent
-  ignore_errors: True
+  ignore_errors: true
   loop:
     - '{{ subnet_cidr_1 }}'
     - '{{ subnet_cidr_2 }}'
@@ -22,4 +22,4 @@
     cidr_block: '{{ vpc_cidr }}'
     state: absent
     name: '{{ resource_prefix }}'
-  ignore_errors: True
+  ignore_errors: true

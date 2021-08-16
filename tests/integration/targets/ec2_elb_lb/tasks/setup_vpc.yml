@@ -1,4 +1,5 @@
-# SETUP: vpc, ec2 key pair, subnet, security group, ec2 instance
+---
+# SETUP: vpc, subnet, security group
 - name: list available AZs
   aws_az_info:
   register: region_azs

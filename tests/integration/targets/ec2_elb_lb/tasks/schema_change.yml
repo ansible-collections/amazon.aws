@@ -1,0 +1,191 @@
+---
+- block:
+    # For creation test some basic behaviour
+    - module_defaults:
+        ec2_elb_lb:
+          zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
+          listeners: '{{ default_listeners }}'
+          health_check: '{{ default_health_check }}'
+          wait: true
+          scheme: 'internet-facing'
+          # subnets: ['{{ subnet_a1 }}', '{{ subnet_b1 }}']
+      block:
+        - name: Create ELB
+          ec2_elb_lb:
+            name: "{{ elb_name }}"
+            state: present
+          register: result
+
+        - assert:
+            that:
+              - result is changed
+              - result.elb.status == 'created'
+              - result.elb.scheme == 'internet-facing'
+
+    - module_defaults:
+        ec2_elb_lb:
+          # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
+          listeners: '{{ default_listeners }}'
+          health_check: '{{ default_health_check }}'
+          wait: true
+          scheme: 'internal'
+          subnets: ['{{ subnet_a1 }}', '{{ subnet_b1 }}']
+      block:
+
+        - name: Change Schema to internal (check_mode)
+          ec2_elb_lb:
+            name: "{{ elb_name }}"
+            state: present
+          register: result
+          check_mode: true
+
+        - assert:
+            that:
+              - result is changed
+
+        - name: Change Schema to internal
+          ec2_elb_lb:
+            name: "{{ elb_name }}"
+            state: present
+          register: result
+
+        - assert:
+            that:
+              - result is changed
+              - result.elb.scheme == 'internal'
+
+        - name: Change Schema to internal idempotency (check_mode)
+          ec2_elb_lb:
+            name: "{{ elb_name }}"
+            state: present
+          register: result
+          check_mode: true
+
+        - assert:
+            that:
+              - result is not changed
+
+        - name: Change Schema to internal idempotency
+          ec2_elb_lb:
+            name: "{{ elb_name }}"
+            state: present
+          register: result
+
+        - assert:
+            that:
+              - result is not changed
+              - result.elb.scheme == 'internal'
+
+        - name: No schema specified (check_mode)
+          ec2_elb_lb:
+            name: "{{ elb_name }}"
+            state: present
+            schema: '{{ omit }}'
+          register: result
+          check_mode: true
+
+        - assert:
+            that:
+              - result is not changed
+
+        - name: No schema specified
+          ec2_elb_lb:
+            name: "{{ elb_name }}"
+            state: present
+            schema: '{{ omit }}'
+          register: result
+
+        - assert:
+            that:
+              - result is not changed
+              - result.elb.scheme == 'internal'
+
+    # For creation test some basic behaviour
+    - module_defaults:
+        ec2_elb_lb:
+          zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
+          listeners: '{{ default_listeners }}'
+          health_check: '{{ default_health_check }}'
+          wait: true
+          scheme: 'internet-facing'
+          # subnets: ['{{ subnet_a1 }}', '{{ subnet_b1 }}']
+      block:
+
+        - name: Change schema to internet-facing (check_mode)
+          ec2_elb_lb:
+            name: "{{ elb_name }}"
+            state: present
+          register: result
+          check_mode: true
+
+        - assert:
+            that:
+              - result is changed
+
+        - name: Change schema to internet-facing
+          ec2_elb_lb:
+            name: "{{ elb_name }}"
+            state: present
+          register: result
+
+        - assert:
+            that:
+              - result is changed
+              - result.elb.scheme == 'internet-facing'
+
+        - name: Change schema to internet-facing idempotency (check_mode)
+          ec2_elb_lb:
+            name: "{{ elb_name }}"
+            state: present
+          register: result
+          check_mode: true
+
+        - assert:
+            that:
+              - result is not changed
+
+        - name: Change schema to internet-facing idempotency
+          ec2_elb_lb:
+            name: "{{ elb_name }}"
+            state: present
+          register: result
+
+        - assert:
+            that:
+              - result is not changed
+              - result.elb.scheme == 'internet-facing'
+
+        - name: No schema specified (check_mode)
+          ec2_elb_lb:
+            name: "{{ elb_name }}"
+            state: present
+            schema: '{{ omit }}'
+          register: result
+          check_mode: true
+
+        - assert:
+            that:
+              - result is not changed
+
+        - name: No schema specified
+          ec2_elb_lb:
+            name: "{{ elb_name }}"
+            state: present
+            schema: '{{ omit }}'
+          register: result
+
+        - assert:
+            that:
+              - result is not changed
+              - result.elb.scheme == 'internet-facing'
+
+  always:
+
+    # ============================================================
+    - name: remove the test load balancer
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: absent
+        wait: true
+      register: result
+      ignore_errors: true

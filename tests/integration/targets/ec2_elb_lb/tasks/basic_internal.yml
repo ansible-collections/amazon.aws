@@ -6,7 +6,7 @@
           # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
           listeners: '{{ default_listeners }}'
           health_check: '{{ default_health_check }}'
-          wait: True
+          wait: true
           scheme: 'internal'
           subnets: ['{{ subnet_a1 }}', '{{ subnet_b1 }}']
       block:
@@ -18,7 +18,7 @@
             name: "{{ elb_name }}"
             state: present
           register: result
-          check_mode: True
+          check_mode: true
 
         - assert:
             that:
@@ -35,13 +35,17 @@
             that:
               - result is changed
               - result.elb.status == "created"
+              - availability_zone_a in result.elb.zones
+              - availability_zone_b in result.elb.zones
+              - subnet_a1 in result.elb.subnets
+              - subnet_b1 in result.elb.subnets
 
         - name: Create ELB idempotency (check_mode)
           ec2_elb_lb:
             name: "{{ elb_name }}"
             state: present
           register: result
-          check_mode: True
+          check_mode: true
 
         - assert:
             that:
@@ -58,6 +62,10 @@
             that:
               - result is not changed
               - result.elb.status == "exists"
+              - availability_zone_a in result.elb.zones
+              - availability_zone_b in result.elb.zones
+              - subnet_a1 in result.elb.subnets
+              - subnet_b1 in result.elb.subnets
 
         - ec2_eni_info:
             filters:
@@ -82,59 +90,59 @@
       ec2_elb_lb:
         name: "{{ elb_name }}"
         state: absent
-        wait: True
+        wait: true
       register: result
-      check_mode: True
+      check_mode: true
 
     - name: assert the load balancer would be removed
       assert:
         that:
-           - result is changed
-           - 'result.elb.name == "{{ elb_name }}"'
-           - 'result.elb.status == "deleted"'
+          - result is changed
+          - 'result.elb.name == "{{ elb_name }}"'
+          - 'result.elb.status == "deleted"'
 
     - name: remove the test load balancer completely
       ec2_elb_lb:
         name: "{{ elb_name }}"
         state: absent
-        wait: True
+        wait: true
       register: result
 
     - name: assert the load balancer was removed
       assert:
         that:
-           - result is changed
-           - 'result.elb.name == "{{ elb_name }}"'
-           - 'result.elb.status == "deleted"'
+          - result is changed
+          - 'result.elb.name == "{{ elb_name }}"'
+          - 'result.elb.status == "deleted"'
 
     - name: remove the test load balancer completely (idempotency) (check_mode)
       ec2_elb_lb:
         name: "{{ elb_name }}"
         state: absent
-        wait: True
+        wait: true
       register: result
-      check_mode: True
+      check_mode: true
 
     - name: assert the load balancer is gone
       assert:
         that:
-           - result is not changed
-           - 'result.elb.name == "{{ elb_name }}"'
-           - 'result.elb.status == "gone"'
+          - result is not changed
+          - 'result.elb.name == "{{ elb_name }}"'
+          - 'result.elb.status == "gone"'
 
     - name: remove the test load balancer completely (idempotency)
       ec2_elb_lb:
         name: "{{ elb_name }}"
         state: absent
-        wait: True
+        wait: true
       register: result
 
     - name: assert the load balancer is gone
       assert:
         that:
-           - result is not changed
-           - 'result.elb.name == "{{ elb_name }}"'
-           - 'result.elb.status == "gone"'
+          - result is not changed
+          - 'result.elb.name == "{{ elb_name }}"'
+          - 'result.elb.status == "gone"'
 
   always:
 
@@ -143,6 +151,6 @@
       ec2_elb_lb:
         name: "{{ elb_name }}"
         state: absent
-        wait: True
+        wait: true
       register: result
-      ignore_errors: True
+      ignore_errors: true
