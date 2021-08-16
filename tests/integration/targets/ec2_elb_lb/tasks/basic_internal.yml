@@ -1,0 +1,148 @@
+---
+- block:
+    # For creation test some basic behaviour
+    - module_defaults:
+        ec2_elb_lb:
+          # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
+          listeners: '{{ default_listeners }}'
+          health_check: '{{ default_health_check }}'
+          wait: True
+          scheme: 'internal'
+          subnets: ['{{ subnet_a1 }}', '{{ subnet_b1 }}']
+      block:
+        # ============================================================
+        # create test elb with listeners, certificate, and health check
+
+        - name: Create ELB (check_mode)
+          ec2_elb_lb:
+            name: "{{ elb_name }}"
+            state: present
+          register: result
+          check_mode: True
+
+        - assert:
+            that:
+              - result is changed
+              - result.elb.status == "created"
+
+        - name: Create ELB
+          ec2_elb_lb:
+            name: "{{ elb_name }}"
+            state: present
+          register: result
+
+        - assert:
+            that:
+              - result is changed
+              - result.elb.status == "created"
+
+        - name: Create ELB idempotency (check_mode)
+          ec2_elb_lb:
+            name: "{{ elb_name }}"
+            state: present
+          register: result
+          check_mode: True
+
+        - assert:
+            that:
+              - result is not changed
+              - result.elb.status == "exists"
+
+        - name: Create ELB idempotency
+          ec2_elb_lb:
+            name: "{{ elb_name }}"
+            state: present
+          register: result
+
+        - assert:
+            that:
+              - result is not changed
+              - result.elb.status == "exists"
+
+        - ec2_eni_info:
+            filters:
+              description: 'ELB {{ elb_name }}'
+          register: info
+
+        - assert:
+            that:
+              - info.network_interfaces | length > 0
+
+        - elb_classic_lb_info:
+            names: ['{{ elb_name }}']
+          register: info
+
+        - assert:
+            that:
+              - info.elbs | length > 0
+
+    # ============================================================
+
+    - name: remove the test load balancer completely (check_mode)
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: absent
+        wait: True
+      register: result
+      check_mode: True
+
+    - name: assert the load balancer would be removed
+      assert:
+        that:
+           - result is changed
+           - 'result.elb.name == "{{ elb_name }}"'
+           - 'result.elb.status == "deleted"'
+
+    - name: remove the test load balancer completely
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: absent
+        wait: True
+      register: result
+
+    - name: assert the load balancer was removed
+      assert:
+        that:
+           - result is changed
+           - 'result.elb.name == "{{ elb_name }}"'
+           - 'result.elb.status == "deleted"'
+
+    - name: remove the test load balancer completely (idempotency) (check_mode)
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: absent
+        wait: True
+      register: result
+      check_mode: True
+
+    - name: assert the load balancer is gone
+      assert:
+        that:
+           - result is not changed
+           - 'result.elb.name == "{{ elb_name }}"'
+           - 'result.elb.status == "gone"'
+
+    - name: remove the test load balancer completely (idempotency)
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: absent
+        wait: True
+      register: result
+
+    - name: assert the load balancer is gone
+      assert:
+        that:
+           - result is not changed
+           - 'result.elb.name == "{{ elb_name }}"'
+           - 'result.elb.status == "gone"'
+
+  always:
+
+    # ============================================================
+    - name: remove the test load balancer
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: absent
+        wait: True
+      register: result
+      ignore_errors: True

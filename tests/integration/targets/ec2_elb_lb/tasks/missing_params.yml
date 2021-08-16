@@ -1,0 +1,41 @@
+---
+# Test behaviour when mandatory params aren't passed
+- block:
+    # ============================================================
+
+    - name: test with no name
+      ec2_elb_lb:
+        state: present
+      register: result
+      ignore_errors: true
+
+    - name: assert failure when called with no parameters
+      assert:
+        that:
+           - 'result.failed'
+           - '"missing required arguments" in result.msg'
+           - '"name" in result.msg'
+
+    - name: test with only name (state missing)
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+      register: result
+      ignore_errors: true
+
+    - name: assert failure when called with only name
+      assert:
+        that:
+           - 'result.failed'
+           - '"missing required arguments" in result.msg'
+           - '"state" in result.msg'
+
+  always:
+
+    # ============================================================
+    - name: remove the test load balancer
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: absent
+        wait: True
+      register: result
+      ignore_errors: True

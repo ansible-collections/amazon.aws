@@ -1,0 +1,77 @@
+# SETUP: vpc, ec2 key pair, subnet, security group, ec2 instance
+- name: list available AZs
+  aws_az_info:
+  register: region_azs
+
+- name: pick an AZ for testing
+  set_fact:
+    availability_zone_a: "{{ region_azs.availability_zones[0].zone_name }}"
+    availability_zone_b: "{{ region_azs.availability_zones[1].zone_name }}"
+
+- name: create a VPC to work in
+  ec2_vpc_net:
+    cidr_block: '{{ vpc_cidr }}'
+    state: present
+    name: '{{ resource_prefix }}'
+    resource_tags:
+      Name: '{{ resource_prefix }}'
+  register: setup_vpc
+
+- name: create a subnet
+  ec2_vpc_subnet:
+    az: '{{ availability_zone_a }}'
+    tags: '{{ resource_prefix }}'
+    vpc_id: '{{ setup_vpc.vpc.id }}'
+    cidr: '{{ subnet_cidr_1 }}'
+    state: present
+    resource_tags:
+      Name: '{{ resource_prefix }}-a-1'
+  register: setup_subnet_1
+
+- name: create a subnet
+  ec2_vpc_subnet:
+    az: '{{ availability_zone_a }}'
+    tags: '{{ resource_prefix }}'
+    vpc_id: '{{ setup_vpc.vpc.id }}'
+    cidr: '{{ subnet_cidr_2 }}'
+    state: present
+    resource_tags:
+      Name: '{{ resource_prefix }}-a-2'
+  register: setup_subnet_2
+
+- name: create a subnet
+  ec2_vpc_subnet:
+    az: '{{ availability_zone_b }}'
+    tags: '{{ resource_prefix }}'
+    vpc_id: '{{ setup_vpc.vpc.id }}'
+    cidr: '{{ subnet_cidr_3 }}'
+    state: present
+    resource_tags:
+      Name: '{{ resource_prefix }}-b-1'
+  register: setup_subnet_3
+
+- name: create a subnet
+  ec2_vpc_subnet:
+    az: '{{ availability_zone_b }}'
+    tags: '{{ resource_prefix }}'
+    vpc_id: '{{ setup_vpc.vpc.id }}'
+    cidr: '{{ subnet_cidr_4 }}'
+    state: present
+    resource_tags:
+      Name: '{{ resource_prefix }}-b-2'
+  register: setup_subnet_4
+
+- name: create a security group
+  ec2_group:
+    name: '{{ resource_prefix }}'
+    description: 'created by Ansible integration tests'
+    state: present
+    vpc_id: '{{ setup_vpc.vpc.id }}'
+  register: setup_sg
+
+- name: store the subnet IDs
+  set_fact:
+    subnet_a1: "{{ setup_subnet_1.subnet.id }}"
+    subnet_a2: "{{ setup_subnet_2.subnet.id }}"
+    subnet_b1: "{{ setup_subnet_3.subnet.id }}"
+    subnet_b2: "{{ setup_subnet_4.subnet.id }}"

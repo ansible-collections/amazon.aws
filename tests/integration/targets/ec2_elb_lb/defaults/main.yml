@@ -1,3 +1,25 @@
 ---
 # defaults file for ec2_elb_lb
 elb_name: 'ansible-test-{{ tiny_prefix }}'
+
+vpc_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/16'
+subnet_cidr_1: '10.{{ 256 | random(seed=resource_prefix) }}.1.0/24'
+subnet_cidr_2: '10.{{ 256 | random(seed=resource_prefix) }}.2.0/24'
+subnet_cidr_3: '10.{{ 256 | random(seed=resource_prefix) }}.3.0/24'
+subnet_cidr_4: '10.{{ 256 | random(seed=resource_prefix) }}.4.0/24'
+
+default_listeners:
+  - protocol: http
+    load_balancer_port: 80
+    instance_port: 80
+  - protocol: http
+    load_balancer_port: 8080
+    instance_port: 8080
+default_health_check:
+    ping_protocol: http
+    ping_port: 80
+    ping_path: "/index.html"
+    response_timeout: 5
+    interval: 30
+    unhealthy_threshold: 2
+    healthy_threshold: 10
