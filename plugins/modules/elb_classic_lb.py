@@ -415,8 +415,9 @@ class ElbManager(object):
         self.changed = False
         self.status = 'gone'
 
-        self.client = self.module.client('elb')
-        self.ec2_client = self.module.client('ec2')
+        retry_decorator = AWSRetry.jittered_backoff()
+        self.client = self.module.client('elb', retry_decorator=retry_decorator)
+        self.ec2_client = self.module.client('ec2', retry_decorator=retry_decorator)
 
         security_group_names = module.params['security_group_names']
         self.security_group_ids = module.params['security_group_ids']
@@ -457,7 +458,7 @@ class ElbManager(object):
         # True if succeeds, exception raised if not
         try:
             if not self.module.check_mode:
-                self.client.delete_load_balancer(LoadBalancerName=self.name)
+                self.client.delete_load_balancer(aws_retry=True, LoadBalancerName=self.name)
             self.changed = True
             self.status = 'deleted'
         except is_boto3_error_code('LoadBalancerNotFound'):
@@ -477,7 +478,7 @@ class ElbManager(object):
         params = scrub_none_parameters(params)
 
         if not self.module.check_mode:
-            self.client.create_load_balancer(**params)
+            self.client.create_load_balancer(aws_retry=True, **params)
             # create_load_balancer only returns the DNS name
             self.elb = self._get_elb()
         self.changed = True
@@ -612,14 +613,13 @@ class ElbManager(object):
             health_check=health_check,
         )
 
+        info['instance_health'] = []
         if info['instances']:
             try:
-                health = self.client.describe_instance_health(self.name)['InstanceStates']
+                health = self.client.describe_instance_health(aws_retry=True, LoadBalancerName=self.name)['InstanceStates']
                 info['instance_health'] = camel_dict_to_snake_dict(health)
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                 self.module.warn('Failed to fetch instance health')
-        else:
-            info['instance_health'] = []
 
         # instance state counts: InService or OutOfService
         if info['instance_health']:
