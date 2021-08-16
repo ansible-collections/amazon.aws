@@ -19,6 +19,9 @@
       aws_access_key: "{{ aws_access_key }}"
       aws_secret_key: "{{ aws_secret_key }}"
       security_token: "{{ security_token | default(omit) }}"
+  collections:
+    - community.aws
+    - amazon.aws
   block:
 
     # ============================================================
@@ -46,6 +49,7 @@
             interval: 30
             unhealthy_threshold: 2
             healthy_threshold: 10
+        wait: True
       register: result
       check_mode: True
 
@@ -76,6 +80,7 @@
             interval: 30
             unhealthy_threshold: 2
             healthy_threshold: 10
+        wait: True
       register: result
 
     - assert:
@@ -92,6 +97,23 @@
           - 'result.elb.health_check.unhealthy_threshold == 2'
           - '[80, 80, "HTTP", "HTTP"] in result.elb.listeners'
           - '[8080, 8080, "HTTP", "HTTP"] in result.elb.listeners'
+
+    - ec2_eni_info:
+        filters:
+          description: 'ELB {{ elb_name }}'
+      register: info
+
+    - assert:
+        that:
+          - info.network_interfaces | length > 0
+
+    - elb_classic_lb_info:
+        names: ['{{ elb_name }}']
+      register: info
+
+    - assert:
+        that:
+          - info.elbs | length > 0
 
     # ============================================================
 
@@ -232,6 +254,7 @@
       ec2_elb_lb:
         name: "{{ elb_name }}"
         state: absent
+        wait: True
       register: result
       check_mode: True
 
@@ -246,6 +269,7 @@
       ec2_elb_lb:
         name: "{{ elb_name }}"
         state: absent
+        wait: True
       register: result
 
     - name: assert the load balancer was removed
@@ -259,6 +283,7 @@
       ec2_elb_lb:
         name: "{{ elb_name }}"
         state: absent
+        wait: True
       register: result
       check_mode: True
 
@@ -273,6 +298,7 @@
       ec2_elb_lb:
         name: "{{ elb_name }}"
         state: absent
+        wait: True
       register: result
 
     - name: assert the load balancer is gone
@@ -317,5 +343,6 @@
       ec2_elb_lb:
         name: "{{ elb_name }}"
         state: absent
+        wait: True
       register: result
       ignore_errors: True

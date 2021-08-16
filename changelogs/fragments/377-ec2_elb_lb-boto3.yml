@@ -2,3 +2,4 @@ minor_changes:
 - ec2_elb_lb - module renamed to ``elb_classic_lb`` (https://github.com/ansible-collections/amazon.aws/pull/377).
 - elb_classic_lb - migrated to boto3 SDK (https://github.com/ansible-collections/amazon.aws/pull/377).
 - elb_classic_lb - added support for check_mode (https://github.com/ansible-collections/amazon.aws/pull/377).
+- elb_classic_lb - added support for wait during creation (https://github.com/ansible-collections/amazon.aws/pull/377).

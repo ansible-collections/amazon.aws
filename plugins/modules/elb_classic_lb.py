@@ -143,8 +143,9 @@ options:
     type: dict
   wait:
     description:
-      - When I(wait=True), Ansible will check the status of the load balancer to ensure it has been successfully
-        removed from AWS.
+      - When creating or deleting (not updating) an ELB, if I(wait=True)
+        Ansible will wait for both the load balancer and related network interfaces
+        to finish creating/deleting.
     type: bool
     default: false
   wait_timeout:
@@ -376,9 +377,12 @@ from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.core import is_boto3_error_code
 from ..module_utils.core import scrub_none_parameters
 from ..module_utils.ec2 import AWSRetry
+from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.ec2 import camel_dict_to_snake_dict
 from ..module_utils.ec2 import snake_dict_to_camel_dict
+
 # from ..module_utils.ec2 import get_ec2_security_group_ids_from_names
+from ..module_utils.waiters import get_waiter
 
 
 class ElbManager(object):
@@ -493,8 +497,21 @@ class ElbManager(object):
     def ensure_ok(self):
         """Create the ELB"""
         if not self.elb:
-            # Zones and listeners will be added at creation
-            self._create_elb()
+            try:
+                self._create_elb()
+            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                self.module.fail_json_aws(e, msg="Failed to create load balancer")
+
+            if self.wait:
+                try:
+                    self._wait_for_elb_created()
+                    # Can take longer than creation
+                    self._wait_for_elb_interface_created()
+                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                    self.module.fail_json_aws(e, msg="Failed while waiting for load balancer deletion")
+
+#        # Some attributes are configured on creation, others need to be updated
+#        # after creation.  Skip updates for those set on creation
 #        else:
 #            if self._get_scheme():
 #                # the only way to change the scheme is by recreating the resource
@@ -530,15 +547,19 @@ class ElbManager(object):
     def ensure_gone(self):
         """Destroy the ELB"""
         if self.elb:
-            self._delete_elb()
-#            if self.wait:
-#                elb_removed = self._wait_for_elb_removed()
-#                # Unfortunately even though the ELB itself is removed quickly
-#                # the interfaces take longer so reliant security groups cannot
-#                # be deleted until the interface has registered as removed.
-#                elb_interface_removed = self._wait_for_elb_interface_removed()
-#                if not (elb_removed and elb_interface_removed):
-#                    self.module.fail_json(msg='Timed out waiting for removal of load balancer.')
+            try:
+                self._delete_elb()
+            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                self.module.fail_json_aws(e, msg="Failed to delete load balancer")
+            if self.wait:
+                try:
+                    elb_removed = self._wait_for_elb_removed()
+                    # Unfortunately even though the ELB itself is removed quickly
+                    # the interfaces take longer so reliant security groups cannot
+                    # be deleted until the interface has registered as removed.
+                    elb_interface_removed = self._wait_for_elb_interface_removed()
+                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                    self.module.fail_json_aws(e, msg="Failed while waiting for load balancer deletion")
 
     def get_info(self):
         try:
@@ -580,6 +601,7 @@ class ElbManager(object):
             hosted_zone_id=check_elb.get('CanonicalHostedZoneNameID'),
             lb_cookie_policy=lb_cookie_policy,
             app_cookie_policy=app_cookie_policy,
+            # XXX TODO
             # proxy_policy=self._get_proxy_protocol_policy(),
             # backends=self._get_backend_policies(),
             instances=instance_ids,
@@ -636,49 +658,86 @@ class ElbManager(object):
 
         return info
 
-#    def _wait_for_elb_removed(self):
-#        polling_increment_secs = 15
-#        max_retries = (self.wait_timeout // polling_increment_secs)
-#        status_achieved = False
-#
-#        for x in range(0, max_retries):
-#            try:
-#                self.elb_conn.get_all_lb_attributes(self.name)
-#            except (boto.exception.BotoServerError, Exception) as e:
-#                if "LoadBalancerNotFound" in e.code:
-#                    status_achieved = True
-#                    break
-#                else:
-#                    time.sleep(polling_increment_secs)
-#
-#        return status_achieved
-#
-#    def _wait_for_elb_interface_removed(self):
-#        polling_increment_secs = 15
-#        max_retries = (self.wait_timeout // polling_increment_secs)
-#        status_achieved = False
-#
-#        elb_interfaces = self.ec2_conn.get_all_network_interfaces(
-#            filters={'attachment.instance-owner-id': 'amazon-elb',
-#                     'description': 'ELB {0}'.format(self.name)})
-#
-#        for x in range(0, max_retries):
-#            for interface in elb_interfaces:
-#                try:
-#                    result = self.ec2_conn.get_all_network_interfaces(interface.id)
-#                    if result == []:
-#                        status_achieved = True
-#                        break
-#                    else:
-#                        time.sleep(polling_increment_secs)
-#                except (boto.exception.BotoServerError, Exception) as e:
-#                    if 'InvalidNetworkInterfaceID' in e.code:
-#                        status_achieved = True
-#                        break
-#                    else:
-#                        self.module.fail_json_aws(e, 'Failure while waiting for interface to be removed')
-#
-#        return status_achieved
+    def _wait_for_elb_created(self):
+        if self.module.check_mode:
+            return True
+
+        delay = 10
+        max_attempts = (self.wait_timeout // delay)
+        waiter = get_waiter(self.client, 'load_balancer_created')
+
+        try:
+            waiter.wait(
+                WaiterConfig={'Delay': delay, 'MaxAttempts': max_attempts},
+                LoadBalancerNames=[self.name],
+            )
+        except botocore.exceptions.WaiterError as e:
+            self.module.fail_json_aws(e, 'Timeout waiting for ELB removal')
+
+        return True
+
+    def _wait_for_elb_interface_created(self):
+        if self.module.check_mode:
+            return True
+        delay = 10
+        max_attempts = (self.wait_timeout // delay)
+        waiter = get_waiter(self.ec2_client, 'network_interface_available')
+
+        filters = ansible_dict_to_boto3_filter_list(
+            {'requester-id': 'amazon-elb',
+             'description': 'ELB {0}'.format(self.name)}
+        )
+
+        try:
+            waiter.wait(
+                WaiterConfig={'Delay': delay, 'MaxAttempts': max_attempts},
+                Filters=filters,
+            )
+        except botocore.exceptions.WaiterError as e:
+            self.module.fail_json_aws(e, 'Timeout waiting for ELB Interface removal')
+
+        return True
+
+    def _wait_for_elb_removed(self):
+        if self.module.check_mode:
+            return True
+
+        delay = 10
+        max_attempts = (self.wait_timeout // delay)
+        waiter = get_waiter(self.client, 'load_balancer_deleted')
+
+        try:
+            waiter.wait(
+                WaiterConfig={'Delay': delay, 'MaxAttempts': max_attempts},
+                LoadBalancerNames=[self.name],
+            )
+        except botocore.exceptions.WaiterError as e:
+            self.module.fail_json_aws(e, 'Timeout waiting for ELB removal')
+
+        return True
+
+    def _wait_for_elb_interface_removed(self):
+        if self.module.check_mode:
+            return True
+
+        delay = 10
+        max_attempts = (self.wait_timeout // delay)
+        waiter = get_waiter(self.ec2_client, 'network_interface_deleted')
+
+        filters = ansible_dict_to_boto3_filter_list(
+            {'requester-id': 'amazon-elb',
+             'description': 'ELB {0}'.format(self.name)}
+        )
+
+        try:
+            waiter.wait(
+                WaiterConfig={'Delay': delay, 'MaxAttempts': max_attempts},
+                Filters=filters,
+            )
+        except botocore.exceptions.WaiterError as e:
+            self.module.fail_json_aws(e, 'Timeout waiting for ELB Interface removal')
+
+        return True
 
 #    def _create_elb_listeners(self, listeners):
 #        """Takes a list of listener tuples and creates them"""

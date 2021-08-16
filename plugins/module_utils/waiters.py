@@ -90,6 +90,30 @@ ec2_data = {
                 },
             ]
         },
+        "NetworkInterfaceDeleted": {
+            "operation": "DescribeNetworkInterfaces",
+            "delay": 5,
+            "maxAttempts": 40,
+            "acceptors": [
+                {
+                    "matcher": "path",
+                    "expected": True,
+                    "argument": "length(NetworkInterfaces[]) > `0`",
+                    "state": "retry"
+                },
+                {
+                    "matcher": "path",
+                    "expected": True,
+                    "argument": "length(NetworkInterfaces[]) == `0`",
+                    "state": "success"
+                },
+                {
+                    "expected": "InvalidNetworkInterfaceID.NotFound",
+                    "matcher": "error",
+                    "state": "success"
+                },
+            ]
+        },
         "NetworkInterfaceDeleteOnTerminate": {
             "operation": "DescribeNetworkInterfaces",
             "delay": 5,
@@ -462,6 +486,49 @@ eks_data = {
 }
 
 
+elb_data = {
+    "version": 2,
+    "waiters": {
+        "LoadBalancerCreated": {
+            "delay": 10,
+            "maxAttempts": 60,
+            "operation": "DescribeLoadBalancers",
+            "acceptors": [
+                {
+                    "matcher": "path",
+                    "expected": True,
+                    "argument": "length(LoadBalancerDescriptions[]) > `0`",
+                    "state": "success",
+                },
+                {
+                    "matcher": "error",
+                    "expected": "LoadBalancerNotFound",
+                    "state": "retry",
+                },
+            ],
+        },
+        "LoadBalancerDeleted": {
+            "delay": 10,
+            "maxAttempts": 60,
+            "operation": "DescribeLoadBalancers",
+            "acceptors": [
+                {
+                    "matcher": "path",
+                    "expected": True,
+                    "argument": "length(LoadBalancerDescriptions[]) > `0`",
+                    "state": "retry",
+                },
+                {
+                    "matcher": "error",
+                    "expected": "LoadBalancerNotFound",
+                    "state": "success",
+                },
+            ],
+        },
+    }
+}
+
+
 rds_data = {
     "version": 2,
     "waiters": {
@@ -572,6 +639,11 @@ def eks_model(name):
     return eks_models.get_waiter(name)
 
 
+def elb_model(name):
+    elb_models = core_waiter.WaiterModel(waiter_config=_inject_limit_retries(elb_data))
+    return elb_models.get_waiter(name)
+
+
 def rds_model(name):
     rds_models = core_waiter.WaiterModel(waiter_config=_inject_limit_retries(rds_data))
     return rds_models.get_waiter(name)
@@ -598,6 +670,12 @@ waiters_by_name = {
     ('EC2', 'network_interface_attached'): lambda ec2: core_waiter.Waiter(
         'network_interface_attached',
         ec2_model('NetworkInterfaceAttached'),
+        core_waiter.NormalizedOperationMethod(
+            ec2.describe_network_interfaces
+        )),
+    ('EC2', 'network_interface_deleted'): lambda ec2: core_waiter.Waiter(
+        'network_interface_deleted',
+        ec2_model('NetworkInterfaceDeleted'),
         core_waiter.NormalizedOperationMethod(
             ec2.describe_network_interfaces
         )),
@@ -744,6 +822,18 @@ waiters_by_name = {
         eks_model('ClusterDeleted'),
         core_waiter.NormalizedOperationMethod(
             eks.describe_cluster
+        )),
+    ('ElasticLoadBalancing', 'load_balancer_created'): lambda elb: core_waiter.Waiter(
+        'load_balancer_created',
+        elb_model('LoadBalancerCreated'),
+        core_waiter.NormalizedOperationMethod(
+            elb.describe_load_balancers
+        )),
+    ('ElasticLoadBalancing', 'load_balancer_deleted'): lambda elb: core_waiter.Waiter(
+        'load_balancer_deleted',
+        elb_model('LoadBalancerDeleted'),
+        core_waiter.NormalizedOperationMethod(
+            elb.describe_load_balancers
         )),
     ('RDS', 'db_instance_stopped'): lambda rds: core_waiter.Waiter(
         'db_instance_stopped',
