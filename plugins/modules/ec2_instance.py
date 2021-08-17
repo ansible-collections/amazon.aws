@@ -286,14 +286,14 @@ options:
     suboptions:
       http_endpoint:
         description:
-        - Enables or disables the HTTP metadata endpoint on instances, default state is enabled.
+        - Enables or disables the HTTP metadata endpoint on instances.
         - If specified a value of disabled, metadata of the instance will not be accessible.
         choices: [enabled, disabled]
         default: enabled
         type: str
       http_tokens:
         description:
-        - Set the state of token usage for instance metadata requests, default state is optional.
+        - Set the state of token usage for instance metadata requests.
         - If the state is optional (v1 and v2), instance metadata can be retrieved with or without a signed token header on request.
         - If the state is required (v2), a signed token header must be sent with any instance metadata retrieval requests.
         choices: [optional, required]
