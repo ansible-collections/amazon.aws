@@ -29,7 +29,7 @@
     - include_tasks: basic_public.yml
     - include_tasks: basic_internal.yml
     - include_tasks: schema_change.yml
-    - include_tasks: simple_changes.yml
+    # - include_tasks: simple_changes.yml
 
   always:
 

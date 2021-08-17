@@ -79,6 +79,7 @@ options:
   zones:
     description:
       - List of availability zones to enable on this ELB.
+      - Mutually exclusive with I(subnets).
     type: list
     elements: str
   purge_zones:
@@ -106,12 +107,17 @@ options:
     type: dict
   subnets:
     description:
-      - A list of VPC subnets to use when creating ELB. Zones should be empty if using this.
+      - A list of VPC subnets to use when creating the ELB.
+      - Mutually exclusive with I(zones).
     type: list
     elements: str
   purge_subnets:
     description:
-      - Purge existing subnet on ELB that are not found in subnets.
+      - Purge existing subnets on the ELB that are not found in I(subnets).
+      - Because it is not permitted to add multiple subnets from the same
+        availability zone, subnets to be purged will be removed before new
+        subnets are added.  This may cause a brief outage if you try to replace
+        all subnets at once.
     type: bool
     default: false
   scheme:
@@ -120,7 +126,6 @@ options:
       - For a private VPC-visible ELB use C(internal).
       - If you choose to update your scheme with a different value the ELB will be destroyed and
         recreated.
-      - To update scheme you must use the option I(wait).
       - Defaults to I(scheme=internet-facing).
     type: str
     choices: ["internal", "internet-facing"]
@@ -442,6 +447,11 @@ class ElbManager(object):
     def validate_params(self):
         pass
 
+    # Pass check_mode down through to the module
+    @property
+    def check_mode(self):
+        return self.module.check_mode
+
     def _get_elb(self):
         try:
             elbs = self._describe_loadbalancer(self.name)
@@ -459,7 +469,7 @@ class ElbManager(object):
     def _delete_elb(self):
         # True if succeeds, exception raised if not
         try:
-            if not self.module.check_mode:
+            if not self.check_mode:
                 self.client.delete_load_balancer(aws_retry=True, LoadBalancerName=self.name)
             self.changed = True
             self.status = 'deleted'
@@ -479,7 +489,7 @@ class ElbManager(object):
             Scheme=self.scheme)
         params = scrub_none_parameters(params)
 
-        if not self.module.check_mode:
+        if not self.check_mode:
             self.client.create_load_balancer(aws_retry=True, **params)
             # create_load_balancer only returns the DNS name
             self.elb = self._get_elb()
@@ -521,11 +531,11 @@ class ElbManager(object):
                     self._create_elb()
                 except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                     self.module.fail_json_aws(e, msg="Failed to recreate load balancer")
-#            else:
+            else:
+                self._set_subnets()
 #                self._set_zones()
 #                self._set_security_groups()
 #                self._set_elb_listeners()
-#                self._set_subnets()
 
 #        self._set_health_check()
 #        # boto has introduced support for some ELB attributes in
@@ -677,7 +687,7 @@ class ElbManager(object):
         return info
 
     def _wait_for_elb_created(self):
-        if self.module.check_mode:
+        if self.check_mode:
             return True
 
         delay = 10
@@ -695,7 +705,7 @@ class ElbManager(object):
         return True
 
     def _wait_for_elb_interface_created(self):
-        if self.module.check_mode:
+        if self.check_mode:
             return True
         delay = 10
         max_attempts = (self.wait_timeout // delay)
@@ -717,7 +727,7 @@ class ElbManager(object):
         return True
 
     def _wait_for_elb_removed(self):
-        if self.module.check_mode:
+        if self.check_mode:
             return True
 
         delay = 10
@@ -735,7 +745,7 @@ class ElbManager(object):
         return True
 
     def _wait_for_elb_interface_removed(self):
-        if self.module.check_mode:
+        if self.check_mode:
             return True
 
         delay = 10
@@ -854,29 +864,57 @@ class ElbManager(object):
 #        except boto.exception.BotoServerError as e:
 #            self.module.fail_json_aws(e, msg='unable to disable zones')
 #        self.changed = True
-#
-#    def _attach_subnets(self, subnets):
-#        self.elb_conn.attach_lb_to_subnets(self.name, subnets)
-#        self.changed = True
-#
-#    def _detach_subnets(self, subnets):
-#        self.elb_conn.detach_lb_from_subnets(self.name, subnets)
-#        self.changed = True
-#
-#    def _set_subnets(self):
-#        """Determine which subnets need to be attached or detached on the ELB"""
-#        if self.subnets:
-#            if self.purge_subnets:
-#                subnets_to_detach = list(set(self.elb.subnets) - set(self.subnets))
-#                subnets_to_attach = list(set(self.subnets) - set(self.elb.subnets))
-#            else:
-#                subnets_to_detach = None
-#                subnets_to_attach = list(set(self.subnets) - set(self.elb.subnets))
-#
-#            if subnets_to_attach:
-#                self._attach_subnets(subnets_to_attach)
-#            if subnets_to_detach:
-#                self._detach_subnets(subnets_to_detach)
+
+    def _attach_subnets(self, subnets):
+        if not subnets:
+            return False
+        self.changed = True
+        if self.check_mode:
+            return True
+        self.client.attach_load_balancer_to_subnets(
+            aws_retry=True,
+            LoadBalancerName=self.name,
+            Subnets=subnets)
+        return True
+
+    def _detach_subnets(self, subnets):
+        if not subnets:
+            return False
+        self.changed = True
+        if self.check_mode:
+            return True
+        self.client.detach_load_balancer_from_subnets(
+            aws_retry=True,
+            LoadBalancerName=self.name,
+            Subnets=subnets)
+        return True
+
+    def _set_subnets(self):
+        """Determine which subnets need to be attached or detached on the ELB"""
+        # Subnets parameter not set, nothing to change
+        if self.subnets is None:
+            return False
+
+        changed = False
+
+        if self.purge_subnets:
+            subnets_to_detach = list(set(self.elb['Subnets']) - set(self.subnets))
+        else:
+            subnets_to_detach = list()
+        subnets_to_attach = list(set(self.subnets) - set(self.elb['Subnets']))
+
+        # You can't add multiple subnets from the same AZ.  Remove first, then
+        # add.
+        try:
+            changed |= self._detach_subnets(subnets_to_detach)
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to detach subnets from load balancer")
+        try:
+            changed |= self._attach_subnets(subnets_to_attach)
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to attach subnets to load balancer")
+
+        return changed
 
     def _check_scheme(self):
         """Determine if the current scheme is different than the scheme of the ELB"""

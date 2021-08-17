@@ -8,12 +8,12 @@
           health_check: '{{ default_health_check }}'
           wait: true
           scheme: 'internal'
-          subnets: ['{{ subnet_a1 }}', '{{ subnet_b1 }}']
+          subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
       block:
         # ============================================================
         # create test elb with listeners, certificate, and health check
 
-        - name: Create ELB (check_mode)
+        - name: Create internal ELB (check_mode)
           ec2_elb_lb:
             name: "{{ elb_name }}"
             state: present
@@ -37,10 +37,10 @@
               - result.elb.status == "created"
               - availability_zone_a in result.elb.zones
               - availability_zone_b in result.elb.zones
-              - subnet_a1 in result.elb.subnets
-              - subnet_b1 in result.elb.subnets
+              - subnet_a in result.elb.subnets
+              - subnet_b in result.elb.subnets
 
-        - name: Create ELB idempotency (check_mode)
+        - name: Create internal ELB idempotency (check_mode)
           ec2_elb_lb:
             name: "{{ elb_name }}"
             state: present
@@ -52,7 +52,7 @@
               - result is not changed
               - result.elb.status == "exists"
 
-        - name: Create ELB idempotency
+        - name: Create internal ELB idempotency
           ec2_elb_lb:
             name: "{{ elb_name }}"
             state: present
@@ -64,8 +64,8 @@
               - result.elb.status == "exists"
               - availability_zone_a in result.elb.zones
               - availability_zone_b in result.elb.zones
-              - subnet_a1 in result.elb.subnets
-              - subnet_b1 in result.elb.subnets
+              - subnet_a in result.elb.subnets
+              - subnet_b in result.elb.subnets
 
         - ec2_eni_info:
             filters:
@@ -83,6 +83,143 @@
         - assert:
             that:
               - info.elbs | length > 0
+
+    # ============================================================
+    # Now we're outside of the creation we drop the defaults
+    # ============================================================
+
+    - name: Add a subnet - no purge (check_mode)
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: present
+        subnets: ['{{ subnet_c }}']
+      register: result
+      check_mode: true
+
+    - assert:
+        that:
+          - result is changed
+          - result.elb.status == "exists"
+
+    - name: Add a subnet - no purge
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: present
+        subnets: ['{{ subnet_c }}']
+      register: result
+
+    - assert:
+        that:
+          - result is changed
+          - result.elb.status == "exists"
+          - availability_zone_a in result.elb.zones
+          - availability_zone_b in result.elb.zones
+          - availability_zone_c in result.elb.zones
+          - subnet_a in result.elb.subnets
+          - subnet_b in result.elb.subnets
+          - subnet_c in result.elb.subnets
+
+    - name: Add a subnet - no purge - idempotency (check_mode)
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: present
+        subnets: ['{{ subnet_c }}']
+      register: result
+      check_mode: true
+
+    - assert:
+        that:
+          - result is not changed
+          - result.elb.status == "exists"
+
+    - name: Add a subnet - no purge - idempotency
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: present
+        subnets: ['{{ subnet_c }}']
+      register: result
+
+    - assert:
+        that:
+          - result is not changed
+          - result.elb.status == "exists"
+          - availability_zone_a in result.elb.zones
+          - availability_zone_b in result.elb.zones
+          - availability_zone_c in result.elb.zones
+          - subnet_a in result.elb.subnets
+          - subnet_b in result.elb.subnets
+          - subnet_c in result.elb.subnets
+
+    # While purging try adding a subnet from the same AZ as one we're purging.
+    # This is important because you can't add 2 AZs to an LB from the same AZ at
+    # the same time.
+    - name: Add a subnet - purge (check_mode)
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: present
+        subnets: ['{{ subnet_c }}', '{{ subnet_a2 }}']
+        purge_subnets: true
+      register: result
+      check_mode: true
+
+    - assert:
+        that:
+          - result is changed
+          - result.elb.status == "exists"
+
+    - name: Add a subnet - purge
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: present
+        subnets: ['{{ subnet_c }}', '{{ subnet_a2 }}']
+        purge_subnets: true
+      register: result
+
+    - assert:
+        that:
+          - result is changed
+          - result.elb.status == "exists"
+          - availability_zone_a in result.elb.zones
+          - availability_zone_b not in result.elb.zones
+          - availability_zone_c in result.elb.zones
+          - subnet_a not in result.elb.subnets
+          - subnet_b not in result.elb.subnets
+          - subnet_c in result.elb.subnets
+          - subnet_a2 in result.elb.subnets
+
+    - name: Add a subnet - purge - idempotency (check_mode)
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: present
+        subnets: ['{{ subnet_c }}', '{{ subnet_a2 }}']
+        purge_subnets: true
+      register: result
+      check_mode: true
+
+    - assert:
+        that:
+          - result is not changed
+          - result.elb.status == "exists"
+
+    - name: Add a subnet - purge - idempotency
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: present
+        subnets: ['{{ subnet_c }}', '{{ subnet_a2 }}']
+        purge_subnets: true
+      register: result
+
+    - assert:
+        that:
+          - result is not changed
+          - result.elb.status == "exists"
+          - availability_zone_a in result.elb.zones
+          - availability_zone_b not in result.elb.zones
+          - availability_zone_c in result.elb.zones
+          - subnet_a not in result.elb.subnets
+          - subnet_b not in result.elb.subnets
+          - subnet_c in result.elb.subnets
+          - subnet_a2 in result.elb.subnets
 
     # ============================================================
 

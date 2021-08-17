@@ -8,7 +8,7 @@
           health_check: '{{ default_health_check }}'
           wait: true
           scheme: 'internet-facing'
-          # subnets: ['{{ subnet_a1 }}', '{{ subnet_b1 }}']
+          # subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
       block:
         # ============================================================
         # create test elb with listeners, certificate, and health check

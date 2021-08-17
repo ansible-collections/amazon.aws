@@ -8,7 +8,7 @@
           health_check: '{{ default_health_check }}'
           wait: true
           scheme: 'internet-facing'
-          # subnets: ['{{ subnet_a1 }}', '{{ subnet_b1 }}']
+          # subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
       block:
         - name: Create ELB
           ec2_elb_lb:
@@ -29,7 +29,7 @@
           health_check: '{{ default_health_check }}'
           wait: true
           scheme: 'internal'
-          subnets: ['{{ subnet_a1 }}', '{{ subnet_b1 }}']
+          subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
       block:
 
         - name: Change Schema to internal (check_mode)
@@ -108,7 +108,7 @@
           health_check: '{{ default_health_check }}'
           wait: true
           scheme: 'internet-facing'
-          # subnets: ['{{ subnet_a1 }}', '{{ subnet_b1 }}']
+          # subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
       block:
 
         - name: Change schema to internet-facing (check_mode)
