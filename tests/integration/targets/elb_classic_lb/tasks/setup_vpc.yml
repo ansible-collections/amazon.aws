@@ -65,11 +65,27 @@
 
 - name: create a security group
   ec2_group:
-    name: '{{ resource_prefix }}'
+    name: '{{ resource_prefix }}-a'
     description: 'created by Ansible integration tests'
     state: present
     vpc_id: '{{ setup_vpc.vpc.id }}'
-  register: setup_sg
+  register: setup_sg_1
+
+- name: create a security group
+  ec2_group:
+    name: '{{ resource_prefix }}-b'
+    description: 'created by Ansible integration tests'
+    state: present
+    vpc_id: '{{ setup_vpc.vpc.id }}'
+  register: setup_sg_2
+
+- name: create a security group
+  ec2_group:
+    name: '{{ resource_prefix }}-c'
+    description: 'created by Ansible integration tests'
+    state: present
+    vpc_id: '{{ setup_vpc.vpc.id }}'
+  register: setup_sg_3
 
 - name: store the subnet IDs
   set_fact:
@@ -77,3 +93,6 @@
     subnet_b: "{{ setup_subnet_2.subnet.id }}"
     subnet_c: "{{ setup_subnet_3.subnet.id }}"
     subnet_a2: "{{ setup_subnet_4.subnet.id }}"
+    sg_a: "{{ setup_sg_1.group_id }}"
+    sg_b: "{{ setup_sg_2.group_id }}"
+    sg_c: "{{ setup_sg_3.group_id }}"

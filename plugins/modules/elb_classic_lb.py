@@ -534,7 +534,7 @@ class ElbManager(object):
             else:
                 self._set_subnets()
                 self._set_zones()
-#                self._set_security_groups()
+                self._set_security_groups()
 #                self._set_elb_listeners()
 
 #        self._set_health_check()
@@ -969,11 +969,28 @@ class ElbManager(object):
 
         return changed
 
-#    def _set_security_groups(self):
-#        if self.security_group_ids is not None and set(self.elb.security_groups) != set(self.security_group_ids):
-#            self.elb_conn.apply_security_groups_to_lb(self.name, self.security_group_ids)
-#            self.changed = True
-#
+    def _set_security_groups(self):
+        if not self.security_group_ids:
+            return False
+        # Security Group Names should already by converted to IDs by this point.
+        if set(self.elb['SecurityGroups']) == set(self.security_group_ids):
+            return False
+
+        self.changed = True
+
+        if self.check_mode:
+            return True
+
+        try:
+            self.client.apply_security_groups_to_load_balancer(
+                aws_retry=True,
+                LoadBalancerName=self.name,
+                SecurityGroups=self.security_group_ids,
+            )
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to apply security groups to load balancer")
+        return True
+
 #    def _set_health_check(self):
 #        """Set health check values on ELB as needed"""
 #        if self.health_check:
@@ -1401,10 +1418,10 @@ def main():
             ['security_group_ids', 'security_group_names'],
             ['zones', 'subnets'],
         ],
-        required_if=[
-            # ['state', 'present', ['listeners']],
-            ['state', 'present', ['zones', 'subnets'], True],
-        ],
+        # required_if=[
+        #     ['state', 'present', ['listeners']],
+        #     ['state', 'present', ['zones', 'subnets'], True],
+        # ],
         supports_check_mode=True,
     )
 

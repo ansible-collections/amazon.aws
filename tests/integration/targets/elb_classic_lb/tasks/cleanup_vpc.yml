@@ -1,9 +1,13 @@
 ---
 - name: delete security groups
   ec2_group:
-    name: '{{ resource_prefix }}'
+    name: '{{ item }}'
     state: absent
   ignore_errors: true
+  loop:
+    - '{{ resource_prefix }}-a'
+    - '{{ resource_prefix }}-b'
+    - '{{ resource_prefix }}-c'
 
 - name: delete subnets
   ec2_vpc_subnet:
