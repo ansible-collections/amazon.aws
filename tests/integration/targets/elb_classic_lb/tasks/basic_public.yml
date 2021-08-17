@@ -2,7 +2,7 @@
 - block:
     # For creation test some basic behaviour
     - module_defaults:
-        ec2_elb_lb:
+        elb_classic_lb:
           zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
           listeners: '{{ default_listeners }}'
           health_check: '{{ default_health_check }}'
@@ -14,7 +14,7 @@
         # create test elb with listeners, certificate, and health check
 
         - name: Create public ELB (check_mode)
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
           register: result
@@ -26,7 +26,7 @@
               - result.elb.status == "created"
 
         - name: Create public ELB
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
           register: result
@@ -39,7 +39,7 @@
               - availability_zone_b in result.elb.zones
 
         - name: Create public ELB idempotency (check_mode)
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
           register: result
@@ -51,7 +51,7 @@
               - result.elb.status == "exists"
 
         - name: Create public ELB idempotency
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
           register: result
@@ -85,7 +85,7 @@
     # ============================================================
 
     - name: Add a zone - no purge (check_mode)
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         zones: ['{{ availability_zone_c }}']
@@ -98,7 +98,7 @@
           - result.elb.status == "exists"
 
     - name: Add a zone - no purge
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         zones: ['{{ availability_zone_c }}']
@@ -113,7 +113,7 @@
           - availability_zone_c in result.elb.zones
 
     - name: Add a zone - no purge - idempotency (check_mode)
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         zones: ['{{ availability_zone_c }}']
@@ -126,7 +126,7 @@
           - result.elb.status == "exists"
 
     - name: Add a zone - no purge - idempotency
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         zones: ['{{ availability_zone_c }}']
@@ -143,7 +143,7 @@
     # ============================================================
 
     - name: Remove a zone - purge (check_mode)
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         zones: ['{{ availability_zone_c }}']
@@ -157,7 +157,7 @@
           - result.elb.status == "exists"
 
     - name: Remove a zone - purge
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         zones: ['{{ availability_zone_c }}']
@@ -173,7 +173,7 @@
           - availability_zone_c in result.elb.zones
 
     - name: Remove a zone - purge - idempotency (check_mode)
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         zones: ['{{ availability_zone_c }}']
@@ -187,7 +187,7 @@
           - result.elb.status == "exists"
 
     - name: Remove a zone - purge - idempotency
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         zones: ['{{ availability_zone_c }}']
@@ -205,7 +205,7 @@
     # ============================================================
 
     - name: remove the test load balancer completely (check_mode)
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
         wait: true
@@ -220,7 +220,7 @@
           - 'result.elb.status == "deleted"'
 
     - name: remove the test load balancer completely
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
         wait: true
@@ -234,7 +234,7 @@
           - 'result.elb.status == "deleted"'
 
     - name: remove the test load balancer completely (idempotency) (check_mode)
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
         wait: true
@@ -249,7 +249,7 @@
           - 'result.elb.status == "gone"'
 
     - name: remove the test load balancer completely (idempotency)
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
         wait: true
@@ -266,7 +266,7 @@
 
     # ============================================================
     - name: remove the test load balancer
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
         wait: true

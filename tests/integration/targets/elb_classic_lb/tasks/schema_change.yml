@@ -2,7 +2,7 @@
 - block:
     # For creation test some basic behaviour
     - module_defaults:
-        ec2_elb_lb:
+        elb_classic_lb:
           zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
           listeners: '{{ default_listeners }}'
           health_check: '{{ default_health_check }}'
@@ -11,7 +11,7 @@
           # subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
       block:
         - name: Create ELB
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
           register: result
@@ -23,7 +23,7 @@
               - result.elb.scheme == 'internet-facing'
 
     - module_defaults:
-        ec2_elb_lb:
+        elb_classic_lb:
           # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
           listeners: '{{ default_listeners }}'
           health_check: '{{ default_health_check }}'
@@ -33,7 +33,7 @@
       block:
 
         - name: Change Schema to internal (check_mode)
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
           register: result
@@ -44,7 +44,7 @@
               - result is changed
 
         - name: Change Schema to internal
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
           register: result
@@ -55,7 +55,7 @@
               - result.elb.scheme == 'internal'
 
         - name: Change Schema to internal idempotency (check_mode)
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
           register: result
@@ -66,7 +66,7 @@
               - result is not changed
 
         - name: Change Schema to internal idempotency
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
           register: result
@@ -77,7 +77,7 @@
               - result.elb.scheme == 'internal'
 
         - name: No schema specified (check_mode)
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
             schema: '{{ omit }}'
@@ -89,7 +89,7 @@
               - result is not changed
 
         - name: No schema specified
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
             schema: '{{ omit }}'
@@ -102,7 +102,7 @@
 
     # For creation test some basic behaviour
     - module_defaults:
-        ec2_elb_lb:
+        elb_classic_lb:
           zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
           listeners: '{{ default_listeners }}'
           health_check: '{{ default_health_check }}'
@@ -112,7 +112,7 @@
       block:
 
         - name: Change schema to internet-facing (check_mode)
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
           register: result
@@ -123,7 +123,7 @@
               - result is changed
 
         - name: Change schema to internet-facing
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
           register: result
@@ -134,7 +134,7 @@
               - result.elb.scheme == 'internet-facing'
 
         - name: Change schema to internet-facing idempotency (check_mode)
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
           register: result
@@ -145,7 +145,7 @@
               - result is not changed
 
         - name: Change schema to internet-facing idempotency
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
           register: result
@@ -156,7 +156,7 @@
               - result.elb.scheme == 'internet-facing'
 
         - name: No schema specified (check_mode)
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
             schema: '{{ omit }}'
@@ -168,7 +168,7 @@
               - result is not changed
 
         - name: No schema specified
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
             schema: '{{ omit }}'
@@ -183,7 +183,7 @@
 
     # ============================================================
     - name: remove the test load balancer
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
         wait: true

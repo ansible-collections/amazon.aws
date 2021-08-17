@@ -2,7 +2,7 @@
 - block:
     # For creation test some basic behaviour
     - module_defaults:
-        ec2_elb_lb:
+        elb_classic_lb:
           # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
           listeners: '{{ default_listeners }}'
           health_check: '{{ default_health_check }}'
@@ -14,7 +14,7 @@
         # create test elb with listeners, certificate, and health check
 
         - name: Create internal ELB (check_mode)
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
           register: result
@@ -26,7 +26,7 @@
               - result.elb.status == "created"
 
         - name: Create ELB
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
           register: result
@@ -41,7 +41,7 @@
               - subnet_b in result.elb.subnets
 
         - name: Create internal ELB idempotency (check_mode)
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
           register: result
@@ -53,7 +53,7 @@
               - result.elb.status == "exists"
 
         - name: Create internal ELB idempotency
-          ec2_elb_lb:
+          elb_classic_lb:
             name: "{{ elb_name }}"
             state: present
           register: result
@@ -89,7 +89,7 @@
     # ============================================================
 
     - name: Add a subnet - no purge (check_mode)
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         subnets: ['{{ subnet_c }}']
@@ -102,7 +102,7 @@
           - result.elb.status == "exists"
 
     - name: Add a subnet - no purge
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         subnets: ['{{ subnet_c }}']
@@ -120,7 +120,7 @@
           - subnet_c in result.elb.subnets
 
     - name: Add a subnet - no purge - idempotency (check_mode)
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         subnets: ['{{ subnet_c }}']
@@ -133,7 +133,7 @@
           - result.elb.status == "exists"
 
     - name: Add a subnet - no purge - idempotency
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         subnets: ['{{ subnet_c }}']
@@ -154,7 +154,7 @@
     # This is important because you can't add 2 AZs to an LB from the same AZ at
     # the same time.
     - name: Add a subnet - purge (check_mode)
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         subnets: ['{{ subnet_c }}', '{{ subnet_a2 }}']
@@ -168,7 +168,7 @@
           - result.elb.status == "exists"
 
     - name: Add a subnet - purge
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         subnets: ['{{ subnet_c }}', '{{ subnet_a2 }}']
@@ -188,7 +188,7 @@
           - subnet_a2 in result.elb.subnets
 
     - name: Add a subnet - purge - idempotency (check_mode)
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         subnets: ['{{ subnet_c }}', '{{ subnet_a2 }}']
@@ -202,7 +202,7 @@
           - result.elb.status == "exists"
 
     - name: Add a subnet - purge - idempotency
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: present
         subnets: ['{{ subnet_c }}', '{{ subnet_a2 }}']
@@ -224,7 +224,7 @@
     # ============================================================
 
     - name: remove the test load balancer completely (check_mode)
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
         wait: true
@@ -239,7 +239,7 @@
           - 'result.elb.status == "deleted"'
 
     - name: remove the test load balancer completely
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
         wait: true
@@ -253,7 +253,7 @@
           - 'result.elb.status == "deleted"'
 
     - name: remove the test load balancer completely (idempotency) (check_mode)
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
         wait: true
@@ -268,7 +268,7 @@
           - 'result.elb.status == "gone"'
 
     - name: remove the test load balancer completely (idempotency)
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
         wait: true
@@ -285,7 +285,7 @@
 
     # ============================================================
     - name: remove the test load balancer
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
         wait: true

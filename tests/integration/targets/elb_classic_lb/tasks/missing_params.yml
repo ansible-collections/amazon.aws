@@ -4,7 +4,7 @@
     # ============================================================
 
     - name: test with no name
-      ec2_elb_lb:
+      elb_classic_lb:
         state: present
       register: result
       ignore_errors: true
@@ -17,7 +17,7 @@
           - '"name" in result.msg'
 
     - name: test with only name (state missing)
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
       register: result
       ignore_errors: true
@@ -33,7 +33,7 @@
 
     # ============================================================
     - name: remove the test load balancer
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
         wait: true

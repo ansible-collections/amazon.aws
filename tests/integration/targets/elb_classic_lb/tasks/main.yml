@@ -6,7 +6,7 @@
 
 # __Test Outline__
 #
-# __ec2_elb_lb__
+# __elb_classic_lb__
 # create test elb with listeners and certificate
 # change AZ's
 # change listeners
@@ -35,7 +35,7 @@
 
     # ============================================================
     - name: remove the test load balancer
-      ec2_elb_lb:
+      elb_classic_lb:
         name: "{{ elb_name }}"
         state: absent
         wait: true
