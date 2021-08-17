@@ -13,7 +13,7 @@
         # ============================================================
         # create test elb with listeners, certificate, and health check
 
-        - name: Create ELB (check_mode)
+        - name: Create public ELB (check_mode)
           ec2_elb_lb:
             name: "{{ elb_name }}"
             state: present
@@ -25,7 +25,7 @@
               - result is changed
               - result.elb.status == "created"
 
-        - name: Create ELB
+        - name: Create public ELB
           ec2_elb_lb:
             name: "{{ elb_name }}"
             state: present
@@ -38,7 +38,7 @@
               - availability_zone_a in result.elb.zones
               - availability_zone_b in result.elb.zones
 
-        - name: Create ELB idempotency (check_mode)
+        - name: Create public ELB idempotency (check_mode)
           ec2_elb_lb:
             name: "{{ elb_name }}"
             state: present
@@ -50,7 +50,7 @@
               - result is not changed
               - result.elb.status == "exists"
 
-        - name: Create ELB idempotency
+        - name: Create public ELB idempotency
           ec2_elb_lb:
             name: "{{ elb_name }}"
             state: present
@@ -79,6 +79,128 @@
         - assert:
             that:
               - info.elbs | length > 0
+
+    # ============================================================
+    # Now we're outside of the creation we drop the defaults
+    # ============================================================
+
+    - name: Add a zone - no purge (check_mode)
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: present
+        zones: ['{{ availability_zone_c }}']
+      register: result
+      check_mode: true
+
+    - assert:
+        that:
+          - result is changed
+          - result.elb.status == "exists"
+
+    - name: Add a zone - no purge
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: present
+        zones: ['{{ availability_zone_c }}']
+      register: result
+
+    - assert:
+        that:
+          - result is changed
+          - result.elb.status == "exists"
+          - availability_zone_a in result.elb.zones
+          - availability_zone_b in result.elb.zones
+          - availability_zone_c in result.elb.zones
+
+    - name: Add a zone - no purge - idempotency (check_mode)
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: present
+        zones: ['{{ availability_zone_c }}']
+      register: result
+      check_mode: true
+
+    - assert:
+        that:
+          - result is not changed
+          - result.elb.status == "exists"
+
+    - name: Add a zone - no purge - idempotency
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: present
+        zones: ['{{ availability_zone_c }}']
+      register: result
+
+    - assert:
+        that:
+          - result is not changed
+          - result.elb.status == "exists"
+          - availability_zone_a in result.elb.zones
+          - availability_zone_b in result.elb.zones
+          - availability_zone_c in result.elb.zones
+
+    # ============================================================
+
+    - name: Remove a zone - purge (check_mode)
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: present
+        zones: ['{{ availability_zone_c }}']
+        purge_zones: true
+      register: result
+      check_mode: true
+
+    - assert:
+        that:
+          - result is changed
+          - result.elb.status == "exists"
+
+    - name: Remove a zone - purge
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: present
+        zones: ['{{ availability_zone_c }}']
+        purge_zones: true
+      register: result
+
+    - assert:
+        that:
+          - result is changed
+          - result.elb.status == "exists"
+          - availability_zone_a not in result.elb.zones
+          - availability_zone_b not in result.elb.zones
+          - availability_zone_c in result.elb.zones
+
+    - name: Remove a zone - purge - idempotency (check_mode)
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: present
+        zones: ['{{ availability_zone_c }}']
+        purge_zones: true
+      register: result
+      check_mode: true
+
+    - assert:
+        that:
+          - result is not changed
+          - result.elb.status == "exists"
+
+    - name: Remove a zone - purge - idempotency
+      ec2_elb_lb:
+        name: "{{ elb_name }}"
+        state: present
+        zones: ['{{ availability_zone_c }}']
+        purge_zones: true
+      register: result
+
+    - assert:
+        that:
+          - result is not changed
+          - result.elb.status == "exists"
+          - availability_zone_a not in result.elb.zones
+          - availability_zone_b not in result.elb.zones
+          - availability_zone_c in result.elb.zones
 
     # ============================================================
 

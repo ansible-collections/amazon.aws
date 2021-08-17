@@ -533,7 +533,7 @@ class ElbManager(object):
                     self.module.fail_json_aws(e, msg="Failed to recreate load balancer")
             else:
                 self._set_subnets()
-#                self._set_zones()
+                self._set_zones()
 #                self._set_security_groups()
 #                self._set_elb_listeners()
 
@@ -850,21 +850,6 @@ class ElbManager(object):
             base_tuple.append(listener.get('SSLCertificateId'))
         return tuple(base_tuple)
 
-#    def _enable_zones(self, zones):
-#        try:
-#            self.elb.enable_zones(zones)
-#        except boto.exception.BotoServerError as e:
-#            self.module.fail_json_aws(e, msg='unable to enable zones')
-#
-#        self.changed = True
-#
-#    def _disable_zones(self, zones):
-#        try:
-#            self.elb.disable_zones(zones)
-#        except boto.exception.BotoServerError as e:
-#            self.module.fail_json_aws(e, msg='unable to disable zones')
-#        self.changed = True
-
     def _attach_subnets(self, subnets):
         if not subnets:
             return False
@@ -923,24 +908,67 @@ class ElbManager(object):
                 return True
         return False
 
-#    def _set_zones(self):
-#        """Determine which zones need to be enabled or disabled on the ELB"""
-#        if self.zones:
-#            if self.purge_zones:
-#                zones_to_disable = list(set(self.elb.availability_zones) -
-#                                        set(self.zones))
-#                zones_to_enable = list(set(self.zones) -
-#                                       set(self.elb.availability_zones))
-#            else:
-#                zones_to_disable = None
-#                zones_to_enable = list(set(self.zones) -
-#                                       set(self.elb.availability_zones))
-#            if zones_to_enable:
-#                self._enable_zones(zones_to_enable)
-#            # N.B. This must come second, in case it would have removed all zones
-#            if zones_to_disable:
-#                self._disable_zones(zones_to_disable)
-#
+    def _enable_zones(self, zones):
+        if not zones:
+            return False
+        self.changed = True
+        if self.check_mode:
+            return True
+
+        try:
+            self.client.enable_availability_zones_for_load_balancer(
+                aws_retry=True,
+                LoadBalancerName=self.name,
+                AvailabilityZones=zones,
+            )
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg='Failed to enable zones for load balancer')
+        return True
+
+    def _disable_zones(self, zones):
+        if not zones:
+            return False
+        self.changed = True
+        if self.check_mode:
+            return True
+
+        try:
+            self.client.disable_availability_zones_for_load_balancer(
+                aws_retry=True,
+                LoadBalancerName=self.name,
+                AvailabilityZones=zones,
+            )
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg='Failed to disable zones for load balancer')
+        return True
+
+    def _set_zones(self):
+        """Determine which zones need to be enabled or disabled on the ELB"""
+        # zones parameter not set, nothing to changeA
+        if self.zones is None:
+            return False
+
+        changed = False
+
+        if self.purge_zones:
+            zones_to_disable = list(set(self.elb['AvailabilityZones']) - set(self.zones))
+        else:
+            zones_to_disable = list()
+        zones_to_enable = list(set(self.zones) - set(self.elb['AvailabilityZones']))
+
+        # Add before we remove to reduce the chance of an outage if someone
+        # replaces all zones at once
+        try:
+            changed |= self._enable_zones(zones_to_enable)
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to enable zone on load balancer")
+        try:
+            changed |= self._disable_zones(zones_to_disable)
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to attach zone to load balancer")
+
+        return changed
+
 #    def _set_security_groups(self):
 #        if self.security_group_ids is not None and set(self.elb.security_groups) != set(self.security_group_ids):
 #            self.elb_conn.apply_security_groups_to_lb(self.name, self.security_group_ids)
