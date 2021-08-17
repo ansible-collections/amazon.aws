@@ -19,6 +19,8 @@
       that:
         - instance_creation is success
         - instance_creation is changed
+        - "'{{ instance_creation.spec.MetadataOptions.HttpEndpoint }}' == 'enabled'"
+        - "'{{ instance_creation.spec.MetadataOptions.HttpTokens }}' == 'required'"
 
   - name: "modify metadata_options on existing instance"
     ec2_instance:
