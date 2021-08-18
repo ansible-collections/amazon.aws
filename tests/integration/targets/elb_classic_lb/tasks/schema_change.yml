@@ -5,7 +5,6 @@
         elb_classic_lb:
           zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
           listeners: '{{ default_listeners }}'
-          health_check: '{{ default_health_check }}'
           wait: true
           scheme: 'internet-facing'
           # subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
@@ -26,7 +25,6 @@
         elb_classic_lb:
           # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
           listeners: '{{ default_listeners }}'
-          health_check: '{{ default_health_check }}'
           wait: true
           scheme: 'internal'
           subnets: ['{{ subnet_a }}', '{{ subnet_b }}']

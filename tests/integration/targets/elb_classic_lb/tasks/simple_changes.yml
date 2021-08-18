@@ -23,22 +23,22 @@
           - availability_zone_b in result.elb.zones
           - subnet_a in result.elb.subnets
           - subnet_b in result.elb.subnets
-          - result.elb.health_check.healthy_threshold == 10
-          - result.elb.health_check.interval == 30
-          # XXX Needs to be set after creation
-          # - result.elb.health_check.target == "HTTP:80/index.html"
-          - result.elb.health_check.timeout == 5
-          - result.elb.health_check.unhealthy_threshold == 2
           - default_listener_tuples[0] in result.elb.listeners
           - default_listener_tuples[1] in result.elb.listeners
           - sg_a in result.elb.security_group_ids
           - sg_b not in result.elb.security_group_ids
           - sg_c not in result.elb.security_group_ids
+          - result.elb.health_check.healthy_threshold == default_health_check['healthy_threshold']
+          - result.elb.health_check.interval == default_health_check['interval']
+          - result.elb.health_check.target == default_health_check_target
+          - result.elb.health_check.timeout == default_health_check['response_timeout']
+          - result.elb.health_check.unhealthy_threshold == default_health_check['unhealthy_threshold']
 
     # AZ / Subnet changes are tested in wth the public/internal tests
     # because they depend on the scheme of the LB
     - include_tasks: 'simple_securitygroups.yml'
     - include_tasks: 'simple_listeners.yml'
+    - include_tasks: 'simple_healthcheck.yml'
 
   always:
 

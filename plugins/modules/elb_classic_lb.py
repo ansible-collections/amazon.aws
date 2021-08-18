@@ -99,8 +99,52 @@ options:
     elements: str
   health_check:
     description:
-      - An associative array of health check configuration settings (see examples).
+      - A dictionary of health check configuration settings (see examples).
     type: dict
+    suboptions:
+      ping_protocol:
+        description:
+        - The protocol which the ELB health check will use when performing a
+          health check.
+        - Valid values are C('HTTP'), C('HTTPS'), C('TCP') and C('SSL').
+        required: True
+        type: str
+      ping_path:
+        description:
+        - The URI path which the ELB health check will query when performing a
+          health check.
+        - Required when I(ping_protocol=HTTP) or I(ping_protocol=HTTPS).
+        required: False
+        type: str
+      ping_port:
+        description:
+        - The TCP port to which the ELB will connect when performing a
+          health check.
+        required: True
+        type: int
+      interval:
+        description:
+        - The approximate interval, in seconds, between health checks of an individual instance.
+        required: True
+        type: int
+      timeout:
+        description:
+        - The amount of time, in seconds, after which no response means a failed health check.
+        aliases: ['response_timeout']
+        required: True
+        type: int
+      unhealthy_threshold:
+        description:
+        - The number of consecutive health check failures required before moving
+          the instance to the Unhealthy state.
+        required: True
+        type: int
+      healthy_threshold:
+        description:
+        - The number of consecutive health checks successes required before moving
+          the instance to the Healthy state.
+        required: True
+        type: int
   access_logs:
     description:
       - An associative array of access logs configuration settings (see examples).
@@ -510,6 +554,25 @@ class ElbManager(object):
 
         return snake_dict_to_camel_dict(listener, True)
 
+    def _format_healthcheck_target(self):
+        """Compose target string from healthcheck parameters"""
+        protocol = self.health_check['ping_protocol'].upper()
+        path = ""
+
+        if protocol in ['HTTP', 'HTTPS'] and 'ping_path' in self.health_check:
+            path = self.health_check['ping_path']
+
+        return "%s:%s%s" % (protocol, self.health_check['ping_port'], path)
+
+    def _format_healthcheck(self):
+        return dict(
+            Target=self._format_healthcheck_target(),
+            Timeout=self.health_check['timeout'],
+            Interval=self.health_check['interval'],
+            UnhealthyThreshold=self.health_check['unhealthy_threshold'],
+            HealthyThreshold=self.health_check['healthy_threshold'],
+        )
+
     def ensure_ok(self):
         """Create the ELB"""
         if not self.elb:
@@ -540,7 +603,8 @@ class ElbManager(object):
                 self._set_security_groups()
                 self._set_elb_listeners()
 
-#        self._set_health_check()
+        self._set_health_check()
+
 #        # boto has introduced support for some ELB attributes in
 #        # different versions, so we check first before trying to
 #        # set them to avoid errors
@@ -999,36 +1063,30 @@ class ElbManager(object):
             self.module.fail_json_aws(e, msg="Failed to apply security groups to load balancer")
         return True
 
-#    def _set_health_check(self):
-#        """Set health check values on ELB as needed"""
-#        if self.health_check:
-#            # This just makes it easier to compare each of the attributes
-#            # and look for changes. Keys are attributes of the current
-#            # health_check; values are desired values of new health_check
-#            health_check_config = {
-#                "target": self._get_health_check_target(),
-#                "timeout": self.health_check['response_timeout'],
-#                "interval": self.health_check['interval'],
-#                "unhealthy_threshold": self.health_check['unhealthy_threshold'],
-#                "healthy_threshold": self.health_check['healthy_threshold'],
-#            }
-#
-#            update_health_check = False
-#
-#            # The health_check attribute is *not* set on newly created
-#            # ELBs! So we have to create our own.
-#            if not self.elb.health_check:
-#                self.elb.health_check = HealthCheck()
-#
-#            for attr, desired_value in health_check_config.items():
-#                if getattr(self.elb.health_check, attr) != desired_value:
-#                    setattr(self.elb.health_check, attr, desired_value)
-#                    update_health_check = True
-#
-#            if update_health_check:
-#                self.elb.configure_health_check(self.elb.health_check)
-#                self.changed = True
-#
+    def _set_health_check(self):
+        if not self.health_check:
+            return False
+
+        """Set health check values on ELB as needed"""
+        health_check_config = self._format_healthcheck()
+
+        if health_check_config == self.elb['HealthCheck']:
+            return False
+
+        self.changed = True
+        if self.check_mode:
+            return True
+        try:
+            self.client.configure_health_check(
+                aws_retry=True,
+                LoadBalancerName=self.name,
+                HealthCheck=health_check_config,
+            )
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to apply healthcheck to load balancer")
+
+        return True
+
 #    def _check_attribute_support(self, attr):
 #        return hasattr(boto.ec2.elb.attributes.LbAttributes(), attr)
 #
@@ -1326,16 +1384,6 @@ class ElbManager(object):
 #
 #            self.elb_conn.make_request('RemoveTags', params)
 #            self.changed = True
-#
-#    def _get_health_check_target(self):
-#        """Compose target string from healthcheck parameters"""
-#        protocol = self.health_check['ping_protocol'].upper()
-#        path = ""
-#
-#        if protocol in ['HTTP', 'HTTPS'] and 'ping_path' in self.health_check:
-#            path = self.health_check['ping_path']
-#
-#        return "%s:%s%s" % (protocol, self.health_check['ping_port'], path)
 
 #    def _validate_listeners(listeners):
 #        if listeners is None:
@@ -1386,11 +1434,23 @@ class ElbManager(object):
 
 def main():
 
+    healthcheck_spec = dict(
+        ping_protocol=dict(required=True, type='str'),
+        # XXX one of HTTP, HTTPS, TCP, SSL but case insensitive
+        # XXX required if ping_protocol in (HTTP, HTTPS)
+        ping_path=dict(required=False, type='str'),
+        ping_port=dict(required=True, type='int'),
+        interval=dict(required=True, type='int'),
+        timeout=dict(aliases=['response_timeout'], required=True, type='int'),
+        unhealthy_threshold=dict(required=True, type='int'),
+        healthy_threshold=dict(required=True, type='int'),
+    )
+
     listeners_spec = dict(
         load_balancer_port=dict(required=True, type='int'),
         instance_port=dict(required=True, type='int'),
         ssl_certificate_id=dict(required=False, type='str'),
-        # It would be good to use choice, but we're case insensitive
+        # XXX one of HTTP, HTTPS, TCP, SSL but case insensitive
         protocol=dict(required=True, type='str'),
         instance_protocol=dict(required=False, type='str'),
     )
@@ -1406,7 +1466,7 @@ def main():
         purge_zones=dict(default=False, type='bool'),
         security_group_ids=dict(type='list', elements='str'),
         security_group_names=dict(type='list', elements='str'),
-        health_check=dict(type='dict'),
+        health_check=dict(type='dict', options=healthcheck_spec),
         subnets=dict(type='list', elements='str'),
         purge_subnets=dict(default=False, type='bool'),
         scheme=dict(choices=['internal', 'internet-facing']),

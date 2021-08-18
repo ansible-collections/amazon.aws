@@ -40,7 +40,6 @@ updated_listener_tuples:
   - [80, 8181, "HTTP", "HTTP"]
   - [8080, 8080, "HTTP", "HTTP"]
 
-
 default_health_check:
     ping_protocol: http
     ping_port: 80
@@ -49,3 +48,23 @@ default_health_check:
     interval: 30
     unhealthy_threshold: 2
     healthy_threshold: 10
+default_health_check_target: "HTTP:80/index.html"
+
+updated_health_check:
+    ping_protocol: http
+    ping_port: 8181
+    ping_path: "/healthz"
+    response_timeout: 15
+    interval: 42
+    unhealthy_threshold: 7
+    healthy_threshold: 6
+updated_health_check_target: "HTTP:8181/healthz"
+
+nonhttp_health_check:
+    ping_protocol: tcp
+    ping_port: 8282
+    response_timeout: 16
+    interval: 43
+    unhealthy_threshold: 8
+    healthy_threshold: 2
+nonhttp_health_check_target: "TCP:8282"
