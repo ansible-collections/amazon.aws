@@ -107,43 +107,43 @@ options:
         - The protocol which the ELB health check will use when performing a
           health check.
         - Valid values are C('HTTP'), C('HTTPS'), C('TCP') and C('SSL').
-        required: True
+        required: true
         type: str
       ping_path:
         description:
         - The URI path which the ELB health check will query when performing a
           health check.
         - Required when I(ping_protocol=HTTP) or I(ping_protocol=HTTPS).
-        required: False
+        required: false
         type: str
       ping_port:
         description:
         - The TCP port to which the ELB will connect when performing a
           health check.
-        required: True
+        required: true
         type: int
       interval:
         description:
         - The approximate interval, in seconds, between health checks of an individual instance.
-        required: True
+        required: true
         type: int
       timeout:
         description:
         - The amount of time, in seconds, after which no response means a failed health check.
         aliases: ['response_timeout']
-        required: True
+        required: true
         type: int
       unhealthy_threshold:
         description:
         - The number of consecutive health check failures required before moving
           the instance to the Unhealthy state.
-        required: True
+        required: true
         type: int
       healthy_threshold:
         description:
         - The number of consecutive health checks successes required before moving
           the instance to the Healthy state.
-        required: True
+        required: true
         type: int
   access_logs:
     description:
@@ -192,7 +192,7 @@ options:
     type: dict
   wait:
     description:
-      - When creating or deleting (not updating) an ELB, if I(wait=True)
+      - When creating or deleting (not updating) an ELB, if I(wait=true)
         Ansible will wait for both the load balancer and related network interfaces
         to finish creating/deleting.
     type: bool
