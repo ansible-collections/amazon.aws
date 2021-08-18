@@ -12,6 +12,7 @@
         scheme: 'internal'
         subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
         security_group_ids: ['{{ sg_a }}']
+        tags: '{{ default_tags }}'
       register: result
 
     - name: Verify that simple parameters were set
@@ -33,12 +34,14 @@
           - result.elb.health_check.target == default_health_check_target
           - result.elb.health_check.timeout == default_health_check['response_timeout']
           - result.elb.health_check.unhealthy_threshold == default_health_check['unhealthy_threshold']
+          - result.elb.tags == default_tags
 
-    # AZ / Subnet changes are tested in wth the public/internal tests
-    # because they depend on the scheme of the LB
+    ## AZ / Subnet changes are tested in wth the public/internal tests
+    ## because they depend on the scheme of the LB
     - include_tasks: 'simple_securitygroups.yml'
     - include_tasks: 'simple_listeners.yml'
     - include_tasks: 'simple_healthcheck.yml'
+    - include_tasks: 'simple_tags.yml'
 
   always:
 

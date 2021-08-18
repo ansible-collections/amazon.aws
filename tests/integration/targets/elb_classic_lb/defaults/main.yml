@@ -8,6 +8,24 @@ subnet_cidr_2: '10.{{ 256 | random(seed=resource_prefix) }}.2.0/24'
 subnet_cidr_3: '10.{{ 256 | random(seed=resource_prefix) }}.3.0/24'
 subnet_cidr_4: '10.{{ 256 | random(seed=resource_prefix) }}.4.0/24'
 
+default_tags:
+  snake_case_key: snake_case_value
+  camelCaseKey: camelCaseValue
+  PascalCaseKey: PascalCaseValue
+  "key with spaces": value with spaces
+  "Upper With Spaces": Upper With Spaces
+
+partial_tags:
+  snake_case_key: snake_case_value
+  camelCaseKey: camelCaseValue
+
+updated_tags:
+  updated_snake_case_key: updated_snake_case_value
+  updatedCamelCaseKey: updatedCamelCaseValue
+  UpdatedPascalCaseKey: UpdatedPascalCaseValue
+  "updated key with spaces": updated value with spaces
+  "updated Upper With Spaces": Updated Upper With Spaces
+
 default_listeners:
   - protocol: http
     load_balancer_port: 80

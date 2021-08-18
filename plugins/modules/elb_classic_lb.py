@@ -205,8 +205,16 @@ options:
     default: 60
   tags:
     description:
-      - An associative array of tags. To delete all tags, supply an empty dict (C({})).
+      - A dictionary of tags to apply to the ELB.
+      - To delete all tags supply an empty dict (C({})) and set
+        I(purge_tags=true).
     type: dict
+  purge_tags:
+    description:
+      - Whether to remove existing tags that aren't passed in the I(tags) parameter.
+    type: bool
+    default: true
+    version_added: 2.0.0
 
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -427,7 +435,10 @@ from ..module_utils.core import is_boto3_error_code
 from ..module_utils.core import scrub_none_parameters
 from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import camel_dict_to_snake_dict
+from ..module_utils.ec2 import compare_aws_tags
 from ..module_utils.ec2 import snake_dict_to_camel_dict
 
 # from ..module_utils.ec2 import get_ec2_security_group_ids_from_names
@@ -460,6 +471,7 @@ class ElbManager(object):
         self.wait = module.params['wait']
         self.wait_timeout = module.params['wait_timeout']
         self.tags = module.params['tags']
+        self.purge_tags = module.params['purge_tags']
 
         self.changed = False
         self.status = 'gone'
@@ -532,6 +544,8 @@ class ElbManager(object):
             Listeners=listeners,
             Scheme=self.scheme)
         params = scrub_none_parameters(params)
+        if self.tags:
+            params['Tags'] = ansible_dict_to_boto3_tag_list(self.tags)
 
         if not self.check_mode:
             self.client.create_load_balancer(aws_retry=True, **params)
@@ -602,6 +616,7 @@ class ElbManager(object):
                 self._set_zones()
                 self._set_security_groups()
                 self._set_elb_listeners()
+                self._set_tags()
 
         self._set_health_check()
 
@@ -624,7 +639,6 @@ class ElbManager(object):
 #        # set/remove instance ids
 #        self._set_instance_ids()
 #
-#        self._set_tags()
 
     def ensure_gone(self):
         """Destroy the ELB"""
@@ -662,7 +676,15 @@ class ElbManager(object):
             elb = self._get_elb()
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             self.module.fail_json_aws(e, msg="Failed to get load balancer")
-        return camel_dict_to_snake_dict(elb or {})
+        if not elb:
+            return {}
+        load_balancer = camel_dict_to_snake_dict(elb)
+        try:
+            load_balancer['tags'] = self._get_tags()
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to get load balancer tags")
+
+        return load_balancer
 
     def get_info(self):
         try:
@@ -756,7 +778,10 @@ class ElbManager(object):
 
         # # return stickiness info?
 
-        # info['tags'] = self.tags
+        try:
+            info['tags'] = self._get_tags()
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to get load balancer tags")
 
         return info
 
@@ -1349,41 +1374,62 @@ class ElbManager(object):
 #            if remove_instances:
 #                self.elb_conn.deregister_instances(self.elb.name, remove_instances)
 #                self.changed = True
-#
-#    def _set_tags(self):
-#        """Add/Delete tags"""
-#        if self.tags is None:
-#            return
-#
-#        params = {'LoadBalancerNames.member.1': self.name}
-#
-#        tagdict = dict()
-#
-#        # get the current list of tags from the ELB, if ELB exists
-#        if self.elb:
-#            current_tags = self.elb_conn.get_list('DescribeTags', params,
-#                                                  [('member', Tag)])
-#            tagdict = dict((tag.Key, tag.Value) for tag in current_tags
-#                           if hasattr(tag, 'Key'))
-#
-#        # Add missing tags
-#        dictact = dict(set(self.tags.items()) - set(tagdict.items()))
-#        if dictact:
-#            for i, key in enumerate(dictact):
-#                params['Tags.member.%d.Key' % (i + 1)] = key
-#                params['Tags.member.%d.Value' % (i + 1)] = dictact[key]
-#
-#            self.elb_conn.make_request('AddTags', params)
-#            self.changed = True
-#
-#        # Remove extra tags
-#        dictact = dict(set(tagdict.items()) - set(self.tags.items()))
-#        if dictact:
-#            for i, key in enumerate(dictact):
-#                params['Tags.member.%d.Key' % (i + 1)] = key
-#
-#            self.elb_conn.make_request('RemoveTags', params)
-#            self.changed = True
+
+    def _get_tags(self):
+        tags = self.client.describe_tags(aws_retry=True,
+                                         LoadBalancerNames=[self.name])
+        if not tags:
+            return {}
+        try:
+            tags = tags['TagDescriptions'][0]['Tags']
+        except (KeyError, TypeError):
+            return {}
+        return boto3_tag_list_to_ansible_dict(tags)
+
+    def _add_tags(self, tags_to_set):
+        if not tags_to_set:
+            return False
+        self.changed = True
+        if self.check_mode:
+            return True
+        tags_to_add = ansible_dict_to_boto3_tag_list(tags_to_set)
+        self.client.add_tags(LoadBalancerNames=[self.name], Tags=tags_to_add)
+        return True
+
+    def _remove_tags(self, tags_to_unset):
+        if not tags_to_unset:
+            return False
+        self.changed = True
+        if self.check_mode:
+            return True
+        tags_to_remove = [dict(Key=tagkey) for tagkey in tags_to_unset]
+        self.client.remove_tags(LoadBalancerNames=[self.name], Tags=tags_to_remove)
+        return True
+
+    def _set_tags(self):
+        """Add/Delete tags"""
+        if self.tags is None:
+            return False
+
+        try:
+            current_tags = self._get_tags()
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to get load balancer tags")
+
+        tags_to_set, tags_to_unset = compare_aws_tags(current_tags, self.tags,
+                                                      self.purge_tags)
+
+        changed = False
+        try:
+            changed |= self._remove_tags(tags_to_unset)
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to remove load balancer tags")
+        try:
+            changed |= self._add_tags(tags_to_set)
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to add load balancer tags")
+
+        return changed
 
 #    def _validate_listeners(listeners):
 #        if listeners is None:
@@ -1478,6 +1524,7 @@ def main():
         wait=dict(default=False, type='bool'),
         wait_timeout=dict(default=60, type='int'),
         tags=dict(type='dict'),
+        purge_tags=dict(default=True, type='bool'),
     )
 
     module = AnsibleAWSModule(
