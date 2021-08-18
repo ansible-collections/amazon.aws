@@ -593,6 +593,13 @@ class ElbManager(object):
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             self.module.fail_json_aws(e, msg="Failed while waiting for load balancer deletion")
 
+    def get_load_balancer(self):
+        try:
+            elb = self._get_elb()
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to get load balancer")
+        return camel_dict_to_snake_dict(elb or {})
+
     def get_info(self):
         try:
             check_elb = self._get_elb()
@@ -1438,10 +1445,10 @@ def main():
 
     if state == 'present':
         elb_man.ensure_ok()
-        # boto3 style
-        lb = camel_dict_to_snake_dict(elb_man.elb or {})
         # original boto style
         elb = elb_man.get_info()
+        # boto3 style
+        lb = elb_man.get_load_balancer()
         ec2_result = dict(elb=elb, load_balancer=lb)
     elif state == 'absent':
         elb_man.ensure_gone()
