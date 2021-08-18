@@ -29,13 +29,16 @@
           # - result.elb.health_check.target == "HTTP:80/index.html"
           - result.elb.health_check.timeout == 5
           - result.elb.health_check.unhealthy_threshold == 2
-          - '[80, 80, "HTTP", "HTTP"] in result.elb.listeners'
-          - '[8080, 8080, "HTTP", "HTTP"] in result.elb.listeners'
+          - default_listener_tuples[0] in result.elb.listeners
+          - default_listener_tuples[1] in result.elb.listeners
           - sg_a in result.elb.security_group_ids
           - sg_b not in result.elb.security_group_ids
           - sg_c not in result.elb.security_group_ids
 
+    # AZ / Subnet changes are tested in wth the public/internal tests
+    # because they depend on the scheme of the LB
     - include_tasks: 'simple_securitygroups.yml'
+    - include_tasks: 'simple_listeners.yml'
 
   always:
 

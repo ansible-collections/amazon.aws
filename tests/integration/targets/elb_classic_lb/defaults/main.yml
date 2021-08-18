@@ -15,6 +15,32 @@ default_listeners:
   - protocol: http
     load_balancer_port: 8080
     instance_port: 8080
+    instance_protocol: http
+default_listener_tuples:
+  - [80, 80, "HTTP", "HTTP"]
+  - [8080, 8080, "HTTP", "HTTP"]
+
+purged_listeners:
+  - protocol: http
+    load_balancer_port: 8080
+    instance_port: 8080
+    instance_protocol: http
+purged_listener_tuples:
+  - [8080, 8080, "HTTP", "HTTP"]
+
+updated_listeners:
+  - protocol: http
+    load_balancer_port: 80
+    instance_port: 8181
+  - protocol: http
+    load_balancer_port: 8080
+    instance_port: 8080
+    instance_protocol: http
+updated_listener_tuples:
+  - [80, 8181, "HTTP", "HTTP"]
+  - [8080, 8080, "HTTP", "HTTP"]
+
+
 default_health_check:
     ping_protocol: http
     ping_port: 80

@@ -1,0 +1,196 @@
+---
+# ===========================================================
+# remove a listener (no purge)
+# remove a listener (purge)
+# add a listener
+# update a listener (same port)
+# ===========================================================
+# Test passing only one of the listeners
+# Without purge
+- name: Test partial Listener to ELB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ purged_listeners }}"
+    purge_listeners: false
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Test partial Listener to ELB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ purged_listeners }}"
+    purge_listeners: false
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - default_listener_tuples[0] in result.elb.listeners
+      - default_listener_tuples[1] in result.elb.listeners
+
+# With purge
+- name: Test partial Listener with purge to ELB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ purged_listeners }}"
+    purge_listeners: true
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Test partial Listener with purge to ELB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ purged_listeners }}"
+    purge_listeners: true
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - purged_listener_tuples[0] in result.elb.listeners
+
+- name: Test partial Listener with purge to ELB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ purged_listeners }}"
+    purge_listeners: true
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Test partial Listener with purge to ELB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ purged_listeners }}"
+    purge_listeners: true
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - purged_listener_tuples[0] in result.elb.listeners
+
+# ===========================================================
+# Test re-adding a listener
+- name: Test re-adding listener to ELB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ default_listeners }}"
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Test re-adding listener to ELB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ default_listeners }}"
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - default_listener_tuples[0] in result.elb.listeners
+      - default_listener_tuples[1] in result.elb.listeners
+
+- name: Test re-adding listener to ELB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ default_listeners }}"
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Test re-adding listener to ELB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ default_listeners }}"
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - default_listener_tuples[0] in result.elb.listeners
+      - default_listener_tuples[1] in result.elb.listeners
+
+# ===========================================================
+# Test passing an updated listener
+- name: Test updated listener to ELB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ updated_listeners }}"
+    purge_listeners: false
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Test updated listener to ELB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ updated_listeners }}"
+    purge_listeners: false
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - updated_listener_tuples[0] in result.elb.listeners
+      - updated_listener_tuples[1] in result.elb.listeners
+
+- name: Test updated listener to ELB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ updated_listeners }}"
+    purge_listeners: false
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Test updated listener to ELB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ updated_listeners }}"
+    purge_listeners: false
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - updated_listener_tuples[0] in result.elb.listeners
+      - updated_listener_tuples[1] in result.elb.listeners

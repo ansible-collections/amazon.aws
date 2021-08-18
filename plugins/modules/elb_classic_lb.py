@@ -496,7 +496,7 @@ class ElbManager(object):
         self.changed = True
         self.status = 'created'
 
-    def _format_listener(self, listener):
+    def _format_listener(self, listener, inject_protocol=False):
         """Formats listener into the format needed by the
         ELB API"""
 
@@ -504,6 +504,9 @@ class ElbManager(object):
         for protocol in ['protocol', 'instance_protocol']:
             if protocol in listener:
                 listener[protocol] = listener[protocol].upper()
+
+        if inject_protocol and 'instance_protocol' not in listener:
+            listener['instance_protocol'] = listener['protocol']
 
         return snake_dict_to_camel_dict(listener, True)
 
@@ -535,7 +538,7 @@ class ElbManager(object):
                 self._set_subnets()
                 self._set_zones()
                 self._set_security_groups()
-#                self._set_elb_listeners()
+                self._set_elb_listeners()
 
 #        self._set_health_check()
 #        # boto has introduced support for some ELB attributes in
@@ -767,76 +770,74 @@ class ElbManager(object):
 
         return True
 
-#    def _create_elb_listeners(self, listeners):
-#        """Takes a list of listener tuples and creates them"""
-#        # True if succeeds, exception raised if not
-#        self.changed = self.elb_conn.create_load_balancer_listeners(self.name,
-#                                                                    complex_listeners=listeners)
-#
-#    def _delete_elb_listeners(self, listeners):
-#        """Takes a list of listener tuples and deletes them from the elb"""
-#        ports = [l[0] for l in listeners]
-#
-#        # True if succeeds, exception raised if not
-#        self.changed = self.elb_conn.delete_load_balancer_listeners(self.name,
-#                                                                    ports)
-#
-#    def _set_elb_listeners(self):
-#        """
-#        Creates listeners specified by self.listeners; overwrites existing
-#        listeners on these ports; removes extraneous listeners
-#        """
-#        listeners_to_add = []
-#        listeners_to_remove = []
-#        listeners_to_keep = []
-#
-#        # Check for any listeners we need to create or overwrite
-#        for listener in self.listeners:
-#            listener_as_tuple = self._listener_as_tuple(listener)
-#
-#            # First we loop through existing listeners to see if one is
-#            # already specified for this port
-#            existing_listener_found = None
-#            for existing_listener in self.elb.listeners:
-#                # Since ELB allows only one listener on each incoming port, a
-#                # single match on the incoming port is all we're looking for
-#                if existing_listener[0] == int(listener['load_balancer_port']):
-#                    existing_listener_found = self._api_listener_as_tuple(existing_listener)
-#                    break
-#
-#            if existing_listener_found:
-#                # Does it match exactly?
-#                if listener_as_tuple != existing_listener_found:
-#                    # The ports are the same but something else is different,
-#                    # so we'll remove the existing one and add the new one
-#                    listeners_to_remove.append(existing_listener_found)
-#                    listeners_to_add.append(listener_as_tuple)
-#                else:
-#                    # We already have this listener, so we're going to keep it
-#                    listeners_to_keep.append(existing_listener_found)
-#            else:
-#                # We didn't find an existing listener, so just add the new one
-#                listeners_to_add.append(listener_as_tuple)
-#
-#        # Check for any extraneous listeners we need to remove, if desired
-#        if self.purge_listeners:
-#            for existing_listener in self.elb.listeners:
-#                existing_listener_tuple = self._api_listener_as_tuple(existing_listener)
-#                if existing_listener_tuple in listeners_to_remove:
-#                    # Already queued for removal
-#                    continue
-#                if existing_listener_tuple in listeners_to_keep:
-#                    # Keep this one around
-#                    continue
-#                # Since we're not already removing it and we don't need to keep
-#                # it, let's get rid of it
-#                listeners_to_remove.append(existing_listener_tuple)
-#
-#        if listeners_to_remove:
-#            self._delete_elb_listeners(listeners_to_remove)
-#
-#        if listeners_to_add:
-#            self._create_elb_listeners(listeners_to_add)
+    def _create_elb_listeners(self, listeners):
+        """Takes a list of listener definitions and creates them"""
+        if not listeners:
+            return False
+        self.changed = True
+        if self.check_mode:
+            return True
+
+        self.changed = self.client.create_load_balancer_listeners(
+            aws_retry=True,
+            LoadBalancerName=self.name,
+            Listeners=listeners,
+        )
+        return True
+
+    def _delete_elb_listeners(self, ports):
+        """Takes a list of listener ports and deletes them from the ELB"""
+        if not ports:
+            return False
+        self.changed = True
+        if self.check_mode:
+            return True
+
+        self.changed = self.client.delete_load_balancer_listeners(
+            aws_retry=True,
+            LoadBalancerName=self.name,
+            LoadBalancerPorts=ports,
+        )
+        return True
+
+    def _set_elb_listeners(self):
+        """
+        Creates listeners specified by self.listeners; overwrites existing
+        listeners on these ports; removes extraneous listeners
+        """
+
+        if not self.listeners:
+            return False
+
+        # We can't use sets here: dicts aren't hashable, so convert to the boto3
+        # format and use a generator to filter
+        new_listeners = list(self._format_listener(l, True) for l in self.listeners)
+        existing_listeners = list(l['Listener'] for l in self.elb['ListenerDescriptions'])
+        listeners_to_remove = list(l for l in existing_listeners if l not in new_listeners)
+        listeners_to_add = list(l for l in new_listeners if l not in existing_listeners)
+
+        changed = False
+
+        if self.purge_listeners:
+            ports_to_remove = list(l['LoadBalancerPort'] for l in listeners_to_remove)
+        else:
+            old_ports = set(l['LoadBalancerPort'] for l in listeners_to_remove)
+            new_ports = set(l['LoadBalancerPort'] for l in listeners_to_add)
+            # If we're not purging, then we need to remove Listeners
+            # where the full definition doesn't match, but the port does
+            ports_to_remove = list(old_ports & new_ports)
+
+        # Update is a delete then add, so do the deletion first
+        try:
+            changed |= self._delete_elb_listeners(ports_to_remove)
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to remove listeners from load balancer")
+        try:
+            changed |= self._create_elb_listeners(listeners_to_add)
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to remove listeners from load balancer")
+
+        return changed
 
     def _api_listener_as_tuple(self, listener):
         """Adds ssl_certificate_id to ELB API tuple if present"""
@@ -1418,6 +1419,8 @@ def main():
             ['security_group_ids', 'security_group_names'],
             ['zones', 'subnets'],
         ],
+        # XXX Need to cover this in validation, we need these for *creation* but
+        # not update / delete
         # required_if=[
         #     ['state', 'present', ['listeners']],
         #     ['state', 'present', ['zones', 'subnets'], True],
