@@ -203,7 +203,7 @@ options:
       - Used in conjunction with wait. Number of seconds to wait for the ELB to be terminated.
       - A maximum of 600 seconds (10 minutes) is allowed.
     type: int
-    default: 60
+    default: 180
   tags:
     description:
       - A dictionary of tags to apply to the ELB.
@@ -1543,7 +1543,7 @@ def main():
         stickiness=dict(type='dict'),
         access_logs=dict(type='dict'),
         wait=dict(default=False, type='bool'),
-        wait_timeout=dict(default=60, type='int'),
+        wait_timeout=dict(default=180, type='int'),
         tags=dict(type='dict'),
         purge_tags=dict(default=True, type='bool'),
     )
