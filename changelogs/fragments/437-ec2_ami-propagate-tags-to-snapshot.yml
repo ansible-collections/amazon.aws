@@ -1,0 +1,2 @@
+minor_changes:
+   - ec2_ami - ensure tags are propagated to the snapshot(s) when creating an AMI (https://github.com/ansible-collections/amazon.aws/pull/437).

@@ -518,8 +518,13 @@ def create_image(module, connection):
         waiter.wait(ImageIds=[image_id], WaiterConfig=dict(Delay=delay, MaxAttempts=max_attempts))
 
     if tags:
+        resources_to_tag = [image_id]
+        image_info = get_image_by_id(module, connection, image_id)
+        if image_info and image_info.get('BlockDeviceMappings'):
+            for mapping in image_info.get('BlockDeviceMappings'):
+                resources_to_tag.append(mapping.get('Ebs').get('SnapshotId'))
         try:
-            connection.create_tags(aws_retry=True, Resources=[image_id], Tags=ansible_dict_to_boto3_tag_list(tags))
+            connection.create_tags(aws_retry=True, Resources=resources_to_tag, Tags=ansible_dict_to_boto3_tag_list(tags))
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Error tagging image")
 

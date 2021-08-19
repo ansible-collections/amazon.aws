@@ -109,6 +109,18 @@
           - "result.changed"
           - "result.image_id.startswith('ami-')"
           - "'Name' in result.tags and result.tags.Name == ec2_ami_name + '_ami'"
+    
+    - name: get related snapshot info and ensure the tags have been propagated
+      ec2_snapshot_info:
+        snapshot_ids:
+          - "{{ result.block_device_mapping['/dev/xvda'].snapshot_id }}"
+      register: snapshot_result
+    
+    - name: ensure the tags have been propagated to the snapshot
+      assert:
+        that:
+          - "'tags' in snapshot_result.snapshots[0]"
+          - "'Name' in snapshot_result.snapshots[0].tags and snapshot_result.snapshots[0].tags.Name == ec2_ami_name + '_ami'"
 
     # ============================================================
 
