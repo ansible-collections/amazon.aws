@@ -41,6 +41,7 @@
           - result.elb.cross_az_load_balancing == 'yes'
           - result.elb.idle_timeout == default_idle_timeout
           - result.elb.connection_draining_timeout == default_drain_timeout
+          - result.elb.proxy_policy == None
 
     ## AZ / Subnet changes are tested in wth the public/internal tests
     ## because they depend on the scheme of the LB
@@ -51,6 +52,7 @@
     - include_tasks: 'simple_cross_az.yml'
     - include_tasks: 'simple_idle_timeout.yml'
     - include_tasks: 'simple_draining_timeout.yml'
+    - include_tasks: 'simple_proxy_policy.yml'
 
   always:
 

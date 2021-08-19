@@ -61,6 +61,13 @@ options:
           - The protocol to use for routing traffic to instances.
           - Valid values are C(HTTP), C(HTTPS), C(TCP), or C(SSL),
         type: str
+      proxy_protocol:
+        description:
+          - Enable proxy protocol for the listener.
+          - Beware, ELB controls for the proxy protocol are based on the
+            I(instance_port).  If you have multiple listeners talking to
+            the same I(instance_port), this will affect all of them.
+        type: bool
   purge_listeners:
     description:
       - Purge existing listeners on ELB that are not found in listeners.
@@ -484,14 +491,7 @@ class ElbManager(object):
         security_group_names = module.params['security_group_names']
         self.security_group_ids = module.params['security_group_ids']
 
-        try:
-            self.elb = self._get_elb()
-        except (botocore.exceptions.ClientException, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Unable to describe load balancer')
-        try:
-            self.elb_attributes = self._get_elb_attributes()
-        except (botocore.exceptions.ClientException, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Unable to describe load balancer attributes')
+        self._update_descriptions()
 
         self.validate_params()
 
@@ -503,6 +503,20 @@ class ElbManager(object):
 #            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
 #                module.fail_json_aws(e, msg="Failed to convert security group names to IDs")
 
+    def _update_descriptions(self):
+        try:
+            self.elb = self._get_elb()
+        except (botocore.exceptions.ClientException, botocore.exceptions.BotoCoreError) as e:
+            self.module.fail_json_aws(e, msg='Unable to describe load balancer')
+        try:
+            self.elb_attributes = self._get_elb_attributes()
+        except (botocore.exceptions.ClientException, botocore.exceptions.BotoCoreError) as e:
+            self.module.fail_json_aws(e, msg='Unable to describe load balancer attributes')
+        try:
+            self.elb_policies = self._get_elb_policies()
+        except (botocore.exceptions.ClientException, botocore.exceptions.BotoCoreError) as e:
+            self.module.fail_json_aws(e, msg='Unable to describe load balancer policies')
+
     # We have a number of complex parameters which can't be validated by
     # AnsibleModule or are only required if the ELB doesn't exist.
     def validate_params(self):
@@ -512,6 +526,18 @@ class ElbManager(object):
     @property
     def check_mode(self):
         return self.module.check_mode
+
+    def _get_elb_policies(self):
+        try:
+            attributes = self.client.describe_load_balancer_policies(LoadBalancerName=self.name)
+        except is_boto3_error_code(['LoadBalancerNotFound', 'LoadBalancerAttributeNotFoundException']):
+            return {}
+        except is_boto3_error_code('AccessDenied'):  # pylint: disable=duplicate-except
+            # Be forgiving if we can't see the attributes
+            # Note: This will break idempotency if someone has set but not describe
+            self.module.warn('Access Denied trying to describe load balancer policies')
+            return {}
+        return attributes['PolicyDescriptions']
 
     def _get_elb_attributes(self):
         try:
@@ -576,12 +602,16 @@ class ElbManager(object):
         ELB API"""
 
         listener = scrub_none_parameters(listener)
+
         for protocol in ['protocol', 'instance_protocol']:
             if protocol in listener:
                 listener[protocol] = listener[protocol].upper()
 
         if inject_protocol and 'instance_protocol' not in listener:
             listener['instance_protocol'] = listener['protocol']
+
+        # Remove proxy_protocol, it has to be handled as a policy
+        listener.pop('proxy_protocol', None)
 
         return snake_dict_to_camel_dict(listener, True)
 
@@ -645,14 +675,13 @@ class ElbManager(object):
 
         self._set_health_check()
         self._set_elb_attributes()
+        self._set_backend_policies()
 
 #        if self._check_attribute_support('access_log'):
 #            self._set_access_log()
 #        # add sticky options
 #        self.select_stickiness_policy()
 #
-#        # ensure backend server policies are correct
-#        self._set_backend_policies()
 #        # set/remove instance ids
 #        self._set_instance_ids()
 #
@@ -689,17 +718,13 @@ class ElbManager(object):
             self.module.fail_json_aws(e, msg="Failed while waiting for load balancer deletion")
 
     def get_load_balancer(self):
-        try:
-            elb = self._get_elb()
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            self.module.fail_json_aws(e, msg="Failed to get load balancer")
+        self._update_descriptions()
+        elb = dict(self.elb or {})
         if not elb:
             return {}
-        try:
-            elb_attrs = self._get_elb_attributes()
-            elb['LoadBalancerAttributes'] = elb_attrs
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            self.module.fail_json_aws(e, msg="Failed to get load balancer attributes")
+
+        elb['LoadBalancerAttributes'] = self.elb_attributes
+        elb['LoadBalancerPolicies'] = self.elb_policies
         load_balancer = camel_dict_to_snake_dict(elb)
         try:
             load_balancer['tags'] = self._get_tags()
@@ -709,29 +734,23 @@ class ElbManager(object):
         return load_balancer
 
     def get_info(self):
-        try:
-            check_elb = self._get_elb()
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            self.module.fail_json_aws(e, msg="Failed to get load balancer")
-        try:
-            check_elb_attrs = self._get_elb_attributes()
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            self.module.fail_json_aws(e, msg="Failed to get load balancer attributes")
+        self._update_descriptions()
 
-        if not check_elb:
+        if not self.elb:
             return dict(
                 name=self.name,
                 status=self.status,
                 region=self.module.region
             )
-
-        policies = check_elb.get('Policies', {})
+        check_elb = dict(self.elb)
+        check_elb_attrs = dict(self.elb_attributes or {})
+        check_policies = check_elb.get('Policies', {})
         try:
-            lb_cookie_policy = policies['LBCookieStickinessPolicies'][0]['PolicyName']
+            lb_cookie_policy = check_policies['LBCookieStickinessPolicies'][0]['PolicyName']
         except (KeyError, IndexError):
             lb_cookie_policy = None
         try:
-            app_cookie_policy = policies['AppCookieStickinessPolicies'][0]['PolicyName']
+            app_cookie_policy = check_policies['AppCookieStickinessPolicies'][0]['PolicyName']
         except (KeyError, IndexError):
             app_cookie_policy = None
 
@@ -739,6 +758,11 @@ class ElbManager(object):
         instance_ids = list(i['InstanceId'] for i in instances)
 
         health_check = camel_dict_to_snake_dict(check_elb.get('HealthCheck', {}))
+
+        backend_policies = list()
+        for port, policies in self._get_backend_policies().items():
+            for policy in policies:
+                backend_policies.append("{0}:{1}".format(port, policy))
 
         info = dict(
             name=check_elb.get('LoadBalancerName'),
@@ -752,9 +776,8 @@ class ElbManager(object):
             hosted_zone_id=check_elb.get('CanonicalHostedZoneNameID'),
             lb_cookie_policy=lb_cookie_policy,
             app_cookie_policy=app_cookie_policy,
-            # XXX TODO
-            # proxy_policy=self._get_proxy_protocol_policy(),
-            # backends=self._get_backend_policies(),
+            proxy_policy=self._get_proxy_protocol_policy(),
+            backends=backend_policies,
             instances=instance_ids,
             out_of_service_count=0,
             in_service_count=0,
@@ -901,7 +924,7 @@ class ElbManager(object):
         if self.check_mode:
             return True
 
-        self.changed = self.client.create_load_balancer_listeners(
+        self.client.create_load_balancer_listeners(
             aws_retry=True,
             LoadBalancerName=self.name,
             Listeners=listeners,
@@ -916,7 +939,7 @@ class ElbManager(object):
         if self.check_mode:
             return True
 
-        self.changed = self.client.delete_load_balancer_listeners(
+        self.client.delete_load_balancer_listeners(
             aws_retry=True,
             LoadBalancerName=self.name,
             LoadBalancerPorts=ports,
@@ -1308,68 +1331,142 @@ class ElbManager(object):
 #
 #            else:
 #                self._set_listener_policy(listeners_dict)
-#
-#    def _get_backend_policies(self):
-#        """Get a list of backend policies"""
-#        policies = []
-#        if self.elb.backends is not None:
-#            for backend in self.elb.backends:
-#                if backend.policies is not None:
-#                    for policy in backend.policies:
-#                        policies.append(str(backend.instance_port) + ':' + policy.policy_name)
-#
-#        return policies
-#
-#    def _set_backend_policies(self):
-#        """Sets policies for all backends"""
-#        ensure_proxy_protocol = False
-#        replace = []
-#        backend_policies = self._get_backend_policies()
-#
-#        # Find out what needs to be changed
-#        for listener in self.listeners:
-#            want = False
-#
-#            if 'proxy_protocol' in listener and listener['proxy_protocol']:
-#                ensure_proxy_protocol = True
-#                want = True
-#
-#            if str(listener['instance_port']) + ':ProxyProtocol-policy' in backend_policies:
-#                if not want:
-#                    replace.append({'port': listener['instance_port'], 'policies': []})
-#            elif want:
-#                replace.append({'port': listener['instance_port'], 'policies': ['ProxyProtocol-policy']})
-#
-#        # enable or disable proxy protocol
-#        if ensure_proxy_protocol:
-#            self._set_proxy_protocol_policy()
-#
-#        # Make the backend policies so
-#        for item in replace:
-#            self.elb_conn.set_lb_policies_of_backend_server(self.elb.name, item['port'], item['policies'])
-#            self.changed = True
-#
-#    def _get_proxy_protocol_policy(self):
-#        """Find out if the elb has a proxy protocol enabled"""
-#        if self.elb.policies is not None and self.elb.policies.other_policies is not None:
-#            for policy in self.elb.policies.other_policies:
-#                if policy.policy_name == 'ProxyProtocol-policy':
-#                    return policy.policy_name
-#
-#        return None
-#
-#    def _set_proxy_protocol_policy(self):
-#        """Install a proxy protocol policy if needed"""
-#        proxy_policy = self._get_proxy_protocol_policy()
-#
-#        if proxy_policy is None:
-#            self.elb_conn.create_lb_policy(
-#                self.elb.name, 'ProxyProtocol-policy', 'ProxyProtocolPolicyType', {'ProxyProtocol': True}
-#            )
-#            self.changed = True
-#
-#        # TODO: remove proxy protocol policy if not needed anymore? There is no side effect to leaving it there
-#
+
+    def _get_backend_policies(self):
+        """Get a list of backend policies mapped to the InstancePort"""
+        if not self.elb:
+            return {}
+        server_descriptions = self.elb.get('BackendServerDescriptions', [])
+        policies = {b['InstancePort']: b['PolicyNames'] for b in server_descriptions}
+        return policies
+
+    def _get_proxy_protocol_policy(self):
+        """Returns the name of the name of the ProxyPolicy if created"""
+        all_proxy_policies = self._get_proxy_policies()
+        if not all_proxy_policies:
+            return None
+        if len(all_proxy_policies) == 1:
+            return all_proxy_policies[0]
+        return all_proxy_policies
+
+    def _get_proxy_policies(self):
+        """Get a list of ProxyProtocolPolicyType policies"""
+        return list(p['PolicyName'] for p in self.elb_policies if p['PolicyTypeName'] == 'ProxyProtocolPolicyType')
+
+    def _get_policy_map(self):
+        """Get a mapping of Policy names to their definitions"""
+        return {p['PolicyName']: p for p in self.elb_policies}
+
+    def _set_backend_policies(self):
+        """Sets policies for all backends"""
+        # Currently only supports setting ProxyProtocol policies
+        if not self.listeners:
+            return False
+
+        ensure_proxy_protocol = False
+        backend_policies = self._get_backend_policies()
+        proxy_policies = set(self._get_proxy_policies())
+
+        proxy_ports = dict()
+        for listener in self.listeners:
+            proxy_protocol = listener.get('proxy_protocol', None)
+            # Only look at the listeners for which proxy_protocol is defined
+            if proxy_protocol is None:
+                next
+            instance_port = listener.get('instance_port')
+            if proxy_ports.get(instance_port, None) is not None:
+                if proxy_ports[instance_port] != proxy_protocol:
+                    self.module.fail_json_aws(
+                        'proxy_protocol set to conflicting values for listeners'
+                        ' on port {0}'.format(instance_port))
+            proxy_ports[instance_port] = proxy_protocol
+
+        if not proxy_ports:
+            return False
+
+        changed = False
+
+        # If anyone's set proxy_protocol to true, make sure we have our policy
+        # in place.
+        proxy_policy_name = 'ProxyProtocol-policy'
+        if any(proxy_ports.values()):
+            changed |= self._set_proxy_protocol_policy(proxy_policy_name)
+
+        for port in proxy_ports:
+            current_policies = set(backend_policies.get(port, []))
+            new_policies = list(current_policies - proxy_policies)
+            if proxy_ports[port]:
+                new_policies.append(proxy_policy_name)
+
+            changed |= self._set_backend_policy(port, new_policies)
+
+        return changed
+
+    def _set_backend_policy(self, port, policies):
+        backend_policies = self._get_backend_policies()
+        current_policies = set(backend_policies.get(port, []))
+
+        if current_policies == set(policies):
+            return False
+
+        self.changed = True
+
+        if self.check_mode:
+            return True
+
+        try:
+            self.client.set_load_balancer_policies_for_backend_server(
+                aws_retry=True,
+                LoadBalancerName=self.name,
+                InstancePort=port,
+                PolicyNames=policies,
+            )
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to set load balancer backend policies",
+                                      port=port, policies=policies)
+
+        return True
+
+    def _set_proxy_protocol_policy(self, policy_name):
+        """Install a proxy protocol policy if needed"""
+        policy_map = self._get_policy_map()
+
+        policy_attributes = [dict(AttributeName='ProxyProtocol', AttributeValue='true')]
+
+        proxy_policy = dict(
+            PolicyName=policy_name,
+            PolicyTypeName='ProxyProtocolPolicyType',
+            PolicyAttributeDescriptions=policy_attributes,
+        )
+
+        existing_policy = policy_map.get(policy_name)
+        if proxy_policy == existing_policy:
+            return False
+
+        if existing_policy is not None:
+            self.module.fail_json(
+                msg="Unable to configure ProxyProtocol policy. "
+                    "Policy with name {0} already exists and doesn't match.".format(policy_name),
+                policy=proxy_policy, existing_policy=existing_policy,
+            )
+
+        proxy_policy['PolicyAttributes'] = proxy_policy.pop('PolicyAttributeDescriptions')
+        proxy_policy['LoadBalancerName'] = self.name
+        self.changed = True
+
+        if self.check_mode:
+            return True
+
+        try:
+            self.client.create_load_balancer_policy(
+                aws_retry=True,
+                **proxy_policy
+            )
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to create load balancer policy", policy=proxy_policy)
+
+        return True
+
 #    def _get_instance_ids(self):
 #        """Get the current list of instance ids installed in the elb"""
 #        instances = []
@@ -1520,6 +1617,7 @@ def main():
         # XXX one of HTTP, HTTPS, TCP, SSL but case insensitive
         protocol=dict(required=True, type='str'),
         instance_protocol=dict(required=False, type='str'),
+        proxy_protocol=dict(required=False, type='bool'),
     )
 
     argument_spec = dict(

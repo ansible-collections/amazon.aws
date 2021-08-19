@@ -1,0 +1,141 @@
+---
+# ===========================================================
+- name: Enable proxy protocol on a listener (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ proxied_listener }}"
+    purge_listeners: false
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Enable proxy protocol on a listener
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ proxied_listener }}"
+    purge_listeners: false
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - result.elb.proxy_policy == "ProxyProtocol-policy"
+      - result.load_balancer.backend_server_descriptions | length == 1
+      - result.load_balancer.backend_server_descriptions[0].policy_names == ["ProxyProtocol-policy"]
+
+- name: Enable proxy protocol on a listener - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ proxied_listener }}"
+    purge_listeners: false
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Enable proxy protocol on a listener - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ proxied_listener }}"
+    purge_listeners: false
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.elb.proxy_policy == "ProxyProtocol-policy"
+      - result.load_balancer.backend_server_descriptions | length == 1
+      - result.load_balancer.backend_server_descriptions[0].policy_names == ["ProxyProtocol-policy"]
+
+# ===========================================================
+
+- name: Disable proxy protocol on a listener (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ unproxied_listener }}"
+    purge_listeners: false
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Disable proxy protocol on a listener
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ unproxied_listener }}"
+    purge_listeners: false
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - result.load_balancer.backend_server_descriptions | length == 0
+
+- name: Disable proxy protocol on a listener - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ unproxied_listener }}"
+    purge_listeners: false
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Disable proxy protocol on a listener - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ unproxied_listener }}"
+    purge_listeners: false
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.load_balancer.backend_server_descriptions | length == 0
+
+# ===========================================================
+
+- name: Re-enable proxy protocol on a listener (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ proxied_listener }}"
+    purge_listeners: false
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Re-enable proxy protocol on a listener
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ proxied_listener }}"
+    purge_listeners: false
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - result.elb.proxy_policy == "ProxyProtocol-policy"
+      - result.load_balancer.backend_server_descriptions | length == 1
+      - result.load_balancer.backend_server_descriptions[0].policy_names == ["ProxyProtocol-policy"]

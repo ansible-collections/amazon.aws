@@ -58,6 +58,22 @@ updated_listener_tuples:
   - [80, 8181, "HTTP", "HTTP"]
   - [8080, 8080, "HTTP", "HTTP"]
 
+unproxied_listener:
+  - protocol: http
+    load_balancer_port: 80
+    instance_port: 8181
+    proxy_protocol: False
+unproxied_listener_tuples:
+  - [80, 8181, "HTTP", "HTTP"]
+
+proxied_listener:
+  - protocol: http
+    load_balancer_port: 80
+    instance_port: 8181
+    proxy_protocol: True
+proxied_listener_tuples:
+  - [80, 8181, "HTTP", "HTTP"]
+
 default_health_check:
     ping_protocol: http
     ping_port: 80
