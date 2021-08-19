@@ -21,7 +21,7 @@
       register: setup_vpc
 
    - name: I am a small change to trigger test_changed.py
-      debug:
+     debug:
         msg: "Hello"
 
     - name: create a key pair to use for creating an ec2 instance
