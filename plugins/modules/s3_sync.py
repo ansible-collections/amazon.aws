@@ -148,6 +148,11 @@ EXAMPLES = '''
     file_root: roles/s3/files/
     storage_class: GLACIER
 
+- name: basic individual file upload
+  community.aws.s3_sync:
+    bucket: tedder
+    file_root: roles/s3/files/file_name
+
 - name: all the options
   community.aws.s3_sync:
     bucket: tedder
