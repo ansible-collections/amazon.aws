@@ -1,15 +1,5 @@
 ---
 # SETUP: vpc, subnet, security group
-- name: list available AZs
-  aws_az_info:
-  register: region_azs
-
-- name: pick an AZ for testing
-  set_fact:
-    availability_zone_a: "{{ region_azs.availability_zones[0].zone_name }}"
-    availability_zone_b: "{{ region_azs.availability_zones[1].zone_name }}"
-    availability_zone_c: "{{ region_azs.availability_zones[2].zone_name }}"
-
 - name: create a VPC to work in
   ec2_vpc_net:
     cidr_block: '{{ vpc_cidr }}'

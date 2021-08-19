@@ -26,6 +26,7 @@
 
     - include_tasks: missing_params.yml
 
+    - include_tasks: describe_region.yml
     - include_tasks: setup_vpc.yml
 
     - include_tasks: basic_public.yml
