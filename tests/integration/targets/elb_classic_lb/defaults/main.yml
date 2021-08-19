@@ -86,3 +86,8 @@ nonhttp_health_check:
     unhealthy_threshold: 8
     healthy_threshold: 2
 nonhttp_health_check_target: "TCP:8282"
+
+default_idle_timeout: 25
+updated_idle_timeout: 50
+default_drain_timeout: 15
+updated_drain_timeout: 25

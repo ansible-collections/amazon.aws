@@ -1,0 +1,148 @@
+---
+# ===========================================================
+
+- name: disable connection draining on ELB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    connection_draining_timeout: 0
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: disable connection draining on ELB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    connection_draining_timeout: 0
+  register: result
+
+- assert:
+    that:
+      - result is changed
+
+- name: disable connection draining on ELB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    connection_draining_timeout: 0
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: disable connection draining on ELB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    connection_draining_timeout: 0
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+
+# ===========================================================
+
+- name: re-enable connection draining on ELB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    connection_draining_timeout: '{{ default_drain_timeout }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: re-enable connection draining on ELB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    connection_draining_timeout: '{{ default_drain_timeout }}'
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - result.elb.connection_draining_timeout == default_drain_timeout
+
+- name: re-enable connection draining on ELB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    connection_draining_timeout: '{{ default_drain_timeout }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: re-enable connection draining on ELB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    connection_draining_timeout: '{{ default_drain_timeout }}'
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.elb.connection_draining_timeout == default_drain_timeout
+
+# ===========================================================
+
+- name: update connection draining timout on ELB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    connection_draining_timeout: '{{ updated_drain_timeout }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: update connection draining timout on ELB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    connection_draining_timeout: '{{ updated_drain_timeout }}'
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - result.elb.connection_draining_timeout == updated_drain_timeout
+
+- name: update connection draining timout on ELB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    connection_draining_timeout: '{{ updated_drain_timeout }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: update connection draining timout on ELB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    connection_draining_timeout: '{{ updated_drain_timeout }}'
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.elb.connection_draining_timeout == updated_drain_timeout

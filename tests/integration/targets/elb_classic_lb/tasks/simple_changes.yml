@@ -1,6 +1,6 @@
 ---
 - block:
-    # Setup an ELB for testing changing one thing at a time
+    ## Setup an ELB for testing changing one thing at a time
     - name: Create ELB
       elb_classic_lb:
         name: "{{ elb_name }}"
@@ -13,6 +13,9 @@
         subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
         security_group_ids: ['{{ sg_a }}']
         tags: '{{ default_tags }}'
+        cross_az_load_balancing: True
+        idle_timeout: '{{ default_idle_timeout }}'
+        connection_draining_timeout: '{{ default_drain_timeout }}'
       register: result
 
     - name: Verify that simple parameters were set
@@ -35,6 +38,9 @@
           - result.elb.health_check.timeout == default_health_check['response_timeout']
           - result.elb.health_check.unhealthy_threshold == default_health_check['unhealthy_threshold']
           - result.elb.tags == default_tags
+          - result.elb.cross_az_load_balancing == 'yes'
+          - result.elb.idle_timeout == default_idle_timeout
+          - result.elb.connection_draining_timeout == default_drain_timeout
 
     ## AZ / Subnet changes are tested in wth the public/internal tests
     ## because they depend on the scheme of the LB
@@ -42,6 +48,9 @@
     - include_tasks: 'simple_listeners.yml'
     - include_tasks: 'simple_healthcheck.yml'
     - include_tasks: 'simple_tags.yml'
+    - include_tasks: 'simple_cross_az.yml'
+    - include_tasks: 'simple_idle_timeout.yml'
+    - include_tasks: 'simple_draining_timeout.yml'
 
   always:
 

@@ -176,6 +176,7 @@ options:
   connection_draining_timeout:
     description:
       - Wait a specified timeout allowing connections to drain before terminating an instance.
+      - Set to C(0) to disable connection draining.
     type: int
   idle_timeout:
     description:
@@ -487,6 +488,10 @@ class ElbManager(object):
             self.elb = self._get_elb()
         except (botocore.exceptions.ClientException, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg='Unable to describe load balancer')
+        try:
+            self.elb_attributes = self._get_elb_attributes()
+        except (botocore.exceptions.ClientException, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg='Unable to describe load balancer attributes')
 
         self.validate_params()
 
@@ -507,6 +512,18 @@ class ElbManager(object):
     @property
     def check_mode(self):
         return self.module.check_mode
+
+    def _get_elb_attributes(self):
+        try:
+            attributes = self.client.describe_load_balancer_attributes(LoadBalancerName=self.name)
+        except is_boto3_error_code(['LoadBalancerNotFound', 'LoadBalancerAttributeNotFoundException']):
+            return {}
+        except is_boto3_error_code('AccessDenied'):  # pylint: disable=duplicate-except
+            # Be forgiving if we can't see the attributes
+            # Note: This will break idempotency if someone has set but not describe
+            self.module.warn('Access Denied trying to describe load balancer attributes')
+            return {}
+        return attributes['LoadBalancerAttributes']
 
     def _get_elb(self):
         try:
@@ -594,6 +611,10 @@ class ElbManager(object):
                 self._create_elb()
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                 self.module.fail_json_aws(e, msg="Failed to create load balancer")
+            try:
+                self.elb_attributes = self._get_elb_attributes()
+            except (botocore.exceptions.ClientException, botocore.exceptions.BotoCoreError) as e:
+                self.module.fail_json_aws(e, msg='Unable to describe load balancer attributes')
             self._wait_created()
 
         # Some attributes are configured on creation, others need to be updated
@@ -611,6 +632,10 @@ class ElbManager(object):
                     self._create_elb()
                 except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                     self.module.fail_json_aws(e, msg="Failed to recreate load balancer")
+                try:
+                    self.elb_attributes = self._get_elb_attributes()
+                except (botocore.exceptions.ClientException, botocore.exceptions.BotoCoreError) as e:
+                    self.module.fail_json_aws(e, msg='Unable to describe load balancer attributes')
             else:
                 self._set_subnets()
                 self._set_zones()
@@ -619,16 +644,8 @@ class ElbManager(object):
                 self._set_tags()
 
         self._set_health_check()
+        self._set_elb_attributes()
 
-#        # boto has introduced support for some ELB attributes in
-#        # different versions, so we check first before trying to
-#        # set them to avoid errors
-#        if self._check_attribute_support('connection_draining'):
-#            self._set_connection_draining_timeout()
-#        if self._check_attribute_support('connecting_settings'):
-#            self._set_idle_timeout()
-#        if self._check_attribute_support('cross_zone_load_balancing'):
-#            self._set_cross_az_load_balancing()
 #        if self._check_attribute_support('access_log'):
 #            self._set_access_log()
 #        # add sticky options
@@ -678,6 +695,11 @@ class ElbManager(object):
             self.module.fail_json_aws(e, msg="Failed to get load balancer")
         if not elb:
             return {}
+        try:
+            elb_attrs = self._get_elb_attributes()
+            elb['LoadBalancerAttributes'] = elb_attrs
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to get load balancer attributes")
         load_balancer = camel_dict_to_snake_dict(elb)
         try:
             load_balancer['tags'] = self._get_tags()
@@ -691,6 +713,10 @@ class ElbManager(object):
             check_elb = self._get_elb()
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             self.module.fail_json_aws(e, msg="Failed to get load balancer")
+        try:
+            check_elb_attrs = self._get_elb_attributes()
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to get load balancer attributes")
 
         if not check_elb:
             return dict(
@@ -763,18 +789,19 @@ class ElbManager(object):
         else:
             info['listeners'] = []
 
-        # if self._check_attribute_support('connection_draining'):
-        #     info['connection_draining_timeout'] = int(self.elb_conn.get_lb_attribute(self.name, 'ConnectionDraining').timeout)
-
-        # if self._check_attribute_support('connecting_settings'):
-        #     info['idle_timeout'] = self.elb_conn.get_lb_attribute(self.name, 'ConnectingSettings').idle_timeout
-
-        # if self._check_attribute_support('cross_zone_load_balancing'):
-        #     is_cross_az_lb_enabled = self.elb_conn.get_lb_attribute(self.name, 'CrossZoneLoadBalancing')
-        #     if is_cross_az_lb_enabled:
-        #         info['cross_az_load_balancing'] = 'yes'
-        #     else:
-        #         info['cross_az_load_balancing'] = 'no'
+        try:
+            info['connection_draining_timeout'] = check_elb_attrs['ConnectionDraining']['Timeout']
+        except KeyError:
+            pass
+        try:
+            info['idle_timeout'] = check_elb_attrs['ConnectionSettings']['IdleTimeout']
+        except KeyError:
+            pass
+        try:
+            is_enabled = check_elb_attrs['CrossZoneLoadBalancing']['Enabled']
+            info['cross_az_load_balancing'] = 'yes' if is_enabled else 'no'
+        except KeyError:
+            pass
 
         # # return stickiness info?
 
@@ -1112,22 +1139,44 @@ class ElbManager(object):
 
         return True
 
-#    def _check_attribute_support(self, attr):
-#        return hasattr(boto.ec2.elb.attributes.LbAttributes(), attr)
-#
-#    def _set_cross_az_load_balancing(self):
-#        attributes = self.elb.get_attributes()
-#        if self.cross_az_load_balancing:
-#            if not attributes.cross_zone_load_balancing.enabled:
-#                self.changed = True
-#            attributes.cross_zone_load_balancing.enabled = True
-#        else:
-#            if attributes.cross_zone_load_balancing.enabled:
-#                self.changed = True
-#            attributes.cross_zone_load_balancing.enabled = False
-#        self.elb_conn.modify_lb_attribute(self.name, 'CrossZoneLoadBalancing',
-#                                          attributes.cross_zone_load_balancing.enabled)
-#
+    def _set_elb_attributes(self):
+        attributes = {}
+        if self.cross_az_load_balancing is not None:
+            attr = dict(Enabled=self.cross_az_load_balancing)
+            if not self.elb_attributes.get('CrossZoneLoadBalancing', None) == attr:
+                attributes['CrossZoneLoadBalancing'] = attr
+
+        if self.idle_timeout is not None:
+            attr = dict(IdleTimeout=self.idle_timeout)
+            if not self.elb_attributes.get('ConnectionSettings', None) == attr:
+                attributes['ConnectionSettings'] = attr
+
+        if self.connection_draining_timeout is not None:
+            curr_attr = dict(self.elb_attributes.get('ConnectionDraining', {}))
+            if self.connection_draining_timeout == 0:
+                attr = dict(Enabled=False)
+                curr_attr.pop('Timeout', None)
+            else:
+                attr = dict(Enabled=True, Timeout=self.connection_draining_timeout)
+            if not curr_attr == attr:
+                attributes['ConnectionDraining'] = attr
+
+        if not attributes:
+            return False
+
+        self.changed = True
+        if self.check_mode:
+            return True
+
+        try:
+            self.client.modify_load_balancer_attributes(
+                aws_retry=True,
+                LoadBalancerName=self.name,
+                LoadBalancerAttributes=attributes
+            )
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to apply load balancer attrbutes")
+
 #    def _set_access_log(self):
 #        attributes = self.elb.get_attributes()
 #        if self.access_logs:
@@ -1153,29 +1202,6 @@ class ElbManager(object):
 #            attributes.access_log.enabled = False
 #            self.changed = True
 #            self.elb_conn.modify_lb_attribute(self.name, 'AccessLog', attributes.access_log)
-#
-#    def _set_connection_draining_timeout(self):
-#        attributes = self.elb.get_attributes()
-#        if self.connection_draining_timeout is not None:
-#            if not attributes.connection_draining.enabled or \
-#                    attributes.connection_draining.timeout != self.connection_draining_timeout:
-#                self.changed = True
-#            attributes.connection_draining.enabled = True
-#            attributes.connection_draining.timeout = self.connection_draining_timeout
-#            self.elb_conn.modify_lb_attribute(self.name, 'ConnectionDraining', attributes.connection_draining)
-#        else:
-#            if attributes.connection_draining.enabled:
-#                self.changed = True
-#            attributes.connection_draining.enabled = False
-#            self.elb_conn.modify_lb_attribute(self.name, 'ConnectionDraining', attributes.connection_draining)
-#
-#    def _set_idle_timeout(self):
-#        attributes = self.elb.get_attributes()
-#        if self.idle_timeout is not None:
-#            if attributes.connecting_settings.idle_timeout != self.idle_timeout:
-#                self.changed = True
-#            attributes.connecting_settings.idle_timeout = self.idle_timeout
-#            self.elb_conn.modify_lb_attribute(self.name, 'ConnectingSettings', attributes.connecting_settings)
 #
 #    def _policy_name(self, policy_type):
 #        return 'ec2-elb-lb-{0}'.format(to_native(policy_type, errors='surrogate_or_strict'))
@@ -1343,11 +1369,6 @@ class ElbManager(object):
 #            self.changed = True
 #
 #        # TODO: remove proxy protocol policy if not needed anymore? There is no side effect to leaving it there
-#
-#    def _diff_list(self, a, b):
-#        """Find the entries in list a that are not in list b"""
-#        b = set(b)
-#        return [aa for aa in a if aa not in b]
 #
 #    def _get_instance_ids(self):
 #        """Get the current list of instance ids installed in the elb"""

@@ -1,0 +1,50 @@
+---
+# ===========================================================
+
+- name: update idle connection timeout on ELB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    idle_timeout: "{{ updated_idle_timeout }}"
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: update idle connection timeout on ELB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    idle_timeout: "{{ updated_idle_timeout }}"
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - result.elb.idle_timeout == updated_idle_timeout
+
+- name: update idle connection timeout on ELB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    idle_timeout: "{{ updated_idle_timeout }}"
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: update idle connection timeout on ELB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    idle_timeout: "{{ updated_idle_timeout }}"
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.elb.idle_timeout == updated_idle_timeout
