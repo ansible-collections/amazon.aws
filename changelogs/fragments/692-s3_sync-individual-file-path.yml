@@ -1,0 +1,2 @@
+bugfixes:
+- s3_sync - fix handling individual file path to upload a individual file to s3 bucket (https://github.com/ansible-collections/community.aws/pull/692).
