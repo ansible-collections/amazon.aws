@@ -3,6 +3,7 @@
 ebs_optimized
 block_devices
 cpu_options
+metadata_options
 default_vpc_tests
 external_resource_attach
 instance_no_wait

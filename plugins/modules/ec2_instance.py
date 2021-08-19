@@ -274,6 +274,29 @@ options:
     description:
       - The placement group that needs to be assigned to the instance
     type: str
+  metadata_options:
+    description:
+      - Modify the metadata options for the instance.
+      - See U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html) for more information.
+      - The two suboptions I(http_endpoint) and I(http_tokens) are supported.
+    type: dict
+    version_added: 2.0.0
+    suboptions:
+      http_endpoint:
+        description:
+        - Enables or disables the HTTP metadata endpoint on instances.
+        - If specified a value of disabled, metadata of the instance will not be accessible.
+        choices: [enabled, disabled]
+        default: enabled
+        type: str
+      http_tokens:
+        description:
+        - Set the state of token usage for instance metadata requests.
+        - If the state is optional (v1 and v2), instance metadata can be retrieved with or without a signed token header on request.
+        - If the state is required (v2), a signed token header must be sent with any instance metadata retrieval requests.
+        choices: [optional, required]
+        default: optional
+        type: str
 
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -383,6 +406,17 @@ EXAMPLES = '''
     tags:
       Env: "eni_on"
     instance_type: t2.micro
+- name: start an instance with metadata options
+  amazon.aws.ec2_instance:
+    name: "public-metadataoptions-instance"
+    vpc_subnet_id: subnet-5calable
+    instance_type: t3.small
+    image_id: ami-123456
+    tags:
+      Environment: Testing
+    metadata_options:
+      http_endpoint: enabled
+      http_tokens: optional
 '''
 
 RETURN = '''
@@ -1193,6 +1227,12 @@ def build_top_level_options(params):
         spec['CpuOptions'] = {}
         spec['CpuOptions']['ThreadsPerCore'] = params.get('cpu_options').get('threads_per_core')
         spec['CpuOptions']['CoreCount'] = params.get('cpu_options').get('core_count')
+    if params.get('metadata_options'):
+        spec['MetadataOptions'] = {}
+        spec['MetadataOptions']['HttpEndpoint'] = params.get(
+            'metadata_options').get('http_endpoint')
+        spec['MetadataOptions']['HttpTokens'] = params.get(
+            'metadata_options').get('http_tokens')
     return spec
 
 
@@ -1735,6 +1775,9 @@ def main():
         instance_ids=dict(default=[], type='list', elements='str'),
         network=dict(default=None, type='dict'),
         volumes=dict(default=None, type='list', elements='dict'),
+        metadata_options=dict(type='dict', options=dict(
+            http_endpoint=dict(type='str', choices=['enabled', 'disabled'], default='enabled'),
+            http_tokens=dict(type='str', choices=['optional', 'required'], default='optional'))),
     )
     # running/present are synonyms
     # as are terminated/absent
