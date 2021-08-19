@@ -119,7 +119,7 @@ ansible_facts:
         ansible_ec2_iam_info_instanceprofilearn:
             description: The IAM instance profile ARN.
             type: str
-            sample: "arn:aws:iam::<account id>:instance-profile/<role name>"
+            sample: "arn:aws:iam::<account id>:instance-profile/role_name"
         ansible_ec2_iam_info_instanceprofileid:
             description: IAM instance profile ID.
             type: str
@@ -132,37 +132,37 @@ ansible_facts:
             description: IAM instance role.
             type: str
             sample: "role_name"
-        ansible_ec2_iam_security_credentials_<role name>:
+        ansible_ec2_iam_security_credentials_role_name:
             description:
                 - If there is an IAM role associated with the instance, role-name is the name of the role,
                   and role-name contains the temporary security credentials associated with the role. Otherwise, not present.
             type: str
             sample: ""
-        ansible_ec2_iam_security_credentials_<role name>_accesskeyid:
+        ansible_ec2_iam_security_credentials_role_name_accesskeyid:
             description: IAM role access key ID.
             type: str
             sample: ""
-        ansible_ec2_iam_security_credentials_<role name>_code:
+        ansible_ec2_iam_security_credentials_role_name_code:
             description: IAM code.
             type: str
             sample: "Success"
-        ansible_ec2_iam_security_credentials_<role name>_expiration:
+        ansible_ec2_iam_security_credentials_role_name_expiration:
             description: IAM role credentials expiration time.
             type: str
             sample: "2017-05-12T09:11:41Z"
-        ansible_ec2_iam_security_credentials_<role name>_lastupdated:
+        ansible_ec2_iam_security_credentials_role_name_lastupdated:
             description: IAM role last updated time.
             type: str
             sample: "2017-05-12T02:40:44Z"
-        ansible_ec2_iam_security_credentials_<role name>_secretaccesskey:
+        ansible_ec2_iam_security_credentials_role_name_secretaccesskey:
             description: IAM role secret access key.
             type: str
             sample: ""
-        ansible_ec2_iam_security_credentials_<role name>_token:
+        ansible_ec2_iam_security_credentials_role_name_token:
             description: IAM role token.
             type: str
             sample: ""
-        ansible_ec2_iam_security_credentials_<role name>_type:
+        ansible_ec2_iam_security_credentials_role_name_type:
             description: IAM role type.
             type: str
             sample: "AWS-HMAC"
@@ -278,87 +278,87 @@ ansible_facts:
             description: Metrics; no longer available.
             type: str
             sample: ""
-        ansible_ec2_network_interfaces_macs_<mac address>_device_number:
+        ansible_ec2_network_interfaces_macs_mac_address_device_number:
             description:
                 - The unique device number associated with that interface. The device number corresponds to the device name;
                   for example, a device-number of 2 is for the eth2 device.
                 - This category corresponds to the DeviceIndex and device-index fields that are used by the Amazon EC2 API and the EC2 commands for the AWS CLI.
             type: str
             sample: "0"
-        ansible_ec2_network_interfaces_macs_<mac address>_interface_id:
+        ansible_ec2_network_interfaces_macs_mac_address_interface_id:
             description: The elastic network interface ID.
             type: str
             sample: "eni-12345678"
-        ansible_ec2_network_interfaces_macs_<mac address>_ipv4_associations_<ip address>:
+        ansible_ec2_network_interfaces_macs_mac_address_ipv4_associations_ip_address:
             description: The private IPv4 addresses that are associated with each public-ip address and assigned to that interface.
             type: str
             sample: ""
-        ansible_ec2_network_interfaces_macs_<mac address>_ipv6s:
+        ansible_ec2_network_interfaces_macs_mac_address_ipv6s:
             description: The IPv6 addresses associated with the interface. Returned only for instances launched into a VPC.
             type: str
             sample: ""
-        ansible_ec2_network_interfaces_macs_<mac address>_local_hostname:
+        ansible_ec2_network_interfaces_macs_mac_address_local_hostname:
             description: The interface's local hostname.
             type: str
             sample: ""
-        ansible_ec2_network_interfaces_macs_<mac address>_local_ipv4s:
+        ansible_ec2_network_interfaces_macs_mac_address_local_ipv4s:
             description: The private IPv4 addresses associated with the interface.
             type: str
             sample: ""
-        ansible_ec2_network_interfaces_macs_<mac address>_mac:
+        ansible_ec2_network_interfaces_macs_mac_address_mac:
             description: The instance's MAC address.
             type: str
             sample: "00:11:22:33:44:55"
-        ansible_ec2_network_interfaces_macs_<mac address>_owner_id:
+        ansible_ec2_network_interfaces_macs_mac_address_owner_id:
             description:
                 - The ID of the owner of the network interface.
                 - In multiple-interface environments, an interface can be attached by a third party, such as Elastic Load Balancing.
                 - Traffic on an interface is always billed to the interface owner.
             type: str
             sample: "01234567890"
-        ansible_ec2_network_interfaces_macs_<mac address>_public_hostname:
+        ansible_ec2_network_interfaces_macs_mac_address_public_hostname:
             description:
                 - The interface's public DNS (IPv4). If the instance is in a VPC,
                   this category is only returned if the enableDnsHostnames attribute is set to true.
             type: str
             sample: "ec2-1-2-3-4.compute-1.amazonaws.com"
-        ansible_ec2_network_interfaces_macs_<mac address>_public_ipv4s:
+        ansible_ec2_network_interfaces_macs_mac_address_public_ipv4s:
             description: The Elastic IP addresses associated with the interface. There may be multiple IPv4 addresses on an instance.
             type: str
             sample: "1.2.3.4"
-        ansible_ec2_network_interfaces_macs_<mac address>_security_group_ids:
+        ansible_ec2_network_interfaces_macs_mac_address_security_group_ids:
             description: The IDs of the security groups to which the network interface belongs. Returned only for instances launched into a VPC.
             type: str
             sample: "sg-01234567,sg-01234568"
-        ansible_ec2_network_interfaces_macs_<mac address>_security_groups:
+        ansible_ec2_network_interfaces_macs_mac_address_security_groups:
             description: Security groups to which the network interface belongs. Returned only for instances launched into a VPC.
             type: str
             sample: "secgroup1,secgroup2"
-        ansible_ec2_network_interfaces_macs_<mac address>_subnet_id:
+        ansible_ec2_network_interfaces_macs_mac_address_subnet_id:
             description: The ID of the subnet in which the interface resides. Returned only for instances launched into a VPC.
             type: str
             sample: "subnet-01234567"
-        ansible_ec2_network_interfaces_macs_<mac address>_subnet_ipv4_cidr_block:
+        ansible_ec2_network_interfaces_macs_mac_address_subnet_ipv4_cidr_block:
             description: The IPv4 CIDR block of the subnet in which the interface resides. Returned only for instances launched into a VPC.
             type: str
             sample: "10.0.1.0/24"
-        ansible_ec2_network_interfaces_macs_<mac address>_subnet_ipv6_cidr_blocks:
+        ansible_ec2_network_interfaces_macs_mac_address_subnet_ipv6_cidr_blocks:
             description: The IPv6 CIDR block of the subnet in which the interface resides. Returned only for instances launched into a VPC.
             type: str
             sample: ""
-        ansible_ec2_network_interfaces_macs_<mac address>_vpc_id:
+        ansible_ec2_network_interfaces_macs_mac_address_vpc_id:
             description: The ID of the VPC in which the interface resides. Returned only for instances launched into a VPC.
             type: str
             sample: "vpc-0123456"
-        ansible_ec2_network_interfaces_macs_<mac address>_vpc_ipv4_cidr_block:
+        ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv4_cidr_block:
             description: The IPv4 CIDR block of the VPC in which the interface resides. Returned only for instances launched into a VPC.
             type: str
             sample: "10.0.0.0/16"
-        ansible_ec2_network_interfaces_macs_<mac address>_vpc_ipv4_cidr_blocks:
+        ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv4_cidr_blocks:
             description: The IPv4 CIDR block of the VPC in which the interface resides. Returned only for instances launched into a VPC.
             type: str
             sample: "10.0.0.0/16"
-        ansible_ec2_network_interfaces_macs_<mac address>_vpc_ipv6_cidr_blocks:
+        ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv6_cidr_blocks:
             description: The IPv6 CIDR block of the VPC in which the interface resides. Returned only for instances launched into a VPC.
             type: str
             sample: ""
