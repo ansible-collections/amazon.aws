@@ -322,41 +322,57 @@ def calculate_multipart_etag(source_path, chunk_size=DEFAULT_CHUNK_SIZE):
 
 def gather_files(fileroot, include=None, exclude=None):
     ret = []
-    for (dirpath, dirnames, filenames) in os.walk(fileroot):
-        for fn in filenames:
-            fullpath = os.path.join(dirpath, fn)
-            # include/exclude
-            if include:
-                found = False
-                for x in include.split(','):
-                    if fnmatch.fnmatch(fn, x):
-                        found = True
-                if not found:
-                    # not on the include list, so we don't want it.
-                    continue
 
-            if exclude:
-                found = False
-                for x in exclude.split(','):
-                    if fnmatch.fnmatch(fn, x):
-                        found = True
-                if found:
-                    # skip it, even if previously included.
-                    continue
+    if os.path.isfile(fileroot):
+        fullpath = fileroot
+        fstat = os.stat(fullpath)
+        path_array = fileroot.split('/')
+        chopped_path = path_array[-1]
+        f_size = fstat[osstat.ST_SIZE]
+        f_modified_epoch = fstat[osstat.ST_MTIME]
+        ret.append({
+            'fullpath': fullpath,
+            'chopped_path': chopped_path,
+            'modified_epoch': f_modified_epoch,
+            'bytes': f_size,
+        })
 
-            chopped_path = os.path.relpath(fullpath, start=fileroot)
-            fstat = os.stat(fullpath)
-            f_size = fstat[osstat.ST_SIZE]
-            f_modified_epoch = fstat[osstat.ST_MTIME]
-            ret.append({
-                'fullpath': fullpath,
-                'chopped_path': chopped_path,
-                'modified_epoch': f_modified_epoch,
-                'bytes': f_size,
-            })
-        # dirpath = path *to* the directory
-        # dirnames = subdirs *in* our directory
-        # filenames
+    else:
+        for (dirpath, dirnames, filenames) in os.walk(fileroot):
+            for fn in filenames:
+                fullpath = os.path.join(dirpath, fn)
+                # include/exclude
+                if include:
+                    found = False
+                    for x in include.split(','):
+                        if fnmatch.fnmatch(fn, x):
+                            found = True
+                    if not found:
+                        # not on the include list, so we don't want it.
+                        continue
+
+                if exclude:
+                    found = False
+                    for x in exclude.split(','):
+                        if fnmatch.fnmatch(fn, x):
+                            found = True
+                    if found:
+                        # skip it, even if previously included.
+                        continue
+
+                chopped_path = os.path.relpath(fullpath, start=fileroot)
+                fstat = os.stat(fullpath)
+                f_size = fstat[osstat.ST_SIZE]
+                f_modified_epoch = fstat[osstat.ST_MTIME]
+                ret.append({
+                    'fullpath': fullpath,
+                    'chopped_path': chopped_path,
+                    'modified_epoch': f_modified_epoch,
+                    'bytes': f_size,
+                })
+            # dirpath = path *to* the directory
+            # dirnames = subdirs *in* our directory
+            # filenames
     return ret
 
 
