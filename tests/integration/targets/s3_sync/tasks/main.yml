@@ -77,6 +77,7 @@
     - assert:
         that:
           - output is changed
+    
     # ============================================================
 
     - name: Sync files already present
@@ -99,6 +100,27 @@
         that:
           - output is not changed
  
+    # ============================================================
+    - name: Create a third s3_bucket
+      s3_bucket:
+        name: "{{ test_bucket_3 }}"
+        state: present
+      register: output
+
+    - assert:
+        that:
+          - output.changed
+          - output.name == "{{ test_bucket_3 }}"
+          - not output.requester_pays
+   
+    - name: Sync individual file with remote bucket
+      s3_sync:
+        bucket: "{{ test_bucket_3 }}"
+        file_root: "{{ output_dir }}/s3_sync/test1.txt"
+      register: output
+    - assert:
+        that:
+          - output is changed
 
     # ============================================================
     # DOCUMENTATION EXAMPLES
@@ -132,3 +154,4 @@
       with_items:
         - "{{ test_bucket }}"
         - "{{ test_bucket_2 }}"
+        - "{{ test_bucket_3 }}"
