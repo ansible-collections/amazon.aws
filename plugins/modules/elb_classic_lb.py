@@ -17,6 +17,7 @@ description:
 short_description: creates, updates or destroys an Amazon ELB.
 author:
   - "Jim Dalton (@jsdalton)"
+  - "Mark Chappell (@tremble)"
 options:
   state:
     description:
@@ -176,7 +177,7 @@ options:
       - The scheme to use when creating the ELB.
       - For a private VPC-visible ELB use C(internal).
       - If you choose to update your scheme with a different value the ELB will be destroyed and
-        recreated.
+        a new ELB created.
       - Defaults to I(scheme=internet-facing).
     type: str
     choices: ["internal", "internet-facing"]
@@ -196,8 +197,38 @@ options:
     type: bool
   stickiness:
     description:
-      - An associative array of stickiness policy settings. Policy will be applied to all listeners (see examples).
+      - A dictionary of stickiness policy settings.
+      - Policy will be applied to all listeners (see examples).
     type: dict
+    suboptions:
+      type:
+        description:
+          - The type of stickiness policy to apply.
+          - Required if I(enabled=true).
+          - Ignored if I(enabled=false).
+        required: false
+        type: 'str'
+        choices: ['application','loadbalancer']
+      enabled:
+        description:
+          - When I(enabled=false) session stickiness will be disabled for all listeners.
+        required: false
+        type: bool
+        default: true
+      cookie:
+        description:
+          - The name of the application cookie used for stickiness.
+          - Required if I(enabled=true) and I(type=application).
+          - Ignored if I(enabled=false).
+        required: false
+        type: str
+      expiration:
+        description:
+          - The time period, in seconds, after which the cookie should be considered stale.
+          - If this parameter is not specified, the stickiness session lasts for the duration of the browser session.
+          - Ignored if I(enabled=false).
+        required: false
+        type: int
   wait:
     description:
       - When creating or deleting (not updating) an ELB, if I(wait=true)
@@ -573,7 +604,8 @@ class ElbManager(object):
             self.changed = True
             self.status = 'deleted'
         except is_boto3_error_code('LoadBalancerNotFound'):
-            pass
+            return False
+        return True
 
     def _create_elb(self):
         listeners = list(self._format_listener(l) for l in self.listeners)
@@ -596,6 +628,7 @@ class ElbManager(object):
             self.elb = self._get_elb()
         self.changed = True
         self.status = 'created'
+        return True
 
     def _format_listener(self, listener, inject_protocol=False):
         """Formats listener into the format needed by the
@@ -676,15 +709,13 @@ class ElbManager(object):
         self._set_health_check()
         self._set_elb_attributes()
         self._set_backend_policies()
+        self._set_stickiness_policies()
 
 #        if self._check_attribute_support('access_log'):
 #            self._set_access_log()
-#        # add sticky options
-#        self.select_stickiness_policy()
 #
 #        # set/remove instance ids
 #        self._set_instance_ids()
-#
 
     def ensure_gone(self):
         """Destroy the ELB"""
@@ -1225,112 +1256,191 @@ class ElbManager(object):
 #            attributes.access_log.enabled = False
 #            self.changed = True
 #            self.elb_conn.modify_lb_attribute(self.name, 'AccessLog', attributes.access_log)
-#
-#    def _policy_name(self, policy_type):
-#        return 'ec2-elb-lb-{0}'.format(to_native(policy_type, errors='surrogate_or_strict'))
-#
-#    def _create_policy(self, policy_param, policy_meth, policy):
-#        getattr(self.elb_conn, policy_meth)(policy_param, self.elb.name, policy)
-#
-#    def _delete_policy(self, elb_name, policy):
-#        self.elb_conn.delete_lb_policy(elb_name, policy)
-#
-#    def _update_policy(self, policy_param, policy_meth, policy_attr, policy):
-#        self._delete_policy(self.elb.name, policy)
-#        self._create_policy(policy_param, policy_meth, policy)
-#
-#    def _set_listener_policy(self, listeners_dict, policy=None):
-#        policy = [] if policy is None else policy
-#
-#        for listener_port in listeners_dict:
-#            if listeners_dict[listener_port].startswith('HTTP'):
-#                self.elb_conn.set_lb_policies_of_listener(self.elb.name, listener_port, policy)
-#
-#    def _set_stickiness_policy(self, elb_info, listeners_dict, policy, **policy_attrs):
-#        for p in getattr(elb_info.policies, policy_attrs['attr']):
-#            if str(p.__dict__['policy_name']) == str(policy[0]):
-#                if str(p.__dict__[policy_attrs['dict_key']]) != str(policy_attrs['param_value'] or 0):
-#                    self._set_listener_policy(listeners_dict)
-#                    self._update_policy(policy_attrs['param_value'], policy_attrs['method'], policy_attrs['attr'], policy[0])
-#                    self.changed = True
-#                break
-#        else:
-#            self._create_policy(policy_attrs['param_value'], policy_attrs['method'], policy[0])
-#            self.changed = True
-#
-#        self._set_listener_policy(listeners_dict, policy)
-#
-#    def select_stickiness_policy(self):
-#        if self.stickiness:
-#
-#            if 'cookie' in self.stickiness and 'expiration' in self.stickiness:
-#                self.module.fail_json(msg='\'cookie\' and \'expiration\' can not be set at the same time')
-#
-#            elb_info = self.elb_conn.get_all_load_balancers(self.elb.name)[0]
-#            d = {}
-#            for listener in elb_info.listeners:
-#                d[listener[0]] = listener[2]
-#            listeners_dict = d
-#
-#            if self.stickiness['type'] == 'loadbalancer':
-#                policy = []
-#                policy_type = 'LBCookieStickinessPolicyType'
-#
-#                if self.module.boolean(self.stickiness['enabled']):
-#
-#                    if 'expiration' not in self.stickiness:
-#                        self.module.fail_json(msg='expiration must be set when type is loadbalancer')
-#
-#                    try:
-#                        expiration = self.stickiness['expiration'] if int(self.stickiness['expiration']) else None
-#                    except ValueError:
-#                        self.module.fail_json(msg='expiration must be set to an integer')
-#
-#                    policy_attrs = {
-#                        'type': policy_type,
-#                        'attr': 'lb_cookie_stickiness_policies',
-#                        'method': 'create_lb_cookie_stickiness_policy',
-#                        'dict_key': 'cookie_expiration_period',
-#                        'param_value': expiration
-#                    }
-#                    policy.append(self._policy_name(policy_attrs['type']))
-#
-#                    self._set_stickiness_policy(elb_info, listeners_dict, policy, **policy_attrs)
-#                elif not self.module.boolean(self.stickiness['enabled']):
-#                    if len(elb_info.policies.lb_cookie_stickiness_policies):
-#                        if elb_info.policies.lb_cookie_stickiness_policies[0].policy_name == self._policy_name(policy_type):
-#                            self.changed = True
-#                    else:
-#                        self.changed = False
-#                    self._set_listener_policy(listeners_dict)
-#                    self._delete_policy(self.elb.name, self._policy_name(policy_type))
-#
-#            elif self.stickiness['type'] == 'application':
-#                policy = []
-#                policy_type = 'AppCookieStickinessPolicyType'
-#                if self.module.boolean(self.stickiness['enabled']):
-#
-#                    if 'cookie' not in self.stickiness:
-#                        self.module.fail_json(msg='cookie must be set when type is application')
-#
-#                    policy_attrs = {
-#                        'type': policy_type,
-#                        'attr': 'app_cookie_stickiness_policies',
-#                        'method': 'create_app_cookie_stickiness_policy',
-#                        'dict_key': 'cookie_name',
-#                        'param_value': self.stickiness['cookie']
-#                    }
-#                    policy.append(self._policy_name(policy_attrs['type']))
-#                    self._set_stickiness_policy(elb_info, listeners_dict, policy, **policy_attrs)
-#                elif not self.module.boolean(self.stickiness['enabled']):
-#                    if len(elb_info.policies.app_cookie_stickiness_policies):
-#                        if elb_info.policies.app_cookie_stickiness_policies[0].policy_name == self._policy_name(policy_type):
-#                            self.changed = True
-#                    self._set_listener_policy(listeners_dict)
-#                    self._delete_policy(self.elb.name, self._policy_name(policy_type))
-#
-#            else:
-#                self._set_listener_policy(listeners_dict)
+
+    def _proxy_policy_name(self):
+        return 'ProxyProtocol-policy'
+
+    def _policy_name(self, policy_type):
+        return 'ec2-elb-lb-{0}'.format(policy_type)
+
+    def _get_listener_policies(self):
+        """Get a list of listener policies mapped to the LoadBalancerPort"""
+        if not self.elb:
+            return {}
+        listener_descriptions = self.elb.get('ListenerDescriptions', [])
+        policies = {l['LoadBalancerPort']: l['PolicyNames'] for l in listener_descriptions}
+        return policies
+
+    def _set_listener_policies(self, port, policies):
+        self.changed = True
+        if self.check_mode:
+            return True
+
+        try:
+            self.client.set_load_balancer_policies_of_listener(
+                aws_retry=True,
+                LoadBalancerName=self.name,
+                LoadBalancerPort=port,
+                PolicyNames=list(policies),
+            )
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to set load balancer listener policies",
+                                      port=port, policies=policies)
+
+        return True
+
+    def _get_stickiness_policies(self):
+        """Get a list of AppCookieStickinessPolicyType and LBCookieStickinessPolicyType policies"""
+        return list(p['PolicyName'] for p in self.elb_policies if p['PolicyTypeName'] in ['AppCookieStickinessPolicyType', 'LBCookieStickinessPolicyType'])
+
+    def _get_app_stickness_policy_map(self):
+        """Get a mapping of App Cookie Stickiness policy names to their definitions"""
+        policies = self.elb.get('Policies', {}).get('AppCookieStickinessPolicies', [])
+        return {p['PolicyName']: p for p in policies}
+
+    def _get_lb_stickness_policy_map(self):
+        """Get a mapping of LB Cookie Stickiness policy names to their definitions"""
+        policies = self.elb.get('Policies', {}).get('LBCookieStickinessPolicies', [])
+        return {p['PolicyName']: p for p in policies}
+
+    def _purge_stickiness_policies(self):
+        """Removes all stickiness policies from all Load Balancers"""
+        # Used when purging stickiness policies or updating a policy (you can't
+        # update a policy while it's connected to a Listener)
+        stickiness_policies = set(self._get_stickiness_policies())
+        listeners = self.elb['ListenerDescriptions']
+        changed = False
+        for listener in listeners:
+            port = listener['Listener']['LoadBalancerPort']
+            policies = set(listener['PolicyNames'])
+            new_policies = set(policies - stickiness_policies)
+            if policies != new_policies:
+                changed |= self._set_listener_policies(port, new_policies)
+        if changed:
+            self._update_descriptions()
+        return changed
+
+    def _set_stickiness_policies(self):
+        if self.stickiness is None:
+            return False
+
+        # Make sure that the list of policies and listeners is up to date, we're
+        # going to make changes to all listeners
+        self._update_descriptions()
+
+        if not self.stickiness['enabled']:
+            return self._purge_stickiness_policies()
+
+        if self.stickiness['type'] == 'loadbalancer':
+            policy_name = self._policy_name('LBCookieStickinessPolicyType')
+            expiration = self.stickiness.get('expiration')
+            if not expiration:
+                expiration = 0
+            policy_description = dict(
+                PolicyName=policy_name,
+                CookieExpirationPeriod=expiration,
+            )
+            existing_policies = self._get_lb_stickness_policy_map()
+            add_method = self.client.create_lb_cookie_stickiness_policy
+        elif self.stickiness['type'] == 'application':
+            policy_name = self._policy_name('AppCookieStickinessPolicyType')
+            policy_description = dict(
+                PolicyName=policy_name,
+                CookieName=self.stickiness.get('cookie', 0)
+            )
+            existing_policies = self._get_app_stickness_policy_map()
+            add_method = self.client.create_app_cookie_stickiness_policy
+        else:
+            # We shouldn't get here...
+            self.module.fail_json(
+                msg='Unknown stickiness policy {0}'.format(
+                    self.stickiness['type']
+                )
+            )
+
+        changed = False
+        # To update a policy we need to delete then re-add, and we can only
+        # delete if the policy isn't attached to a listener
+        if policy_name in existing_policies:
+            if existing_policies[policy_name] != policy_description:
+                changed |= self._purge_stickiness_policies()
+
+        changed |= self._set_stickiness_policy(
+            method=add_method,
+            description=policy_description,
+            existing_policies=existing_policies,
+        )
+
+        listeners = self.elb['ListenerDescriptions']
+        for listener in listeners:
+            changed |= self._set_lb_stickiness_policy(
+                listener=listener,
+                policy=policy_name
+            )
+        return changed
+
+    def _delete_loadbalancer_policy(self, policy_name):
+        self.changed = True
+        if self.check_mode:
+            return True
+
+        try:
+            self.client.delete_load_balancer_policy(
+                LoadBalancerName=self.name,
+                PolicyName=policy_name,
+            )
+        except is_boto3_error_code('InvalidConfigurationRequest'):
+            # Already deleted
+            return False
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+            self.module.fail_json_aws(e, msg="Failed to load balancer policy {0}".format(policy_name))
+        return True
+
+    def _set_stickiness_policy(self, method, description, existing_policies=None):
+        changed = False
+        if existing_policies:
+            policy_name = description['PolicyName']
+            if policy_name in existing_policies:
+                if existing_policies[policy_name] == description:
+                    return False
+                if existing_policies[policy_name] != description:
+                    changed |= self._delete_loadbalancer_policy(policy_name)
+
+        self.changed = True
+        changed = True
+
+        if self.check_mode:
+            return changed
+
+        # This needs to be in place for comparisons, but not passed to the
+        # method.
+        if not description.get('CookieExpirationPeriod', None):
+            description.pop('CookieExpirationPeriod', None)
+
+        try:
+            method(
+                aws_retry=True,
+                LoadBalancerName=self.name,
+                **description
+            )
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to create load balancer stickiness policy",
+                                      description=description)
+        return changed
+
+    def _set_lb_stickiness_policy(self, listener, policy):
+        port = listener['Listener']['LoadBalancerPort']
+        stickiness_policies = set(self._get_stickiness_policies())
+        changed = False
+
+        policies = set(listener['PolicyNames'])
+        new_policies = list(policies - stickiness_policies)
+        new_policies.append(policy)
+
+        if policies != set(new_policies):
+            changed |= self._set_listener_policies(port, new_policies)
+
+        return changed
 
     def _get_backend_policies(self):
         """Get a list of backend policies mapped to the InstancePort"""
@@ -1388,7 +1498,7 @@ class ElbManager(object):
 
         # If anyone's set proxy_protocol to true, make sure we have our policy
         # in place.
-        proxy_policy_name = 'ProxyProtocol-policy'
+        proxy_policy_name = self._proxy_policy_name()
         if any(proxy_ports.values()):
             changed |= self._set_proxy_protocol_policy(proxy_policy_name)
 
@@ -1598,6 +1708,13 @@ class ElbManager(object):
 
 def main():
 
+    stickiness_spec = dict(
+        type=dict(required=False, type='str', choices=['application', 'loadbalancer']),
+        enabled=dict(required=False, type='bool', default=True),
+        cookie=dict(required=False, type='str'),
+        expiration=dict(required=False, type='int')
+    )
+
     healthcheck_spec = dict(
         ping_protocol=dict(required=True, type='str'),
         # XXX one of HTTP, HTTPS, TCP, SSL but case insensitive
@@ -1638,7 +1755,7 @@ def main():
         connection_draining_timeout=dict(type='int'),
         idle_timeout=dict(type='int'),
         cross_az_load_balancing=dict(type='bool'),
-        stickiness=dict(type='dict'),
+        stickiness=dict(type='dict', options=stickiness_spec),
         access_logs=dict(type='dict'),
         wait=dict(default=False, type='bool'),
         wait_timeout=dict(default=180, type='int'),

@@ -107,3 +107,19 @@ default_idle_timeout: 25
 updated_idle_timeout: 50
 default_drain_timeout: 15
 updated_drain_timeout: 25
+
+app_stickiness:
+    type: application
+    cookie: MyCookie
+    enabled: true
+
+updated_app_stickiness:
+    type: application
+    cookie: AnotherCookie
+
+lb_stickiness:
+    type: loadbalancer
+
+updated_lb_stickiness:
+    type: loadbalancer
+    expiration: 600
