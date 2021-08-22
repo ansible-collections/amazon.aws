@@ -231,9 +231,10 @@ options:
         type: int
   wait:
     description:
-      - When creating or deleting (not updating) an ELB, if I(wait=true)
+      - When creating, deleting, or adding instances to an ELB, if I(wait=true)
         Ansible will wait for both the load balancer and related network interfaces
         to finish creating/deleting.
+      - Support for waiting when adding instances was added in release 2.0.0.
     type: bool
     default: false
   wait_timeout:
@@ -547,6 +548,10 @@ class ElbManager(object):
             self.elb_policies = self._get_elb_policies()
         except (botocore.exceptions.ClientException, botocore.exceptions.BotoCoreError) as e:
             self.module.fail_json_aws(e, msg='Unable to describe load balancer policies')
+        try:
+            self.elb_health = self._get_elb_instance_health()
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg='Unable to describe load balancer instance health')
 
     # We have a number of complex parameters which can't be validated by
     # AnsibleModule or are only required if the ELB doesn't exist.
@@ -569,6 +574,18 @@ class ElbManager(object):
             self.module.warn('Access Denied trying to describe load balancer policies')
             return {}
         return attributes['PolicyDescriptions']
+
+    def _get_elb_instance_health(self):
+        try:
+            instance_health = self.client.describe_instance_health(LoadBalancerName=self.name)
+        except is_boto3_error_code(['LoadBalancerNotFound', 'LoadBalancerAttributeNotFoundException']):
+            return []
+        except is_boto3_error_code('AccessDenied'):  # pylint: disable=duplicate-except
+            # Be forgiving if we can't see the attributes
+            # Note: This will break idempotency if someone has set but not describe
+            self.module.warn('Access Denied trying to describe instance health')
+            return []
+        return instance_health['InstanceStates']
 
     def _get_elb_attributes(self):
         try:
@@ -710,12 +727,10 @@ class ElbManager(object):
         self._set_elb_attributes()
         self._set_backend_policies()
         self._set_stickiness_policies()
+        self._set_instance_ids()
 
 #        if self._check_attribute_support('access_log'):
 #            self._set_access_log()
-#
-#        # set/remove instance ids
-#        self._set_instance_ids()
 
     def ensure_gone(self):
         """Destroy the ELB"""
@@ -785,9 +800,6 @@ class ElbManager(object):
         except (KeyError, IndexError):
             app_cookie_policy = None
 
-        instances = check_elb.get('Instances', [])
-        instance_ids = list(i['InstanceId'] for i in instances)
-
         health_check = camel_dict_to_snake_dict(check_elb.get('HealthCheck', {}))
 
         backend_policies = list()
@@ -809,7 +821,7 @@ class ElbManager(object):
             app_cookie_policy=app_cookie_policy,
             proxy_policy=self._get_proxy_protocol_policy(),
             backends=backend_policies,
-            instances=instance_ids,
+            instances=self._get_instance_ids(),
             out_of_service_count=0,
             in_service_count=0,
             unknown_instance_state_count=0,
@@ -817,13 +829,8 @@ class ElbManager(object):
             health_check=health_check,
         )
 
-        info['instance_health'] = []
-        if info['instances']:
-            try:
-                health = self.client.describe_instance_health(aws_retry=True, LoadBalancerName=self.name)['InstanceStates']
-                info['instance_health'] = camel_dict_to_snake_dict(health)
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                self.module.warn('Failed to fetch instance health')
+        instance_health = camel_dict_to_snake_dict(dict(InstanceHealth=self.elb_health))
+        info.update(instance_health)
 
         # instance state counts: InService or OutOfService
         if info['instance_health']:
@@ -866,17 +873,21 @@ class ElbManager(object):
 
         return info
 
+    @property
+    def _waiter_config(self):
+        delay = min(10, self.wait_timeout)
+        max_attempts = (self.wait_timeout // delay)
+        return {'Delay': delay, 'MaxAttempts': max_attempts}
+
     def _wait_for_elb_created(self):
         if self.check_mode:
             return True
 
-        delay = 10
-        max_attempts = (self.wait_timeout // delay)
         waiter = get_waiter(self.client, 'load_balancer_created')
 
         try:
             waiter.wait(
-                WaiterConfig={'Delay': delay, 'MaxAttempts': max_attempts},
+                WaiterConfig=self._waiter_config,
                 LoadBalancerNames=[self.name],
             )
         except botocore.exceptions.WaiterError as e:
@@ -887,8 +898,6 @@ class ElbManager(object):
     def _wait_for_elb_interface_created(self):
         if self.check_mode:
             return True
-        delay = 10
-        max_attempts = (self.wait_timeout // delay)
         waiter = get_waiter(self.ec2_client, 'network_interface_available')
 
         filters = ansible_dict_to_boto3_filter_list(
@@ -898,7 +907,7 @@ class ElbManager(object):
 
         try:
             waiter.wait(
-                WaiterConfig={'Delay': delay, 'MaxAttempts': max_attempts},
+                WaiterConfig=self._waiter_config,
                 Filters=filters,
             )
         except botocore.exceptions.WaiterError as e:
@@ -910,13 +919,11 @@ class ElbManager(object):
         if self.check_mode:
             return True
 
-        delay = 10
-        max_attempts = (self.wait_timeout // delay)
         waiter = get_waiter(self.client, 'load_balancer_deleted')
 
         try:
             waiter.wait(
-                WaiterConfig={'Delay': delay, 'MaxAttempts': max_attempts},
+                WaiterConfig=self._waiter_config,
                 LoadBalancerNames=[self.name],
             )
         except botocore.exceptions.WaiterError as e:
@@ -928,8 +935,6 @@ class ElbManager(object):
         if self.check_mode:
             return True
 
-        delay = 10
-        max_attempts = (self.wait_timeout // delay)
         waiter = get_waiter(self.ec2_client, 'network_interface_deleted')
 
         filters = ansible_dict_to_boto3_filter_list(
@@ -939,11 +944,33 @@ class ElbManager(object):
 
         try:
             waiter.wait(
-                WaiterConfig={'Delay': delay, 'MaxAttempts': max_attempts},
+                WaiterConfig=self._waiter_config,
                 Filters=filters,
             )
         except botocore.exceptions.WaiterError as e:
             self.module.fail_json_aws(e, 'Timeout waiting for ELB Interface removal')
+
+        return True
+
+    def _wait_for_instance_state(self, waiter_name, instances):
+        if not instances:
+            return False
+
+        if self.check_mode:
+            return True
+
+        waiter = get_waiter(self.client, waiter_name)
+
+        instance_list = list(dict(InstanceId=instance) for instance in instances)
+
+        try:
+            waiter.wait(
+                WaiterConfig=self._waiter_config,
+                LoadBalancerName=self.name,
+                Instances=instance_list,
+            )
+        except botocore.exceptions.WaiterError as e:
+            self.module.fail_json_aws(e, 'Timeout waiting for ELB Instance State')
 
         return True
 
@@ -1316,8 +1343,7 @@ class ElbManager(object):
             new_policies = set(policies - stickiness_policies)
             if policies != new_policies:
                 changed |= self._set_listener_policies(port, new_policies)
-        if changed:
-            self._update_descriptions()
+
         return changed
 
     def _set_stickiness_policies(self):
@@ -1364,6 +1390,9 @@ class ElbManager(object):
         if policy_name in existing_policies:
             if existing_policies[policy_name] != policy_description:
                 changed |= self._purge_stickiness_policies()
+
+        if changed:
+            self._update_descriptions()
 
         changed |= self._set_stickiness_policy(
             method=add_method,
@@ -1577,31 +1606,54 @@ class ElbManager(object):
 
         return True
 
-#    def _get_instance_ids(self):
-#        """Get the current list of instance ids installed in the elb"""
-#        instances = []
-#        if self.elb.instances is not None:
-#            for instance in self.elb.instances:
-#                instances.append(instance.id)
-#
-#        return instances
-#
-#    def _set_instance_ids(self):
-#        """Register or deregister instances from an lb instance"""
-#        assert_instances = self.instance_ids or []
-#
-#        has_instances = self._get_instance_ids()
-#
-#        add_instances = self._diff_list(assert_instances, has_instances)
-#        if add_instances:
-#            self.elb_conn.register_instances(self.elb.name, add_instances)
-#            self.changed = True
-#
-#        if self.purge_instance_ids:
-#            remove_instances = self._diff_list(has_instances, assert_instances)
-#            if remove_instances:
-#                self.elb_conn.deregister_instances(self.elb.name, remove_instances)
-#                self.changed = True
+    def _get_instance_ids(self):
+        """Get the current list of instance ids installed in the elb"""
+        elb = self.elb or {}
+        return list(i['InstanceId'] for i in elb.get('Instances', []))
+
+    def _change_instances(self, method, instances):
+        if not instances:
+            return False
+
+        self.changed = True
+        if self.check_mode:
+            return True
+
+        instance_id_list = list({'InstanceId': i} for i in instances)
+        try:
+            method(
+                aws_retry=True,
+                LoadBalancerName=self.name,
+                Instances=instance_id_list,
+            )
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            self.module.fail_json_aws(e, msg="Failed to change instance registration",
+                                      instances=instance_id_list, name=self.name)
+        return True
+
+    def _set_instance_ids(self):
+        """Register or deregister instances from an lb instance"""
+        new_instances = self.instance_ids or []
+        existing_instances = self._get_instance_ids()
+
+        instances_to_add = set(new_instances) - set(existing_instances)
+        if self.purge_instance_ids:
+            instances_to_remove = set(existing_instances) - set(new_instances)
+        else:
+            instances_to_remove = []
+
+        changed = False
+
+        changed |= self._change_instances(self.client.register_instances_with_load_balancer,
+                                          instances_to_add)
+        if self.wait:
+            self._wait_for_instance_state('instance_in_service', list(instances_to_add))
+        changed |= self._change_instances(self.client.deregister_instances_from_load_balancer,
+                                          instances_to_remove)
+        if self.wait:
+            self._wait_for_instance_state('instance_deregistered', list(instances_to_remove))
+
+        return changed
 
     def _get_tags(self):
         tags = self.client.describe_tags(aws_retry=True,

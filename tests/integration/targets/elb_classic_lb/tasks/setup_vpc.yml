@@ -59,6 +59,11 @@
     description: 'created by Ansible integration tests'
     state: present
     vpc_id: '{{ setup_vpc.vpc.id }}'
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: '{{ vpc_cidr }}'
   register: setup_sg_1
 
 - name: create a security group
@@ -67,6 +72,11 @@
     description: 'created by Ansible integration tests'
     state: present
     vpc_id: '{{ setup_vpc.vpc.id }}'
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: '{{ vpc_cidr }}'
   register: setup_sg_2
 
 - name: create a security group
@@ -75,9 +85,14 @@
     description: 'created by Ansible integration tests'
     state: present
     vpc_id: '{{ setup_vpc.vpc.id }}'
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: '{{ vpc_cidr }}'
   register: setup_sg_3
 
-- name: store the subnet IDs
+- name: store the IDs
   set_fact:
     subnet_a: "{{ setup_subnet_1.subnet.id }}"
     subnet_b: "{{ setup_subnet_2.subnet.id }}"

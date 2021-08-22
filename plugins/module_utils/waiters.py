@@ -489,6 +489,55 @@ eks_data = {
 elb_data = {
     "version": 2,
     "waiters": {
+        "AnyInstanceInService": {
+            "acceptors": [
+                {
+                    "argument": "InstanceStates[].State",
+                    "expected": "InService",
+                    "matcher": "pathAny",
+                    "state": "success"
+                }
+            ],
+            "delay": 15,
+            "maxAttempts": 40,
+            "operation": "DescribeInstanceHealth"
+        },
+        "InstanceDeregistered": {
+            "delay": 15,
+            "operation": "DescribeInstanceHealth",
+            "maxAttempts": 40,
+            "acceptors": [
+                {
+                    "expected": "OutOfService",
+                    "matcher": "pathAll",
+                    "state": "success",
+                    "argument": "InstanceStates[].State"
+                },
+                {
+                    "matcher": "error",
+                    "expected": "InvalidInstance",
+                    "state": "success"
+                }
+            ]
+        },
+        "InstanceInService": {
+            "acceptors": [
+                {
+                    "argument": "InstanceStates[].State",
+                    "expected": "InService",
+                    "matcher": "pathAll",
+                    "state": "success"
+                },
+                {
+                    "matcher": "error",
+                    "expected": "InvalidInstance",
+                    "state": "retry"
+                }
+            ],
+            "delay": 15,
+            "maxAttempts": 40,
+            "operation": "DescribeInstanceHealth"
+        },
         "LoadBalancerCreated": {
             "delay": 10,
             "maxAttempts": 60,
@@ -822,6 +871,24 @@ waiters_by_name = {
         eks_model('ClusterDeleted'),
         core_waiter.NormalizedOperationMethod(
             eks.describe_cluster
+        )),
+    ('ElasticLoadBalancing', 'any_instance_in_service'): lambda elb: core_waiter.Waiter(
+        'any_instance_in_service',
+        elb_model('AnyInstanceInService'),
+        core_waiter.NormalizedOperationMethod(
+            elb.describe_instance_health
+        )),
+    ('ElasticLoadBalancing', 'instance_deregistered'): lambda elb: core_waiter.Waiter(
+        'instance_deregistered',
+        elb_model('InstanceDeregistered'),
+        core_waiter.NormalizedOperationMethod(
+            elb.describe_instance_health
+        )),
+    ('ElasticLoadBalancing', 'instance_in_service'): lambda elb: core_waiter.Waiter(
+        'load_balancer_created',
+        elb_model('InstanceInService'),
+        core_waiter.NormalizedOperationMethod(
+            elb.describe_instance_health
         )),
     ('ElasticLoadBalancing', 'load_balancer_created'): lambda elb: core_waiter.Waiter(
         'load_balancer_created',

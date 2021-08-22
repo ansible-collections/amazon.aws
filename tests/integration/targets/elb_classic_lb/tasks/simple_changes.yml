@@ -54,6 +54,7 @@
     - include_tasks: 'simple_draining_timeout.yml'
     - include_tasks: 'simple_proxy_policy.yml'
     - include_tasks: 'simple_stickiness.yml'
+    - include_tasks: 'simple_instances.yml'
 
   always:
 
