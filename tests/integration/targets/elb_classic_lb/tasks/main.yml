@@ -29,6 +29,7 @@
     - include_tasks: describe_region.yml
     - include_tasks: setup_vpc.yml
     - include_tasks: setup_instances.yml
+    - include_tasks: setup_s3.yml
 
     - include_tasks: basic_public.yml
     - include_tasks: basic_internal.yml
@@ -48,5 +49,6 @@
       register: result
       ignore_errors: true
 
+    - include_tasks: cleanup_s3.yml
     - include_tasks: cleanup_instances.yml
     - include_tasks: cleanup_vpc.yml

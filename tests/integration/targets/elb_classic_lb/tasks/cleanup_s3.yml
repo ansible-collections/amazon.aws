@@ -1,0 +1,32 @@
+---
+- name: Create empty temporary directory
+  tempfile:
+    state: directory
+  register: tmpdir
+  ignore_errors: true
+
+- name: Empty S3 buckets before deletion
+  s3_sync:
+    bucket: '{{ item }}'
+    delete: true
+    file_root: '{{ tmpdir.path }}'
+  ignore_errors: true
+  loop:
+    - '{{ s3_logging_bucket_a }}'
+    - '{{ s3_logging_bucket_b }}'
+
+- name: Delete S3 bucket for access logs
+  s3_bucket:
+    name: '{{ item }}'
+    state: absent
+  register: logging_bucket
+  ignore_errors: true
+  loop:
+    - '{{ s3_logging_bucket_a }}'
+    - '{{ s3_logging_bucket_b }}'
+
+- name: Remove temporary directory
+  file:
+    state: absent
+    path: "{{ tmpdir.path }}"
+  ignore_errors: yes

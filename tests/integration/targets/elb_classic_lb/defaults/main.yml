@@ -140,3 +140,24 @@ lb_stickiness:
 updated_lb_stickiness:
     type: loadbalancer
     expiration: 600
+
+# Amazon's SDKs don't provide the list of account ID's.  Amazon only provide a
+# web page.  If you want to run the tests outside the US regions you'll need to
+# update this.
+# https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-access-logs.html
+access_log_account_id_map:
+    us-east-1: '127311923021'
+    us-east-2: '033677994240'
+    us-west-1: '027434742980'
+    us-west-2: '797873946194'
+    us-gov-west-1: '048591011584'
+    us-gov-east-1: '190560391635'
+
+access_log_account_id: '{{ access_log_account_id_map[aws_region] }}'
+
+s3_logging_bucket_a: '{{ resource_prefix }}-a'
+s3_logging_bucket_b: '{{ resource_prefix }}-b'
+default_logging_prefix: 'logs'
+updated_logging_prefix: 'mylogs'
+default_logging_interval: 5
+updated_logging_interval: 60

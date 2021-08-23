@@ -1,0 +1,587 @@
+---
+# ===========================================================
+
+- name: S3 logging for ELB - implied enabled (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      interval: '{{ default_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_a }}'
+      s3_prefix: '{{ default_logging_prefix }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: S3 logging for ELB - implied enabled
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      interval: '{{ default_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_a }}'
+      s3_prefix: '{{ default_logging_prefix }}'
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.load_balancer.load_balancer_attributes.access_log.emit_interval == default_logging_interval
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_name == s3_logging_bucket_a
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_prefix == default_logging_prefix
+      - result.load_balancer.load_balancer_attributes.access_log.enabled == True
+
+# ===========================================================
+
+- name: Disable S3 logging for ELB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: false
+      interval: '{{ default_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_a }}'
+      s3_prefix: '{{ default_logging_prefix }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Disable S3 logging for ELB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: false
+      interval: '{{ default_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_a }}'
+      s3_prefix: '{{ default_logging_prefix }}'
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - result.load_balancer.load_balancer_attributes.access_log.enabled == False
+
+- name: Disable S3 logging for ELB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: false
+      interval: '{{ default_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_a }}'
+      s3_prefix: '{{ default_logging_prefix }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Disable S3 logging for ELB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: false
+      interval: '{{ default_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_a }}'
+      s3_prefix: '{{ default_logging_prefix }}'
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.load_balancer.load_balancer_attributes.access_log.enabled == False
+
+# ===========================================================
+
+- name: Disable S3 logging for ELB - ignore extras (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: false
+      interval: '{{ updated_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_b }}'
+      s3_prefix: '{{ updated_logging_prefix }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Disable S3 logging for ELB - ignore extras
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: false
+      interval: '{{ default_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_a }}'
+      s3_prefix: '{{ default_logging_prefix }}'
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.load_balancer.load_balancer_attributes.access_log.enabled == False
+
+- name: Disable S3 logging for ELB - no extras (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: false
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Disable S3 logging for ELB - no extras
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: false
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.load_balancer.load_balancer_attributes.access_log.enabled == False
+
+# ===========================================================
+
+- name: Re-enable S3 logging for ELB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ default_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_a }}'
+      s3_prefix: '{{ default_logging_prefix }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Re-enable S3 logging for ELB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ default_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_a }}'
+      s3_prefix: '{{ default_logging_prefix }}'
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - result.load_balancer.load_balancer_attributes.access_log.emit_interval == default_logging_interval
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_name == s3_logging_bucket_a
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_prefix == default_logging_prefix
+      - result.load_balancer.load_balancer_attributes.access_log.enabled == True
+
+- name: Re-enable S3 logging for ELB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ default_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_a }}'
+      s3_prefix: '{{ default_logging_prefix }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Re-enable S3 logging for ELB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ default_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_a }}'
+      s3_prefix: '{{ default_logging_prefix }}'
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.load_balancer.load_balancer_attributes.access_log.emit_interval == default_logging_interval
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_name == s3_logging_bucket_a
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_prefix == default_logging_prefix
+      - result.load_balancer.load_balancer_attributes.access_log.enabled == True
+
+# ===========================================================
+
+- name: Update ELB Log delivery interval for ELB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ updated_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_a }}'
+      s3_prefix: '{{ default_logging_prefix }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Update ELB Log delivery interval for ELB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ updated_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_a }}'
+      s3_prefix: '{{ default_logging_prefix }}'
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - result.load_balancer.load_balancer_attributes.access_log.emit_interval == updated_logging_interval
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_name == s3_logging_bucket_a
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_prefix == default_logging_prefix
+      - result.load_balancer.load_balancer_attributes.access_log.enabled == True
+
+- name: Update ELB Log delivery interval for ELB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ updated_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_a }}'
+      s3_prefix: '{{ default_logging_prefix }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Update ELB Log delivery interval for ELB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ updated_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_a }}'
+      s3_prefix: '{{ default_logging_prefix }}'
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.load_balancer.load_balancer_attributes.access_log.emit_interval == updated_logging_interval
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_name == s3_logging_bucket_a
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_prefix == default_logging_prefix
+      - result.load_balancer.load_balancer_attributes.access_log.enabled == True
+
+# ===========================================================
+
+- name: Update S3 Logging Location for ELB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ updated_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_b }}'
+      s3_prefix: '{{ default_logging_prefix }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Update S3 Logging Location for ELB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ updated_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_b }}'
+      s3_prefix: '{{ default_logging_prefix }}'
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - result.load_balancer.load_balancer_attributes.access_log.emit_interval == updated_logging_interval
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_name == s3_logging_bucket_b
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_prefix == default_logging_prefix
+      - result.load_balancer.load_balancer_attributes.access_log.enabled == True
+
+- name: Update S3 Logging Location for ELB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ updated_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_b }}'
+      s3_prefix: '{{ default_logging_prefix }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Update S3 Logging Location for ELB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ updated_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_b }}'
+      s3_prefix: '{{ default_logging_prefix }}'
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.load_balancer.load_balancer_attributes.access_log.emit_interval == updated_logging_interval
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_name == s3_logging_bucket_b
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_prefix == default_logging_prefix
+      - result.load_balancer.load_balancer_attributes.access_log.enabled == True
+
+# ===========================================================
+
+- name: Update S3 Logging Prefix for ELB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ updated_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_b }}'
+      s3_prefix: '{{ updated_logging_prefix }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Update S3 Logging Prefix for ELB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ updated_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_b }}'
+      s3_prefix: '{{ updated_logging_prefix }}'
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - result.load_balancer.load_balancer_attributes.access_log.emit_interval == updated_logging_interval
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_name == s3_logging_bucket_b
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_prefix == updated_logging_prefix
+      - result.load_balancer.load_balancer_attributes.access_log.enabled == True
+
+- name: Update S3 Logging Prefix for ELB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ updated_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_b }}'
+      s3_prefix: '{{ updated_logging_prefix }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Update S3 Logging Prefix for ELB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ updated_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_b }}'
+      s3_prefix: '{{ updated_logging_prefix }}'
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.load_balancer.load_balancer_attributes.access_log.emit_interval == updated_logging_interval
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_name == s3_logging_bucket_b
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_prefix == updated_logging_prefix
+      - result.load_balancer.load_balancer_attributes.access_log.enabled == True
+
+# ===========================================================
+
+- name: Empty S3 Logging Prefix for ELB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ updated_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_b }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Empty S3 Logging Prefix for ELB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ updated_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_b }}'
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - result.load_balancer.load_balancer_attributes.access_log.emit_interval == updated_logging_interval
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_name == s3_logging_bucket_b
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_prefix == ''
+      - result.load_balancer.load_balancer_attributes.access_log.enabled == True
+
+- name: Empty S3 Logging Prefix for ELB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ updated_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_b }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Empty S3 Logging Prefix for ELB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ updated_logging_interval }}'
+      s3_location: '{{ s3_logging_bucket_b }}'
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.load_balancer.load_balancer_attributes.access_log.emit_interval == updated_logging_interval
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_name == s3_logging_bucket_b
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_prefix == ''
+      - result.load_balancer.load_balancer_attributes.access_log.enabled == True
+
+- name: Empty string S3 Logging Prefix for ELB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ updated_logging_interval }}'
+      s3_prefix: ''
+      s3_location: '{{ s3_logging_bucket_b }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Empty  stringS3 Logging Prefix for ELB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      interval: '{{ updated_logging_interval }}'
+      s3_prefix: ''
+      s3_location: '{{ s3_logging_bucket_b }}'
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.load_balancer.load_balancer_attributes.access_log.emit_interval == updated_logging_interval
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_name == s3_logging_bucket_b
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_prefix == ''
+      - result.load_balancer.load_balancer_attributes.access_log.enabled == True
+
+# ===========================================================
+
+- name: Update S3 Logging interval for ELB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      s3_location: '{{ s3_logging_bucket_b }}'
+      s3_prefix: ''
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Update S3 Logging interval for ELB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    access_logs:
+      enabled: true
+      s3_location: '{{ s3_logging_bucket_b }}'
+      s3_prefix: ''
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.load_balancer.load_balancer_attributes.access_log.emit_interval == 60
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_name == s3_logging_bucket_b
+      - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_prefix == ''
+      - result.load_balancer.load_balancer_attributes.access_log.enabled == True

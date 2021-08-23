@@ -155,8 +155,39 @@ options:
         type: int
   access_logs:
     description:
-      - An associative array of access logs configuration settings (see examples).
+      - A dictionary of access logs configuration settings (see examples).
     type: dict
+    suboptions:
+      enabled:
+        description:
+        - When set to C(True) will configure delivery of access logs to an S3
+          bucket.
+        - When set to C(False) will disable delivery of access logs.
+        required: false
+        type: bool
+        default: true
+      s3_location:
+        description:
+        - The S3 bucket to deliver access logs to.
+        - See U(https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-access-logs.html)
+          for more information about the necessary S3 bucket policies.
+        - Required when I(enabled=True).
+        required: false
+        type: str
+      s3_prefix:
+        description:
+        - Where in the S3 bucket to deliver the logs.
+        - If the prefix is not provided or set to C(""), the log is placed at the root level of the bucket.
+        required: false
+        type: str
+        default: ""
+      interval:
+        description:
+        - The interval for publishing the access logs to S3.
+        required: false
+        type: int
+        default: 60
+        choices: [ 5, 60 ]
   subnets:
     description:
       - A list of VPC subnets to use when creating the ELB.
@@ -1242,6 +1273,22 @@ class ElbManager(object):
             if not curr_attr == attr:
                 attributes['ConnectionDraining'] = attr
 
+        if self.access_logs is not None:
+            curr_attr = dict(self.elb_attributes.get('AccessLog', {}))
+            # For disabling we only need to compare and pass 'Enabled'
+            if not self.access_logs.get('enabled'):
+                curr_attr = dict(Enabled=curr_attr.get('Enabled', False))
+                attr = dict(Enabled=self.access_logs.get('enabled'))
+            else:
+                attr = dict(
+                    Enabled=True,
+                    S3BucketName=self.access_logs['s3_location'],
+                    S3BucketPrefix=self.access_logs.get('s3_prefix', ''),
+                    EmitInterval=self.access_logs.get('interval', 60),
+                )
+            if not curr_attr == attr:
+                attributes['AccessLog'] = attr
+
         if not attributes:
             return False
 
@@ -1257,32 +1304,6 @@ class ElbManager(object):
             )
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             self.module.fail_json_aws(e, msg="Failed to apply load balancer attrbutes")
-
-#    def _set_access_log(self):
-#        attributes = self.elb.get_attributes()
-#        if self.access_logs:
-#            if 's3_location' not in self.access_logs:
-#                self.module.fail_json(msg='s3_location information required')
-#
-#            access_logs_config = {
-#                "enabled": True,
-#                "s3_bucket_name": self.access_logs['s3_location'],
-#                "s3_bucket_prefix": self.access_logs.get('s3_prefix', ''),
-#                "emit_interval": self.access_logs.get('interval', 60),
-#            }
-#
-#            update_access_logs_config = False
-#            for attr, desired_value in access_logs_config.items():
-#                if getattr(attributes.access_log, attr) != desired_value:
-#                    setattr(attributes.access_log, attr, desired_value)
-#                    update_access_logs_config = True
-#            if update_access_logs_config:
-#                self.elb_conn.modify_lb_attribute(self.name, 'AccessLog', attributes.access_log)
-#                self.changed = True
-#        elif attributes.access_log.enabled:
-#            attributes.access_log.enabled = False
-#            self.changed = True
-#            self.elb_conn.modify_lb_attribute(self.name, 'AccessLog', attributes.access_log)
 
     def _proxy_policy_name(self):
         return 'ProxyProtocol-policy'
@@ -1760,6 +1781,13 @@ class ElbManager(object):
 
 def main():
 
+    access_log_spec = dict(
+        enabled=dict(required=False, type='bool', default=True),
+        s3_location=dict(required=False, type='str'),
+        s3_prefix=dict(required=False, type='str', default=""),
+        interval=dict(required=False, type='int', default=60, choices=[5, 60]),
+    )
+
     stickiness_spec = dict(
         type=dict(required=False, type='str', choices=['application', 'loadbalancer']),
         enabled=dict(required=False, type='bool', default=True),
@@ -1808,7 +1836,7 @@ def main():
         idle_timeout=dict(type='int'),
         cross_az_load_balancing=dict(type='bool'),
         stickiness=dict(type='dict', options=stickiness_spec),
-        access_logs=dict(type='dict'),
+        access_logs=dict(type='dict', options=access_log_spec),
         wait=dict(default=False, type='bool'),
         wait_timeout=dict(default=180, type='int'),
         tags=dict(type='dict'),

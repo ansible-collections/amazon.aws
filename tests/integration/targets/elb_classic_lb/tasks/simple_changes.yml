@@ -16,6 +16,11 @@
         cross_az_load_balancing: True
         idle_timeout: '{{ default_idle_timeout }}'
         connection_draining_timeout: '{{ default_drain_timeout }}'
+        access_logs:
+          interval: '{{ default_logging_interval }}'
+          s3_location: '{{ s3_logging_bucket_a }}'
+          s3_prefix: '{{ default_logging_prefix }}'
+          enabled: true
       register: result
 
     - name: Verify that simple parameters were set
@@ -42,9 +47,14 @@
           - result.elb.idle_timeout == default_idle_timeout
           - result.elb.connection_draining_timeout == default_drain_timeout
           - result.elb.proxy_policy == None
+          - result.load_balancer.load_balancer_attributes.access_log.emit_interval == default_logging_interval
+          - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_name == s3_logging_bucket_a
+          - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_prefix == default_logging_prefix
+          - result.load_balancer.load_balancer_attributes.access_log.enabled == True
 
     ## AZ / Subnet changes are tested in wth the public/internal tests
     ## because they depend on the scheme of the LB
+
     - include_tasks: 'simple_securitygroups.yml'
     - include_tasks: 'simple_listeners.yml'
     - include_tasks: 'simple_healthcheck.yml'
@@ -55,6 +65,7 @@
     - include_tasks: 'simple_proxy_policy.yml'
     - include_tasks: 'simple_stickiness.yml'
     - include_tasks: 'simple_instances.yml'
+    - include_tasks: 'simple_logging.yml'
 
   always:
 
