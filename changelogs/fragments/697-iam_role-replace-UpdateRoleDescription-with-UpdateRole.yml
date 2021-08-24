@@ -1,2 +1,2 @@
 bugfixes:
-- iam_role - Modified iam_role to replace update_role_description with update_role (https://github.com/ansible-collections/community.aws/pull/697).
+- iam_role - Modified iam_role internal code to replace update_role_description with update_role (https://github.com/ansible-collections/community.aws/pull/697).
