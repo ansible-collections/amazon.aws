@@ -512,7 +512,7 @@ from ..module_utils.ec2 import camel_dict_to_snake_dict
 from ..module_utils.ec2 import compare_aws_tags
 from ..module_utils.ec2 import snake_dict_to_camel_dict
 
-# from ..module_utils.ec2 import get_ec2_security_group_ids_from_names
+from ..module_utils.ec2 import get_ec2_security_group_ids_from_names
 from ..module_utils.waiters import get_waiter
 
 
@@ -558,13 +558,22 @@ class ElbManager(object):
 
         self.validate_params()
 
-#        if security_group_names:
-#            try:
-#                ec2 = module.client('ec2')
-#                security_group_ids = _get_ec2_security_group_ids_from_names(
-#                    security_group_names, ec2, vpc_id=vpc_id)
-#            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-#                module.fail_json_aws(e, msg="Failed to convert security group names to IDs")
+        if security_group_names:
+            # Use the subnets attached to the VPC to find which VPC we're in and
+            # limit the search
+            if self.elb.get('Subnets'):
+                subnets = set(self.elb.get('Subnets') + list(self.subnets or []))
+            else:
+                subnets = set(self.subnets)
+            if subnets:
+                vpc_id = self._get_vpc_from_subnets(subnets)
+            else:
+                vpc_id = None
+            try:
+                self.security_group_ids = self._get_ec2_security_group_ids_from_names(
+                    sec_group_list=security_group_names, vpc_id=vpc_id)
+            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                module.fail_json_aws(e, msg="Failed to convert security group names to IDs, try using security group IDs rather than names")
 
     def _update_descriptions(self):
         try:
@@ -1755,29 +1764,30 @@ class ElbManager(object):
         paginator = self.client.get_paginator('describe_load_balancers')
         return paginator.paginate(LoadBalancerNames=[lb_name]).build_full_result()['LoadBalancerDescriptions']
 
+    def _get_vpc_from_subnets(self, subnets):
+        if not subnets:
+            return None
 
-# def _get_vpc_from_subnets(module, ec2_client, subnets):
-#     if not subnets:
-#         return None
-#
-#     subnet_details = _describe_subnets(ec2_client, subnets)
-#     vpc_ids = set(subnet['VpcId'] for subnet in subnet_details)
-#
-#     if not vpc_ids:
-#         return None
-#     if length(vpc_ids) > 1:
-#         module.fail_json("Subnets for an ELB may not span multiple VPCs",
-#             subnets=subnet_details, vpc_ids=vpc_ids)
-#     vpc_id = vpc_ids.pop()
-#
-# @AWSRetry.jittered_backoff()
-# def _describe_subnets(ec2, subnet_ids):
-#     paginator = ec2.get_paginator('describe_subnets')
-#     return paginator.paginate(SubnetIds=subnet_ids).build_full_result()['Subnets']
-#
-# @AWSRetry.jittered_backoff()
-# def _get_ec2_security_group_ids_from_names(**params):
-#     return get_ec2_security_group_ids_from_names(**params)
+        subnet_details = self._describe_subnets(list(subnets))
+        vpc_ids = set(subnet['VpcId'] for subnet in subnet_details)
+
+        if not vpc_ids:
+            return None
+        if len(vpc_ids) > 1:
+            self.module.fail_json("Subnets for an ELB may not span multiple VPCs",
+                                  subnets=subnet_details, vpc_ids=vpc_ids)
+        vpc_id = vpc_ids.pop()
+
+    @AWSRetry.jittered_backoff()
+    def _describe_subnets(self, subnet_ids):
+        paginator = self.ec2_client.get_paginator('describe_subnets')
+        return paginator.paginate(SubnetIds=subnet_ids).build_full_result()['Subnets']
+
+    #  Wrap it so we get the backoff
+    @AWSRetry.jittered_backoff()
+    def _get_ec2_security_group_ids_from_names(self, **params):
+        return get_ec2_security_group_ids_from_names(ec2_connection=self.ec2_client, **params)
+
 
 def main():
 
