@@ -327,7 +327,7 @@ def update_role_description(connection, module, params, role):
         return True
 
     try:
-        connection.update_role_description(RoleName=params['RoleName'], Description=params['Description'], aws_retry=True)
+        connection.update_role(RoleName=params['RoleName'], Description=params['Description'], aws_retry=True)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to update description for role {0}".format(params['RoleName']))
     return True
