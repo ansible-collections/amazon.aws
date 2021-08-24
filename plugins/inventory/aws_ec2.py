@@ -188,6 +188,23 @@ include_filters:
 exclude_filters:
 - tag:Name:
   - 'my_first_tag'
+
+# Example using groups to assign the running hosts to a group based on vpc_id
+plugin: aws_ec2
+boto_profile: aws_profile
+# Populate inventory with instances in these regions
+regions:
+  - us-east-2
+filters:
+  # All instances with their state as `running`
+  instance-state-name: running
+keyed_groups:
+  - prefix: tag
+    key: tags
+compose:
+  ansible_host: public_dns_name
+groups:
+  libvpc: vpc_id == 'vpc-####'
 '''
 
 import re
