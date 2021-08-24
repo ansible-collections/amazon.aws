@@ -703,6 +703,12 @@ class ElbManager(object):
         # Remove proxy_protocol, it has to be handled as a policy
         listener.pop('proxy_protocol', None)
 
+        ssl_id = listener.pop('ssl_certificate_id', None)
+
+        formatted_listener = snake_dict_to_camel_dict(listener, True)
+        if ssl_id:
+            formatted_listener['SSLCertificateId'] = ssl_id
+
         return snake_dict_to_camel_dict(listener, True)
 
     def _format_healthcheck_target(self):
