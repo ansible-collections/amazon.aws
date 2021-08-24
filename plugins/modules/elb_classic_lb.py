@@ -556,8 +556,6 @@ class ElbManager(object):
 
         self._update_descriptions()
 
-        self.validate_params()
-
         if security_group_names:
             # Use the subnets attached to the VPC to find which VPC we're in and
             # limit the search
@@ -595,8 +593,16 @@ class ElbManager(object):
 
     # We have a number of complex parameters which can't be validated by
     # AnsibleModule or are only required if the ELB doesn't exist.
-    def validate_params(self):
-        pass
+    def validate_params(self, state=None):
+        problem_found = False
+        # Validate that protocol is one of the permitted values
+        problem_found |= self._validate_listeners(self.listeners)
+        problem_found |= self._validate_health_check(self.health_check)
+        problem_found |= self._validate_stickiness(self.stickiness)
+        if state == 'present':
+            # When creating a new ELB
+            problem_found |= self._validate_creation_requirements()
+        problem_found |= self._validate_access_logs(self.access_logs)
 
     # Pass check_mode down through to the module
     @property
@@ -1747,23 +1753,92 @@ class ElbManager(object):
 
         return changed
 
-#    def _validate_listeners(listeners):
-#        if listeners is None:
-#            return True
-#        return all(ElbManager.validate_listener(listener) for listener in listeners)
-#
-#    def _validate_listener(listener):
-#        if listener is None:
-#            return False
-#        if "instance_protocol" in listener:
-#            if not ElbManager.validate_protocol(listener['instance_protocol'])
-#                return False
-#        return ElbManager.validate_protocol(listener['protocol'])
-#
-#    def _validate_protocol(protocol):
-#        if protocol is None:
-#            return True
-#        return protocol.upper() in ['HTTP', 'HTTPS', 'TCP', 'SSL']
+    def _validate_stickiness(self, stickiness):
+        problem_found = False
+        if not stickiness:
+            return problem_found
+        if not stickiness['enabled']:
+            return problem_found
+        if stickiness['type'] == 'application':
+            if not stickiness.get('cookie'):
+                problem_found = True
+                self.module.fail_json(
+                    msg='cookie must be specified when stickiness type is "application"',
+                    stickiness=stickiness,
+                )
+            if stickiness.get('expiration'):
+                self.warn(
+                    msg='expiration is ignored when stickiness type is "application"',)
+        if stickiness['type'] == 'loadbalancer':
+            if stickiness.get('cookie'):
+                self.warn(
+                    msg='cookie is ignored when stickiness type is "loadbalancer"',)
+        return problem_found
+
+    def _validate_access_logs(self, access_logs):
+        problem_found = False
+        if not access_logs:
+            return problem_found
+        if not access_logs['enabled']:
+            return problem_found
+        if not access_logs.get('s3_location', None):
+            problem_found = True
+            self.module.fail_json(
+                msg='s3_location must be provided when access_logs.state is "present"')
+        return problem_found
+
+    def _validate_creation_requirements(self):
+        if self.elb:
+            return False
+        problem_found = False
+        if not self.subnets and not self.zones:
+            problem_found = True
+            self.module.fail_json(
+                msg='One of subnets or zones must be provided when creating an ELB')
+        if not self.listeners:
+            problem_found = True
+            self.module.fail_json(
+                msg='listeners must be provided when creating an ELB')
+        return problem_found
+
+    def _validate_listeners(self, listeners):
+        if not listeners:
+            return False
+        return any(self._validate_listener(listener) for listener in listeners)
+
+    def _validate_listener(self, listener):
+        problem_found = False
+        if not listener:
+            return problem_found
+        for protocol in ['instance_protocol', 'protocol']:
+            value = listener.get(protocol, None)
+            problem = self._validate_protocol(value)
+            problem_found |= problem
+            if problem:
+                self.module.fail_json(
+                    msg='Invalid protocol ({0}) in listener'.format(value),
+                    listener=listener)
+        return problem_found
+
+    def _validate_health_check(self, health_check):
+        if not health_check:
+            return False
+        protocol = health_check['ping_protocol']
+        if self._validate_protocol(protocol):
+            self.module.fail_json(
+                msg='Invalid protocol ({0}) defined in health check'.format(protocol),
+                health_check=health_check,)
+        if protocol.upper() in ['HTTP', 'HTTPS']:
+            if not health_check['ping_path']:
+                self.module.fail_json(
+                    msg='For HTTP and HTTPS health checks a ping_path must be provided',
+                    health_check=health_check,)
+        return False
+
+    def _validate_protocol(self, protocol):
+        if not protocol:
+            return False
+        return protocol.upper() not in ['HTTP', 'HTTPS', 'TCP', 'SSL']
 
     @AWSRetry.jittered_backoff()
     def _describe_loadbalancer(self, lb_name):
@@ -1813,8 +1888,6 @@ def main():
 
     healthcheck_spec = dict(
         ping_protocol=dict(required=True, type='str'),
-        # XXX one of HTTP, HTTPS, TCP, SSL but case insensitive
-        # XXX required if ping_protocol in (HTTP, HTTPS)
         ping_path=dict(required=False, type='str'),
         ping_port=dict(required=True, type='int'),
         interval=dict(required=True, type='int'),
@@ -1827,7 +1900,6 @@ def main():
         load_balancer_port=dict(required=True, type='int'),
         instance_port=dict(required=True, type='int'),
         ssl_certificate_id=dict(required=False, type='str'),
-        # XXX one of HTTP, HTTPS, TCP, SSL but case insensitive
         protocol=dict(required=True, type='str'),
         instance_protocol=dict(required=False, type='str'),
         proxy_protocol=dict(required=False, type='bool'),
@@ -1865,12 +1937,6 @@ def main():
             ['security_group_ids', 'security_group_names'],
             ['zones', 'subnets'],
         ],
-        # XXX Need to cover this in validation, we need these for *creation* but
-        # not update / delete
-        # required_if=[
-        #     ['state', 'present', ['listeners']],
-        #     ['state', 'present', ['zones', 'subnets'], True],
-        # ],
         supports_check_mode=True,
     )
 
@@ -1881,6 +1947,7 @@ def main():
         module.fail_json(msg='wait_timeout maximum is 600 seconds')
 
     elb_man = ElbManager(module)
+    elb_man.validate_params(state)
 
     if state == 'present':
         elb_man.ensure_ok()
