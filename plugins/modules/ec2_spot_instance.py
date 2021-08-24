@@ -10,10 +10,7 @@ module: ec2_spot_instance
 version_added: 2.0.0
 short_description: request, stop, reboot or cancel spot instance
 description:
-    - Creates, stops, reboots or cancels spot instances.
-    - >
-      Note: This module uses the boto3 Python module to interact with the EC2 API.
-      M(amazon.aws.ec2) will still support the older boto Python module to interact with spot instances.
+    - Creates or cancels spot instance requests.
 options:
   zone_group:
     description:
@@ -102,10 +99,12 @@ options:
           arn:
             description:
               - The Amazon Resource Name (ARN) of the instance profile.
+              - Only one of I(arn) or I(name) may be specified.
             type: str
           name:
             description:
               - The name of the instance profile.
+              - Only one of I(arn) or I(name) may be specified.
             type: str
       image_id:
         description:
@@ -244,20 +243,9 @@ options:
         description:
           - The Base64-encoded user data for the instance. User data is limited to 16 KB.
         type: str
-  price:
-    description:
-      - Maximum spot price to bid. If not set, a regular on-demand instance is requested.
-      - A spot request is made with this maximum bid. When it is filled, the instance is started.
-    type: str
-  request_type:
-    description:
-      - The type of spot request.
-      - After being interrupted a C(persistent) spot instance will be started once there is capacity to fill the request again.
-    default: "one-time"
-    choices: [ "one-time", "persistent" ]
-    type: str
   state:
     description:
+      - Whether the spot request should be created or removed.
       - When I(state=present), I(launch_specification) is required.
       - When I(state=absent), I(spot_instance_request_ids) is required.
     default: 'present'
@@ -284,34 +272,63 @@ options:
       - The end date of the request
   tags:
     description:
-      - tag:value pairs to add to the volume after creation.
-    default: []
-    type: list
+      - A dictionary of key-value pairs for tagging the Spot Instance request on creation.
+    default: {}
+    type: dict
   spot_instance_request_ids:
     description:
         - List of strings with IDs of spot requests to be cancelled
     default: []
     type: list
+ extends_documentation_fragment:
+- amazon.aws.aws
+- amazon.aws.ec2
 '''
 
 EXAMPLES = '''
-# Simple Spot Request Creation
-- hosts: localhost
-  tasks:
-    - name: Test EC2 spot instance module
-      amazon.aws.ec2_spot_instance:
-        launch_specification:
-          image_id: "ami-123456789"
-          key_name: "my-keypair"
-          instance_type: "t2.medium"
+# Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Simple Spot Request Termination
-- hosts: localhost
-  tasks:
-    - name: Test EC2 spot instance cancel module
-      amazon.aws.ec2_spot_instance:
-        spot_instance_request_ids: ['sir-d8468pbj', 'sir-qph6aytk']
-        state: 'absent'
+- name: Simple Spot Request Creation
+  amazon.aws.ec2_spot_instance:
+    launch_specification:
+      image_id: ami-123456789
+      key_name: my-keypair
+      instance_type: t2.medium
+
+  - name: Spot Request Creation with more options
+    ec2_spot_instance:
+      launch_specification:
+        image_id: ami-123456789
+        key_name: my-keypair
+        instance_type: t2.medium
+        subnet_id: subnet-12345678
+        block_device_mappings:
+          - device_name: /dev/sdb
+            ebs:
+              delete_on_termination: True
+              volume_type: gp3
+              volume_size: 5
+          - device_name: /dev/sdc
+            ebs:
+              delete_on_termination: True
+              volume_type: io2
+              volume_size: 30
+        network_interfaces:
+          - associate_public_ip_address: False
+            delete_on_termination: True
+            device_index: 0
+        placement:
+          availability_zone: us-west-2a
+        monitoring:
+          enabled: False
+      spot_price: 0.002
+      tags:
+        Environment: Testing
+
+- name: Spot Request Termination
+  amazon.aws.ec2_spot_instance:
+    spot_instance_request_ids: ['sir-12345678', 'sir-abcdefgh']
+    state: absent
 '''
 
 RETURN = '''
@@ -320,43 +337,64 @@ spot_request:
     returned: when success
     type: dict
     sample: {
-            "CreateTime": "2021-07-21T18:33:47+00:00",
-            "InstanceInterruptionBehavior": "terminate",
-            "LaunchSpecification": {
-                "ImageId": "ami-0d5eff06f840b45e9",
-                "InstanceType": "t2.medium",
-                "KeyName": "zuul",
-                "Monitoring": {
-                    "Enabled": false
-                },
-                "Placement": {
-                    "AvailabilityZone": "us-east-1e"
-                },
-                "SecurityGroups": [
-                    {
-                        "GroupId": "sg-0fa9a734e7111af56",
-                        "GroupName": "default"
+        "create_time": "2021-08-23T22:59:12+00:00",
+        "instance_interruption_behavior": "terminate",
+        "launch_specification": {
+            "block_device_mappings": [
+                {
+                    "device_name": "/dev/sdb",
+                    "ebs": {
+                        "delete_on_termination": true,
+                        "volume_size": 5,
+                        "volume_type": "gp3"
                     }
-                ],
-                "SubnetId": "subnet-0ff1d9ce7798affb1"
+                }
+            ],
+            "ebs_optimized": false,
+            "iam_instance_profile": {
+                "arn": "arn:aws:iam::EXAMPLE:instance-profile/myinstanceprofile"
             },
-            "ProductDescription": "Linux/UNIX",
-            "SpotInstanceRequestId": "sir-d8468pbj",
-            "SpotPrice": "0.046400",
-            "State": "open",
-            "Status": {
-                "Code": "pending-evaluation",
-                "Message": "Your Spot request has been submitted for review, and is pending evaluation.",
-                "UpdateTime": "2021-07-21T18:33:47+00:00"
+            "image_id": "ami-083ac7c7ecf9bb9b0",
+            "instance_type": "t2.small",
+            "key_name": "mykey",
+            "monitoring": {
+                "enabled": false
             },
-            "Type": "one-time"
+            "network_interfaces": [
+                {
+                    "associate_public_ip_address": false,
+                    "delete_on_termination": true,
+                    "device_index": 0
+                }
+            ],
+            "placement": {
+                "availability_zone": "us-west-2a",
+                "tenancy": "default"
+            },
+            "security_groups": [
+                {
+                    "group_name": "default"
+                }
+            ]
+        },
+        "product_description": "Linux/UNIX",
+        "spot_instance_request_id": "sir-1234abcd",
+        "spot_price": "0.006,
+        "state": "open",
+        "status": {
+            "code": "pending-evaluation",
+            "message": "Your Spot request has been submitted for review, and is pending evaluation.",
+            "update_time": "2021-08-23T22:59:12+00:00"
+        },
+        "type": "one-time"
+
         }
 
 cancelled_spot_request:
     description: The spot instance request details that has been cancelled
     returned: always
     type: str
-    sample: 'Spot requests with IDs: sir-1w76bbrh have been cancelled'
+    sample: 'Spot requests with IDs: sir-1234abcd have been cancelled'
 '''
 import time
 import datetime
@@ -364,154 +402,60 @@ import datetime
 try:
     import botocore
 except ImportError:
-    pass  # Taken care of by AnsibleAWSModule
+    pass  # Handled by AnsibleAWSModule
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.ec2 import AWSRetry
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
+
+
+def build_launch_specification(launch_spec):
+    """
+    Remove keys that have a value of None from Launch Specification
+    Descend into these subkeys:
+    network_interfaces
+    block_device_mappings
+    monitoring
+    placement
+    iam_instance_profile
+    """
+    assigned_keys = dict((k, v) for k, v in launch_spec.items() if v is not None)
+
+    sub_key_to_build = ['placement', 'iam_instance_profile', 'monitoring']
+    for subkey in sub_key_to_build:
+        if launch_spec[subkey] is not None:
+            assigned_keys[subkey] = dict((k, v) for k, v in launch_spec[subkey].items() if v is not None)
+
+    if launch_spec['network_interfaces'] is not None:
+        interfaces = []
+        for iface in launch_spec['network_interfaces']:
+            interfaces.append(dict((k, v) for k, v in iface.items() if v is not None))
+        assigned_keys['network_interfaces'] = interfaces
+
+    if launch_spec['block_device_mappings'] is not None:
+        block_devs = []
+        for dev in launch_spec['block_device_mappings']:
+            block_devs.append(
+                dict((k, v) for k, v in dev.items() if v is not None))
+        assigned_keys['block_device_mappings'] = block_devs
+
+    return snake_dict_to_camel_dict(assigned_keys, capitalize_first=True)
 
 
 def request_spot_instances(module, connection):
+
+    # connection.request_spot_instances() always creates a new spot request
+    changed = True
+
     if module.check_mode:
-        changed = True
         module.exit_json(changed=changed)
-        return
 
     params = {}
 
     if module.params.get('launch_specification') is not None:
-        params['LaunchSpecification'] = {}
-
-    if module.params.get('launch_specification').get('security_group_ids') is not None:
-        params['LaunchSpecification']['SecurityGroupIds'] = module.params.get('launch_specification').get(
-            'security_group_ids')
-
-    if module.params.get('launch_specification').get('security_groups') is not None:
-        params['LaunchSpecification']['SecurityGroups'] = module.params.get('launch_specification').get(
-            'security_groups')
-
-    if module.params.get('launch_specification').get('ebs_optimized') is not None:
-        params['LaunchSpecification']['EbsOptimized'] = module.params.get('launch_specification').get('ebs_optimized')
-
-    if module.params.get('launch_specification').get('image_id') is not None:
-        params['LaunchSpecification']['ImageId'] = module.params.get('launch_specification').get('image_id')
-
-    if module.params.get('launch_specification').get('instance_type') is not None:
-        params['LaunchSpecification']['InstanceType'] = module.params.get('launch_specification').get('instance_type')
-
-    if module.params.get('launch_specification').get('kernel_id') is not None:
-        params['LaunchSpecification']['KernelId'] = module.params.get('launch_specification').get('kernel_id')
-
-    if module.params.get('launch_specification').get('key_name') is not None:
-        params['LaunchSpecification']['KeyName'] = module.params.get('launch_specification').get('key_name')
-
-    if module.params.get('launch_specification').get('ramdisk_id') is not None:
-        params['LaunchSpecification']['RamdiskId'] = module.params.get('launch_specification').get('ramdisk_id')
-
-    if module.params.get('launch_specification').get('user_data') is not None:
-        params['LaunchSpecification']['UserData'] = module.params.get('launch_specification').get('user_data')
-
-    if module.params.get('launch_specification').get('subnet_id') is not None:
-        params['LaunchSpecification']['SubnetId'] = module.params.get('launch_specification').get('subnet_id')
-
-    if module.params.get('launch_specification').get('block_device_mappings') is not None:
-        params['LaunchSpecification']['BlockDeviceMappings'] = {}
-
-        if module.params.get('launch_specification').get('block_device_mappings').get('device_name') is not None:
-            params['LaunchSpecification']['BlockDeviceMappings']['DeviceName'] = module.params.get('launch_specification').get('block_device_mappings').get('device_name')
-
-        if module.params.get('launch_specification').get('block_device_mappings').get('virtual_name') is not None:
-            params['LaunchSpecification']['BlockDeviceMappings']['VirtualName'] = module.params.get('launch_specification').get('block_device_mappings').get('virtual_name')
-
-        if module.params.get('launch_specification').get('block_device_mappings').get('ebs') is not None:
-            params['LaunchSpecification']['BlockDeviceMappings']['Ebs'] = module.params.get('launch_specification').get('block_device_mappings').get('ebs')
-
-        if module.params.get('launch_specification').get('block_device_mappings').get('no_device') is not None:
-            params['LaunchSpecification']['BlockDeviceMappings']['NoDevice'] = module.params.get('launch_specification').get('block_device_mappings').get('no_device')
-
-    if module.params.get('launch_specification').get('network_interfaces') is not None:
-        params['LaunchSpecification']['NetworkInterfaces'] = []
-
-        # for each_item in module.params.get('launch_specification').get('network_interfaces'):
-        # if module.params.get('launch_specification').get('network_interfaces').get('associate_public_ip_address') is not None:
-        #     params['LaunchSpecification']['NetworkInterfaces']['AssociatePublicIpAddress'] = module.params.get('launch_specification').get('network_interfaces').get('associate_public_ip_address')
-        #
-        # if module.params.get('launch_specification').get('network_interfaces').get('delete_on_termination') is not None:
-        #     params['LaunchSpecification']['NetworkInterfaces']['DeleteOnTermination'] = module.params.get('launch_specification').get('network_interfaces').get('delete_on_termination')
-        #
-        # if module.params.get('launch_specification').get('network_interfaces').get('description') is not None:
-        #     params['LaunchSpecification']['NetworkInterfaces']['Description'] = module.params.get('launch_specification').get('network_interfaces').get('description')
-        #
-        # if module.params.get('launch_specification').get('network_interfaces').get('device_index') is not None:
-        #     params['LaunchSpecification']['NetworkInterfaces']['DeviceIndex'] = module.params.get('launch_specification').get('network_interfaces').get('device_index')
-        #
-        # if module.params.get('launch_specification').get('network_interfaces').get('groups') is not None:
-        #     params['LaunchSpecification']['NetworkInterfaces']['Groups'] = module.params.get('launch_specification').get('network_interfaces').get('groups')
-        #
-        # if module.params.get('launch_specification').get('network_interfaces').get('ipv6_address_count') is not None:
-        #     params['LaunchSpecification']['NetworkInterfaces']['Ipv6AddressCount'] = module.params.get('launch_specification').get('network_interfaces').get('ipv6_address_count')
-        #
-        # if module.params.get('launch_specification').get('network_interfaces').get('ipv6_addresses') is not None:
-        #     params['LaunchSpecification']['NetworkInterfaces']['Ipv6Addresses'] = module.params.get('launch_specification').get('network_interfaces').get('ipv6_addresses')
-        #
-        # if module.params.get('launch_specification').get('network_interfaces').get('network_interface_id') is not None:
-        #     params['LaunchSpecification']['NetworkInterfaces']['NetworkInterfaceId'] = module.params.get('launch_specification').get('network_interfaces').get('network_interface_id')
-        #
-        # if module.params.get('launch_specification').get('network_interfaces').get('private_ip_addresses') is not None:
-        #     params['LaunchSpecification']['NetworkInterfaces']['PrivateIpAddresses'] = module.params.get('launch_specification').get('network_interfaces').get('private_ip_addresses')
-        #
-        # if module.params.get('launch_specification').get('network_interfaces').get('secondary_private_ip_address_count') is not None:
-        #     params['LaunchSpecification']['NetworkInterfaces']['SecondaryPrivateIpAddressCount'] = module.params.get('launch_specification').get('network_interfaces').get('secondary_private_ip_address_count')
-        #
-        # if module.params.get('launch_specification').get('network_interfaces').get('subnet_id') is not None:
-        #     params['LaunchSpecification']['NetworkInterfaces']['SubnetId'] = module.params.get('launch_specification').get('network_interfaces').get('subnet_id')
-        #
-        # if module.params.get('launch_specification').get('network_interfaces').get('associate_carrier_ip_address') is not None:
-        #     params['LaunchSpecification']['NetworkInterfaces']['AssociateCarrierIpAddress'] = module.params.get('launch_specification').get('network_interfaces').get('associate_carrier_ip_address')
-        #
-        # if module.params.get('launch_specification').get('network_interfaces').get('interface_type') is not None:
-        #     params['LaunchSpecification']['NetworkInterfaces']['InterfaceType'] = module.params.get('launch_specification').get('network_interfaces').get('interface_type')
-        #
-        # if module.params.get('launch_specification').get('network_interfaces').get('network_card_index') is not None:
-        #     params['LaunchSpecification']['NetworkInterfaces']['NetworkCardIndex'] = module.params.get('launch_specification').get('network_interfaces').get('network_card_index')
-        #
-        # if module.params.get('launch_specification').get('network_interfaces').get('ipv4_prefixes') is not None:
-        #     params['LaunchSpecification']['NetworkInterfaces']['Ipv4Prefixes'] = module.params.get('launch_specification').get('network_interfaces').get('ipv4_prefixes')
-        #
-        # if module.params.get('launch_specification').get('network_interfaces').get('ipv4_prefix_count') is not None:
-        #     params['LaunchSpecification']['NetworkInterfaces']['Ipv4PrefixCount'] = module.params.get('launch_specification').get('network_interfaces').get('ipv4_prefix_count')
-        #
-        # if module.params.get('launch_specification').get('network_interfaces').get('ipv6_prefixes') is not None:
-        #     params['LaunchSpecification']['NetworkInterfaces']['Ipv6Prefixes'] = module.params.get('launch_specification').get('network_interfaces').get('ipv6_prefixes')
-        #
-        # if module.params.get('launch_specification').get('network_interfaces').get('ipv6_prefix_count') is not None:
-        #     params['LaunchSpecification']['NetworkInterfaces']['Ipv6PrefixCount'] = module.params.get('launch_specification').get('network_interfaces').get('ipv6_prefix_count')
-
-    if module.params.get('launch_specification').get('monitoring') is not None:
-        params['LaunchSpecification']['Monitoring'] = {}
-
-        if module.params.get('launch_specification').get('monitoring').get('enabled') is not None:
-            params['LaunchSpecification']['Monitoring']['Enabled'] = module.params.get('launch_specification').get('monitoring').get('enabled')
-
-    if module.params.get('launch_specification').get('placement') is not None:
-        params['LaunchSpecification']['Placement'] = {}
-
-        if module.params.get('launch_specification').get('placement').get('availability_zone') is not None:
-            params['LaunchSpecification']['Placement']['AvailabilityZone'] = module.params.get('launch_specification').get('placement').get('availability_zone')
-
-        if module.params.get('launch_specification').get('placement').get('tenancy') is not None:
-            params['LaunchSpecification']['Placement']['Tenancy'] = module.params.get('launch_specification').get('placement').get('tenancy')
-
-        if module.params.get('launch_specification').get('placement').get('group_name') is not None:
-            params['LaunchSpecification']['Placement']['GroupName'] = module.params.get('launch_specification').get('placement').get('group_name')
-
-    if module.params.get('launch_specification').get('iam_instance_profile') is not None:
-        params['LaunchSpecification']['IamInstanceProfile'] = {}
-
-        if module.params.get('launch_specification').get('iam_instance_profile').get('arn') is not None:
-            params['LaunchSpecification']['IamInstanceProfile']['Arn'] = module.params.get('launch_specification').get('iam_instance_profile').get('arn')
-
-        if module.params.get('launch_specification').get('iam_instance_profile').get('name') is not None:
-            params['LaunchSpecification']['IamInstanceProfile']['Name'] = module.params.get('launch_specification').get('iam_instance_profile').get('name')
+        params['LaunchSpecification'] = build_launch_specification(module.params.get('launch_specification'))
 
     if module.params.get('zone_group') is not None:
         params['AvailabilityZoneGroup'] = module.params.get('zone_group')
@@ -535,35 +479,47 @@ def request_spot_instances(module, connection):
         params['InstanceInterruptionBehavior'] = module.params.get('interruption')
 
     if module.params.get('tags') is not None:
-        params['TagSpecifications'] = module.params.get('tags')
+        params['TagSpecifications'] = [{
+            'ResourceType': 'spot-instances-request',
+            'Tags': ansible_dict_to_boto3_tag_list(module.params.get('tags')),
+        }]
 
+    # TODO: add support for datetime-based parameters
     # params['ValidFrom'] = module.params.get('valid_from')
     # params['ValidUntil'] = module.params.get('valid_until')
+
     try:
-        request_spot_instance_response = connection.request_spot_instances(**params)
-        return request_spot_instance_response
+        request_spot_instance_response = (connection.request_spot_instances(**params))['SpotInstanceRequests'][0]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Error while creating the spot instance request')
 
+    request_spot_instance_response['Tags'] = boto3_tag_list_to_ansible_dict(request_spot_instance_response.get('Tags', []))
+    spot_request = camel_dict_to_snake_dict(request_spot_instance_response, ignore_list=['Tags'])
+    module.exit_json(spot_request=spot_request, changed=changed)
+
 
 def cancel_spot_instance_requests(module, connection):
-    if module.check_mode:
-        return
 
+    changed = False
     spot_instance_request_ids = module.params.get('spot_instance_request_ids')
-    params = dict()
-    params['SpotInstanceRequestIds'] = spot_instance_request_ids
-    try:
-        response = connection.cancel_spot_instance_requests(**params)
-        changed = True
-        for each_item in response['CancelledSpotInstanceRequests']:
-            if each_item['State'] != 'cancelled':
-                changed = False
-                break
 
-        module.exit_json(changed=changed,
-                         msg='Cancelled Spot request {}'.format(module.params.get('spot_instance_request_ids')))
-        return cancel_spot_instance_request_response
+    try:
+        requests_exist = connection.describe_spot_instance_requests(SpotInstanceRequestIds=spot_instance_request_ids,
+                                                                    Filters=[{'Name': 'state', 'Values': ['open', 'active']}])
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        module.fail_json_aws(e, msg="Failure when describing spot requests")
+
+    try:
+        if len(requests_exist['SpotInstanceRequests']) > 0:
+            changed = True
+            if module.check_mode:
+                module.exit_json(changed=changed,
+                                 msg='Would have cancelled Spot request {}'.format(spot_instance_request_ids))
+
+            connection.cancel_spot_instance_requests(SpotInstanceRequestIds=module.params.get('spot_instance_request_ids'))
+            module.exit_json(changed=changed, msg='Cancelled Spot request {}'.format(module.params.get('spot_instance_request_ids')))
+        else:
+            module.exit_json(changed=changed, msg='Spot request not found or already cancelled')
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Error while cancelling the spot instance request')
 
@@ -634,10 +590,10 @@ def main():
         launch_group=dict(type='str'),
         launch_specification=dict(type='dict', options=launch_specification_options),
         request_type=dict(default='one-time', choices=["one-time", "persistent"]),
-        state=dict(default='present', choices=['present', 'absent', 'running', 'restarted', 'stopped']),
+        state=dict(default='present', choices=['present', 'absent']),
         spot_price=dict(type='str'),
         spot_type=dict(default='one-time', choices=["one-time", "persistent"]),
-        tags=dict(type='list'),
+        tags=dict(type='dict'),
         # valid_from=dict(type='datetime', default=datetime.datetime.now()),
         # valid_until=dict(type='datetime', default=(datetime.datetime.now() + datetime.timedelta(minutes=60))
         spot_instance_request_ids=dict(type='list', elements='str'),
@@ -656,10 +612,7 @@ def main():
     state = module.params['state']
 
     if state == 'present':
-        response = request_spot_instances(module, connection)
-        changed = True
-        spot_request = response.get('SpotInstanceRequests')[0]
-        module.exit_json(changed=changed, spot_request=spot_request)
+        request_spot_instances(module, connection)
 
     if state == 'absent':
         cancel_spot_instance_requests(module, connection)

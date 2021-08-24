@@ -73,22 +73,77 @@
   # ============================================================
 
   # Assert that spot instance request is created
-  - name: Create spot instance request
+  - name: Create simple spot instance request
     ec2_spot_instance:
       launch_specification:
         image_id: "{{ image_id }}"
         key_name: "{{ resource_prefix }}-keypair"
         instance_type: "t2.medium"
         subnet_id: "{{ vpc_subnet_result.subnet.id }}"
-    register: result
+    register: create_result
 
   - name: Assert that result has changed and request has been created
     assert:
       that:
-        - "result.changed == True"
-        - "result.spot_request is defined"
-        - "result.spot_request.SpotInstanceRequestId is defined"
-        - 'result.spot_request.LaunchSpecification.SubnetId == vpc_subnet_result.subnet.id'
+        - create_result is changed
+        - create_result.spot_request is defined
+        - create_result.spot_request.spot_instance_request_id is defined
+        - create_result.spot_request.launch_specification.subnet_id == vpc_subnet_result.subnet.id
+
+  - name: Create spot request with more complex options
+    ec2_spot_instance:
+      launch_specification:
+        image_id: "{{ image_id }}"
+        key_name: "{{ resource_prefix }}-keypair"
+        instance_type: "t2.medium"
+        block_device_mappings:
+          - device_name: /dev/sdb
+            ebs:
+              delete_on_termination: True
+              volume_type: gp3
+              volume_size: 5
+        network_interfaces:
+          - associate_public_ip_address: False
+            delete_on_termination: True
+            device_index: 0
+        placement:
+          availability_zone: '{{ availability_zone }}'
+        monitoring:
+          enabled: False
+      spot_price: 0.002
+      tags:
+        camelCase: "helloWorld"
+        PascalCase: "HelloWorld"
+        snake_case: "hello_world"
+        "Title Case": "Hello World"
+        "lowercase spaced": "hello world"
+    register: complex_create_result
+
+  - assert:
+      that:
+        - complex_create_result is changed
+        - complex_create_result.spot_request is defined
+        - complex_create_result.spot_request.spot_instance_request_id is defined
+        - complex_create_result.spot_request.type == 'one-time'
+        - '"0.002" in complex_create_result.spot_request.spot_price'  ## AWS pads trailing zeros on the spot price
+        - launch_spec.placement.availability_zone == availability_zone
+        - launch_spec.block_device_mappings|length == 1
+        - launch_spec.block_device_mappings.0.ebs.delete_on_termination == true
+        - launch_spec.block_device_mappings.0.ebs.volume_type == 'gp3'
+        - launch_spec.block_device_mappings.0.ebs.volume_size == 5
+        - launch_spec.network_interfaces|length == 1
+        - launch_spec.network_interfaces.0.device_index == 0
+        - launch_spec.network_interfaces.0.associate_public_ip_address == false
+        - launch_spec.network_interfaces.0.delete_on_termination == true
+        - spot_request_tags|length == 5
+        - spot_request_tags['camelCase'] == 'helloWorld'
+        - spot_request_tags['PascalCase'] == 'HelloWorld'
+        - spot_request_tags['snake_case'] == 'hello_world'
+        - spot_request_tags['Title Case'] == 'Hello World'
+        - spot_request_tags['lowercase spaced'] == 'hello world'
+    vars:
+      launch_spec: '{{ complex_create_result.spot_request.launch_specification }}'
+      spot_request_tags: '{{ complex_create_result.spot_request.tags }}'
 
   # Assert check mode
   - name: Create spot instance request (check_mode)
@@ -99,14 +154,46 @@
         instance_type: "t2.medium"
         subnet_id: "{{ vpc_subnet_result.subnet.id }}"
     check_mode: True
-    register: result_check_mode
+    register: check_create_result
 
-  - name: Assert that result has changed and request has been created in check_mode
-    assert:
+  - assert:
       that:
-        - "result_check_mode.changed == True"
+        - check_create_result is changed
 
+  - name: Remove spot instance request (check_mode)
+    ec2_spot_instance:
+      spot_instance_request_ids: '{{ create_result.spot_request.spot_instance_request_id }}'
+      state: absent
+    check_mode: True
+    register: check_cancel_result
 
+  - assert:
+      that:
+        - check_cancel_result is changed
+
+  - name: Remove spot instance requests
+    ec2_spot_instance:
+      spot_instance_request_ids:
+        - '{{ create_result.spot_request.spot_instance_request_id }}'
+        - '{{ complex_create_result.spot_request.spot_instance_request_id }}'
+      state: absent
+    register: cancel_result
+
+  - assert:
+      that:
+        - cancel_result is changed
+        - '"Cancelled Spot request" in cancel_result.msg'
+
+  - name: Check no change if request is already cancelled (idempotency)
+    ec2_spot_instance:
+      spot_instance_request_ids: '{{ create_result.spot_request.spot_instance_request_id }}'
+      state: absent
+    register: cancel_request_again
+
+  - assert:
+      that:
+        - cancel_request_again is not changed
+        - '"Spot request not found or already cancelled" in cancel_request_again.msg'
 
   always:
 
@@ -117,9 +204,11 @@
           filters:
             vpc-id: "{{ vpc_result.vpc.id }}"
 
-      - name: remove spot instance request
+      - name: remove spot instance requests
         ec2_spot_instance:
-          spot_instance_request_ids: '{{ result.spot_request.SpotInstanceRequestId }}'
+          spot_instance_request_ids:
+            - '{{ create_result.spot_request.spot_instance_request_id }}'
+            - '{{ complex_create_result.spot_request.spot_instance_request_id }}'
           state: 'absent'
         ignore_errors: true
         retries: 5
@@ -156,3 +245,4 @@
         ec2_key:
           name: "{{ resource_prefix }}-keypair"
           state: absent
+        ignore_errors: true
