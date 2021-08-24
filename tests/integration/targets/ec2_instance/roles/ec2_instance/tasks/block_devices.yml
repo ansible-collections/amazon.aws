@@ -91,27 +91,14 @@
       wait: true
     register: block_device_instances_gp3
 
-  - name: "Gather instance info"
-    ec2_instance_info:
-      filters:
-        "tag:Name": "{{ resource_prefix }}-test-ebs-vols-gp3"
-    register: block_device_instances_gp3_info
-
   - assert:
       that:
       - block_device_instances_gp3 is not failed
       - block_device_instances_gp3 is changed
-      - block_device_instances_gp3_info.instances[0].block_device_mappings[0]
-      - block_device_instances_gp3_info.instances[0].block_device_mappings[0].device_name == '/dev/sdb'
-      - block_device_instances_info.instances[0].block_device_mappings[0].volume_type == 'gp3'
-      - block_device_instances_info.instances[0].block_device_mappings[0].volume_size == 20
-      - block_device_instances_info.instances[0].block_device_mappings[0].throughput == 500
-
-
-  - name: "Terminate instances"
-    ec2_instance:
-      state: absent
-      instance_ids: "{{ block_device_instances_gp3.instance_ids }}"
+      - block_device_instances_gp3.spec.BlockDeviceMappings[0].DeviceName == '/dev/sdb'
+      - block_device_instances_gp3.spec.BlockDeviceMappings[0].Ebs.VolumeType == 'gp3'
+      - block_device_instances_gp3.spec.BlockDeviceMappings[0].Ebs.VolumeSize == 20
+      - block_device_instances_gp3.spec.BlockDeviceMappings[0].Ebs.Throughput == 500
 
   always:
   - name: "Terminate block_devices instances"
