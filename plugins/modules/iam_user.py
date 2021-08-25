@@ -41,6 +41,16 @@ options:
     default: false
     type: bool
     aliases: ['purge_policy', 'purge_managed_policies']
+  tags:
+    description:
+      - Tag dict to apply to the user.
+    required: false
+    type: dict
+  purge_tags:
+    description:
+      - Remove tags not listed in I(tags) when tags is specified.
+    default: true
+    type: bool
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -70,6 +80,13 @@ EXAMPLES = r'''
     name: testuser1
     state: present
     purge_policies: true
+
+- name: Create user with tags
+  community.aws.iam_user:
+    name: testuser1
+    state: present
+    tags:
+      Env: Prod
 
 - name: Delete the user
   community.aws.iam_user:
@@ -103,6 +120,11 @@ user:
             description: the path to the user
             type: str
             sample: /
+        tags:
+            description: user tags
+            type: dict
+            returned: always
+            sample: '{"Env": "Prod"}'
 '''
 
 try:
@@ -114,6 +136,9 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
 
 
 def compare_attached_policies(current_attached_policies, new_attached_policies):
@@ -156,6 +181,7 @@ def create_or_update_user(connection, module):
 
     params = dict()
     params['UserName'] = module.params.get('name')
+    params["Tags"] = module.params.get('tags')
     managed_policies = module.params.get('managed_policies')
     purge_policies = module.params.get('purge_policies')
     changed = False
@@ -176,6 +202,8 @@ def create_or_update_user(connection, module):
             changed = True
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Unable to create user")
+    else:
+        changed = update_user_tags(connection, module, params['UserName'], user)
 
     # Manage managed policies
     current_attached_policies = get_attached_policy_list(connection, module, params['UserName'])
@@ -208,13 +236,15 @@ def create_or_update_user(connection, module):
                     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                         module.fail_json_aws(e, msg="Unable to attach policy {0} to user {1}".format(
                                              policy_arn, params['UserName']))
+
     if module.check_mode:
         module.exit_json(changed=changed)
 
     # Get the user again
     user = get_user(connection, module, params['UserName'])
+    user['tags'] = get_user_tags(connection, module, params['UserName'])
 
-    module.exit_json(changed=changed, iam_user=camel_dict_to_snake_dict(user))
+    module.exit_json(changed=changed, iam_user=camel_dict_to_snake_dict(user, ignore_list=["tags"]))
 
 
 def destroy_user(connection, module):
@@ -302,6 +332,13 @@ def get_user(connection, module, name):
         module.fail_json_aws(e, msg="Unable to get user {0}".format(name))
 
 
+def get_user_tags(connection, module, user_name):
+    try:
+        return boto3_tag_list_to_ansible_dict(connection.list_user_tags(UserName=user_name, aws_retry=True)['Tags'])
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Unable to list tags for user {0}".format(user_name))
+
+
 def get_attached_policy_list(connection, module, name):
 
     try:
@@ -321,6 +358,32 @@ def delete_user_login_profile(connection, module, user_name):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to delete login profile for user {0}".format(user_name))
 
+def update_user_tags(connection, module, user_name, user):
+    new_tags = module.params.get('Tags')
+    if new_tags is None:
+        return False
+    new_tags = boto3_tag_list_to_ansible_dict(new_tags)
+
+    purge_tags = module.params.get('purge_tags')
+
+    try:
+        existing_tags = boto3_tag_list_to_ansible_dict(connection.list_user_tags(UserName=user_name, aws_retry=True)['Tags'])
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError, KeyError):
+        existing_tags = {}
+
+    tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, new_tags, purge_tags=purge_tags)
+
+    if not module.check_mode:
+        try:
+            if tags_to_remove:
+                connection.untag_user(UserName=user_name, TagKeys=tags_to_remove, aws_retry=True)
+            if tags_to_add:
+                connection.tag_user(UserName=user_name, Tags=ansible_dict_to_boto3_tag_list(tags_to_add), aws_retry=True)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg='Unable to set tags for user %s' % user_name)
+
+    changed = bool(tags_to_add) or bool(tags_to_remove)
+    return changed
 
 def main():
 
@@ -328,7 +391,9 @@ def main():
         name=dict(required=True, type='str'),
         managed_policies=dict(default=[], type='list', aliases=['managed_policy'], elements='str'),
         state=dict(choices=['present', 'absent'], required=True),
-        purge_policies=dict(default=False, type='bool', aliases=['purge_policy', 'purge_managed_policies'])
+        purge_policies=dict(default=False, type='bool', aliases=['purge_policy', 'purge_managed_policies']),
+        tags=dict(type='dict'),
+        purge_tags=dict(type='bool', default=True),
     )
 
     module = AnsibleAWSModule(

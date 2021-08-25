@@ -97,6 +97,7 @@
         - test_iam_user.path == '{{ test_path }}'
         - test_iam_user.user_id is not none
         - test_iam_user.user_name == '{{ test_user }}'
+        - iam_user_info.iam_users[0].tags | length == 0
 
   - name: get info on IAM user(s)
     iam_user_info:
@@ -118,6 +119,7 @@
         - iam_user_info.iam_users[0].path == test_iam_user.path
         - iam_user_info.iam_users[0].user_id == test_iam_user.user_id
         - iam_user_info.iam_users[0].user_name == test_iam_user.user_name
+        - iam_user_info.iam_users[0].tags | length == 0
 
   - name: get info on IAM user(s) on path
     iam_user_info:
@@ -132,6 +134,37 @@
         - iam_user_info.iam_users[0].path == test_iam_user.path
         - iam_user_info.iam_users[0].user_id == test_iam_user.user_id
         - iam_user_info.iam_users[0].user_name == test_iam_user.user_name
+        - iam_user_info.iam_users[0].tags | length == 0
+
+  - name: 'Add Tag'
+    iam_user:
+      name: '{{ test_user }}'
+      state: present
+      tags:
+        TagA: ValueA
+    register: iam_user
+  - assert:
+      that:
+          - iam_user is changed
+          - iam_user.user_name == test_user
+          - iam_user.tags | length == 1
+          - '"TagA" in iam_user.iam_user.tags'
+          - iam_user.iam_user.tags.TagA == "ValueA"
+
+  - name: 'Add Tag (no change)'
+    iam_user:
+      name: '{{ test_user }}'
+      state: present
+      tags:
+        TagA: ValueA
+    register: iam_user
+  - assert:
+      that:
+          - iam_user is not changed
+          - iam_user.user_name == test_user
+          - iam_user.tags | length == 1
+          - '"TagA" in iam_user.iam_user.tags'
+          - iam_user.iam_user.tags.TagA == "ValueA"
 
   # ===========================================
   # Test Managed Policy management
@@ -324,6 +357,7 @@
         - iam_user_info.iam_users[0].path == test_iam_user.path
         - iam_user_info.iam_users[0].user_id == test_iam_user.user_id
         - iam_user_info.iam_users[0].user_name == test_iam_user.user_name
+        - iam_user_info.iam_users[0].tags | length == 0
 
   - name: remove user from group
     iam_group:
