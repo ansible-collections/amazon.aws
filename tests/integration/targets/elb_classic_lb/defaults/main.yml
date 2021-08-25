@@ -155,8 +155,8 @@ access_log_account_id_map:
 
 access_log_account_id: '{{ access_log_account_id_map[aws_region] }}'
 
-s3_logging_bucket_a: '{{ resource_prefix }}-a'
-s3_logging_bucket_b: '{{ resource_prefix }}-b'
+s3_logging_bucket_a: 'ansible-test-{{ tiny_prefix }}-a'
+s3_logging_bucket_b: 'ansible-test-{{ tiny_prefix }}-b'
 default_logging_prefix: 'logs'
 updated_logging_prefix: 'mylogs'
 default_logging_interval: 5
