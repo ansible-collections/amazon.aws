@@ -179,6 +179,7 @@ options:
     - A list of block device mappings, by default this will always use the AMI root device so the volumes option is primarily for adding more storage.
     - A mapping contains the (optional) keys device_name, virtual_name, ebs.volume_type, ebs.volume_size, ebs.kms_key_id,
       ebs.iops, and ebs.delete_on_termination.
+    - Set ebs.throughput value requires botocore>=1.19.27.
     - For more information about each parameter, see U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_BlockDeviceMapping.html).
     type: list
     elements: dict
@@ -954,6 +955,15 @@ def build_volume_spec(params):
             for int_value in ['volume_size', 'iops']:
                 if int_value in volume['ebs']:
                     volume['ebs'][int_value] = int(volume['ebs'][int_value])
+            if 'volume_type' in volume['ebs'] and volume['ebs']['volume_type'] == 'gp3':
+                if not volume['ebs'].get('iops'):
+                    volume['ebs']['iops'] = 3000
+                if 'throughput' in volume['ebs']:
+                    module.require_botocore_at_least('1.19.27', reason='to set throughtput value')
+                    volume['ebs']['throughput'] = int(volume['ebs']['throughput'])
+                else:
+                    volume['ebs']['throughput'] = 125
+
     return [snake_dict_to_camel_dict(v, capitalize_first=True) for v in volumes]
 
 
