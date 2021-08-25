@@ -28,6 +28,7 @@ options:
   name:
     description:
       - The name of the ELB.
+      - The name of an ELB must be less than 32 characters and unique per-region per-account.
     type: str
     required: true
   listeners:
@@ -494,7 +495,187 @@ EXAMPLES = """
     tags: {}
 """
 
-# import time
+RETURN = '''
+elb:
+  description: Load Balancer attributes
+  returned: always
+  type: dict
+  contains:
+    app_cookie_policy:
+      description: The name of the policy used to control if the ELB is using a application cookie stickiness policy.
+      type: str
+      sample: ec2-elb-lb-AppCookieStickinessPolicyType
+      returned: when state is not 'absent'
+    backends:
+      description: A description of the backend policy applied to the ELB (instance-port:policy-name).
+      type: str
+      sample: 8181:ProxyProtocol-policy
+      returned: when state is not 'absent'
+    connection_draining_timeout:
+      description: The maximum time, in seconds, to keep the existing connections open before deregistering the instances.
+      type: int
+      sample: 25
+      returned: when state is not 'absent'
+    cross_az_load_balancing:
+      description: Either C('yes') if cross-AZ load balancing is enabled, or C('no') if cross-AZ load balancing is disabled.
+      type: str
+      sample: 'yes'
+      returned: when state is not 'absent'
+    dns_name:
+      description: The DNS name of the ELB.
+      type: str
+      sample: internal-ansible-test-935c585850ac-1516306744.us-east-1.elb.amazonaws.com
+      returned: when state is not 'absent'
+    health_check:
+      description: A dictionary describing the health check used for the ELB.
+      type: dict
+      returned: when state is not 'absent'
+      contains:
+        healthy_threshold:
+          description: The number of consecutive successful health checks before marking an instance as healthy.
+          type: int
+          sample: 2
+        interval:
+          description: The time, in seconds, between each health check.
+          type: int
+          sample: 10
+        target:
+          description: The Protocol, Port, and for HTTP(S) health checks the path tested by the health check.
+          type: str
+          sample: TCP:22
+        timeout:
+          description: The time, in seconds, after which an in progress health check is considered failed due to a timeout.
+          type: int
+          sample: 5
+        unhealthy_threshold:
+          description: The number of consecutive failed health checks before marking an instance as unhealthy.
+          type: int
+          sample: 2
+    hosted_zone_id:
+      description: The ID of the Amazon Route 53 hosted zone for the load balancer.
+      type: str
+      sample: Z35SXDOTRQ7X7K
+      returned: when state is not 'absent'
+    hosted_zone_name:
+      description: The DNS name of the load balancer when using a custom hostname.
+      type: str
+      sample: 'ansible-module.example'
+      returned: when state is not 'absent'
+    idle_timeout:
+      description: The length of of time before an idle connection is dropped by the ELB.
+      type: int
+      sample: 50
+      returned: when state is not 'absent'
+    in_service_count:
+      description: The number of instances attached to the ELB in an in-service state.
+      type: int
+      sample: 1
+      returned: when state is not 'absent'
+    instance_health:
+      description: A list of dictionaries describing the health of each instance attached to the ELB.
+      type: list
+      elements: dict
+      returned: when state is not 'absent'
+      contains:
+        description:
+          description: A human readable description of why the instance is not in service.
+          type: str
+          sample: N/A
+          returned: when state is not 'absent'
+        instance_id:
+          description: The ID of the instance.
+          type: str
+          sample: i-03dcc8953a03d6435
+          returned: when state is not 'absent'
+        reason_code:
+          description: A code describing why the instance is not in service.
+          type: str
+          sample: N/A
+          returned: when state is not 'absent'
+        state:
+          description: The current service state of the instance.
+          type: str
+          sample: InService
+          returned: when state is not 'absent'
+    instances:
+      description: A list of the IDs of instances attached to the ELB.
+      type: list
+      elements: str
+      sample: ['i-03dcc8953a03d6435']
+      returned: when state is not 'absent'
+    lb_cookie_policy:
+      description: The name of the policy used to control if the ELB is using a cookie stickiness policy.
+      type: str
+      sample: ec2-elb-lb-LBCookieStickinessPolicyType
+      returned: when state is not 'absent'
+    listeners:
+      description:
+      - A list of lists describing the listeners attached to the ELB.
+      - The nested list contains the listener port, the instance port, the listener protoco, the instance port,
+        and where appropriate the ID of the SSL certificate for the port.
+      type: list
+      elements: list
+      sample: [[22, 22, 'TCP', 'TCP'], [80, 8181, 'HTTP', 'HTTP']]
+      returned: when state is not 'absent'
+    name:
+      description: The name of the ELB.  This name is unique per-region, per-account.
+      type: str
+      sample: ansible-test-935c585850ac
+      returned: when state is not 'absent'
+    out_of_service_count:
+      description: The number of instances attached to the ELB in an out-of-service state.
+      type: int
+      sample: 0
+      returned: when state is not 'absent'
+    proxy_policy:
+      description: The name of the policy used to control if the ELB operates using the Proxy protocol.
+      type: str
+      sample: ProxyProtocol-policy
+      returned: when the proxy protocol policy exists.
+    region:
+      description: The AWS region in which the ELB is running.
+      type: str
+      sample: us-east-1
+      returned: always
+    scheme:
+      description: Whether the ELB is an C('internal') or a C('internet-facing') load balancer.
+      type: str
+      sample: internal
+      returned: when state is not 'absent'
+    security_group_ids:
+      description: A list of the IDs of the Security Groups attached to the ELB.
+      type: list
+      elements: str
+      sample: ['sg-0c12ebd82f2fb97dc', 'sg-01ec7378d0c7342e6']
+      returned: when state is not 'absent'
+    status:
+      description: A minimal description of the current state of the ELB.  Valid values are C('exists'), C('gone'), C('deleted'), C('created').
+      type: str
+      sample: exists
+      returned: always
+    subnets:
+      description: A list of the subnet IDs attached to the ELB.
+      type: list
+      elements: str
+      sample: ['subnet-00d9d0f70c7e5f63c', 'subnet-03fa5253586b2d2d5']
+      returned: when state is not 'absent'
+    tags:
+      description: A dictionary describing the tags attached to the ELB.
+      type: dict
+      sample: {'Name': 'ansible-test-935c585850ac', 'ExampleTag': 'Example Value'}
+      returned: when state is not 'absent'
+    unknown_instance_state_count:
+      description: The number of instances attached to the ELB in an unknown state.
+      type: int
+      sample: 0
+      returned: when state is not 'absent'
+    zones:
+      description: A list of the AWS regions in which the ELB is running.
+      type: list
+      elements: str
+      sample: ['us-east-1b', 'us-east-1a']
+      returned: when state is not 'absent'
+'''
 
 try:
     import botocore
