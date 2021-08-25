@@ -44,6 +44,7 @@ _raw:
 
 
 import json
+import netaddr
 
 from ansible.errors import AnsibleError
 from ansible.module_utils.six.moves.urllib.error import HTTPError
@@ -53,6 +54,20 @@ from ansible.module_utils.urls import ConnectionError
 from ansible.module_utils.urls import open_url
 from ansible.module_utils.urls import SSLValidationError
 from ansible.plugins.lookup import LookupBase
+
+def valid_cidr(Ip):
+    """
+    Validate IP address
+    """
+    try:
+        netaddr.IPNetwork(Ip)
+    except netaddr.core.AddrFormatError as e:
+        raise AnsibleError("Not a valid IP address" %e)
+        return False
+    cidr = Ip.split('/')
+    if (len(cidr) <= 1 or cidr[1] == ''):
+        return False
+    return True
 
 
 class LookupModule(LookupBase):
@@ -87,4 +102,9 @@ class LookupModule(LookupBase):
             service = str.upper(kwargs['service'])
             amazon_response = (item for item in amazon_response if item['service'] == service)
 
-        return [item[ip_prefix_label] for item in amazon_response]
+            iprange = [item[ip_prefix_label] for item in amazon_response]
+            for i in iprange:
+                if not valid_cidr(i):
+                    raise AnsibleError("Invalid Ip address: %s" % i)
+                return True
+            return iprange
