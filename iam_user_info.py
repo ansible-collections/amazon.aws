@@ -96,6 +96,11 @@ iam_users:
             returned: if user exists
             type: str
             sample: "test_user"
+        tags:
+            description: User tags.
+            type: dict
+            returned: always
+            sample: '{"Env": "Prod"}'
 '''
 
 try:
@@ -107,6 +112,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
 @AWSRetry.exponential_backoff()
@@ -128,7 +134,13 @@ def list_iam_users(connection, module):
         if name:
             params['UserName'] = name
         try:
-            iam_users.append(connection.get_user(**params)['User'])
+            user = connection.get_user(**params)['User']
+            try:
+                user['tags'] = boto3_tag_list_to_ansible_dict(user['Tags'])
+                del user['Tags']
+            except KeyError:
+                user['tags'] = {}
+            iam_users.append(user)
         except (ClientError, BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't get IAM user info for user %s" % name)
 
@@ -150,7 +162,7 @@ def list_iam_users(connection, module):
         if name:
             iam_users = [user for user in iam_users if user['UserName'] == name]
 
-    module.exit_json(iam_users=[camel_dict_to_snake_dict(user) for user in iam_users])
+    module.exit_json(iam_users=[camel_dict_to_snake_dict(user, ignore_list=['tags']) for user in iam_users])
 
 
 def main():
