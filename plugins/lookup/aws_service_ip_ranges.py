@@ -53,6 +53,20 @@ from ansible.module_utils.urls import open_url
 from ansible.module_utils.urls import SSLValidationError
 from ansible.plugins.lookup import LookupBase
 
+def valid_cidr(Ip):
+    """
+    Validate IP address
+    """
+    try:
+        netaddr.IPNetwork(Ip)
+    except netaddr.core.AddrFormatError as e:
+        raise AnsibleError("Not a valid IP address" %e)
+        return False
+    cidr = Ip.split('/')
+    if (len(cidr) <= 1 or cidr[1] == ''):
+        return False
+    return True
+
 
 def valid_cidr(ip_address):
     """
