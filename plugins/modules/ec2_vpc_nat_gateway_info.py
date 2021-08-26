@@ -34,7 +34,7 @@ extends_documentation_fragment:
 EXAMPLES = r'''
 # Simple example of listing all nat gateways
 - name: List all managed nat gateways in ap-southeast-2
-  community.aws.ec2_vpc_nat_gateway_info:
+  amazon.aws.ec2_vpc_nat_gateway_info:
     region: ap-southeast-2
   register: all_ngws
 
@@ -43,7 +43,7 @@ EXAMPLES = r'''
     msg: "{{ all_ngws.result }}"
 
 - name: Get details on specific nat gateways
-  community.aws.ec2_vpc_nat_gateway_info:
+  amazon.aws.ec2_vpc_nat_gateway_info:
     nat_gateway_ids:
       - nat-1234567891234567
       - nat-7654321987654321
@@ -51,14 +51,14 @@ EXAMPLES = r'''
   register: specific_ngws
 
 - name: Get all nat gateways with specific filters
-  community.aws.ec2_vpc_nat_gateway_info:
+  amazon.aws.ec2_vpc_nat_gateway_info:
     region: ap-southeast-2
     filters:
       state: ['pending']
   register: pending_ngws
 
 - name: Get nat gateways with specific filter
-  community.aws.ec2_vpc_nat_gateway_info:
+  amazon.aws.ec2_vpc_nat_gateway_info:
     region: ap-southeast-2
     filters:
       subnet-id: subnet-12345678
@@ -202,7 +202,7 @@ def main():
                               supports_check_mode=True,)
     if module._name == 'ec2_vpc_nat_gateway_facts':
         module.deprecate("The 'ec2_vpc_nat_gateway_facts' module has been renamed to 'ec2_vpc_nat_gateway_info'",
-                         date='2021-12-01', collection_name='community.aws')
+                         date='2021-12-01', collection_name='amazon.aws')
 
     try:
         connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())

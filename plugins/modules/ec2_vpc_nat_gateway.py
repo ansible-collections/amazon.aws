@@ -97,7 +97,7 @@ EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create new nat gateway with client token.
-  community.aws.ec2_vpc_nat_gateway:
+  amazon.aws.ec2_vpc_nat_gateway:
     state: present
     subnet_id: subnet-12345678
     eip_address: 52.1.1.1
@@ -106,7 +106,7 @@ EXAMPLES = r'''
   register: new_nat_gateway
 
 - name: Create new nat gateway using an allocation-id.
-  community.aws.ec2_vpc_nat_gateway:
+  amazon.aws.ec2_vpc_nat_gateway:
     state: present
     subnet_id: subnet-12345678
     allocation_id: eipalloc-12345678
@@ -114,7 +114,7 @@ EXAMPLES = r'''
   register: new_nat_gateway
 
 - name: Create new nat gateway, using an EIP address  and wait for available status.
-  community.aws.ec2_vpc_nat_gateway:
+  amazon.aws.ec2_vpc_nat_gateway:
     state: present
     subnet_id: subnet-12345678
     eip_address: 52.1.1.1
@@ -123,7 +123,7 @@ EXAMPLES = r'''
   register: new_nat_gateway
 
 - name: Create new nat gateway and allocate new EIP.
-  community.aws.ec2_vpc_nat_gateway:
+  amazon.aws.ec2_vpc_nat_gateway:
     state: present
     subnet_id: subnet-12345678
     wait: true
@@ -131,7 +131,7 @@ EXAMPLES = r'''
   register: new_nat_gateway
 
 - name: Create new nat gateway and allocate new EIP if a nat gateway does not yet exist in the subnet.
-  community.aws.ec2_vpc_nat_gateway:
+  amazon.aws.ec2_vpc_nat_gateway:
     state: present
     subnet_id: subnet-12345678
     wait: true
@@ -140,7 +140,7 @@ EXAMPLES = r'''
   register: new_nat_gateway
 
 - name: Delete nat gateway using discovered nat gateways from facts module.
-  community.aws.ec2_vpc_nat_gateway:
+  amazon.aws.ec2_vpc_nat_gateway:
     state: absent
     region: ap-southeast-2
     wait: true
@@ -150,7 +150,7 @@ EXAMPLES = r'''
   loop: "{{ gateways_to_remove.result }}"
 
 - name: Delete nat gateway and wait for deleted status.
-  community.aws.ec2_vpc_nat_gateway:
+  amazon.aws.ec2_vpc_nat_gateway:
     state: absent
     nat_gateway_id: nat-12345678
     wait: true
@@ -158,7 +158,7 @@ EXAMPLES = r'''
     region: ap-southeast-2
 
 - name: Delete nat gateway and release EIP.
-  community.aws.ec2_vpc_nat_gateway:
+  amazon.aws.ec2_vpc_nat_gateway:
     state: absent
     nat_gateway_id: nat-12345678
     release_eip: true
@@ -167,7 +167,7 @@ EXAMPLES = r'''
     region: ap-southeast-2
 
 - name: Create new nat gateway using allocation-id and tags.
-  community.aws.ec2_vpc_nat_gateway:
+  amazon.aws.ec2_vpc_nat_gateway:
     state: present
     subnet_id: subnet-12345678
     allocation_id: eipalloc-12345678
@@ -178,7 +178,7 @@ EXAMPLES = r'''
   register: new_nat_gateway
 
 - name: Update tags without purge
-  community.aws.ec2_vpc_nat_gateway:
+  amazon.aws.ec2_vpc_nat_gateway:
     subnet_id: subnet-12345678
     allocation_id: eipalloc-12345678
     region: ap-southeast-2
