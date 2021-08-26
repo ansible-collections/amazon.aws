@@ -184,6 +184,10 @@
         - cancel_result is changed
         - '"Cancelled Spot request" in cancel_result.msg'
 
+  - name: Sometimes we run the next test before the EC2 API is fully updated from the previous task
+    pause:
+      seconds: 3
+
   - name: Check no change if request is already cancelled (idempotency)
     ec2_spot_instance:
       spot_instance_request_ids: '{{ create_result.spot_request.spot_instance_request_id }}'
@@ -194,6 +198,19 @@
       that:
         - cancel_request_again is not changed
         - '"Spot request not found or already cancelled" in cancel_request_again.msg'
+
+  - name: Gracefully try to remove non-existent request (NotFound)
+    ec2_spot_instance:
+      spot_instance_request_ids:
+        - sir-12345678
+      state: absent
+    register: fake_cancel_result
+
+  - assert:
+      that:
+        - fake_cancel_result is not changed
+        - '"Spot request not found or already cancelled" in fake_cancel_result.msg'
+
 
   always:
 

@@ -295,35 +295,35 @@ EXAMPLES = '''
       key_name: my-keypair
       instance_type: t2.medium
 
-  - name: Spot Request Creation with more options
-    ec2_spot_instance:
-      launch_specification:
-        image_id: ami-123456789
-        key_name: my-keypair
-        instance_type: t2.medium
-        subnet_id: subnet-12345678
-        block_device_mappings:
-          - device_name: /dev/sdb
-            ebs:
-              delete_on_termination: True
-              volume_type: gp3
-              volume_size: 5
-          - device_name: /dev/sdc
-            ebs:
-              delete_on_termination: True
-              volume_type: io2
-              volume_size: 30
-        network_interfaces:
-          - associate_public_ip_address: False
-            delete_on_termination: True
-            device_index: 0
-        placement:
-          availability_zone: us-west-2a
-        monitoring:
-          enabled: False
-      spot_price: 0.002
-      tags:
-        Environment: Testing
+- name: Spot Request Creation with more options
+ec2_spot_instance:
+  launch_specification:
+    image_id: ami-123456789
+    key_name: my-keypair
+    instance_type: t2.medium
+    subnet_id: subnet-12345678
+    block_device_mappings:
+      - device_name: /dev/sdb
+        ebs:
+          delete_on_termination: True
+          volume_type: gp3
+          volume_size: 5
+      - device_name: /dev/sdc
+        ebs:
+          delete_on_termination: True
+          volume_type: io2
+          volume_size: 30
+    network_interfaces:
+      - associate_public_ip_address: False
+        delete_on_termination: True
+        device_index: 0
+    placement:
+      availability_zone: us-west-2a
+    monitoring:
+      enabled: False
+  spot_price: 0.002
+  tags:
+    Environment: Testing
 
 - name: Spot Request Termination
   amazon.aws.ec2_spot_instance:
@@ -409,6 +409,7 @@ from ansible.module_utils.common.dict_transformations import snake_dict_to_camel
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ..module_utils.core import is_boto3_error_code
 
 
 def build_launch_specification(launch_spec):
@@ -454,31 +455,31 @@ def request_spot_instances(module, connection):
 
     params = {}
 
-    if module.params.get('launch_specification') is not None:
+    if module.params.get('launch_specification'):
         params['LaunchSpecification'] = build_launch_specification(module.params.get('launch_specification'))
 
-    if module.params.get('zone_group') is not None:
+    if module.params.get('zone_group'):
         params['AvailabilityZoneGroup'] = module.params.get('zone_group')
 
-    if module.params.get('count') is not None:
+    if module.params.get('count'):
         params['InstanceCount'] = module.params.get('count')
 
-    if module.params.get('launch_group') is not None:
+    if module.params.get('launch_group'):
         params['LaunchGroup'] = module.params.get('launch_group')
 
-    if module.params.get('spot_price') is not None:
+    if module.params.get('spot_price'):
         params['SpotPrice'] = module.params.get('spot_price')
 
-    if module.params.get('spot_type') is not None:
+    if module.params.get('spot_type'):
         params['Type'] = module.params.get('spot_type')
 
-    if module.params.get('client_token') is not None:
+    if module.params.get('client_token'):
         params['ClientToken'] = module.params.get('client_token')
 
-    if module.params.get('interruption') is not None:
+    if module.params.get('interruption'):
         params['InstanceInterruptionBehavior'] = module.params.get('interruption')
 
-    if module.params.get('tags') is not None:
+    if module.params.get('tags'):
         params['TagSpecifications'] = [{
             'ResourceType': 'spot-instances-request',
             'Tags': ansible_dict_to_boto3_tag_list(module.params.get('tags')),
@@ -489,7 +490,7 @@ def request_spot_instances(module, connection):
     # params['ValidUntil'] = module.params.get('valid_until')
 
     try:
-        request_spot_instance_response = (connection.request_spot_instances(**params))['SpotInstanceRequests'][0]
+        request_spot_instance_response = (connection.request_spot_instances(aws_retry=True, **params))['SpotInstanceRequests'][0]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Error while creating the spot instance request')
 
@@ -502,11 +503,15 @@ def cancel_spot_instance_requests(module, connection):
 
     changed = False
     spot_instance_request_ids = module.params.get('spot_instance_request_ids')
-
+    requests_exist = dict()
     try:
-        requests_exist = connection.describe_spot_instance_requests(SpotInstanceRequestIds=spot_instance_request_ids,
-                                                                    Filters=[{'Name': 'state', 'Values': ['open', 'active']}])
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        paginator = connection.get_paginator('describe_spot_instance_requests').paginate(SpotInstanceRequestIds=spot_instance_request_ids,
+                                                                                         Filters=[{'Name': 'state', 'Values': ['open', 'active']}])
+        jittered_retry = AWSRetry.jittered_backoff()
+        requests_exist = jittered_retry(paginator.build_full_result)()
+    except is_boto3_error_code('InvalidSpotInstanceRequestID.NotFound'):
+        requests_exist['SpotInstanceRequests'] = []
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failure when describing spot requests")
 
     try:
@@ -516,7 +521,7 @@ def cancel_spot_instance_requests(module, connection):
                 module.exit_json(changed=changed,
                                  msg='Would have cancelled Spot request {}'.format(spot_instance_request_ids))
 
-            connection.cancel_spot_instance_requests(SpotInstanceRequestIds=module.params.get('spot_instance_request_ids'))
+            connection.cancel_spot_instance_requests(aws_retry=True, SpotInstanceRequestIds=module.params.get('spot_instance_request_ids'))
             module.exit_json(changed=changed, msg='Cancelled Spot request {}'.format(module.params.get('spot_instance_request_ids')))
         else:
             module.exit_json(changed=changed, msg='Spot request not found or already cancelled')
@@ -607,7 +612,7 @@ def main():
         supports_check_mode=True
     )
 
-    connection = module.client('ec2', AWSRetry.jittered_backoff())
+    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
     state = module.params['state']
 
