@@ -172,7 +172,7 @@
       state: present
     check_mode: yes
     register: iam_user
-    - assert:
+  - assert:
       that:
           - iam_user is changed
 
@@ -181,7 +181,7 @@
       name: '{{ test_user }}'
       state: present
     register: iam_user
-    - assert:
+  - assert:
       that:
           - iam_user is changed
           - iam_user.user_name == test_user
