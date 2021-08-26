@@ -19,7 +19,6 @@ plugins/modules/ec2_vpc_endpoint.py pylint:ansible-deprecated-no-version
 plugins/modules/ec2_vpc_endpoint_info.py pylint:ansible-deprecated-no-version
 plugins/modules/ec2_vpc_igw_info.py pylint:ansible-deprecated-no-version
 plugins/modules/ec2_vpc_nacl_info.py pylint:ansible-deprecated-no-version
-plugins/modules/ec2_vpc_nat_gateway_info.py pylint:ansible-deprecated-no-version
 plugins/modules/ec2_vpc_peering_info.py pylint:ansible-deprecated-no-version
 plugins/modules/ec2_vpc_route_table_info.py pylint:ansible-deprecated-no-version
 plugins/modules/ec2_vpc_vgw_info.py pylint:ansible-deprecated-no-version
