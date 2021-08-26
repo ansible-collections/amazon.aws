@@ -203,7 +203,7 @@ def create_or_update_user(connection, module):
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Unable to create user")
     else:
-        changed = update_user_tags(connection, module, params['UserName'], user)
+        changed = update_user_tags(connection, module, params['UserName'])
 
     # Manage managed policies
     current_attached_policies = get_attached_policy_list(connection, module, params['UserName'])
@@ -359,11 +359,10 @@ def delete_user_login_profile(connection, module, user_name):
         module.fail_json_aws(e, msg="Unable to delete login profile for user {0}".format(user_name))
 
 
-def update_user_tags(connection, module, user_name, user):
-    new_tags = module.params.get('Tags')
+def update_user_tags(connection, module, user_name):
+    new_tags = module.params.get('tags')
     if new_tags is None:
         return False
-    new_tags = boto3_tag_list_to_ansible_dict(new_tags)
 
     purge_tags = module.params.get('purge_tags')
 
