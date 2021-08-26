@@ -358,6 +358,7 @@ def delete_user_login_profile(connection, module, user_name):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to delete login profile for user {0}".format(user_name))
 
+
 def update_user_tags(connection, module, user_name, user):
     new_tags = module.params.get('Tags')
     if new_tags is None:
@@ -384,6 +385,7 @@ def update_user_tags(connection, module, user_name, user):
 
     changed = bool(tags_to_add) or bool(tags_to_remove)
     return changed
+
 
 def main():
 
