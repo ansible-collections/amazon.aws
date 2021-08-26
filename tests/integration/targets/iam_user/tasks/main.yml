@@ -166,6 +166,27 @@
           - '"TagA" in iam_user.iam_user.tags'
           - iam_user.iam_user.tags.TagA == "ValueA"
 
+  - name: 'Remove Tag (check mode)'
+    iam_user:
+      name: '{{ test_user }}'
+      state: present
+    check_mode: yes
+    register: iam_user
+    - assert:
+      that:
+          - iam_user is changed
+
+  - name: 'Remove Tag'
+    iam_user:
+      name: '{{ test_user }}'
+      state: present
+    register: iam_user
+    - assert:
+      that:
+          - iam_user is changed
+          - iam_user.user_name == test_user
+          - iam_user.tags | length == 0
+
   # ===========================================
   # Test Managed Policy management
   #
