@@ -1,0 +1,135 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  collections:
+    - amazon.aws
+    - community.aws
+  block:
+
+  - name: 'List all available services (Check Mode)'
+    ec2_vpc_endpoint_service_info:
+    check_mode: True
+    register: services_check
+
+  - name: 'Verify services (Check Mode)'
+    vars:
+      first_service: '{{ services_check.service_details[0] }}'
+    assert:
+      that:
+      - services_check is successful
+      - services_check is not changed
+      - '"service_names" in services_check'
+      - '"service_details" in services_check'
+      - '"acceptance_required" in first_service'
+      - '"availability_zones" in first_service'
+      - '"base_endpoint_dns_names" in first_service'
+      - '"manages_vpc_endpoints" in first_service'
+      - '"owner" in first_service'
+      - '"private_dns_name" in first_service'
+      - '"private_dns_name_verification_state" in first_service'
+      - '"service_id" in first_service'
+      - '"service_name" in first_service'
+      - '"service_type" in first_service'
+      - '"tags" in first_service'
+      - '"vpc_endpoint_policy_supported" in first_service'
+
+  - name: 'List all available services'
+    ec2_vpc_endpoint_service_info:
+    register: services_info
+
+  - name: 'Verify services'
+    vars:
+      first_service: '{{ services_info.service_details[0] }}'
+    assert:
+      that:
+      - services_info is successful
+      - services_info is not changed
+      - '"service_names" in services_info'
+      - '"service_details" in services_info'
+      - '"acceptance_required" in first_service'
+      - '"availability_zones" in first_service'
+      - '"base_endpoint_dns_names" in first_service'
+      - '"manages_vpc_endpoints" in first_service'
+      - '"owner" in first_service'
+      - '"private_dns_name" in first_service'
+      - '"private_dns_name_verification_state" in first_service'
+      - '"service_id" in first_service'
+      - '"service_name" in first_service'
+      - '"service_type" in first_service'
+      - '"tags" in first_service'
+      - '"vpc_endpoint_policy_supported" in first_service'
+
+  - name: 'Limit services by name'
+    ec2_vpc_endpoint_service_info:
+      service_names: '{{ search_service_names }}'
+    register: services_info
+
+  - name: 'Verify services'
+    vars:
+      first_service: '{{ services_info.service_details[0] }}'
+      # The same service sometimes pop up twice. s3 for example has
+      # s3.us-east-1.amazonaws.com and s3.us-east-1.vpce.amazonaws.com which are
+      # part of com.amazonaws.us-east-1.s3 so we need to run the results through
+      # the unique filter to know if we've got what we think we have
+      unique_names: '{{ services_info.service_names | unique | list }}'
+      unique_detail_names: '{{ services_info.service_details | map(attribute="service_name") | unique | list }}'
+    assert:
+      that:
+      - services_info is successful
+      - services_info is not changed
+      - '"service_names" in services_info'
+      - (unique_names | length) == (search_service_names | length)
+      - (unique_detail_names | length ) == (search_service_names | length)
+      - (unique_names | difference(search_service_names) | length) == 0
+      - (unique_detail_names | difference(search_service_names) | length) == 0
+      - '"service_details" in services_info'
+      - '"acceptance_required" in first_service'
+      - '"availability_zones" in first_service'
+      - '"base_endpoint_dns_names" in first_service'
+      - '"manages_vpc_endpoints" in first_service'
+      - '"owner" in first_service'
+      - '"private_dns_name" in first_service'
+      - '"private_dns_name_verification_state" in first_service'
+      - '"service_id" in first_service'
+      - '"service_name" in first_service'
+      - '"service_type" in first_service'
+      - '"tags" in first_service'
+      - '"vpc_endpoint_policy_supported" in first_service'
+
+  - name: 'Grab single service details to test filters'
+    set_fact:
+      example_service: '{{ services_info.service_details[0] }}'
+
+  - name: 'Limit services by filter'
+    ec2_vpc_endpoint_service_info:
+      filters:
+        service-name: '{{ example_service.service_name }}'
+    register: filtered_service
+
+  - name: 'Verify services'
+    vars:
+      first_service: '{{ filtered_service.service_details[0] }}'
+    assert:
+      that:
+      - filtered_service is successful
+      - filtered_service is not changed
+      - '"service_names" in filtered_service'
+      - filtered_service.service_names | length == 1
+      - '"service_details" in filtered_service'
+      - filtered_service.service_details | length == 1
+      - '"acceptance_required" in first_service'
+      - '"availability_zones" in first_service'
+      - '"base_endpoint_dns_names" in first_service'
+      - '"manages_vpc_endpoints" in first_service'
+      - '"owner" in first_service'
+      - '"private_dns_name" in first_service'
+      - '"private_dns_name_verification_state" in first_service'
+      - '"service_id" in first_service'
+      - '"service_name" in first_service'
+      - '"service_type" in first_service'
+      - '"tags" in first_service'
+      - '"vpc_endpoint_policy_supported" in first_service'

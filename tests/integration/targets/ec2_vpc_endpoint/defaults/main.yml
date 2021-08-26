@@ -1,0 +1,7 @@
+vpc_name: '{{ resource_prefix }}-vpc'
+vpc_seed: '{{ resource_prefix }}'
+vpc_cidr: 10.{{ 256 | random(seed=vpc_seed) }}.22.0/24
+
+# S3 and EC2 should generally be available...
+endpoint_service_a: com.amazonaws.{{ aws_region }}.s3
+endpoint_service_b: com.amazonaws.{{ aws_region }}.ec2
