@@ -54,7 +54,6 @@ from ansible.module_utils.urls import SSLValidationError
 from ansible.plugins.lookup import LookupBase
 
 
-
 class LookupModule(LookupBase):
     def run(self, terms, variables, **kwargs):
         if "ipv6_prefixes" in kwargs and kwargs["ipv6_prefixes"]:
