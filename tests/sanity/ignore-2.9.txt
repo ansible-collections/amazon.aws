@@ -21,3 +21,4 @@ plugins/modules/ec2_vpc_route_table_info.py pylint:ansible-deprecated-no-version
 plugins/modules/ec2_vpc_subnet_info.py pylint:ansible-deprecated-no-version  # We use dates for deprecations, Ansible 2.9 only supports this for compatability
 plugins/modules/ec2_vpc_endpoint.py pylint:ansible-deprecated-no-version
 plugins/modules/ec2_vpc_endpoint_info.py pylint:ansible-deprecated-no-version
+plugins/modules/ec2_vpc_nat_gateway_info.py pylint:ansible-deprecated-no-version
