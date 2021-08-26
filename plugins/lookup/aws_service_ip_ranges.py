@@ -67,8 +67,8 @@ def valid_cidr(ip_address):
     """
     if NETADDR_LIBRARY_IMPORT_ERROR:
         raise_from(
-        AnsibleError('netaddr must be installed to use this plugin'),
-        NETADDR_LIBRARY_IMPORT_ERROR)
+            AnsibleError('netaddr must be installed to use this plugin'),
+            NETADDR_LIBRARY_IMPORT_ERROR)
     try:
         netaddr.IPNetwork(ip_address)
     except netaddr.core.AddrFormatError as e:
@@ -81,7 +81,7 @@ def valid_cidr(ip_address):
 
 class LookupModule(LookupBase):
     def run(self, terms, variables, **kwargs):
-        if "ipv6_prefix" in kwargs and kwargs["ipv6_prefix"]:
+        if "ipv6_prefixes" in kwargs and kwargs["ipv6_prefixes"]:
             prefixes_label = "ipv6_prefixes"
             ip_prefix_label = "ipv6_prefix"
         else:
