@@ -54,33 +54,6 @@ from ansible.module_utils.urls import SSLValidationError
 from ansible.plugins.lookup import LookupBase
 
 
-def valid_cidr(ip_address):
-    """
-    Validate IP address
-    """
-    try:
-        netaddr.IPNetwork(ip_address)
-    except netaddr.core.AddrFormatError as e:
-        raise AnsibleError("Not a valid IP address: %s" % e)
-    cidr = ip_address.split('/')
-    if (len(cidr) <= 1 or cidr[1] == ''):
-        return False
-    return True
-
-
-def valid_cidr(ip_address):
-    """
-    Validate IP address
-    """
-    try:
-        netaddr.IPNetwork(ip_address)
-    except netaddr.core.AddrFormatError as e:
-        raise AnsibleError("Not a valid IP address: %s" % e)
-    cidr = ip_address.split('/')
-    if (len(cidr) <= 1 or cidr[1] == ''):
-        return False
-    return True
-
 
 class LookupModule(LookupBase):
     def run(self, terms, variables, **kwargs):
