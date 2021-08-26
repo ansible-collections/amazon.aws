@@ -42,10 +42,15 @@ _raw:
   description: comma-separated list of CIDR ranges
 """
 
-
 import json
-import netaddr
+try:
+    import netaddr
+except ImportError as imp_exc:
+    NETADDR_LIBRARY_IMPORT_ERROR = imp_exc
+else:
+    NETADDR_LIBRARY_IMPORT_ERROR = None
 
+from ansible.module_utils.six import raise_from
 from ansible.errors import AnsibleError
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible.module_utils.six.moves.urllib.error import URLError
@@ -60,20 +65,10 @@ def valid_cidr(ip_address):
     """
     Validate IP address
     """
-    try:
-        netaddr.IPNetwork(ip_address)
-    except netaddr.core.AddrFormatError as e:
-        raise AnsibleError("Not a valid IP address: %s" % e)
-    cidr = ip_address.split('/')
-    if (len(cidr) <= 1 or cidr[1] == ''):
-        return False
-    return True
-
-
-def valid_cidr(ip_address):
-    """
-    Validate IP address
-    """
+    if NETADDR_LIBRARY_IMPORT_ERROR:
+        raise_from(
+        AnsibleError('netaddr must be installed to use this plugin'),
+        NETADDR_LIBRARY_IMPORT_ERROR)
     try:
         netaddr.IPNetwork(ip_address)
     except netaddr.core.AddrFormatError as e:
