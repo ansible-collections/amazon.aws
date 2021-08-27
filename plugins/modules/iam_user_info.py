@@ -122,11 +122,9 @@ def list_iam_users_with_backoff(client, operation, **kwargs):
 
 
 def describe_iam_user(user):
-    try:
-        user['tags'] = boto3_tag_list_to_ansible_dict(user['Tags'])
-        del user['Tags']
-    except KeyError:
-        user['tags'] = {}
+    tags = boto3_tag_list_to_ansible_dict(user.pop('Tags', []))
+    user = camel_dict_to_snake_dict(user)
+    user['tags'] = tags
     return user
 
 
@@ -165,7 +163,7 @@ def list_iam_users(connection, module):
         if name:
             iam_users = [user for user in iam_users if user['UserName'] == name]
 
-    module.exit_json(iam_users=[camel_dict_to_snake_dict(describe_iam_user(user), ignore_list=['tags']) for user in iam_users])
+    module.exit_json(iam_users=[describe_iam_user(user) for user in iam_users])
 
 
 def main():
