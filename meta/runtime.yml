@@ -1,4 +1,3 @@
----
 requires_ansible: '>=2.9.10'
 action_groups:
   aws:
@@ -21,7 +20,6 @@ action_groups:
   - ec2_elb_facts
   - ec2_lc_facts
   - ec2_placement_group_facts
-  - ec2_vpc_igw_facts
   - ec2_vpc_nacl_facts
   - ec2_vpc_peering_facts
   - ec2_vpc_route_table_facts
@@ -124,8 +122,6 @@ action_groups:
   - ec2_transit_gateway
   - ec2_transit_gateway_info
   - ec2_vpc_egress_igw
-  - ec2_vpc_igw
-  - ec2_vpc_igw_info
   - ec2_vpc_nacl
   - ec2_vpc_nacl_info
   - ec2_vpc_peer
@@ -342,11 +338,11 @@ plugin_routing:
     ec2_vpc_endpoint_service_info:
       redirect: amazon.aws.ec2_vpc_endpoint_service_info
     ec2_vpc_igw_facts:
-      deprecation:
-        removal_date: 2021-12-01
-        warning_text: >-
-          ec2_vpc_igw_facts was renamed in Ansible 2.9 to ec2_vpc_igw_info.
-          Please update your tasks.
+      redirect: amazon.aws.ec2_vpc_igw_facts
+    ec2_vpc_igw:
+      redirect: amazon.aws.ec2_vpc_igw
+    ec2_vpc_igw_info:
+      redirect: amazon.aws.ec2_vpc_igw_info
     ec2_vpc_nacl_facts:
       deprecation:
         removal_date: 2021-12-01
