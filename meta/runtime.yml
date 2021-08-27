@@ -24,7 +24,6 @@ action_groups:
   - ec2_vpc_endpoint_facts
   - ec2_vpc_igw_facts
   - ec2_vpc_nacl_facts
-  - ec2_vpc_nat_gateway_facts
   - ec2_vpc_peering_facts
   - ec2_vpc_route_table_facts
   - ec2_vpc_vgw_facts
@@ -133,8 +132,6 @@ action_groups:
   - ec2_vpc_igw_info
   - ec2_vpc_nacl
   - ec2_vpc_nacl_info
-  - ec2_vpc_nat_gateway
-  - ec2_vpc_nat_gateway_info
   - ec2_vpc_peer
   - ec2_vpc_peering_info
   - ec2_vpc_route_table
@@ -226,7 +223,6 @@ action_groups:
   - wafv2_rule_group_info
   - wafv2_web_acl
   - wafv2_web_acl_info
-
 plugin_routing:
   modules:
     aws_acm_facts:
@@ -305,7 +301,7 @@ plugin_routing:
     ec2_instance:
       redirect: amazon.aws.ec2_instance
     ec2_instance_facts:
-        redirect: amazon.aws.ec2_instance_info
+      redirect: amazon.aws.ec2_instance_info
     ec2_instance_info:
       redirect: amazon.aws.ec2_instance_info
     ec2_eip_facts:
@@ -359,13 +355,6 @@ plugin_routing:
         removal_date: 2021-12-01
         warning_text: >-
           ec2_vpc_nacl_facts was renamed in Ansible 2.9 to ec2_vpc_nacl_info.
-          Please update your tasks.
-    ec2_vpc_nat_gateway_facts:
-      deprecation:
-        removal_date: 2021-12-01
-        warning_text: >-
-          ec2_vpc_nat_gateway_facts was renamed in Ansible 2.9 to
-          ec2_vpc_nat_gateway_info.
           Please update your tasks.
     ec2_vpc_peering_facts:
       deprecation:
@@ -453,9 +442,9 @@ plugin_routing:
       deprecation:
         removal_version: 3.0.0
         warning_text: >-
-            The iam module is based upon a deprecated version of the AWS SDKs
-            and is deprecated in favor of the iam_user, iam_group and iam_role modules.
-            Please update your tasks.
+          The iam module is based upon a deprecated version of the AWS SDKs
+          and is deprecated in favor of the iam_user, iam_group and iam_role modules.
+          Please update your tasks.
     iam_cert_facts:
       deprecation:
         removal_date: 2021-12-01
@@ -492,9 +481,9 @@ plugin_routing:
       deprecation:
         removal_version: 3.0.0
         warning_text: >-
-            The rds module is based upon a deprecated version of the AWS SDKs
-            and is deprecated in favor of the rds_instance and rds_snapshot modules.
-            Please update your tasks.
+          The rds module is based upon a deprecated version of the AWS SDKs
+          and is deprecated in favor of the rds_instance and rds_snapshot modules.
+          Please update your tasks.
     rds_instance_facts:
       deprecation:
         removal_date: 2021-12-01
@@ -519,3 +508,9 @@ plugin_routing:
         warning_text: >-
           route53_facts was renamed in Ansible 2.9 to route53_info.
           Please update your tasks.
+    ec2_vpc_nat_gateway_facts:
+      redirect: amazon.aws.ec2_vpc_nat_gateway_facts
+    ec2_vpc_nat_gateway:
+      redirect: amazon.aws.ec2_vpc_nat_gateway
+    ec2_vpc_nat_gateway_info:
+      redirect: amazon.aws.ec2_vpc_nat_gateway_info
