@@ -21,7 +21,6 @@ action_groups:
   - ec2_elb_facts
   - ec2_lc_facts
   - ec2_placement_group_facts
-  - ec2_vpc_endpoint_facts
   - ec2_vpc_igw_facts
   - ec2_vpc_nacl_facts
   - ec2_vpc_peering_facts
@@ -125,9 +124,6 @@ action_groups:
   - ec2_transit_gateway
   - ec2_transit_gateway_info
   - ec2_vpc_egress_igw
-  - ec2_vpc_endpoint
-  - ec2_vpc_endpoint_info
-  - ec2_vpc_endpoint_service_info
   - ec2_vpc_igw
   - ec2_vpc_igw_info
   - ec2_vpc_nacl
@@ -338,12 +334,13 @@ plugin_routing:
           ec2_placement_group_info.
           Please update your tasks.
     ec2_vpc_endpoint_facts:
-      deprecation:
-        removal_date: 2021-12-01
-        warning_text: >-
-          ec2_vpc_endpoint_facts was renamed in Ansible 2.9 to
-          ec2_vpc_endpoint_info.
-          Please update your tasks.
+      redirect: amazon.aws.ec2_vpc_endpoint_facts
+    ec2_vpc_endpoint:
+      redirect: amazon.aws.ec2_vpc_endpoint
+    ec2_vpc_endpoint_info:
+      redirect: amazon.aws.ec2_vpc_endpoint_info
+    ec2_vpc_endpoint_service_info:
+      redirect: amazon.aws.ec2_vpc_endpoint_service_info
     ec2_vpc_igw_facts:
       deprecation:
         removal_date: 2021-12-01
@@ -370,6 +367,12 @@ plugin_routing:
           ec2_vpc_route_table_facts was renamed in Ansible 2.9 to
           ec2_vpc_route_table_info.
           Please update your tasks.
+    ec2_vpc_nat_gateway_facts:
+      redirect: amazon.aws.ec2_vpc_nat_gateway_facts
+    ec2_vpc_nat_gateway:
+      redirect: amazon.aws.ec2_vpc_nat_gateway
+    ec2_vpc_nat_gateway_info:
+      redirect: amazon.aws.ec2_vpc_nat_gateway_info
     ec2_vpc_vgw_facts:
       deprecation:
         removal_date: 2021-12-01
@@ -508,9 +511,3 @@ plugin_routing:
         warning_text: >-
           route53_facts was renamed in Ansible 2.9 to route53_info.
           Please update your tasks.
-    ec2_vpc_nat_gateway_facts:
-      redirect: amazon.aws.ec2_vpc_nat_gateway_facts
-    ec2_vpc_nat_gateway:
-      redirect: amazon.aws.ec2_vpc_nat_gateway
-    ec2_vpc_nat_gateway_info:
-      redirect: amazon.aws.ec2_vpc_nat_gateway_info
