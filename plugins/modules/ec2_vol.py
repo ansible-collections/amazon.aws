@@ -92,7 +92,7 @@ options:
     version_added: 1.5.0
   modify_volume:
     description:
-      - The volume won't be modify unless this key is C(true).
+      - The volume won't be modified unless this key is C(true).
     type: bool
     default: false
     version_added: 1.4.0
