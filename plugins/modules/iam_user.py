@@ -181,9 +181,10 @@ def create_or_update_user(connection, module):
 
     params = dict()
     params['UserName'] = module.params.get('name')
-    params["Tags"] = module.params.get('tags')
     managed_policies = module.params.get('managed_policies')
     purge_policies = module.params.get('purge_policies')
+    if module.params.get('tags') is not None:
+        params["Tags"] = ansible_dict_to_boto3_tag_list(module.params.get('tags'))
     changed = False
     if managed_policies:
         managed_policies = convert_friendly_names_to_arns(connection, module, managed_policies)
