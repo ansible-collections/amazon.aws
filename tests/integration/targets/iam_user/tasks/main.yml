@@ -166,6 +166,19 @@
           - '"TagA" in iam_user.iam_user.user.tags'
           - iam_user.iam_user.user.tags.TagA == "ValueA"
 
+  - name: 'Create user without Tag (no change)'
+    iam_user:
+      name: '{{ test_user }}'
+      state: present
+    register: iam_user
+  - assert:
+      that:
+          - iam_user is not changed
+          - iam_user.iam_user.user.user_name == test_user
+          - iam_user.iam_user.user.tags | length == 1
+          - '"TagA" in iam_user.iam_user.user.tags'
+          - iam_user.iam_user.user.tags.TagA == "ValueA"
+
   - name: 'Remove Tag (check mode)'
     iam_user:
       name: '{{ test_user }}'
