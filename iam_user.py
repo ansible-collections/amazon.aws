@@ -244,7 +244,7 @@ def create_or_update_user(connection, module):
     # Get the user again
     user = get_user(connection, module, params['UserName'])
 
-    module.exit_json(changed=changed, iam_user={'user': camel_dict_to_snake_dict(user['User'], ignore_list=["tags"])})
+    module.exit_json(changed=changed, iam_user=user)
 
 
 def destroy_user(connection, module):
@@ -331,11 +331,9 @@ def get_user(connection, module, name):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to get user {0}".format(name))
 
-    try:
-        user['User']['tags'] = boto3_tag_list_to_ansible_dict(user['User']['Tags'])
-        del user['User']['Tags']
-    except KeyError:
-        user['User']['tags'] = {}
+    tags = boto3_tag_list_to_ansible_dict(user['User'].pop('Tags', []))
+    user = camel_dict_to_snake_dict(user)
+    user['user']['tags'] = tags
     return user
 
 
@@ -361,7 +359,7 @@ def delete_user_login_profile(connection, module, user_name):
 
 def update_user_tags(connection, module, params, user):
     user_name = params['UserName']
-    existing_tags = user['User']['tags']
+    existing_tags = user['user']['tags']
     new_tags = params.get('Tags')
     if new_tags is None:
         return False
