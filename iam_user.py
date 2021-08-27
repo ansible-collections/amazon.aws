@@ -244,7 +244,7 @@ def create_or_update_user(connection, module):
     # Get the user again
     user = get_user(connection, module, params['UserName'])
 
-    module.exit_json(changed=changed, iam_user=camel_dict_to_snake_dict(user, ignore_list=["tags"]))
+    module.exit_json(changed=changed, iam_user={'user': camel_dict_to_snake_dict(user['User'], ignore_list=["tags"])})
 
 
 def destroy_user(connection, module):
