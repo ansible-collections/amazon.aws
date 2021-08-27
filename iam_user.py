@@ -332,10 +332,10 @@ def get_user(connection, module, name):
         module.fail_json_aws(e, msg="Unable to get user {0}".format(name))
     
     try:
-        user['tags'] = boto3_tag_list_to_ansible_dict(user['Tags'])
-        del user['Tags']
+        user['User']['tags'] = boto3_tag_list_to_ansible_dict(user['User']['Tags'])
+        del user['User']['Tags']
     except KeyError:
-        user['tags'] = {}
+        user['User']['tags'] = {}
     return user
 
 
@@ -361,7 +361,7 @@ def delete_user_login_profile(connection, module, user_name):
 
 def update_user_tags(connection, module, params, user):
     user_name = params['UserName']
-    existing_tags = user['tags']
+    existing_tags = user['User']['tags']
     new_tags = params.get('Tags')
     if new_tags is None:
         return False
