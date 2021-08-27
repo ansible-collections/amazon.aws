@@ -330,7 +330,7 @@ def get_user(connection, module, name):
         return None
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to get user {0}".format(name))
-    
+
     try:
         user['User']['tags'] = boto3_tag_list_to_ansible_dict(user['User']['Tags'])
         del user['User']['Tags']
@@ -366,7 +366,7 @@ def update_user_tags(connection, module, params, user):
     if new_tags is None:
         return False
     new_tags = boto3_tag_list_to_ansible_dict(new_tags)
-    
+
     purge_tags = module.params.get('purge_tags')
 
     tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, new_tags, purge_tags=purge_tags)
