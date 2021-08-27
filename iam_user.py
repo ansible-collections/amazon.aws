@@ -335,7 +335,7 @@ def get_user(connection, module, name):
 
 def get_user_tags(connection, module, user_name):
     try:
-        return boto3_tag_list_to_ansible_dict(connection.list_user_tags(UserName=user_name, aws_retry=True)['Tags'])
+        return boto3_tag_list_to_ansible_dict(connection.list_user_tags(UserName=user_name)['Tags'])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to list tags for user {0}".format(user_name))
 
@@ -368,7 +368,7 @@ def update_user_tags(connection, module, user_name):
     purge_tags = module.params.get('purge_tags')
 
     try:
-        existing_tags = boto3_tag_list_to_ansible_dict(connection.list_user_tags(UserName=user_name, aws_retry=True)['Tags'])
+        existing_tags = boto3_tag_list_to_ansible_dict(connection.list_user_tags(UserName=user_name)['Tags'])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError, KeyError):
         existing_tags = {}
 
@@ -377,9 +377,9 @@ def update_user_tags(connection, module, user_name):
     if not module.check_mode:
         try:
             if tags_to_remove:
-                connection.untag_user(UserName=user_name, TagKeys=tags_to_remove, aws_retry=True)
+                connection.untag_user(UserName=user_name, TagKeys=tags_to_remove)
             if tags_to_add:
-                connection.tag_user(UserName=user_name, Tags=ansible_dict_to_boto3_tag_list(tags_to_add), aws_retry=True)
+                connection.tag_user(UserName=user_name, Tags=ansible_dict_to_boto3_tag_list(tags_to_add))
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg='Unable to set tags for user %s' % user_name)
 
