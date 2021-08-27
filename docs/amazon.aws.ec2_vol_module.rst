@@ -278,7 +278,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>The volume won&#x27;t be modify unless this key is <code>true</code>.</div>
+                        <div>The volume won&#x27;t be modified unless this key is <code>true</code>.</div>
                 </td>
             </tr>
             <tr>
