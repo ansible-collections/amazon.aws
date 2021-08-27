@@ -166,7 +166,7 @@
           - '"TagA" in iam_user.iam_user.user.tags'
           - iam_user.iam_user.user.tags.TagA == "ValueA"
 
-  - name: 'Extend Tags (no change)'
+  - name: 'Extend Tags'
     iam_user:
       name: '{{ test_user }}'
       state: present
@@ -199,9 +199,7 @@
       that:
           - iam_user is not changed
           - iam_user.iam_user.user.user_name == test_user
-          - iam_user.iam_user.user.tags | length == 1
-          - '"TagA" in iam_user.iam_user.user.tags'
-          - iam_user.iam_user.user.tags.TagA == "ValueA"
+          - iam_user.iam_user.user.tags | length == 4
 
   - name: 'Remove all Tags (check mode)'
     iam_user:
@@ -229,7 +227,7 @@
           - '"TagA" in iam_user.iam_user.user.tags'
           - iam_user.iam_user.user.tags.TagA == "ValueA"
 
-  - name: 'Change Tags'
+  - name: 'Change Tag'
     iam_user:
       name: '{{ test_user }}'
       state: present
