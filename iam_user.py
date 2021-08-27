@@ -204,7 +204,7 @@ def create_or_update_user(connection, module):
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Unable to create user")
     else:
-        changed = update_user_tags(connection, module, params['UserName'])
+        changed = update_user_tags(connection, module, params, user)
 
     # Manage managed policies
     current_attached_policies = get_attached_policy_list(connection, module, params['UserName'])
@@ -243,7 +243,6 @@ def create_or_update_user(connection, module):
 
     # Get the user again
     user = get_user(connection, module, params['UserName'])
-    user['tags'] = get_user_tags(connection, module, params['UserName'])
 
     module.exit_json(changed=changed, iam_user=camel_dict_to_snake_dict(user, ignore_list=["tags"]))
 
@@ -326,18 +325,18 @@ def get_user(connection, module, name):
     params['UserName'] = name
 
     try:
-        return connection.get_user(**params)
+        user = connection.get_user(**params)
     except is_boto3_error_code('NoSuchEntity'):
         return None
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to get user {0}".format(name))
-
-
-def get_user_tags(connection, module, user_name):
+    
     try:
-        return boto3_tag_list_to_ansible_dict(connection.list_user_tags(UserName=user_name)['Tags'])
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Unable to list tags for user {0}".format(user_name))
+        user['tags'] = boto3_tag_list_to_ansible_dict(user['Tags'])
+        del user['Tags']
+    except KeyError:
+        user['tags'] = {}
+    return user
 
 
 def get_attached_policy_list(connection, module, name):
@@ -360,17 +359,15 @@ def delete_user_login_profile(connection, module, user_name):
         module.fail_json_aws(e, msg="Unable to delete login profile for user {0}".format(user_name))
 
 
-def update_user_tags(connection, module, user_name):
-    new_tags = module.params.get('tags')
+def update_user_tags(connection, module, params, user):
+    user_name = params['UserName']
+    existing_tags = user['tags']
+    new_tags = params.get('Tags')
     if new_tags is None:
         return False
-
+    new_tags = boto3_tag_list_to_ansible_dict(new_tags)
+    
     purge_tags = module.params.get('purge_tags')
-
-    try:
-        existing_tags = boto3_tag_list_to_ansible_dict(connection.list_user_tags(UserName=user_name)['Tags'])
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError, KeyError):
-        existing_tags = {}
 
     tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, new_tags, purge_tags=purge_tags)
 
