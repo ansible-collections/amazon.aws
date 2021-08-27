@@ -121,6 +121,15 @@ def list_iam_users_with_backoff(client, operation, **kwargs):
     return paginator.paginate(**kwargs).build_full_result()
 
 
+def describe_user(user):
+    try:
+        user['tags'] = boto3_tag_list_to_ansible_dict(user['Tags'])
+        del user['Tags']
+    except KeyError:
+        user['tags'] = {}
+    return user
+
+
 def list_iam_users(connection, module):
 
     name = module.params.get('name')
@@ -134,13 +143,7 @@ def list_iam_users(connection, module):
         if name:
             params['UserName'] = name
         try:
-            user = connection.get_user(**params)['User']
-            try:
-                user['tags'] = boto3_tag_list_to_ansible_dict(user['Tags'])
-                del user['Tags']
-            except KeyError:
-                user['tags'] = {}
-            iam_users.append(user)
+            iam_users.append(connection.get_user(**params)['User'])
         except (ClientError, BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't get IAM user info for user %s" % name)
 
@@ -162,7 +165,7 @@ def list_iam_users(connection, module):
         if name:
             iam_users = [user for user in iam_users if user['UserName'] == name]
 
-    module.exit_json(iam_users=[camel_dict_to_snake_dict(user, ignore_list=['tags']) for user in iam_users])
+    module.exit_json(iam_users=[camel_dict_to_snake_dict(describe_user(user), ignore_list=['tags']) for user in iam_users])
 
 
 def main():
