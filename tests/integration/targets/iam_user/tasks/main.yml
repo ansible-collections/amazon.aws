@@ -97,7 +97,7 @@
         - test_iam_user.path == '{{ test_path }}'
         - test_iam_user.user_id is not none
         - test_iam_user.user_name == '{{ test_user }}'
-        - iam_user_info.iam_users[0].tags | length == 0
+        - test_iam_user.tags | length == 0
 
   - name: get info on IAM user(s)
     iam_user_info:
