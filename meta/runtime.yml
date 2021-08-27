@@ -55,6 +55,9 @@ action_groups:
   - ec2_vpc_igw_facts
   - ec2_vpc_igw
   - ec2_vpc_igw_info
+  - ec2_vpc_route_table_facts
+  - ec2_vpc_route_table
+  - ec2_vpc_route_table_info
 plugin_routing:
   modules:
     aws_az_facts:
@@ -143,4 +146,11 @@ plugin_routing:
         removal_date: 2021-12-01
         warning_text: >-
             ec2_vpc_igw_facts was renamed in Ansible 2.9 to ec2_vpc_igw_info.
+            Please update your tasks.
+    ec2_vpc_route_table_facts:
+      deprecation:
+        removal_date: 2021-12-01
+        warning_text: >-
+            ec2_vpc_route_table_facts was renamed in Ansible 2.9 to
+            ec2_vpc_route_table_info.
             Please update your tasks.
