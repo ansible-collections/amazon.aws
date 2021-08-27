@@ -2,7 +2,9 @@
 # This file is part of Ansible
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import absolute_import, division, print_function
 __metaclass__ = type
+
 
 DOCUMENTATION = '''
 ---
@@ -11,11 +13,13 @@ version_added: 2.0.0
 short_description: request, stop, reboot or cancel spot instance
 description:
     - Creates or cancels spot instance requests.
+author:
+  - Sri Rachana Achyuthuni (@srirachanaachyuthuni)
 options:
   zone_group:
     description:
       - Name for logical grouping of spot requests.
-      - All spot instances in the request are launched in the same availability zone. 
+      - All spot instances in the request are launched in the same availability zone.
     type: str
   client_token:
     description: The idempotency token you provided when you launched the instance, if applicable.
@@ -30,12 +34,13 @@ options:
       - The behavior when a Spot Instance is interrupted.
     choices: [ "hibernate", "stop", "terminate" ]
     type: str
+    default: terminate
   launch_group:
     description:
       - Launch group for spot requests, see U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/how-spot-instances-work.html#spot-launch-group).
     type: str
   launch_specification:
-    description: 
+    description:
       - The launch specification.
     type: dict
     suboptions:
@@ -62,7 +67,7 @@ options:
         type: str
       user_data:
         description:
-          - Opaque blob of data which is made available to the EC2 instance.
+          - The base64-encoded user data for the instance. User data is limited to 16 KB.
         type: str
       block_device_mappings:
         description:
@@ -76,11 +81,12 @@ options:
             type: str
           virtual_name:
             description:
-              - The virtual device name 
+              - The virtual device name
             type: str
           ebs:
             description:
-              - Parameters used to automatically set up EBS volumes when the instance is launched, see U(https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.request_spot_instances)
+              - Parameters used to automatically set up EBS volumes when the instance is launched,
+                see U(https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.request_spot_instances)
             type: dict
           no_device:
             description:
@@ -108,7 +114,7 @@ options:
             type: str
       image_id:
         description:
-          -  The ID of the AMI.
+          - The ID of the AMI.
         type: str
       instance_type:
         description:
@@ -131,15 +137,16 @@ options:
             type: bool
           delete_on_termination:
             description:
-              - If set to true , the interface is deleted when the instance is terminated. You can specify true only if creating a new network interface when launching an instance.
-              type: bool
+              - If set to true , the interface is deleted when the instance is terminated.
+                You can specify true only if creating a new network interface when launching an instance.
+            type: bool
           description:
             description:
               - The description of the network interface. Applies only if creating a network interface when launching an instance.
             type: str
           device_index:
             description:
-              - The position of the network interface in the attachment order. A primary network interface has a device index of 0. 
+              - The position of the network interface in the attachment order. A primary network interface has a device index of 0.
               - If you specify a network interface when launching an instance, you must specify the device index.
             type: int
           groups:
@@ -156,6 +163,10 @@ options:
               - One or more IPv6 addresses to assign to the network interface.
             type: list
             elements: dict
+            suboptions:
+              ipv6address:
+                description: The IPv6 address.
+                type: str
           network_interface_id:
             description:
               - The ID of the network interface.
@@ -169,7 +180,7 @@ options:
               - One or more private IPv4 addresses to assign to the network interface
             type: list
             elements: dict
-          secondary_private_address_count:
+          secondary_private_ip_address_count:
             description:
               - The number of secondary private IPv4 addresses.
             type: int
@@ -198,7 +209,7 @@ options:
           ipv4_prefix_count:
             description:
               - The number of IPv4 delegated prefixes to be automatically assigned to the network interface
-              type: int
+            type: int
           ipv6_prefixes:
             description:
               - One or more IPv6 delegated prefixes to be assigned to the network interface
@@ -221,35 +232,33 @@ options:
             description:
               - The name of the placement group.
             type: str
-            tenancy:
+          tenancy:
+            description:
               - the tenancy of the host
             type: str
-            choices: ['default'|'dedicated'|'host']
+            choices: ['default', 'dedicated', 'host']
+            default: default
       ramdisk_id:
         description:
           - The ID of the RAM disk.
         type: str
       monitoring:
         description:
-          -Indicates whether basic or detailed monitoring is enabled for the instance.
+          - Indicates whether basic or detailed monitoring is enabled for the instance.
         type: dict
         suboptions:
           enabled:
             description:
               - Indicates whether detailed monitoring is enabled. Otherwise, basic monitoring is enabled.
             type: bool
-            default:false
-      user_data:
-        description:
-          - The Base64-encoded user data for the instance. User data is limited to 16 KB.
-        type: str
+            default: false
   state:
     description:
       - Whether the spot request should be created or removed.
       - When I(state=present), I(launch_specification) is required.
       - When I(state=absent), I(spot_instance_request_ids) is required.
     default: 'present'
-    choices: ['absent', 'present']
+    choices: [ 'absent', 'present' ]
     type: str
   spot_price:
     description:
@@ -260,27 +269,20 @@ options:
     description:
       - The type of spot request.
       - After being interrupted a C(persistent) spot instance will be started once there is capacity to fill the request again.
-    default: "one-time"
+    default: 'one-time'
     choices: [ "one-time", "persistent" ]
     type: str
-  valid_from:
-    description:
-      -  The start date of the request. If this is a one-time request, the request becomes active at this date and time and remains active until all instances launch, the request expires, or the request is canceled.
-      -  If the request is persistent, the request becomes active at this date and time and remains active until it expires or is canceled.      
-  valid_until:
-    description:
-      - The end date of the request
   tags:
     description:
       - A dictionary of key-value pairs for tagging the Spot Instance request on creation.
-    default: {}
     type: dict
   spot_instance_request_ids:
     description:
-        - List of strings with IDs of spot requests to be cancelled
+      - List of strings with IDs of spot requests to be cancelled
     default: []
     type: list
- extends_documentation_fragment:
+    elements: str
+extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 '''
@@ -296,34 +298,34 @@ EXAMPLES = '''
       instance_type: t2.medium
 
 - name: Spot Request Creation with more options
-ec2_spot_instance:
-  launch_specification:
-    image_id: ami-123456789
-    key_name: my-keypair
-    instance_type: t2.medium
-    subnet_id: subnet-12345678
-    block_device_mappings:
-      - device_name: /dev/sdb
-        ebs:
+  amazon.aws.ec2_spot_instance:
+    launch_specification:
+      image_id: ami-123456789
+      key_name: my-keypair
+      instance_type: t2.medium
+      subnet_id: subnet-12345678
+      block_device_mappings:
+        - device_name: /dev/sdb
+          ebs:
+            delete_on_termination: True
+            volume_type: gp3
+            volume_size: 5
+        - device_name: /dev/sdc
+          ebs:
+            delete_on_termination: True
+            volume_type: io2
+            volume_size: 30
+      network_interfaces:
+        - associate_public_ip_address: False
           delete_on_termination: True
-          volume_type: gp3
-          volume_size: 5
-      - device_name: /dev/sdc
-        ebs:
-          delete_on_termination: True
-          volume_type: io2
-          volume_size: 30
-    network_interfaces:
-      - associate_public_ip_address: False
-        delete_on_termination: True
-        device_index: 0
-    placement:
-      availability_zone: us-west-2a
-    monitoring:
-      enabled: False
-  spot_price: 0.002
-  tags:
-    Environment: Testing
+          device_index: 0
+      placement:
+        availability_zone: us-west-2a
+      monitoring:
+        enabled: False
+    spot_price: 0.002
+    tags:
+      Environment: Testing
 
 - name: Spot Request Termination
   amazon.aws.ec2_spot_instance:
@@ -379,7 +381,7 @@ spot_request:
         },
         "product_description": "Linux/UNIX",
         "spot_instance_request_id": "sir-1234abcd",
-        "spot_price": "0.006,
+        "spot_price": "0.00600",
         "state": "open",
         "status": {
             "code": "pending-evaluation",
@@ -519,10 +521,10 @@ def cancel_spot_instance_requests(module, connection):
             changed = True
             if module.check_mode:
                 module.exit_json(changed=changed,
-                                 msg='Would have cancelled Spot request {}'.format(spot_instance_request_ids))
+                                 msg='Would have cancelled Spot request {0}'.format(spot_instance_request_ids))
 
             connection.cancel_spot_instance_requests(aws_retry=True, SpotInstanceRequestIds=module.params.get('spot_instance_request_ids'))
-            module.exit_json(changed=changed, msg='Cancelled Spot request {}'.format(module.params.get('spot_instance_request_ids')))
+            module.exit_json(changed=changed, msg='Cancelled Spot request {0}'.format(module.params.get('spot_instance_request_ids')))
         else:
             module.exit_json(changed=changed, msg='Spot request not found or already cancelled')
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -535,15 +537,15 @@ def main():
         delete_on_termination=dict(type='bool'),
         description=dict(type='str'),
         device_index=dict(type='int'),
-        groups=dict(type='list'),
+        groups=dict(type='list', elements='str'),
         ipv6_address_count=dict(type='int'),
-        ipv6_addresses=dict(type=list, elements='dict'),
+        ipv6_addresses=dict(type='list', elements='dict', options=dict(ipv6address=dict(type='str'))),
         network_interface_id=dict(type='str'),
         private_ip_address=dict(type='str'),
         private_ip_addresses=dict(type='list', elements='dict'),
         secondary_private_ip_address_count=dict(type='int'),
         subnet_id=dict(type='str'),
-        associate_carrier_ip_address=dict(type='boolean'),
+        associate_carrier_ip_address=dict(type='bool'),
         interface_type=dict(type='str', choices=['interface', 'efa']),
         network_card_index=dict(type='int'),
         ipv4_prefixes=dict(type='list', elements='dict'),
@@ -574,14 +576,14 @@ def main():
         security_groups=dict(type='list', elements='str'),
         block_device_mappings=dict(type='list', elements='dict', options=block_device_mappings_options),
         ebs_optimized=dict(type='bool', default=False),
-        iam_instance_profile=dict(type='dict',options=iam_instance_profile_options),
+        iam_instance_profile=dict(type='dict', options=iam_instance_profile_options),
         image_id=dict(type='str'),
         instance_type=dict(type='str'),
         kernel_id=dict(type='str'),
         key_name=dict(type='str'),
         monitoring=dict(type='dict', options=monitoring_options),
         network_interfaces=dict(type='list', elements='dict', options=network_interface_options, default=[]),
-        placement=dict(type='dict', options=placement_options, default={}),
+        placement=dict(type='dict', options=placement_options),
         ramdisk_id=dict(type='str'),
         user_data=dict(type='str'),
         subnet_id=dict(type='str')
@@ -589,12 +591,11 @@ def main():
 
     argument_spec = dict(
         zone_group=dict(type='str'),
-        client_token=dict(type='str'),
+        client_token=dict(type='str', no_log=False),
         count=dict(type='int', default=1),
-        interruption=dict(type='str', default="terminate"),
+        interruption=dict(type='str', default="terminate", choices=['hibernate', 'stop', 'terminate']),
         launch_group=dict(type='str'),
         launch_specification=dict(type='dict', options=launch_specification_options),
-        request_type=dict(default='one-time', choices=["one-time", "persistent"]),
         state=dict(default='present', choices=['present', 'absent']),
         spot_price=dict(type='str'),
         spot_type=dict(default='one-time', choices=["one-time", "persistent"]),
@@ -605,10 +606,6 @@ def main():
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        mutually_exclusive=[
-            ['block_duration', 'zone_group'],
-            ['block_duration', 'launch_group'],
-        ],
         supports_check_mode=True
     )
 
