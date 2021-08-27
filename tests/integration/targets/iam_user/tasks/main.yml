@@ -146,10 +146,10 @@
   - assert:
       that:
           - iam_user is changed
-          - iam_user.iam_user.user_name == test_user
-          - iam_user.iam_user.tags | length == 1
-          - '"TagA" in iam_user.iam_user.tags'
-          - iam_user.iam_user.tags.TagA == "ValueA"
+          - iam_user.iam_user.user.user_name == test_user
+          - iam_user.iam_user.user.tags | length == 1
+          - '"TagA" in iam_user.iam_user.user.tags'
+          - iam_user.iam_user.user.tags.TagA == "ValueA"
 
   - name: 'Add Tag (no change)'
     iam_user:
@@ -161,10 +161,10 @@
   - assert:
       that:
           - iam_user is not changed
-          - iam_user.iam_user.user_name == test_user
-          - iam_user.iam_user.tags | length == 1
-          - '"TagA" in iam_user.iam_user.tags'
-          - iam_user.iam_user.tags.TagA == "ValueA"
+          - iam_user.iam_user.user.user_name == test_user
+          - iam_user.iam_user.user.tags | length == 1
+          - '"TagA" in iam_user.iam_user.user.tags'
+          - iam_user.iam_user.user.tags.TagA == "ValueA"
 
   - name: 'Remove Tag (check mode)'
     iam_user:
@@ -184,8 +184,8 @@
   - assert:
       that:
           - iam_user is changed
-          - iam_user.iam_user.user_name == test_user
-          - iam_user.iam_user.tags | length == 0
+          - iam_user.iam_user.user.user_name == test_user
+          - iam_user.iam_user.user.tags | length == 0
 
   # ===========================================
   # Test Managed Policy management
