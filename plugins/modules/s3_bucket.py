@@ -512,11 +512,8 @@ def bucket_exists(s3_client, bucket_name):
     try:
         s3_client.head_bucket(Bucket=bucket_name)
         bucket_exists = True
-    except ClientError as e:
-        if e.response['Error']['Code'] == '404':
-            bucket_exists = False
-        else:
-            raise
+    except is_boto3_error_code('404'):
+        bucket_exists = False
     return bucket_exists
 
 
