@@ -183,6 +183,7 @@
     iam_user:
       name: '{{ test_user }}'
       state: present
+      tags: {}
     check_mode: yes
     register: iam_user
   - assert:
@@ -193,6 +194,7 @@
     iam_user:
       name: '{{ test_user }}'
       state: present
+      tags: {}
     register: iam_user
   - assert:
       that:
