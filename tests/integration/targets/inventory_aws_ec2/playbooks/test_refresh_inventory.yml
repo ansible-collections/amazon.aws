@@ -13,17 +13,14 @@
           - "not groups.aws_ec2"
 
     - name: create a new host
-      ec2:
-        image: "{{ images[aws_region] }}"
+      ec2_instance:
+        image_id: "{{ images[aws_region] }}"
         exact_count: 1
-        count_tag:
-          Name: '{{ resource_prefix }}'
-        instance_tags:
-          Name: '{{ resource_prefix }}'
+        name: '{{ resource_prefix }}'
         instance_type: t2.micro
-        wait: yes
-        group_id: '{{ setup_sg.group_id }}'
+        security_groups: '{{ setup_sg.security_groups }}'
         vpc_subnet_id: '{{ setup_subnet.subnet.id }}'
+        wait: no
       register: setup_instance
 
     - meta: refresh_inventory
@@ -36,14 +33,12 @@
           - "groups.aws_ec2.0 == '{{ resource_prefix }}'"
 
     - name: remove setup ec2 instance
-      ec2:
+      ec2_instance:
         instance_type: t2.micro
         instance_ids: '{{ setup_instance.instance_ids }}'
         state: absent
-        wait: yes
-        instance_tags:
-          Name: '{{ resource_prefix }}'
-        group_id: '{{ setup_sg.group_id }}'
+        name: '{{ resource_prefix }}'
+        security_groups: '{{ setup_sg.security_groups }}'
         vpc_subnet_id: '{{ setup_subnet.subnet.id }}'
 
     - meta: refresh_inventory
@@ -56,13 +51,11 @@
 
   always:
     - name: remove setup ec2 instance
-      ec2:
+      ec2_instance:
         instance_type: t2.micro
         instance_ids: '{{ setup_instance.instance_ids }}'
         state: absent
-        wait: yes
-        instance_tags:
-          Name: '{{ resource_prefix }}'
-        group_id: '{{ setup_sg.group_id }}'
+        name: '{{ resource_prefix }}'
+        security_groups: '{{ setup_sg.security_groups }}'
         vpc_subnet_id: '{{ setup_subnet.subnet.id }}'
       ignore_errors: yes
