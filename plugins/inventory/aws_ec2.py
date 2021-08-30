@@ -693,6 +693,16 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         self.display.debug("aws_ec2 inventory filename must end with 'aws_ec2.yml' or 'aws_ec2.yaml'")
         return False
 
+
+    def build_include_filters(self):
+        if self.get_option('filters'):
+            return [self.get_option('filters')] + self.get_option('include_filters')
+        elif self.get_option('include_filters'):
+            return self.get_option('include_filters')
+        else:  # no filter
+            return [{}]
+
+
     def parse(self, inventory, loader, path, cache=True):
 
         super(InventoryModule, self).parse(inventory, loader, path)
@@ -709,7 +719,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
         # get user specifications
         regions = self.get_option('regions')
-        include_filters = [self.get_option('filters')] if self.get_option('filters') else [] + self.get_option('include_filters')
+        include_filters = self.build_include_filters()
         exclude_filters = self.get_option('exclude_filters')
         hostnames = self.get_option('hostnames')
         strict_permissions = self.get_option('strict_permissions')
