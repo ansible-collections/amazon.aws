@@ -194,20 +194,6 @@ def test_verify_file_bad_config(inventory):
     assert inventory.verify_file('not_aws_config.yml') is False
 
 
-def test_insufficient_credentials(inventory):
-    inventory._options = {
-        'aws_access_key': None,
-        'aws_secret_key': None,
-        'aws_security_token': None,
-        'aws_profile': None,
-        'iam_role_arn': None
-    }
-    with pytest.raises(AnsibleError) as error_message:
-        loader = DataLoader()
-        inventory._set_credentials(loader)
-        assert "Insufficient credentials found" in error_message
-
-
 def test_include_filters_with_no_filter(inventory):
     inventory._options = {
         'filters': {},
