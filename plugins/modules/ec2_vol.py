@@ -742,12 +742,12 @@ def main():
         if detach_vol_flag:
             volume, changed = detach_volume(module, ec2_conn, volume_dict=volume)
         elif inst is not None:
-            volume, changed = attach_volume(module, ec2_conn, volume_dict=volume, instance_dict=inst, device_name=device_name)
+            volume, vol_attached = attach_volume(module, ec2_conn, volume_dict=volume, instance_dict=inst, device_name=device_name)
 
         # Add device, volume_id and volume_type parameters separately to maintain backward compatibility
         volume_info = get_volume_info(volume, tags=final_tags)
 
-        if tags_changed:
+        if tags_changed or vol_attached:
             changed = True
 
         module.exit_json(changed=changed, volume=volume_info, device=volume_info['attachment_set']['device'],
