@@ -192,3 +192,31 @@ def test_insufficient_credentials(inventory):
 
 def test_verify_file_bad_config(inventory):
     assert inventory.verify_file('not_aws_config.yml') is False
+
+
+def test_include_filters_with_no_filter(inventory):
+    inventory._options = {
+        'filters': {},
+        'include_filters': [],
+    }
+    print(inventory.build_include_filters())
+    assert inventory.build_include_filters() == [{}]
+
+
+def test_include_filters_with_include_filters_only(inventory):
+    inventory._options = {
+        'filters': {},
+        'include_filters': [{"foo": "bar"}],
+    }
+    assert inventory.build_include_filters() == [{"foo": "bar"}]
+
+
+def test_include_filters_with_filter_and_include_filters(inventory):
+    inventory._options = {
+        'filters': {"from_filter": 1},
+        'include_filters': [{"from_include_filter": "bar"}],
+    }
+    print(inventory.build_include_filters())
+    assert inventory.build_include_filters() == [
+        {"from_filter": 1},
+        {"from_include_filter": "bar"}]
