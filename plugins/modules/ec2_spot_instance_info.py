@@ -13,6 +13,8 @@ EXAMPLES = '''
 
 RETURN = '''
 '''
+
+import q
 import time
 import datetime
 
@@ -31,10 +33,17 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_er
 
 def describe_spot_instance_requests(connection, module):
 
+    changed = True
+
+    if module.check_mode:
+        module.exit_json(changed=changed)
+
     params = {}
 
     if module.params.get('filters'):
-        params['Filters'] = module.params.get('filters')
+        filters_dit = module.params.get('filters')
+        camel_filters = snake_dict_to_camel_dict(filters_dit, capitalize_first=True)
+        params['Filters'] = camel_filters
     if module.params.get('dry_run'):
         params['DryRun'] = module.params.get('dry_run')
     if module.params.get('spot_instance_request_ids'):
@@ -44,7 +53,14 @@ def describe_spot_instance_requests(connection, module):
     if module.params.get('max_results'):
         params['MaxResults'] = module.params.get('max_results')
 
-    pass
+    try:
+        describe_spot_instance_requests_response = (connection.describe_spot_instance_requests(**params))
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to describe sport instance requests')
+
+    describe_spot_instance_requests_response['Tags'] = boto3_tag_list_to_ansible_dict(describe_spot_instance_requests_response.get('Tags', []))
+    describe_spot_requests = camel_dict_to_snake_dict(describe_spot_instance_requests_response, ignore_list=['Tags'])
+    module.exit_json(describe_spot_requests=describe_spot_requests, changed=changed)
 
 def main():
 
