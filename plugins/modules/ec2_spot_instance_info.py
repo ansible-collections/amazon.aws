@@ -57,6 +57,8 @@ RETURN = '''
     spot_instance_request_ids:
       - sir-c3cp9jsk
 '''
+
+import q
 import time
 import datetime
 
