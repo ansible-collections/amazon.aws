@@ -1,0 +1,265 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  collections:
+  - community.aws
+
+  block:
+  - name: Get available AZs
+    aws_az_info:
+      filters:
+        region-name: "{{ aws_region }}"
+    register: az_info
+
+  - name: Pick an AZ
+    set_fact:
+      availability_zone: "{{ az_info['availability_zones'][0]['zone_name'] }}"
+
+  # ============================================================
+  - name: create a VPC
+    ec2_vpc_net:
+      name: "{{ resource_prefix }}-vpc"
+      state: present
+      cidr_block: "{{ vpc_cidr }}"
+      tags:
+        Name: "{{ resource_prefix }}-vpc"
+        Description: "Created by ansible-test"
+    register: vpc_result
+
+  - name: create a subnet
+    ec2_vpc_subnet:
+      cidr: "{{ vpc_cidr }}"
+      az: "{{ availability_zone }}"
+      vpc_id: "{{ vpc_result.vpc.id }}"
+      tags:
+        Name: "{{ resource_prefix }}-vpc"
+        Description: "Created by ansible-test"
+      state: present
+    register: vpc_subnet_result
+
+  - name: create a security group
+    ec2_group:
+      name: "{{ resource_prefix }}-sg"
+      description: "Created by {{ resource_prefix }}"
+      rules: []
+      state: present
+      vpc_id: "{{ vpc_result.vpc.id }}"
+    register: vpc_sg_result
+
+  - name: Get a list of images
+    ec2_ami_info:
+      filters:
+        owner-alias: amazon
+        name: "amzn2-ami-minimal-hvm-*"
+        description: "Amazon Linux 2 AMI *"
+    register: images_info
+
+  - name: create a new ec2 key pair
+    ec2_key:
+      name: "{{ resource_prefix }}-keypair"
+
+  - name: Set facts to simplify use of extra resources
+    set_fact:
+      vpc_id: "{{ vpc_result.vpc.id }}"
+      vpc_subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+      vpc_sg_id: "{{ vpc_sg_result.group_id }}"
+      image_id: "{{ images_info.images | sort(attribute='creation_date') | reverse | first | json_query('image_id') }}"
+
+  # ============================================================
+
+  # Assert that spot instance request is created
+  - name: Create simple spot instance request
+    ec2_spot_instance:
+      launch_specification:
+        image_id: "{{ image_id }}"
+        key_name: "{{ resource_prefix }}-keypair"
+        instance_type: "t2.medium"
+        subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+    register: create_result
+
+  - name: Assert that result has changed and request has been created
+    assert:
+      that:
+        - create_result is changed
+        - create_result.spot_request is defined
+        - create_result.spot_request.spot_instance_request_id is defined
+        - create_result.spot_request.launch_specification.subnet_id == vpc_subnet_result.subnet.id
+
+  - name: Create spot request with more complex options
+    ec2_spot_instance:
+      launch_specification:
+        image_id: "{{ image_id }}"
+        key_name: "{{ resource_prefix }}-keypair"
+        instance_type: "t2.medium"
+        block_device_mappings:
+          - device_name: /dev/sdb
+            ebs:
+              delete_on_termination: True
+              volume_type: gp3
+              volume_size: 5
+        network_interfaces:
+          - associate_public_ip_address: False
+            delete_on_termination: True
+            device_index: 0
+        placement:
+          availability_zone: '{{ availability_zone }}'
+        monitoring:
+          enabled: False
+      spot_price: 0.002
+      tags:
+        camelCase: "helloWorld"
+        PascalCase: "HelloWorld"
+        snake_case: "hello_world"
+        "Title Case": "Hello World"
+        "lowercase spaced": "hello world"
+    register: complex_create_result
+
+  - assert:
+      that:
+        - complex_create_result is changed
+        - complex_create_result.spot_request is defined
+        - complex_create_result.spot_request.spot_instance_request_id is defined
+        - complex_create_result.spot_request.type == 'one-time'
+        - '"0.002" in complex_create_result.spot_request.spot_price'  ## AWS pads trailing zeros on the spot price
+        - launch_spec.placement.availability_zone == availability_zone
+        - launch_spec.block_device_mappings|length == 1
+        - launch_spec.block_device_mappings.0.ebs.delete_on_termination == true
+        - launch_spec.block_device_mappings.0.ebs.volume_type == 'gp3'
+        - launch_spec.block_device_mappings.0.ebs.volume_size == 5
+        - launch_spec.network_interfaces|length == 1
+        - launch_spec.network_interfaces.0.device_index == 0
+        - launch_spec.network_interfaces.0.associate_public_ip_address == false
+        - launch_spec.network_interfaces.0.delete_on_termination == true
+        - spot_request_tags|length == 5
+        - spot_request_tags['camelCase'] == 'helloWorld'
+        - spot_request_tags['PascalCase'] == 'HelloWorld'
+        - spot_request_tags['snake_case'] == 'hello_world'
+        - spot_request_tags['Title Case'] == 'Hello World'
+        - spot_request_tags['lowercase spaced'] == 'hello world'
+    vars:
+      launch_spec: '{{ complex_create_result.spot_request.launch_specification }}'
+      spot_request_tags: '{{ complex_create_result.spot_request.tags }}'
+
+  # Assert check mode
+  - name: Create spot instance request (check_mode)
+    ec2_spot_instance:
+      launch_specification:
+        image_id: "{{ image_id }}"
+        key_name: "{{ resource_prefix }}-keypair"
+        instance_type: "t2.medium"
+        subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+    check_mode: True
+    register: check_create_result
+
+  - assert:
+      that:
+        - check_create_result is changed
+
+  - name: Remove spot instance request (check_mode)
+    ec2_spot_instance:
+      spot_instance_request_ids: '{{ create_result.spot_request.spot_instance_request_id }}'
+      state: absent
+    check_mode: True
+    register: check_cancel_result
+
+  - assert:
+      that:
+        - check_cancel_result is changed
+
+  - name: Remove spot instance requests
+    ec2_spot_instance:
+      spot_instance_request_ids:
+        - '{{ create_result.spot_request.spot_instance_request_id }}'
+        - '{{ complex_create_result.spot_request.spot_instance_request_id }}'
+      state: absent
+    register: cancel_result
+
+  - assert:
+      that:
+        - cancel_result is changed
+        - '"Cancelled Spot request" in cancel_result.msg'
+
+  - name: Sometimes we run the next test before the EC2 API is fully updated from the previous task
+    pause:
+      seconds: 3
+
+  - name: Check no change if request is already cancelled (idempotency)
+    ec2_spot_instance:
+      spot_instance_request_ids: '{{ create_result.spot_request.spot_instance_request_id }}'
+      state: absent
+    register: cancel_request_again
+
+  - assert:
+      that:
+        - cancel_request_again is not changed
+        - '"Spot request not found or already cancelled" in cancel_request_again.msg'
+
+  - name: Gracefully try to remove non-existent request (NotFound)
+    ec2_spot_instance:
+      spot_instance_request_ids:
+        - sir-12345678
+      state: absent
+    register: fake_cancel_result
+
+  - assert:
+      that:
+        - fake_cancel_result is not changed
+        - '"Spot request not found or already cancelled" in fake_cancel_result.msg'
+
+
+  always:
+
+    # ============================================================
+      - name: Delete spot instances
+        ec2_instance:
+          state: absent
+          filters:
+            vpc-id: "{{ vpc_result.vpc.id }}"
+
+      - name: remove spot instance requests
+        ec2_spot_instance:
+          spot_instance_request_ids:
+            - '{{ create_result.spot_request.spot_instance_request_id }}'
+            - '{{ complex_create_result.spot_request.spot_instance_request_id }}'
+          state: 'absent'
+        ignore_errors: true
+        retries: 5
+
+      - name: remove the security group
+        ec2_group:
+          name: "{{ resource_prefix }}-sg"
+          description: "{{ resource_prefix }}"
+          rules: []
+          state: absent
+          vpc_id: "{{ vpc_result.vpc.id }}"
+        ignore_errors: true
+        retries: 5
+
+      - name: remove the subnet
+        ec2_vpc_subnet:
+          cidr: "{{ vpc_cidr }}"
+          az: "{{ availability_zone }}"
+          vpc_id: "{{ vpc_result.vpc.id }}"
+          state: absent
+        ignore_errors: true
+        retries: 5
+        when: vpc_subnet_result is defined
+
+      - name: remove the VPC
+        ec2_vpc_net:
+          name: "{{ resource_prefix }}-vpc"
+          cidr_block: "{{ vpc_cidr }}"
+          state: absent
+        ignore_errors: true
+        retries: 5
+
+      - name: remove key pair by name
+        ec2_key:
+          name: "{{ resource_prefix }}-keypair"
+          state: absent
+        ignore_errors: true
