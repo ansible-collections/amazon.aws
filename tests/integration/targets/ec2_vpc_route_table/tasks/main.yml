@@ -16,24 +16,24 @@
   - name: create subnets
     ec2_vpc_subnet:
       cidr: '{{ item.cidr }}'
-      az: '{{ aws_region}}{{ item.az }}'
+      az: '{{ item.zone }}'
       vpc_id: '{{ vpc.vpc.id }}'
       state: present
       tags:
         Public: '{{ item.public|string }}'
-        Name: "{{ (item.public|bool)|ternary('public', 'private') }}-{{ item.az }}"
+        Name: "{{ (item.public|bool)|ternary('public', 'private') }}-{{ item.zone }}"
     with_items:
     - cidr: 10.228.228.0/24
-      az: a
+      zone: '{{ availability_zone_a }}'
       public: 'True'
     - cidr: 10.228.229.0/24
-      az: b
+      zone: '{{ availability_zone_b }}'
       public: 'True'
     - cidr: 10.228.230.0/24
-      az: a
+      zone: '{{ availability_zone_a }}'
       public: 'False'
     - cidr: 10.228.231.0/24
-      az: b
+      zone: '{{ availability_zone_b }}'
       public: 'False'
     register: subnets
   - ec2_vpc_subnet_info:

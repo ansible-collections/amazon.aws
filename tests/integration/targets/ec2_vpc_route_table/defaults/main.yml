@@ -1,0 +1,3 @@
+---
+availability_zone_a: '{{ ec2_availability_zone_names[0] }}'
+availability_zone_b: '{{ ec2_availability_zone_names[1] }}'

@@ -1,2 +1,5 @@
 dependencies:
-  - setup_remote_tmp_dir
+- role: setup_botocore_pip
+  vars:
+    botocore_version: '1.19.27'
+- role: setup_ec2_facts

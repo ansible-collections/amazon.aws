@@ -1,5 +1,4 @@
 ---
-
 - module_defaults:
     group/aws:
       aws_access_key: '{{ aws_access_key | default(omit) }}'
@@ -10,13 +9,6 @@
   block:
 
     # ==== Env setup ==========================================================
-    - name: list available AZs
-      aws_az_info:
-      register: region_azs
-
-    - name: pick an AZ for testing
-      set_fact:
-        availability_zone: "{{ region_azs.availability_zones[0].zone_name }}"
 
     - name: Create a test VPC
       ec2_vpc_net:
@@ -32,19 +24,6 @@
         cidr: "{{ subnet_cidr }}"
         az: "{{ availability_zone }}"
       register: testing_subnet
-
-    - name: Find AMI to use
-      ec2_ami_info:
-        owners: 'amazon'
-        filters:
-          name: '{{ ec2_ami_name }}'
-      register: ec2_amis
-
-    - name: Set fact with latest AMI
-      vars:
-        latest_ami: '{{ ec2_amis.images | sort(attribute="creation_date") | last }}'
-      set_fact:
-        ec2_ami_image: '{{ latest_ami.image_id }}'
 
     # ==== Cloudformation tests ===============================================
 
@@ -68,7 +47,7 @@
         template_body: "{{ lookup('file','cf_template.json') }}"
         template_parameters:
           InstanceType: "t3.nano"
-          ImageId: "{{ ec2_ami_image }}"
+          ImageId: "{{ ec2_ami_id }}"
           SubnetId: "{{ testing_subnet.subnet.id }}"
         tags:
           Stack: "{{ stack_name }}"
@@ -88,7 +67,7 @@
         template_body: "{{ lookup('file','cf_template.json') }}"
         template_parameters:
           InstanceType: "t3.nano"
-          ImageId: "{{ ec2_ami_image }}"
+          ImageId: "{{ ec2_ami_id }}"
           SubnetId: "{{ testing_subnet.subnet.id }}"
         tags:
           Stack: "{{ stack_name }}"
@@ -110,7 +89,7 @@
         template_body: "{{ lookup('file','cf_template.json') }}"
         template_parameters:
           InstanceType: "t3.nano"
-          ImageId: "{{ ec2_ami_image }}"
+          ImageId: "{{ ec2_ami_id }}"
           SubnetId: "{{ testing_subnet.subnet.id }}"
         tags:
           Stack: "{{ stack_name }}"
@@ -129,7 +108,7 @@
         template_body: "{{ lookup('file','cf_template.json') }}"
         template_parameters:
           InstanceType: "t3.nano"
-          ImageId: "{{ ec2_ami_image }}"
+          ImageId: "{{ ec2_ami_id }}"
           SubnetId: "{{ testing_subnet.subnet.id }}"
         tags:
           Stack: "{{ stack_name }}"
@@ -221,7 +200,7 @@
         template_body: "{{ lookup('file','cf_template.json') }}"
         template_parameters:
           InstanceType: "t3.micro"
-          ImageId: "{{ ec2_ami_image }}"
+          ImageId: "{{ ec2_ami_id }}"
           SubnetId: "{{ testing_subnet.subnet.id }}"
         tags:
           Stack: "{{ stack_name }}"
@@ -266,7 +245,7 @@
         template_body: "{{ lookup('file','cf_template.json') }}"
         template_parameters:
           InstanceType: "t3.nano"
-          ImageId: "{{ ec2_ami_image }}"
+          ImageId: "{{ ec2_ami_id }}"
           SubnetId: "{{ testing_subnet.subnet.id }}"
         tags:
           Stack: "{{ stack_name }}"
@@ -288,7 +267,7 @@
         template_body: "{{ lookup('file','cf_template.json') }}"
         template_parameters:
           InstanceType: "t3.nano"
-          ImageId: "{{ ec2_ami_image }}"
+          ImageId: "{{ ec2_ami_id }}"
           SubnetId: "{{ testing_subnet.subnet.id }}"
         tags:
           Stack: "{{ stack_name }}"
@@ -329,7 +308,7 @@
         template_body: "{{ lookup('file','cf_template.json') }}"
         template_parameters:
           InstanceType: "t3.nano"
-          ImageId: "{{ ec2_ami_image }}"
+          ImageId: "{{ ec2_ami_id }}"
           SubnetId: "{{ testing_subnet.subnet.id }}"
         tags:
           Stack: "{{ stack_name }}"
@@ -372,7 +351,7 @@
         template_body: "{{ lookup('file','cf_template.json') }}"
         template_parameters:
           InstanceType: "t3.nano"
-          ImageId: "{{ ec2_ami_image }}"
+          ImageId: "{{ ec2_ami_id }}"
           SubnetId: "{{ testing_subnet.subnet.id }}"
         tags:
           Stack: "{{ stack_name }}"
@@ -391,7 +370,7 @@
         template_body: "{{ lookup('file','cf_template.json') }}"
         template_parameters:
           InstanceType: "t3.nano"
-          ImageId: "{{ ec2_ami_image }}"
+          ImageId: "{{ ec2_ami_id }}"
           SubnetId: "{{ testing_subnet.subnet.id }}"
         tags:
           Stack: "{{ stack_name }}"

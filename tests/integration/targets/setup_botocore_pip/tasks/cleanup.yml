@@ -1,0 +1,5 @@
+- name: 'Delete temporary pip environment'
+  file:
+    path: "{{ botocore_pip_directory }}"
+    state: absent
+  no_log: yes

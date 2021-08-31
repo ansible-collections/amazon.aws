@@ -28,7 +28,7 @@
 
     - name: create a subnet to use for creating an ec2 instance
       ec2_vpc_subnet:
-        az: '{{ ec2_region }}a'
+        az: '{{ availability_zone }}'
         tags: '{{ ec2_ami_name }}_setup'
         vpc_id: '{{ setup_vpc.vpc.id }}'
         cidr: '{{ subnet_cidr }}'
@@ -50,7 +50,7 @@
         key_name: '{{ setup_key.key.name }}'
         instance_type: t2.micro
         state: present
-        image: '{{ ec2_region_images[ec2_region] }}'
+        image: '{{ ec2_ami_id }}'
         wait: yes
         instance_tags:
           '{{ec2_ami_name}}_instance_setup': 'integration_tests'
@@ -61,7 +61,7 @@
     - name: take a snapshot of the instance to create an image
       ec2_snapshot:
         instance_id: '{{ setup_instance.instance_ids[0] }}'
-        device_name: /dev/xvda
+        device_name: '{{ ec2_ami_root_disk }}'
         state: present
       register: setup_snapshot
 
@@ -75,7 +75,7 @@
         tags:
           Name: '{{ ec2_ami_name }}_ami'
         wait: yes
-        root_device_name: /dev/xvda
+        root_device_name: '{{ ec2_ami_root_disk }}'
       register: result
       ignore_errors: yes
 
@@ -96,7 +96,7 @@
         tags:
           Name: '{{ ec2_ami_name }}_ami'
         wait: yes
-        root_device_name: /dev/xvda
+        root_device_name: '{{ ec2_ami_root_disk }}'
       register: result
 
     - name: set image id fact for deletion later
@@ -109,13 +109,13 @@
           - "result.changed"
           - "result.image_id.startswith('ami-')"
           - "'Name' in result.tags and result.tags.Name == ec2_ami_name + '_ami'"
-    
+
     - name: get related snapshot info and ensure the tags have been propagated
       ec2_snapshot_info:
         snapshot_ids:
-          - "{{ result.block_device_mapping['/dev/xvda'].snapshot_id }}"
+          - "{{ result.block_device_mapping[ec2_ami_root_disk].snapshot_id }}"
       register: snapshot_result
-    
+
     - name: ensure the tags have been propagated to the snapshot
       assert:
         that:
@@ -137,7 +137,7 @@
             no_device: yes
         state: present
         wait: yes
-        root_device_name: /dev/xvda
+        root_device_name: '{{ ec2_ami_root_disk }}'
       register: result_no_device_true
 
     - name: set image id fact for deletion later
@@ -162,7 +162,7 @@
             no_device: no
         state: present
         wait: yes
-        root_device_name: /dev/xvda
+        root_device_name: '{{ ec2_ami_root_disk }}'
       register: result_no_device_false
 
     - name: set image id fact for deletion later
@@ -296,9 +296,9 @@
           user_ids: []
         tags:
           Name: '{{ ec2_ami_name }}_ami'
-        root_device_name: /dev/xvda
+        root_device_name: '{{ ec2_ami_root_disk }}'
         device_mapping:
-          - device_name: /dev/xvda
+          - device_name: '{{ ec2_ami_root_disk }}'
             volume_type: gp2
             size: 8
             delete_on_termination: true
@@ -309,7 +309,7 @@
     - name: set image id fact for deletion later
       set_fact:
         ec2_ami_image_id: "{{ result.image_id }}"
-        ec2_ami_snapshot: "{{ result.block_device_mapping['/dev/xvda'].snapshot_id }}"
+        ec2_ami_snapshot: "{{ result.block_device_mapping[ec2_ami_root_disk].snapshot_id }}"
 
     - name: assert a new ami has been created
       assert:
@@ -326,12 +326,12 @@
         name: '{{ ec2_ami_name }}_ami'
         tags:
           Name: '{{ ec2_ami_name }}_ami'
-        root_device_name: /dev/xvda
+        root_device_name: '{{ ec2_ami_root_disk }}'
         image_id: '{{ result.image_id }}'
         launch_permissions:
           user_ids: []
         device_mapping:
-          - device_name: /dev/xvda
+          - device_name: '{{ ec2_ami_root_disk }}'
             volume_type: gp2
             size: 8
             delete_on_termination: true
@@ -550,7 +550,7 @@
 
     - name: remove setup subnet
       ec2_vpc_subnet:
-        az: '{{ ec2_region }}a'
+        az: '{{ availability_zone }}'
         tags: '{{ec2_ami_name}}_setup'
         vpc_id: '{{ setup_vpc.vpc.id }}'
         cidr: '{{ subnet_cidr }}'

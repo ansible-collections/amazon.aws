@@ -1,4 +1,6 @@
 ---
+availability_zone: '{{ ec2_availability_zone_names[0] }}'
+
 vpc_seed_a: '{{ resource_prefix }}'
 vpc_seed_b: '{{ resource_prefix }}-ec2_eni'
 vpc_prefix: '10.{{ 256 | random(seed=vpc_seed_a) }}.{{ 256 | random(seed=vpc_seed_b ) }}'
