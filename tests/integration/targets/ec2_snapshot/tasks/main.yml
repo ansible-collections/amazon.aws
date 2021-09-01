@@ -48,20 +48,11 @@
           - untagged_snapshot.snapshots| length == 1
           - untagged_snapshot.snapshots[0].volume_id == volume_detached.volume_id
 
-    - ec2_ami_info:
-        owners: amazon
-        filters:
-          architecture: x86_64
-          virtualization-type: hvm
-          root-device-type: ebs
-          name: "amzn-ami-hvm*"
-      register: amis
-
     - name: Setup an instance for testing
       ec2_instance:
         name: '{{ resource_prefix }}'
         instance_type: t2.nano
-        image_id: "{{ (amis.images | sort(attribute='creation_date') | last).image_id }}"
+        image_id: '{{ ec2_ami_id }}'
         wait: yes
         volumes:
           - device_name: /dev/xvda

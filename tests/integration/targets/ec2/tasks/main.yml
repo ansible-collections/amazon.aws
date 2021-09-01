@@ -11,13 +11,6 @@
   block:
 
     # SETUP: vpc, ec2 key pair, subnet, security group, ec2 instance
-    - name: list available AZs
-      aws_az_info:
-      register: region_azs
-
-    - name: pick an AZ for testing
-      set_fact:
-        availability_zone: "{{ region_azs.availability_zones[0].zone_name }}"
 
     - name: create a VPC to work in
       ec2_vpc_net:
@@ -53,19 +46,6 @@
         vpc_id: '{{ setup_vpc.vpc.id }}'
       register: setup_sg
 
-    - name: Find AMI to use
-      ec2_ami_info:
-        owners: 'amazon'
-        filters:
-          name: '{{ ec2_ami_name }}'
-      register: ec2_amis
-
-    - name: Set fact with latest AMI
-      vars:
-        latest_ami: '{{ ec2_amis.images | sort(attribute="creation_date") | last }}'
-      set_fact:
-        ec2_ami_image: '{{ latest_ami.image_id }}'
-
     # ============================================================
 
     - name: test first instance is started
@@ -73,7 +53,7 @@
         instance_type: t2.micro
         key_name: '{{ setup_key.key.name }}'
         state: present
-        image: '{{ ec2_ami_image }}'
+        image: '{{ ec2_ami_id }}'
         wait: yes
         instance_tags:
           ResourcePrefix: '{{ resource_prefix }}-integration_tests'
@@ -86,7 +66,7 @@
         instance_type: t2.micro
         key_name: '{{ setup_key.key.name }}'
         state: present
-        image: '{{ ec2_ami_image }}'
+        image: '{{ ec2_ami_id }}'
         wait: yes
         instance_tags:
           ResourcePrefix: '{{ resource_prefix }}-another_tag'
@@ -189,7 +169,7 @@
 
     - name: remove setup subnet
       ec2_vpc_subnet:
-        az: '{{ ec2_region }}a'
+        az: '{{ availability_zone }}'
         tags: '{{resource_prefix}}_setup'
         vpc_id: '{{ setup_vpc.vpc.id }}'
         cidr: '{{ subnet_cidr }}'

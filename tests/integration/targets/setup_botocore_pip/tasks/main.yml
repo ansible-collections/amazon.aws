@@ -1,0 +1,42 @@
+- name: 'Ensure that we have virtualenv available to us'
+  pip:
+    name: virtualenv
+
+- name: 'Create temporary directory for pip environment'
+  tempfile:
+    state: directory
+    prefix: botocore
+    suffix: .test
+  register: botocore_pip_directory
+  notify:
+    - 'Delete temporary pip environment'
+
+- name: 'Record temporary directory'
+  set_fact:
+    botocore_pip_directory: "{{ botocore_pip_directory.path }}"
+
+- set_fact:
+    botocore_virtualenv: "{{ botocore_pip_directory }}/virtualenv"
+    botocore_virtualenv_command: "{{ ansible_python_interpreter }} -m virtualenv"
+
+- set_fact:
+    botocore_virtualenv_interpreter: "{{ botocore_virtualenv }}/bin/python"
+
+- pip:
+    name:
+      - 'boto3{{ _boto3_comparison }}{{ _boto3_version }}'
+      - 'botocore{{ _botocore_comparison }}{{ _botocore_version }}'
+      - 'coverage<5'
+    virtualenv: "{{ botocore_virtualenv }}"
+    virtualenv_command: "{{ botocore_virtualenv_command }}"
+    virtualenv_site_packages: no
+  vars:
+    _boto3_version: '{{ boto3_version | default(default_boto3_version) }}'
+    _botocore_version: '{{ botocore_version | default(default_botocore_version) }}'
+    _is_default_boto3: '{{ _boto3_version == default_boto3_version }}'
+    _is_default_botocore: '{{ _botocore_version == default_botocore_version }}'
+    # Only set the default to >= if the other dep has been updated and the dep has not been set
+    _default_boto3_comparison: '{% if _is_default_boto3 and not _is_default_botocore %}>={% else %}=={% endif %}'
+    _default_botocore_comparison: '{% if _is_default_botocore and not _is_default_boto3 %}>={% else %}=={% endif %}'
+    _boto3_comparison: '{{ boto3_comparison | default(_default_boto3_comparison) }}'
+    _botocore_comparison: '{{ botocore_comparison | default(_default_botocore_comparison) }}'

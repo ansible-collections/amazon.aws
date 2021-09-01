@@ -1,0 +1,2 @@
+ec2_ami_name: 'Fedora-Cloud-Base-*.x86_64*'
+ec2_ami_owner_id: '125523088429'

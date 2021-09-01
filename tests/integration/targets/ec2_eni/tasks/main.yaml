@@ -11,15 +11,6 @@
   - community.aws
 
   block:
-  - name: Get available AZs
-    aws_az_info:
-      filters:
-        region-name: "{{ aws_region }}"
-    register: az_info
-
-  - name: Pick an AZ
-    set_fact:
-      availability_zone: "{{ az_info['availability_zones'][0]['zone_name'] }}"
 
   # ============================================================
   - name: create a VPC
@@ -52,27 +43,18 @@
       vpc_id: "{{ vpc_result.vpc.id }}"
     register: vpc_sg_result
 
-  - name: Get a list of images
-    ec2_ami_info:
-      filters:
-        owner-alias: amazon
-        name: "amzn2-ami-minimal-hvm-*"
-        description: "Amazon Linux 2 AMI *"
-    register: images_info
-
   - name: Set facts to simplify use of extra resources
     set_fact:
       vpc_id: "{{ vpc_result.vpc.id }}"
       vpc_subnet_id: "{{ vpc_subnet_result.subnet.id }}"
       vpc_sg_id: "{{ vpc_sg_result.group_id }}"
-      image_id: "{{ images_info.images | sort(attribute='creation_date') | reverse | first | json_query('image_id') }}"
 
   # ============================================================
 
   - name: Create 2 instances to test attaching and detaching network interfaces
     ec2_instance:
       name: "{{ resource_prefix }}-eni-instance-{{ item }}"
-      image_id: "{{ image_id }}"
+      image_id: "{{ ec2_ami_id }}"
       vpc_subnet_id: "{{ vpc_subnet_id }}"
       instance_type: t2.micro
       wait: false

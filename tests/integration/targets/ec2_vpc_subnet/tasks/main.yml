@@ -6,15 +6,6 @@
       security_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-
-    - name: list available AZs
-      aws_az_info:
-      register: region_azs
-
-    - name: pick an AZ for testing
-      set_fact:
-        subnet_az: "{{ region_azs.availability_zones[0].zone_name }}"
-
     # ============================================================
     - name: create a VPC
       ec2_vpc_net:
@@ -48,7 +39,7 @@
     - name: create subnet (expected changed=true) (CHECK MODE)
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
-        az: "{{ subnet_az }}"
+        az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
           Name: '{{ec2_vpc_subnet_name}}'
@@ -65,7 +56,7 @@
     - name: create subnet (expected changed=true)
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
-        az: "{{ subnet_az }}"
+        az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
           Name: '{{ec2_vpc_subnet_name}}'
@@ -93,7 +84,7 @@
           - '"assign_ipv6_address_on_creation" in subnet_info'
           - 'subnet_info.assign_ipv6_address_on_creation == False'
           - '"availability_zone" in subnet_info'
-          - 'subnet_info.availability_zone == subnet_az'
+          - 'subnet_info.availability_zone == availability_zone'
           - '"available_ip_address_count" in subnet_info'
           - '"cidr_block" in subnet_info'
           - 'subnet_info.cidr_block == subnet_cidr'
@@ -117,7 +108,7 @@
     - name: recreate subnet (expected changed=false) (CHECK MODE)
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
-        az: "{{ subnet_az }}"
+        az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
           Name: '{{ec2_vpc_subnet_name}}'
@@ -134,7 +125,7 @@
     - name: recreate subnet (expected changed=false)
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
-        az: "{{ subnet_az }}"
+        az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
           Name: '{{ec2_vpc_subnet_name}}'
@@ -152,7 +143,7 @@
     - name: update subnet so instances launched in it are assigned an IP (CHECK MODE)
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
-        az: "{{ subnet_az }}"
+        az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
           Name: '{{ec2_vpc_subnet_name}}'
@@ -170,7 +161,7 @@
     - name: update subnet so instances launched in it are assigned an IP
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
-        az: "{{ subnet_az }}"
+        az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
           Name: '{{ec2_vpc_subnet_name}}'
@@ -189,7 +180,7 @@
     - name: add invalid ipv6 block to subnet (expected failed)
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
-        az: "{{ subnet_az }}"
+        az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         ipv6_cidr: 2001:db8::/64
         tags:
@@ -209,7 +200,7 @@
     - name: add a tag (expected changed=true) (CHECK MODE)
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
-        az: "{{ subnet_az }}"
+        az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
           Name: '{{ec2_vpc_subnet_name}}'
@@ -227,7 +218,7 @@
     - name: add a tag (expected changed=true)
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
-        az: "{{ subnet_az }}"
+        az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
           Name: '{{ec2_vpc_subnet_name}}'
@@ -262,7 +253,7 @@
     - name: remove tags with default purge_tags=true (expected changed=true) (CHECK MODE)
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
-        az: "{{ subnet_az }}"
+        az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
           AnotherTag: SomeValue
@@ -278,7 +269,7 @@
     - name: remove tags with default purge_tags=true (expected changed=true)
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
-        az: "{{ subnet_az }}"
+        az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
           AnotherTag: SomeValue
@@ -310,7 +301,7 @@
     - name: change tags with purge_tags=false (expected changed=true) (CHECK MODE)
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
-        az: "{{ subnet_az }}"
+        az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
           Name: '{{ec2_vpc_subnet_name}}'
@@ -328,7 +319,7 @@
     - name: change tags with purge_tags=false (expected changed=true)
       ec2_vpc_subnet:
         cidr: "{{ subnet_cidr }}"
-        az: "{{ subnet_az }}"
+        az: "{{ availability_zone }}"
         vpc_id: "{{ vpc_result.vpc.id }}"
         tags:
           Name: '{{ec2_vpc_subnet_name}}'
