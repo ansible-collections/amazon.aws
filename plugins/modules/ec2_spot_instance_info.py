@@ -58,7 +58,6 @@ RETURN = '''
       - sir-c3cp9jsk
 '''
 
-import q
 import time
 import datetime
 
