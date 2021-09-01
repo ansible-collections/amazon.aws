@@ -6,6 +6,39 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
+module: ec2_spot_instance_info
+version_added: 2.0.0
+short_description: Gather information about ec2 spot instance requests
+description:
+	- Describes the specified Spot Instance requests.
+options:
+	filters:
+		description:
+			- A list of filters to apply.
+			- Each list item is a dict consisting of a filter key and a filter value.
+			- See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeSpotInstanceRequests.html) for possible filters.
+		type: list
+	dry_run:
+		description:
+			- A boolean to check if you have the required permissions for the action.
+			- Does not make the request.
+			- If required permissions are not present then returns an error response UnauthorizedOperation else DryRunOperation.
+		type: bool
+	spot_instance_request_ids:
+		description:
+			- One or more Spot Instance request IDs.
+		type: str
+	next_token:
+		description:
+			- A token to request the next set of results.
+			- Value is null when no more results to return
+		type: str
+	max_results:
+		description:
+			- Maximum number of results to be returned in a single call.
+			- Value can be between 5 and 1000.
+		type: int
+
 '''
 
 EXAMPLES = '''
@@ -19,9 +52,9 @@ import time
 import datetime
 
 try:
-    import botocore
+  import botocore
 except ImportError:
-    pass # Handled by AnsibleAWSModule
+  pass # Handled by AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
