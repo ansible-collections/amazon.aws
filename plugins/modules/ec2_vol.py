@@ -749,7 +749,7 @@ def main():
         # Add device, volume_id and volume_type parameters separately to maintain backward compatibility
         volume_info = get_volume_info(volume, tags=final_tags)
 
-        if tags_changed or vol_attached:
+        if tags_changed or attach_changed:
             changed = True
 
         module.exit_json(changed=changed, volume=volume_info, device=volume_info['attachment_set']['device'],
