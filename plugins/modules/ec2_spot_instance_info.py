@@ -39,6 +39,9 @@ options:
 			- Value can be between 5 and 1000.
 		type: int
 
+extends_documentation_fragment:
+- amazon.aws.aws
+- amazon.aws.ec2
 '''
 
 EXAMPLES = '''
@@ -47,7 +50,6 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
-import q
 import time
 import datetime
 
