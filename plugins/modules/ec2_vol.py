@@ -740,7 +740,7 @@ def main():
         final_tags, tags_changed = ensure_tags(module, ec2_conn, volume['volume_id'], 'volume', tags, module.params.get('purge_tags'))
 
         if detach_vol_flag:
-            volume, changed = detach_volume(module, ec2_conn, volume_dict=volume)
+            volume, attach_changed = detach_volume(module, ec2_conn, volume_dict=volume)
         elif inst is not None:
             volume, vol_attached = attach_volume(module, ec2_conn, volume_dict=volume, instance_dict=inst, device_name=device_name)
 
