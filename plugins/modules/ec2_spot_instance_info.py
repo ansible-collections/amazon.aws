@@ -13,6 +13,8 @@ version_added: 2.0.0
 short_description: Gather information about ec2 spot instance requests
 description:
   - Describes the specified Spot Instance requests.
+author:
+  - Mandar Vijay Kulkarni (@mandar242)
 options:
   filters:
     description:
@@ -20,16 +22,20 @@ options:
       - Each list item is a dict consisting of a filter key and a filter value.
       - See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeSpotInstanceRequests.html) for possible filters.
     type: list
+    elements: dict
   dry_run:
     description:
       - A boolean to check if you have the required permissions for the action.
       - Does not make the request.
       - If required permissions are not present then returns an error response UnauthorizedOperation else DryRunOperation.
+    default: False
+    choices: [ True, False ]
     type: bool
   spot_instance_request_ids:
     description:
       - One or more Spot Instance request IDs.
-    type: str
+    type: list
+    elements: str
   next_token:
     description:
       - A token to request the next set of results.
@@ -47,15 +53,57 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
-'''
-
-RETURN = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: describe the Spot Instance requests based on request IDs
   amazon.aws.ec2_spot_instance_info:
     spot_instance_request_ids:
-      - sir-c3cp9jsk
+      - sir-12345678
+
+'''
+
+RETURN = '''
+spot_request:
+    description:  The gathered information about specified spot instance requests.
+    returned: when success
+    type: dict
+    sample: {
+        "create_time": "2021-09-01T21:05:57+00:00",
+        "instance_id": "i-08877936b801ac475",
+        "instance_interruption_behavior": "terminate",
+        "launch_specification": {
+            "ebs_optimized": false,
+            "image_id": "ami-0443305dabd4be2bc",
+            "instance_type": "t2.medium",
+            "key_name": "zuul",
+            "monitoring": {
+                "enabled": false
+            },
+            "placement": {
+                "availability_zone": "us-east-2b"
+            },
+            "security_groups": [
+                {
+                    "group_id": "sg-01f9833207d53b937",
+                    "group_name": "default"
+                }
+            ],
+            "subnet_id": "subnet-07d906b8358869bda"
+        },
+        "launched_availability_zone": "us-east-2b",
+        "product_description": "Linux/UNIX",
+        "spot_instance_request_id": "sir-c3cp9jsk",
+        "spot_price": "0.046400",
+        "state": "active",
+        "status": {
+            "code": "fulfilled",
+            "message": "Your spot request is fulfilled.",
+            "update_time": "2021-09-01T21:05:59+00:00"
+        },
+        "tags": {},
+        "type": "one-time",
+        "valid_until": "2021-09-08T21:05:57+00:00"
+      }
 '''
 
 import time
@@ -98,13 +146,13 @@ def describe_spot_instance_requests(connection, module):
         params['MaxResults'] = module.params.get('max_results')
 
     try:
-        describe_spot_instance_requests_response = (connection.describe_spot_instance_requests(**params))
+        describe_spot_instance_requests_response = (connection.describe_spot_instance_requests(**params))['SpotInstanceRequests'][0]
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to describe sport instance requests')
 
     describe_spot_instance_requests_response['Tags'] = boto3_tag_list_to_ansible_dict(describe_spot_instance_requests_response.get('Tags', []))
     describe_spot_requests = camel_dict_to_snake_dict(describe_spot_instance_requests_response, ignore_list=['Tags'])
-    module.exit_json(spot_requests=describe_spot_requests, changed=changed)
+    module.exit_json(spot_request=describe_spot_requests, changed=changed)
 
 
 def main():
@@ -113,7 +161,7 @@ def main():
         filters=dict(default=[], type='list', elements='dict'),
         dry_run=dict(default=False, type='bool', choices=[True, False]),
         spot_instance_request_ids=dict(default=[], type='list', elements='str'),
-        next_token=dict(default=None, type='str'),
+        next_token=dict(default=None, type='str', no_log=False),
         max_results=dict(type='int')
     )
     module = AnsibleAWSModule(
