@@ -167,7 +167,7 @@ def describe_spot_instance_requests(connection, module):
     for response_list_item in describe_spot_instance_requests_response:
       spot_request['spot_instance_requests'].append(camel_dict_to_snake_dict(response_list_item))
 
-    module.exit_json(spot_request=spot_request, changed=changed)
+    module.exit_json(spot_request=spot_request['spot_instance_requests'], changed=changed)
 
 
 def main():
