@@ -60,6 +60,17 @@ EXAMPLES = '''
     spot_instance_request_ids:
       - sir-12345678
 
+- name: describe the Spot Instance requests and filter results based on instance type
+  amazon.aws.ec2_spot_instance_info:
+    spot_instance_request_ids:
+      - sir-12345678
+      - sir-13579246
+      - sir-87654321
+    filters:
+      - name: 'launch.instance-type'
+        values:
+          - t3.medium
+
 '''
 
 RETURN = '''
@@ -146,13 +157,17 @@ def describe_spot_instance_requests(connection, module):
         params['MaxResults'] = module.params.get('max_results')
 
     try:
-        describe_spot_instance_requests_response = (connection.describe_spot_instance_requests(**params))['SpotInstanceRequests'][0]
+        describe_spot_instance_requests_response = (connection.describe_spot_instance_requests(**params))['SpotInstanceRequests']
+        import q
+        q(describe_spot_instance_requests_response)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to describe sport instance requests')
 
-    describe_spot_instance_requests_response['Tags'] = boto3_tag_list_to_ansible_dict(describe_spot_instance_requests_response.get('Tags', []))
-    describe_spot_requests = camel_dict_to_snake_dict(describe_spot_instance_requests_response, ignore_list=['Tags'])
-    module.exit_json(spot_request=describe_spot_requests, changed=changed)
+    spot_request = {'spot_instance_requests': []}
+    for response_list_item in describe_spot_instance_requests_response:
+      spot_request['spot_instance_requests'].append(camel_dict_to_snake_dict(response_list_item))
+
+    module.exit_json(spot_request=spot_request, changed=changed)
 
 
 def main():
