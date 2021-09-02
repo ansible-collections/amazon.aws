@@ -234,6 +234,11 @@ instances:
       returned: always
       type: str
       sample: '2017-10-10T04:00:07.434000+00:00'
+    iops:
+      description: The Provisioned IOPS value for the DB instance.
+      returned: always
+      type: int
+      sample: 1000
     kms_key_id:
       description: KMS Key ID
       returned: always
