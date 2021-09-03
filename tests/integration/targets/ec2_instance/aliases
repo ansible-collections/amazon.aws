@@ -1,4 +1,5 @@
-disabled
+# Takes about 10-15 minutes
+slow
+
 cloud/aws
 ec2_instance_info
-slow
