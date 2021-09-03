@@ -3,7 +3,7 @@
     ec2_instance:
       state: present
       name: "{{ resource_prefix }}-checkmode-comparison"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       security_groups: "{{ sg.group_id }}"
       instance_type: "{{ ec2_instance_type }}"
       vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
@@ -17,7 +17,7 @@
     ec2_instance:
       state: present
       name: "{{ resource_prefix }}-checkmode-comparison-checkmode"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       security_groups: "{{ sg.group_id }}"
       instance_type: "{{ ec2_instance_type }}"
       vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"

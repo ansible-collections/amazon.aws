@@ -3,7 +3,7 @@
     ec2_instance:
       state: present
       name: "{{ resource_prefix }}-test-t3nano-enabled-required"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
       vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
@@ -26,7 +26,7 @@
     ec2_instance:
       state: present
       name: "{{ resource_prefix }}-test-t3nano-enabled-required"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
       vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"

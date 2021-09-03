@@ -7,7 +7,7 @@
     ec2_instance:
       state: present
       name: "{{ resource_prefix }}-test-state-param-changes"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
       security_groups: "{{ sg.group_id }}"
@@ -31,7 +31,7 @@
     ec2_instance:
       state: running
       name: "{{ resource_prefix }}-test-state-param-changes"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
       security_groups: "{{ sg2.group_id }}"
@@ -56,7 +56,7 @@
     ec2_instance:
       state: stopped
       name: "{{ resource_prefix }}-test-state-param-changes"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
       security_groups: "{{ sg.group_id }}"
@@ -81,7 +81,7 @@
     ec2_instance:
       state: stopped
       name: "{{ resource_prefix }}-test-state-param-changes"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
       security_groups: "{{ sg2.group_id }}"
@@ -104,7 +104,7 @@
     ec2_instance:
       state: running
       name: "{{ resource_prefix }}-test-state-param-changes"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
       security_groups: "{{ sg.group_id }}"

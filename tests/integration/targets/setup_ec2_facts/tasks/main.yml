@@ -15,6 +15,7 @@
       security_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region }}'
 
+  run_once: True
   block:
   # ============================================================
 

@@ -21,9 +21,6 @@
     block:
     - include_role:
         name: 'ec2_instance'
-        tasks_from: find_ami.yml
-    - include_role:
-        name: 'ec2_instance'
         tasks_from: env_setup.yml
     rescue:
     - include_role:

@@ -2,7 +2,7 @@
   - name: "New instance with 2 security groups"
     ec2_instance:
       name: "{{ resource_prefix }}-test-security-groups"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
       tags:
         TestId: "{{ resource_prefix }}"
@@ -16,7 +16,7 @@
   - name: "Recreate same instance with 2 security groups ( Idempotency )"
     ec2_instance:
       name: "{{ resource_prefix }}-test-security-groups"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
       tags:
         TestId: "{{ resource_prefix }}"
@@ -39,7 +39,7 @@
   - name: "Remove secondary security group from instance"
     ec2_instance:
       name: "{{ resource_prefix }}-test-security-groups"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
       tags:
         TestId: "{{ resource_prefix }}"
@@ -60,7 +60,7 @@
   - name: "Add secondary security group to instance"
     ec2_instance:
       name: "{{ resource_prefix }}-test-security-groups"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
       tags:
         TestId: "{{ resource_prefix }}"

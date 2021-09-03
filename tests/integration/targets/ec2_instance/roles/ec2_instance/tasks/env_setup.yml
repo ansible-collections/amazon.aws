@@ -1,17 +1,5 @@
 - run_once: '{{ setup_run_once | default("no") | bool }}'
   block:
-  - name: "fetch AZ availability"
-    aws_az_info:
-    register: az_info
-  - name: "Assert that we have multiple AZs available to us"
-    assert:
-      that: az_info.availability_zones | length >= 2
-
-  - name: "pick AZs"
-    set_fact:
-      subnet_a_az: '{{ az_info.availability_zones[0].zone_name }}'
-      subnet_b_az: '{{ az_info.availability_zones[1].zone_name }}'
-
   - name: "Create VPC for use in testing"
     ec2_vpc_net:
       state: present
@@ -77,7 +65,7 @@
           to_port: 80
           cidr_ip: 0.0.0.0/0
     register: sg
-  
+
   - name: "create secondary security group with the vpc"
     ec2_group:
       name: "{{ resource_prefix }}-sg-2"
