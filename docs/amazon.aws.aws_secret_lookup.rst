@@ -26,8 +26,9 @@ Requirements
 ------------
 The below requirements are needed on the local Ansible controller node that executes this lookup.
 
+- python >= 3.6
 - boto3
-- botocore>=1.10.0
+- botocore >= 1.16.0
 
 
 Parameters
@@ -203,6 +204,32 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>on_deleted</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.0.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>error</b>&nbsp;&larr;</div></li>
+                                    <li>skip</li>
+                                    <li>warn</li>
+                        </ul>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>Action to take if the secret has been marked for deletion.</div>
+                        <div><code>error</code> will raise a fatal error when the secret has been marked for deletion.</div>
+                        <div><code>skip</code> will silently ignore the deleted secret.</div>
+                        <div><code>warn</code> will skip over the deleted secret but issue a warning.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>on_denied</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -339,6 +366,14 @@ Examples
        debug: msg="{{ lookup('amazon.aws.aws_secret', 'secrets.environments.production.password', nested=true) }}"
        # The secret can be queried using the following syntax: `aws_secret_object_name.key1.key2.key3`.
        # If an object is of the form `{"key1":{"key2":{"key3":1}}}` the query would return the value `1`.
+     - name: lookup secretsmanager secret in a specific region using specified region and aws profile using nested feature
+       debug: >
+        msg="{{ lookup('amazon.aws.aws_secret', 'secrets.environments.production.password', region=region, aws_profile=aws_profile,
+        aws_access_key=aws_access_key, aws_secret_key=aws_secret_key, nested=true) }}"
+       # The secret can be queried using the following syntax: `aws_secret_object_name.key1.key2.key3`.
+       # If an object is of the form `{"key1":{"key2":{"key3":1}}}` the query would return the value `1`.
+       # Region is the AWS region where the AWS secret is stored.
+       # AWS_profile is the aws profile to use, that has access to the AWS secret.
 
 
 

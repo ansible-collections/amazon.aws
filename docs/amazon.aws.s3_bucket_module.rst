@@ -25,9 +25,9 @@ Requirements
 ------------
 The below requirements are needed on the host that executes this module.
 
-- boto
-- boto3
-- python >= 2.6
+- python >= 3.6
+- boto3 >= 1.13.0
+- botocore >= 1.16.0
 
 
 Parameters
@@ -53,7 +53,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
+                        <div><code>AWS access key</code>. If not set then the value of the <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_ACCESS_KEY</code> or <code>EC2_ACCESS_KEY</code> environment variable is used.</div>
                         <div>If <em>profile</em> is set this parameter is ignored.</div>
                         <div>Passing the <em>aws_access_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
@@ -72,7 +72,7 @@ Parameters
                 </td>
                 <td>
                         <div>The location of a CA Bundle to use when validating SSL certificates.</div>
-                        <div>Only used for boto3 based modules.</div>
+                        <div>Not used by boto 2 based modules.</div>
                         <div>Note: The CA Bundle is read &#x27;module&#x27; side and may need to be explicitly copied from the controller if not run locally.</div>
                 </td>
             </tr>
@@ -105,7 +105,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
+                        <div><code>AWS secret key</code>. If not set then the value of the <code>AWS_SECRET_ACCESS_KEY</code>, <code>AWS_SECRET_KEY</code>, or <code>EC2_SECRET_KEY</code> environment variable is used.</div>
                         <div>If <em>profile</em> is set this parameter is ignored.</div>
                         <div>Passing the <em>aws_secret_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
@@ -147,6 +147,28 @@ Parameters
                 </td>
                 <td>
                         <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>delete_object_ownership</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.0.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Delete bucket&#x27;s ownership controls.</div>
+                        <div>This option cannot be used together with a <em>object_ownership</em> definition.</div>
+                        <div>Management of bucket ownership controls requires botocore&gt;=1.18.11.</div>
                 </td>
             </tr>
             <tr>
@@ -259,6 +281,30 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>object_ownership</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.0.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>BucketOwnerPreferred</li>
+                                    <li>ObjectWriter</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Allow bucket&#x27;s ownership controls.</div>
+                        <div><code>BucketOwnerPreferred</code> - Objects uploaded to the bucket change ownership to the bucket owner if the objects are uploaded with the bucket-owner-full-control canned ACL.</div>
+                        <div><code>ObjectWriter</code> - The uploading account will own the object if the object is uploaded with the bucket-owner-full-control canned ACL.</div>
+                        <div>This option cannot be used together with a <em>delete_object_ownership</em> definition.</div>
+                        <div>Management of bucket ownership controls requires botocore&gt;=1.18.11.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>policy</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -268,7 +314,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The JSON policy as a string.</div>
+                        <div>The JSON policy as a string. Set to the string <code>&quot;null&quot;</code> to force the absence of a policy.</div>
                 </td>
             </tr>
             <tr>
@@ -283,7 +329,6 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                         <div>Using <em>profile</em> will override <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> and support for passing them at the same time as <em>profile</em> has been deprecated.</div>
                         <div><em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> will be made mutually exclusive with <em>profile</em> after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_profile</div>
@@ -471,7 +516,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
+                        <div><code>AWS STS security token</code>. If not set then the value of the <code>AWS_SECURITY_TOKEN</code> or <code>EC2_SECURITY_TOKEN</code> environment variable is used.</div>
                         <div>If <em>profile</em> is set this parameter is ignored.</div>
                         <div>Passing the <em>security_token</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_security_token, access_token</div>
@@ -527,7 +572,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
+                        <div>When set to &quot;no&quot;, SSL certificates will not be validated for communication with the AWS APIs.</div>
                 </td>
             </tr>
             <tr>
@@ -559,8 +604,9 @@ Notes
 .. note::
    - If ``requestPayment``, ``policy``, ``tagging`` or ``versioning`` operations/API aren't implemented by the endpoint, module doesn't fail if each parameter satisfies the following condition. *requester_pays* is ``False``, *policy*, *tags*, and *versioning* are ``None``.
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
-   - Ansible uses the boto configuration file (typically ~/.boto) if no credentials are provided. See https://boto.readthedocs.io/en/latest/boto_config_tut.html
-   - ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be configured in the boto config file
+   - When no credentials are explicitly provided the AWS SDK (boto3) that Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``). See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html for more information.
+   - Modules based on the original AWS SDK (boto) may read their default configuration from different files. See https://boto.readthedocs.io/en/latest/boto_config_tut.html for more information.
+   - ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be defined in the configuration files.
 
 
 
@@ -629,7 +675,7 @@ Examples
         public_access:
             block_public_acls: true
             ignore_public_acls: true
-            ## keys == 'false' can be ommited, undefined keys defaults to 'false'
+            ## keys == 'false' can be omitted, undefined keys defaults to 'false'
             # block_public_policy: false
             # restrict_public_buckets: false
 
@@ -638,6 +684,24 @@ Examples
         name: mys3bucket
         state: present
         delete_public_access: true
+
+    # Create a bucket with object ownership controls set to ObjectWriter
+    - amazon.aws.s3_bucket:
+        name: mys3bucket
+        state: present
+        object_ownership: ObjectWriter
+
+    # Delete onwership controls from bucket
+    - amazon.aws.s3_bucket:
+        name: mys3bucket
+        state: present
+        delete_object_ownership: true
+
+    # Delete a bucket policy from bucket
+    - amazon.aws.s3_bucket:
+        name: mys3bucket
+        state: present
+        policy: "null"
 
 
 
@@ -650,3 +714,4 @@ Authors
 ~~~~~~~
 
 - Rob White (@wimnat)
+- Aubin Bikouo (@abikouo)

@@ -1,11 +1,11 @@
-.. _amazon.aws.ec2_tag_module:
+.. _amazon.aws.ec2_vpc_igw_module:
 
 
-******************
-amazon.aws.ec2_tag
-******************
+**********************
+amazon.aws.ec2_vpc_igw
+**********************
 
-**create and remove tags on ec2 resources**
+**Manage an AWS VPC Internet gateway**
 
 
 Version added: 1.0.0
@@ -17,9 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Creates, modifies and removes tags for any EC2 resource.
-- Resources are referenced by their resource id (for example, an instance being i-XXXXXXX, a VPC being vpc-XXXXXXX).
-- This module is designed to be used with complex args (tags), see the examples.
+- Manage an AWS VPC Internet gateway
 
 
 
@@ -173,16 +171,16 @@ Parameters
                     <div style="font-size: small">
                         <span style="color: purple">boolean</span>
                     </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0</div>
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
-                                    <li>yes</li>
+                                    <li>no</li>
+                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                         </ul>
                 </td>
                 <td>
-                        <div>Whether unspecified tags should be removed from the resource.</div>
-                        <div>Note that when combined with <em>state=absent</em>, specified tags with non-matching values are not purged.</div>
+                        <div>Remove tags not listed in <em>tags</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -199,22 +197,6 @@ Parameters
                 <td>
                         <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>resource</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The EC2 resource id.</div>
                 </td>
             </tr>
             <tr>
@@ -248,12 +230,10 @@ Parameters
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
                                     <li><div style="color: blue"><b>present</b>&nbsp;&larr;</div></li>
                                     <li>absent</li>
-                                    <li>list</li>
                         </ul>
                 </td>
                 <td>
-                        <div>Whether the tags should be present or absent on the resource.</div>
-                        <div>The use of <em>state=list</em> to interrogate the tags of an instance has been deprecated and will be removed after 2022-06-01.  The &#x27;list&#x27; functionality has been moved to a dedicated module <span class='module'>amazon.aws.ec2_tag_info</span>.</div>
+                        <div>Create or terminate the IGW</div>
                 </td>
             </tr>
             <tr>
@@ -268,9 +248,9 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A dictionary of tags to add or remove from the resource.</div>
-                        <div>If the value provided for a key is not set and <em>state=absent</em>, the tag will be removed regardless of its current value.</div>
-                        <div>Required when <em>state=present</em> or <em>state=absent</em>.</div>
+                        <div>A dict of tags to apply to the internet gateway.</div>
+                        <div>To remove all tags set <em>tags={}</em> and <em>purge_tags=true</em>.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: resource_tags</div>
                 </td>
             </tr>
             <tr>
@@ -290,6 +270,22 @@ Parameters
                 </td>
                 <td>
                         <div>When set to &quot;no&quot;, SSL certificates will not be validated for communication with the AWS APIs.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>vpc_id</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The VPC ID for the VPC in which to manage the Internet Gateway.</div>
                 </td>
             </tr>
     </table>
@@ -312,49 +308,30 @@ Examples
 
 .. code-block:: yaml
 
-    - name: Ensure tags are present on a resource
-      amazon.aws.ec2_tag:
-        region: eu-west-1
-        resource: vol-XXXXXX
+    # Note: These examples do not set authentication details, see the AWS Guide for details.
+
+    # Ensure that the VPC has an Internet Gateway.
+    # The Internet Gateway ID is can be accessed via {{igw.gateway_id}} for use in setting up NATs etc.
+    - name: Create Internet gateway
+      amazon.aws.ec2_vpc_igw:
+        vpc_id: vpc-abcdefgh
+        state: present
+      register: igw
+
+    - name: Create Internet gateway with tags
+      amazon.aws.ec2_vpc_igw:
+        vpc_id: vpc-abcdefgh
         state: present
         tags:
-          Name: ubervol
-          env: prod
+            Tag1: tag1
+            Tag2: tag2
+      register: igw
 
-    - name: Ensure all volumes are tagged
-      amazon.aws.ec2_tag:
-        region:  eu-west-1
-        resource: '{{ item.id }}'
-        state: present
-        tags:
-          Name: dbserver
-          Env: production
-      loop: '{{ ec2_vol.volumes }}'
-
-    - name: Remove the Env tag
-      amazon.aws.ec2_tag:
-        region: eu-west-1
-        resource: i-xxxxxxxxxxxxxxxxx
-        tags:
-          Env:
+    - name: Delete Internet gateway
+      amazon.aws.ec2_vpc_igw:
         state: absent
-
-    - name: Remove the Env tag if it's currently 'development'
-      amazon.aws.ec2_tag:
-        region: eu-west-1
-        resource: i-xxxxxxxxxxxxxxxxx
-        tags:
-          Env: development
-        state: absent
-
-    - name: Remove all tags except for Name from an instance
-      amazon.aws.ec2_tag:
-        region: eu-west-1
-        resource: i-xxxxxxxxxxxxxxxxx
-        tags:
-            Name: ''
-        state: absent
-        purge_tags: true
+        vpc_id: vpc-abcdefgh
+      register: vpc_igw_delete
 
 
 
@@ -373,31 +350,35 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>added_tags</b>
+                    <b>changed</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">dictionary</span>
+                      <span style="color: purple">boolean</span>
                     </div>
                 </td>
-                <td>If tags were added</td>
+                <td>always</td>
                 <td>
-                            <div>A dict of tags that were added to the resource</div>
+                            <div>If any changes have been made to the Internet Gateway.</div>
                     <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;changed&#x27;: False}</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>removed_tags</b>
+                    <b>gateway_id</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">dictionary</span>
+                      <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td>If tags were removed</td>
+                <td><em>state=present</em></td>
                 <td>
-                            <div>A dict of tags that were removed from the resource</div>
+                            <div>The unique identifier for the Internet Gateway.</div>
                     <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;gateway_id&#x27;: &#x27;igw-XXXXXXXX&#x27;}</div>
                 </td>
             </tr>
             <tr>
@@ -409,10 +390,29 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                       <span style="color: purple">dictionary</span>
                     </div>
                 </td>
-                <td>always</td>
+                <td><em>state=present</em></td>
                 <td>
-                            <div>A dict containing the tags on the resource</div>
+                            <div>The tags associated the Internet Gateway.</div>
                     <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;tags&#x27;: {&#x27;Ansible&#x27;: &#x27;Test&#x27;}}</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>vpc_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td><em>state=present</em></td>
+                <td>
+                            <div>The VPC ID associated with the Internet Gateway.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;vpc_id&#x27;: &#x27;vpc-XXXXXXXX&#x27;}</div>
                 </td>
             </tr>
     </table>
@@ -426,5 +426,4 @@ Status
 Authors
 ~~~~~~~
 
-- Lester Wade (@lwade)
-- Paul Arthur (@flowerysong)
+- Robert Estelle (@erydo)

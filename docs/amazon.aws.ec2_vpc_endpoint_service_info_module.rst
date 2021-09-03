@@ -1,14 +1,14 @@
-.. _amazon.aws.ec2_tag_module:
+.. _amazon.aws.ec2_vpc_endpoint_service_info_module:
 
 
-******************
-amazon.aws.ec2_tag
-******************
+****************************************
+amazon.aws.ec2_vpc_endpoint_service_info
+****************************************
 
-**create and remove tags on ec2 resources**
+**retrieves AWS VPC endpoint service details**
 
 
-Version added: 1.0.0
+Version added: 1.5.0
 
 .. contents::
    :local:
@@ -17,9 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Creates, modifies and removes tags for any EC2 resource.
-- Resources are referenced by their resource id (for example, an instance being i-XXXXXXX, a VPC being vpc-XXXXXXX).
-- This module is designed to be used with complex args (tags), see the examples.
+- Gets details related to AWS VPC Endpoint Services.
 
 
 
@@ -151,6 +149,22 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>filters</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>A dict of filters to apply.</div>
+                        <div>Each dict item consists of a filter key and a filter value. See <a href='https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVpcEndpointServices.html'>https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVpcEndpointServices.html</a> for possible filters.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>profile</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -168,26 +182,6 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>purge_tags</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
-                                    <li>yes</li>
-                        </ul>
-                </td>
-                <td>
-                        <div>Whether unspecified tags should be removed from the resource.</div>
-                        <div>Note that when combined with <em>state=absent</em>, specified tags with non-matching values are not purged.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>region</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -199,22 +193,6 @@ Parameters
                 <td>
                         <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>resource</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The EC2 resource id.</div>
                 </td>
             </tr>
             <tr>
@@ -238,39 +216,17 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>state</b>
+                    <b>service_names</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>present</b>&nbsp;&larr;</div></li>
-                                    <li>absent</li>
-                                    <li>list</li>
-                        </ul>
-                </td>
-                <td>
-                        <div>Whether the tags should be present or absent on the resource.</div>
-                        <div>The use of <em>state=list</em> to interrogate the tags of an instance has been deprecated and will be removed after 2022-06-01.  The &#x27;list&#x27; functionality has been moved to a dedicated module <span class='module'>amazon.aws.ec2_tag_info</span>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>tags</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
+                        <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=string</span>
                     </div>
                 </td>
                 <td>
                 </td>
                 <td>
-                        <div>A dictionary of tags to add or remove from the resource.</div>
-                        <div>If the value provided for a key is not set and <em>state=absent</em>, the tag will be removed regardless of its current value.</div>
-                        <div>Required when <em>state=present</em> or <em>state=absent</em>.</div>
+                        <div>A list of service names which can be used to narrow the search results.</div>
                 </td>
             </tr>
             <tr>
@@ -312,49 +268,11 @@ Examples
 
 .. code-block:: yaml
 
-    - name: Ensure tags are present on a resource
-      amazon.aws.ec2_tag:
-        region: eu-west-1
-        resource: vol-XXXXXX
-        state: present
-        tags:
-          Name: ubervol
-          env: prod
-
-    - name: Ensure all volumes are tagged
-      amazon.aws.ec2_tag:
-        region:  eu-west-1
-        resource: '{{ item.id }}'
-        state: present
-        tags:
-          Name: dbserver
-          Env: production
-      loop: '{{ ec2_vol.volumes }}'
-
-    - name: Remove the Env tag
-      amazon.aws.ec2_tag:
-        region: eu-west-1
-        resource: i-xxxxxxxxxxxxxxxxx
-        tags:
-          Env:
-        state: absent
-
-    - name: Remove the Env tag if it's currently 'development'
-      amazon.aws.ec2_tag:
-        region: eu-west-1
-        resource: i-xxxxxxxxxxxxxxxxx
-        tags:
-          Env: development
-        state: absent
-
-    - name: Remove all tags except for Name from an instance
-      amazon.aws.ec2_tag:
-        region: eu-west-1
-        resource: i-xxxxxxxxxxxxxxxxx
-        tags:
-            Name: ''
-        state: absent
-        purge_tags: true
+    # Simple example of listing all supported AWS services for VPC endpoints
+    - name: List supported AWS endpoint services
+      amazon.aws.ec2_vpc_endpoint_service_info:
+        region: ap-southeast-2
+      register: supported_endpoint_services
 
 
 
@@ -366,41 +284,204 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
 
     <table border=0 cellpadding=0 class="documentation-table">
         <tr>
-            <th colspan="1">Key</th>
+            <th colspan="2">Key</th>
             <th>Returned</th>
             <th width="100%">Description</th>
         </tr>
             <tr>
-                <td colspan="1">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>added_tags</b>
+                    <b>service_details</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">dictionary</span>
+                      <span style="color: purple">complex</span>
                     </div>
                 </td>
-                <td>If tags were added</td>
+                <td>success</td>
                 <td>
-                            <div>A dict of tags that were added to the resource</div>
+                            <div>Detailed information about the AWS VPC endpoint services.</div>
+                    <br/>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>acceptance_required</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>Whether VPC endpoint connection requests to the service must be accepted by the service owner.</div>
                     <br/>
                 </td>
             </tr>
             <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>removed_tags</b>
+                    <b>availability_zones</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">dictionary</span>
+                      <span style="color: purple">list</span>
                     </div>
                 </td>
-                <td>If tags were removed</td>
+                <td>success</td>
                 <td>
-                            <div>A dict of tags that were removed from the resource</div>
+                            <div>The Availability Zones in which the service is available.</div>
                     <br/>
                 </td>
             </tr>
             <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>base_endpoint_dns_names</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The DNS names for the service.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>manages_vpc_endpoints</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>Whether the service manages its VPC endpoints.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>owner</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The AWS account ID of the service owner.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>private_dns_name</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The private DNS name for the service.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>private_dns_name_verification_state</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The verification state of the VPC endpoint service.</div>
+                            <div>Consumers of an endpoint service cannot use the private name when the state is not <code>verified</code>.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>private_dns_names</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The private DNS names assigned to the VPC endpoint service.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>service_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The ID of the endpoint service.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>service_name</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The ARN of the endpoint service.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>service_type</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The type of the service</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>tags</b>
@@ -409,10 +490,44 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                       <span style="color: purple">dictionary</span>
                     </div>
                 </td>
-                <td>always</td>
+                <td>success</td>
                 <td>
-                            <div>A dict containing the tags on the resource</div>
+                            <div>A dict of tags associated with the service</div>
                     <br/>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>vpc_endpoint_policy_supported</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>Whether the service supports endpoint policies.</div>
+                    <br/>
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>service_names</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>List of supported AWS VPC endpoint service names.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;service_names&#x27;: [&#x27;com.amazonaws.ap-southeast-2.s3&#x27;]}</div>
                 </td>
             </tr>
     </table>
@@ -426,5 +541,4 @@ Status
 Authors
 ~~~~~~~
 
-- Lester Wade (@lwade)
-- Paul Arthur (@flowerysong)
+- Mark Chappell (@tremble)

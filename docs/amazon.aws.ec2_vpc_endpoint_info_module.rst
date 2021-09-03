@@ -1,11 +1,11 @@
-.. _amazon.aws.ec2_tag_module:
+.. _amazon.aws.ec2_vpc_endpoint_info_module:
 
 
-******************
-amazon.aws.ec2_tag
-******************
+********************************
+amazon.aws.ec2_vpc_endpoint_info
+********************************
 
-**create and remove tags on ec2 resources**
+**Retrieves AWS VPC endpoints details using AWS methods.**
 
 
 Version added: 1.0.0
@@ -17,9 +17,8 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Creates, modifies and removes tags for any EC2 resource.
-- Resources are referenced by their resource id (for example, an instance being i-XXXXXXX, a VPC being vpc-XXXXXXX).
-- This module is designed to be used with complex args (tags), see the examples.
+- Gets various details related to AWS VPC endpoints.
+- This module was called ``ec2_vpc_endpoint_facts`` before Ansible 2.9. The usage did not change.
 
 
 
@@ -151,6 +150,21 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>filters</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>A dict of filters to apply. Each dict item consists of a filter key and a filter value. See <a href='https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVpcEndpoints.html'>https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVpcEndpoints.html</a> for possible filters.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>profile</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -168,21 +182,24 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>purge_tags</b>
+                    <b>query</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
+                        <span style="color: purple">string</span>
                     </div>
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
-                                    <li>yes</li>
+                                    <li>services</li>
+                                    <li>endpoints</li>
                         </ul>
                 </td>
                 <td>
-                        <div>Whether unspecified tags should be removed from the resource.</div>
-                        <div>Note that when combined with <em>state=absent</em>, specified tags with non-matching values are not purged.</div>
+                        <div>Defaults to <code>endpoints</code>.</div>
+                        <div>Specifies the query action to take.</div>
+                        <div><em>query=endpoints</em> returns information about AWS VPC endpoints.</div>
+                        <div>Retrieving information about services using <em>query=services</em> has been deprecated in favour of the <span class='module'>ec2_vpc_endpoint_service_info</span> module.</div>
+                        <div>The <em>query</em> option has been deprecated and will be removed after 2022-12-01.</div>
                 </td>
             </tr>
             <tr>
@@ -199,22 +216,6 @@ Parameters
                 <td>
                         <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>resource</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The EC2 resource id.</div>
                 </td>
             </tr>
             <tr>
@@ -238,44 +239,6 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>state</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>present</b>&nbsp;&larr;</div></li>
-                                    <li>absent</li>
-                                    <li>list</li>
-                        </ul>
-                </td>
-                <td>
-                        <div>Whether the tags should be present or absent on the resource.</div>
-                        <div>The use of <em>state=list</em> to interrogate the tags of an instance has been deprecated and will be removed after 2022-06-01.  The &#x27;list&#x27; functionality has been moved to a dedicated module <span class='module'>amazon.aws.ec2_tag_info</span>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>tags</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>A dictionary of tags to add or remove from the resource.</div>
-                        <div>If the value provided for a key is not set and <em>state=absent</em>, the tag will be removed regardless of its current value.</div>
-                        <div>Required when <em>state=present</em> or <em>state=absent</em>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>validate_certs</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -290,6 +253,22 @@ Parameters
                 </td>
                 <td>
                         <div>When set to &quot;no&quot;, SSL certificates will not be validated for communication with the AWS APIs.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>vpc_endpoint_ids</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The IDs of specific endpoints to retrieve the details of.</div>
                 </td>
             </tr>
     </table>
@@ -312,49 +291,39 @@ Examples
 
 .. code-block:: yaml
 
-    - name: Ensure tags are present on a resource
-      amazon.aws.ec2_tag:
-        region: eu-west-1
-        resource: vol-XXXXXX
-        state: present
-        tags:
-          Name: ubervol
-          env: prod
+    # Simple example of listing all support AWS services for VPC endpoints
+    - name: List supported AWS endpoint services
+      amazon.aws.ec2_vpc_endpoint_info:
+        query: services
+        region: ap-southeast-2
+      register: supported_endpoint_services
 
-    - name: Ensure all volumes are tagged
-      amazon.aws.ec2_tag:
-        region:  eu-west-1
-        resource: '{{ item.id }}'
-        state: present
-        tags:
-          Name: dbserver
-          Env: production
-      loop: '{{ ec2_vol.volumes }}'
+    - name: Get all endpoints in ap-southeast-2 region
+      amazon.aws.ec2_vpc_endpoint_info:
+        query: endpoints
+        region: ap-southeast-2
+      register: existing_endpoints
 
-    - name: Remove the Env tag
-      amazon.aws.ec2_tag:
-        region: eu-west-1
-        resource: i-xxxxxxxxxxxxxxxxx
-        tags:
-          Env:
-        state: absent
+    - name: Get all endpoints with specific filters
+      amazon.aws.ec2_vpc_endpoint_info:
+        query: endpoints
+        region: ap-southeast-2
+        filters:
+          vpc-id:
+            - vpc-12345678
+            - vpc-87654321
+          vpc-endpoint-state:
+            - available
+            - pending
+      register: existing_endpoints
 
-    - name: Remove the Env tag if it's currently 'development'
-      amazon.aws.ec2_tag:
-        region: eu-west-1
-        resource: i-xxxxxxxxxxxxxxxxx
-        tags:
-          Env: development
-        state: absent
-
-    - name: Remove all tags except for Name from an instance
-      amazon.aws.ec2_tag:
-        region: eu-west-1
-        resource: i-xxxxxxxxxxxxxxxxx
-        tags:
-            Name: ''
-        state: absent
-        purge_tags: true
+    - name: Get details on specific endpoint
+      amazon.aws.ec2_vpc_endpoint_info:
+        query: endpoints
+        region: ap-southeast-2
+        vpc_endpoint_ids:
+          - vpce-12345678
+      register: endpoint_details
 
 
 
@@ -373,46 +342,35 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>added_tags</b>
+                    <b>service_names</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">dictionary</span>
+                      <span style="color: purple">list</span>
                     </div>
                 </td>
-                <td>If tags were added</td>
+                <td><em>query</em> is <code>services</code></td>
                 <td>
-                            <div>A dict of tags that were added to the resource</div>
+                            <div>AWS VPC endpoint service names</div>
                     <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;service_names&#x27;: [&#x27;com.amazonaws.ap-southeast-2.s3&#x27;]}</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>removed_tags</b>
+                    <b>vpc_endpoints</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">dictionary</span>
+                      <span style="color: purple">list</span>
                     </div>
                 </td>
-                <td>If tags were removed</td>
+                <td><em>query</em> is <code>endpoints</code></td>
                 <td>
-                            <div>A dict of tags that were removed from the resource</div>
+                            <div>A list of endpoints that match the query. Each endpoint has the keys creation_timestamp, policy_document, route_table_ids, service_name, state, vpc_endpoint_id, vpc_id.</div>
                     <br/>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>tags</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>always</td>
-                <td>
-                            <div>A dict containing the tags on the resource</div>
-                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;vpc_endpoints&#x27;: [{&#x27;creation_timestamp&#x27;: &#x27;2017-02-16T11:06:48+00:00&#x27;, &#x27;policy_document&#x27;: &#x27;&quot;{\\&quot;Version\\&quot;:\\&quot;2012-10-17\\&quot;,\\&quot;Id\\&quot;:\\&quot;Policy1450910922815\\&quot;, \\&quot;Statement\\&quot;:[{\\&quot;Sid\\&quot;:\\&quot;Stmt1450910920641\\&quot;,\\&quot;Effect\\&quot;:\\&quot;Allow\\&quot;, \\&quot;Principal\\&quot;:\\&quot;*\\&quot;,\\&quot;Action\\&quot;:\\&quot;s3:*\\&quot;,\\&quot;Resource\\&quot;:[\\&quot;arn:aws:s3:::*/*\\&quot;,\\&quot;arn:aws:s3:::*\\&quot;]}]}&quot;\n&#x27;, &#x27;route_table_ids&#x27;: [&#x27;rtb-abcd1234&#x27;], &#x27;service_name&#x27;: &#x27;com.amazonaws.ap-southeast-2.s3&#x27;, &#x27;state&#x27;: &#x27;available&#x27;, &#x27;vpc_endpoint_id&#x27;: &#x27;vpce-abbad0d0&#x27;, &#x27;vpc_id&#x27;: &#x27;vpc-1111ffff&#x27;}]}</div>
                 </td>
             </tr>
     </table>
@@ -426,5 +384,4 @@ Status
 Authors
 ~~~~~~~
 
-- Lester Wade (@lwade)
-- Paul Arthur (@flowerysong)
+- Karen Cheng (@Etherdaemon)

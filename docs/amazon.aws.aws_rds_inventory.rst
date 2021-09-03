@@ -210,6 +210,7 @@ Parameters
                     <td>
                             <div> ini entries:
                                     <p>[default]<br>fact_caching_prefix = ansible_inventory_</p>
+                                    <p>[defaults]<br>fact_caching_prefix = ansible_inventory_</p>
                                     <p>[inventory]<br>cache_prefix = ansible_inventory_</p>
                             </div>
                                 <div>env:ANSIBLE_CACHE_PLUGIN_PREFIX</div>

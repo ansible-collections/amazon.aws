@@ -1,11 +1,11 @@
-.. _amazon.aws.ec2_tag_module:
+.. _amazon.aws.ec2_vpc_igw_info_module:
 
 
-******************
-amazon.aws.ec2_tag
-******************
+***************************
+amazon.aws.ec2_vpc_igw_info
+***************************
 
-**create and remove tags on ec2 resources**
+**Gather information about internet gateways in AWS**
 
 
 Version added: 1.0.0
@@ -17,9 +17,8 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Creates, modifies and removes tags for any EC2 resource.
-- Resources are referenced by their resource id (for example, an instance being i-XXXXXXX, a VPC being vpc-XXXXXXX).
-- This module is designed to be used with complex args (tags), see the examples.
+- Gather information about internet gateways in AWS.
+- This module was called ``ec2_vpc_igw_facts`` before Ansible 2.9. The usage did not change.
 
 
 
@@ -116,6 +115,27 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>convert_tags</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Convert tags from boto3 format (list of dictionaries) to the standard dictionary format.</div>
+                        <div>This currently defaults to <code>False</code>.  The default will be changed to <code>True</code> after 2022-06-22.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>debug_botocore_endpoint_logs</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -151,6 +171,37 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>filters</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>A dict of filters to apply. Each dict item consists of a filter key and a filter value. See <a href='https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInternetGateways.html'>https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInternetGateways.html</a> for possible filters.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>internet_gateway_ids</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Get details of specific Internet Gateway ID. Provide this value as a list.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>profile</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -163,26 +214,6 @@ Parameters
                         <div>Using <em>profile</em> will override <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> and support for passing them at the same time as <em>profile</em> has been deprecated.</div>
                         <div><em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> will be made mutually exclusive with <em>profile</em> after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_profile</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>purge_tags</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
-                                    <li>yes</li>
-                        </ul>
-                </td>
-                <td>
-                        <div>Whether unspecified tags should be removed from the resource.</div>
-                        <div>Note that when combined with <em>state=absent</em>, specified tags with non-matching values are not purged.</div>
                 </td>
             </tr>
             <tr>
@@ -204,22 +235,6 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>resource</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The EC2 resource id.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>security_token</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -233,44 +248,6 @@ Parameters
                         <div>If <em>profile</em> is set this parameter is ignored.</div>
                         <div>Passing the <em>security_token</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_security_token, access_token</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>state</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>present</b>&nbsp;&larr;</div></li>
-                                    <li>absent</li>
-                                    <li>list</li>
-                        </ul>
-                </td>
-                <td>
-                        <div>Whether the tags should be present or absent on the resource.</div>
-                        <div>The use of <em>state=list</em> to interrogate the tags of an instance has been deprecated and will be removed after 2022-06-01.  The &#x27;list&#x27; functionality has been moved to a dedicated module <span class='module'>amazon.aws.ec2_tag_info</span>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>tags</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>A dictionary of tags to add or remove from the resource.</div>
-                        <div>If the value provided for a key is not set and <em>state=absent</em>, the tag will be removed regardless of its current value.</div>
-                        <div>Required when <em>state=present</em> or <em>state=absent</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -312,49 +289,28 @@ Examples
 
 .. code-block:: yaml
 
-    - name: Ensure tags are present on a resource
-      amazon.aws.ec2_tag:
-        region: eu-west-1
-        resource: vol-XXXXXX
-        state: present
-        tags:
-          Name: ubervol
-          env: prod
+    # # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-    - name: Ensure all volumes are tagged
-      amazon.aws.ec2_tag:
-        region:  eu-west-1
-        resource: '{{ item.id }}'
-        state: present
-        tags:
-          Name: dbserver
-          Env: production
-      loop: '{{ ec2_vol.volumes }}'
+    - name: Gather information about all Internet Gateways for an account or profile
+      amazon.aws.ec2_vpc_igw_info:
+        region: ap-southeast-2
+        profile: production
+      register: igw_info
 
-    - name: Remove the Env tag
-      amazon.aws.ec2_tag:
-        region: eu-west-1
-        resource: i-xxxxxxxxxxxxxxxxx
-        tags:
-          Env:
-        state: absent
+    - name: Gather information about a filtered list of Internet Gateways
+      amazon.aws.ec2_vpc_igw_info:
+        region: ap-southeast-2
+        profile: production
+        filters:
+            "tag:Name": "igw-123"
+      register: igw_info
 
-    - name: Remove the Env tag if it's currently 'development'
-      amazon.aws.ec2_tag:
-        region: eu-west-1
-        resource: i-xxxxxxxxxxxxxxxxx
-        tags:
-          Env: development
-        state: absent
-
-    - name: Remove all tags except for Name from an instance
-      amazon.aws.ec2_tag:
-        region: eu-west-1
-        resource: i-xxxxxxxxxxxxxxxxx
-        tags:
-            Name: ''
-        state: absent
-        purge_tags: true
+    - name: Gather information about a specific internet gateway by InternetGatewayId
+      amazon.aws.ec2_vpc_igw_info:
+        region: ap-southeast-2
+        profile: production
+        internet_gateway_ids: igw-c1231234
+      register: igw_info
 
 
 
@@ -366,42 +322,118 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
 
     <table border=0 cellpadding=0 class="documentation-table">
         <tr>
-            <th colspan="1">Key</th>
+            <th colspan="3">Key</th>
             <th>Returned</th>
             <th width="100%">Description</th>
         </tr>
             <tr>
-                <td colspan="1">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>added_tags</b>
+                    <b>changed</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">dictionary</span>
+                      <span style="color: purple">boolean</span>
                     </div>
                 </td>
-                <td>If tags were added</td>
+                <td>always</td>
                 <td>
-                            <div>A dict of tags that were added to the resource</div>
+                            <div>True if listing the internet gateways succeeds.</div>
                     <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">false</div>
                 </td>
             </tr>
             <tr>
-                <td colspan="1">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>removed_tags</b>
+                    <b>internet_gateways</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">dictionary</span>
+                      <span style="color: purple">complex</span>
                     </div>
                 </td>
-                <td>If tags were removed</td>
+                <td>always</td>
                 <td>
-                            <div>A dict of tags that were removed from the resource</div>
+                            <div>The internet gateways for the account.</div>
                     <br/>
                 </td>
             </tr>
-            <tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>attachments</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">complex</span>
+                    </div>
+                </td>
+                <td><em>state=present</em></td>
+                <td>
+                            <div>Any VPCs attached to the internet gateway</div>
+                    <br/>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>state</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td><em>state=present</em></td>
+                <td>
+                            <div>The current state of the attachment</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">available</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>vpc_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td><em>state=present</em></td>
+                <td>
+                            <div>The ID of the VPC.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">vpc-02123b67</div>
+                </td>
+            </tr>
+
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>internet_gateway_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td><em>state=present</em></td>
+                <td>
+                            <div>The ID of the internet gateway</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">igw-2123634d</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>tags</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
@@ -409,12 +441,15 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                       <span style="color: purple">dictionary</span>
                     </div>
                 </td>
-                <td>always</td>
+                <td><em>state=present</em></td>
                 <td>
-                            <div>A dict containing the tags on the resource</div>
+                            <div>Any tags assigned to the internet gateway</div>
                     <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;tags&#x27;: {&#x27;Ansible&#x27;: &#x27;Test&#x27;}}</div>
                 </td>
             </tr>
+
     </table>
     <br/><br/>
 
@@ -426,5 +461,4 @@ Status
 Authors
 ~~~~~~~
 
-- Lester Wade (@lwade)
-- Paul Arthur (@flowerysong)
+- Nick Aslanidis (@naslanidis)

@@ -54,18 +54,30 @@ Name | Description
 [amazon.aws.ec2_eni_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_eni_info_module.rst)|Gather information about ec2 ENI interfaces in AWS
 [amazon.aws.ec2_group](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_group_module.rst)|maintain an ec2 VPC security group.
 [amazon.aws.ec2_group_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_group_info_module.rst)|Gather information about ec2 security groups in AWS.
+[amazon.aws.ec2_instance](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_instance_module.rst)|Create & manage EC2 instances
+[amazon.aws.ec2_instance_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_instance_info_module.rst)|Gather information about ec2 instances in AWS
 [amazon.aws.ec2_key](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_key_module.rst)|create or delete an ec2 key pair
 [amazon.aws.ec2_metadata_facts](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_metadata_facts_module.rst)|gathers facts (instance metadata) about remote hosts within EC2
 [amazon.aws.ec2_snapshot](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_snapshot_module.rst)|Creates a snapshot from an existing volume
 [amazon.aws.ec2_snapshot_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_snapshot_info_module.rst)|Gather information about ec2 volume snapshots in AWS
+[amazon.aws.ec2_spot_instance](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_spot_instance_module.rst)|request, stop, reboot or cancel spot instance
 [amazon.aws.ec2_tag](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_tag_module.rst)|create and remove tags on ec2 resources
 [amazon.aws.ec2_tag_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_tag_info_module.rst)|list tags on ec2 resources
 [amazon.aws.ec2_vol](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vol_module.rst)|Create and attach a volume, return volume id and device map
 [amazon.aws.ec2_vol_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vol_info_module.rst)|Gather information about ec2 volumes in AWS
 [amazon.aws.ec2_vpc_dhcp_option](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_dhcp_option_module.rst)|Manages DHCP Options, and can ensure the DHCP options for the given VPC match what's requested
 [amazon.aws.ec2_vpc_dhcp_option_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_dhcp_option_info_module.rst)|Gather information about dhcp options sets in AWS
+[amazon.aws.ec2_vpc_endpoint](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_endpoint_module.rst)|Create and delete AWS VPC Endpoints.
+[amazon.aws.ec2_vpc_endpoint_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_endpoint_info_module.rst)|Retrieves AWS VPC endpoints details using AWS methods.
+[amazon.aws.ec2_vpc_endpoint_service_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_endpoint_service_info_module.rst)|retrieves AWS VPC endpoint service details
+[amazon.aws.ec2_vpc_igw](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_igw_module.rst)|Manage an AWS VPC Internet gateway
+[amazon.aws.ec2_vpc_igw_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_igw_info_module.rst)|Gather information about internet gateways in AWS
+[amazon.aws.ec2_vpc_nat_gateway](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_nat_gateway_module.rst)|Manage AWS VPC NAT Gateways.
+[amazon.aws.ec2_vpc_nat_gateway_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_nat_gateway_info_module.rst)|Retrieves AWS VPC Managed Nat Gateway details using AWS methods.
 [amazon.aws.ec2_vpc_net](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_net_module.rst)|Configure AWS virtual private clouds
 [amazon.aws.ec2_vpc_net_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_net_info_module.rst)|Gather information about ec2 VPCs in AWS
+[amazon.aws.ec2_vpc_route_table](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_route_table_module.rst)|Manage route tables for AWS virtual private clouds
+[amazon.aws.ec2_vpc_route_table_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_route_table_info_module.rst)|Gather information about ec2 VPC route tables in AWS
 [amazon.aws.ec2_vpc_subnet](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_subnet_module.rst)|Manage subnets in AWS virtual private clouds
 [amazon.aws.ec2_vpc_subnet_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_subnet_info_module.rst)|Gather information about ec2 VPC subnets in AWS
 [amazon.aws.s3_bucket](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.s3_bucket_module.rst)|Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID

@@ -1,3 +1,0 @@
----
-bugfixes:
-- "inventory - ``include_filters`` won't be ignored anymore if ``filters`` is not set (https://github.com/ansible-collections/amazon.aws/issues/457)."

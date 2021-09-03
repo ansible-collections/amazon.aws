@@ -25,9 +25,9 @@ Requirements
 ------------
 The below requirements are needed on the host that executes this module.
 
-- boto
-- boto3
-- python >= 2.6
+- python >= 3.6
+- boto3 >= 1.13.0
+- botocore >= 1.16.0
 
 
 Parameters
@@ -53,7 +53,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
+                        <div><code>AWS access key</code>. If not set then the value of the <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_ACCESS_KEY</code> or <code>EC2_ACCESS_KEY</code> environment variable is used.</div>
                         <div>If <em>profile</em> is set this parameter is ignored.</div>
                         <div>Passing the <em>aws_access_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
@@ -72,7 +72,7 @@ Parameters
                 </td>
                 <td>
                         <div>The location of a CA Bundle to use when validating SSL certificates.</div>
-                        <div>Only used for boto3 based modules.</div>
+                        <div>Not used by boto 2 based modules.</div>
                         <div>Note: The CA Bundle is read &#x27;module&#x27; side and may need to be explicitly copied from the controller if not run locally.</div>
                 </td>
             </tr>
@@ -105,7 +105,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
+                        <div><code>AWS secret key</code>. If not set then the value of the <code>AWS_SECRET_ACCESS_KEY</code>, <code>AWS_SECRET_KEY</code>, or <code>EC2_SECRET_KEY</code> environment variable is used.</div>
                         <div>If <em>profile</em> is set this parameter is ignored.</div>
                         <div>Passing the <em>aws_secret_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
@@ -206,7 +206,6 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                         <div>Using <em>profile</em> will override <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> and support for passing them at the same time as <em>profile</em> has been deprecated.</div>
                         <div><em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> will be made mutually exclusive with <em>profile</em> after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_profile</div>
@@ -350,7 +349,9 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The start of the range of ports that traffic is coming from.  A value of <code>-1</code> indicates all ports.</div>
+                        <div>The start of the range of ports that traffic is coming from.</div>
+                        <div>A value can be between <code>0</code> to <code>65535</code>.</div>
+                        <div>A value of <code>-1</code> indicates all ports (only supported when <em>proto=icmp</em>).</div>
                 </td>
             </tr>
             <tr>
@@ -466,7 +467,9 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The end of the range of ports that traffic is coming from.  A value of <code>-1</code> indicates all ports.</div>
+                        <div>The end of the range of ports that traffic is coming from.</div>
+                        <div>A value can be between <code>0</code> to <code>65535</code>.</div>
+                        <div>A value of <code>-1</code> indicates all ports (only supported when <em>proto=icmp</em>).</div>
                 </td>
             </tr>
 
@@ -533,7 +536,9 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The start of the range of ports that traffic is going to.  A value of <code>-1</code> indicates all ports.</div>
+                        <div>The start of the range of ports that traffic is going to.</div>
+                        <div>A value can be between <code>0</code> to <code>65535</code>.</div>
+                        <div>A value of <code>-1</code> indicates all ports (only supported when <em>proto=icmp</em>).</div>
                 </td>
             </tr>
             <tr>
@@ -649,7 +654,9 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The end of the range of ports that traffic is going to.  A value of <code>-1</code> indicates all ports.</div>
+                        <div>The end of the range of ports that traffic is going to.</div>
+                        <div>A value can be between <code>0</code> to <code>65535</code>.</div>
+                        <div>A value of <code>-1</code> indicates all ports (only supported when <em>proto=icmp</em>).</div>
                 </td>
             </tr>
 
@@ -665,7 +672,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
+                        <div><code>AWS STS security token</code>. If not set then the value of the <code>AWS_SECURITY_TOKEN</code> or <code>EC2_SECURITY_TOKEN</code> environment variable is used.</div>
                         <div>If <em>profile</em> is set this parameter is ignored.</div>
                         <div>Passing the <em>security_token</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_security_token, access_token</div>
@@ -722,7 +729,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
+                        <div>When set to &quot;no&quot;, SSL certificates will not be validated for communication with the AWS APIs.</div>
                 </td>
             </tr>
             <tr>
@@ -751,8 +758,9 @@ Notes
    - If a rule declares a group_name and that group doesn't exist, it will be automatically created. In that case, group_desc should be provided as well. The module will refuse to create a depended-on group without a description.
    - Preview diff mode support is added in version 2.7.
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
-   - Ansible uses the boto configuration file (typically ~/.boto) if no credentials are provided. See https://boto.readthedocs.io/en/latest/boto_config_tut.html
-   - ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be configured in the boto config file
+   - When no credentials are explicitly provided the AWS SDK (boto3) that Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``). See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html for more information.
+   - Modules based on the original AWS SDK (boto) may read their default configuration from different files. See https://boto.readthedocs.io/en/latest/boto_config_tut.html for more information.
+   - ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be defined in the configuration files.
 
 
 
@@ -818,7 +826,7 @@ Examples
             # the containing group name may be specified here
             group_name: example
           - proto: all
-            # in the 'proto' attribute, if you specify -1, all, or a protocol number other than tcp, udp, icmp, or 58 (ICMPv6),
+            # in the 'proto' attribute, if you specify -1 (only supported when I(proto=icmp)), all, or a protocol number other than tcp, udp, icmp, or 58 (ICMPv6),
             # traffic on all ports is allowed, regardless of any ports you specify
             from_port: 10050 # this value is ignored
             to_port: 10050 # this value is ignored
