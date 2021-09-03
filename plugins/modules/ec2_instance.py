@@ -1440,7 +1440,6 @@ def change_network_attachments(instance, params, ec2):
     return False
 
 
-@AWSRetry.jittered_backoff()
 def find_instances(ec2, ids=None, filters=None):
     paginator = ec2.get_paginator('describe_instances')
     if ids:
@@ -1457,7 +1456,8 @@ def find_instances(ec2, ids=None, filters=None):
         results = _describe_instances(ec2, **params)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Could not describe instances")
-    return list(results)
+    retval = list(results)
+    return retval
 
 
 @AWSRetry.jittered_backoff()
@@ -1508,9 +1508,11 @@ def ensure_instance_state(desired_module_state, ec2):
     Sets return keys depending on the desired instance state
     """
     results = dict()
+    changed = False
     if desired_module_state in ('running', 'started'):
-        changed, failed, instances, failure_reason = change_instance_state(
+        _changed, failed, instances, failure_reason = change_instance_state(
             filters=module.params.get('filters'), desired_module_state=desired_module_state, ec2=ec2)
+        changed |= _changed
 
         if failed:
             module.fail_json(
@@ -1529,14 +1531,16 @@ def ensure_instance_state(desired_module_state, ec2):
         # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-reboot.html
         # The Ansible behaviour of issuing a stop/start has a minor impact on user billing
         # This will need to be changelogged if we ever change to ec2.reboot_instance
-        changed, failed, instances, failure_reason = change_instance_state(
+        _changed, failed, instances, failure_reason = change_instance_state(
             filters=module.params.get('filters'),
             desired_module_state='stopped',
             ec2=ec2)
-        changed, failed, instances, failure_reason = change_instance_state(
+        changed |= _changed
+        _changed, failed, instances, failure_reason = change_instance_state(
             filters=module.params.get('filters'),
             desired_module_state=desired_module_state,
             ec2=ec2)
+        changed |= _changed
 
         if failed:
             module.fail_json(
@@ -1552,10 +1556,11 @@ def ensure_instance_state(desired_module_state, ec2):
             instances=[pretty_instance(i) for i in instances],
         )
     elif desired_module_state in ('stopped',):
-        changed, failed, instances, failure_reason = change_instance_state(
+        _changed, failed, instances, failure_reason = change_instance_state(
             filters=module.params.get('filters'),
             desired_module_state=desired_module_state,
             ec2=ec2)
+        changed |= _changed
 
         if failed:
             module.fail_json(
@@ -1849,11 +1854,16 @@ def main():
                 module.fail_json(msg="Parameter network.interfaces can't be used with security_groups")
 
     state = module.params.get('state')
-    ec2 = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+    retry_decorator = AWSRetry.jittered_backoff(
+        catch_extra_error_codes=[
+            'IncorrectState',
+        ]
+    )
+    ec2 = module.client('ec2', retry_decorator=retry_decorator)
     if module.params.get('filters') is None:
         filters = {
             # all states except shutting-down and terminated
-            'instance-state-name': ['pending', 'running', 'stopping', 'stopped']
+            'instance-state-name': ['pending', 'running', 'stopping', 'stopped'],
         }
         if isinstance(module.params.get('instance_ids'), string_types):
             filters['instance-id'] = [module.params.get('instance_ids')]
