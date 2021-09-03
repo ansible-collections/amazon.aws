@@ -52,7 +52,6 @@
     ec2_instance_info:
       filters:
         "tag:Name": "{{ resource_prefix }}-test-ebs-vols"
-        "instance-state-name": "running"
     register: presented_instance_fact
 
   - name: "fact checkmode ec2 instance"
@@ -61,10 +60,14 @@
         "tag:Name": "{{ resource_prefix }}-test-ebs-vols-checkmode"
     register: checkmode_instance_fact
 
-  - name: "Confirm whether the check mode is working normally."
+  - name: "Confirm instance was created without check mode"
     assert:
       that:
         - "{{ presented_instance_fact.instances | length }} > 0"
+
+  - name: "Confirm instance was not created with check mode"
+    assert:
+      that:
         - "{{ checkmode_instance_fact.instances | length }} == 0"
 
   - name: "Terminate instances"
