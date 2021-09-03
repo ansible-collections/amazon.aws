@@ -17,8 +17,8 @@
     - name: Check the returned value for the earlier task
       assert:
         that:
-          - "{{ create_instance_check_mode_results.changed }}"
-          - "{{ create_instance_check_mode_results.spec.DisableApiTermination }}"
+          - create_instance_check_mode_results is changed
+          - create_instance_check_mode_results.spec.DisableApiTermination == True
 
     - name: Create instance with termination protection
       ec2_instance:
@@ -80,7 +80,7 @@
     - name: Check the returned value for the earlier task
       assert:
         that:
-          - "{{ not create_instance_check_mode_results.changed }}"
+          - create_instance_check_mode_results is not changed
 
     - name: Create instance with termination protection (idempotent)
       ec2_instance:
