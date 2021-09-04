@@ -1,7 +1,7 @@
 - block:
   - name: "New instance with an extra block device"
     ec2_instance:
-      state: present
+      state: running
       name: "{{ resource_prefix }}-test-ebs-vols"
       image_id: "{{ ec2_ami_id }}"
       vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
@@ -77,7 +77,7 @@
 
   - name: "New instance with an extra block device - gp3 volume_type and throughput"
     ec2_instance:
-      state: present
+      state: running
       name: "{{ resource_prefix }}-test-ebs-vols-gp3"
       image_id: "{{ ec2_ami_id }}"
       vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"

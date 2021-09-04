@@ -63,7 +63,7 @@
   - name: "Verify that it was not stopped."
     assert:
       that:
-        - '"{{ confirm_checkmode_stopinstance_fact.instances[0].state.name }}" != "stopped"'
+        - confirm_checkmode_stopinstance_fact.instances[0].state.name not in ["stopped", "stopping"]
 
   - name: "Stop instance."
     ec2_instance:
@@ -73,9 +73,8 @@
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
         TestTag: "Some Value"
+      wait: true
     register: instance_stop
-    until: not instance_stop.failed
-    retries: 10
 
   - name: "fact stopped ec2 instance"
     ec2_instance_info:
@@ -86,7 +85,7 @@
   - name: "Verify that it was stopped."
     assert:
       that:
-        - '"{{ confirm_stopinstance_fact.instances[0].state.name }}" in ["stopped", "stopping"]'
+        - confirm_stopinstance_fact.instances[0].state.name  in ["stopped", "stopping"]
 
   - name: "Running instance in check mode."
     ec2_instance:
@@ -158,6 +157,7 @@
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
         TestTag: "Some Value"
+      wait: True
     check_mode: yes
 
   - name: "fact ec2 instance"
@@ -179,6 +179,7 @@
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
         TestTag: "Some Value"
+      wait: True
 
   - name: "fact ec2 instance"
     ec2_instance_info:

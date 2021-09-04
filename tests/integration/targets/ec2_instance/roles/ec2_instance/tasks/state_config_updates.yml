@@ -5,7 +5,7 @@
 - block:
   - name: "Make instance with sg and termination protection enabled"
     ec2_instance:
-      state: present
+      state: running
       name: "{{ resource_prefix }}-test-state-param-changes"
       image_id: "{{ ec2_ami_id }}"
       tags:
@@ -111,6 +111,7 @@
       vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
       termination_protection: False
       instance_type: "{{ ec2_instance_type }}"
+      wait: True
     register: change_params_start_result
 
   - assert:
@@ -120,8 +121,8 @@
         - '"instances" in change_params_start_result'
         - '"instance_ids" in change_params_start_result'
         - '"changes" in change_params_start_result'
-        - '"reboot_success" in change_params_start_result'
-        - '"reboot_failed" in change_params_start_result'
+        - '"start_success" in change_params_start_result'
+        - '"start_failed" in change_params_start_result'
         - change_params_start_result.instances[0].security_groups[0].group_id == "{{ sg.group_id }}"
         - change_params_start_result.changes[0].DisableApiTermination.Value == False
 

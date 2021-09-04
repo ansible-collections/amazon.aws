@@ -17,6 +17,7 @@
   ec2_eni:
     state: absent
     eni_id: "{{ item.id }}"
+  register: removed
   until: removed is not failed
   with_items: "{{ enis.network_interfaces }}"
   ignore_errors: yes
