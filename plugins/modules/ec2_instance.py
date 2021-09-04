@@ -1789,6 +1789,42 @@ def run_instances(**instance_spec):
         return client.run_instances(**instance_spec)
 
 
+def build_filters():
+    filters = {
+        # all states except shutting-down and terminated
+        'instance-state-name': ['pending', 'running', 'stopping', 'stopped'],
+    }
+    if isinstance(module.params.get('instance_ids'), string_types):
+        filters['instance-id'] = [module.params.get('instance_ids')]
+    elif isinstance(module.params.get('instance_ids'), list) and len(module.params.get('instance_ids')):
+        filters['instance-id'] = module.params.get('instance_ids')
+    else:
+        if not module.params.get('vpc_subnet_id'):
+            if module.params.get('network'):
+                # grab AZ from one of the ENIs
+                ints = module.params.get('network').get('interfaces')
+                if ints:
+                    filters['network-interface.network-interface-id'] = []
+                    for i in ints:
+                        if isinstance(i, dict):
+                            i = i['id']
+                        filters['network-interface.network-interface-id'].append(i)
+            else:
+                sub = get_default_subnet(get_default_vpc(), availability_zone=module.params.get('availability_zone'))
+                filters['subnet-id'] = sub['SubnetId']
+        else:
+            filters['subnet-id'] = [module.params.get('vpc_subnet_id')]
+
+        if module.params.get('name'):
+            filters['tag:Name'] = [module.params.get('name')]
+
+        if module.params.get('image_id'):
+            filters['image-id'] = [module.params.get('image_id')]
+        elif (module.params.get('image') or {}).get('id'):
+            filters['image-id'] = [module.params.get('image', {}).get('id')]
+    return filters
+
+
 def main():
     global module
     global client
@@ -1853,47 +1889,16 @@ def main():
                 module.fail_json(msg="Parameter network.interfaces can't be used with security_groups")
 
     state = module.params.get('state')
+
     retry_decorator = AWSRetry.jittered_backoff(
         catch_extra_error_codes=[
             'IncorrectState',
         ]
     )
     client = module.client('ec2', retry_decorator=retry_decorator)
+
     if module.params.get('filters') is None:
-        filters = {
-            # all states except shutting-down and terminated
-            'instance-state-name': ['pending', 'running', 'stopping', 'stopped'],
-        }
-        if isinstance(module.params.get('instance_ids'), string_types):
-            filters['instance-id'] = [module.params.get('instance_ids')]
-        elif isinstance(module.params.get('instance_ids'), list) and len(module.params.get('instance_ids')):
-            filters['instance-id'] = module.params.get('instance_ids')
-        else:
-            if not module.params.get('vpc_subnet_id'):
-                if module.params.get('network'):
-                    # grab AZ from one of the ENIs
-                    ints = module.params.get('network').get('interfaces')
-                    if ints:
-                        filters['network-interface.network-interface-id'] = []
-                        for i in ints:
-                            if isinstance(i, dict):
-                                i = i['id']
-                            filters['network-interface.network-interface-id'].append(i)
-                else:
-                    sub = get_default_subnet(get_default_vpc(), availability_zone=module.params.get('availability_zone'))
-                    filters['subnet-id'] = sub['SubnetId']
-            else:
-                filters['subnet-id'] = [module.params.get('vpc_subnet_id')]
-
-            if module.params.get('name'):
-                filters['tag:Name'] = [module.params.get('name')]
-
-            if module.params.get('image_id'):
-                filters['image-id'] = [module.params.get('image_id')]
-            elif (module.params.get('image') or {}).get('id'):
-                filters['image-id'] = [module.params.get('image', {}).get('id')]
-
-        module.params['filters'] = filters
+        module.params['filters'] = build_filters()
 
     existing_matches = find_instances(filters=module.params.get('filters'))
     changed = False
