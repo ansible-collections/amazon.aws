@@ -1510,19 +1510,22 @@ def ensure_instance_state(desired_module_state):
     if desired_module_state in ('running', 'started'):
         _changed, failed, instances, failure_reason = change_instance_state(
             filters=module.params.get('filters'), desired_module_state=desired_module_state)
-        changed |= _changed
+        changed |= bool(len(_changed))
 
         if failed:
             module.fail_json(
                 msg="Unable to start instances: {0}".format(failure_reason),
-                reboot_success=list(changed),
+                reboot_success=list(_changed),
                 reboot_failed=failed)
 
         results = dict(
             msg='Instances started',
-            reboot_success=list(changed),
-            changed=bool(len(changed)),
+            start_success=list(_changed),
+            start_failed=[],
+            # Avoid breaking things 'reboot' is wrong but used to be returned
+            reboot_success=list(_changed),
             reboot_failed=[],
+            changed=changed,
             instances=[pretty_instance(i) for i in instances],
         )
     elif desired_module_state in ('restarted', 'rebooted'):
@@ -1533,23 +1536,23 @@ def ensure_instance_state(desired_module_state):
             filters=module.params.get('filters'),
             desired_module_state='stopped',
         )
-        changed |= _changed
+        changed |= bool(len(_changed))
         _changed, failed, instances, failure_reason = change_instance_state(
             filters=module.params.get('filters'),
             desired_module_state=desired_module_state,
         )
-        changed |= _changed
+        changed |= bool(len(_changed))
 
         if failed:
             module.fail_json(
                 msg="Unable to restart instances: {0}".format(failure_reason),
-                reboot_success=list(changed),
+                reboot_success=list(_changed),
                 reboot_failed=failed)
 
         results = dict(
             msg='Instances restarted',
-            reboot_success=list(changed),
-            changed=bool(len(changed)),
+            reboot_success=list(_changed),
+            changed=changed,
             reboot_failed=[],
             instances=[pretty_instance(i) for i in instances],
         )
@@ -1558,18 +1561,18 @@ def ensure_instance_state(desired_module_state):
             filters=module.params.get('filters'),
             desired_module_state=desired_module_state,
         )
-        changed |= _changed
+        changed |= bool(len(_changed))
 
         if failed:
             module.fail_json(
                 msg="Unable to stop instances: {0}".format(failure_reason),
-                stop_success=list(changed),
+                stop_success=list(_changed),
                 stop_failed=failed)
 
         results = dict(
             msg='Instances stopped',
-            stop_success=list(changed),
-            changed=bool(len(changed)),
+            stop_success=list(_changed),
+            changed=changed,
             stop_failed=[],
             instances=[pretty_instance(i) for i in instances],
         )
@@ -1617,6 +1620,13 @@ def change_instance_state(filters, desired_module_state):
     for inst in instances:
         try:
             if desired_ec2_state == 'terminated':
+                # Before terminating an instance we need for them to leave
+                # 'pending' or 'stopping' (if they're in those states)
+                if inst['State']['Name'] == 'stopping':
+                    await_instances([inst['InstanceId']], desired_module_state='stopped', force_wait=True)
+                elif inst['State']['Name'] == 'pending':
+                    await_instances([inst['InstanceId']], desired_module_state='running', force_wait=True)
+
                 if module.check_mode:
                     changed.add(inst['InstanceId'])
                     continue
@@ -1626,7 +1636,12 @@ def change_instance_state(filters, desired_module_state):
                 resp = client.terminate_instances(aws_retry=True, InstanceIds=[inst['InstanceId']])
                 [changed.add(i['InstanceId']) for i in resp['TerminatingInstances']]
             if desired_ec2_state == 'stopped':
-                if inst['State']['Name'] in ('stopping', 'stopped'):
+                # Before stopping an instance we need for them to leave
+                # 'pending'
+                if inst['State']['Name'] == 'pending':
+                    await_instances([inst['InstanceId']], desired_module_state='running', force_wait=True)
+                # Already moving to the relevant state
+                elif inst['State']['Name'] in ('stopping', 'stopped'):
                     unchanged.add(inst['InstanceId'])
                     continue
 
@@ -1636,6 +1651,12 @@ def change_instance_state(filters, desired_module_state):
                 resp = client.stop_instances(aws_retry=True, InstanceIds=[inst['InstanceId']])
                 [changed.add(i['InstanceId']) for i in resp['StoppingInstances']]
             if desired_ec2_state == 'running':
+                if inst['State']['Name'] in ('pending', 'running'):
+                    unchanged.add(inst['InstanceId'])
+                    continue
+                elif inst['State']['Name'] == 'stopping':
+                    await_instances([inst['InstanceId']], desired_module_state='stopped', force_wait=True)
+
                 if module.check_mode:
                     changed.add(inst['InstanceId'])
                     continue
@@ -1677,53 +1698,50 @@ def determine_iam_role(name_or_arn):
         module.fail_json_aws(e, msg="An error occurred while searching for instance_role {0}. Please try supplying the full ARN.".format(name_or_arn))
 
 
-def handle_existing(existing_matches, changed, module_state):
-    state_results = []
-    alter_config_result = []
-    if module_state in ('running', 'started') and [i for i in existing_matches if i['State']['Name'] != 'running']:
-        ins_changed, failed, instances, failure_reason = change_instance_state(filters=module.params.get('filters'), desired_module_state=module_state)
-        if failed:
-            module.fail_json(msg="Couldn't start instances: {0}. Failure reason: {1}".format(instances, failure_reason))
-        module.exit_json(
-            changed=bool(len(ins_changed)) or changed,
-            instances=[pretty_instance(i) for i in instances],
-            instance_ids=[i['InstanceId'] for i in instances],
-        )
-    changes = diff_instance_and_params(existing_matches[0], module.params)
-    for c in changes:
-        if not module.check_mode:
-            try:
-                client.modify_instance_attribute(aws_retry=True, **c)
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                module.fail_json_aws(e, msg="Could not apply change {0} to existing instance.".format(str(c)))
-    changed |= bool(changes)
-    changed |= add_or_update_instance_profile(existing_matches[0], module.params.get('instance_role'))
-    changed |= change_network_attachments(existing_matches[0], module.params)
+def handle_existing(existing_matches, state):
+    tags = dict(module.params.get('tags') or {})
+    name = module.params.get('name')
+    if name:
+        tags['Name'] = name
+
+    changed = False
+    all_changes = list()
+
+    for instance in existing_matches:
+        changed |= manage_tags(instance, tags, module.params.get('purge_tags', False))
+        changes = diff_instance_and_params(instance, module.params)
+        for c in changes:
+            if not module.check_mode:
+                try:
+                    client.modify_instance_attribute(aws_retry=True, **c)
+                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                    module.fail_json_aws(e, msg="Could not apply change {0} to existing instance.".format(str(c)))
+        all_changes.extend(changes)
+        changed |= bool(changes)
+        changed |= add_or_update_instance_profile(existing_matches[0], module.params.get('instance_role'))
+        changed |= change_network_attachments(existing_matches[0], module.params)
+
     altered = find_instances(ids=[i['InstanceId'] for i in existing_matches])
     alter_config_result = dict(
-        changed=bool(len(changes)) or changed,
+        changed=changed,
         instances=[pretty_instance(i) for i in altered],
         instance_ids=[i['InstanceId'] for i in altered],
         changes=changes,
     )
 
-    if len(state_results):
-        result = {**state_results, **alter_config_result}
-    else:
-        result = alter_config_result
+    state_results = ensure_instance_state(state)
+
+    result = {**state_results, **alter_config_result}
+
     return result
 
 
-def ensure_present(existing_matches, changed, desired_module_state):
-    if len(existing_matches):
-        try:
-            handle_existing(existing_matches, changed, desired_module_state)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json_aws(
-                e, msg="Failed to handle existing instances {0}".format(', '.join([i['InstanceId'] for i in existing_matches])),
-                # instances=[pretty_instance(i) for i in existing_matches],
-                # instance_ids=[i['InstanceId'] for i in existing_matches],
-            )
+def ensure_present(existing_matches, desired_module_state):
+    tags = dict(module.params.get('tags') or {})
+    name = module.params.get('name')
+    if name:
+        tags['Name'] = name
+
     try:
         instance_spec = build_run_instance_spec(module.params)
         # If check mode is enabled,suspend 'ensure function'.
@@ -1901,31 +1919,22 @@ def main():
         module.params['filters'] = build_filters()
 
     existing_matches = find_instances(filters=module.params.get('filters'))
-    changed = False
 
-    if state not in ('terminated', 'absent') and existing_matches:
-        for match in existing_matches:
-            warn_if_public_ip_assignment_changed(match)
-            warn_if_cpu_options_changed(match)
-            tags = module.params.get('tags') or {}
-            name = module.params.get('name')
-            if name:
-                tags['Name'] = name
-            changed |= manage_tags(match, tags, module.params.get('purge_tags', False))
-
-    if state in ('present', 'running', 'started'):
-        ensure_present(existing_matches=existing_matches, changed=changed, desired_module_state=state)
-    elif state in ('restarted', 'rebooted', 'stopped', 'absent', 'terminated'):
+    if state in ('terminated', 'absent'):
         if existing_matches:
             result = ensure_instance_state(state)
         else:
-            module.exit_json(
+            result = dict(
                 msg='No matching instances found',
                 changed=False,
-                instances=[],
             )
+    elif existing_matches:
+        for match in existing_matches:
+            warn_if_public_ip_assignment_changed(match)
+            warn_if_cpu_options_changed(match)
+        result = handle_existing(existing_matches, state)
     else:
-        module.fail_json(msg="We don't handle the state {0}".format(state))
+        result = ensure_present(existing_matches=existing_matches, desired_module_state=state)
 
     module.exit_json(**result)
 
