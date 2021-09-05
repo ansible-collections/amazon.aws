@@ -2143,7 +2143,13 @@ def main():
         elb = elb_man.get_info()
         ec2_result = dict(elb=elb)
 
-    module.exit_json(changed=elb_man.changed, **ec2_result)
+    ansible_facts = {'ec2_elb': 'info'}
+
+    module.exit_json(
+        ansible_facts=ansible_facts,
+        changed=elb_man.changed,
+        **ec2_result,
+    )
 
 
 if __name__ == '__main__':
