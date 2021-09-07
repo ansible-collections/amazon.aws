@@ -1,4 +1,5 @@
 coverage==4.5.4
+setuptools < 58.0.2 ; python_version >= '3.5' # setuptools 58.0.2 breaks installation of packages, such as coverage, that reference the 'use_2to3' feature
 placebo
 mock
 pytest-xdist
