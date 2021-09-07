@@ -1,8 +1,10 @@
 breaking_changes:
 - >-
-  ec2_instance - if plays require the old behavior of ``ec2_instance``, waiting for
-  EC2 instance monitoring status to become ``OK`` when launching a new instance,
-  the action will need to specify ``state: started`` (https://github.com/ansible-collections/amazon.aws/pull/481).
+  ec2_instance - instance wait for state behaviour has changed.  If plays
+  require the old behavior of waiting for the instance monitoring status to
+  become ``OK`` when launching a new instance, the action will need to specify
+  ``state: started``
+  (https://github.com/ansible-collections/amazon.aws/pull/481).
 bugfixes:
 - >-
   ec2_instance - ``ec2_instance`` was waiting on EC2 instance monitoring status
