@@ -121,7 +121,7 @@ import time
 import datetime
 
 try:
-  import botocore
+    import botocore
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
@@ -165,7 +165,7 @@ def describe_spot_instance_requests(connection, module):
 
     spot_request = {'spot_instance_requests': []}
     for response_list_item in describe_spot_instance_requests_response:
-      spot_request['spot_instance_requests'].append(camel_dict_to_snake_dict(response_list_item))
+        spot_request['spot_instance_requests'].append(camel_dict_to_snake_dict(response_list_item))
 
     module.exit_json(spot_request=spot_request['spot_instance_requests'], changed=changed)
 
