@@ -37,6 +37,9 @@
       assert:
         that:
           - vpc_info.vpcs | length == 0
+    - name: debug
+      debug:
+        var: vpc_info
 
     - name: test check mode creating a VPC
       ec2_vpc_net:
