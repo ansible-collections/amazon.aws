@@ -12,6 +12,10 @@
 
   block:
 
+    - name: define unused variable
+      set_fact:
+        ununsed: "This is just for test"
+
     - name: Create a test VPC
       ec2_vpc_net:
         name: "{{ vpc_name }}"
