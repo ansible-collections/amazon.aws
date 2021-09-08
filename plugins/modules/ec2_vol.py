@@ -483,7 +483,7 @@ def attach_volume(module, ec2_conn, volume_dict, instance_dict, device_name):
                                                  InstanceId=instance_dict['instance_id'],
                                                  VolumeId=volume_dict['volume_id'])
 
-        waiter = ec2_conn.get_waiter('volume_available')
+        waiter = ec2_conn.get_waiter('volume_in_use')
         waiter.wait(VolumeIds=[attach_response['VolumeId']])
         changed = True
 
