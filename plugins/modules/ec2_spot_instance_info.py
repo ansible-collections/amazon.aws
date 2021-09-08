@@ -28,16 +28,6 @@ options:
       - One or more Spot Instance request IDs.
     type: list
     elements: str
-  next_token:
-    description:
-      - A token to request the next set of results.
-      - Value is null when no more results to return
-    type: str
-  max_results:
-    description:
-      - Maximum number of results to be returned in a single call.
-      - Value can be between 5 and 1000.
-    type: int
 
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -109,8 +99,6 @@ spot_request:
       }
 '''
 
-import time
-import datetime
 
 try:
     import botocore
@@ -118,13 +106,12 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
+def _describe_spot_instance_requests(connection, **params):
+    paginator = connection.get_paginator('describe_spot_instance_requests')
+    return paginator.paginate(**params).build_full_result()
 
 def describe_spot_instance_requests(connection, module):
 
@@ -136,26 +123,23 @@ def describe_spot_instance_requests(connection, module):
     params = {}
 
     if module.params.get('filters'):
-        filters_dit = module.params.get('filters')
-        camel_filters = snake_dict_to_camel_dict(filters_dit, capitalize_first=True)
+        filters_dict = module.params.get('filters')
+        camel_filters = snake_dict_to_camel_dict(filters_dict, capitalize_first=True)
         params['Filters'] = camel_filters
     if module.params.get('spot_instance_request_ids'):
         params['SpotInstanceRequestIds'] = module.params.get('spot_instance_request_ids')
-    if module.params.get('next_token'):
-        params['NextToken'] = module.params.get('next_token')
-    if module.params.get('max_results'):
-        params['MaxResults'] = module.params.get('max_results')
 
     try:
-        describe_spot_instance_requests_response = (connection.describe_spot_instance_requests(**params))['SpotInstanceRequests']
+        describe_spot_instance_requests_response = _describe_spot_instance_requests(connection, **params)['SpotInstanceRequests']
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Failed to describe sport instance requests')
+        module.fail_json_aws(e, msg='Failed to describe spot instance requests')
 
-    spot_request = {'spot_instance_requests': []}
+    # spot_request = {'spot_instance_requests': []}
+    spot_request = []
     for response_list_item in describe_spot_instance_requests_response:
-        spot_request['spot_instance_requests'].append(camel_dict_to_snake_dict(response_list_item))
+        spot_request.append(camel_dict_to_snake_dict(response_list_item))
 
-    module.exit_json(spot_request=spot_request['spot_instance_requests'], changed=changed)
+    module.exit_json(spot_request=spot_request, changed=changed)
 
 
 def main():
@@ -163,8 +147,6 @@ def main():
     argument_spec = dict(
         filters=dict(default=[], type='list', elements='dict'),
         spot_instance_request_ids=dict(default=[], type='list', elements='str'),
-        next_token=dict(default=None, type='str', no_log=False),
-        max_results=dict(type='int')
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
