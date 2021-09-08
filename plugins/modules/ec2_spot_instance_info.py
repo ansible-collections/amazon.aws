@@ -53,6 +53,16 @@ EXAMPLES = '''
         values:
           - t3.medium
 
+- name: describe the Spot requests filtered using multiple filters
+  amazon.aws.ec2_spot_instance_info:
+    filters:
+      - name: 'state'
+        values:
+          - active
+      - name: launch.block-device-mapping.device-name
+        values:
+          - /dev/sdb
+
 '''
 
 RETURN = '''
@@ -109,9 +119,11 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+
 def _describe_spot_instance_requests(connection, **params):
     paginator = connection.get_paginator('describe_spot_instance_requests')
     return paginator.paginate(**params).build_full_result()
+
 
 def describe_spot_instance_requests(connection, module):
 
@@ -134,10 +146,12 @@ def describe_spot_instance_requests(connection, module):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to describe spot instance requests')
 
-    # spot_request = {'spot_instance_requests': []}
     spot_request = []
     for response_list_item in describe_spot_instance_requests_response:
         spot_request.append(camel_dict_to_snake_dict(response_list_item))
+
+    if len(spot_request) == 0:
+        module.exit_json(changed=changed, msg='No spot requests found for specified options')
 
     module.exit_json(spot_request=spot_request, changed=changed)
 

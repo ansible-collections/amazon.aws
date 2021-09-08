@@ -167,6 +167,22 @@
       that:
         - complex_spot_instance_info_result.spot_request[0].state in ['open', 'active']
 
+  - name: Get info about the created spot instance requests and filter result based on provided filters
+    ec2_spot_instance_info:
+      spot_instance_request_ids:
+        - '{{ create_result.spot_request.spot_instance_request_id }}'
+        - '{{ complex_create_result.spot_request.spot_instance_request_id }}'
+      filters:
+        - name: launch.block-device-mapping.device-name
+          values:
+            - /dev/sdb
+    register: spot_instance_info_filter_result
+
+  - name: Assert that the correct spot request was returned in the filtered result
+    assert:
+      that:
+        -  spot_instance_info_filter_result.spot_request[0].spot_instance_request_id == complex_create_result.spot_request.spot_instance_request_id
+
   # Assert check mode
   - name: Create spot instance request (check_mode)
     ec2_spot_instance:
