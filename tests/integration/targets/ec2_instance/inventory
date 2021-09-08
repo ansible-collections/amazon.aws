@@ -1,5 +1,6 @@
 [tests]
-# Sorted fastest to slowest
+checkmode_tests
+termination_protection
 ebs_optimized
 block_devices
 cpu_options
@@ -8,9 +9,7 @@ default_vpc_tests
 external_resource_attach
 instance_no_wait
 iam_instance_role
-termination_protection
 tags_and_vpc_settings
-checkmode_tests
 security_group
 state_config_updates
 

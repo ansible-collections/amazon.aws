@@ -17,6 +17,7 @@
   ec2_eni:
     state: absent
     eni_id: "{{ item.id }}"
+  register: removed
   until: removed is not failed
   with_items: "{{ enis.network_interfaces }}"
   ignore_errors: yes
@@ -39,32 +40,6 @@
     description: a security group for ansible tests
     vpc_id: "{{ testing_vpc.vpc.id }}"
     state: absent
-  register: removed
-  until: removed is not failed
-  ignore_errors: yes
-  retries: 10
-
-- name: "remove routing rules"
-  ec2_vpc_route_table:
-    state: absent
-    vpc_id: "{{ testing_vpc.vpc.id }}"
-    tags:
-      created: "{{ resource_prefix }}-route"
-    routes:
-      - dest: 0.0.0.0/0
-        gateway_id: "{{ igw.gateway_id }}"
-    subnets:
-      - "{{ testing_subnet_a.subnet.id }}"
-      - "{{ testing_subnet_b.subnet.id }}"
-  register: removed
-  until: removed is not failed
-  ignore_errors: yes
-  retries: 10
-
-- name: "remove internet gateway"
-  ec2_vpc_igw:
-    state: absent
-    vpc_id: "{{ testing_vpc.vpc.id }}"
   register: removed
   until: removed is not failed
   ignore_errors: yes

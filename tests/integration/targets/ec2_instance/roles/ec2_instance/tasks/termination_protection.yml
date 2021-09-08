@@ -2,7 +2,7 @@
     - name: Create instance with termination protection (check mode)
       ec2_instance:
         name: "{{ resource_prefix }}-termination-protection"
-        image_id: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_id }}"
         tags:
           TestId: "{{ resource_prefix }}"
         security_groups: "{{ sg.group_id }}"
@@ -17,13 +17,13 @@
     - name: Check the returned value for the earlier task
       assert:
         that:
-          - "{{ create_instance_check_mode_results.changed }}"
-          - "{{ create_instance_check_mode_results.spec.DisableApiTermination }}"
+          - create_instance_check_mode_results is changed
+          - create_instance_check_mode_results.spec.DisableApiTermination == True
 
     - name: Create instance with termination protection
       ec2_instance:
         name: "{{ resource_prefix }}-termination-protection"
-        image_id: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_id }}"
         tags:
           TestId: "{{ resource_prefix }}"
         security_groups: "{{ sg.group_id }}"
@@ -65,7 +65,7 @@
     - name: Create instance with termination protection (check mode) (idempotent)
       ec2_instance:
         name: "{{ resource_prefix }}-termination-protection"
-        image_id: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_id }}"
         tags:
           TestId: "{{ resource_prefix }}"
         security_groups: "{{ sg.group_id }}"
@@ -80,12 +80,12 @@
     - name: Check the returned value for the earlier task
       assert:
         that:
-          - "{{ not create_instance_check_mode_results.changed }}"
+          - create_instance_check_mode_results is not changed
 
     - name: Create instance with termination protection (idempotent)
       ec2_instance:
         name: "{{ resource_prefix }}-termination-protection"
-        image_id: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_id }}"
         tags:
           TestId: "{{ resource_prefix }}"
         security_groups: "{{ sg.group_id }}"
@@ -113,7 +113,7 @@
     - name: Set termination protection to false (check_mode)
       ec2_instance:
         name: "{{ resource_prefix }}-termination-protection"
-        image_id: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_id }}"
         tags:
           TestId: "{{ resource_prefix }}"
         termination_protection: false
@@ -147,7 +147,7 @@
     - name: Set termination protection to false
       ec2_instance:
         name: "{{ resource_prefix }}-termination-protection"
-        image_id: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_id }}"
         tags:
           TestId: "{{ resource_prefix }}"
         termination_protection: false
@@ -180,7 +180,7 @@
     - name: Set termination protection to false (idempotent)
       ec2_instance:
         name: "{{ resource_prefix }}-termination-protection"
-        image_id: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_id }}"
         tags:
           TestId: "{{ resource_prefix }}"
         termination_protection: false
@@ -196,7 +196,7 @@
     - name: Set termination protection to true
       ec2_instance:
         name: "{{ resource_prefix }}-termination-protection"
-        image_id: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_id }}"
         tags:
           TestId: "{{ resource_prefix }}"
         termination_protection: true
@@ -213,7 +213,7 @@
     - name: Set termination protection to true (idempotent)
       ec2_instance:
         name: "{{ resource_prefix }}-termination-protection"
-        image_id: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_id }}"
         tags:
           TestId: "{{ resource_prefix }}"
         termination_protection: true
@@ -229,7 +229,7 @@
     - name: Set termination protection to false (so we can terminate instance)
       ec2_instance:
         name: "{{ resource_prefix }}-termination-protection"
-        image_id: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_id }}"
         tags:
           TestId: "{{ resource_prefix }}"
         termination_protection: false

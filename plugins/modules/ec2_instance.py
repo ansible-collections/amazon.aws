@@ -28,6 +28,14 @@ options:
   state:
     description:
       - Goal state for the instances.
+      - "I(state=present): ensures instances exist, but does not guarantee any state (e.g. running). Newly-launched instances will be run by EC2."
+      - "I(state=running): I(state=present) + ensures the instances are running"
+      - "I(state=started): I(state=running) + waits for EC2 status checks to report OK if I(wait=true)"
+      - "I(state=stopped): ensures an existing instance is stopped."
+      - "I(state=rebooted): convenience alias for I(state=stopped) immediately followed by I(state=running)"
+      - "I(state=restarted): convenience alias for I(state=stopped) immediately followed by I(state=started)"
+      - "I(state=terminated): ensures an existing instance is terminated."
+      - "I(state=absent): alias for I(state=terminated)"
     choices: [present, terminated, running, started, stopped, restarted, rebooted, absent]
     default: present
     type: str
@@ -920,7 +928,7 @@ def tower_callback_script(tower_conf, windows=False, passwd=None):
     raise NotImplementedError("Only windows with remote-prep or non-windows with tower job callback supported so far.")
 
 
-def manage_tags(match, new_tags, purge_tags, ec2):
+def manage_tags(match, new_tags, purge_tags):
     changed = False
     old_tags = boto3_tag_list_to_ansible_dict(match.get('Tags', {}))
     tags_to_set, tags_to_delete = compare_aws_tags(
@@ -931,14 +939,14 @@ def manage_tags(match, new_tags, purge_tags, ec2):
         return bool(tags_to_delete or tags_to_set)
     try:
         if tags_to_set:
-            ec2.create_tags(
+            client.create_tags(
                 aws_retry=True,
                 Resources=[match['InstanceId']],
                 Tags=ansible_dict_to_boto3_tag_list(tags_to_set))
             changed |= True
         if tags_to_delete:
             delete_with_current_values = dict((k, old_tags.get(k)) for k in tags_to_delete)
-            ec2.delete_tags(
+            client.delete_tags(
                 aws_retry=True,
                 Resources=[match['InstanceId']],
                 Tags=ansible_dict_to_boto3_tag_list(delete_with_current_values))
@@ -967,7 +975,7 @@ def build_volume_spec(params):
     return [snake_dict_to_camel_dict(v, capitalize_first=True) for v in volumes]
 
 
-def add_or_update_instance_profile(instance, desired_profile_name, ec2):
+def add_or_update_instance_profile(instance, desired_profile_name):
     instance_profile_setting = instance.get('IamInstanceProfile')
     if instance_profile_setting and desired_profile_name:
         if desired_profile_name in (instance_profile_setting.get('Name'), instance_profile_setting.get('Arn')):
@@ -980,14 +988,14 @@ def add_or_update_instance_profile(instance, desired_profile_name, ec2):
 
         # update association
         try:
-            association = ec2.describe_iam_instance_profile_associations(
+            association = client.describe_iam_instance_profile_associations(
                 aws_retry=True,
                 Filters=[{'Name': 'instance-id', 'Values': [instance['InstanceId']]}])
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             # check for InvalidAssociationID.NotFound
             module.fail_json_aws(e, "Could not find instance profile association")
         try:
-            resp = ec2.replace_iam_instance_profile_association(
+            resp = client.replace_iam_instance_profile_association(
                 aws_retry=True,
                 AssociationId=association['IamInstanceProfileAssociations'][0]['AssociationId'],
                 IamInstanceProfile={'Arn': determine_iam_role(desired_profile_name)}
@@ -999,7 +1007,7 @@ def add_or_update_instance_profile(instance, desired_profile_name, ec2):
     if not instance_profile_setting and desired_profile_name:
         # create association
         try:
-            resp = ec2.associate_iam_instance_profile(
+            resp = client.associate_iam_instance_profile(
                 aws_retry=True,
                 IamInstanceProfile={'Arn': determine_iam_role(desired_profile_name)},
                 InstanceId=instance['InstanceId']
@@ -1011,7 +1019,7 @@ def add_or_update_instance_profile(instance, desired_profile_name, ec2):
     return False
 
 
-def build_network_spec(params, ec2):
+def build_network_spec(params):
     """
     Returns list of interfaces [complex]
     Interface type: {
@@ -1054,12 +1062,12 @@ def build_network_spec(params, ec2):
         if params.get('vpc_subnet_id'):
             spec['SubnetId'] = params['vpc_subnet_id']
         else:
-            default_vpc = get_default_vpc(ec2)
+            default_vpc = get_default_vpc()
             if default_vpc is None:
                 module.fail_json(
                     msg="No default subnet could be found - you must include a VPC subnet ID (vpc_subnet_id parameter) to create an instance")
             else:
-                sub = get_default_subnet(ec2, default_vpc)
+                sub = get_default_subnet(default_vpc)
                 spec['SubnetId'] = sub['SubnetId']
 
         if network.get('private_ip_address'):
@@ -1070,7 +1078,6 @@ def build_network_spec(params, ec2):
                 group=params.get('security_group'),
                 groups=params.get('security_groups'),
                 subnet_id=spec['SubnetId'],
-                ec2=ec2
             )
             spec['Groups'] = groups
         if network.get('description') is not None:
@@ -1157,11 +1164,11 @@ def warn_if_cpu_options_changed(instance):
                 threads_per_core_curr, threads_per_core))
 
 
-def discover_security_groups(group, groups, parent_vpc_id=None, subnet_id=None, ec2=None):
+def discover_security_groups(group, groups, parent_vpc_id=None, subnet_id=None):
 
     if subnet_id is not None:
         try:
-            sub = ec2.describe_subnets(aws_retry=True, SubnetIds=[subnet_id])
+            sub = client.describe_subnets(aws_retry=True, SubnetIds=[subnet_id])
         except is_boto3_error_code('InvalidGroup.NotFound'):
             module.fail_json(
                 "Could not find subnet {0} to associate security groups. Please check the vpc_subnet_id and security_groups parameters.".format(
@@ -1173,9 +1180,9 @@ def discover_security_groups(group, groups, parent_vpc_id=None, subnet_id=None, 
         parent_vpc_id = sub['Subnets'][0]['VpcId']
 
     if group:
-        return get_ec2_security_group_ids_from_names(group, ec2, vpc_id=parent_vpc_id)
+        return get_ec2_security_group_ids_from_names(group, client, vpc_id=parent_vpc_id)
     if groups:
-        return get_ec2_security_group_ids_from_names(groups, ec2, vpc_id=parent_vpc_id)
+        return get_ec2_security_group_ids_from_names(groups, client, vpc_id=parent_vpc_id)
     return []
 
 
@@ -1264,7 +1271,7 @@ def build_instance_tags(params, propagate_tags_to_volumes=True):
     ]
 
 
-def build_run_instance_spec(params, ec2):
+def build_run_instance_spec(params):
 
     spec = dict(
         ClientToken=uuid.uuid4().hex,
@@ -1272,7 +1279,7 @@ def build_run_instance_spec(params, ec2):
         MinCount=1,
     )
     # network parameters
-    spec['NetworkInterfaces'] = build_network_spec(params, ec2)
+    spec['NetworkInterfaces'] = build_network_spec(params)
     spec['BlockDeviceMappings'] = build_volume_spec(params)
     spec.update(**build_top_level_options(params))
     spec['TagSpecifications'] = build_instance_tags(params)
@@ -1285,8 +1292,8 @@ def build_run_instance_spec(params, ec2):
     return spec
 
 
-def await_instances(ids, state='OK'):
-    if not module.params.get('wait', True):
+def await_instances(ids, desired_module_state='present', force_wait=False):
+    if not module.params.get('wait', True) and not force_wait:
         # the user asked not to wait for anything
         return
 
@@ -1294,16 +1301,21 @@ def await_instances(ids, state='OK'):
         # In check mode, there is no change even if you wait.
         return
 
-    state_opts = {
-        'OK': 'instance_status_ok',
-        'STOPPED': 'instance_stopped',
-        'TERMINATED': 'instance_terminated',
-        'EXISTS': 'instance_exists',
-        'RUNNING': 'instance_running',
+    # Map ansible state to boto3 waiter type
+    state_to_boto3_waiter = {
+        'present': 'instance_exists',
+        'started': 'instance_status_ok',
+        'running': 'instance_running',
+        'stopped': 'instance_stopped',
+        'restarted': 'instance_status_ok',
+        'rebooted': 'instance_running',
+        'terminated': 'instance_terminated',
+        'absent': 'instance_terminated',
     }
-    if state not in state_opts:
-        module.fail_json(msg="Cannot wait for state {0}, invalid state".format(state))
-    waiter = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff()).get_waiter(state_opts[state])
+    if desired_module_state not in state_to_boto3_waiter:
+        module.fail_json(msg="Cannot wait for state {0}, invalid state".format(desired_module_state))
+    boto3_waiter_type = state_to_boto3_waiter[desired_module_state]
+    waiter = client.get_waiter(boto3_waiter_type)
     try:
         waiter.wait(
             InstanceIds=ids,
@@ -1314,13 +1326,13 @@ def await_instances(ids, state='OK'):
         )
     except botocore.exceptions.WaiterConfigError as e:
         module.fail_json(msg="{0}. Error waiting for instances {1} to reach state {2}".format(
-            to_native(e), ', '.join(ids), state))
+            to_native(e), ', '.join(ids), boto3_waiter_type))
     except botocore.exceptions.WaiterError as e:
         module.warn("Instances {0} took too long to reach state {1}. {2}".format(
-            ', '.join(ids), state, to_native(e)))
+            ', '.join(ids), boto3_waiter_type, to_native(e)))
 
 
-def diff_instance_and_params(instance, params, ec2, skip=None):
+def diff_instance_and_params(instance, params, skip=None):
     """boto3 instance obj, module params"""
 
     if skip is None:
@@ -1348,7 +1360,7 @@ def diff_instance_and_params(instance, params, ec2, skip=None):
             continue
 
         try:
-            value = ec2.describe_instance_attribute(aws_retry=True, Attribute=mapping.attribute_name, InstanceId=id_)
+            value = client.describe_instance_attribute(aws_retry=True, Attribute=mapping.attribute_name, InstanceId=id_)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Could not describe attribute {0} for instance {1}".format(mapping.attribute_name, id_))
         if value[mapping.instance_key]['Value'] != params.get(mapping.param_key):
@@ -1361,26 +1373,25 @@ def diff_instance_and_params(instance, params, ec2, skip=None):
 
     if params.get('security_group') or params.get('security_groups'):
         try:
-            value = ec2.describe_instance_attribute(aws_retry=True, Attribute="groupSet", InstanceId=id_)
+            value = client.describe_instance_attribute(aws_retry=True, Attribute="groupSet", InstanceId=id_)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Could not describe attribute groupSet for instance {0}".format(id_))
         # managing security groups
         if params.get('vpc_subnet_id'):
             subnet_id = params.get('vpc_subnet_id')
         else:
-            default_vpc = get_default_vpc(ec2)
+            default_vpc = get_default_vpc()
             if default_vpc is None:
                 module.fail_json(
                     msg="No default subnet could be found - you must include a VPC subnet ID (vpc_subnet_id parameter) to modify security groups.")
             else:
-                sub = get_default_subnet(ec2, default_vpc)
+                sub = get_default_subnet(default_vpc)
                 subnet_id = sub['SubnetId']
 
         groups = discover_security_groups(
             group=params.get('security_group'),
             groups=params.get('security_groups'),
             subnet_id=subnet_id,
-            ec2=ec2
         )
         expected_groups = groups
         instance_groups = [g['GroupId'] for g in value['Groups']]
@@ -1402,7 +1413,7 @@ def diff_instance_and_params(instance, params, ec2, skip=None):
     return changes_to_apply
 
 
-def change_network_attachments(instance, params, ec2):
+def change_network_attachments(instance, params):
     if (params.get('network') or {}).get('interfaces') is not None:
         new_ids = []
         for inty in params.get('network').get('interfaces'):
@@ -1415,7 +1426,7 @@ def change_network_attachments(instance, params, ec2):
         to_attach = set(new_ids) - set(old_ids)
         for eni_id in to_attach:
             try:
-                ec2.attach_network_interface(
+                client.attach_network_interface(
                     aws_retry=True,
                     DeviceIndex=new_ids.index(eni_id),
                     InstanceId=instance['InstanceId'],
@@ -1427,9 +1438,8 @@ def change_network_attachments(instance, params, ec2):
     return False
 
 
-@AWSRetry.jittered_backoff()
-def find_instances(ec2, ids=None, filters=None):
-    paginator = ec2.get_paginator('describe_instances')
+def find_instances(ids=None, filters=None):
+    paginator = client.get_paginator('describe_instances')
     if ids:
         params = dict(InstanceIds=ids)
     elif filters is None:
@@ -1441,21 +1451,22 @@ def find_instances(ec2, ids=None, filters=None):
         params = dict(Filters=ansible_dict_to_boto3_filter_list(filters))
 
     try:
-        results = _describe_instances(ec2, **params)
+        results = _describe_instances(**params)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Could not describe instances")
-    return list(results)
+    retval = list(results)
+    return retval
 
 
 @AWSRetry.jittered_backoff()
-def _describe_instances(ec2, **params):
-    paginator = ec2.get_paginator('describe_instances')
+def _describe_instances(**params):
+    paginator = client.get_paginator('describe_instances')
     return paginator.paginate(**params).search('Reservations[].Instances[]')
 
 
-def get_default_vpc(ec2):
+def get_default_vpc():
     try:
-        vpcs = ec2.describe_vpcs(
+        vpcs = client.describe_vpcs(
             aws_retry=True,
             Filters=ansible_dict_to_boto3_filter_list({'isDefault': 'true'}))
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -1465,9 +1476,9 @@ def get_default_vpc(ec2):
     return None
 
 
-def get_default_subnet(ec2, vpc, availability_zone=None):
+def get_default_subnet(vpc, availability_zone=None):
     try:
-        subnets = ec2.describe_subnets(
+        subnets = client.describe_subnets(
             aws_retry=True,
             Filters=ansible_dict_to_boto3_filter_list({
                 'vpc-id': vpc['VpcId'],
@@ -1490,75 +1501,86 @@ def get_default_subnet(ec2, vpc, availability_zone=None):
     return None
 
 
-def ensure_instance_state(state, ec2):
+def ensure_instance_state(desired_module_state):
     """
     Sets return keys depending on the desired instance state
     """
     results = dict()
-    if state in ('running', 'started'):
-        changed, failed, instances, failure_reason = change_instance_state(filters=module.params.get('filters'), desired_state='RUNNING', ec2=ec2)
+    changed = False
+    if desired_module_state in ('running', 'started'):
+        _changed, failed, instances, failure_reason = change_instance_state(
+            filters=module.params.get('filters'), desired_module_state=desired_module_state)
+        changed |= bool(len(_changed))
+
         if failed:
             module.fail_json(
                 msg="Unable to start instances: {0}".format(failure_reason),
-                reboot_success=list(changed),
+                reboot_success=list(_changed),
                 reboot_failed=failed)
 
         results = dict(
             msg='Instances started',
-            reboot_success=list(changed),
-            changed=bool(len(changed)),
+            start_success=list(_changed),
+            start_failed=[],
+            # Avoid breaking things 'reboot' is wrong but used to be returned
+            reboot_success=list(_changed),
             reboot_failed=[],
+            changed=changed,
             instances=[pretty_instance(i) for i in instances],
         )
-    elif state in ('restarted', 'rebooted'):
+    elif desired_module_state in ('restarted', 'rebooted'):
         # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-reboot.html
         # The Ansible behaviour of issuing a stop/start has a minor impact on user billing
-        # This will need to be changelogged if we ever change to ec2.reboot_instance
-        _changed, _failed, _instances, _failure_reason = change_instance_state(
+        # This will need to be changelogged if we ever change to client.reboot_instance
+        _changed, failed, instances, failure_reason = change_instance_state(
             filters=module.params.get('filters'),
-            desired_state='STOPPED',
-            ec2=ec2)
-        changed, failed, instances, failure_reason = change_instance_state(
+            desired_module_state='stopped',
+        )
+        changed |= bool(len(_changed))
+        _changed, failed, instances, failure_reason = change_instance_state(
             filters=module.params.get('filters'),
-            desired_state='RUNNING',
-            ec2=ec2)
+            desired_module_state=desired_module_state,
+        )
+        changed |= bool(len(_changed))
 
         if failed:
             module.fail_json(
                 msg="Unable to restart instances: {0}".format(failure_reason),
-                reboot_success=list(changed),
+                reboot_success=list(_changed),
                 reboot_failed=failed)
 
         results = dict(
             msg='Instances restarted',
-            reboot_success=list(changed),
-            changed=bool(len(changed)),
+            reboot_success=list(_changed),
+            changed=changed,
             reboot_failed=[],
             instances=[pretty_instance(i) for i in instances],
         )
-    elif state in ('stopped',):
-        changed, failed, instances, failure_reason = change_instance_state(
+    elif desired_module_state in ('stopped',):
+        _changed, failed, instances, failure_reason = change_instance_state(
             filters=module.params.get('filters'),
-            desired_state='STOPPED',
-            ec2=ec2)
+            desired_module_state=desired_module_state,
+        )
+        changed |= bool(len(_changed))
+
         if failed:
             module.fail_json(
                 msg="Unable to stop instances: {0}".format(failure_reason),
-                stop_success=list(changed),
+                stop_success=list(_changed),
                 stop_failed=failed)
 
         results = dict(
             msg='Instances stopped',
-            stop_success=list(changed),
-            changed=bool(len(changed)),
+            stop_success=list(_changed),
+            changed=changed,
             stop_failed=[],
             instances=[pretty_instance(i) for i in instances],
         )
-    elif state in ('absent', 'terminated'):
+    elif desired_module_state in ('absent', 'terminated'):
         terminated, terminate_failed, instances, failure_reason = change_instance_state(
             filters=module.params.get('filters'),
-            desired_state='TERMINATED',
-            ec2=ec2)
+            desired_module_state=desired_module_state,
+        )
 
         if terminate_failed:
             module.fail_json(
@@ -1575,42 +1597,71 @@ def ensure_instance_state(state, ec2):
     return results
 
 
-def change_instance_state(filters, desired_state, ec2):
-    """Takes STOPPED/RUNNING/TERMINATED"""
+def change_instance_state(filters, desired_module_state):
 
+    # Map ansible state to ec2 state
+    ec2_instance_states = {
+        'present': 'running',
+        'started': 'running',
+        'running': 'running',
+        'stopped': 'stopped',
+        'restarted': 'running',
+        'rebooted': 'running',
+        'terminated': 'terminated',
+        'absent': 'terminated',
+    }
+    desired_ec2_state = ec2_instance_states[desired_module_state]
     changed = set()
-    instances = find_instances(ec2, filters=filters)
-    to_change = set(i['InstanceId'] for i in instances if i['State']['Name'].upper() != desired_state)
+    instances = find_instances(filters=filters)
+    to_change = set(i['InstanceId'] for i in instances if i['State']['Name'] != desired_ec2_state)
     unchanged = set()
     failure_reason = ""
 
     for inst in instances:
         try:
-            if desired_state == 'TERMINATED':
+            if desired_ec2_state == 'terminated':
+                # Before terminating an instance we need for them to leave
+                # 'pending' or 'stopping' (if they're in those states)
+                if inst['State']['Name'] == 'stopping':
+                    await_instances([inst['InstanceId']], desired_module_state='stopped', force_wait=True)
+                elif inst['State']['Name'] == 'pending':
+                    await_instances([inst['InstanceId']], desired_module_state='running', force_wait=True)
+
                 if module.check_mode:
                     changed.add(inst['InstanceId'])
                     continue
 
                 # TODO use a client-token to prevent double-sends of these start/stop/terminate commands
                 # https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html
-                resp = ec2.terminate_instances(aws_retry=True, InstanceIds=[inst['InstanceId']])
+                resp = client.terminate_instances(aws_retry=True, InstanceIds=[inst['InstanceId']])
                 [changed.add(i['InstanceId']) for i in resp['TerminatingInstances']]
-            if desired_state == 'STOPPED':
-                if inst['State']['Name'] in ('stopping', 'stopped'):
+            if desired_ec2_state == 'stopped':
+                # Before stopping an instance we need for them to leave
+                # 'pending'
+                if inst['State']['Name'] == 'pending':
+                    await_instances([inst['InstanceId']], desired_module_state='running', force_wait=True)
+                # Already moving to the relevant state
+                elif inst['State']['Name'] in ('stopping', 'stopped'):
                     unchanged.add(inst['InstanceId'])
                     continue
 
                 if module.check_mode:
                     changed.add(inst['InstanceId'])
                     continue
-                resp = ec2.stop_instances(aws_retry=True, InstanceIds=[inst['InstanceId']])
+                resp = client.stop_instances(aws_retry=True, InstanceIds=[inst['InstanceId']])
                 [changed.add(i['InstanceId']) for i in resp['StoppingInstances']]
-            if desired_state == 'RUNNING':
+            if desired_ec2_state == 'running':
+                if inst['State']['Name'] in ('pending', 'running'):
+                    unchanged.add(inst['InstanceId'])
+                    continue
+                elif inst['State']['Name'] == 'stopping':
+                    await_instances([inst['InstanceId']], desired_module_state='stopped', force_wait=True)
+
                 if module.check_mode:
                     changed.add(inst['InstanceId'])
                     continue
 
-                resp = ec2.start_instances(aws_retry=True, InstanceIds=[inst['InstanceId']])
+                resp = client.start_instances(aws_retry=True, InstanceIds=[inst['InstanceId']])
                 [changed.add(i['InstanceId']) for i in resp['StartingInstances']]
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             try:
@@ -1619,12 +1670,12 @@ def change_instance_state(filters, desired_state, ec2):
                 failure_reason = to_native(e)
 
     if changed:
-        await_instances(ids=list(changed) + list(unchanged), state=desired_state)
+        await_instances(ids=list(changed) + list(unchanged), desired_module_state=desired_module_state)
 
     change_failed = list(to_change - changed)
 
     if instances:
-        instances = find_instances(ec2, ids=list(i['InstanceId'] for i in instances))
+        instances = find_instances(ids=list(i['InstanceId'] for i in instances))
     return changed, change_failed, instances, failure_reason
 
 
@@ -1647,57 +1698,65 @@ def determine_iam_role(name_or_arn):
         module.fail_json_aws(e, msg="An error occurred while searching for instance_role {0}. Please try supplying the full ARN.".format(name_or_arn))
 
 
-def handle_existing(existing_matches, changed, ec2, state):
-    to_change_state = False
-    state_results = []
-    alter_config_result = []
-    if state in ('running', 'started') and [i for i in existing_matches if i['State']['Name'] != 'running']:
-        to_change_state = True
-    elif state == 'stopped' and [i for i in existing_matches if i['State']['Name'] != 'stopped']:
-        to_change_state = True
-    elif state in ('restarted', 'rebooted'):
-        to_change_state = True
-    if to_change_state:
-        state_results = ensure_instance_state(state, ec2)
+def handle_existing(existing_matches, state):
+    tags = dict(module.params.get('tags') or {})
+    name = module.params.get('name')
+    if name:
+        tags['Name'] = name
 
-    changes = diff_instance_and_params(existing_matches[0], module.params, ec2)
+    changed = False
+    all_changes = list()
 
-    for c in changes:
-        if not module.check_mode:
-            try:
-                ec2.modify_instance_attribute(aws_retry=True, **c)
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                module.fail_json_aws(e, msg="Could not apply change {0} to existing instance.".format(str(c)))
-    changed |= bool(changes)
-    changed |= add_or_update_instance_profile(existing_matches[0], module.params.get('instance_role'), ec2)
-    changed |= change_network_attachments(existing_matches[0], module.params, ec2)
-    altered = find_instances(ec2, ids=[i['InstanceId'] for i in existing_matches])
+    for instance in existing_matches:
+        changed |= manage_tags(instance, tags, module.params.get('purge_tags', False))
+        changes = diff_instance_and_params(instance, module.params)
+        for c in changes:
+            if not module.check_mode:
+                try:
+                    client.modify_instance_attribute(aws_retry=True, **c)
+                except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+                    module.fail_json_aws(e, msg="Could not apply change {0} to existing instance.".format(str(c)))
+        all_changes.extend(changes)
+        changed |= bool(changes)
+        changed |= add_or_update_instance_profile(existing_matches[0], module.params.get('instance_role'))
+        changed |= change_network_attachments(existing_matches[0], module.params)
+
+    altered = find_instances(ids=[i['InstanceId'] for i in existing_matches])
     alter_config_result = dict(
-        changed=bool(len(changes)) or changed,
+        changed=changed,
         instances=[pretty_instance(i) for i in altered],
         instance_ids=[i['InstanceId'] for i in altered],
         changes=changes,
     )
 
-    if len(state_results):
-        result = {**state_results, **alter_config_result}
-    else:
-        result = alter_config_result
+    state_results = ensure_instance_state(state)
+
+    result = {**state_results, **alter_config_result}
+
     return result
 
 
-def ensure_present(existing_matches, changed, ec2, state):
+def ensure_present(existing_matches, desired_module_state):
+    tags = dict(module.params.get('tags') or {})
+    name = module.params.get('name')
+    if name:
+        tags['Name'] = name
+
     try:
-        instance_spec = build_run_instance_spec(module.params, ec2)
+        instance_spec = build_run_instance_spec(module.params)
         # If check mode is enabled,suspend 'ensure function'.
         if module.check_mode:
             module.exit_json(
                 changed=True,
                 spec=instance_spec,
             )
-        instance_response = run_instances(ec2, **instance_spec)
+        instance_response = run_instances(**instance_spec)
         instances = instance_response['Instances']
         instance_ids = [i['InstanceId'] for i in instances]
+
+        # Wait for instances to exist in the EC2 API before
+        # attempting to modify them
+        await_instances(instance_ids, desired_module_state='present', force_wait=True)
 
         for ins in instances:
             # Wait for instances to exist (don't check state)
@@ -1705,17 +1764,17 @@ def ensure_present(existing_matches, changed, ec2, state):
                 AWSRetry.jittered_backoff(
                     catch_extra_error_codes=['InvalidInstanceID.NotFound'],
                 )(
-                    ec2.describe_instance_status
+                    client.describe_instance_status
                 )(
                     InstanceIds=[ins['InstanceId']],
                     IncludeAllInstances=True,
                 )
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                 module.fail_json_aws(e, msg="Failed to fetch status of new EC2 instance")
-            changes = diff_instance_and_params(ins, module.params, ec2, skip=['UserData', 'EbsOptimized'])
+            changes = diff_instance_and_params(ins, module.params, skip=['UserData', 'EbsOptimized'])
             for c in changes:
                 try:
-                    ec2.modify_instance_attribute(aws_retry=True, **c)
+                    client.modify_instance_attribute(aws_retry=True, **c)
                 except botocore.exceptions.ClientError as e:
                     module.fail_json_aws(e, msg="Could not apply change {0} to new instance.".format(str(c)))
 
@@ -1725,8 +1784,8 @@ def ensure_present(existing_matches, changed, ec2, state):
                 instance_ids=instance_ids,
                 spec=instance_spec,
             )
-        await_instances(instance_ids)
-        instances = find_instances(ec2, ids=instance_ids)
+        await_instances(instance_ids, desired_module_state=desired_module_state)
+        instances = find_instances(ids=instance_ids)
 
         module.exit_json(
             changed=True,
@@ -1738,18 +1797,55 @@ def ensure_present(existing_matches, changed, ec2, state):
         module.fail_json_aws(e, msg="Failed to create new EC2 instance")
 
 
-def run_instances(ec2, **instance_spec):
+def run_instances(**instance_spec):
     try:
-        return ec2.run_instances(**instance_spec)
+        return client.run_instances(**instance_spec)
     except is_boto3_error_message('Invalid IAM Instance Profile ARN'):
         # If the instance profile has just been created, it takes some time to be visible by ec2
         # So we wait 10 second and retry the run_instances
         time.sleep(10)
-        return ec2.run_instances(**instance_spec)
+        return client.run_instances(**instance_spec)
+
+
+def build_filters():
+    filters = {
+        # all states except shutting-down and terminated
+        'instance-state-name': ['pending', 'running', 'stopping', 'stopped'],
+    }
+    if isinstance(module.params.get('instance_ids'), string_types):
+        filters['instance-id'] = [module.params.get('instance_ids')]
+    elif isinstance(module.params.get('instance_ids'), list) and len(module.params.get('instance_ids')):
+        filters['instance-id'] = module.params.get('instance_ids')
+    else:
+        if not module.params.get('vpc_subnet_id'):
+            if module.params.get('network'):
+                # grab AZ from one of the ENIs
+                ints = module.params.get('network').get('interfaces')
+                if ints:
+                    filters['network-interface.network-interface-id'] = []
+                    for i in ints:
+                        if isinstance(i, dict):
+                            i = i['id']
+                        filters['network-interface.network-interface-id'].append(i)
+            else:
+                sub = get_default_subnet(get_default_vpc(), availability_zone=module.params.get('availability_zone'))
+                filters['subnet-id'] = sub['SubnetId']
+        else:
+            filters['subnet-id'] = [module.params.get('vpc_subnet_id')]
+
+        if module.params.get('name'):
+            filters['tag:Name'] = [module.params.get('name')]
+
+        if module.params.get('image_id'):
+            filters['image-id'] = [module.params.get('image_id')]
+        elif (module.params.get('image') or {}).get('id'):
+            filters['image-id'] = [module.params.get('image', {}).get('id')]
+    return filters
 
 
 def main():
     global module
+    global client
     argument_spec = dict(
         state=dict(default='present', choices=['present', 'started', 'running', 'stopped', 'restarted', 'rebooted', 'terminated', 'absent']),
         wait=dict(default=True, type='bool'),
@@ -1811,73 +1907,34 @@ def main():
                 module.fail_json(msg="Parameter network.interfaces can't be used with security_groups")
 
     state = module.params.get('state')
-    ec2 = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
+
+    retry_decorator = AWSRetry.jittered_backoff(
+        catch_extra_error_codes=[
+            'IncorrectState',
+        ]
+    )
+    client = module.client('ec2', retry_decorator=retry_decorator)
+
     if module.params.get('filters') is None:
-        filters = {
-            # all states except shutting-down and terminated
-            'instance-state-name': ['pending', 'running', 'stopping', 'stopped']
-        }
-        if isinstance(module.params.get('instance_ids'), string_types):
-            filters['instance-id'] = [module.params.get('instance_ids')]
-        elif isinstance(module.params.get('instance_ids'), list) and len(module.params.get('instance_ids')):
-            filters['instance-id'] = module.params.get('instance_ids')
+        module.params['filters'] = build_filters()
+
+    existing_matches = find_instances(filters=module.params.get('filters'))
+
+    if state in ('terminated', 'absent'):
+        if existing_matches:
+            result = ensure_instance_state(state)
         else:
-            if not module.params.get('vpc_subnet_id'):
-                if module.params.get('network'):
-                    # grab AZ from one of the ENIs
-                    ints = module.params.get('network').get('interfaces')
-                    if ints:
-                        filters['network-interface.network-interface-id'] = []
-                        for i in ints:
-                            if isinstance(i, dict):
-                                i = i['id']
-                            filters['network-interface.network-interface-id'].append(i)
-                else:
-                    sub = get_default_subnet(ec2, get_default_vpc(ec2), availability_zone=module.params.get('availability_zone'))
-                    filters['subnet-id'] = sub['SubnetId']
-            else:
-                filters['subnet-id'] = [module.params.get('vpc_subnet_id')]
-
-            if module.params.get('name'):
-                filters['tag:Name'] = [module.params.get('name')]
-
-            if module.params.get('image_id'):
-                filters['image-id'] = [module.params.get('image_id')]
-            elif (module.params.get('image') or {}).get('id'):
-                filters['image-id'] = [module.params.get('image', {}).get('id')]
-
-        module.params['filters'] = filters
-
-    existing_matches = find_instances(ec2, filters=module.params.get('filters'))
-    changed = False
-
-    if state not in ('terminated', 'absent') and existing_matches:
+            result = dict(
+                msg='No matching instances found',
+                changed=False,
+            )
+    elif existing_matches:
         for match in existing_matches:
             warn_if_public_ip_assignment_changed(match)
             warn_if_cpu_options_changed(match)
-            tags = module.params.get('tags') or {}
-            name = module.params.get('name')
-            if name:
-                tags['Name'] = name
-            changed |= manage_tags(match, tags, module.params.get('purge_tags', False), ec2)
-
-    if state in ('present', 'running', 'started', 'restarted', 'rebooted', 'stopped'):
-        # If we're not removing the instance, handle any config changes and update state
-        if len(existing_matches):
-            result = handle_existing(existing_matches, changed, ec2, state)
-        else:
-            ensure_present(existing_matches=existing_matches, changed=changed, ec2=ec2, state=state)
-    elif state in ('absent', 'terminated'):
-        if existing_matches:
-            result = ensure_instance_state(state, ec2)
-        else:
-            module.exit_json(
-                msg='No matching instances found',
-                changed=False,
-                instances=[],
-            )
+        result = handle_existing(existing_matches, state)
     else:
-        module.fail_json(msg="We don't handle the state {0}".format(state))
+        result = ensure_present(existing_matches=existing_matches, desired_module_state=state)
 
     module.exit_json(**result)
 

@@ -1,5 +1,5 @@
 dependencies:
-  - prepare_tests
-  - setup_ec2
+- prepare_tests
+- setup_ec2_facts
 collections:
-  - amazon.aws
+- amazon.aws

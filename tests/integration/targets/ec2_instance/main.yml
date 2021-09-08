@@ -21,9 +21,6 @@
     block:
     - include_role:
         name: 'ec2_instance'
-        tasks_from: find_ami.yml
-    - include_role:
-        name: 'ec2_instance'
         tasks_from: env_setup.yml
     rescue:
     - include_role:
@@ -38,6 +35,6 @@
 - hosts: all
   gather_facts: no
   strategy: free
-  #serial: 10
+  serial: 3
   roles:
     - ec2_instance

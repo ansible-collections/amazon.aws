@@ -4,7 +4,7 @@
     ec2_instance:
       name: "{{ resource_prefix }}-test-uptime"
       region: "{{ ec2_region }}"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
       vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"

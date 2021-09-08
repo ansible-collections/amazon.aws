@@ -1,17 +1,5 @@
 - run_once: '{{ setup_run_once | default("no") | bool }}'
   block:
-  - name: "fetch AZ availability"
-    aws_az_info:
-    register: az_info
-  - name: "Assert that we have multiple AZs available to us"
-    assert:
-      that: az_info.availability_zones | length >= 2
-
-  - name: "pick AZs"
-    set_fact:
-      subnet_a_az: '{{ az_info.availability_zones[0].zone_name }}'
-      subnet_b_az: '{{ az_info.availability_zones[1].zone_name }}'
-
   - name: "Create VPC for use in testing"
     ec2_vpc_net:
       state: present
@@ -21,12 +9,6 @@
         Name: Ansible ec2_instance Testing VPC
       tenancy: default
     register: testing_vpc
-
-  - name: "Create internet gateway for use in testing"
-    ec2_vpc_igw:
-      state: present
-      vpc_id: "{{ testing_vpc.vpc.id }}"
-    register: igw
 
   - name: "Create default subnet in zone A"
     ec2_vpc_subnet:
@@ -48,19 +30,6 @@
         Name: "{{ resource_prefix }}-subnet-b"
     register: testing_subnet_b
 
-  - name: "create routing rules"
-    ec2_vpc_route_table:
-      state: present
-      vpc_id: "{{ testing_vpc.vpc.id }}"
-      tags:
-        created: "{{ resource_prefix }}-route"
-      routes:
-        - dest: 0.0.0.0/0
-          gateway_id: "{{ igw.gateway_id }}"
-      subnets:
-        - "{{ testing_subnet_a.subnet.id }}"
-        - "{{ testing_subnet_b.subnet.id }}"
-
   - name: "create a security group with the vpc"
     ec2_group:
       state: present
@@ -77,7 +46,7 @@
           to_port: 80
           cidr_ip: 0.0.0.0/0
     register: sg
-  
+
   - name: "create secondary security group with the vpc"
     ec2_group:
       name: "{{ resource_prefix }}-sg-2"

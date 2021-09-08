@@ -1,9 +1,9 @@
 - block:
   - name: "New instance with an extra block device"
     ec2_instance:
-      state: present
+      state: running
       name: "{{ resource_prefix }}-test-ebs-vols"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
       volumes:
       - device_name: /dev/sdb
@@ -35,7 +35,7 @@
     ec2_instance:
       state: present
       name: "{{ resource_prefix }}-test-ebs-vols-checkmode"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
       volumes:
       - device_name: /dev/sdb
@@ -52,7 +52,6 @@
     ec2_instance_info:
       filters:
         "tag:Name": "{{ resource_prefix }}-test-ebs-vols"
-        "instance-state-name": "running"
     register: presented_instance_fact
 
   - name: "fact checkmode ec2 instance"
@@ -61,22 +60,26 @@
         "tag:Name": "{{ resource_prefix }}-test-ebs-vols-checkmode"
     register: checkmode_instance_fact
 
-  - name: "Confirm whether the check mode is working normally."
+  - name: "Confirm instance was created without check mode"
     assert:
       that:
         - "{{ presented_instance_fact.instances | length }} > 0"
+
+  - name: "Confirm instance was not created with check mode"
+    assert:
+      that:
         - "{{ checkmode_instance_fact.instances | length }} == 0"
 
   - name: "Terminate instances"
     ec2_instance:
       state: absent
       instance_ids: "{{ block_device_instances.instance_ids }}"
-  
+
   - name: "New instance with an extra block device - gp3 volume_type and throughput"
     ec2_instance:
-      state: present
+      state: running
       name: "{{ resource_prefix }}-test-ebs-vols-gp3"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
       volumes:
       - device_name: /dev/sdb

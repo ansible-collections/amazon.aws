@@ -35,7 +35,7 @@
       network:
         interfaces:
           - id: "{{ eni_a.interface.id }}"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       availability_zone: '{{ subnet_b_az }}'
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
@@ -62,7 +62,7 @@
         interfaces:
           - id: "{{ eni_a.interface.id }}"
           - id: "{{ eni_b.interface.id }}"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
       instance_type: "{{ ec2_instance_type }}"
@@ -80,7 +80,7 @@
       network:
         interfaces:
           - id: "{{ eni_c.interface.id }}"
-      image_id: "{{ ec2_ami_image }}"
+      image_id: "{{ ec2_ami_id }}"
       availability_zone: '{{ subnet_b_az }}'
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
