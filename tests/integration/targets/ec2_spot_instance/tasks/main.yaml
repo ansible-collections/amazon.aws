@@ -90,6 +90,17 @@
         - create_result.spot_request.spot_instance_request_id is defined
         - create_result.spot_request.launch_specification.subnet_id == vpc_subnet_result.subnet.id
 
+  - name: Get info about the spot instance request created
+    ec2_spot_instance_info:
+      spot_instance_request_ids:
+        - "{{ create_result.spot_request.spot_instance_request_id }}"
+    register: spot_instance_info_result
+
+  - name: Assert that the spot request created is open or active
+    assert:
+      that:
+        - spot_instance_info_result.spot_request[0].state in ['open', 'active']
+
   - name: Create spot request with more complex options
     ec2_spot_instance:
       launch_specification:
@@ -144,6 +155,17 @@
     vars:
       launch_spec: '{{ complex_create_result.spot_request.launch_specification }}'
       spot_request_tags: '{{ complex_create_result.spot_request.tags }}'
+
+  - name: Get info about the complex spot instance request created
+    ec2_spot_instance_info:
+      spot_instance_request_ids:
+        - "{{ complex_create_result.spot_request.spot_instance_request_id }}"
+    register: complex_spot_instance_info_result
+
+  - name: Assert that the complex spot request created is open or active
+    assert:
+      that:
+        - complex_spot_instance_info_result.spot_request[0].state in ['open', 'active']
 
   # Assert check mode
   - name: Create spot instance request (check_mode)

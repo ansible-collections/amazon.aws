@@ -158,8 +158,6 @@ def describe_spot_instance_requests(connection, module):
 
     try:
         describe_spot_instance_requests_response = (connection.describe_spot_instance_requests(**params))['SpotInstanceRequests']
-        import q
-        q(describe_spot_instance_requests_response)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to describe sport instance requests')
 
