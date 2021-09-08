@@ -23,14 +23,6 @@ options:
       - See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeSpotInstanceRequests.html) for possible filters.
     type: list
     elements: dict
-  dry_run:
-    description:
-      - A boolean to check if you have the required permissions for the action.
-      - Does not make the request.
-      - If required permissions are not present then returns an error response UnauthorizedOperation else DryRunOperation.
-    default: False
-    choices: [ True, False ]
-    type: bool
   spot_instance_request_ids:
     description:
       - One or more Spot Instance request IDs.
@@ -147,8 +139,6 @@ def describe_spot_instance_requests(connection, module):
         filters_dit = module.params.get('filters')
         camel_filters = snake_dict_to_camel_dict(filters_dit, capitalize_first=True)
         params['Filters'] = camel_filters
-    if module.params.get('dry_run'):
-        params['DryRun'] = module.params.get('dry_run')
     if module.params.get('spot_instance_request_ids'):
         params['SpotInstanceRequestIds'] = module.params.get('spot_instance_request_ids')
     if module.params.get('next_token'):
@@ -172,7 +162,6 @@ def main():
 
     argument_spec = dict(
         filters=dict(default=[], type='list', elements='dict'),
-        dry_run=dict(default=False, type='bool', choices=[True, False]),
         spot_instance_request_ids=dict(default=[], type='list', elements='str'),
         next_token=dict(default=None, type='str', no_log=False),
         max_results=dict(type='int')
