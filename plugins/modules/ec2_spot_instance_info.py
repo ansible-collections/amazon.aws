@@ -18,14 +18,16 @@ author:
 options:
   filters:
     description:
-      - A list of filters to apply.
-      - Each list item is a dict consisting of a filter key and a filter value.
+      - A dict of filters to apply. Each dict item consists of a filter key and a filter value.
+      - Filter names and values are case sensitive.
       - See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeSpotInstanceRequests.html) for possible filters.
-    type: list
-    elements: dict
+    required: false
+    default: {}
+    type: dict
   spot_instance_request_ids:
     description:
       - One or more Spot Instance request IDs.
+    required: false
     type: list
     elements: str
 
@@ -49,19 +51,13 @@ EXAMPLES = '''
       - sir-13579246
       - sir-87654321
     filters:
-      - name: 'launch.instance-type'
-        values:
-          - t3.medium
+        launch.instance-type: t3.medium
 
 - name: describe the Spot requests filtered using multiple filters
   amazon.aws.ec2_spot_instance_info:
     filters:
-      - name: 'state'
-        values:
-          - active
-      - name: launch.block-device-mapping.device-name
-        values:
-          - /dev/sdb
+        state: active
+        launch.block-device-mapping.device-name: /dev/sdb
 
 '''
 
@@ -118,6 +114,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSM
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 
 
 def _describe_spot_instance_requests(connection, **params):
@@ -127,17 +124,10 @@ def _describe_spot_instance_requests(connection, **params):
 
 def describe_spot_instance_requests(connection, module):
 
-    changed = True
-
-    if module.check_mode:
-        module.exit_json(changed=changed)
-
     params = {}
 
     if module.params.get('filters'):
-        filters_dict = module.params.get('filters')
-        camel_filters = snake_dict_to_camel_dict(filters_dict, capitalize_first=True)
-        params['Filters'] = camel_filters
+        params['Filters'] = ansible_dict_to_boto3_filter_list(module.params.get('filters'))
     if module.params.get('spot_instance_request_ids'):
         params['SpotInstanceRequestIds'] = module.params.get('spot_instance_request_ids')
 
@@ -151,15 +141,15 @@ def describe_spot_instance_requests(connection, module):
         spot_request.append(camel_dict_to_snake_dict(response_list_item))
 
     if len(spot_request) == 0:
-        module.exit_json(changed=changed, msg='No spot requests found for specified options')
+        module.exit_json(msg='No spot requests found for specified options')
 
-    module.exit_json(spot_request=spot_request, changed=changed)
+    module.exit_json(spot_request=spot_request)
 
 
 def main():
 
     argument_spec = dict(
-        filters=dict(default=[], type='list', elements='dict'),
+        filters=dict(default={}, type='dict'),
         spot_instance_request_ids=dict(default=[], type='list', elements='str'),
     )
     module = AnsibleAWSModule(
