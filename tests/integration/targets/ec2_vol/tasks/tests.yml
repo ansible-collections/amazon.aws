@@ -342,29 +342,6 @@
         that:
           - ec2_vol_info.volumes | length == 4
 
-    - name: detach volume from the instance
-      ec2_vol:
-        id: "{{ new_vol_attach_result.volume_id }}"
-        instance: ""
-      register: new_vol_attach_result
-
-    - name: check task return attributes
-      assert:
-        that:
-          - new_vol_attach_result.changed
-          - new_vol_attach_result.volume.status == 'available'
-
-    - name: detach volume from the instance (idempotent)
-      ec2_vol:
-        id: "{{ new_vol_attach_result.volume_id }}"
-        instance: ""
-      register: new_vol_attach_result_idem
-
-    - name: check task return attributes
-      assert:
-        that:
-          - not new_vol_attach_result_idem.changed
-
     - name: must not change because of missing parameter modify_volume
       ec2_vol:
         id: "{{ new_vol_attach_result.volume_id }}"
@@ -457,7 +434,30 @@
           - v.type == 'gp3'
       vars:
         v: "{{ verify_gp3_change.volumes[0] }}"
+        
+    - name: detach volume from the instance
+      ec2_vol:
+        id: "{{ new_vol_attach_result.volume_id }}"
+        instance: ""
+      register: new_vol_attach_result
 
+    - name: check task return attributes
+      assert:
+        that:
+          - new_vol_attach_result.changed
+          - new_vol_attach_result.volume.status == 'available'
+
+    - name: detach volume from the instance (idempotent)
+      ec2_vol:
+        id: "{{ new_vol_attach_result.volume_id }}"
+        instance: ""
+      register: new_vol_attach_result_idem
+
+    - name: check task return attributes
+      assert:
+        that:
+          - not new_vol_attach_result_idem.changed
+          
     - name: delete volume
       ec2_vol:
         id: "{{ volume2.volume_id }}"

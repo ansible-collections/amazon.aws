@@ -783,14 +783,16 @@ def main():
         final_tags, tags_changed = ensure_tags(module, ec2_conn, volume['volume_id'], 'volume', tags, module.params.get('purge_tags'))
 
         if detach_vol_flag:
-            volume, changed = detach_volume(module, ec2_conn, volume_dict=volume)
+            volume, attach_changed = detach_volume(module, ec2_conn, volume_dict=volume)
         elif inst is not None:
-            volume, changed = attach_volume(module, ec2_conn, volume_dict=volume, instance_dict=inst, device_name=device_name)
+            volume, attach_changed = attach_volume(module, ec2_conn, volume_dict=volume, instance_dict=inst, device_name=device_name)
+        else:
+            attach_changed = False
 
         # Add device, volume_id and volume_type parameters separately to maintain backward compatibility
         volume_info = get_volume_info(volume, tags=final_tags)
 
-        if tags_changed:
+        if tags_changed or attach_changed:
             changed = True
 
         module.exit_json(changed=changed, volume=volume_info, device=volume_info['attachment_set']['device'],

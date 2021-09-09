@@ -1,0 +1,6 @@
+bugfixes:
+- >-
+  ec2_vol - Fixes ``changed`` status when ``modify_volume`` is used, but no new 
+  disk is being attached.  The module incorrectly reported that no change had 
+  occurred even when disks had been modified (iops, throughput, type, etc.).
+  (https://github.com/ansible-collections/amazon.aws/issues/482).
