@@ -115,6 +115,7 @@
               volume_size: 5
         network_interfaces:
           - associate_public_ip_address: False
+            subnet_id: "{{ vpc_subnet_result.subnet.id }}"
             delete_on_termination: True
             device_index: 0
         placement:
@@ -181,7 +182,15 @@
   - name: Assert that the correct spot request was returned in the filtered result
     assert:
       that:
-        -  spot_instance_info_filter_result.spot_request[0].spot_instance_request_id == complex_create_result.spot_request.spot_instance_request_id
+        - spot_instance_info_filter_result.spot_request[0].spot_instance_request_id == complex_create_result.spot_request.spot_instance_request_id
+
+  - name: Assert that the correct keys are set while creating the spot instance with complex options
+    assert:
+      that:
+        - complex_create_result.spot_request.spot_price == "0.002000"
+        - complex_create_result.spot_request.launch_specification.block_device_mappings[0].ebs.volume_size == 5
+        - complex_create_result.spot_request.launch_specification.block_device_mappings[0].ebs.volume_type == "gp3"
+        - complex_create_result.spot_request.launch_specification.network_interfaces[0].delete_on_termination == True
 
   # Assert check mode
   - name: Create spot instance request (check_mode)
