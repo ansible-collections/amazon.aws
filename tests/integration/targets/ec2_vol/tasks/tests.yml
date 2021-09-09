@@ -203,7 +203,7 @@
       assert:
         that:
           - "not vol_attach_result.changed"
-          - "vol_attach_result.volume.attachment_set.status == 'attached'"
+          - vol_attach_result.volume.attachment_set.status in ['attached', 'attaching']
 
     - name: attach a new volume to an instance
       ec2_vol:
