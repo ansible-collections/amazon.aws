@@ -61,6 +61,7 @@ Name | Description
 [amazon.aws.ec2_snapshot](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_snapshot_module.rst)|Creates a snapshot from an existing volume
 [amazon.aws.ec2_snapshot_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_snapshot_info_module.rst)|Gather information about ec2 volume snapshots in AWS
 [amazon.aws.ec2_spot_instance](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_spot_instance_module.rst)|request, stop, reboot or cancel spot instance
+[amazon.aws.ec2_spot_instance_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_spot_instance_info_module.rst)|Gather information about ec2 spot instance requests
 [amazon.aws.ec2_tag](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_tag_module.rst)|create and remove tags on ec2 resources
 [amazon.aws.ec2_tag_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_tag_info_module.rst)|list tags on ec2 resources
 [amazon.aws.ec2_vol](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vol_module.rst)|Create and attach a volume, return volume id and device map

@@ -27,8 +27,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.13.0
-- botocore >= 1.16.0
+- boto3 >= 1.15.0
+- botocore >= 1.18.0
 
 
 Parameters
@@ -478,7 +478,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
                     </div>
-<div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0</div>                </td>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0</div>                </td>
                 <td>When a Name tag has been set</td>
                 <td>
                             <div>The Name tag of the ENI, often displayed in the AWS UIs as Name</div>
@@ -684,7 +684,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <div style="font-size: small">
                       <span style="color: purple">dictionary</span>
                     </div>
-<div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0</div>                </td>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.3.0</div>                </td>
                 <td>always</td>
                 <td>
                             <div>Dictionary of tags added to the ENI</div>

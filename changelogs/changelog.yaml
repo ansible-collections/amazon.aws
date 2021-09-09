@@ -300,6 +300,10 @@ releases:
   2.0.0:
     changes:
       breaking_changes:
+      - 'ec2_instance - instance wait for state behaviour has changed.  If plays require
+        the old behavior of waiting for the instance monitoring status to become ``OK``
+        when launching a new instance, the action will need to specify ``state: started``
+        (https://github.com/ansible-collections/amazon.aws/pull/481).'
       - ec2_snapshot - support for waiting indefinitely has been dropped, new default
         is 10 minutes (https://github.com/ansible-collections/amazon.aws/pull/356).
       - ec2_vol_info - return ``attachment_set`` is now a list of attachments with
@@ -319,6 +323,9 @@ releases:
       - aws_s3 - Fix upload permission when an S3 bucket ACL policy requires a particular
         canned ACL (https://github.com/ansible-collections/amazon.aws/pull/318)
       - ec2_ami - Fix ami issue when creating an ami with no_device parameter (https://github.com/ansible-collections/amazon.aws/pull/386)
+      - ec2_instance - ``ec2_instance`` was waiting on EC2 instance monitoring status
+        to be ``OK`` when launching a new instance. This could cause a play to wait
+        multiple minutes for AWS's monitoring to complete status checks (https://github.com/ansible-collections/amazon.aws/pull/481).
       - ec2_snapshot - Fix snapshot issue when capturing a snapshot of a volume without
         tags (https://github.com/ansible-collections/amazon.aws/pull/383)
       - ec2_vol - Fixes ``changed`` status when ``modify_volume`` is used, but no
@@ -477,6 +484,7 @@ releases:
     - 461-ipaddress.yml
     - 464-rds_cluster-waiter.yml
     - 465-pylint.yml
+    - 481-ec2_instance-wait_sanity.yml
     - 483-ec2_vol_fix_returned_changed_var.yml
     - include_filters_with_filter.yaml
     - migrate_ec2_instance.yml

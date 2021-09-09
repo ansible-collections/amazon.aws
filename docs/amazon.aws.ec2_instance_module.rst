@@ -28,8 +28,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.13.0
-- botocore >= 1.16.0
+- boto3 >= 1.15.0
+- botocore >= 1.18.0
 
 
 Parameters
@@ -940,6 +940,14 @@ Parameters
                 </td>
                 <td>
                         <div>Goal state for the instances.</div>
+                        <div><em>state=present</em>: ensures instances exist, but does not guarantee any state (e.g. running). Newly-launched instances will be run by EC2.</div>
+                        <div><em>state=running</em>: <em>state=present</em> + ensures the instances are running</div>
+                        <div><em>state=started</em>: <em>state=running</em> + waits for EC2 status checks to report OK if <em>wait=true</em></div>
+                        <div><em>state=stopped</em>: ensures an existing instance is stopped.</div>
+                        <div><em>state=rebooted</em>: convenience alias for <em>state=stopped</em> immediately followed by <em>state=running</em></div>
+                        <div><em>state=restarted</em>: convenience alias for <em>state=stopped</em> immediately followed by <em>state=started</em></div>
+                        <div><em>state=terminated</em>: ensures an existing instance is terminated.</div>
+                        <div><em>state=absent</em>: alias for <em>state=terminated</em></div>
                 </td>
             </tr>
             <tr>
