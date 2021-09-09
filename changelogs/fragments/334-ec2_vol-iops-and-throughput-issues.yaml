@@ -1,2 +1,0 @@
-bugfixes:
-- ec2_vol - fix iops setting and enforce iops/throughput parameters usage (https://github.com/ansible-collections/amazon.aws/pull/334)
