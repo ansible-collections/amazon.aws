@@ -43,14 +43,7 @@ _raw:
 """
 
 import json
-try:
-    import netaddr
-except ImportError as imp_exc:
-    NETADDR_LIBRARY_IMPORT_ERROR = imp_exc
-else:
-    NETADDR_LIBRARY_IMPORT_ERROR = None
 
-from ansible.module_utils.six import raise_from
 from ansible.errors import AnsibleError
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible.module_utils.six.moves.urllib.error import URLError
@@ -59,24 +52,6 @@ from ansible.module_utils.urls import ConnectionError
 from ansible.module_utils.urls import open_url
 from ansible.module_utils.urls import SSLValidationError
 from ansible.plugins.lookup import LookupBase
-
-
-def valid_cidr(ip_address):
-    """
-    Validate IP address
-    """
-    if NETADDR_LIBRARY_IMPORT_ERROR:
-        raise_from(
-            AnsibleError('netaddr must be installed to use this plugin'),
-            NETADDR_LIBRARY_IMPORT_ERROR)
-    try:
-        netaddr.IPNetwork(ip_address)
-    except netaddr.core.AddrFormatError as e:
-        raise AnsibleError("Not a valid IP address: %s" % e)
-    cidr = ip_address.split('/')
-    if (len(cidr) <= 1 or cidr[1] == ''):
-        return False
-    return True
 
 
 class LookupModule(LookupBase):
@@ -112,8 +87,4 @@ class LookupModule(LookupBase):
             amazon_response = (item for item in amazon_response if item['service'] == service)
 
             iprange = [item[ip_prefix_label] for item in amazon_response]
-            for i in iprange:
-                if not valid_cidr(i):
-                    raise AnsibleError("Invalid Ip address: %s" % i)
-                return True
             return iprange
