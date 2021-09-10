@@ -205,7 +205,6 @@
     - name: Assert no changes made
       assert:
         that:
-          - '"Only one IPv6 CIDR is permitted per VPC, {{ result.vpc.id }} already has CIDR {{ vpc_1_ipv6_cidr }}" in result.warnings'
           - result is not changed
           - vpc_info.vpcs | length == 1
 
