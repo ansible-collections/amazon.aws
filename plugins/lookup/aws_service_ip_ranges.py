@@ -85,5 +85,5 @@ class LookupModule(LookupBase):
         if 'service' in kwargs:
             service = str.upper(kwargs['service'])
             amazon_response = (item for item in amazon_response if item['service'] == service)
-            iprange = [item[ip_prefix_label] for item in amazon_response]
-            return iprange
+        iprange = [item[ip_prefix_label] for item in amazon_response]
+        return iprange
