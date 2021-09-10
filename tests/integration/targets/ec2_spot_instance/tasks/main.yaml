@@ -164,16 +164,19 @@
     ec2_spot_instance_info:
       spot_instance_request_ids:
         - "{{ complex_create_result.spot_request.spot_instance_request_id }}"
-    register: complex_spot_instance_info_result
+    register: complex_info_result
 
   - name: Assert that the complex spot request created is open/active and correct keys are set
     assert:
       that:
-        - complex_spot_instance_info_result.spot_request[0].state in ['open', 'active']
-        - complex_create_result.spot_request.spot_price == "0.002000"
-        - complex_create_result.spot_request.launch_specification.block_device_mappings[0].ebs.volume_size == 5
-        - complex_create_result.spot_request.launch_specification.block_device_mappings[0].ebs.volume_type == "gp3"
-        - complex_create_result.spot_request.launch_specification.network_interfaces[0].delete_on_termination == True
+        - complex_info_result.spot_request[0].state in ['open', 'active']
+        - complex_create_result.spot_request.spot_price == complex_info_result.spot_request[0].spot_price
+        - create_launch_spec.block_device_mappings[0].ebs.volume_size == info_launch_spec.block_device_mappings[0].ebs.volume_size
+        - create_launch_spec.block_device_mappings[0].ebs.volume_type == info_launch_spec.block_device_mappings[0].ebs.volume_type
+        - create_launch_spec.network_interfaces[0].delete_on_termination == info_launch_spec.network_interfaces[0].delete_on_termination
+    vars:
+      create_launch_spec: "{{ complex_create_result.spot_request.launch_specification }}"
+      info_launch_spec: "{{ complex_info_result.spot_request[0].launch_specification }}"
 
   - name: Get info about the created spot instance requests and filter result based on provided filters
     ec2_spot_instance_info:
@@ -181,6 +184,7 @@
         - '{{ create_result.spot_request.spot_instance_request_id }}'
         - '{{ complex_create_result.spot_request.spot_instance_request_id }}'
       filters:
+        tag:ansible-test: "{{ resource_prefix }}"
         launch.block-device-mapping.device-name: /dev/sdb
     register: spot_instance_info_filter_result
 
