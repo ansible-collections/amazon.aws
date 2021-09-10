@@ -1,5 +1,5 @@
 dependencies:
-- prepare_tests
-- setup_ec2_facts
+- role: prepare_tests
+- role: setup_ec2_facts
 collections:
 - amazon.aws

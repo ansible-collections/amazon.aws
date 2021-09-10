@@ -1,4 +1,9 @@
 - block:
+  - include_role:
+      name: setup_botocore_pip
+    vars:
+      botocore_version: '1.19.27'
+
   - name: "New instance with an extra block device"
     ec2_instance:
       state: running
@@ -93,6 +98,9 @@
       instance_type: "{{ ec2_instance_type }}"
       wait: true
     register: block_device_instances_gp3
+    # Managing Troughput requires botocore >= 1.19.27
+    vars:
+      ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
 
   - assert:
       that:

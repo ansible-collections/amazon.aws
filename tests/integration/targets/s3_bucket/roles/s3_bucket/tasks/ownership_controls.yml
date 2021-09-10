@@ -6,26 +6,15 @@
       security_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
   block:
-    - pip:
-        name: virtualenv
-    - set_fact:
-        virtualenv: "{{ remote_tmp_dir }}/virtualenv"
-        virtualenv_command: "{{ ansible_python_interpreter }} -m virtualenv"
-    - set_fact:
-        virtualenv_interpreter: "{{ virtualenv }}/bin/python"
-    - pip:
-        name:
-          - 'boto3>=1.13.0'
-          - 'botocore==1.18.11'
-          - 'coverage<5'
-        virtualenv: '{{ virtualenv }}'
-        virtualenv_command: '{{ virtualenv_command }}'
-        virtualenv_site_packages: no
+    - include_role:
+        name: setup_botocore_pip
+      vars:
+        botocore_version: '1.18.11'
 
     # ============================================================
     - name: Wrap test in virtualenv
       vars:
-        ansible_python_interpreter: "{{ virtualenv }}/bin/python"
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
       block:
         - set_fact:
             local_bucket_name: "{{ bucket_name | hash('md5')}}ownership"
@@ -136,7 +125,3 @@
         name: '{{ local_bucket_name }}'
         state: absent
       ignore_errors: yes
-
-    - file:
-        path: "{{ virtualenv }}"
-        state: absent
