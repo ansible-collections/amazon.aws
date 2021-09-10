@@ -44,7 +44,7 @@
       - s3_ipv6s is iterable
       - s3_ipv6s is not string
       - s3_ipv6s | length > 1
-      - s3_ipsv6s[0] | ansible.netcommon.ipv6
+      - s3_ipv6s[0] | ansible.netcommon.ipv6
 
 - name: lookup range with a different service
   set_fact:
