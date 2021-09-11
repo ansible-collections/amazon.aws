@@ -4,7 +4,6 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from ansible_collections.amazon.aws.plugins.module_utils.cloud import CloudRetry, BackoffIterator
-import pytest
 import unittest
 import random
 from datetime import datetime
@@ -62,12 +61,14 @@ class CloudRetryUtils(unittest.TestCase):
             return "TestException with status: {0}".format(self.status)
 
     class UnitTestsRetry(CloudRetry):
+        base_class = Exception
 
         @staticmethod
         def status_code_from_exception(error):
             return getattr(error, "status") if hasattr(error, "status") else None
 
     class CustomRetry(CloudRetry):
+        base_class = Exception
 
         @staticmethod
         def status_code_from_exception(error):
@@ -79,6 +80,28 @@ class CloudRetryUtils(unittest.TestCase):
                 return response_code in catch_extra_error_codes + CloudRetryUtils.custom_error_codes
             else:
                 return response_code in CloudRetryUtils.custom_error_codes
+
+    class KeyRetry(CloudRetry):
+        base_class = KeyError
+
+        @staticmethod
+        def status_code_from_exception(error):
+            return True
+
+        @staticmethod
+        def found(response_code, catch_extra_error_codes=None):
+            return True
+
+    class KeyAndIndexRetry(CloudRetry):
+        base_class = (KeyError, IndexError)
+
+        @staticmethod
+        def status_code_from_exception(error):
+            return True
+
+        @staticmethod
+        def found(response_code, catch_extra_error_codes=None):
+            return True
 
     # ========================================================
     # Setup some initial data that we can use within our tests
@@ -193,5 +216,45 @@ class CloudRetryUtils(unittest.TestCase):
                 raised = True
                 duration = (datetime.now() - start).seconds
                 assert duration == 2
+            finally:
+                assert raised
+
+    def test_only_base_exception(self):
+        def _fail_index():
+            my_list = list()
+            return my_list[5]
+
+        def _fail_key():
+            my_dict = dict()
+            return my_dict['invalid_key']
+
+        def _fail_exception():
+            raise Exception('bang')
+
+        key_retry_decorator = CloudRetryUtils.KeyRetry.exponential_backoff(retries=2, delay=2, backoff=4, max_delay=100)
+        key_and_index_retry_decorator = CloudRetryUtils.KeyAndIndexRetry.exponential_backoff(retries=2, delay=2, backoff=4, max_delay=100)
+
+        expectations = [
+            [key_retry_decorator, _fail_exception, 0],
+            [key_retry_decorator, _fail_index, 0],
+            [key_retry_decorator, _fail_key, 2],
+            [key_and_index_retry_decorator, _fail_exception, 0],
+            [key_and_index_retry_decorator, _fail_index, 2],
+            [key_and_index_retry_decorator, _fail_key, 2],
+        ]
+
+        for expection in expectations:
+            decorator = expection[0]
+            function = expection[1]
+            duration = expection[2]
+
+            start = datetime.now()
+            raised = False
+            try:
+                decorator(function)()
+            except Exception:
+                raised = True
+                _duration = (datetime.now() - start).seconds
+                assert duration == _duration
             finally:
                 assert raised

@@ -58,7 +58,7 @@ class BackoffIterator:
         return return_value
 
 
-def _retry_func(func, sleep_time_generator, retries, catch_extra_error_codes, found_f, status_code_from_except_f):
+def _retry_func(func, sleep_time_generator, retries, catch_extra_error_codes, found_f, status_code_from_except_f, base_class):
     counter = 0
     for sleep_time in sleep_time_generator:
         try:
@@ -66,6 +66,8 @@ def _retry_func(func, sleep_time_generator, retries, catch_extra_error_codes, fo
         except Exception as exc:
             counter += 1
             if counter == retries:
+                raise
+            if base_class and not isinstance(exc, base_class):
                 raise
             status_code = status_code_from_except_f(exc)
             if found_f(status_code, catch_extra_error_codes):
@@ -79,8 +81,16 @@ class CloudRetry:
     The base class to be used by other cloud providers to provide a backoff/retry decorator based on status codes.
     """
 
+    base_class = type(None)
+
     @staticmethod
     def status_code_from_exception(error):
+        """
+        Returns the Error 'code' from an exception.
+        Args:
+          error: The Exception from which the error code is to be extracted.
+            error will be an instance of class.base_class.
+        """
         raise NotImplementedError()
 
     @staticmethod
@@ -96,8 +106,8 @@ class CloudRetry:
                 return True
         return _is_iterable() and response_code in catch_extra_error_codes
 
-    @staticmethod
-    def base_decorator(retries, found, status_code_from_exception, catch_extra_error_codes, sleep_time_generator):
+    @classmethod
+    def base_decorator(cls, retries, found, status_code_from_exception, catch_extra_error_codes, sleep_time_generator):
         def retry_decorator(func):
             @functools.wraps(func)
             def _retry_wrapper(*args, **kwargs):
@@ -108,7 +118,8 @@ class CloudRetry:
                     retries=retries,
                     catch_extra_error_codes=catch_extra_error_codes,
                     found_f=found,
-                    status_code_from_except_f=status_code_from_exception
+                    status_code_from_except_f=status_code_from_exception,
+                    base_class=cls.base_class,
                 )
             return _retry_wrapper
         return retry_decorator
@@ -131,11 +142,13 @@ class CloudRetry:
             Callable: A generator that calls the decorated function using an exponential backoff.
         """
         sleep_time_generator = BackoffIterator(delay=delay, backoff=backoff, max_delay=max_delay)
-        return CloudRetry.base_decorator(retries=retries,
-                                         found=cls.found,
-                                         status_code_from_exception=cls.status_code_from_exception,
-                                         catch_extra_error_codes=catch_extra_error_codes,
-                                         sleep_time_generator=sleep_time_generator)
+        return cls.base_decorator(
+            retries=retries,
+            found=cls.found,
+            status_code_from_exception=cls.status_code_from_exception,
+            catch_extra_error_codes=catch_extra_error_codes,
+            sleep_time_generator=sleep_time_generator,
+        )
 
     @classmethod
     def jittered_backoff(cls, retries=10, delay=3, backoff=2.0, max_delay=60, catch_extra_error_codes=None):
@@ -155,11 +168,13 @@ class CloudRetry:
             Callable: A generator that calls the decorated function using using a jittered backoff strategy.
         """
         sleep_time_generator = BackoffIterator(delay=delay, backoff=backoff, max_delay=max_delay, jitter=True)
-        return CloudRetry.base_decorator(retries=retries,
-                                         found=cls.found,
-                                         status_code_from_exception=cls.status_code_from_exception,
-                                         catch_extra_error_codes=catch_extra_error_codes,
-                                         sleep_time_generator=sleep_time_generator)
+        return cls.base_decorator(
+            retries=retries,
+            found=cls.found,
+            status_code_from_exception=cls.status_code_from_exception,
+            catch_extra_error_codes=catch_extra_error_codes,
+            sleep_time_generator=sleep_time_generator,
+        )
 
     @classmethod
     def backoff(cls, tries=10, delay=3, backoff=1.1, catch_extra_error_codes=None):
@@ -184,4 +199,5 @@ class CloudRetry:
             delay=delay,
             backoff=backoff,
             max_delay=None,
-            catch_extra_error_codes=catch_extra_error_codes)
+            catch_extra_error_codes=catch_extra_error_codes,
+        )
