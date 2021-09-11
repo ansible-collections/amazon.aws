@@ -1,5 +1,6 @@
 - name: lookup range with no arguments
-  set_fact:    no_params: "{{ lookup('amazon.aws.aws_service_ip_ranges') }}"
+  set_fact:
+    no_params: "{{ lookup('amazon.aws.aws_service_ip_ranges') }}"
 
 - name: assert that we're returned a single string
   assert:
