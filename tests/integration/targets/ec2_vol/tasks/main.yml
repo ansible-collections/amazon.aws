@@ -31,6 +31,36 @@
         az: '{{ availability_zone }}'
       register: testing_subnet
 
+    - name: create an ec2 instance
+      ec2_instance:
+        name: "{{ instance_name }}"
+        vpc_subnet_id: "{{ testing_subnet.subnet.id }}"
+        instance_type: t3.nano
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          ResourcePrefix: "{{ resource_prefix }}"
+      register: test_instance
+
+    - name: check task return attributes
+      assert:
+        that:
+          - test_instance.changed
+
+    - name: create another ec2 instance
+      ec2_instance:
+        name: "{{ instance_name }}-2"
+        vpc_subnet_id: "{{ testing_subnet.subnet.id }}"
+        instance_type: t3.nano
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          ResourcePrefix: "{{ resource_prefix }}"
+      register: test_instance_2
+
+    - name: check task return attributes
+      assert:
+        that:
+          - test_instance_2.changed
+
     # # ==== ec2_vol tests ===============================================
 
     - name: create a volume (validate module defaults)
@@ -134,20 +164,12 @@
           - volume3.changed
           - "volume3.volume.snapshot_id ==  vol1_snapshot.snapshot_id"
 
-    - name: create an ec2 instance
+    - name: Wait for instance to start
       ec2_instance:
         name: "{{ instance_name }}"
-        vpc_subnet_id: "{{ testing_subnet.subnet.id }}"
-        instance_type: t3.nano
+        state: running
         image_id: "{{ ec2_ami_id }}"
-        tags:
-          ResourcePrefix: "{{ resource_prefix }}"
-      register: test_instance
-
-    - name: check task return attributes
-      assert:
-        that:
-          - test_instance.changed
+        wait: True
 
     - name: attach existing volume to an instance
       ec2_vol:
@@ -668,20 +690,12 @@
         delete_on_termination: no
       register: vol_attach_result
 
-    - name: create another ec2 instance
+    - name: Wait for instance to start
       ec2_instance:
         name: "{{ instance_name }}-2"
-        vpc_subnet_id: "{{ testing_subnet.subnet.id }}"
-        instance_type: t3.nano
+        state: running
         image_id: "{{ ec2_ami_id }}"
-        tags:
-          ResourcePrefix: "{{ resource_prefix }}"
-      register: test_instance_2
-
-    - name: check task return attributes
-      assert:
-        that:
-          - test_instance_2.changed
+        wait: True
 
     - name: attach existing volume to second instance
       ec2_vol:
@@ -721,6 +735,7 @@
         instance_ids:
           - "{{ item }}"
         state: terminated
+        wait: True
       with_items:
         - "{{ test_instance.instance_ids[0] }}"
         - "{{ test_instance_2.instance_ids[0] }}"
