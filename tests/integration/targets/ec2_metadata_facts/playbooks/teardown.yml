@@ -22,19 +22,14 @@
       wait: True
     ignore_errors: true
     retries: 5
+    register: remove
+    until: remove is successful
 
   - name: remove ssh key
     ec2_key:
       name: "{{ ec2_key_name }}"
       state: absent
     ignore_errors: true
-
-  - name: remove the security group
-    ec2_group:
-      group_id: "{{ vpc_sg_id }}"
-      state: absent
-    ignore_errors: true
-    retries: 5
 
   - name: remove the public route table
     ec2_vpc_route_table:
@@ -44,6 +39,26 @@
       state: absent
     ignore_errors: true
     retries: 5
+    register: remove
+    until: remove is successful
+
+  - name: remove the internet gateway
+    ec2_vpc_igw:
+      vpc_id: "{{ vpc_id }}"
+      state: absent
+    ignore_errors: true
+    retries: 5
+    register: remove
+    until: remove is successful
+
+  - name: remove the security group
+    ec2_group:
+      group_id: "{{ vpc_sg_id }}"
+      state: absent
+    ignore_errors: true
+    retries: 5
+    register: remove
+    until: remove is successful
 
   - name: remove the subnet
     ec2_vpc_subnet:
@@ -53,13 +68,8 @@
       state: absent
     ignore_errors: true
     retries: 5
-
-  - name: remove the internet gateway
-    ec2_vpc_igw:
-      vpc_id: "{{ vpc_id }}"
-      state: absent
-    ignore_errors: true
-    retries: 5
+    register: remove
+    until: remove is successful
 
   - name: remove the VPC
     ec2_vpc_net:
@@ -68,3 +78,5 @@
       state: absent
     ignore_errors: true
     retries: 5
+    register: remove
+    until: remove is successful

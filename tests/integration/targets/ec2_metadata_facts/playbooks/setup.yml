@@ -16,23 +16,16 @@
     vpc_seed: '{{ resource_prefix }}'
     vpc_cidr: '10.{{ 256 | random(seed=vpc_seed) }}.0.0/16'
     subnet_cidr: '10.{{ 256 | random(seed=vpc_seed) }}.32.0/24'
-    ec2_ami_name: 'amzn2-ami-hvm-2.*-x86_64-gp2'
-    sshkey_file: '{{ resource_prefix }}_key'
 
   tasks:
 
-  - name: Create an ssh key
-    shell: echo 'y' | ssh-keygen -P '' -f ../{{ sshkey_file }}
+  - include_role:
+      name: '../setup_sshkey'
+  - include_role:
+      name: '../setup_ec2_facts'
 
-  - name: Get available AZs
-    aws_az_info:
-      filters:
-        region-name: "{{ aws_region }}"
-    register: az_info
-
-  - name: Pick an AZ
-    set_fact:
-      availability_zone: "{{ az_info['availability_zones'][0]['zone_name'] }}"
+  - set_fact:
+      availability_zone: '{{ ec2_availability_zone_names[0] }}'
 
   # ============================================================
   - name: create a VPC
@@ -97,17 +90,9 @@
   - name: Create a key
     ec2_key:
       name: '{{ resource_prefix }}'
-      key_material: "{{ lookup('file', '../' ~ sshkey_file ~ '.pub') }}"
+      key_material: '{{ key_material }}'
       state: present
     register: ec2_key_result
-
-  - name: Get a list of images
-    ec2_ami_info:
-      filters:
-        owner-alias: amazon
-        name: "amzn2-ami-minimal-hvm-*"
-        description: "Amazon Linux 2 AMI *"
-    register: images_info
 
   - name: Set facts to simplify use of extra resources
     set_fact:
@@ -115,21 +100,21 @@
       vpc_sg_id: "{{ vpc_sg_result.group_id }}"
       vpc_igw_id: "{{ igw_result.gateway_id }}"
       vpc_route_table_id: "{{ public_route_table.route_table.id }}"
-      image_id: "{{ images_info.images | sort(attribute='creation_date') | reverse | first | json_query('image_id') }}"
       ec2_key_name: "{{ ec2_key_result.key.name }}"
 
   - name: Create an instance to test with
     ec2_instance:
+      state: running
       name: "{{ resource_prefix }}-ec2-metadata-facts"
-      image_id: "{{ image_id }}"
+      image_id: "{{ ec2_ami_id }}"
       vpc_subnet_id: "{{ vpc_subnet_id }}"
       security_group: "{{ vpc_sg_id }}"
       instance_type: t2.micro
       key_name: "{{ ec2_key_name }}"
       network:
         assign_public_ip: true
-      wait: true
-      wait_timeout: 300
+        delete_on_termination: true
+      wait: True
     register: ec2_instance
 
   - set_fact:
@@ -139,3 +124,8 @@
     template:
       src: ../templates/inventory.j2
       dest: ../inventory
+
+  - wait_for:
+      port: 22
+      host: '{{ ec2_instance.instances[0].public_ip_address }}'
+      timeout: 300

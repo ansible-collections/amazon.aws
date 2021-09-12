@@ -61,8 +61,10 @@
 
 - name: set facts for future roles
   set_fact:
+    # Public SSH keys (OpenSSH format)
     key_material: "{{ lookup('file', sshkey_pub) }}"
     another_key_material: "{{ lookup('file', another_sshkey_pub) }}"
+    # AWS 'fingerprint' (md5digest)
     fingerprint: '{{ fingerprint.stdout }}'
     another_fingerprint: '{{ another_fingerprint.stdout }}'
   tags:
