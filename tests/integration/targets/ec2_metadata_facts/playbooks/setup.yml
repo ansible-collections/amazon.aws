@@ -115,6 +115,7 @@
         assign_public_ip: true
         delete_on_termination: true
       wait: True
+
     register: ec2_instance
 
   - set_fact:
@@ -128,4 +129,4 @@
   - wait_for:
       port: 22
       host: '{{ ec2_instance.instances[0].public_ip_address }}'
-      timeout: 300
+      timeout: 1200
