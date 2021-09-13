@@ -1,0 +1,2 @@
+minor_changes:
+- ec2_spot_instance_info - Added a new module that describes the specified Spot Instance requests (https://github.com/ansible-collections/amazon.aws/pull/487).

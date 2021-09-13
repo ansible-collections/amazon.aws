@@ -80,6 +80,8 @@
         key_name: "{{ resource_prefix }}-keypair"
         instance_type: "t2.medium"
         subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+      tags:
+        ansible-test: "{{ resource_prefix }}"
     register: create_result
 
   - name: Assert that result has changed and request has been created
@@ -89,6 +91,17 @@
         - create_result.spot_request is defined
         - create_result.spot_request.spot_instance_request_id is defined
         - create_result.spot_request.launch_specification.subnet_id == vpc_subnet_result.subnet.id
+
+  - name: Get info about the spot instance request created
+    ec2_spot_instance_info:
+      spot_instance_request_ids:
+        - "{{ create_result.spot_request.spot_instance_request_id }}"
+    register: spot_instance_info_result
+
+  - name: Assert that the spot request created is open or active
+    assert:
+      that:
+        - spot_instance_info_result.spot_request[0].state in ['open', 'active']
 
   - name: Create spot request with more complex options
     ec2_spot_instance:
@@ -104,6 +117,7 @@
               volume_size: 5
         network_interfaces:
           - associate_public_ip_address: False
+            subnet_id: "{{ vpc_subnet_result.subnet.id }}"
             delete_on_termination: True
             device_index: 0
         placement:
@@ -117,6 +131,7 @@
         snake_case: "hello_world"
         "Title Case": "Hello World"
         "lowercase spaced": "hello world"
+        ansible-test: "{{ resource_prefix }}"
     register: complex_create_result
 
   - assert:
@@ -135,7 +150,7 @@
         - launch_spec.network_interfaces.0.device_index == 0
         - launch_spec.network_interfaces.0.associate_public_ip_address == false
         - launch_spec.network_interfaces.0.delete_on_termination == true
-        - spot_request_tags|length == 5
+        - spot_request_tags|length == 6
         - spot_request_tags['camelCase'] == 'helloWorld'
         - spot_request_tags['PascalCase'] == 'HelloWorld'
         - spot_request_tags['snake_case'] == 'hello_world'
@@ -145,6 +160,39 @@
       launch_spec: '{{ complex_create_result.spot_request.launch_specification }}'
       spot_request_tags: '{{ complex_create_result.spot_request.tags }}'
 
+  - name: Get info about the complex spot instance request created
+    ec2_spot_instance_info:
+      spot_instance_request_ids:
+        - "{{ complex_create_result.spot_request.spot_instance_request_id }}"
+    register: complex_info_result
+
+  - name: Assert that the complex spot request created is open/active and correct keys are set
+    assert:
+      that:
+        - complex_info_result.spot_request[0].state in ['open', 'active']
+        - complex_create_result.spot_request.spot_price == complex_info_result.spot_request[0].spot_price
+        - create_launch_spec.block_device_mappings[0].ebs.volume_size == info_launch_spec.block_device_mappings[0].ebs.volume_size
+        - create_launch_spec.block_device_mappings[0].ebs.volume_type == info_launch_spec.block_device_mappings[0].ebs.volume_type
+        - create_launch_spec.network_interfaces[0].delete_on_termination == info_launch_spec.network_interfaces[0].delete_on_termination
+    vars:
+      create_launch_spec: "{{ complex_create_result.spot_request.launch_specification }}"
+      info_launch_spec: "{{ complex_info_result.spot_request[0].launch_specification }}"
+
+  - name: Get info about the created spot instance requests and filter result based on provided filters
+    ec2_spot_instance_info:
+      spot_instance_request_ids:
+        - '{{ create_result.spot_request.spot_instance_request_id }}'
+        - '{{ complex_create_result.spot_request.spot_instance_request_id }}'
+      filters:
+        tag:ansible-test: "{{ resource_prefix }}"
+        launch.block-device-mapping.device-name: /dev/sdb
+    register: spot_instance_info_filter_result
+
+  - name: Assert that the correct spot request was returned in the filtered result
+    assert:
+      that:
+        - spot_instance_info_filter_result.spot_request[0].spot_instance_request_id == complex_create_result.spot_request.spot_instance_request_id
+
   # Assert check mode
   - name: Create spot instance request (check_mode)
     ec2_spot_instance:
@@ -153,6 +201,8 @@
         key_name: "{{ resource_prefix }}-keypair"
         instance_type: "t2.medium"
         subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+      tags:
+        ansible-test: "{{ resource_prefix }}"
     check_mode: True
     register: check_create_result
 
@@ -221,14 +271,20 @@
           filters:
             vpc-id: "{{ vpc_result.vpc.id }}"
 
+      - name: get all spot requests created during test
+        ec2_spot_instance_info:
+          filters:
+            tag:ansible-test: "{{ resource_prefix }}"
+        register: spot_request_list
+
       - name: remove spot instance requests
         ec2_spot_instance:
           spot_instance_request_ids:
-            - '{{ create_result.spot_request.spot_instance_request_id }}'
-            - '{{ complex_create_result.spot_request.spot_instance_request_id }}'
+            - '{{ item.spot_instance_request_id }}'
           state: 'absent'
         ignore_errors: true
         retries: 5
+        with_items: "{{ spot_request_list.spot_request }}"
 
       - name: remove the security group
         ec2_group:
