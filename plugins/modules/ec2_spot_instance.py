@@ -398,8 +398,9 @@ cancelled_spot_request:
     type: str
     sample: 'Spot requests with IDs: sir-1234abcd have been cancelled'
 '''
-import time
-import datetime
+# TODO: add support for datetime-based parameters
+# import datetime
+# import time
 
 try:
     import botocore
