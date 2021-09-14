@@ -50,3 +50,4 @@
       ec2_ami_id: '{{ latest_image.image_id }}'
       ec2_ami_details: '{{ latest_image }}'
       ec2_ami_root_disk: '{{ latest_image.block_device_mappings[0].device_name }}'
+      ec2_ami_ssh_user: '{{ ec2_ami_ssh_user }}'

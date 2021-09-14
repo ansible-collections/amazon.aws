@@ -1,0 +1,4 @@
+dependencies:
+- prepare_tests
+- setup_ec2_facts
+- setup_sshkey
