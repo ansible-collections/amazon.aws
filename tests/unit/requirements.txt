@@ -1,2 +1,2 @@
-boto3>=1.13.0
+boto3>=1.15.0
 placebo
