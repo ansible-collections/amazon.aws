@@ -96,6 +96,11 @@
     include_tasks: ./test_deletion.yaml
 
   always:
+    # ============================================================
+      # Some test problems are caused by "eventual consistency"
+      # describe the ENIs in the account so we can see what's happening
+      - name: Describe ENIs in account
+        ec2_eni_info: {}
 
     # ============================================================
       - name: remove the network interfaces
