@@ -684,9 +684,12 @@ def detach_eni(connection, eni, module):
         connection.detach_network_interface(
             aws_retry=True,
             AttachmentId=eni["Attachment"]["AttachmentId"],
-            Force=force_detach
+            Force=force_detach,
         )
-        get_waiter(connection, 'network_interface_available').wait(NetworkInterfaceIds=[eni_id])
+        get_waiter(connection, 'network_interface_available').wait(
+            NetworkInterfaceIds=[eni_id],
+            WaiterConfig={'Delay': 5, 'MaxAttempts': 80},
+        )
         return True
 
     return False
