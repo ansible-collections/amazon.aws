@@ -958,24 +958,6 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">2017-10-10T04:00:07.434000+00:00</div>
                 </td>
             </tr>
-             <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="4">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>iops</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>always</td>
-                <td>
-                            <div>The Provisioned IOPS value for the DB instance.</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">1000</div>
-                </td>
-            </tr>
             <tr>
                     <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="4">
