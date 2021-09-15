@@ -40,60 +40,38 @@
     - set_fact:
         subnet_ids: '{{ subnets | community.general.json_query("results[].subnet.id") | list }}'
 
-    - pip:
-        name: virtualenv
-    - set_fact:
-        virtualenv: "{{ remote_tmp_dir }}/virtualenv"
-        virtualenv_command: "{{ ansible_python_interpreter }} -m virtualenv"
-    - set_fact:
-        virtualenv_interpreter: "{{ virtualenv }}/bin/python"
-    - pip:
-        name:
-          - 'boto3>=1.13.0'
-          - 'botocore==1.17.48'
-          - 'coverage<5'
-        virtualenv: '{{ virtualenv }}'
-        virtualenv_command: '{{ virtualenv_command }}'
-        virtualenv_site_packages: no
-
      # ============================================================
-    - name: Wrap test in virtualenv
-      vars:
-        ansible_python_interpreter: "{{ virtualenv }}/bin/python"
-      block:
-        - name: create msk configuration
-          aws_msk_config:
-            name: "{{ msk_config_name }}"
-            state: "present"
-            kafka_versions:
-              - "{{ msk_version }}"
-          register: msk_config
+    - name: create msk configuration
+      aws_msk_config:
+        name: "{{ msk_config_name }}"
+        state: "present"
+        kafka_versions:
+          - "{{ msk_version }}"
+      register: msk_config
 
-        - name: create tests
-          include_tasks: test_create.yml
+    - name: create tests
+      include_tasks: test_create.yml
 
-        - name: update tests
-          include_tasks: test_update.yml
+    - name: update tests
+      include_tasks: test_update.yml
 
-        - name: delete tests
-          include_tasks: test_delete.yml
-
-      always:
-
-        - name: delete msk cluster
-          aws_msk_cluster:
-            name: "{{ msk_cluster_name }}"
-            state: absent
-            wait: true
-          ignore_errors: yes
-
-        - name: remove msk configuration
-          aws_msk_config:
-            name: "{{ msk_config_name }}"
-            state: absent
-          ignore_errors: yes
+    - name: delete tests
+      include_tasks: test_delete.yml
 
   always:
+
+    - name: delete msk cluster
+      aws_msk_cluster:
+        name: "{{ msk_cluster_name }}"
+        state: absent
+        wait: true
+      ignore_errors: yes
+
+    - name: remove msk configuration
+      aws_msk_config:
+        name: "{{ msk_config_name }}"
+        state: absent
+      ignore_errors: yes
 
     - name: remove subnets
       ec2_vpc_subnet:

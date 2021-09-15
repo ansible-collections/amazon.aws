@@ -10,7 +10,7 @@
         virtualenv_interpreter: "{{ virtualenv }}/bin/python"
     - pip:
         name:
-          - 'boto3>=1.13.0'
+          - 'boto3>=1.15.0'
           - 'botocore==1.18.11'
           - 'coverage<5'
         virtualenv: '{{ virtualenv }}'

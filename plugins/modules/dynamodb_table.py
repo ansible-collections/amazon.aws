@@ -19,8 +19,8 @@ author: Alan Loi (@loia)
 requirements:
 - python >= 3.6
 - boto >= 2.49.0
-- boto3 >= 1.13.0
-- botocore >= 1.16.0
+- boto3 >= 1.15.0
+- botocore >= 1.18.0
 options:
   state:
     description:
