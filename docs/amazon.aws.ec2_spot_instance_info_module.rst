@@ -1,14 +1,14 @@
-.. _amazon.aws.ec2_vol_info_module:
+.. _amazon.aws.ec2_spot_instance_info_module:
 
 
-***********************
-amazon.aws.ec2_vol_info
-***********************
+*********************************
+amazon.aws.ec2_spot_instance_info
+*********************************
 
-**Gather information about ec2 volumes in AWS**
+**Gather information about ec2 spot instance requests**
 
 
-Version added: 1.0.0
+Version added: 2.0.0
 
 .. contents::
    :local:
@@ -17,8 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Gather information about ec2 volumes in AWS.
-- This module was called ``ec2_vol_facts`` before Ansible 2.9. The usage did not change.
+- Describes the specified Spot Instance requests.
 
 
 
@@ -157,10 +156,12 @@ Parameters
                     </div>
                 </td>
                 <td>
+                        <b>Default:</b><br/><div style="color: blue">{}</div>
                 </td>
                 <td>
                         <div>A dict of filters to apply. Each dict item consists of a filter key and a filter value.</div>
-                        <div>See <a href='https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVolumes.html'>https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVolumes.html</a> for possible filters.</div>
+                        <div>Filter names and values are case sensitive.</div>
+                        <div>See <a href='https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeSpotInstanceRequests.html'>https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeSpotInstanceRequests.html</a> for possible filters.</div>
                 </td>
             </tr>
             <tr>
@@ -217,6 +218,22 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>spot_instance_request_ids</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>One or more Spot Instance request IDs.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>validate_certs</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -255,23 +272,25 @@ Examples
 
     # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-    # Gather information about all volumes
-    - amazon.aws.ec2_vol_info:
+    - name: describe the Spot Instance requests based on request IDs
+      amazon.aws.ec2_spot_instance_info:
+        spot_instance_request_ids:
+          - sir-12345678
 
-    # Gather information about a particular volume using volume ID
-    - amazon.aws.ec2_vol_info:
+    - name: describe the Spot Instance requests and filter results based on instance type
+      amazon.aws.ec2_spot_instance_info:
+        spot_instance_request_ids:
+          - sir-12345678
+          - sir-13579246
+          - sir-87654321
         filters:
-          volume-id: vol-00112233
+            launch.instance-type: t3.medium
 
-    # Gather information about any volume with a tag key Name and value Example
-    - amazon.aws.ec2_vol_info:
+    - name: describe the Spot requests filtered using multiple filters
+      amazon.aws.ec2_spot_instance_info:
         filters:
-          "tag:Name": Example
-
-    # Gather information about any volume that is attached
-    - amazon.aws.ec2_vol_info:
-        filters:
-          attachment.status: attached
+            state: active
+            launch.block-device-mapping.device-name: /dev/sdb
 
 
 
@@ -283,237 +302,27 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
 
     <table border=0 cellpadding=0 class="documentation-table">
         <tr>
-            <th colspan="2">Key</th>
+            <th colspan="1">Key</th>
             <th>Returned</th>
             <th width="100%">Description</th>
         </tr>
             <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>volumes</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=dictionary</span>
-                    </div>
-                </td>
-                <td>always</td>
-                <td>
-                            <div>Volumes that match the provided filters. Each element consists of a dict with all the information related to that volume.</div>
-                    <br/>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>attachment_set</b>
+                    <b>spot_request</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">dictionary</span>
                     </div>
                 </td>
-                <td></td>
+                <td>when success</td>
                 <td>
-                            <div>Information about the volume attachments.</div>
+                            <div>The gathered information about specified spot instance requests.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;attach_time&#x27;: &#x27;2015-10-23T00:22:29.000Z&#x27;, &#x27;deleteOnTermination&#x27;: &#x27;false&#x27;, &#x27;device&#x27;: &#x27;/dev/sdf&#x27;, &#x27;instance_id&#x27;: &#x27;i-8356263c&#x27;, &#x27;status&#x27;: &#x27;attached&#x27;}</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;create_time&#x27;: &#x27;2021-09-01T21:05:57+00:00&#x27;, &#x27;instance_id&#x27;: &#x27;i-08877936b801ac475&#x27;, &#x27;instance_interruption_behavior&#x27;: &#x27;terminate&#x27;, &#x27;launch_specification&#x27;: {&#x27;ebs_optimized&#x27;: False, &#x27;image_id&#x27;: &#x27;ami-0443305dabd4be2bc&#x27;, &#x27;instance_type&#x27;: &#x27;t2.medium&#x27;, &#x27;key_name&#x27;: &#x27;zuul&#x27;, &#x27;monitoring&#x27;: {&#x27;enabled&#x27;: False}, &#x27;placement&#x27;: {&#x27;availability_zone&#x27;: &#x27;us-east-2b&#x27;}, &#x27;security_groups&#x27;: [{&#x27;group_id&#x27;: &#x27;sg-01f9833207d53b937&#x27;, &#x27;group_name&#x27;: &#x27;default&#x27;}], &#x27;subnet_id&#x27;: &#x27;subnet-07d906b8358869bda&#x27;}, &#x27;launched_availability_zone&#x27;: &#x27;us-east-2b&#x27;, &#x27;product_description&#x27;: &#x27;Linux/UNIX&#x27;, &#x27;spot_instance_request_id&#x27;: &#x27;sir-c3cp9jsk&#x27;, &#x27;spot_price&#x27;: &#x27;0.046400&#x27;, &#x27;state&#x27;: &#x27;active&#x27;, &#x27;status&#x27;: {&#x27;code&#x27;: &#x27;fulfilled&#x27;, &#x27;message&#x27;: &#x27;Your spot request is fulfilled.&#x27;, &#x27;update_time&#x27;: &#x27;2021-09-01T21:05:59+00:00&#x27;}, &#x27;tags&#x27;: {}, &#x27;type&#x27;: &#x27;one-time&#x27;, &#x27;valid_until&#x27;: &#x27;2021-09-08T21:05:57+00:00&#x27;}</div>
                 </td>
             </tr>
-            <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>create_time</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td></td>
-                <td>
-                            <div>The time stamp when volume creation was initiated.</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">2015-10-21T14:36:08.870Z</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>encrypted</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">boolean</span>
-                    </div>
-                </td>
-                <td></td>
-                <td>
-                            <div>Indicates whether the volume is encrypted.</div>
-                    <br/>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>id</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td></td>
-                <td>
-                            <div>The ID of the volume.</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">vol-35b333d9</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>iops</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">integer</span>
-                    </div>
-                </td>
-                <td></td>
-                <td>
-                            <div>The number of I/O operations per second (IOPS) that the volume supports.</div>
-                    <br/>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>size</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">integer</span>
-                    </div>
-                </td>
-                <td></td>
-                <td>
-                            <div>The size of the volume, in GiBs.</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">1</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>snapshot_id</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td></td>
-                <td>
-                            <div>The snapshot from which the volume was created, if applicable.</div>
-                    <br/>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>status</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td></td>
-                <td>
-                            <div>The volume state.</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">in-use</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>tags</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td></td>
-                <td>
-                            <div>Any tags assigned to the volume.</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;env&#x27;: &#x27;dev&#x27;}</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>throughput</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">integer</span>
-                    </div>
-                </td>
-                <td></td>
-                <td>
-                            <div>The throughput that the volume supports, in MiB/s.</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">131</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>type</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td></td>
-                <td>
-                            <div>The volume type. This can be gp2, io1, st1, sc1, or standard.</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">standard</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>zone</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td></td>
-                <td>
-                            <div>The Availability Zone of the volume.</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">us-east-1b</div>
-                </td>
-            </tr>
-
     </table>
     <br/><br/>
 
@@ -525,4 +334,4 @@ Status
 Authors
 ~~~~~~~
 
-- Rob White (@wimnat)
+- Mandar Vijay Kulkarni (@mandar242)

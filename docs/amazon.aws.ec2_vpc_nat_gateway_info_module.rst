@@ -1,11 +1,11 @@
-.. _amazon.aws.ec2_vol_info_module:
+.. _amazon.aws.ec2_vpc_nat_gateway_info_module:
 
 
-***********************
-amazon.aws.ec2_vol_info
-***********************
+***********************************
+amazon.aws.ec2_vpc_nat_gateway_info
+***********************************
 
-**Gather information about ec2 volumes in AWS**
+**Retrieves AWS VPC Managed Nat Gateway details using AWS methods.**
 
 
 Version added: 1.0.0
@@ -17,8 +17,8 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Gather information about ec2 volumes in AWS.
-- This module was called ``ec2_vol_facts`` before Ansible 2.9. The usage did not change.
+- Gets various details related to AWS VPC Managed Nat Gateways
+- This module was called ``ec2_vpc_nat_gateway_facts`` before Ansible 2.9. The usage did not change.
 
 
 
@@ -159,8 +159,23 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A dict of filters to apply. Each dict item consists of a filter key and a filter value.</div>
-                        <div>See <a href='https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVolumes.html'>https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVolumes.html</a> for possible filters.</div>
+                        <div>A dict of filters to apply. Each dict item consists of a filter key and a filter value. See <a href='https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeNatGateways.html'>https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeNatGateways.html</a> for possible filters.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>nat_gateway_ids</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>List of specific nat gateway IDs to fetch details for.</div>
                 </td>
             </tr>
             <tr>
@@ -253,25 +268,38 @@ Examples
 
 .. code-block:: yaml
 
-    # Note: These examples do not set authentication details, see the AWS Guide for details.
+    # Simple example of listing all nat gateways
+    - name: List all managed nat gateways in ap-southeast-2
+      amazon.aws.ec2_vpc_nat_gateway_info:
+        region: ap-southeast-2
+      register: all_ngws
 
-    # Gather information about all volumes
-    - amazon.aws.ec2_vol_info:
+    - name: Debugging the result
+      ansible.builtin.debug:
+        msg: "{{ all_ngws.result }}"
 
-    # Gather information about a particular volume using volume ID
-    - amazon.aws.ec2_vol_info:
+    - name: Get details on specific nat gateways
+      amazon.aws.ec2_vpc_nat_gateway_info:
+        nat_gateway_ids:
+          - nat-1234567891234567
+          - nat-7654321987654321
+        region: ap-southeast-2
+      register: specific_ngws
+
+    - name: Get all nat gateways with specific filters
+      amazon.aws.ec2_vpc_nat_gateway_info:
+        region: ap-southeast-2
         filters:
-          volume-id: vol-00112233
+          state: ['pending']
+      register: pending_ngws
 
-    # Gather information about any volume with a tag key Name and value Example
-    - amazon.aws.ec2_vol_info:
+    - name: Get nat gateways with specific filter
+      amazon.aws.ec2_vpc_nat_gateway_info:
+        region: ap-southeast-2
         filters:
-          "tag:Name": Example
-
-    # Gather information about any volume that is attached
-    - amazon.aws.ec2_vol_info:
-        filters:
-          attachment.status: attached
+          subnet-id: subnet-12345678
+          state: ['available']
+      register: existing_nat_gateways
 
 
 
@@ -283,47 +311,44 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
 
     <table border=0 cellpadding=0 class="documentation-table">
         <tr>
-            <th colspan="2">Key</th>
+            <th colspan="3">Key</th>
             <th>Returned</th>
             <th width="100%">Description</th>
         </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>volumes</b>
+                    <b>changed</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                       / <span style="color: purple">elements=dictionary</span>
+                      <span style="color: purple">boolean</span>
                     </div>
                 </td>
                 <td>always</td>
                 <td>
-                            <div>Volumes that match the provided filters. Each element consists of a dict with all the information related to that volume.</div>
+                            <div>True if listing the internet gateways succeeds</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>result</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                    </div>
+                </td>
+                <td>suceess</td>
+                <td>
+                            <div>The result of the describe, converted to ansible snake case style.</div>
+                            <div>See also <a href='http://boto3.readthedocs.io/en/latest/reference/services/ec2.html#EC2.Client.describe_nat_gateways'>http://boto3.readthedocs.io/en/latest/reference/services/ec2.html#EC2.Client.describe_nat_gateways</a></div>
                     <br/>
                 </td>
             </tr>
                                 <tr>
                     <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>attachment_set</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td></td>
-                <td>
-                            <div>Information about the volume attachments.</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;attach_time&#x27;: &#x27;2015-10-23T00:22:29.000Z&#x27;, &#x27;deleteOnTermination&#x27;: &#x27;false&#x27;, &#x27;device&#x27;: &#x27;/dev/sdf&#x27;, &#x27;instance_id&#x27;: &#x27;i-8356263c&#x27;, &#x27;status&#x27;: &#x27;attached&#x27;}</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>create_time</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
@@ -331,119 +356,182 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                       <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td></td>
+                <td>always</td>
                 <td>
-                            <div>The time stamp when volume creation was initiated.</div>
+                            <div>The date and time the NAT gateway was created</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">2015-10-21T14:36:08.870Z</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">2021-03-11T22:43:25+00:00</div>
                 </td>
             </tr>
             <tr>
                     <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>encrypted</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">boolean</span>
-                    </div>
-                </td>
-                <td></td>
-                <td>
-                            <div>Indicates whether the volume is encrypted.</div>
-                    <br/>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>id</b>
+                    <b>delete_time</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td></td>
+                <td>when the NAT gateway has been deleted</td>
                 <td>
-                            <div>The ID of the volume.</div>
+                            <div>The date and time the NAT gateway was deleted</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">vol-35b333d9</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">2021-03-11T22:43:25+00:00</div>
                 </td>
             </tr>
             <tr>
                     <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>iops</b>
+                    <b>nat_gateway_addresses</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">integer</span>
+                      <span style="color: purple">dictionary</span>
                     </div>
                 </td>
-                <td></td>
+                <td>always</td>
                 <td>
-                            <div>The number of I/O operations per second (IOPS) that the volume supports.</div>
+                            <div>List containing a dictionary with the IP addresses and network interface associated with the NAT gateway</div>
                     <br/>
                 </td>
             </tr>
-            <tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
                     <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>size</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">integer</span>
-                    </div>
-                </td>
-                <td></td>
-                <td>
-                            <div>The size of the volume, in GiBs.</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">1</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>snapshot_id</b>
+                    <b>allocation_id</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td></td>
+                <td>always</td>
                 <td>
-                            <div>The snapshot from which the volume was created, if applicable.</div>
+                            <div>The allocation ID of the Elastic IP address that&#x27;s associated with the NAT gateway</div>
                     <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">eipalloc-0853e66a40803da76</div>
                 </td>
             </tr>
             <tr>
                     <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>status</b>
+                    <b>network_interface_id</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td></td>
+                <td>always</td>
                 <td>
-                            <div>The volume state.</div>
+                            <div>The ID of the network interface associated with the NAT gateway</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">in-use</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">eni-0a37acdbe306c661c</div>
                 </td>
             </tr>
             <tr>
                     <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>private_ip</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>The private IP address associated with the Elastic IP address</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">10.0.238.227</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>public_ip</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>The Elastic IP address associated with the NAT gateway</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">34.204.123.52</div>
+                </td>
+            </tr>
+
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>nat_gateway_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>The ID of the NAT gateway</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">nat-0c242a2397acf6173</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>state</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>state of the NAT gateway</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">available</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>subnet_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>The ID of the subnet in which the NAT gateway is located</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">subnet-098c447465d4344f9</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>tags</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
@@ -451,66 +539,30 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                       <span style="color: purple">dictionary</span>
                     </div>
                 </td>
-                <td></td>
+                <td>always</td>
                 <td>
-                            <div>Any tags assigned to the volume.</div>
+                            <div>Tags applied to the NAT gateway</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;env&#x27;: &#x27;dev&#x27;}</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;Tag1&#x27;: &#x27;tag1&#x27;, &#x27;Tag_2&#x27;: &#x27;tag_2&#x27;}</div>
                 </td>
             </tr>
             <tr>
                     <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
+                <td colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>throughput</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">integer</span>
-                    </div>
-                </td>
-                <td></td>
-                <td>
-                            <div>The throughput that the volume supports, in MiB/s.</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">131</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>type</b>
+                    <b>vpc_id</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td></td>
+                <td>always</td>
                 <td>
-                            <div>The volume type. This can be gp2, io1, st1, sc1, or standard.</div>
+                            <div>The ID of the VPC in which the NAT gateway is located</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">standard</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>zone</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td></td>
-                <td>
-                            <div>The Availability Zone of the volume.</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">us-east-1b</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">vpc-02f37f48438ab7d4c</div>
                 </td>
             </tr>
 
@@ -525,4 +577,4 @@ Status
 Authors
 ~~~~~~~
 
-- Rob White (@wimnat)
+- Karen Cheng (@Etherdaemon)

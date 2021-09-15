@@ -1,3 +1,0 @@
----
-minor_changes:
-- ec2_eni - fix idempotency when ``security_groups`` attribute is specified (https://github.com/ansible-collections/amazon.aws/pull/337).

@@ -1,2 +1,0 @@
-minor_changes:
-- module_utils/waiter - add Route53 ``resource_record_sets_changed`` waiter (https://github.com/ansible-collections/amazon.aws/pull/350).

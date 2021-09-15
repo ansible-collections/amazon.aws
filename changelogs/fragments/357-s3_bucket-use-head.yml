@@ -1,2 +1,0 @@
-minor_changes:
-- s3_bucket - updated to use HeadBucket instead of ListBucket when testing for bucket existence (https://github.com/ansible-collections/amazon.aws/pull/357).

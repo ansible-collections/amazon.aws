@@ -1,2 +1,0 @@
-minor_changes:
-  - s3_bucket - add new option ``object_ownership`` to configure object ownership (https://github.com/ansible-collections/amazon.aws/pull/311)

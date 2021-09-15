@@ -27,8 +27,9 @@ Requirements
 ------------
 The below requirements are needed on the local Ansible controller node that executes this lookup.
 
+- python >= 3.6
 - boto3
-- botocore
+- botocore >= 1.18.0
 
 
 Parameters
@@ -77,6 +78,58 @@ Parameters
                     </td>
                 <td>
                         <div>A boolean to indicate whether to decrypt the parameter.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>on_denied</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.0.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>error</b>&nbsp;&larr;</div></li>
+                                    <li>skip</li>
+                                    <li>warn</li>
+                        </ul>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>Action to take if access to the SSM parameter is denied.</div>
+                        <div><code>error</code> will raise a fatal error when access to the SSM parameter is denied.</div>
+                        <div><code>skip</code> will silently ignore the denied SSM parameter.</div>
+                        <div><code>warn</code> will skip over the denied SSM parameter but issue a warning.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>on_missing</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.0.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>error</b>&nbsp;&larr;</div></li>
+                                    <li>skip</li>
+                                    <li>warn</li>
+                        </ul>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>Action to take if the SSM parameter is missing.</div>
+                        <div><code>error</code> will raise a fatal error when the SSM parameter is missing.</div>
+                        <div><code>skip</code> will silently ignore the missing SSM parameter.</div>
+                        <div><code>warn</code> will skip over the missing SSM parameter but issue a warning.</div>
                 </td>
             </tr>
             <tr>
@@ -172,6 +225,12 @@ Examples
     - name: Iterate over multiple paths as dictionaries (one iteration per path)
       debug: msg='Path contains {{ item }}'
       loop: '{{ lookup("aws_ssm", "/demo/", "/demo1/", bypath=True)}}'
+
+    - name: lookup ssm parameter and fail if missing
+      debug: msg="{{ lookup('aws_ssm', 'missing-parameter', on_missing="error" ) }}"
+
+    - name: lookup ssm parameter warn if access is denied
+      debug: msg="{{ lookup('aws_ssm', 'missing-parameter', on_denied="warn" ) }}"
 
 
 

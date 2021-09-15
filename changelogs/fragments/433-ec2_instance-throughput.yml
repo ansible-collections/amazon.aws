@@ -1,2 +1,0 @@
-minor_changes:
-  - ec2_instance - add ``throughput`` parameter for gp3 volume types (https://github.com/ansible-collections/amazon.aws/pull/433).

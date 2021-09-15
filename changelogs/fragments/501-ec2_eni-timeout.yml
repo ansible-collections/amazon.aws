@@ -1,2 +1,0 @@
-minor_changes:
-- ec2_eni - timeout increased when waiting for ENIs to finish detaching (https://github.com/ansible-collections/amazon.aws/pull/501).

@@ -1,2 +1,0 @@
-minor_changes:
-- integration tests - remove dependency with collection ``community.general`` (https://github.com/ansible-collections/amazon.aws/pull/361).

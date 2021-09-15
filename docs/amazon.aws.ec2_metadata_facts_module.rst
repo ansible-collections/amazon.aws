@@ -352,7 +352,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
                             </div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">arn:aws:iam::&lt;account id&gt;:instance-profile/&lt;role name&gt;</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">arn:aws:iam::&lt;account id&gt;:instance-profile/role_name</div>
                 </td>
             </tr>
             <tr>
@@ -410,7 +410,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_iam_security_credentials_<role name></b>
+                    <b>ansible_ec2_iam_security_credentials_role_name</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -426,7 +426,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_iam_security_credentials_<role name>_accesskeyid</b>
+                    <b>ansible_ec2_iam_security_credentials_role_name_accesskeyid</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -442,7 +442,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_iam_security_credentials_<role name>_code</b>
+                    <b>ansible_ec2_iam_security_credentials_role_name_code</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -460,7 +460,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_iam_security_credentials_<role name>_expiration</b>
+                    <b>ansible_ec2_iam_security_credentials_role_name_expiration</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -478,7 +478,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_iam_security_credentials_<role name>_lastupdated</b>
+                    <b>ansible_ec2_iam_security_credentials_role_name_lastupdated</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -496,7 +496,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_iam_security_credentials_<role name>_secretaccesskey</b>
+                    <b>ansible_ec2_iam_security_credentials_role_name_secretaccesskey</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -512,7 +512,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_iam_security_credentials_<role name>_token</b>
+                    <b>ansible_ec2_iam_security_credentials_role_name_token</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -528,7 +528,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_iam_security_credentials_<role name>_type</b>
+                    <b>ansible_ec2_iam_security_credentials_role_name_type</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -1004,7 +1004,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_network_interfaces_macs_<mac address>_device_number</b>
+                    <b>ansible_ec2_network_interfaces_macs_mac_address_device_number</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -1024,7 +1024,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_network_interfaces_macs_<mac address>_interface_id</b>
+                    <b>ansible_ec2_network_interfaces_macs_mac_address_interface_id</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -1042,7 +1042,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_network_interfaces_macs_<mac address>_ipv4_associations_<ip address></b>
+                    <b>ansible_ec2_network_interfaces_macs_mac_address_ipv4_associations_ip_address</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -1058,7 +1058,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_network_interfaces_macs_<mac address>_ipv6s</b>
+                    <b>ansible_ec2_network_interfaces_macs_mac_address_ipv6s</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -1074,7 +1074,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_network_interfaces_macs_<mac address>_local_hostname</b>
+                    <b>ansible_ec2_network_interfaces_macs_mac_address_local_hostname</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -1090,7 +1090,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_network_interfaces_macs_<mac address>_local_ipv4s</b>
+                    <b>ansible_ec2_network_interfaces_macs_mac_address_local_ipv4s</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -1106,7 +1106,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_network_interfaces_macs_<mac address>_mac</b>
+                    <b>ansible_ec2_network_interfaces_macs_mac_address_mac</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -1124,7 +1124,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_network_interfaces_macs_<mac address>_owner_id</b>
+                    <b>ansible_ec2_network_interfaces_macs_mac_address_owner_id</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -1146,7 +1146,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_network_interfaces_macs_<mac address>_public_hostname</b>
+                    <b>ansible_ec2_network_interfaces_macs_mac_address_public_hostname</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -1164,7 +1164,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_network_interfaces_macs_<mac address>_public_ipv4s</b>
+                    <b>ansible_ec2_network_interfaces_macs_mac_address_public_ipv4s</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -1182,7 +1182,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_network_interfaces_macs_<mac address>_security_group_ids</b>
+                    <b>ansible_ec2_network_interfaces_macs_mac_address_security_group_ids</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -1200,7 +1200,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_network_interfaces_macs_<mac address>_security_groups</b>
+                    <b>ansible_ec2_network_interfaces_macs_mac_address_security_groups</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -1218,7 +1218,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_network_interfaces_macs_<mac address>_subnet_id</b>
+                    <b>ansible_ec2_network_interfaces_macs_mac_address_subnet_id</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -1236,7 +1236,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_network_interfaces_macs_<mac address>_subnet_ipv4_cidr_block</b>
+                    <b>ansible_ec2_network_interfaces_macs_mac_address_subnet_ipv4_cidr_block</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -1254,7 +1254,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_network_interfaces_macs_<mac address>_subnet_ipv6_cidr_blocks</b>
+                    <b>ansible_ec2_network_interfaces_macs_mac_address_subnet_ipv6_cidr_blocks</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -1270,7 +1270,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_network_interfaces_macs_<mac address>_vpc_id</b>
+                    <b>ansible_ec2_network_interfaces_macs_mac_address_vpc_id</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -1288,7 +1288,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_network_interfaces_macs_<mac address>_vpc_ipv4_cidr_block</b>
+                    <b>ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv4_cidr_block</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -1306,7 +1306,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_network_interfaces_macs_<mac address>_vpc_ipv4_cidr_blocks</b>
+                    <b>ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv4_cidr_blocks</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
@@ -1324,7 +1324,7 @@ Facts returned by this module are added/updated in the ``hostvars`` host facts a
             <tr>
                 <td colspan="2" colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>ansible_ec2_network_interfaces_macs_<mac address>_vpc_ipv6_cidr_blocks</b>
+                    <b>ansible_ec2_network_interfaces_macs_mac_address_vpc_ipv6_cidr_blocks</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this fact"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
