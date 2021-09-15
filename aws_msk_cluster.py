@@ -544,7 +544,6 @@ def create_or_update_cluster(client, module):
                 }
             },
             "cluster_kafka_version": {
-                "botocore_version": "1.16.19",
                 "current_value": cluster["CurrentBrokerSoftwareInfo"]["KafkaVersion"],
                 "target_value": module.params.get("version"),
                 "update_params": {

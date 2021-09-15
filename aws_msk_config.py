@@ -279,9 +279,6 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=module_args, supports_check_mode=True)
 
-    # Support for update_configuration and delete_configuration added in 1.17.48
-    module.require_botocore_at_least('1.17.48')
-
     client = module.client("kafka", retry_decorator=AWSRetry.jittered_backoff())
 
     if module.params["state"] == "present":
