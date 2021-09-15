@@ -1,4 +1,0 @@
-minor_changes:
-- ecs_task - remove unused import (https://github.com/ansible-collections/community.aws/pull/686).
-- ec2_vpc_vgw - fix arguments-renamed pylint issue (https://github.com/ansible-collections/community.aws/pull/686).
-- ec2_vpc_vpn - fix arguments-renamed pylint issue (https://github.com/ansible-collections/community.aws/pull/686).

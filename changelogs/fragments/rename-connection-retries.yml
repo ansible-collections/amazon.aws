@@ -1,2 +1,0 @@
-bugfixes:
-  - aws_ssm - rename ``retries`` to ``reconnection_retries`` to avoid conflict with task retries

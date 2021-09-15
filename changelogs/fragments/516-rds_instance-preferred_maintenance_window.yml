@@ -1,2 +1,0 @@
-minor_changes:
-- rds_instance - convert ``preferred_maintenance_window`` days into lowercase so changed returns properly (https://github.com/ansible-collections/community.aws/pull/516).

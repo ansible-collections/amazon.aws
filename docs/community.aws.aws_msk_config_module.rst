@@ -1,14 +1,14 @@
-.. _community.aws.ecs_tag_module:
+.. _community.aws.aws_msk_config_module:
 
 
-*********************
-community.aws.ecs_tag
-*********************
+****************************
+community.aws.aws_msk_config
+****************************
 
-**create and remove tags on Amazon ECS resources**
+**Manage Amazon MSK cluster configurations.**
 
 
-Version added: 1.0.0
+Version added: 2.0.0
 
 .. contents::
    :local:
@@ -17,8 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Creates and removes tags for Amazon ECS resources.
-- Resources are referenced by their cluster name.
+- Create, delete and modify Amazon MSK (Managed Streaming for Apache Kafka) cluster configurations.
 
 
 
@@ -26,9 +25,11 @@ Requirements
 ------------
 The below requirements are needed on the host that executes this module.
 
-- python >= 3.6
+- boto3
 - boto3 >= 1.13.0
 - botocore >= 1.16.0
+- botocore >= 1.17.48
+- python >= 3.6
 
 
 Parameters
@@ -115,17 +116,17 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>cluster_name</b>
+                    <b>config</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
+                        <span style="color: purple">dictionary</span>
                     </div>
                 </td>
                 <td>
                 </td>
                 <td>
-                        <div>The name of the cluster whose resources we are tagging.</div>
+                        <div>Contents of the server.properties file.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: configuration</div>
                 </td>
             </tr>
             <tr>
@@ -150,6 +151,21 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>description</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The description of the configuration.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>ec2_url</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -161,6 +177,39 @@ Parameters
                 <td>
                         <div>URL to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_endpoint_url, endpoint_url</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>kafka_versions</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The versions of Apache Kafka with which you can use this MSK configuration.</div>
+                        <div>Required when <em>state=present</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>name</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The name of the configuration.</div>
                 </td>
             </tr>
             <tr>
@@ -183,26 +232,6 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>purge_tags</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
-                                    <li>yes</li>
-                        </ul>
-                </td>
-                <td>
-                        <div>Whether unspecified tags should be removed from the resource.</div>
-                        <div>Note that when combined with <em>state=absent</em>, specified tags with non-matching values are not purged.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>region</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -214,44 +243,6 @@ Parameters
                 <td>
                         <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>resource</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The ECS resource name.</div>
-                        <div>Required unless <em>resource_type=cluster</em>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>resource_type</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>cluster</b>&nbsp;&larr;</div></li>
-                                    <li>task</li>
-                                    <li>service</li>
-                                    <li>task_definition</li>
-                                    <li>container</li>
-                        </ul>
-                </td>
-                <td>
-                        <div>The type of resource.</div>
                 </td>
             </tr>
             <tr>
@@ -288,23 +279,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Whether the tags should be present or absent on the resource.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>tags</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>A dictionary of tags to add or remove from the resource.</div>
-                        <div>If the value provided for a tag is null and <em>state=absent</em>, the tag will be removed regardless of its current value.</div>
+                        <div>Create (<code>present</code>) or delete (<code>absent</code>) cluster configuration.</div>
                 </td>
             </tr>
             <tr>
@@ -334,7 +309,6 @@ Notes
 -----
 
 .. note::
-   - none
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
    - When no credentials are explicitly provided the AWS SDK (boto3) that Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``). See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html for more information.
    - Modules based on the original AWS SDK (boto) may read their default configuration from different files. See https://boto.readthedocs.io/en/latest/boto_config_tut.html for more information.
@@ -347,39 +321,23 @@ Examples
 
 .. code-block:: yaml
 
-    - name: Ensure tags are present on a resource
-      community.aws.ecs_tag:
-        cluster_name: mycluster
-        resource_type: cluster
+    # Note: These examples do not set authentication details, see the AWS Guide for details.
+
+    - aws_msk_config:
+        name: kafka-cluster-configuration
         state: present
-        tags:
-          Name: ubervol
-          env: prod
+        kafka_versions:
+          - 2.6.0
+          - 2.6.1
+        config:
+          auto.create.topics.enable: false
+          num.partitions: 1
+          default.replication.factor: 3
+          zookeeper.session.timeout.ms: 18000
 
-    - name: Remove the Env tag
-      community.aws.ecs_tag:
-        cluster_name: mycluster
-        resource_type: cluster
-        tags:
-          Env:
+    - aws_msk_config:
+        name: kafka-cluster-configuration
         state: absent
-
-    - name: Remove the Env tag if it's currently 'development'
-      community.aws.ecs_tag:
-        cluster_name: mycluster
-        resource_type: cluster
-        tags:
-          Env: development
-        state: absent
-
-    - name: Remove all tags except for Name from a cluster
-      community.aws.ecs_tag:
-        cluster_name: mycluster
-        resource_type: cluster
-        tags:
-            Name: foo
-        state: absent
-        purge_tags: true
 
 
 
@@ -398,37 +356,24 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>added_tags</b>
+                    <b>arn</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">dictionary</span>
+                      <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td>If tags were added</td>
+                <td><em>state=present</em></td>
                 <td>
-                            <div>A dict of tags that were added to the resource</div>
+                            <div>The Amazon Resource Name (ARN) of the configuration.</div>
                     <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">arn:aws:kafka:&lt;region&gt;:&lt;account&gt;:configuration/&lt;name&gt;/&lt;resource-id&gt;</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>removed_tags</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>If tags were removed</td>
-                <td>
-                            <div>A dict of tags that were removed from the resource</div>
-                    <br/>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>tags</b>
+                    <b>response</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">dictionary</span>
@@ -436,8 +381,44 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>A dict containing the tags on the resource</div>
+                            <div>The response from actual API call.</div>
                     <br/>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>revision</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td><em>state=present</em></td>
+                <td>
+                            <div>The revision number.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">1</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>server_properties</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td><em>state=present</em></td>
+                <td>
+                            <div>Contents of the server.properties file.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">default.replication.factor=3
+    num.io.threads=8
+    zookeeper.session.timeout.ms=18000</div>
                 </td>
             </tr>
     </table>
@@ -451,4 +432,4 @@ Status
 Authors
 ~~~~~~~
 
-- Michael Pechner (@mpechner)
+- Daniil Kupchenko (@oukooveu)

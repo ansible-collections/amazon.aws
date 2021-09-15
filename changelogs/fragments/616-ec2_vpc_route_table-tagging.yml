@@ -1,4 +1,0 @@
-bugfixes:
-- ec2_vpc_route_table - automatically retry when attempting to modify freshly created route tables (https://github.com/ansible-collections/community.aws/pull/616).
-minor_changes:
-- ec2_vpc_route_table - use shared code for tagging route tables (https://github.com/ansible-collections/community.aws/pull/616).
