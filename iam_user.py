@@ -46,11 +46,13 @@ options:
       - Tag dict to apply to the user.
     required: false
     type: dict
+    version_added: 2.0.0
   purge_tags:
     description:
       - Remove tags not listed in I(tags) when tags is specified.
     default: true
     type: bool
+    version_added: 2.0.0
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
