@@ -20,8 +20,8 @@ options:
   region:
     description: 'The AWS region to narrow the ranges to. Examples: us-east-1, eu-west-2, ap-southeast-1'
   ipv6_prefixes:
-    description: 'Return only ipv6 addresses. Option: ipv6_prefixes=True'
-    version_added: 2.0.0
+    description: 'When I(ipv6_prefixes=True) the lookup will return ipv6 addresses instead of ipv4 addresses'
+    version_added: 2.1.0
 '''
 
 EXAMPLES = """

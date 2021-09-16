@@ -11,7 +11,7 @@
 - name: lookup range with wantlist
   set_fact:
     want_list: "{{ lookup('amazon.aws.aws_service_ip_ranges', wantlist=True) }}"
-    want_ipv6_list: "{ lookup('amazon.aws.aws_service_ip_ranges', wantlist=True, ipv6_prefixes=True) }}"
+    want_ipv6_list: "{{ lookup('amazon.aws.aws_service_ip_ranges', wantlist=True, ipv6_prefixes=True) }}"
 
 - name: assert that we're returned a list
   assert:
@@ -120,12 +120,10 @@
       - eu_central_1_ips | intersect(us_east_1_ips) | length == 0
       - eu_central_1_ipv6s | intersect(us_east_1_ipv6s) | length == 0
 
-
 - name: lookup range with service and region
   set_fact:
     s3_us_ips: "{{ lookup('amazon.aws.aws_service_ip_ranges', region='us-east-1', service='S3', wantlist=True) }}"
     s3_us_ipv6s: "{{ lookup('amazon.aws.aws_service_ip_ranges', region='us-east-1', service='S3', wantlist=True, ipv6_prefixes=True) }}"
-
 
 - name: assert that we're returned a list
   assert:
