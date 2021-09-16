@@ -19,6 +19,9 @@ options:
     description: 'The service to filter ranges by. Options: EC2, S3, CLOUDFRONT, CODEbUILD, ROUTE53, ROUTE53_HEALTHCHECKS'
   region:
     description: 'The AWS region to narrow the ranges to. Examples: us-east-1, eu-west-2, ap-southeast-1'
+  ipv6_prefixes:
+    description: 'When I(ipv6_prefixes=True) the lookup will return ipv6 addresses instead of ipv4 addresses'
+    version_added: 2.1.0
 '''
 
 EXAMPLES = """
@@ -40,7 +43,6 @@ _raw:
   description: comma-separated list of CIDR ranges
 """
 
-
 import json
 
 from ansible.errors import AnsibleError
@@ -55,9 +57,16 @@ from ansible.plugins.lookup import LookupBase
 
 class LookupModule(LookupBase):
     def run(self, terms, variables, **kwargs):
+        if "ipv6_prefixes" in kwargs and kwargs["ipv6_prefixes"]:
+            prefixes_label = "ipv6_prefixes"
+            ip_prefix_label = "ipv6_prefix"
+        else:
+            prefixes_label = "prefixes"
+            ip_prefix_label = "ip_prefix"
+
         try:
             resp = open_url('https://ip-ranges.amazonaws.com/ip-ranges.json')
-            amazon_response = json.load(resp)['prefixes']
+            amazon_response = json.load(resp)[prefixes_label]
         except getattr(json.decoder, 'JSONDecodeError', ValueError) as e:
             # on Python 3+, json.decoder.JSONDecodeError is raised for bad
             # JSON. On 2.x it's a ValueError
@@ -77,5 +86,5 @@ class LookupModule(LookupBase):
         if 'service' in kwargs:
             service = str.upper(kwargs['service'])
             amazon_response = (item for item in amazon_response if item['service'] == service)
-
-        return [item['ip_prefix'] for item in amazon_response]
+        iprange = [item[ip_prefix_label] for item in amazon_response]
+        return iprange
