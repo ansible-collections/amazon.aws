@@ -5,6 +5,20 @@ community.aws Release Notes
 .. contents:: Topics
 
 
+v1.5.1
+======
+
+Minor Changes
+-------------
+
+- ec2_instance - remove unnecessary raise when exiting with a failure (https://github.com/ansible-collections/amazon.aws/pull/460).
+
+Bugfixes
+--------
+
+- ec2_vol - Fixes ``changed`` status when ``modify_volume`` is used, but no new  disk is being attached.  The module incorrectly reported that no change had  occurred even when disks had been modified (iops, throughput, type, etc.). (https://github.com/ansible-collections/amazon.aws/issues/482).
+- ec2_vol - fix iops setting and enforce iops/throughput parameters usage (https://github.com/ansible-collections/amazon.aws/pull/334)
+
 v1.5.0
 ======
 

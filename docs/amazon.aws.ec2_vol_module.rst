@@ -243,7 +243,6 @@ Parameters
                 </td>
                 <td>
                         <div>The provisioned IOPs you want to associate with this volume (integer).</div>
-                        <div>By default AWS will set this to 100.</div>
                 </td>
             </tr>
             <tr>
