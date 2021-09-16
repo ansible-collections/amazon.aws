@@ -1,0 +1,247 @@
+---
+# redshift_subnet_group integration tests
+#
+# Current module limitations:
+# - check_mode not supported
+# - Tagging not supported
+# - Module is not idempotent
+# - Returned values *very* limited
+#
+- module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
+    # ============================================================
+    # Setup infra needed for tests
+    - name: create a VPC
+      ec2_vpc_net:
+        state: present
+        name: '{{ vpc_name }}'
+        cidr_block: '{{ vpc_cidr }}'
+        tags:
+          TestPrefix: '{{ resource_prefix }}'
+      register: vpc_result
+
+    - name: create subnets
+      ec2_vpc_subnet:
+        state: present
+        cidr: '{{ item.cidr }}'
+        az: '{{ item.zone }}'
+        vpc_id: '{{ vpc_result.vpc.id }}'
+        tags:
+          Name: '{{ item.name }}'
+          TestPrefix: '{{ resource_prefix }}'
+      register: vpc_subnet_create
+      loop:
+      - name: '{{ subnet_name_a }}'
+        cidr: '{{ subnet_cidr_a }}'
+        zone: '{{ subnet_zone_a }}'
+      - name: '{{ subnet_name_b }}'
+        cidr: '{{ subnet_cidr_b }}'
+        zone: '{{ subnet_zone_b }}'
+      - name: '{{ subnet_name_c }}'
+        cidr: '{{ subnet_cidr_c }}'
+        zone: '{{ subnet_zone_c }}'
+      - name: '{{ subnet_name_d }}'
+        cidr: '{{ subnet_cidr_d }}'
+        zone: '{{ subnet_zone_d }}'
+
+    - name: Store IDs of subnets and VPC
+      set_fact:
+        vpc_id: '{{ vpc_result.vpc.id }}'
+        subnet_id_a: '{{ vpc_subnet_create.results[0].subnet.id }}'
+        subnet_id_b: '{{ vpc_subnet_create.results[1].subnet.id }}'
+        subnet_id_c: '{{ vpc_subnet_create.results[2].subnet.id }}'
+        subnet_id_d: '{{ vpc_subnet_create.results[3].subnet.id }}'
+    # ============================================================
+
+    - name: Create Subnet Group
+      redshift_subnet_group:
+        state: present
+        group_name: '{{ group_name }}'
+        group_description: '{{ description_default }}'
+        group_subnets:
+        - '{{ subnet_id_a }}'
+        - '{{ subnet_id_b }}'
+      register: create_group
+
+    - name: Check result - Create Subnet Group
+      assert:
+        that:
+          - create_group is successful
+          - create_group is changed
+          - '"group" in create_group'
+          - '"name" in create_group.group'
+          - '"vpc_id" in create_group.group'
+          - create_group.group.name == group_name
+          - create_group.group.vpc_id == vpc_id
+
+    - name: Create Subnet Group - idempotency
+      redshift_subnet_group:
+        state: present
+        group_name: '{{ group_name }}'
+        group_description: '{{ description_default }}'
+        group_subnets:
+        - '{{ subnet_id_a }}'
+        - '{{ subnet_id_b }}'
+      register: create_group
+
+    - name: Check result - Create Subnet Group - idempotency
+      assert:
+        that:
+          - create_group is successful
+          # XXX Not idempotent
+          #- create_group is not changed
+          - '"group" in create_group'
+          - '"name" in create_group.group'
+          - '"vpc_id" in create_group.group'
+          - create_group.group.name == group_name
+          - create_group.group.vpc_id == vpc_id
+
+    # ============================================================
+
+    - name: Update Subnet Group Description
+      redshift_subnet_group:
+        state: present
+        group_name: '{{ group_name }}'
+        group_description: '{{ description_updated }}'
+        group_subnets:
+        - '{{ subnet_id_a }}'
+        - '{{ subnet_id_b }}'
+      register: update_description
+
+    - name: Check result - Update Subnet Group Description
+      assert:
+        that:
+          - update_description is successful
+          - update_description is changed
+          - '"group" in update_description'
+          - '"name" in update_description.group'
+          - '"vpc_id" in update_description.group'
+          - update_description.group.name == group_name
+          - update_description.group.vpc_id == vpc_id
+
+    - name: Update Subnet Group Description - idempotency
+      redshift_subnet_group:
+        state: present
+        group_name: '{{ group_name }}'
+        group_description: '{{ description_updated }}'
+        group_subnets:
+        - '{{ subnet_id_a }}'
+        - '{{ subnet_id_b }}'
+      register: update_description
+
+    - name: Check result - Update Subnet Group Description - idempotency
+      assert:
+        that:
+          - update_description is successful
+          # XXX Not idempotent
+          #- update_description is not changed
+          - '"group" in update_description'
+          - '"name" in update_description.group'
+          - '"vpc_id" in update_description.group'
+          - update_description.group.name == group_name
+          - update_description.group.vpc_id == vpc_id
+
+    # ============================================================
+
+    - name: Update Subnet Group subnets
+      redshift_subnet_group:
+        state: present
+        group_name: '{{ group_name }}'
+        group_description: '{{ description_updated }}'
+        group_subnets:
+        - '{{ subnet_id_c }}'
+        - '{{ subnet_id_d }}'
+      register: update_subnets
+
+    - name: Check result - Update Subnet Group subnets
+      assert:
+        that:
+          - update_subnets is successful
+          - update_subnets is changed
+          - '"group" in update_subnets'
+          - '"name" in update_subnets.group'
+          - '"vpc_id" in update_subnets.group'
+          - update_subnets.group.name == group_name
+          - update_subnets.group.vpc_id == vpc_id
+
+    - name: Update Subnet Group subnets - idempotency
+      redshift_subnet_group:
+        state: present
+        group_name: '{{ group_name }}'
+        group_description: '{{ description_updated }}'
+        group_subnets:
+        - '{{ subnet_id_c }}'
+        - '{{ subnet_id_d }}'
+      register: update_subnets
+
+    - name: Check result - Update Subnet Group subnets - idempotency
+      assert:
+        that:
+          - update_subnets is successful
+          # XXX Not idempotent
+          #- update_subnets is not changed
+          - '"group" in update_subnets'
+          - '"name" in update_subnets.group'
+          - '"vpc_id" in update_subnets.group'
+          - update_subnets.group.name == group_name
+          - update_subnets.group.vpc_id == vpc_id
+
+    # ============================================================
+
+    - name: Delete Subnet Group
+      redshift_subnet_group:
+        state: absent
+        group_name: '{{ group_name }}'
+      register: delete_group
+
+    - name: Check result - Delete Subnet Group
+      assert:
+        that:
+          - delete_group is changed
+
+    - name: Delete Subnet Group - idempotency
+      redshift_subnet_group:
+        state: absent
+        group_name: '{{ group_name }}'
+      register: delete_group
+
+    - name: Check result - Delete Subnet Group - idempotency
+      assert:
+        that:
+          - delete_group is not changed
+
+  always:
+
+    ################################################
+    # TEARDOWN STARTS HERE
+    ################################################
+
+    - name: Delete Subnet Group
+      redshift_subnet_group:
+        state: absent
+        group_name: '{{ group_name }}'
+      ignore_errors: True
+
+    - name: tidy up subnet
+      ec2_vpc_subnet:
+        state: absent
+        cidr: '{{ item }}'
+        vpc_id: '{{ vpc_result.vpc.id }}'
+      loop:
+      - '{{ subnet_cidr_a }}'
+      - '{{ subnet_cidr_b }}'
+      - '{{ subnet_cidr_c }}'
+      - '{{ subnet_cidr_d }}'
+      ignore_errors: True
+
+    - name: tidy up VPC
+      ec2_vpc_net:
+        state: absent
+        name: '{{ vpc_name }}'
+        cidr_block: '{{ vpc_cidr }}'
+      ignore_errors: True

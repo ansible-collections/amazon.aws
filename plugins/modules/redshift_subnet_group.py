@@ -32,11 +32,13 @@ options:
   group_description:
     description:
       - Database subnet group description.
+      - Required when I(state=present).
     aliases: ['description']
     type: str
   group_subnets:
     description:
       - List of subnet IDs that make up the cluster subnet group.
+      - Required when I(state=present).
     aliases: ['subnets']
     type: list
     elements: str
