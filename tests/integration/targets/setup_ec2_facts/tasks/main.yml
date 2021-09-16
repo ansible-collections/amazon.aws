@@ -1,0 +1,53 @@
+---
+# Setup a couple of common facts about the AWS Region
+#
+# Information about availablity zones
+# - ec2_availability_zone_names
+#
+# An EC2 AMI that can be used for spinning up Instances performs as search
+# rather than hardcoding the IDs so we're not limited to specific Regions
+# - ec2_ami_id
+#
+- module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+
+  run_once: True
+  block:
+  # ============================================================
+
+  - name: Get available AZs
+    aws_az_info:
+      filters:
+        region-name: '{{ aws_region }}'
+    register: _az_info
+
+  - name: Pick an AZ
+    set_fact:
+      ec2_availability_zone_names: '{{ _az_info.availability_zones | selectattr("zone_name", "defined") | map(attribute="zone_name") | list }}'
+
+  # ============================================================
+
+  - name: Get a list of images
+    ec2_ami_info:
+      filters:
+        name: '{{ ec2_ami_name }}'
+        owner-id: '{{ ec2_ami_owner_id }}'
+        architecture: x86_64
+        virtualization-type: hvm
+        root-device-type: ebs
+    register: _images_info
+    # Very spammy
+    no_log: True
+
+  - name: Set Fact for latest AMI
+    vars:
+      latest_image: '{{ _images_info.images | sort(attribute="creation_date") | reverse | first }}'
+    set_fact:
+      ec2_ami_id: '{{ latest_image.image_id }}'
+      ec2_ami_details: '{{ latest_image }}'
+      ec2_ami_root_disk: '{{ latest_image.block_device_mappings[0].device_name }}'
+      ec2_ami_ssh_user: '{{ ec2_ami_ssh_user }}'
