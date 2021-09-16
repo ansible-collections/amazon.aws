@@ -1,0 +1,2 @@
+default_botocore_version: '1.18.0'
+default_boto3_version: '1.15.0'

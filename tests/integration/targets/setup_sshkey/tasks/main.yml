@@ -1,0 +1,71 @@
+# (c) 2014, James Laska <jlaska@ansible.com>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: create a temp dir
+  tempfile:
+    state: directory
+  register: sshkey_dir
+  tags:
+    - prepare
+
+- name: ensure script is available
+  copy:
+    src: ec2-fingerprint.py
+    dest: '{{ sshkey_dir.path }}/ec2-fingerprint.py'
+    mode: 0700
+  tags:
+    - prepare
+
+- name: Set location of SSH keys
+  set_fact:
+    sshkey: '{{ sshkey_dir.path }}/key_one'
+    another_sshkey: '{{ sshkey_dir.path }}/key_two'
+    sshkey_pub: '{{ sshkey_dir.path }}/key_one.pub'
+    another_sshkey_pub: '{{ sshkey_dir.path }}/key_two.pub'
+
+- name: generate sshkey
+  shell: echo 'y' | ssh-keygen -P '' -f '{{ sshkey }}'
+  tags:
+    - prepare
+
+- name: record fingerprint
+  shell: '{{ sshkey_dir.path }}/ec2-fingerprint.py {{ sshkey_pub }}'
+  register: fingerprint
+  tags:
+    - prepare
+
+- name: generate another_sshkey
+  shell: echo 'y' | ssh-keygen -P '' -f {{ another_sshkey }}
+  tags:
+    - prepare
+
+- name: record another fingerprint
+  shell: '{{ sshkey_dir.path }}/ec2-fingerprint.py {{ another_sshkey_pub }}'
+  register: another_fingerprint
+  tags:
+    - prepare
+
+- name: set facts for future roles
+  set_fact:
+    # Public SSH keys (OpenSSH format)
+    key_material: "{{ lookup('file', sshkey_pub) }}"
+    another_key_material: "{{ lookup('file', another_sshkey_pub) }}"
+    # AWS 'fingerprint' (md5digest)
+    fingerprint: '{{ fingerprint.stdout }}'
+    another_fingerprint: '{{ another_fingerprint.stdout }}'
+  tags:
+    - prepare
