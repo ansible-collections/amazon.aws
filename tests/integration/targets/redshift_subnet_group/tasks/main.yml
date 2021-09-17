@@ -93,8 +93,7 @@
       assert:
         that:
           - create_group is successful
-          # XXX Not idempotent
-          #- create_group is not changed
+          - create_group is not changed
           - '"group" in create_group'
           - '"name" in create_group.group'
           - '"vpc_id" in create_group.group'
@@ -108,9 +107,10 @@
         state: present
         group_name: '{{ group_name }}'
         group_description: '{{ description_updated }}'
-        group_subnets:
-        - '{{ subnet_id_a }}'
-        - '{{ subnet_id_b }}'
+        ## No longer mandatory
+        # group_subnets:
+        # - '{{ subnet_id_a }}'
+        # - '{{ subnet_id_b }}'
       register: update_description
 
     - name: Check result - Update Subnet Group Description
@@ -129,17 +129,17 @@
         state: present
         group_name: '{{ group_name }}'
         group_description: '{{ description_updated }}'
-        group_subnets:
-        - '{{ subnet_id_a }}'
-        - '{{ subnet_id_b }}'
+        ## No longer mandatory
+        # group_subnets:
+        # - '{{ subnet_id_a }}'
+        # - '{{ subnet_id_b }}'
       register: update_description
 
     - name: Check result - Update Subnet Group Description - idempotency
       assert:
         that:
           - update_description is successful
-          # XXX Not idempotent
-          #- update_description is not changed
+          - update_description is not changed
           - '"group" in update_description'
           - '"name" in update_description.group'
           - '"vpc_id" in update_description.group'
@@ -152,7 +152,8 @@
       redshift_subnet_group:
         state: present
         group_name: '{{ group_name }}'
-        group_description: '{{ description_updated }}'
+        ## No longer mandatory
+        # group_description: '{{ description_updated }}'
         group_subnets:
         - '{{ subnet_id_c }}'
         - '{{ subnet_id_d }}'
@@ -173,7 +174,8 @@
       redshift_subnet_group:
         state: present
         group_name: '{{ group_name }}'
-        group_description: '{{ description_updated }}'
+        ## No longer mandatory
+        # group_description: '{{ description_updated }}'
         group_subnets:
         - '{{ subnet_id_c }}'
         - '{{ subnet_id_d }}'
@@ -183,8 +185,7 @@
       assert:
         that:
           - update_subnets is successful
-          # XXX Not idempotent
-          #- update_subnets is not changed
+          - update_subnets is not changed
           - '"group" in update_subnets'
           - '"name" in update_subnets.group'
           - '"vpc_id" in update_subnets.group'
