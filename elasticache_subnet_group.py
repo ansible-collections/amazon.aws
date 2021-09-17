@@ -139,6 +139,10 @@ def get_subnet_group(name):
 
 
 def create_subnet_group(name, description, subnets):
+
+    if module.check_mode:
+        return True
+
     try:
         if not description:
             description = name
@@ -168,6 +172,9 @@ def update_subnet_group(subnet_group, name, description, subnets):
     if not update_params:
         return False
 
+    if module.check_mode:
+        return True
+
     try:
         client.modify_cache_subnet_group(
             aws_retry=True,
@@ -181,6 +188,10 @@ def update_subnet_group(subnet_group, name, description, subnets):
 
 
 def delete_subnet_group(name):
+
+    if module.check_mode:
+        return True
+
     try:
         client.delete_cache_subnet_group(
             aws_retry=True,
@@ -206,7 +217,10 @@ def main():
     global module
     global client
 
-    module = AnsibleAWSModule(argument_spec=argument_spec)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+    )
 
     state = module.params.get('state')
     name = module.params.get('name').lower()
