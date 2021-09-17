@@ -1,3 +1,5 @@
-cloud/aws
+# duration: 15
 slow
+
+cloud/aws
 ec2_ami_info
