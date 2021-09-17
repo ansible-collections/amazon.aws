@@ -1,0 +1,42 @@
+---
+availability_zone: '{{ ec2_availability_zone_names[0] }}'
+
+vpc_name: '{{ resource_prefix }}'
+subnet_name_a: '{{ resource_prefix }}-a'
+subnet_name_b: '{{ resource_prefix }}-b'
+subnet_name_c: '{{ resource_prefix }}-c'
+subnet_name_d: '{{ resource_prefix }}-d'
+
+vpc_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/16'
+subnet_cidr_a: '10.{{ 256 | random(seed=resource_prefix) }}.1.0/24'
+subnet_cidr_b: '10.{{ 256 | random(seed=resource_prefix) }}.2.0/24'
+subnet_cidr_c: '10.{{ 256 | random(seed=resource_prefix) }}.3.0/24'
+subnet_cidr_d: '10.{{ 256 | random(seed=resource_prefix) }}.4.0/24'
+
+subnet_zone_a: '{{ ec2_availability_zone_names[0] }}'
+subnet_zone_b: '{{ ec2_availability_zone_names[1] }}'
+subnet_zone_c: '{{ ec2_availability_zone_names[0] }}'
+subnet_zone_d: '{{ ec2_availability_zone_names[1] }}'
+
+group_name: '{{ resource_prefix }}'
+description_default: 'Subnet Description'
+description_updated: 'updated subnet description'
+
+# Tagging not currently supported, planned with boto3 upgrade
+tags_default:
+  snake_case_key: snake_case_value
+  camelCaseKey: camelCaseValue
+  PascalCaseKey: PascalCaseValue
+  'key with spaces': value with spaces
+  'Upper With Spaces': Upper With Spaces
+
+partial_tags:
+  snake_case_key: snake_case_value
+  camelCaseKey: camelCaseValue
+
+updated_tags:
+  updated_snake_case_key: updated_snake_case_value
+  updatedCamelCaseKey: updatedCamelCaseValue
+  UpdatedPascalCaseKey: UpdatedPascalCaseValue
+  'updated key with spaces': updated value with spaces
+  'updated Upper With Spaces': Updated Upper With Spaces
