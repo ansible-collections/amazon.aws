@@ -59,6 +59,42 @@ EXAMPLES = r'''
     name: norwegian-blue
 '''
 
+RETURN = r'''
+cache_subnet_group:
+  description: Description of the Elasticache Subnet Group.
+  returned: always
+  type: dict
+  contains:
+    arn:
+      description: The Amazon Resource Name (ARN) of the cache subnet group.
+      returned: when the subnet group exists
+      type: str
+      sample: arn:aws:elasticache:us-east-1:012345678901:subnetgroup:norwegian-blue
+    description:
+      description: The description of the cache subnet group.
+      returned: when the cache subnet group exists
+      type: str
+      sample: My Fancy Ex Parrot Subnet Group
+    name:
+      description: The name of the cache subnet group.
+      returned: when the cache subnet group exists
+      type: str
+      sample: norwegian-blue
+    vpc_id:
+      description: The VPC ID of the cache subnet group.
+      returned: when the cache subnet group exists
+      type: str
+      sample: norwegian-blue
+    subnet_ids:
+      description: The IDs of the subnets beloging to the cache subnet group.
+      returned: when the cache subnet group exists
+      type: list
+      elements: str
+      sample:
+        - subnet-aaaaaaaa
+        - subnet-bbbbbbbb
+'''
+
 try:
     import botocore
 except ImportError:

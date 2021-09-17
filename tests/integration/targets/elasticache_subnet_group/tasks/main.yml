@@ -72,11 +72,21 @@
         that:
           - create_group is successful
           - create_group is changed
-          #- '"group" in create_group'
-          #- '"name" in create_group.group'
-          #- '"vpc_id" in create_group.group'
-          #- create_group.group.name == group_name
-          #- create_group.group.vpc_id == vpc_id
+          - '"cache_subnet_group" in create_group'
+          - '"arn" in create_group.cache_subnet_group'
+          - '"description" in create_group.cache_subnet_group'
+          - '"name" in create_group.cache_subnet_group'
+          - '"subnet_ids" in create_group.cache_subnet_group'
+          - '"vpc_id" in create_group.cache_subnet_group'
+          - create_group.cache_subnet_group.description == description_default
+          - create_group.cache_subnet_group.name == group_name
+          - subnet_id_a in create_group.cache_subnet_group.subnet_ids
+          - subnet_id_b in create_group.cache_subnet_group.subnet_ids
+          - subnet_id_c not in create_group.cache_subnet_group.subnet_ids
+          - subnet_id_d not in create_group.cache_subnet_group.subnet_ids
+          - create_group.cache_subnet_group.vpc_id == vpc_id
+          - create_group.cache_subnet_group.arn.startswith('arn:')
+          - create_group.cache_subnet_group.arn.endswith(group_name)
 
     - name: Create Subnet Group - idempotency
       elasticache_subnet_group:
@@ -93,11 +103,21 @@
         that:
           - create_group is successful
           - create_group is not changed
-          #- '"group" in create_group'
-          #- '"name" in create_group.group'
-          #- '"vpc_id" in create_group.group'
-          #- create_group.group.name == group_name
-          #- create_group.group.vpc_id == vpc_id
+          - '"cache_subnet_group" in create_group'
+          - '"arn" in create_group.cache_subnet_group'
+          - '"description" in create_group.cache_subnet_group'
+          - '"name" in create_group.cache_subnet_group'
+          - '"subnet_ids" in create_group.cache_subnet_group'
+          - '"vpc_id" in create_group.cache_subnet_group'
+          - create_group.cache_subnet_group.description == description_default
+          - create_group.cache_subnet_group.name == group_name
+          - subnet_id_a in create_group.cache_subnet_group.subnet_ids
+          - subnet_id_b in create_group.cache_subnet_group.subnet_ids
+          - subnet_id_c not in create_group.cache_subnet_group.subnet_ids
+          - subnet_id_d not in create_group.cache_subnet_group.subnet_ids
+          - create_group.cache_subnet_group.vpc_id == vpc_id
+          - create_group.cache_subnet_group.arn.startswith('arn:')
+          - create_group.cache_subnet_group.arn.endswith(group_name)
 
     # ============================================================
 
@@ -116,11 +136,21 @@
         that:
           - update_description is successful
           - update_description is changed
-          #- '"group" in update_description'
-          #- '"name" in update_description.group'
-          #- '"vpc_id" in update_description.group'
-          #- update_description.group.name == group_name
-          #- update_description.group.vpc_id == vpc_id
+          - '"cache_subnet_group" in update_description'
+          - '"arn" in update_description.cache_subnet_group'
+          - '"description" in update_description.cache_subnet_group'
+          - '"name" in update_description.cache_subnet_group'
+          - '"subnet_ids" in update_description.cache_subnet_group'
+          - '"vpc_id" in update_description.cache_subnet_group'
+          - update_description.cache_subnet_group.description == description_updated
+          - update_description.cache_subnet_group.name == group_name
+          - subnet_id_a in update_description.cache_subnet_group.subnet_ids
+          - subnet_id_b in update_description.cache_subnet_group.subnet_ids
+          - subnet_id_c not in update_description.cache_subnet_group.subnet_ids
+          - subnet_id_d not in update_description.cache_subnet_group.subnet_ids
+          - update_description.cache_subnet_group.vpc_id == vpc_id
+          - update_description.cache_subnet_group.arn.startswith('arn:')
+          - update_description.cache_subnet_group.arn.endswith(group_name)
 
     - name: Update Subnet Group Description - idempotency
       elasticache_subnet_group:
@@ -137,11 +167,21 @@
         that:
           - update_description is successful
           - update_description is not changed
-          #- '"group" in update_description'
-          #- '"name" in update_description.group'
-          #- '"vpc_id" in update_description.group'
-          #- update_description.group.name == group_name
-          #- update_description.group.vpc_id == vpc_id
+          - '"cache_subnet_group" in update_description'
+          - '"arn" in update_description.cache_subnet_group'
+          - '"description" in update_description.cache_subnet_group'
+          - '"name" in update_description.cache_subnet_group'
+          - '"subnet_ids" in update_description.cache_subnet_group'
+          - '"vpc_id" in update_description.cache_subnet_group'
+          - update_description.cache_subnet_group.description == description_updated
+          - update_description.cache_subnet_group.name == group_name
+          - subnet_id_a in update_description.cache_subnet_group.subnet_ids
+          - subnet_id_b in update_description.cache_subnet_group.subnet_ids
+          - subnet_id_c not in update_description.cache_subnet_group.subnet_ids
+          - subnet_id_d not in update_description.cache_subnet_group.subnet_ids
+          - update_description.cache_subnet_group.vpc_id == vpc_id
+          - update_description.cache_subnet_group.arn.startswith('arn:')
+          - update_description.cache_subnet_group.arn.endswith(group_name)
 
     # ============================================================
 
@@ -160,11 +200,21 @@
         that:
           - update_subnets is successful
           - update_subnets is changed
-          #- '"group" in update_subnets'
-          #- '"name" in update_subnets.group'
-          #- '"vpc_id" in update_subnets.group'
-          #- update_subnets.group.name == group_name
-          #- update_subnets.group.vpc_id == vpc_id
+          - '"cache_subnet_group" in update_subnets'
+          - '"arn" in update_subnets.cache_subnet_group'
+          - '"description" in update_subnets.cache_subnet_group'
+          - '"name" in update_subnets.cache_subnet_group'
+          - '"subnet_ids" in update_subnets.cache_subnet_group'
+          - '"vpc_id" in update_subnets.cache_subnet_group'
+          - update_subnets.cache_subnet_group.description == description_updated
+          - update_subnets.cache_subnet_group.name == group_name
+          - subnet_id_a not in update_subnets.cache_subnet_group.subnet_ids
+          - subnet_id_b not in update_subnets.cache_subnet_group.subnet_ids
+          - subnet_id_c in update_subnets.cache_subnet_group.subnet_ids
+          - subnet_id_d in update_subnets.cache_subnet_group.subnet_ids
+          - update_subnets.cache_subnet_group.vpc_id == vpc_id
+          - update_subnets.cache_subnet_group.arn.startswith('arn:')
+          - update_subnets.cache_subnet_group.arn.endswith(group_name)
 
     - name: Update Subnet Group subnets - idempotency
       elasticache_subnet_group:
@@ -181,11 +231,21 @@
         that:
           - update_subnets is successful
           - update_subnets is not changed
-          #- '"group" in update_subnets'
-          #- '"name" in update_subnets.group'
-          #- '"vpc_id" in update_subnets.group'
-          #- update_subnets.group.name == group_name
-          #- update_subnets.group.vpc_id == vpc_id
+          - '"cache_subnet_group" in update_subnets'
+          - '"arn" in update_subnets.cache_subnet_group'
+          - '"description" in update_subnets.cache_subnet_group'
+          - '"name" in update_subnets.cache_subnet_group'
+          - '"subnet_ids" in update_subnets.cache_subnet_group'
+          - '"vpc_id" in update_subnets.cache_subnet_group'
+          - update_subnets.cache_subnet_group.description == description_updated
+          - update_subnets.cache_subnet_group.name == group_name
+          - subnet_id_a not in update_subnets.cache_subnet_group.subnet_ids
+          - subnet_id_b not in update_subnets.cache_subnet_group.subnet_ids
+          - subnet_id_c in update_subnets.cache_subnet_group.subnet_ids
+          - subnet_id_d in update_subnets.cache_subnet_group.subnet_ids
+          - update_subnets.cache_subnet_group.vpc_id == vpc_id
+          - update_subnets.cache_subnet_group.arn.startswith('arn:')
+          - update_subnets.cache_subnet_group.arn.endswith(group_name)
 
     # ============================================================
 
