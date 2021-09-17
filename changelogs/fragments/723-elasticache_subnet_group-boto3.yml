@@ -1,0 +1,2 @@
+minor_changes:
+- elasticache_subnet_group - module migrated to boto3 AWS SDK (https://github.com/ansible-collections/community.aws/pull/723).
