@@ -9,8 +9,6 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-author:
-  - "Jens Carl (@j-carl), Hothead Games Inc."
 module: redshift_subnet_group
 version_added: 1.0.0
 short_description: manage Redshift cluster subnet groups
@@ -20,33 +18,31 @@ options:
   state:
     description:
       - Specifies whether the subnet should be present or absent.
-    required: true
+    default: 'present'
     choices: ['present', 'absent' ]
     type: str
-  group_name:
+  name:
     description:
       - Cluster subnet group name.
     required: true
-    aliases: ['name']
+    aliases: ['group_name']
     type: str
-  group_description:
+  description:
     description:
-      - Database subnet group description.
-      - Required when I(state=present).
-    aliases: ['description']
+      - Cluster subnet group description.
+    aliases: ['group_description']
     type: str
-  group_subnets:
+  subnets:
     description:
       - List of subnet IDs that make up the cluster subnet group.
-      - Required when I(state=present).
-    aliases: ['subnets']
+    aliases: ['group_subnets']
     type: list
     elements: str
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-requirements:
-- boto >= 2.49.0
+author:
+  - "Jens Carl (@j-carl), Hothead Games Inc."
 '''
 
 EXAMPLES = r'''
@@ -66,10 +62,10 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
-group:
-    description: dictionary containing all Redshift subnet group information
+cluster_subnet_group:
+    description: dictionary containing Redshift subnet group information
     returned: success
-    type: complex
+    type: dict
     contains:
         name:
             description: name of the Redshift subnet group
@@ -84,95 +80,159 @@ group:
 '''
 
 try:
-    import boto
-    import boto.redshift
+    import botocore
 except ImportError:
-    pass  # Handled by HAS_BOTO
+    pass  # Handled by AnsibleAWSModule
+
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+
+
+def get_subnet_group(name):
+    try:
+        groups = client.describe_cluster_subnet_groups(
+            aws_retry=True,
+            ClusterSubnetGroupName=name,
+        )['ClusterSubnetGroups']
+    except is_boto3_error_code('ClusterSubnetGroupNotFoundFault'):
+        return None
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to describe subnet group")
+
+    if not groups:
+        return None
+
+    if len(groups) > 1:
+        module.fail_aws(
+            msg="Found multiple matches for subnet group",
+            cluster_subnet_groups=camel_dict_to_snake_dict(groups),
+        )
+
+    subnet_group = camel_dict_to_snake_dict(groups[0])
+
+    subnet_group['name'] = subnet_group['cluster_subnet_group_name']
+
+    subnet_ids = list(s['subnet_identifier'] for s in subnet_group['subnets'])
+    subnet_group['subnet_ids'] = subnet_ids
+
+    return subnet_group
+
+
+def create_subnet_group(name, description, subnets):
+    try:
+        if not description:
+            description = name
+        if not subnets:
+            subnets = []
+        client.create_cluster_subnet_group(
+            aws_retry=True,
+            ClusterSubnetGroupName=name,
+            Description=description,
+            SubnetIds=subnets,
+        )
+        return True
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to create subnet group")
+
+
+def update_subnet_group(subnet_group, name, description, subnets):
+    update_params = dict()
+    if description and subnet_group['description'] != description:
+        update_params['Description'] = description
+    if subnets:
+        old_subnets = set(subnet_group['subnet_ids'])
+        new_subnets = set(subnets)
+        if old_subnets != new_subnets:
+            update_params['SubnetIds'] = list(subnets)
+
+    if not update_params:
+        return False
+
+    # Description is optional, SubnetIds is not
+    if 'SubnetIds' not in update_params:
+        update_params['SubnetIds'] = subnet_group['subnet_ids']
+
+    try:
+        client.modify_cluster_subnet_group(
+            aws_retry=True,
+            ClusterSubnetGroupName=name,
+            **update_params,
+        )
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to update subnet group")
+
+    return True
+
+
+def delete_subnet_group(name):
+    try:
+        client.delete_cluster_subnet_group(
+            aws_retry=True,
+            ClusterSubnetGroupName=name,
+        )
+        return True
+    except is_boto3_error_code('ClusterSubnetGroupNotFoundFault'):
+        # AWS is "eventually consistent", cope with the race conditions where
+        # deletion hadn't completed when we ran describe
+        return False
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to delete subnet group")
 
 
 def main():
     argument_spec = dict(
-        state=dict(required=True, choices=['present', 'absent']),
-        group_name=dict(required=True, aliases=['name']),
-        group_description=dict(required=False, aliases=['description']),
-        group_subnets=dict(required=False, aliases=['subnets'], type='list', elements='str'),
+        state=dict(default='present', choices=['present', 'absent']),
+        name=dict(required=True, aliases=['group_name']),
+        description=dict(required=False, aliases=['group_description']),
+        subnets=dict(required=False, aliases=['group_subnets'], type='list', elements='str'),
     )
-    module = AnsibleAWSModule(argument_spec=argument_spec, check_boto3=False)
 
-    if not HAS_BOTO:
-        module.fail_json(msg='boto v2.9.0+ required for this module')
+    global module
+    global client
+
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+    )
 
     state = module.params.get('state')
-    group_name = module.params.get('group_name')
-    group_description = module.params.get('group_description')
-    group_subnets = module.params.get('group_subnets')
+    name = module.params.get('group_name')
+    description = module.params.get('group_description')
+    subnets = module.params.get('group_subnets')
+
+    client = module.client('redshift', retry_decorator=AWSRetry.jittered_backoff())
+
+    subnet_group = get_subnet_group(name)
+    changed = False
 
     if state == 'present':
-        for required in ('group_name', 'group_description', 'group_subnets'):
-            if not module.params.get(required):
-                module.fail_json(msg=str("parameter %s required for state='present'" % required))
-    else:
-        for not_allowed in ('group_description', 'group_subnets'):
-            if module.params.get(not_allowed):
-                module.fail_json(msg=str("parameter %s not allowed for state='absent'" % not_allowed))
-
-    region, ec2_url, aws_connect_params = get_aws_connection_info(module)
-    if not region:
-        module.fail_json(msg=str("Region must be specified as a parameter, in EC2_REGION or AWS_REGION environment variables or in boto configuration file"))
-
-    # Connect to the Redshift endpoint.
-    try:
-        conn = connect_to_aws(boto.redshift, region, **aws_connect_params)
-    except boto.exception.JSONResponseError as e:
-        module.fail_json(msg=str(e))
-
-    try:
-        changed = False
-        exists = False
-        group = None
-
-        try:
-            matching_groups = conn.describe_cluster_subnet_groups(group_name, max_records=100)
-            exists = len(matching_groups) > 0
-        except boto.exception.JSONResponseError as e:
-            if e.body['Error']['Code'] != 'ClusterSubnetGroupNotFoundFault':
-                # if e.code != 'ClusterSubnetGroupNotFoundFault':
-                module.fail_json(msg=str(e))
-
-        if state == 'absent':
-            if exists:
-                conn.delete_cluster_subnet_group(group_name)
-                changed = True
-
+        if not subnet_group:
+            result = create_subnet_group(name, description, subnets)
+            changed |= result
         else:
-            if not exists:
-                new_group = conn.create_cluster_subnet_group(group_name, group_description, group_subnets)
-                group = {
-                    'name': new_group['CreateClusterSubnetGroupResponse']['CreateClusterSubnetGroupResult']
-                    ['ClusterSubnetGroup']['ClusterSubnetGroupName'],
-                    'vpc_id': new_group['CreateClusterSubnetGroupResponse']['CreateClusterSubnetGroupResult']
-                    ['ClusterSubnetGroup']['VpcId'],
-                }
-            else:
-                changed_group = conn.modify_cluster_subnet_group(group_name, group_subnets, description=group_description)
-                group = {
-                    'name': changed_group['ModifyClusterSubnetGroupResponse']['ModifyClusterSubnetGroupResult']
-                    ['ClusterSubnetGroup']['ClusterSubnetGroupName'],
-                    'vpc_id': changed_group['ModifyClusterSubnetGroupResponse']['ModifyClusterSubnetGroupResult']
-                    ['ClusterSubnetGroup']['VpcId'],
-                }
+            result = update_subnet_group(subnet_group, name, description, subnets)
+            changed |= result
+        subnet_group = get_subnet_group(name)
+    else:
+        if subnet_group:
+            result = delete_subnet_group(name)
+            changed |= result
+        subnet_group = None
 
-            changed = True
+    compat_results = dict()
+    if subnet_group:
+        compat_results['group'] = dict(
+            name=subnet_group['name'],
+            vpc_id=subnet_group['vpc_id'],
+        )
 
-    except boto.exception.JSONResponseError as e:
-        module.fail_json(msg=str(e))
-
-    module.exit_json(changed=changed, group=group)
+    module.exit_json(
+        changed=changed,
+        cluster_subnet_group=subnet_group,
+        **compat_results,
+    )
 
 
 if __name__ == '__main__':
