@@ -17,7 +17,7 @@ description:
 options:
   state:
     description:
-      - Specifies whether the subnet should be present or absent.
+      - Specifies whether the subnet group should be present or absent.
     default: 'present'
     choices: ['present', 'absent' ]
     type: str
@@ -35,6 +35,7 @@ options:
   subnets:
     description:
       - List of subnet IDs that make up the cluster subnet group.
+      - At least one subnet must be provided when creating a cluster subnet group.
     aliases: ['group_subnets']
     type: list
     elements: str
@@ -122,11 +123,13 @@ def get_subnet_group(name):
 
 
 def create_subnet_group(name, description, subnets):
+
+    if not subnets:
+        module.fail_json(msg='At least one subnet must be provided when creating a subnet group')
+
     try:
         if not description:
             description = name
-        if not subnets:
-            subnets = []
         client.create_cluster_subnet_group(
             aws_retry=True,
             ClusterSubnetGroupName=name,
@@ -198,9 +201,9 @@ def main():
     )
 
     state = module.params.get('state')
-    name = module.params.get('group_name')
-    description = module.params.get('group_description')
-    subnets = module.params.get('group_subnets')
+    name = module.params.get('name')
+    description = module.params.get('description')
+    subnets = module.params.get('subnets')
 
     client = module.client('redshift', retry_decorator=AWSRetry.jittered_backoff())
 
