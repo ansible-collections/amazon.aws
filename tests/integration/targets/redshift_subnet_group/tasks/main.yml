@@ -101,6 +101,17 @@
           - '"vpc_id" in create_group.group'
           - create_group.group.name == group_name
           - create_group.group.vpc_id == vpc_id
+          - '"cluster_subnet_group" in create_group'
+          - '"description" in create_group.cluster_subnet_group'
+          - '"subnet_ids" in create_group.cluster_subnet_group'
+          - '"vpc_id" in create_group.cluster_subnet_group'
+          - create_group.cluster_subnet_group.name == group_name
+          - create_group.cluster_subnet_group.description == description_default
+          - subnet_id_a in create_group.cluster_subnet_group.subnet_ids
+          - subnet_id_b in create_group.cluster_subnet_group.subnet_ids
+          - subnet_id_c not in create_group.cluster_subnet_group.subnet_ids
+          - subnet_id_d not in create_group.cluster_subnet_group.subnet_ids
+          - create_group.cluster_subnet_group.vpc_id == vpc_id
 
     - name: Create Subnet Group - idempotency
       redshift_subnet_group:
@@ -122,6 +133,17 @@
           - '"vpc_id" in create_group.group'
           - create_group.group.name == group_name
           - create_group.group.vpc_id == vpc_id
+          - '"cluster_subnet_group" in create_group'
+          - '"description" in create_group.cluster_subnet_group'
+          - '"subnet_ids" in create_group.cluster_subnet_group'
+          - '"vpc_id" in create_group.cluster_subnet_group'
+          - create_group.cluster_subnet_group.name == group_name
+          - create_group.cluster_subnet_group.description == description_default
+          - subnet_id_a in create_group.cluster_subnet_group.subnet_ids
+          - subnet_id_b in create_group.cluster_subnet_group.subnet_ids
+          - subnet_id_c not in create_group.cluster_subnet_group.subnet_ids
+          - subnet_id_d not in create_group.cluster_subnet_group.subnet_ids
+          - create_group.cluster_subnet_group.vpc_id == vpc_id
 
     # ============================================================
 
@@ -146,6 +168,17 @@
           - '"vpc_id" in update_description.group'
           - update_description.group.name == group_name
           - update_description.group.vpc_id == vpc_id
+          - '"cluster_subnet_group" in update_description'
+          - '"description" in update_description.cluster_subnet_group'
+          - '"subnet_ids" in update_description.cluster_subnet_group'
+          - '"vpc_id" in update_description.cluster_subnet_group'
+          - update_description.cluster_subnet_group.name == group_name
+          - update_description.cluster_subnet_group.description == description_updated
+          - subnet_id_a in update_description.cluster_subnet_group.subnet_ids
+          - subnet_id_b in update_description.cluster_subnet_group.subnet_ids
+          - subnet_id_c not in update_description.cluster_subnet_group.subnet_ids
+          - subnet_id_d not in update_description.cluster_subnet_group.subnet_ids
+          - update_description.cluster_subnet_group.vpc_id == vpc_id
 
     - name: Update Subnet Group Description - idempotency
       redshift_subnet_group:
@@ -168,6 +201,17 @@
           - '"vpc_id" in update_description.group'
           - update_description.group.name == group_name
           - update_description.group.vpc_id == vpc_id
+          - '"cluster_subnet_group" in update_description'
+          - '"description" in update_description.cluster_subnet_group'
+          - '"subnet_ids" in update_description.cluster_subnet_group'
+          - '"vpc_id" in update_description.cluster_subnet_group'
+          - update_description.cluster_subnet_group.name == group_name
+          - update_description.cluster_subnet_group.description == description_updated
+          - subnet_id_a in update_description.cluster_subnet_group.subnet_ids
+          - subnet_id_b in update_description.cluster_subnet_group.subnet_ids
+          - subnet_id_c not in update_description.cluster_subnet_group.subnet_ids
+          - subnet_id_d not in update_description.cluster_subnet_group.subnet_ids
+          - update_description.cluster_subnet_group.vpc_id == vpc_id
 
     # ============================================================
 
@@ -192,6 +236,17 @@
           - '"vpc_id" in update_subnets.group'
           - update_subnets.group.name == group_name
           - update_subnets.group.vpc_id == vpc_id
+          - '"cluster_subnet_group" in update_subnets'
+          - '"description" in update_subnets.cluster_subnet_group'
+          - '"subnet_ids" in update_subnets.cluster_subnet_group'
+          - '"vpc_id" in update_subnets.cluster_subnet_group'
+          - update_subnets.cluster_subnet_group.name == group_name
+          - update_subnets.cluster_subnet_group.description == description_updated
+          - subnet_id_a not in update_subnets.cluster_subnet_group.subnet_ids
+          - subnet_id_b not in update_subnets.cluster_subnet_group.subnet_ids
+          - subnet_id_c in update_subnets.cluster_subnet_group.subnet_ids
+          - subnet_id_d in update_subnets.cluster_subnet_group.subnet_ids
+          - update_subnets.cluster_subnet_group.vpc_id == vpc_id
 
     - name: Update Subnet Group subnets - idempotency
       redshift_subnet_group:
@@ -214,6 +269,17 @@
           - '"vpc_id" in update_subnets.group'
           - update_subnets.group.name == group_name
           - update_subnets.group.vpc_id == vpc_id
+          - '"cluster_subnet_group" in update_subnets'
+          - '"description" in update_subnets.cluster_subnet_group'
+          - '"subnet_ids" in update_subnets.cluster_subnet_group'
+          - '"vpc_id" in update_subnets.cluster_subnet_group'
+          - update_subnets.cluster_subnet_group.name == group_name
+          - update_subnets.cluster_subnet_group.description == description_updated
+          - subnet_id_a not in update_subnets.cluster_subnet_group.subnet_ids
+          - subnet_id_b not in update_subnets.cluster_subnet_group.subnet_ids
+          - subnet_id_c in update_subnets.cluster_subnet_group.subnet_ids
+          - subnet_id_d in update_subnets.cluster_subnet_group.subnet_ids
+          - update_subnets.cluster_subnet_group.vpc_id == vpc_id
 
     # ============================================================
 
@@ -259,6 +325,17 @@
           - '"vpc_id" in create_group.group'
           - create_group.group.name == group_name
           - create_group.group.vpc_id == vpc_id
+          - '"cluster_subnet_group" in create_group'
+          - '"description" in create_group.cluster_subnet_group'
+          - '"subnet_ids" in create_group.cluster_subnet_group'
+          - '"vpc_id" in create_group.cluster_subnet_group'
+          - create_group.cluster_subnet_group.name == group_name
+          - create_group.cluster_subnet_group.description == group_name
+          - subnet_id_a in create_group.cluster_subnet_group.subnet_ids
+          - subnet_id_b not in create_group.cluster_subnet_group.subnet_ids
+          - subnet_id_c not in create_group.cluster_subnet_group.subnet_ids
+          - subnet_id_d not in create_group.cluster_subnet_group.subnet_ids
+          - create_group.cluster_subnet_group.vpc_id == vpc_id
 
     - name: Create minimal Subnet Group - idempotency
       redshift_subnet_group:
@@ -278,6 +355,17 @@
           - '"vpc_id" in create_group.group'
           - create_group.group.name == group_name
           - create_group.group.vpc_id == vpc_id
+          - '"cluster_subnet_group" in create_group'
+          - '"description" in create_group.cluster_subnet_group'
+          - '"subnet_ids" in create_group.cluster_subnet_group'
+          - '"vpc_id" in create_group.cluster_subnet_group'
+          - create_group.cluster_subnet_group.name == group_name
+          - create_group.cluster_subnet_group.description == group_name
+          - subnet_id_a in create_group.cluster_subnet_group.subnet_ids
+          - subnet_id_b not in create_group.cluster_subnet_group.subnet_ids
+          - subnet_id_c not in create_group.cluster_subnet_group.subnet_ids
+          - subnet_id_d not in create_group.cluster_subnet_group.subnet_ids
+          - create_group.cluster_subnet_group.vpc_id == vpc_id
 
     # ============================================================
 
@@ -301,6 +389,17 @@
           - '"vpc_id" in update_complex.group'
           - update_complex.group.name == group_name
           - update_complex.group.vpc_id == vpc_id
+          - '"cluster_subnet_group" in update_complex'
+          - '"description" in update_complex.cluster_subnet_group'
+          - '"subnet_ids" in update_complex.cluster_subnet_group'
+          - '"vpc_id" in update_complex.cluster_subnet_group'
+          - update_complex.cluster_subnet_group.name == group_name
+          - update_complex.cluster_subnet_group.description == description_updated
+          - subnet_id_a in update_complex.cluster_subnet_group.subnet_ids
+          - subnet_id_b in update_complex.cluster_subnet_group.subnet_ids
+          - subnet_id_c not in update_complex.cluster_subnet_group.subnet_ids
+          - subnet_id_d not in update_complex.cluster_subnet_group.subnet_ids
+          - update_complex.cluster_subnet_group.vpc_id == vpc_id
 
     - name: Full Update Subnet Group - idempotency
       redshift_subnet_group:
@@ -322,6 +421,17 @@
           - '"vpc_id" in update_complex.group'
           - update_complex.group.name == group_name
           - update_complex.group.vpc_id == vpc_id
+          - '"cluster_subnet_group" in update_complex'
+          - '"description" in update_complex.cluster_subnet_group'
+          - '"subnet_ids" in update_complex.cluster_subnet_group'
+          - '"vpc_id" in update_complex.cluster_subnet_group'
+          - update_complex.cluster_subnet_group.name == group_name
+          - update_complex.cluster_subnet_group.description == description_updated
+          - subnet_id_a in update_complex.cluster_subnet_group.subnet_ids
+          - subnet_id_b in update_complex.cluster_subnet_group.subnet_ids
+          - subnet_id_c not in update_complex.cluster_subnet_group.subnet_ids
+          - subnet_id_d not in update_complex.cluster_subnet_group.subnet_ids
+          - update_complex.cluster_subnet_group.vpc_id == vpc_id
 
     # ============================================================
 
