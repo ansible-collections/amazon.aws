@@ -64,20 +64,33 @@ EXAMPLES = r'''
 
 RETURN = r'''
 cluster_subnet_group:
-    description: dictionary containing Redshift subnet group information
+    description: A dictionary containing information about the Redshift subnet group.
     returned: success
     type: dict
     contains:
         name:
-            description: name of the Redshift subnet group
-            returned: success
+            description: Name of the Redshift subnet group.
+            returned: when the cache subnet group exists
             type: str
             sample: "redshift_subnet_group_name"
         vpc_id:
-            description: Id of the VPC where the subnet is located
-            returned: success
+            description: Id of the VPC where the subnet is located.
+            returned: when the cache subnet group exists
             type: str
             sample: "vpc-aabb1122"
+        description:
+            description: The description of the cache subnet group.
+            returned: when the cache subnet group exists
+            type: str
+            sample: Redshift subnet
+        subnet_ids:
+            description: The IDs of the subnets beloging to the Redshift subnet group.
+            returned: when the cache subnet group exists
+            type: list
+            elements: str
+            sample:
+              - subnet-aaaaaaaa
+              - subnet-bbbbbbbb
 '''
 
 try:
@@ -90,6 +103,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
 def get_subnet_group(name):
@@ -112,8 +126,10 @@ def get_subnet_group(name):
             cluster_subnet_groups=camel_dict_to_snake_dict(groups),
         )
 
+    tags = boto3_tag_list_to_ansible_dict(groups[0]['Tags'])
     subnet_group = camel_dict_to_snake_dict(groups[0])
 
+    subnet_group['tags'] = tags
     subnet_group['name'] = subnet_group['cluster_subnet_group_name']
 
     subnet_ids = list(s['subnet_identifier'] for s in subnet_group['subnets'])
