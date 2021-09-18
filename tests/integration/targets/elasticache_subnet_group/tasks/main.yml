@@ -13,6 +13,48 @@
       security_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region }}'
   block:
+
+    # ============================================================
+
+    - name: Create Subnet Group with no subnets - check_mode
+      elasticache_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+      check_mode: True
+      register: create_group
+      ignore_errors: True
+
+    - name: Check result - Create Subnet Group with no subnets - check_mode
+      assert:
+        that:
+          - create_group is failed
+          # Check we caught the issue before trying to create
+          - '"CreateCacheSubnetGroup" not in create_group.resource_actions'
+          # Check that we don't refer to the boto3 parameter
+          - '"SubnetIds" not in create_group.msg'
+          # Loosely check the message
+          - '"subnet" in create_group.msg'
+          - '"At least" in create_group.msg'
+
+    - name: Create Subnet Group with no subnets
+      elasticache_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+      register: create_group
+      ignore_errors: True
+
+    - name: Check result - Create Subnet Group with no subnets
+      assert:
+        that:
+          - create_group is failed
+          # Check we caught the issue before trying to create
+          - '"CreateCacheSubnetGroup" not in create_group.resource_actions'
+          # Check that we don't refer to the boto3 parameter
+          - '"SubnetIds" not in create_group.msg'
+          # Loosely check the message
+          - '"subnet" in create_group.msg'
+          - '"At least" in create_group.msg'
+
     # ============================================================
     # Setup infra needed for tests
     - name: create a VPC
@@ -55,6 +97,7 @@
         subnet_id_b: '{{ vpc_subnet_create.results[1].subnet.id }}'
         subnet_id_c: '{{ vpc_subnet_create.results[2].subnet.id }}'
         subnet_id_d: '{{ vpc_subnet_create.results[3].subnet.id }}'
+
     # ============================================================
 
     - name: Create Subnet Group - check_mode
