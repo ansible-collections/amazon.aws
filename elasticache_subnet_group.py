@@ -34,6 +34,7 @@ options:
   subnets:
     description:
       - List of subnet IDs that make up the ElastiCache subnet group.
+      - At least one subnet must be provided when creating an ElastiCache subnet group.
     type: list
     elements: str
 author:
@@ -140,14 +141,15 @@ def get_subnet_group(name):
 
 def create_subnet_group(name, description, subnets):
 
+    if not subnets:
+        module.fail_json(msg='At least one subnet must be provided when creating a subnet group')
+
     if module.check_mode:
         return True
 
     try:
         if not description:
             description = name
-        if not subnets:
-            subnets = []
         client.create_cache_subnet_group(
             aws_retry=True,
             CacheSubnetGroupName=name,
