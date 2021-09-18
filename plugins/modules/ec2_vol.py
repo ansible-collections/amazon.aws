@@ -609,13 +609,14 @@ def detach_volume(module, ec2_conn, volume_dict):
 
     attachment_data = get_attachment_data(volume_dict, wanted_state='attached')
     # The ID of the instance must be specified if you are detaching a Multi-Attach enabled volume.
-    for attachment in attachment_data:
-        ec2_conn.detach_volume(aws_retry=True, InstanceId=attachment['instance_id'], VolumeId=volume_dict['volume_id'])
-        waiter = ec2_conn.get_waiter('volume_available')
-        waiter.wait(
-            VolumeIds=[volume_dict['volume_id']],
-        )
-        changed = True
+    if not module.check_mode:
+        for attachment in attachment_data:
+            ec2_conn.detach_volume(aws_retry=True, InstanceId=attachment['instance_id'], VolumeId=volume_dict['volume_id'])
+            waiter = ec2_conn.get_waiter('volume_available')
+            waiter.wait(
+                VolumeIds=[volume_dict['volume_id']],
+            )
+            changed = True
 
     volume_dict = get_volume(module, ec2_conn, vol_id=volume_dict['volume_id'])
     return volume_dict, changed
@@ -696,6 +697,7 @@ def main():
             ['volume_type', 'io1', ['iops']],
             ['volume_type', 'io2', ['iops']],
         ],
+        supports_check_mode=True
     )
 
     param_id = module.params.get('id')
@@ -809,6 +811,13 @@ def main():
                         changed=False
                     )
 
+        if module.check_mode:
+            if detach_vol_flag:
+                volume, attach_changed = detach_volume(module, ec2_conn, volume_dict=volume)
+                volume['attachments'] = []
+            volume_info = get_volume_info(module, volume)
+            module.exit_json(changed=True, volume=volume_info, device=device_name, volume_id=volume_info['id'], volume_type=volume_info['type'])
+
         if volume:
             volume, changed = update_volume(module, ec2_conn, volume)
         else:
@@ -837,6 +846,8 @@ def main():
         if not name and not param_id:
             module.fail_json('A volume name or id is required for deletion')
         if volume:
+            if module.check_mode:
+                module.exit_json(changed=True)
             detach_volume(module, ec2_conn, volume_dict=volume)
             changed = delete_volume(module, ec2_conn, volume_id=volume['volume_id'])
         module.exit_json(changed=changed)
