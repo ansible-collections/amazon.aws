@@ -14,6 +14,28 @@
       security_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region }}'
   block:
+
+    # ============================================================
+
+    - name: Create Subnet Group with no subnets
+      redshift_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+      register: create_group
+      ignore_errors: True
+
+    - name: Check result - Create Subnet Group with no subnets
+      assert:
+        that:
+          - create_group is failed
+          # Check we caught the issue before trying to create
+          - '"CreateClusterSubnetGroup" not in create_group.resource_actions'
+          # Check that we don't refer to the boto3 parameter
+          - '"subnetIds" not in create_group.msg'
+          # Loosely check the message
+          - '"subnet" in create_group.msg'
+          - '"At least" in create_group.msg'
+
     # ============================================================
     # Setup infra needed for tests
     - name: create a VPC
@@ -56,6 +78,7 @@
         subnet_id_b: '{{ vpc_subnet_create.results[1].subnet.id }}'
         subnet_id_c: '{{ vpc_subnet_create.results[2].subnet.id }}'
         subnet_id_d: '{{ vpc_subnet_create.results[3].subnet.id }}'
+
     # ============================================================
 
     - name: Create Subnet Group
@@ -215,6 +238,103 @@
       assert:
         that:
           - delete_group is not changed
+
+    # ============================================================
+
+    - name: Create minimal Subnet Group
+      redshift_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+        subnets:
+        - '{{ subnet_id_a }}'
+      register: create_group
+
+    - name: Check result - Create minimal Subnet Group
+      assert:
+        that:
+          - create_group is successful
+          - create_group is changed
+          - '"group" in create_group'
+          - '"name" in create_group.group'
+          - '"vpc_id" in create_group.group'
+          - create_group.group.name == group_name
+          - create_group.group.vpc_id == vpc_id
+
+    - name: Create minimal Subnet Group - idempotency
+      redshift_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+        subnets:
+        - '{{ subnet_id_a }}'
+      register: create_group
+
+    - name: Check result - Create minimal Subnet Group - idempotency
+      assert:
+        that:
+          - create_group is successful
+          - create_group is not changed
+          - '"group" in create_group'
+          - '"name" in create_group.group'
+          - '"vpc_id" in create_group.group'
+          - create_group.group.name == group_name
+          - create_group.group.vpc_id == vpc_id
+
+    # ============================================================
+
+    - name: Full Update Subnet Group
+      redshift_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+        description: '{{ description_updated }}'
+        subnets:
+        - '{{ subnet_id_a }}'
+        - '{{ subnet_id_b }}'
+      register: update_complex
+
+    - name: Check result - Full Update Subnet Group
+      assert:
+        that:
+          - update_complex is successful
+          - update_complex is changed
+          - '"group" in update_complex'
+          - '"name" in update_complex.group'
+          - '"vpc_id" in update_complex.group'
+          - update_complex.group.name == group_name
+          - update_complex.group.vpc_id == vpc_id
+
+    - name: Full Update Subnet Group - idempotency
+      redshift_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+        description: '{{ description_updated }}'
+        subnets:
+        - '{{ subnet_id_a }}'
+        - '{{ subnet_id_b }}'
+      register: update_complex
+
+    - name: Check result - Full Update Subnet Group - idempotency
+      assert:
+        that:
+          - update_complex is successful
+          - update_complex is not changed
+          - '"group" in update_complex'
+          - '"name" in update_complex.group'
+          - '"vpc_id" in update_complex.group'
+          - update_complex.group.name == group_name
+          - update_complex.group.vpc_id == vpc_id
+
+    # ============================================================
+
+    - name: Delete Subnet Group
+      redshift_subnet_group:
+        state: absent
+        name: '{{ group_name }}'
+      register: delete_group
+
+    - name: Check result - Delete Subnet Group
+      assert:
+        that:
+          - delete_group is changed
 
   always:
 
