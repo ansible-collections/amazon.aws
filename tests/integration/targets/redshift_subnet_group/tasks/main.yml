@@ -17,6 +17,26 @@
 
     # ============================================================
 
+    - name: Create Subnet Group with no subnets - check_mode
+      redshift_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+      register: create_group
+      ignore_errors: True
+      check_mode: True
+
+    - name: Check result - Create Subnet Group with no subnets - check_mode
+      assert:
+        that:
+          - create_group is failed
+          # Check we caught the issue before trying to create
+          - '"CreateClusterSubnetGroup" not in create_group.resource_actions'
+          # Check that we don't refer to the boto3 parameter
+          - '"subnetIds" not in create_group.msg'
+          # Loosely check the message
+          - '"subnet" in create_group.msg'
+          - '"At least" in create_group.msg'
+
     - name: Create Subnet Group with no subnets
       redshift_subnet_group:
         state: present
@@ -81,6 +101,23 @@
 
     # ============================================================
 
+    - name: Create Subnet Group - check_mode
+      redshift_subnet_group:
+        state: present
+        group_name: '{{ group_name }}'
+        group_description: '{{ description_default }}'
+        group_subnets:
+        - '{{ subnet_id_a }}'
+        - '{{ subnet_id_b }}'
+      register: create_group
+      check_mode: True
+
+    - name: Check result - Create Subnet Group - check_mode
+      assert:
+        that:
+          - create_group is successful
+          - create_group is changed
+
     - name: Create Subnet Group
       redshift_subnet_group:
         state: present
@@ -112,6 +149,23 @@
           - subnet_id_c not in create_group.cluster_subnet_group.subnet_ids
           - subnet_id_d not in create_group.cluster_subnet_group.subnet_ids
           - create_group.cluster_subnet_group.vpc_id == vpc_id
+
+    - name: Create Subnet Group - idempotency - check_mode
+      redshift_subnet_group:
+        state: present
+        group_name: '{{ group_name }}'
+        group_description: '{{ description_default }}'
+        group_subnets:
+        - '{{ subnet_id_a }}'
+        - '{{ subnet_id_b }}'
+      register: create_group
+      check_mode: True
+
+    - name: Check result - Create Subnet Group - idempotency - check_mode
+      assert:
+        that:
+          - create_group is successful
+          - create_group is not changed
 
     - name: Create Subnet Group - idempotency
       redshift_subnet_group:
@@ -147,6 +201,24 @@
 
     # ============================================================
 
+    - name: Update Subnet Group Description - check_mode
+      redshift_subnet_group:
+        state: present
+        group_name: '{{ group_name }}'
+        group_description: '{{ description_updated }}'
+        ## No longer mandatory
+        # group_subnets:
+        # - '{{ subnet_id_a }}'
+        # - '{{ subnet_id_b }}'
+      register: update_description
+      check_mode: True
+
+    - name: Check result - Update Subnet Group Description - check_mode
+      assert:
+        that:
+          - update_description is successful
+          - update_description is changed
+
     - name: Update Subnet Group Description
       redshift_subnet_group:
         state: present
@@ -179,6 +251,24 @@
           - subnet_id_c not in update_description.cluster_subnet_group.subnet_ids
           - subnet_id_d not in update_description.cluster_subnet_group.subnet_ids
           - update_description.cluster_subnet_group.vpc_id == vpc_id
+
+    - name: Update Subnet Group Description - idempotency - check_mode
+      redshift_subnet_group:
+        state: present
+        group_name: '{{ group_name }}'
+        group_description: '{{ description_updated }}'
+        ## No longer mandatory
+        # group_subnets:
+        # - '{{ subnet_id_a }}'
+        # - '{{ subnet_id_b }}'
+      register: update_description
+      check_mode: True
+
+    - name: Check result - Update Subnet Group Description - idempotency - check_mode
+      assert:
+        that:
+          - update_description is successful
+          - update_description is not changed
 
     - name: Update Subnet Group Description - idempotency
       redshift_subnet_group:
@@ -215,6 +305,24 @@
 
     # ============================================================
 
+    - name: Update Subnet Group subnets - check_mode
+      redshift_subnet_group:
+        state: present
+        group_name: '{{ group_name }}'
+        ## No longer mandatory
+        # group_description: '{{ description_updated }}'
+        group_subnets:
+        - '{{ subnet_id_c }}'
+        - '{{ subnet_id_d }}'
+      register: update_subnets
+      check_mode: True
+
+    - name: Check result - Update Subnet Group subnets - check_mode
+      assert:
+        that:
+          - update_subnets is successful
+          - update_subnets is changed
+
     - name: Update Subnet Group subnets
       redshift_subnet_group:
         state: present
@@ -247,6 +355,24 @@
           - subnet_id_c in update_subnets.cluster_subnet_group.subnet_ids
           - subnet_id_d in update_subnets.cluster_subnet_group.subnet_ids
           - update_subnets.cluster_subnet_group.vpc_id == vpc_id
+
+    - name: Update Subnet Group subnets - idempotency - check_mode
+      redshift_subnet_group:
+        state: present
+        group_name: '{{ group_name }}'
+        ## No longer mandatory
+        # group_description: '{{ description_updated }}'
+        group_subnets:
+        - '{{ subnet_id_c }}'
+        - '{{ subnet_id_d }}'
+      register: update_subnets
+      check_mode: True
+
+    - name: Check result - Update Subnet Group subnets - idempotency - check_mode
+      assert:
+        that:
+          - update_subnets is successful
+          - update_subnets is not changed
 
     - name: Update Subnet Group subnets - idempotency
       redshift_subnet_group:
@@ -283,6 +409,18 @@
 
     # ============================================================
 
+    - name: Delete Subnet Group - check_mode
+      redshift_subnet_group:
+        state: absent
+        group_name: '{{ group_name }}'
+      register: delete_group
+      check_mode: True
+
+    - name: Check result - Delete Subnet Group - check_mode
+      assert:
+        that:
+          - delete_group is changed
+
     - name: Delete Subnet Group
       redshift_subnet_group:
         state: absent
@@ -293,6 +431,18 @@
       assert:
         that:
           - delete_group is changed
+
+    - name: Delete Subnet Group - idempotency - check_mode
+      redshift_subnet_group:
+        state: absent
+        group_name: '{{ group_name }}'
+      register: delete_group
+      check_mode: True
+
+    - name: Check result - Delete Subnet Group - idempotency - check_mode
+      assert:
+        that:
+          - delete_group is not changed
 
     - name: Delete Subnet Group - idempotency
       redshift_subnet_group:
@@ -306,6 +456,21 @@
           - delete_group is not changed
 
     # ============================================================
+
+    - name: Create minimal Subnet Group - check_mode
+      redshift_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+        subnets:
+        - '{{ subnet_id_a }}'
+      register: create_group
+      check_mode: True
+
+    - name: Check result - Create minimal Subnet Group - check_mode
+      assert:
+        that:
+          - create_group is successful
+          - create_group is changed
 
     - name: Create minimal Subnet Group
       redshift_subnet_group:
@@ -336,6 +501,21 @@
           - subnet_id_c not in create_group.cluster_subnet_group.subnet_ids
           - subnet_id_d not in create_group.cluster_subnet_group.subnet_ids
           - create_group.cluster_subnet_group.vpc_id == vpc_id
+
+    - name: Create minimal Subnet Group - idempotency - check_mode
+      redshift_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+        subnets:
+        - '{{ subnet_id_a }}'
+      register: create_group
+      check_mode: True
+
+    - name: Check result - Create minimal Subnet Group - idempotency - check_mode
+      assert:
+        that:
+          - create_group is successful
+          - create_group is not changed
 
     - name: Create minimal Subnet Group - idempotency
       redshift_subnet_group:
@@ -369,6 +549,23 @@
 
     # ============================================================
 
+    - name: Full Update Subnet Group - check_mode
+      redshift_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+        description: '{{ description_updated }}'
+        subnets:
+        - '{{ subnet_id_a }}'
+        - '{{ subnet_id_b }}'
+      register: update_complex
+      check_mode: True
+
+    - name: Check result - Full Update Subnet Group - check_mode
+      assert:
+        that:
+          - update_complex is successful
+          - update_complex is changed
+
     - name: Full Update Subnet Group
       redshift_subnet_group:
         state: present
@@ -400,6 +597,23 @@
           - subnet_id_c not in update_complex.cluster_subnet_group.subnet_ids
           - subnet_id_d not in update_complex.cluster_subnet_group.subnet_ids
           - update_complex.cluster_subnet_group.vpc_id == vpc_id
+
+    - name: Full Update Subnet Group - idempotency - check_mode
+      redshift_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+        description: '{{ description_updated }}'
+        subnets:
+        - '{{ subnet_id_a }}'
+        - '{{ subnet_id_b }}'
+      register: update_complex
+      check_mode: True
+
+    - name: Check result - Full Update Subnet Group - idempotency - check_mode
+      assert:
+        that:
+          - update_complex is successful
+          - update_complex is not changed
 
     - name: Full Update Subnet Group - idempotency
       redshift_subnet_group:
