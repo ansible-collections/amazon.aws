@@ -126,7 +126,10 @@ def get_subnet_group(name):
             cluster_subnet_groups=camel_dict_to_snake_dict(groups),
         )
 
+    # No support for managing tags yet, but make sure that we don't need to
+    # change the return value structure after it's been available in a release.
     tags = boto3_tag_list_to_ansible_dict(groups[0]['Tags'])
+
     subnet_group = camel_dict_to_snake_dict(groups[0])
 
     subnet_group['tags'] = tags
@@ -142,6 +145,9 @@ def create_subnet_group(name, description, subnets):
 
     if not subnets:
         module.fail_json(msg='At least one subnet must be provided when creating a subnet group')
+
+    if module.check_mode:
+        return True
 
     try:
         if not description:
@@ -170,6 +176,9 @@ def update_subnet_group(subnet_group, name, description, subnets):
     if not update_params:
         return False
 
+    if module.check_mode:
+        return True
+
     # Description is optional, SubnetIds is not
     if 'SubnetIds' not in update_params:
         update_params['SubnetIds'] = subnet_group['subnet_ids']
@@ -187,6 +196,10 @@ def update_subnet_group(subnet_group, name, description, subnets):
 
 
 def delete_subnet_group(name):
+
+    if module.check_mode:
+        return True
+
     try:
         client.delete_cluster_subnet_group(
             aws_retry=True,
@@ -214,6 +227,7 @@ def main():
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
+        supports_check_mode=True,
     )
 
     state = module.params.get('state')
