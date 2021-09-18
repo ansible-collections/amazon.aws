@@ -448,6 +448,207 @@
         that:
           - delete_group is not changed
 
+    # ============================================================
+
+    - name: Create minimal Subnet Group - check_mode
+      elasticache_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+        subnets:
+        - '{{ subnet_id_a }}'
+      check_mode: True
+      register: create_group
+
+    - name: Check result - Create minimal Subnet Group - check_mode
+      assert:
+        that:
+          - create_group is successful
+          - create_group is changed
+
+    - name: Create minimal Subnet Group
+      elasticache_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+        subnets:
+        - '{{ subnet_id_a }}'
+      register: create_group
+
+    - name: Check result - Create minimal Subnet Group
+      assert:
+        that:
+          - create_group is successful
+          - create_group is changed
+          - '"cache_subnet_group" in create_group'
+          - '"arn" in create_group.cache_subnet_group'
+          - '"description" in create_group.cache_subnet_group'
+          - '"name" in create_group.cache_subnet_group'
+          - '"subnet_ids" in create_group.cache_subnet_group'
+          - '"vpc_id" in create_group.cache_subnet_group'
+          - create_group.cache_subnet_group.description == group_name
+          - create_group.cache_subnet_group.name == group_name
+          - subnet_id_a in create_group.cache_subnet_group.subnet_ids
+          - subnet_id_b not in create_group.cache_subnet_group.subnet_ids
+          - subnet_id_c not in create_group.cache_subnet_group.subnet_ids
+          - subnet_id_d not in create_group.cache_subnet_group.subnet_ids
+          - create_group.cache_subnet_group.vpc_id == vpc_id
+          - create_group.cache_subnet_group.arn.startswith('arn:')
+          - create_group.cache_subnet_group.arn.endswith(group_name)
+
+    - name: Create minimal Subnet Group - idempotency - check_mode
+      elasticache_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+        subnets:
+        - '{{ subnet_id_a }}'
+      check_mode: True
+      register: create_group
+
+    - name: Check result - Create minimal Subnet Group - idempotency - check_mode
+      assert:
+        that:
+          - create_group is successful
+          - create_group is not changed
+
+    - name: Create minimal Subnet Group - idempotency
+      elasticache_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+        subnets:
+        - '{{ subnet_id_a }}'
+      register: create_group
+
+    - name: Check result - Create minimal Subnet Group - idempotency
+      assert:
+        that:
+          - create_group is successful
+          - create_group is not changed
+          - '"cache_subnet_group" in create_group'
+          - '"arn" in create_group.cache_subnet_group'
+          - '"description" in create_group.cache_subnet_group'
+          - '"name" in create_group.cache_subnet_group'
+          - '"subnet_ids" in create_group.cache_subnet_group'
+          - '"vpc_id" in create_group.cache_subnet_group'
+          - create_group.cache_subnet_group.description == group_name
+          - create_group.cache_subnet_group.name == group_name
+          - subnet_id_a in create_group.cache_subnet_group.subnet_ids
+          - subnet_id_b not in create_group.cache_subnet_group.subnet_ids
+          - subnet_id_c not in create_group.cache_subnet_group.subnet_ids
+          - subnet_id_d not in create_group.cache_subnet_group.subnet_ids
+          - create_group.cache_subnet_group.vpc_id == vpc_id
+          - create_group.cache_subnet_group.arn.startswith('arn:')
+          - create_group.cache_subnet_group.arn.endswith(group_name)
+
+    # ============================================================
+
+    - name: Full Update Subnet Group - check_mode
+      elasticache_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+        description: '{{ description_updated }}'
+        subnets:
+        - '{{ subnet_id_a }}'
+        - '{{ subnet_id_b }}'
+      check_mode: True
+      register: update_complex
+
+    - name: Check result - Full Update Subnet Group - check_mode
+      assert:
+        that:
+          - update_complex is successful
+          - update_complex is changed
+
+    - name: Update Subnet Group
+      elasticache_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+        description: '{{ description_updated }}'
+        subnets:
+        - '{{ subnet_id_a }}'
+        - '{{ subnet_id_b }}'
+      register: update_complex
+
+    - name: Check result - Full Update Subnet Group
+      assert:
+        that:
+          - update_complex is successful
+          - update_complex is changed
+          - '"cache_subnet_group" in update_complex'
+          - '"arn" in update_complex.cache_subnet_group'
+          - '"description" in update_complex.cache_subnet_group'
+          - '"name" in update_complex.cache_subnet_group'
+          - '"subnet_ids" in update_complex.cache_subnet_group'
+          - '"vpc_id" in update_complex.cache_subnet_group'
+          - update_complex.cache_subnet_group.description == description_updated
+          - update_complex.cache_subnet_group.name == group_name
+          - subnet_id_a in update_complex.cache_subnet_group.subnet_ids
+          - subnet_id_b in update_complex.cache_subnet_group.subnet_ids
+          - subnet_id_c not in update_complex.cache_subnet_group.subnet_ids
+          - subnet_id_d not in update_complex.cache_subnet_group.subnet_ids
+          - update_complex.cache_subnet_group.vpc_id == vpc_id
+          - update_complex.cache_subnet_group.arn.startswith('arn:')
+          - update_complex.cache_subnet_group.arn.endswith(group_name)
+
+    - name: Full Update Subnet Group - idempotency - check_mode
+      elasticache_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+        description: '{{ description_updated }}'
+        subnets:
+        - '{{ subnet_id_a }}'
+        - '{{ subnet_id_b }}'
+      check_mode: True
+      register: update_complex
+
+    - name: Check result - Full Update Subnet Group - idempotency - check_mode
+      assert:
+        that:
+          - update_complex is successful
+          - update_complex is not changed
+
+    - name: Full Update Subnet Group - idempotency
+      elasticache_subnet_group:
+        state: present
+        name: '{{ group_name }}'
+        description: '{{ description_updated }}'
+        subnets:
+        - '{{ subnet_id_a }}'
+        - '{{ subnet_id_b }}'
+      register: update_complex
+
+    - name: Check result - Full Update Subnet Group - idempotency
+      assert:
+        that:
+          - update_complex is successful
+          - update_complex is not changed
+          - '"cache_subnet_group" in update_complex'
+          - '"arn" in update_complex.cache_subnet_group'
+          - '"description" in update_complex.cache_subnet_group'
+          - '"name" in update_complex.cache_subnet_group'
+          - '"subnet_ids" in update_complex.cache_subnet_group'
+          - '"vpc_id" in update_complex.cache_subnet_group'
+          - update_complex.cache_subnet_group.description == description_updated
+          - update_complex.cache_subnet_group.name == group_name
+          - subnet_id_a in update_complex.cache_subnet_group.subnet_ids
+          - subnet_id_b in update_complex.cache_subnet_group.subnet_ids
+          - subnet_id_c not in update_complex.cache_subnet_group.subnet_ids
+          - subnet_id_d not in update_complex.cache_subnet_group.subnet_ids
+          - update_complex.cache_subnet_group.vpc_id == vpc_id
+          - update_complex.cache_subnet_group.arn.startswith('arn:')
+          - update_complex.cache_subnet_group.arn.endswith(group_name)
+
+    # ============================================================
+
+    - name: Delete Subnet Group
+      elasticache_subnet_group:
+        state: absent
+        name: '{{ group_name }}'
+      register: delete_group
+
+    - name: Check result - Delete Subnet Group
+      assert:
+        that:
+          - delete_group is changed
+
   always:
 
     ################################################
