@@ -1,0 +1,733 @@
+---
+# dynamodb_table integration tests
+#
+# Current module limitations:
+# - changed very flakey
+# - various parameters have defaults set so reset undefined value
+#
+- module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
+
+  # ==============================================
+
+  - name: Create table - check_mode
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      hash_key_name: '{{ table_index }}'
+      hash_key_type: '{{ table_index_type }}'
+    register: create_table
+    check_mode: True
+
+  - name: Check results - Create table - check_mode
+    assert:
+      that:
+      - create_table is successful
+      - create_table is changed
+      - '"hash_key_name" in create_table'
+
+  - name: Create table
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      hash_key_name: '{{ table_index }}'
+      hash_key_type: '{{ table_index_type }}'
+    register: create_table
+
+  - name: Check results - Create table
+    assert:
+      that:
+      - create_table is successful
+      - create_table is changed
+      - '"hash_key_name" in create_table'
+      - '"hash_key_type" in create_table'
+      - '"indexes" in create_table'
+      - '"range_key_name" in create_table'
+      - '"range_key_type" in create_table'
+      - '"read_capacity" in create_table'
+      - '"region" in create_table'
+      - '"table_name" in create_table'
+      - '"table_status" in create_table'
+      - '"write_capacity" in create_table'
+      - create_table.hash_key_name == table_index
+      - create_table.hash_key_type == table_index_type
+      - create_table.indexes | length == 0
+      - create_table.range_key_name is none
+      - create_table.range_key_type == "STRING"
+      - create_table.read_capacity == 1
+      - create_table.table_name == table_name
+      - create_table.write_capacity == 1
+
+  - name: Create table - idempotent - check_mode
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      hash_key_name: '{{ table_index }}'
+      hash_key_type: '{{ table_index_type }}'
+    register: create_table
+    check_mode: True
+
+  - name: Check results - Create table - idempotent - check_mode
+    assert:
+      that:
+      - create_table is successful
+      - create_table is not changed
+
+  - name: Create table - idempotent
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      hash_key_name: '{{ table_index }}'
+      hash_key_type: '{{ table_index_type }}'
+    register: create_table
+
+  - name: Check results - Create table - idempotent
+    assert:
+      that:
+      - create_table is successful
+      - create_table is not changed
+      - '"hash_key_name" in create_table'
+      - '"hash_key_type" in create_table'
+      - '"indexes" in create_table'
+      - '"range_key_name" in create_table'
+      - '"range_key_type" in create_table'
+      - '"read_capacity" in create_table'
+      - '"region" in create_table'
+      - '"table_name" in create_table'
+      - '"table_status" in create_table'
+      - '"write_capacity" in create_table'
+      - create_table.hash_key_name == table_index
+      - create_table.hash_key_type == table_index_type
+      - create_table.indexes | length == 0
+      - create_table.range_key_name is none
+      - create_table.range_key_type == "STRING"
+      - create_table.read_capacity == 1
+      - create_table.table_name == table_name
+      - create_table.write_capacity == 1
+
+  # ==============================================
+
+  - name: Tag table - check_mode
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      tags: '{{ tags_default }}'
+    register: tag_table
+    check_mode: True
+
+  - name: Check results - Tag table - check_mode
+    assert:
+      that:
+      - tag_table is successful
+      # XXX bug updating (just) tags doesn't return 'changed'
+      # - tag_table is changed
+
+  - name: Tag table
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      tags: '{{ tags_default }}'
+    register: tag_table
+
+  - name: Check results - Tag table
+    assert:
+      that:
+      - tag_table is successful
+      # XXX bug updating (just) tags doesn't return 'changed'
+      # - tag_table is changed
+      - '"hash_key_name" in tag_table'
+      - '"hash_key_type" in tag_table'
+      - '"indexes" in tag_table'
+      - '"range_key_name" in tag_table'
+      - '"range_key_type" in tag_table'
+      - '"read_capacity" in tag_table'
+      - '"region" in tag_table'
+      - '"table_name" in tag_table'
+      - '"table_status" in tag_table'
+      - '"write_capacity" in tag_table'
+      # XXX Bug - returns none when not actively set
+      # - tag_table.hash_key_name == table_index
+      # XXX Bug - returns string when not actively set
+      #- tag_table.hash_key_type == table_index_type
+      - tag_table.indexes | length == 0
+      - tag_table.range_key_name is none
+      - tag_table.range_key_type == "STRING"
+      - tag_table.read_capacity == 1
+      - tag_table.table_name == table_name
+      - tag_table.write_capacity == 1
+      - tag_table.tags == tags_default
+
+  - name: Tag table - idempotent - check_mode
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      tags: '{{ tags_default }}'
+    register: tag_table
+    check_mode: True
+
+  - name: Check results - Tag table - idempotent - check_mode
+    assert:
+      that:
+      - tag_table is successful
+      - tag_table is not changed
+
+  - name: Tag table - idempotent
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      tags: '{{ tags_default }}'
+    register: tag_table
+
+  - name: Check results - Tag table - idempotent
+    assert:
+      that:
+      - tag_table is successful
+      - tag_table is not changed
+      - '"hash_key_name" in tag_table'
+      - '"hash_key_type" in tag_table'
+      - '"indexes" in tag_table'
+      - '"range_key_name" in tag_table'
+      - '"range_key_type" in tag_table'
+      - '"read_capacity" in tag_table'
+      - '"region" in tag_table'
+      - '"table_name" in tag_table'
+      - '"table_status" in tag_table'
+      - '"write_capacity" in tag_table'
+      # XXX Bug - returns none when not actively set
+      # - tag_table.hash_key_name == table_index
+      # XXX Bug - returns string when not actively set
+      # - tag_table.hash_key_type == table_index_type
+      - tag_table.indexes | length == 0
+      - tag_table.range_key_name is none
+      - tag_table.range_key_type == "STRING"
+      - tag_table.read_capacity == 1
+      - tag_table.table_name == table_name
+      - tag_table.write_capacity == 1
+      - tag_table.tags == tags_default
+
+  # ==============================================
+
+  - name: Update table read capacity - check_mode
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      read_capacity: 3
+    register: update_read
+    check_mode: True
+
+  - name: Check results - Update table read capacity - check_mode
+    assert:
+      that:
+      - update_read is successful
+      - update_read is changed
+
+  - name: Update table read capacity
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      read_capacity: 3
+    register: update_read
+
+  - name: Check results - Update table read capacity
+    assert:
+      that:
+      - update_read is successful
+      - update_read is changed
+      - '"hash_key_name" in update_read'
+      - '"hash_key_type" in update_read'
+      - '"indexes" in update_read'
+      - '"range_key_name" in update_read'
+      - '"range_key_type" in update_read'
+      - '"read_capacity" in update_read'
+      - '"region" in update_read'
+      - '"table_name" in update_read'
+      - '"table_status" in update_read'
+      - '"write_capacity" in update_read'
+      # XXX Bug - returns none when not actively set
+      # - update_read.hash_key_name == table_index
+      # XXX Bug - returns string when not actively set
+      # - update_read.hash_key_type == table_index_type
+      - update_read.indexes | length == 0
+      - update_read.range_key_name is none
+      - update_read.range_key_type == "STRING"
+      - update_read.read_capacity == 3
+      - update_read.table_name == table_name
+      - update_read.write_capacity == 1
+      # Tags are only returned when tagging
+      # - update_read.tags == tags_default
+
+  - name: Update table read capacity - idempotent - check_mode
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      read_capacity: 3
+    register: update_read
+    check_mode: True
+
+  - name: Check results - Update table read capacity - idempotent - check_mode
+    assert:
+      that:
+      - update_read is successful
+      # XXX Bug - returns changed
+      # - update_read is not changed
+
+  - name: Update table read capacity - idempotent
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      read_capacity: 3
+    register: update_read
+    # Can result in ResourceInUseException - change in flight
+    until: update_read is successful
+    retries: 15
+    delay: 10
+
+  - name: Check results - Update table read capacity - idempotent
+    assert:
+      that:
+      - update_read is successful
+      - update_read is not changed
+      - '"hash_key_name" in update_read'
+      - '"hash_key_type" in update_read'
+      - '"indexes" in update_read'
+      - '"range_key_name" in update_read'
+      - '"range_key_type" in update_read'
+      - '"read_capacity" in update_read'
+      - '"region" in update_read'
+      - '"table_name" in update_read'
+      - '"table_status" in update_read'
+      - '"write_capacity" in update_read'
+      # XXX Bug - returns none when not actively set
+      # - update_read.hash_key_name == table_index
+      # XXX Bug - returns string when not actively set
+      # - update_read.hash_key_type == table_index_type
+      - update_read.indexes | length == 0
+      - update_read.range_key_name is none
+      - update_read.range_key_type == "STRING"
+      - update_read.read_capacity == 3
+      - update_read.table_name == table_name
+      - update_read.write_capacity == 1
+      # Tags are only returned when tagging
+      # - update_read.tags == tags_default
+
+  # ==============================================
+
+  - name: Update table write capacity - check_mode
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      write_capacity: 3
+    register: update_write
+    check_mode: True
+
+  - name: Check results - Update table write capacity - check_mode
+    assert:
+      that:
+      - update_write is successful
+      - update_write is changed
+
+  - name: Update table write capacity
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      write_capacity: 3
+    register: update_write
+
+  - name: Check results - Update table write capacity
+    assert:
+      that:
+      - update_write is successful
+      - update_write is changed
+      - '"hash_key_name" in update_write'
+      - '"hash_key_type" in update_write'
+      - '"indexes" in update_write'
+      - '"range_key_name" in update_write'
+      - '"range_key_type" in update_write'
+      - '"read_capacity" in update_write'
+      - '"region" in update_write'
+      - '"table_name" in update_write'
+      - '"table_status" in update_write'
+      - '"write_capacity" in update_write'
+      # XXX Bug - returns none when not actively set
+      # - update_write.hash_key_name == table_index
+      # XXX Bug - returns string when not actively set
+      # - update_write.hash_key_type == table_index_type
+      - update_write.indexes | length == 0
+      - update_write.range_key_name is none
+      - update_write.range_key_type == "STRING"
+      # XXX Bug - gets reset to 1 because a default was set
+      # - update_write.read_capacity == 3
+      - update_write.table_name == table_name
+      - update_write.write_capacity == 3
+      # Tags are only returned when tagging
+      # - update_write.tags == tags_default
+
+  - name: Update table write capacity - idempotent - check_mode
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      write_capacity: 3
+    register: update_write
+    check_mode: True
+
+  - name: Check results - Update table write capacity - idempotent - check_mode
+    assert:
+      that:
+      - update_write is successful
+      # XXX Bug - returns changed
+      # - update_write is not changed
+
+  - name: Update table write capacity - idempotent
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      write_capacity: 3
+    register: update_write
+    # Can result in ResourceInUseException - change in flight
+    until: update_write is successful
+    retries: 15
+    delay: 10
+
+  - name: Check results - Update table write capacity - idempotent
+    assert:
+      that:
+      - update_write is successful
+      # XXX Bug - returns changed
+      # - update_write is not changed
+      - '"hash_key_name" in update_write'
+      - '"hash_key_type" in update_write'
+      - '"indexes" in update_write'
+      - '"range_key_name" in update_write'
+      - '"range_key_type" in update_write'
+      - '"read_capacity" in update_write'
+      - '"region" in update_write'
+      - '"table_name" in update_write'
+      - '"table_status" in update_write'
+      - '"write_capacity" in update_write'
+      # XXX Bug - returns none when not actively set
+      # - update_write.hash_key_name == table_index
+      # XXX Bug - returns string when not actively set
+      # - update_write.hash_key_type == table_index_type
+      - update_write.indexes | length == 0
+      - update_write.range_key_name is none
+      - update_write.range_key_type == "STRING"
+      # XXX Bug - gets reset to 1 because a default was set
+      # - update_write.read_capacity == 3
+      - update_write.table_name == table_name
+      - update_write.write_capacity == 3
+      # Tags are only returned when tagging
+      # - update_write.tags == tags_default
+
+  # ==============================================
+
+  - name: Update table add range index - check_mode
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      range_key_name: '{{ range_index }}'
+      range_key_type: '{{ range_index_type }}'
+    register: update_range_index
+    check_mode: True
+
+  - name: Check results - Update table add range index - check_mode
+    assert:
+      that:
+      - update_range_index is successful
+      - update_range_index is changed
+
+  - name: Update table write capacity
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      range_key_name: '{{ range_index }}'
+      range_key_type: '{{ range_index_type }}'
+    register: update_range_index
+
+  - name: Check results - Update table add range index
+    assert:
+      that:
+      - update_range_index is successful
+      - update_range_index is changed
+      - '"hash_key_name" in update_range_index'
+      - '"hash_key_type" in update_range_index'
+      - '"indexes" in update_range_index'
+      - '"range_key_name" in update_range_index'
+      - '"range_key_type" in update_range_index'
+      - '"read_capacity" in update_range_index'
+      - '"region" in update_range_index'
+      - '"table_name" in update_range_index'
+      - '"table_status" in update_range_index'
+      - '"write_capacity" in update_range_index'
+      # XXX Bug - returns none when not actively set
+      # - update_range_index.hash_key_name == table_index
+      # XXX Bug - returns string when not actively set
+      # - update_range_index.hash_key_type == table_index_type
+      - update_range_index.indexes | length == 0
+      - update_range_index.range_key_name == range_index
+      - update_range_index.range_key_type == range_index_type
+      # XXX Bug - gets reset to 1 because a default was set
+      # - update_range_index.read_capacity == 3
+      - update_range_index.table_name == table_name
+      # XXX Bug - gets reset to 1 because a default was set
+      # - update_range_index.write_capacity == 3
+      # Tags are only returned when tagging
+      # - update_range_index.tags == tags_default
+
+  - name: Update table add range index - idempotent - check_mode
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      range_key_name: '{{ range_index }}'
+      range_key_type: '{{ range_index_type }}'
+    register: update_range_index
+    check_mode: True
+
+  - name: Check results - Update table add range index - idempotent - check_mode
+    assert:
+      that:
+      - update_range_index is successful
+      # XXX Bug - returns changed
+      # - update_range_index is not changed
+
+  - name: Update table add range index - idempotent
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      range_key_name: '{{ range_index }}'
+      range_key_type: '{{ range_index_type }}'
+    register: update_range_index
+    # Can result in ResourceInUseException - change in flight
+    until: update_range_index is successful
+    retries: 15
+    delay: 10
+
+  - name: Check results - Update table add range index - idempotent
+    assert:
+      that:
+      - update_range_index is successful
+      # XXX Bug - returns changed
+      # - update_range_index is not changed
+      - '"hash_key_name" in update_range_index'
+      - '"hash_key_type" in update_range_index'
+      - '"indexes" in update_range_index'
+      - '"range_key_name" in update_range_index'
+      - '"range_key_type" in update_range_index'
+      - '"read_capacity" in update_range_index'
+      - '"region" in update_range_index'
+      - '"table_name" in update_range_index'
+      - '"table_status" in update_range_index'
+      - '"write_capacity" in update_range_index'
+      # XXX Bug - returns none when not actively set
+      # - update_range_index.hash_key_name == table_index
+      # XXX Bug - returns string when not actively set
+      # - update_range_index.hash_key_type == table_index_type
+      - update_range_index.indexes | length == 0
+      - update_range_index.range_key_name == range_index
+      - update_range_index.range_key_type == range_index_type
+      # XXX Bug - gets reset to 1 because a default was set
+      # - update_range_index.read_capacity == 3
+      - update_range_index.table_name == table_name
+      # XXX Bug - gets reset to 1 because a default was set
+      # - update_range_index.write_capacity == 3
+      # Tags are only returned when tagging
+      # - update_range_index.tags == tags_default
+
+  # ==============================================
+
+  - name: Update table add indexes - check_mode
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      indexes: '{{ indexes }}'
+    register: update_indexes
+    check_mode: True
+
+  - name: Check results - Update table add indexes - check_mode
+    assert:
+      that:
+      - update_indexes is successful
+      - update_indexes is changed
+
+  - name: Update table add indexes
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      indexes: '{{ indexes }}'
+    register: update_indexes
+    # Can result in LimitExceededException - change in flight
+    until: update_indexes is successful
+    retries: 45
+    delay: 10
+
+  - name: Check results - Update table add indexes
+    assert:
+      that:
+      - update_indexes is successful
+      - update_indexes is changed
+      - '"hash_key_name" in update_indexes'
+      - '"hash_key_type" in update_indexes'
+      - '"indexes" in update_indexes'
+      - '"range_key_name" in update_indexes'
+      - '"range_key_type" in update_indexes'
+      - '"read_capacity" in update_indexes'
+      - '"region" in update_indexes'
+      - '"table_name" in update_indexes'
+      - '"table_status" in update_indexes'
+      - '"write_capacity" in update_indexes'
+      # XXX Bug - returns none when not actively set
+      # - update_indexes.hash_key_name == table_index
+      # XXX Bug - returns string when not actively set
+      # - update_indexes.hash_key_type == table_index_type
+      - update_indexes.indexes | length == 2
+      # XXX Bug - returns none when not actively set
+      # - update_indexes.range_key_name == range_index
+      # XXX Bug - returns string when not actively set
+      # - update_indexes.range_key_type == range_index_type
+      # XXX Bug - gets reset to 1 because a default was set
+      # - update_indexes.read_capacity == 3
+      - update_indexes.table_name == table_name
+      # XXX Bug - gets reset to 1 because a default was set
+      # - update_indexes.write_capacity == 3
+      # Tags are only returned when tagging
+      # - update_indexes.tags == tags_default
+
+  - name: Update table add indexes - idempotent - check_mode
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      indexes: '{{ indexes }}'
+    register: update_indexes
+    check_mode: True
+
+  - name: Check results - Update table add indexes - idempotent - check_mode
+    assert:
+      that:
+      - update_indexes is successful
+      # XXX Bug - returns changed
+      # - update_indexes is not changed
+
+  - name: Update table add indexes - idempotent
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      indexes: '{{ indexes }}'
+    register: update_indexes
+    # Can result in LimitExceededException - change in flight
+    until: update_indexes is successful
+    retries: 45
+    delay: 10
+
+  - name: Check results - Update table add indexes - idempotent
+    assert:
+      that:
+      - update_indexes is successful
+      # XXX Bug - returns changed
+      # - update_indexes is not changed
+      - '"hash_key_name" in update_indexes'
+      - '"hash_key_type" in update_indexes'
+      - '"indexes" in update_indexes'
+      - '"range_key_name" in update_indexes'
+      - '"range_key_type" in update_indexes'
+      - '"read_capacity" in update_indexes'
+      - '"region" in update_indexes'
+      - '"table_name" in update_indexes'
+      - '"table_status" in update_indexes'
+      - '"write_capacity" in update_indexes'
+      # XXX Bug - returns none when not actively set
+      # - update_indexes.hash_key_name == table_index
+      # XXX Bug - returns string when not actively set
+      # - update_indexes.hash_key_type == table_index_type
+      - update_indexes.indexes | length == 2
+      # XXX Bug - returns none when not actively set
+      # - update_indexes.range_key_name == range_index
+      # XXX Bug - returns string when not actively set
+      # - update_indexes.range_key_type == range_index_type
+      # XXX Bug - gets reset to 1 because a default was set
+      # - update_indexes.read_capacity == 3
+      - update_indexes.table_name == table_name
+      # XXX Bug - gets reset to 1 because a default was set
+      # - update_indexes.write_capacity == 3
+      # Tags are only returned when tagging
+      # - update_indexes.tags == tags_default
+
+  # ==============================================
+
+  - name: Delete table - check_mode
+    dynamodb_table:
+      state: absent
+      name: '{{ table_name }}'
+    register: delete_table
+    check_mode: True
+
+  - name: Check results - Delete table - check_mode
+    assert:
+      that:
+      - delete_table is successful
+      - delete_table is changed
+
+  - name: Delete table
+    dynamodb_table:
+      state: absent
+      name: '{{ table_name }}'
+    register: delete_table
+    # Updates don't support waiting yet, so retry until successful
+    until: delete_table is successful
+    retries: 45
+    delay: 10
+
+  - name: Check results - Delete table
+    assert:
+      that:
+      - delete_table is successful
+      - delete_table is changed
+
+  - name: Delete table - idempotent - check_mode
+    dynamodb_table:
+      state: absent
+      name: '{{ table_name }}'
+    register: delete_table
+    check_mode: True
+
+  - name: Check results - Delete table - idempotent - check_mode
+    assert:
+      that:
+      - delete_table is successful
+      # XXX bug - returns changed
+      # - delete_table is not changed
+
+  - name: Delete table - idempotent
+    dynamodb_table:
+      state: absent
+      name: '{{ table_name }}'
+    register: delete_table
+    # Deletion doesn't support waiting yet, so retry until successful
+    until: delete_table is successful
+    retries: 45
+    delay: 10
+
+  - name: Check results - Delete table - idempotent
+    assert:
+      that:
+      - delete_table is successful
+      - delete_table is not changed
+
+  always:
+
+  ################################################
+  # TEARDOWN STARTS HERE
+  ################################################
+
+  - name: Clean up table
+    dynamodb_table:
+      state: absent
+      name: '{{ table_name }}'
+    register: delete_table
+    # Can result in LimitExceededException or ResourceInUseException - changes in flight
+    until: delete_table is successful
+    retries: 40
+    delay: 10
