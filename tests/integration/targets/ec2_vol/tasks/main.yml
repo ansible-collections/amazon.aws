@@ -718,15 +718,25 @@
 
     - name: Create a volume (check_mode)
       ec2_vol:
-        volume_size: 1
+        volume_size: 2
         zone: "{{ availability_zone }}"
         tags:
           ResourcePrefix: "{{ resource_prefix }}"
+      check_mode: true
       register: check_create_result_vol
 
     - assert:
         that:
           - check_create_result_vol is changed
+
+    - name: Get instance info before check mode attach
+      ec2_instance_info:
+        instance_ids:
+          - "{{ item }}"
+      ignore_errors: yes
+      with_items:
+        - "{{ test_instance.instance_ids[0] }}"
+      register: check_instance_info_pre
 
     - name: Attach a volume (check_mode)
       ec2_vol:
@@ -734,11 +744,25 @@
         volume_size: 2
         volume_type: gp2
         device_name: /dev/xvdf
+      check_mode: true
       register: check_vol_attach_result
+
+    - name: Get instance info after check mode attach
+      ec2_instance_info:
+        instance_ids:
+          - "{{ item }}"
+      ignore_errors: yes
+      with_items:
+        - "{{ test_instance.instance_ids[0] }}"
+      register: check_instance_info_post
 
     - assert:
         that:
           - check_vol_attach_result is changed
+          - volume_count_after == volume_count_before
+      vars:
+        volume_count_before: "{{ check_instance_info_pre.results[0].instances[0].block_device_mappings | length }}"
+        volume_count_after: "{{ check_instance_info_post.results[0].instances[0].block_device_mappings | length }}"
 
     # ==== Cleanup ============================================================
 
