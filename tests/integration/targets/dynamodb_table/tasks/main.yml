@@ -161,8 +161,7 @@
       - tag_table.read_capacity == 1
       - tag_table.table_name == table_name
       - tag_table.write_capacity == 1
-      # XXX Missing Perms
-      # - tag_table.tags == tags_default
+      - tag_table.tags == tags_default
 
   - name: Tag table - idempotent - check_mode
     dynamodb_table:
@@ -176,8 +175,7 @@
     assert:
       that:
       - tag_table is successful
-      # XXX Missing Perms
-      # - tag_table is not changed
+      - tag_table is not changed
 
   - name: Tag table - idempotent
     dynamodb_table:
@@ -190,8 +188,7 @@
     assert:
       that:
       - tag_table is successful
-      # XXX Missing Perms
-      # - tag_table is not changed
+      - tag_table is not changed
       - '"hash_key_name" in tag_table'
       - '"hash_key_type" in tag_table'
       - '"indexes" in tag_table'
@@ -212,8 +209,7 @@
       - tag_table.read_capacity == 1
       - tag_table.table_name == table_name
       - tag_table.write_capacity == 1
-      # XXX Missing Perms
-      # - tag_table.tags == tags_default
+      - tag_table.tags == tags_default
 
   # ==============================================
 
@@ -263,8 +259,7 @@
       - update_read.read_capacity == 3
       - update_read.table_name == table_name
       - update_read.write_capacity == 1
-      # XXX Missing Perms
-      # - update_read.tags == tags_default
+      - update_read.tags == tags_default
 
   - name: Update table read capacity - idempotent - check_mode
     dynamodb_table:
@@ -312,8 +307,7 @@
       - update_read.read_capacity == 3
       - update_read.table_name == table_name
       - update_read.write_capacity == 1
-      # XXX Missing Perms
-      # - update_read.tags == tags_default
+      - update_read.tags == tags_default
 
   # ==============================================
 
@@ -363,8 +357,7 @@
       - update_write.read_capacity == 3
       - update_write.table_name == table_name
       - update_write.write_capacity == 3
-      # XXX Missing Perms
-      # - update_write.tags == tags_default
+      - update_write.tags == tags_default
 
   - name: Update table write capacity - idempotent - check_mode
     dynamodb_table:
@@ -412,11 +405,12 @@
       - update_write.read_capacity == 3
       - update_write.table_name == table_name
       - update_write.write_capacity == 3
-      # XXX Missing Perms
-      # - update_write.tags == tags_default
+      - update_write.tags == tags_default
 
   # ==============================================
   # Updating the indexes used to simply be ignored
+  # We've deprecated accepting this, but dropping
+  # support would be a breaking change.
 
   - name: Update table add range index - check_mode
     dynamodb_table:
@@ -465,8 +459,7 @@
       - update_range_index.read_capacity == 3
       - update_range_index.table_name == table_name
       - update_range_index.write_capacity == 3
-      # XXX Missing Perms
-      # - update_range_index.tags == tags_default
+      - update_range_index.tags == tags_default
 
   - name: Update table add range index - idempotent - check_mode
     dynamodb_table:
@@ -515,8 +508,7 @@
       - update_range_index.read_capacity == 3
       - update_range_index.table_name == table_name
       - update_range_index.write_capacity == 3
-      # XXX Missing Perms
-      # - update_range_index.tags == tags_default
+      - update_range_index.tags == tags_default
 
   # ==============================================
 
@@ -560,13 +552,12 @@
       - update_indexes.hash_key_name == table_index
       - update_indexes.hash_key_type == table_index_type
       - update_indexes.indexes | length == 2
-      - update_indexes.range_key_name == range_index
-      - update_indexes.range_key_type == range_index_type
+      # - update_indexes.range_key_name == range_index
+      # - update_indexes.range_key_type == range_index_type
       - update_indexes.read_capacity == 3
       - update_indexes.table_name == table_name
       - update_indexes.write_capacity == 3
-      # XXX Missing Perms
-      # - update_indexes.tags == tags_default
+      - update_indexes.tags == tags_default
 
   - name: Update table add indexes - idempotent - check_mode
     dynamodb_table:
@@ -608,13 +599,12 @@
       - update_indexes.hash_key_name == table_index
       - update_indexes.hash_key_type == table_index_type
       - update_indexes.indexes | length == 2
-      - update_indexes.range_key_name == range_index
-      - update_indexes.range_key_type == range_index_type
+      # - update_indexes.range_key_name == range_index
+      # - update_indexes.range_key_type == range_index_type
       - update_indexes.read_capacity == 3
       - update_indexes.table_name == table_name
       - update_indexes.write_capacity == 3
-      # XXX Missing Perms
-      # - update_indexes.tags == tags_default
+      - update_indexes.tags == tags_default
 
   # ==============================================
 
@@ -667,6 +657,240 @@
       that:
       - delete_table is successful
       - delete_table is not changed
+
+  # ==============================================
+
+  - name: Create complex table - check_mode
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      hash_key_name: '{{ table_index }}'
+      hash_key_type: '{{ table_index_type }}'
+      range_key_name: '{{ range_index }}'
+      range_key_type: '{{ range_index_type }}'
+      read_capacity: 3
+      write_capacity: 3
+      tags: '{{ tags_default }}'
+      indexes: '{{ indexes }}'
+    register: create_complex_table
+    check_mode: True
+
+  - name: Check results - Create complex table - check_mode
+    assert:
+      that:
+      - create_complex_table is successful
+      - create_complex_table is changed
+
+  - name: Create complex table
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      hash_key_name: '{{ table_index }}'
+      hash_key_type: '{{ table_index_type }}'
+      range_key_name: '{{ range_index }}'
+      range_key_type: '{{ range_index_type }}'
+      read_capacity: 3
+      write_capacity: 3
+      tags: '{{ tags_default }}'
+      indexes: '{{ indexes }}'
+    register: create_complex_table
+
+  - name: Check results - Create complex table
+    assert:
+      that:
+      - create_complex_table is successful
+      - create_complex_table is changed
+      - '"hash_key_name" in create_complex_table'
+      - '"hash_key_type" in create_complex_table'
+      - '"indexes" in create_complex_table'
+      - '"range_key_name" in create_complex_table'
+      - '"range_key_type" in create_complex_table'
+      - '"read_capacity" in create_complex_table'
+      - '"region" in create_complex_table'
+      - '"table_name" in create_complex_table'
+      - '"table_status" in create_complex_table'
+      - '"tags" in create_complex_table'
+      - '"write_capacity" in create_complex_table'
+      - create_complex_table.hash_key_name == table_index
+      - create_complex_table.hash_key_type == table_index_type
+      - create_complex_table.indexes | length == 2
+      - create_complex_table.range_key_name == range_index
+      - create_complex_table.range_key_type == range_index_type
+      - create_complex_table.read_capacity == 3
+      - create_complex_table.table_name == table_name
+      - create_complex_table.write_capacity == 3
+      - create_complex_table.tags == tags_default
+
+  - name: Create complex table - idempotent - check_mode
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      hash_key_name: '{{ table_index }}'
+      hash_key_type: '{{ table_index_type }}'
+      range_key_name: '{{ range_index }}'
+      range_key_type: '{{ range_index_type }}'
+      read_capacity: 3
+      write_capacity: 3
+      tags: '{{ tags_default }}'
+      indexes: '{{ indexes }}'
+    register: create_complex_table
+    check_mode: True
+
+  - name: Check results - Create complex table - idempotent - check_mode
+    assert:
+      that:
+      - create_complex_table is successful
+      - create_complex_table is not changed
+
+  - name: Create complex table - idempotent
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      hash_key_name: '{{ table_index }}'
+      hash_key_type: '{{ table_index_type }}'
+      range_key_name: '{{ range_index }}'
+      range_key_type: '{{ range_index_type }}'
+      read_capacity: 3
+      write_capacity: 3
+      tags: '{{ tags_default }}'
+      indexes: '{{ indexes }}'
+    register: create_complex_table
+
+  - name: Check results - Create complex table - idempotent
+    assert:
+      that:
+      - create_complex_table is successful
+      - create_complex_table is not changed
+      - '"hash_key_name" in create_complex_table'
+      - '"hash_key_type" in create_complex_table'
+      - '"indexes" in create_complex_table'
+      - '"range_key_name" in create_complex_table'
+      - '"range_key_type" in create_complex_table'
+      - '"read_capacity" in create_complex_table'
+      - '"region" in create_complex_table'
+      - '"table_name" in create_complex_table'
+      - '"table_status" in create_complex_table'
+      - '"tags" in create_complex_table'
+      - '"write_capacity" in create_complex_table'
+      - create_complex_table.hash_key_name == table_index
+      - create_complex_table.hash_key_type == table_index_type
+      - create_complex_table.indexes | length == 2
+      - create_complex_table.range_key_name == range_index
+      - create_complex_table.range_key_type == range_index_type
+      - create_complex_table.read_capacity == 3
+      - create_complex_table.table_name == table_name
+      - create_complex_table.write_capacity == 3
+      - create_complex_table.tags == tags_default
+
+  # ==============================================
+
+  - name: Update table update index - check_mode
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      indexes: '{{ index_updated }}'
+    register: update_index
+    check_mode: True
+
+  - name: Check results - Update table update index - check_mode
+    assert:
+      that:
+      - update_index is successful
+      - update_index is changed
+
+  - name: Update table update index
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      indexes: '{{ index_updated }}'
+    register: update_index
+
+  - name: Check results - Update table update index
+    assert:
+      that:
+      - update_index is successful
+      - update_index is changed
+      - '"hash_key_name" in update_index'
+      - '"hash_key_type" in update_index'
+      - '"indexes" in update_index'
+      - '"range_key_name" in update_index'
+      - '"range_key_type" in update_index'
+      - '"read_capacity" in update_index'
+      - '"region" in update_index'
+      - '"table_name" in update_index'
+      - '"table_status" in update_index'
+      - '"tags" in update_index'
+      - '"write_capacity" in update_index'
+      - update_index.hash_key_name == table_index
+      - update_index.hash_key_type == table_index_type
+      - update_index.indexes | length == 2
+      - update_index.range_key_name == range_index
+      - update_index.range_key_type == range_index_type
+      - update_index.read_capacity == 3
+      - update_index.table_name == table_name
+      - update_index.write_capacity == 3
+      - update_index.tags == tags_default
+
+  - name: Update table update index - idempotent - check_mode
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      indexes: '{{ index_updated }}'
+    register: update_index
+    check_mode: True
+
+  - name: Check results - Update table update index - idempotent - check_mode
+    assert:
+      that:
+      - update_index is successful
+      - update_index is not changed
+
+  - name: Update table update index - idempotent
+    dynamodb_table:
+      state: present
+      name: '{{ table_name }}'
+      indexes: '{{ index_updated }}'
+    register: update_index
+
+  - name: Check results - Update table update index - idempotent
+    assert:
+      that:
+      - update_index is successful
+      - update_index is not changed
+      - '"hash_key_name" in update_index'
+      - '"hash_key_type" in update_index'
+      - '"indexes" in update_index'
+      - '"range_key_name" in update_index'
+      - '"range_key_type" in update_index'
+      - '"read_capacity" in update_index'
+      - '"region" in update_index'
+      - '"table_name" in update_index'
+      - '"table_status" in update_index'
+      - '"tags" in update_index'
+      - '"write_capacity" in update_index'
+      - update_index.hash_key_name == table_index
+      - update_index.hash_key_type == table_index_type
+      - update_index.indexes | length == 2
+      - update_index.range_key_name == range_index
+      - update_index.range_key_type == range_index_type
+      - update_index.read_capacity == 3
+      - update_index.table_name == table_name
+      - update_index.write_capacity == 3
+      - update_index.tags == tags_default
+
+  # ==============================================
+
+  - name: Delete table
+    dynamodb_table:
+      state: absent
+      name: '{{ table_name }}'
+    register: delete_table
+
+  - name: Check results - Delete table
+    assert:
+      that:
+      - delete_table is successful
+      - delete_table is changed
 
   always:
 

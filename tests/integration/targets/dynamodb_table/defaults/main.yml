@@ -27,6 +27,12 @@ indexes:
     read_capacity: 5
     write_capacity: 5
 
+index_updated:
+  - name: NamedIndex
+    type: global_include
+    read_capacity: 3
+    write_capacity: 3
+
 
 tags_default:
   snake_case_key: snake_case_value
