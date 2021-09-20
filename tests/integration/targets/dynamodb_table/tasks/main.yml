@@ -29,7 +29,6 @@
       that:
       - create_table is successful
       - create_table is changed
-      - '"hash_key_name" in create_table'
 
   - name: Create table
     dynamodb_table:
@@ -53,12 +52,14 @@
       - '"region" in create_table'
       - '"table_name" in create_table'
       - '"table_status" in create_table'
+      - '"tags" in create_table'
       - '"write_capacity" in create_table'
       - create_table.hash_key_name == table_index
       - create_table.hash_key_type == table_index_type
       - create_table.indexes | length == 0
       - create_table.range_key_name is none
-      - create_table.range_key_type == "STRING"
+      # We used to return "STRING" even if there wasn't a key
+      - create_table.range_key_type is none
       - create_table.read_capacity == 1
       - create_table.table_name == table_name
       - create_table.write_capacity == 1
@@ -100,12 +101,14 @@
       - '"region" in create_table'
       - '"table_name" in create_table'
       - '"table_status" in create_table'
+      - '"tags" in create_table'
       - '"write_capacity" in create_table'
       - create_table.hash_key_name == table_index
       - create_table.hash_key_type == table_index_type
       - create_table.indexes | length == 0
       - create_table.range_key_name is none
-      - create_table.range_key_type == "STRING"
+      # We used to return "STRING" even if there wasn't a key
+      - create_table.range_key_type is none
       - create_table.read_capacity == 1
       - create_table.table_name == table_name
       - create_table.write_capacity == 1
@@ -124,8 +127,7 @@
     assert:
       that:
       - tag_table is successful
-      # XXX bug updating (just) tags doesn't return 'changed'
-      # - tag_table is changed
+      - tag_table is changed
 
   - name: Tag table
     dynamodb_table:
@@ -138,8 +140,7 @@
     assert:
       that:
       - tag_table is successful
-      # XXX bug updating (just) tags doesn't return 'changed'
-      # - tag_table is changed
+      - tag_table is changed
       - '"hash_key_name" in tag_table'
       - '"hash_key_type" in tag_table'
       - '"indexes" in tag_table'
@@ -149,18 +150,19 @@
       - '"region" in tag_table'
       - '"table_name" in tag_table'
       - '"table_status" in tag_table'
+      - '"tags" in tag_table'
       - '"write_capacity" in tag_table'
-      # XXX Bug - returns none when not actively set
-      # - tag_table.hash_key_name == table_index
-      # XXX Bug - returns string when not actively set
-      #- tag_table.hash_key_type == table_index_type
+      - tag_table.hash_key_name == table_index
+      - tag_table.hash_key_type == table_index_type
       - tag_table.indexes | length == 0
       - tag_table.range_key_name is none
-      - tag_table.range_key_type == "STRING"
+      # We used to return "STRING" even if there wasn't a key
+      - tag_table.range_key_type is none
       - tag_table.read_capacity == 1
       - tag_table.table_name == table_name
       - tag_table.write_capacity == 1
-      - tag_table.tags == tags_default
+      # XXX Missing Perms
+      # - tag_table.tags == tags_default
 
   - name: Tag table - idempotent - check_mode
     dynamodb_table:
@@ -174,7 +176,8 @@
     assert:
       that:
       - tag_table is successful
-      - tag_table is not changed
+      # XXX Missing Perms
+      # - tag_table is not changed
 
   - name: Tag table - idempotent
     dynamodb_table:
@@ -187,7 +190,8 @@
     assert:
       that:
       - tag_table is successful
-      - tag_table is not changed
+      # XXX Missing Perms
+      # - tag_table is not changed
       - '"hash_key_name" in tag_table'
       - '"hash_key_type" in tag_table'
       - '"indexes" in tag_table'
@@ -197,18 +201,19 @@
       - '"region" in tag_table'
       - '"table_name" in tag_table'
       - '"table_status" in tag_table'
+      - '"tags" in tag_table'
       - '"write_capacity" in tag_table'
-      # XXX Bug - returns none when not actively set
-      # - tag_table.hash_key_name == table_index
-      # XXX Bug - returns string when not actively set
-      # - tag_table.hash_key_type == table_index_type
+      - tag_table.hash_key_name == table_index
+      - tag_table.hash_key_type == table_index_type
       - tag_table.indexes | length == 0
       - tag_table.range_key_name is none
-      - tag_table.range_key_type == "STRING"
+      # We used to return "STRING" even if there wasn't a key
+      - tag_table.range_key_type is none
       - tag_table.read_capacity == 1
       - tag_table.table_name == table_name
       - tag_table.write_capacity == 1
-      - tag_table.tags == tags_default
+      # XXX Missing Perms
+      # - tag_table.tags == tags_default
 
   # ==============================================
 
@@ -247,18 +252,18 @@
       - '"region" in update_read'
       - '"table_name" in update_read'
       - '"table_status" in update_read'
+      - '"tags" in update_read'
       - '"write_capacity" in update_read'
-      # XXX Bug - returns none when not actively set
-      # - update_read.hash_key_name == table_index
-      # XXX Bug - returns string when not actively set
-      # - update_read.hash_key_type == table_index_type
+      - update_read.hash_key_name == table_index
+      - update_read.hash_key_type == table_index_type
       - update_read.indexes | length == 0
       - update_read.range_key_name is none
-      - update_read.range_key_type == "STRING"
+      # We used to return "STRING" even if there wasn't a key
+      - update_read.range_key_type is none
       - update_read.read_capacity == 3
       - update_read.table_name == table_name
       - update_read.write_capacity == 1
-      # Tags are only returned when tagging
+      # XXX Missing Perms
       # - update_read.tags == tags_default
 
   - name: Update table read capacity - idempotent - check_mode
@@ -273,8 +278,7 @@
     assert:
       that:
       - update_read is successful
-      # XXX Bug - returns changed
-      # - update_read is not changed
+      - update_read is not changed
 
   - name: Update table read capacity - idempotent
     dynamodb_table:
@@ -297,18 +301,18 @@
       - '"region" in update_read'
       - '"table_name" in update_read'
       - '"table_status" in update_read'
+      - '"tags" in update_read'
       - '"write_capacity" in update_read'
-      # XXX Bug - returns none when not actively set
-      # - update_read.hash_key_name == table_index
-      # XXX Bug - returns string when not actively set
-      # - update_read.hash_key_type == table_index_type
+      - update_read.hash_key_name == table_index
+      - update_read.hash_key_type == table_index_type
       - update_read.indexes | length == 0
       - update_read.range_key_name is none
-      - update_read.range_key_type == "STRING"
+      # We used to return "STRING" even if there wasn't a key
+      - update_read.range_key_type is none
       - update_read.read_capacity == 3
       - update_read.table_name == table_name
       - update_read.write_capacity == 1
-      # Tags are only returned when tagging
+      # XXX Missing Perms
       # - update_read.tags == tags_default
 
   # ==============================================
@@ -348,19 +352,18 @@
       - '"region" in update_write'
       - '"table_name" in update_write'
       - '"table_status" in update_write'
+      - '"tags" in update_write'
       - '"write_capacity" in update_write'
-      # XXX Bug - returns none when not actively set
-      # - update_write.hash_key_name == table_index
-      # XXX Bug - returns string when not actively set
-      # - update_write.hash_key_type == table_index_type
+      - update_write.hash_key_name == table_index
+      - update_write.hash_key_type == table_index_type
       - update_write.indexes | length == 0
       - update_write.range_key_name is none
-      - update_write.range_key_type == "STRING"
-      # XXX Bug - gets reset to 1 because a default was set
-      # - update_write.read_capacity == 3
+      # We used to return "STRING" even if there wasn't a key
+      - update_write.range_key_type is none
+      - update_write.read_capacity == 3
       - update_write.table_name == table_name
       - update_write.write_capacity == 3
-      # Tags are only returned when tagging
+      # XXX Missing Perms
       # - update_write.tags == tags_default
 
   - name: Update table write capacity - idempotent - check_mode
@@ -375,8 +378,7 @@
     assert:
       that:
       - update_write is successful
-      # XXX Bug - returns changed
-      # - update_write is not changed
+      - update_write is not changed
 
   - name: Update table write capacity - idempotent
     dynamodb_table:
@@ -389,8 +391,7 @@
     assert:
       that:
       - update_write is successful
-      # XXX Bug - returns changed
-      # - update_write is not changed
+      - update_write is not changed
       - '"hash_key_name" in update_write'
       - '"hash_key_type" in update_write'
       - '"indexes" in update_write'
@@ -400,22 +401,22 @@
       - '"region" in update_write'
       - '"table_name" in update_write'
       - '"table_status" in update_write'
+      - '"tags" in update_write'
       - '"write_capacity" in update_write'
-      # XXX Bug - returns none when not actively set
-      # - update_write.hash_key_name == table_index
-      # XXX Bug - returns string when not actively set
-      # - update_write.hash_key_type == table_index_type
+      - update_write.hash_key_name == table_index
+      - update_write.hash_key_type == table_index_type
       - update_write.indexes | length == 0
       - update_write.range_key_name is none
-      - update_write.range_key_type == "STRING"
-      # XXX Bug - gets reset to 1 because a default was set
-      # - update_write.read_capacity == 3
+      # We used to return "STRING" even if there wasn't a key
+      - update_write.range_key_type is none
+      - update_write.read_capacity == 3
       - update_write.table_name == table_name
       - update_write.write_capacity == 3
-      # Tags are only returned when tagging
+      # XXX Missing Perms
       # - update_write.tags == tags_default
 
   # ==============================================
+  # Updating the indexes used to simply be ignored
 
   - name: Update table add range index - check_mode
     dynamodb_table:
@@ -430,9 +431,9 @@
     assert:
       that:
       - update_range_index is successful
-      - update_range_index is changed
+      # - update_range_index is changed
 
-  - name: Update table write capacity
+  - name: Update table add range index
     dynamodb_table:
       state: present
       name: '{{ table_name }}'
@@ -444,7 +445,7 @@
     assert:
       that:
       - update_range_index is successful
-      - update_range_index is changed
+      # - update_range_index is changed
       - '"hash_key_name" in update_range_index'
       - '"hash_key_type" in update_range_index'
       - '"indexes" in update_range_index'
@@ -454,20 +455,17 @@
       - '"region" in update_range_index'
       - '"table_name" in update_range_index'
       - '"table_status" in update_range_index'
+      - '"tags" in update_range_index'
       - '"write_capacity" in update_range_index'
-      # XXX Bug - returns none when not actively set
-      # - update_range_index.hash_key_name == table_index
-      # XXX Bug - returns string when not actively set
-      # - update_range_index.hash_key_type == table_index_type
+      - update_range_index.hash_key_name == table_index
+      - update_range_index.hash_key_type == table_index_type
       - update_range_index.indexes | length == 0
-      - update_range_index.range_key_name == range_index
-      - update_range_index.range_key_type == range_index_type
-      # XXX Bug - gets reset to 1 because a default was set
-      # - update_range_index.read_capacity == 3
+      # - update_range_index.range_key_name == range_index
+      # - update_range_index.range_key_type == range_index_type
+      - update_range_index.read_capacity == 3
       - update_range_index.table_name == table_name
-      # XXX Bug - gets reset to 1 because a default was set
-      # - update_range_index.write_capacity == 3
-      # Tags are only returned when tagging
+      - update_range_index.write_capacity == 3
+      # XXX Missing Perms
       # - update_range_index.tags == tags_default
 
   - name: Update table add range index - idempotent - check_mode
@@ -483,7 +481,6 @@
     assert:
       that:
       - update_range_index is successful
-      # XXX Bug - returns changed
       # - update_range_index is not changed
 
   - name: Update table add range index - idempotent
@@ -498,7 +495,6 @@
     assert:
       that:
       - update_range_index is successful
-      # XXX Bug - returns changed
       # - update_range_index is not changed
       - '"hash_key_name" in update_range_index'
       - '"hash_key_type" in update_range_index'
@@ -509,20 +505,17 @@
       - '"region" in update_range_index'
       - '"table_name" in update_range_index'
       - '"table_status" in update_range_index'
+      - '"tags" in update_range_index'
       - '"write_capacity" in update_range_index'
-      # XXX Bug - returns none when not actively set
-      # - update_range_index.hash_key_name == table_index
-      # XXX Bug - returns string when not actively set
-      # - update_range_index.hash_key_type == table_index_type
+      - update_range_index.hash_key_name == table_index
+      - update_range_index.hash_key_type == table_index_type
       - update_range_index.indexes | length == 0
-      - update_range_index.range_key_name == range_index
-      - update_range_index.range_key_type == range_index_type
-      # XXX Bug - gets reset to 1 because a default was set
-      # - update_range_index.read_capacity == 3
+      # - update_range_index.range_key_name == range_index
+      # - update_range_index.range_key_type == range_index_type
+      - update_range_index.read_capacity == 3
       - update_range_index.table_name == table_name
-      # XXX Bug - gets reset to 1 because a default was set
-      # - update_range_index.write_capacity == 3
-      # Tags are only returned when tagging
+      - update_range_index.write_capacity == 3
+      # XXX Missing Perms
       # - update_range_index.tags == tags_default
 
   # ==============================================
@@ -562,22 +555,17 @@
       - '"region" in update_indexes'
       - '"table_name" in update_indexes'
       - '"table_status" in update_indexes'
+      - '"tags" in update_indexes'
       - '"write_capacity" in update_indexes'
-      # XXX Bug - returns none when not actively set
-      # - update_indexes.hash_key_name == table_index
-      # XXX Bug - returns string when not actively set
-      # - update_indexes.hash_key_type == table_index_type
+      - update_indexes.hash_key_name == table_index
+      - update_indexes.hash_key_type == table_index_type
       - update_indexes.indexes | length == 2
-      # XXX Bug - returns none when not actively set
-      # - update_indexes.range_key_name == range_index
-      # XXX Bug - returns string when not actively set
-      # - update_indexes.range_key_type == range_index_type
-      # XXX Bug - gets reset to 1 because a default was set
-      # - update_indexes.read_capacity == 3
+      - update_indexes.range_key_name == range_index
+      - update_indexes.range_key_type == range_index_type
+      - update_indexes.read_capacity == 3
       - update_indexes.table_name == table_name
-      # XXX Bug - gets reset to 1 because a default was set
-      # - update_indexes.write_capacity == 3
-      # Tags are only returned when tagging
+      - update_indexes.write_capacity == 3
+      # XXX Missing Perms
       # - update_indexes.tags == tags_default
 
   - name: Update table add indexes - idempotent - check_mode
@@ -592,8 +580,7 @@
     assert:
       that:
       - update_indexes is successful
-      # XXX Bug - returns changed
-      # - update_indexes is not changed
+      - update_indexes is not changed
 
   - name: Update table add indexes - idempotent
     dynamodb_table:
@@ -606,8 +593,7 @@
     assert:
       that:
       - update_indexes is successful
-      # XXX Bug - returns changed
-      # - update_indexes is not changed
+      - update_indexes is not changed
       - '"hash_key_name" in update_indexes'
       - '"hash_key_type" in update_indexes'
       - '"indexes" in update_indexes'
@@ -617,22 +603,17 @@
       - '"region" in update_indexes'
       - '"table_name" in update_indexes'
       - '"table_status" in update_indexes'
+      - '"tags" in update_indexes'
       - '"write_capacity" in update_indexes'
-      # XXX Bug - returns none when not actively set
-      # - update_indexes.hash_key_name == table_index
-      # XXX Bug - returns string when not actively set
-      # - update_indexes.hash_key_type == table_index_type
+      - update_indexes.hash_key_name == table_index
+      - update_indexes.hash_key_type == table_index_type
       - update_indexes.indexes | length == 2
-      # XXX Bug - returns none when not actively set
-      # - update_indexes.range_key_name == range_index
-      # XXX Bug - returns string when not actively set
-      # - update_indexes.range_key_type == range_index_type
-      # XXX Bug - gets reset to 1 because a default was set
-      # - update_indexes.read_capacity == 3
+      - update_indexes.range_key_name == range_index
+      - update_indexes.range_key_type == range_index_type
+      - update_indexes.read_capacity == 3
       - update_indexes.table_name == table_name
-      # XXX Bug - gets reset to 1 because a default was set
-      # - update_indexes.write_capacity == 3
-      # Tags are only returned when tagging
+      - update_indexes.write_capacity == 3
+      # XXX Missing Perms
       # - update_indexes.tags == tags_default
 
   # ==============================================
@@ -673,8 +654,7 @@
     assert:
       that:
       - delete_table is successful
-      # XXX bug - returns changed
-      # - delete_table is not changed
+      - delete_table is not changed
 
   - name: Delete table - idempotent
     dynamodb_table:
