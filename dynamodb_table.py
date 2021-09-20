@@ -16,11 +16,6 @@ description:
   - Can update the provisioned throughput on existing tables.
   - Returns the status of the specified table.
 author: Alan Loi (@loia)
-requirements:
-- python >= 3.6
-- boto >= 2.49.0
-- boto3 >= 1.15.0
-- botocore >= 1.18.0
 options:
   state:
     description:
@@ -36,13 +31,13 @@ options:
   hash_key_name:
     description:
       - Name of the hash key.
-      - Required when C(state=present).
+      - Required when I(state=present) and table doesn't exist.
     type: str
   hash_key_type:
     description:
       - Type of the hash key.
+      - Defaults to C('STRING') when creating a new table.
     choices: ['STRING', 'NUMBER', 'BINARY']
-    default: 'STRING'
     type: str
   range_key_name:
     description:
@@ -51,18 +46,18 @@ options:
   range_key_type:
     description:
       - Type of the range key.
+      - Defaults to C('STRING') when creating a new range key.
     choices: ['STRING', 'NUMBER', 'BINARY']
-    default: 'STRING'
     type: str
   read_capacity:
     description:
       - Read throughput capacity (units) to provision.
-    default: 1
+      - Defaults to C(1) when creating a new table.
     type: int
   write_capacity:
     description:
       - Write throughput capacity (units) to provision.
-    default: 1
+      - Defaults to C(1) when creating a new table.
     type: int
   indexes:
     description:
@@ -77,25 +72,39 @@ options:
       type:
         description:
           - The type of index.
-          - "Valid types: C(all), C(global_all), C(global_include), C(global_keys_only), C(include), C(keys_only)"
         type: str
         required: true
+        choices: ['all', 'global_all', 'global_include', 'global_keys_only', 'include', 'keys_only']
       hash_key_name:
-        description: The name of the hash-based key.
-        required: true
+        description:
+          - The name of the hash-based key.
+          - Required if index doesn't already exist.
+          - Can not be modified once the index has been created.
+        required: false
         type: str
       hash_key_type:
-        description: The type of the hash-based key.
+        description:
+          - The type of the hash-based key.
+          - Defaults to C('STRING') when creating a new index.
+          - Can not be modified once the index has been created.
         type: str
+        choices: ['STRING', 'NUMBER', 'BINARY']
       range_key_name:
-        description: The name of the range-based key.
+        description:
+          - The name of the range-based key.
+          - Can not be modified once the index has been created.
         type: str
       range_key_type:
         type: str
-        description: The type of the range-based key.
+        description:
+          - The type of the range-based key.
+          - Defaults to C('STRING') when creating a new index.
+          - Can not be modified once the index has been created.
+        choices: ['STRING', 'NUMBER', 'BINARY']
       includes:
         type: list
         description: A list of fields to include when using C(global_include) or C(include) indexes.
+        elements: str
       read_capacity:
         description:
           - Read throughput capacity (units) to provision for the index.
@@ -110,13 +119,25 @@ options:
   tags:
     description:
       - A hash/dictionary of tags to add to the new instance or for starting/stopping instance by tag.
-      - 'For example: C({"key":"value"}) and C({"key":"value","key2":"value2"})'
+      - 'For example: C({"key":"value"}) or C({"key":"value","key2":"value2"})'
     type: dict
-  wait_for_active_timeout:
+  purge_tags:
     description:
-      - how long before wait gives up, in seconds. only used when tags is set
-    default: 60
+      - Remove tags not listed in I(tags).
+    default: True
+    type: bool
+  wait_timeout:
+    description:
+      - How long (in seconds) to wait for creation / update / deletion to complete.
+    aliases: ['wait_for_active_timeout']
+    default: 120
     type: int
+  wait:
+    description:
+      - When I(wait=True) the module will wait for up to I(wait_timeout) seconds
+        for table creation or deletion to complete before returning.
+    default: True
+    type: bool
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -174,300 +195,734 @@ table_status:
     sample: ACTIVE
 '''
 
-import time
-import traceback
-
 try:
-    import boto
-    import boto.dynamodb2
-    from boto.dynamodb2.table import Table
-    from boto.dynamodb2.fields import HashKey, RangeKey, AllIndex, GlobalAllIndex, GlobalIncludeIndex, GlobalKeysOnlyIndex, IncludeIndex, KeysOnlyIndex
-    from boto.dynamodb2.types import STRING, NUMBER, BINARY
-    from boto.exception import BotoServerError, NoAuthHandlerFound, JSONResponseError
-    from boto.dynamodb2.exceptions import ValidationException
-    DYNAMO_TYPE_MAP = {
-        'STRING': STRING,
-        'NUMBER': NUMBER,
-        'BINARY': BINARY
-    }
-    # Boto 2 is mandatory, Boto3 is only needed for tagging
     import botocore
 except ImportError:
-    pass  # Handled by ec2.HAS_BOTO and ec2.HAS_BOTO3
+    pass  # Handled by AnsibleAWSModule
+
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleAWSError
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
 
 
 DYNAMO_TYPE_DEFAULT = 'STRING'
 INDEX_REQUIRED_OPTIONS = ['name', 'type', 'hash_key_name']
 INDEX_OPTIONS = INDEX_REQUIRED_OPTIONS + ['hash_key_type', 'range_key_name', 'range_key_type', 'includes', 'read_capacity', 'write_capacity']
 INDEX_TYPE_OPTIONS = ['all', 'global_all', 'global_include', 'global_keys_only', 'include', 'keys_only']
+# Map in both directions
+DYNAMO_TYPE_MAP_LONG = {'STRING': 'S', 'NUMBER': 'N', 'BINARY': 'B'}
+DYNAMO_TYPE_MAP_SHORT = dict((v, k) for k, v in DYNAMO_TYPE_MAP_LONG.items())
+KEY_TYPE_CHOICES = list(DYNAMO_TYPE_MAP_LONG.keys())
 
 
-def create_or_update_dynamo_table(connection, module, boto3_dynamodb=None, boto3_sts=None, region=None):
+# If you try to update an index while another index is updating, it throws
+# LimitExceededException/ResourceInUseException exceptions at you.  This can be
+# pretty slow, so add plenty of retries...
+@AWSRetry.jittered_backoff(
+    retries=45, delay=5, max_delay=30,
+    catch_extra_error_codes=['LimitExceededException', 'ResourceInUseException', 'ResourceNotFoundException'],
+)
+def _update_table_with_long_retry(**changes):
+    return client.update_table(
+        TableName=module.params.get('name'),
+        **changes
+    )
+
+
+# ResourceNotFoundException is expected here if the table doesn't exist
+@AWSRetry.jittered_backoff(catch_extra_error_codes=['LimitExceededException', 'ResourceInUseException'])
+def _describe_table(**params):
+    return client.describe_table(**params)
+
+
+def wait_exists():
     table_name = module.params.get('name')
-    hash_key_name = module.params.get('hash_key_name')
-    hash_key_type = module.params.get('hash_key_type')
-    range_key_name = module.params.get('range_key_name')
-    range_key_type = module.params.get('range_key_type')
-    read_capacity = module.params.get('read_capacity')
-    write_capacity = module.params.get('write_capacity')
-    all_indexes = module.params.get('indexes')
-    tags = module.params.get('tags')
-    wait_for_active_timeout = module.params.get('wait_for_active_timeout')
+    wait_timeout = module.params.get('wait_timeout')
 
-    for index in all_indexes:
-        validate_index(index, module)
+    delay = min(wait_timeout, 5)
+    max_attempts = wait_timeout // delay
 
-    schema = get_schema_param(hash_key_name, hash_key_type, range_key_name, range_key_type)
+    try:
+        waiter = client.get_waiter('table_exists')
+        waiter.wait(
+            WaiterConfig={'Delay': delay, 'MaxAttempts': max_attempts},
+            TableName=table_name,
+        )
+    except botocore.exceptions.WaiterError as e:
+        module.fail_json_aws(e, msg='Timeout while waiting on table creation')
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg='Failed while waiting on table creation')
 
-    throughput = {
-        'read': read_capacity,
-        'write': write_capacity
-    }
 
-    indexes, global_indexes = get_indexes(all_indexes)
+def wait_not_exists():
+    table_name = module.params.get('name')
+    wait_timeout = module.params.get('wait_timeout')
 
-    result = dict(
-        region=region,
-        table_name=table_name,
+    delay = min(wait_timeout, 5)
+    max_attempts = wait_timeout // delay
+
+    try:
+        waiter = client.get_waiter('table_not_exists')
+        waiter.wait(
+            WaiterConfig={'Delay': delay, 'MaxAttempts': max_attempts},
+            TableName=table_name,
+        )
+    except botocore.exceptions.WaiterError as e:
+        module.fail_json_aws(e, msg='Timeout while waiting on table deletion')
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg='Failed while waiting on table deletion')
+
+
+def _short_type_to_long(short_key):
+    if not short_key:
+        return None
+    return DYNAMO_TYPE_MAP_SHORT.get(short_key, None)
+
+
+def _long_type_to_short(long_key):
+    if not long_key:
+        return None
+    return DYNAMO_TYPE_MAP_LONG.get(long_key, None)
+
+
+def _schema_dict(key_name, key_type):
+    return dict(
+        AttributeName=key_name,
+        KeyType=key_type,
+    )
+
+
+def _merge_index_params(index, current_index):
+    idx = dict(current_index)
+    idx.update(index)
+    return idx
+
+
+def _decode_primary_index(current_table):
+    """
+    Decodes the primary index info from the current table definition
+    splitting it up into the keys we use as parameters
+    """
+    # The schema/attribute definitions are a list of dicts which need the same
+    # treatment as boto3's tag lists
+    schema = boto3_tag_list_to_ansible_dict(
+        current_table.get('key_schema', []),
+        # Map from 'HASH'/'RANGE' to attribute name
+        tag_name_key_name='key_type',
+        tag_value_key_name='attribute_name',
+    )
+    attributes = boto3_tag_list_to_ansible_dict(
+        current_table.get('attribute_definitions', []),
+        # Map from attribute name to 'S'/'N'/'B'.
+        tag_name_key_name='attribute_name',
+        tag_value_key_name='attribute_type',
+    )
+
+    hash_key_name = schema.get('HASH')
+    hash_key_type = _short_type_to_long(attributes.get(hash_key_name, None))
+    range_key_name = schema.get('RANGE', None)
+    range_key_type = _short_type_to_long(attributes.get(range_key_name, None))
+
+    return dict(
         hash_key_name=hash_key_name,
         hash_key_type=hash_key_type,
         range_key_name=range_key_name,
         range_key_type=range_key_type,
-        read_capacity=read_capacity,
-        write_capacity=write_capacity,
-        indexes=all_indexes,
     )
 
+
+def _decode_index(index_data, attributes, type_prefix=''):
     try:
-        table = Table(table_name, connection=connection)
+        index_map = dict(
+            name=index_data['index_name'],
+        )
 
-        if dynamo_table_exists(table):
-            result['changed'] = update_dynamo_table(table, throughput=throughput, check_mode=module.check_mode, global_indexes=global_indexes)
-        else:
-            if not module.check_mode:
-                Table.create(table_name, connection=connection, schema=schema, throughput=throughput, indexes=indexes, global_indexes=global_indexes)
-            result['changed'] = True
+        index_data = dict(index_data)
+        index_data['attribute_definitions'] = attributes
 
-        if not module.check_mode:
-            result['table_status'] = table.describe()['Table']['TableStatus']
+        index_map.update(_decode_primary_index(index_data))
 
-        if tags:
-            # only tables which are active can be tagged
-            wait_until_table_active(module, table, wait_for_active_timeout)
-            account_id = get_account_id(boto3_sts)
-            boto3_dynamodb.tag_resource(
-                ResourceArn='arn:aws:dynamodb:' +
-                region +
-                ':' +
-                account_id +
-                ':table/' +
-                table_name,
-                Tags=ansible_dict_to_boto3_tag_list(tags))
-            result['tags'] = tags
+        throughput = index_data.get('provisioned_throughput', {})
+        if throughput:
+            index_map['read_capacity'] = throughput.get('read_capacity_units')
+            index_map['write_capacity'] = throughput.get('write_capacity_units')
 
-    except BotoServerError:
-        result['msg'] = 'Failed to create/update dynamo table due to error: ' + traceback.format_exc()
-        module.fail_json(**result)
-    else:
-        module.exit_json(**result)
+        projection = index_data.get('projection', {})
+        if projection:
+            index_map['type'] = type_prefix + projection.get('projection_type')
+            index_map['includes'] = projection.get('non_key_attributes', [])
+
+        return index_map
+    except Exception as e:
+        module.fail_json_aws(e, msg='Decode failure', index_data=index_data)
 
 
-def get_account_id(boto3_sts):
-    return boto3_sts.get_caller_identity()["Account"]
+def compatability_results(current_table):
+    if not current_table:
+        return dict()
+
+    throughput = current_table.get('provisioned_throughput', {})
+
+    primary_indexes = _decode_primary_index(current_table)
+
+    hash_key_name = primary_indexes.get('hash_key_name')
+    hash_key_type = primary_indexes.get('hash_key_type')
+    range_key_name = primary_indexes.get('range_key_name')
+    range_key_type = primary_indexes.get('range_key_type')
+
+    indexes = list()
+    global_indexes = current_table.get('_global_index_map', {})
+    local_indexes = current_table.get('_local_index_map', {})
+    for index in global_indexes:
+        indexes.append(global_indexes[index])
+    for index in local_indexes:
+        indexes.append(local_indexes[index])
+
+    compat_results = dict(
+        hash_key_name=hash_key_name,
+        hash_key_type=hash_key_type,
+        range_key_name=range_key_name,
+        range_key_type=range_key_type,
+        indexes=indexes,
+        read_capacity=throughput.get('read_capacity_units', None),
+        region=module.region,
+        table_name=current_table.get('table_name', None),
+        table_status=current_table.get('table_status', None),
+        tags=current_table.get('tags', {}),
+        write_capacity=throughput.get('write_capacity_units', None),
+    )
+
+    return compat_results
 
 
-def wait_until_table_active(module, table, wait_timeout):
-    max_wait_time = time.time() + wait_timeout
-    while (max_wait_time > time.time()) and (table.describe()['Table']['TableStatus'] != 'ACTIVE'):
-        time.sleep(5)
-    if max_wait_time <= time.time():
-        # waiting took too long
-        module.fail_json(msg="timed out waiting for table to exist")
-
-
-def delete_dynamo_table(connection, module):
+def get_dynamodb_table():
     table_name = module.params.get('name')
+    try:
+        table = _describe_table(TableName=table_name)
+    except is_boto3_error_code('ResourceNotFoundException'):
+        return None
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg='Failed to describe table')
 
-    result = dict(
-        region=module.params.get('region'),
-        table_name=table_name,
+    table = table['Table']
+    try:
+        tags = client.list_tags_of_resource(aws_retry=True, ResourceArn=table['TableArn'])['Tags']
+    except is_boto3_error_code('AccessDeniedException'):
+        module.warn('Permission denied when listing tags')
+        tags = []
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg='Failed to list table tags')
+
+    tags = boto3_tag_list_to_ansible_dict(tags)
+
+    table = camel_dict_to_snake_dict(table)
+
+    # Put some of the values into places people will expect them
+    table['arn'] = table['table_arn']
+    table['name'] = table['table_name']
+    table['status'] = table['table_status']
+    table['id'] = table['table_id']
+    table['size'] = table['table_size_bytes']
+    table['tags'] = tags
+
+    # convert indexes into something we can easily search against
+    attributes = table['attribute_definitions']
+    global_index_map = dict()
+    local_index_map = dict()
+    for index in table.get('global_secondary_indexes', []):
+        idx = _decode_index(index, attributes, type_prefix='global_')
+        global_index_map[idx['name']] = idx
+    for index in table.get('local_secondary_indexes', []):
+        idx = _decode_index(index, attributes)
+        local_index_map[idx['name']] = idx
+    table['_global_index_map'] = global_index_map
+    table['_local_index_map'] = local_index_map
+
+    return table
+
+
+def _generate_attribute_map():
+    """
+    Builds a map of Key Names to Type
+    """
+    attributes = dict()
+
+    for index in (module.params, *module.params.get('indexes')):
+        # run through hash_key_name and range_key_name
+        for t in ['hash', 'range']:
+            key_name = index.get(t + '_key_name')
+            if not key_name:
+                continue
+            key_type = index.get(t + '_key_type') or DYNAMO_TYPE_DEFAULT
+            _type = _long_type_to_short(key_type)
+            if key_name in attributes:
+                if _type != attributes[key_name]:
+                    module.fail_json(msg='Conflicting attribute type',
+                                     type_1=_type, type_2=attributes[key_name],
+                                     key_name=key_name)
+            else:
+                attributes[key_name] = _type
+
+    return attributes
+
+
+def _generate_attributes():
+    attributes = _generate_attribute_map()
+
+    # Use ansible_dict_to_boto3_tag_list to generate the list of dicts
+    # format we need
+    attrs = ansible_dict_to_boto3_tag_list(
+        attributes,
+        tag_name_key_name='AttributeName',
+        tag_value_key_name='AttributeType'
+    )
+    return list(attrs)
+
+
+def _generate_throughput(params=None):
+    if not params:
+        params = module.params
+
+    read_capacity = params.get('read_capacity') or 1
+    write_capacity = params.get('write_capacity') or 1
+    throughput = dict(
+        ReadCapacityUnits=read_capacity,
+        WriteCapacityUnits=write_capacity,
     )
 
-    try:
-        table = Table(table_name, connection=connection)
-
-        if dynamo_table_exists(table):
-            if not module.check_mode:
-                table.delete()
-            result['changed'] = True
-
-        else:
-            result['changed'] = False
-
-    except BotoServerError:
-        result['msg'] = 'Failed to delete dynamo table due to error: ' + traceback.format_exc()
-        module.fail_json(**result)
-    else:
-        module.exit_json(**result)
+    return throughput
 
 
-def dynamo_table_exists(table):
-    try:
-        table.describe()
-        return True
+def _generate_schema(params=None):
+    if not params:
+        params = module.params
 
-    except JSONResponseError as e:
-        if e.message and e.message.startswith('Requested resource not found'):
-            return False
-        else:
-            raise e
+    schema = list()
+    hash_key_name = params.get('hash_key_name')
+    range_key_name = params.get('range_key_name')
 
-
-def update_dynamo_table(table, throughput=None, check_mode=False, global_indexes=None):
-    table.describe()  # populate table details
-    throughput_changed = False
-    global_indexes_changed = False
-    if has_throughput_changed(table, throughput):
-        if not check_mode:
-            throughput_changed = table.update(throughput=throughput)
-        else:
-            throughput_changed = True
-
-    removed_indexes, added_indexes, index_throughput_changes = get_changed_global_indexes(table, global_indexes)
-    if removed_indexes:
-        if not check_mode:
-            for name, index in removed_indexes.items():
-                global_indexes_changed = table.delete_global_secondary_index(name) or global_indexes_changed
-        else:
-            global_indexes_changed = True
-
-    if added_indexes:
-        if not check_mode:
-            for name, index in added_indexes.items():
-                global_indexes_changed = table.create_global_secondary_index(global_index=index) or global_indexes_changed
-        else:
-            global_indexes_changed = True
-
-    if index_throughput_changes:
-        if not check_mode:
-            # todo: remove try once boto has https://github.com/boto/boto/pull/3447 fixed
-            try:
-                global_indexes_changed = table.update_global_secondary_index(global_indexes=index_throughput_changes) or global_indexes_changed
-            except ValidationException:
-                pass
-        else:
-            global_indexes_changed = True
-
-    return throughput_changed or global_indexes_changed
-
-
-def has_throughput_changed(table, new_throughput):
-    if not new_throughput:
-        return False
-
-    return new_throughput['read'] != table.throughput['read'] or \
-        new_throughput['write'] != table.throughput['write']
-
-
-def get_schema_param(hash_key_name, hash_key_type, range_key_name, range_key_type):
+    if hash_key_name:
+        entry = _schema_dict(hash_key_name, 'HASH')
+        schema.append(entry)
     if range_key_name:
-        schema = [
-            HashKey(hash_key_name, DYNAMO_TYPE_MAP.get(hash_key_type, DYNAMO_TYPE_MAP[DYNAMO_TYPE_DEFAULT])),
-            RangeKey(range_key_name, DYNAMO_TYPE_MAP.get(range_key_type, DYNAMO_TYPE_MAP[DYNAMO_TYPE_DEFAULT]))
-        ]
-    else:
-        schema = [
-            HashKey(hash_key_name, DYNAMO_TYPE_MAP.get(hash_key_type, DYNAMO_TYPE_MAP[DYNAMO_TYPE_DEFAULT]))
-        ]
+        entry = _schema_dict(range_key_name, 'RANGE')
+        schema.append(entry)
+
     return schema
 
 
-def get_changed_global_indexes(table, global_indexes):
-    table.describe()
+def _primary_index_changes(current_table):
 
-    table_index_info = dict((index.name, index.schema()) for index in table.global_indexes)
-    table_index_objects = dict((index.name, index) for index in table.global_indexes)
-    set_index_info = dict((index.name, index.schema()) for index in global_indexes)
-    set_index_objects = dict((index.name, index) for index in global_indexes)
+    primary_index = _decode_primary_index(current_table)
 
-    removed_indexes = dict((name, index) for name, index in table_index_info.items() if name not in set_index_info)
-    added_indexes = dict((name, set_index_objects[name]) for name, index in set_index_info.items() if name not in table_index_info)
-    # todo: uncomment once boto has https://github.com/boto/boto/pull/3447 fixed
-    # for name, index in set_index_objects.items():
-    #      if (name not in added_indexes and
-    #             (index.throughput['read'] != str(table_index_objects[name].throughput['read']) or
-    #              index.throughput['write'] != str(table_index_objects[name].throughput['write']))):
-    #         index_throughput_changes[name] = index.throughput
-    # todo: remove once boto has https://github.com/boto/boto/pull/3447 fixed
-    index_throughput_changes = dict((name, index.throughput) for name, index in set_index_objects.items() if name not in added_indexes)
+    hash_key_name = primary_index.get('hash_key_name')
+    _hash_key_name = module.params.get('hash_key_name')
+    hash_key_type = primary_index.get('hash_key_type')
+    _hash_key_type = module.params.get('hash_key_type')
+    range_key_name = primary_index.get('range_key_name')
+    _range_key_name = module.params.get('range_key_name')
+    range_key_type = primary_index.get('range_key_type')
+    _range_key_type = module.params.get('range_key_type')
 
-    return removed_indexes, added_indexes, index_throughput_changes
+    changed = list()
 
+    if _hash_key_name and (_hash_key_name != hash_key_name):
+        changed.append('hash_key_name')
+    if _hash_key_type and (_hash_key_type != hash_key_type):
+        changed.append('hash_key_type')
+    if _range_key_name and (_range_key_name != range_key_name):
+        changed.append('range_key_name')
+    if _range_key_type and (_range_key_type != range_key_type):
+        changed.append('range_key_type')
 
-def validate_index(index, module):
-    for key, val in index.items():
-        if key not in INDEX_OPTIONS:
-            module.fail_json(msg='%s is not a valid option for an index' % key)
-    for required_option in INDEX_REQUIRED_OPTIONS:
-        if required_option not in index:
-            module.fail_json(msg='%s is a required option for an index' % required_option)
-    if index['type'] not in INDEX_TYPE_OPTIONS:
-        module.fail_json(msg='%s is not a valid index type, must be one of %s' % (index['type'], INDEX_TYPE_OPTIONS))
+    return changed
 
 
-def get_indexes(all_indexes):
-    indexes = []
-    global_indexes = []
-    for index in all_indexes:
-        name = index['name']
-        schema = get_schema_param(index.get('hash_key_name'), index.get('hash_key_type'), index.get('range_key_name'), index.get('range_key_type'))
-        throughput = {
-            'read': index.get('read_capacity', 1),
-            'write': index.get('write_capacity', 1)
-        }
+def _throughput_changes(current_table):
 
-        if index['type'] == 'all':
-            indexes.append(AllIndex(name, parts=schema))
+    throughput = current_table.get('provisioned_throughput', {})
+    read_capacity = throughput.get('read_capacity_units', None)
+    _read_capacity = module.params.get('read_capacity') or read_capacity
+    write_capacity = throughput.get('write_capacity_units', None)
+    _write_capacity = module.params.get('write_capacity') or write_capacity
 
-        elif index['type'] == 'global_all':
-            global_indexes.append(GlobalAllIndex(name, parts=schema, throughput=throughput))
+    if (read_capacity != _read_capacity) or (write_capacity != _write_capacity):
+        return dict(
+            ReadCapacityUnits=_read_capacity,
+            WriteCapacityUnits=_write_capacity,
+        )
 
-        elif index['type'] == 'global_include':
-            global_indexes.append(GlobalIncludeIndex(name, parts=schema, throughput=throughput, includes=index['includes']))
+    return dict()
 
-        elif index['type'] == 'global_keys_only':
-            global_indexes.append(GlobalKeysOnlyIndex(name, parts=schema, throughput=throughput))
 
-        elif index['type'] == 'include':
-            indexes.append(IncludeIndex(name, parts=schema, includes=index['includes']))
+def _generate_global_indexes():
+    index_exists = dict()
+    indexes = list()
+    for index in module.params.get('indexes'):
+        if index.get('type') not in ['global_all', 'global_include', 'global_keys_only']:
+            continue
+        name = index.get('name')
+        if name in index_exists:
+            module.fail_json(msg='Duplicate key {0} in list of global indexes'.format(name))
+        # Convert the type name to upper case and remove the global_
+        index['type'] = index['type'].upper()[7:]
+        index = _generate_index(index)
+        index_exists[name] = True
+        indexes.append(index)
 
-        elif index['type'] == 'keys_only':
-            indexes.append(KeysOnlyIndex(name, parts=schema))
+    return indexes
 
-    return indexes, global_indexes
+
+def _generate_local_indexes():
+    index_exists = dict()
+    indexes = list()
+    for index in module.params.get('indexes'):
+        index = dict()
+        if index.get('type') not in ['all', 'include', 'keys_only']:
+            continue
+        name = index.get('name')
+        if name in index_exists:
+            module.fail_json(msg='Duplicate key {0} in list of local indexes'.format(name))
+        index['type'] = index['type'].upper()
+        index = _generate_index(index, False)
+        index_exists[name] = True
+        indexes.append(index)
+
+    return indexes
+
+
+def _generate_global_index_map(current_table):
+    global_index_map = dict()
+    existing_indexes = current_table['_global_index_map']
+    for index in module.params.get('indexes'):
+        if index.get('type') not in ['global_all', 'global_include', 'global_keys_only']:
+            continue
+        name = index.get('name')
+        if name in global_index_map:
+            module.fail_json(msg='Duplicate key {0} in list of global indexes'.format(name))
+        idx = _merge_index_params(index, existing_indexes.get(name, {}))
+        # Convert the type name to upper case and remove the global_
+        idx['type'] = idx['type'].upper()[7:]
+        global_index_map[name] = idx
+    return global_index_map
+
+
+def _generate_local_index_map(current_table):
+    local_index_map = dict()
+    existing_indexes = current_table['_local_index_map']
+    for index in module.params.get('indexes'):
+        if index.get('type') not in ['all', 'include', 'keys_only']:
+            continue
+        name = index.get('name')
+        if name in local_index_map:
+            module.fail_json(msg='Duplicate key {0} in list of local indexes'.format(name))
+        idx = _merge_index_params(index, existing_indexes.get(name, {}))
+        # Convert the type name to upper case
+        idx['type'] = idx['type'].upper()
+        local_index_map[name] = idx
+    return local_index_map
+
+
+def _generate_index(index, include_throughput=True):
+    key_schema = _generate_schema(index)
+    throughput = _generate_throughput(index)
+    non_key_attributes = index['includes'] or []
+    projection = dict(
+        ProjectionType=index['type'],
+    )
+    if index['type'] != 'ALL':
+        projection['NonKeyAttributes'] = non_key_attributes
+    else:
+        if non_key_attributes:
+            module.deprecate(
+                "DynamoDB does not support specifying non-key-attributes ('includes') for "
+                "indexes of type 'all'.  Attempts to set this attributes are currently "
+                "ignored, but in future will result in a failure.  "
+                "Index name: {0}".format(index['name']),
+                version='3.0.0', collection_name='community.aws')
+
+    idx = dict(
+        IndexName=index['name'],
+        KeySchema=key_schema,
+        Projection=projection,
+    )
+    if include_throughput:
+        idx['ProvisionedThroughput'] = throughput
+
+    return idx
+
+
+def _attribute_changes(current_table):
+    # TODO (future) It would be nice to catch attempts to change types here.
+    return _generate_attributes()
+
+
+def _global_index_changes(current_table):
+    current_global_index_map = current_table['_global_index_map']
+    global_index_map = _generate_global_index_map(current_table)
+
+    index_changes = list()
+
+    # TODO (future) it would be nice to add support for deleting an index
+    for name in global_index_map:
+        idx = dict(_generate_index(global_index_map[name]))
+        if name not in current_global_index_map:
+            index_changes.append(dict(Create=idx))
+        else:
+            # The only thing we can change is the provisioned throughput.
+            # TODO (future) it would be nice to throw a deprecation here
+            # rather than dropping other changes on the floor
+            _current = current_global_index_map[name]
+            _new = global_index_map[name]
+            change = dict()
+            if _new['read_capacity'] != _current['read_capacity']:
+                change['ReadCapacityUnits'] = _new['read_capacity']
+            if _new['write_capacity'] != _current['write_capacity']:
+                change['WriteCapacityUnits'] = _new['write_capacity']
+            if change:
+                update = dict(
+                    IndexName=name,
+                    ProvisionedThroughput=change,
+                )
+                index_changes.append(dict(Update=update))
+
+    return index_changes
+
+
+def _local_index_changes(current_table):
+    # TODO (future) Changes to Local Indexes aren't possible after creation,
+    # we should probably throw a deprecation warning here (original module
+    # also just dropped these changes on the floor)
+    return []
+
+
+def _update_table(current_table):
+    changes = dict()
+    additional_global_index_changes = list()
+
+    throughput_changes = _throughput_changes(current_table)
+    if throughput_changes:
+        changes['ProvisionedThroughput'] = throughput_changes
+
+    global_index_changes = _global_index_changes(current_table)
+    if global_index_changes:
+        changes['GlobalSecondaryIndexUpdates'] = global_index_changes
+        # Only one index can be changed at a time, pass the first during the
+        # main update and deal with the others on a slow retry to wait for
+        # completion
+        if len(global_index_changes) > 1:
+            changes['GlobalSecondaryIndexUpdates'] = [global_index_changes[0]]
+            additional_global_index_changes = global_index_changes[1:]
+
+    local_index_changes = _local_index_changes(current_table)
+    if local_index_changes:
+        changes['LocalSecondaryIndexUpdates'] = local_index_changes
+
+    if not changes:
+        return False
+
+    if module.check_mode:
+        return True
+
+    if global_index_changes or local_index_changes:
+        changes['AttributeDefinitions'] = _generate_attributes()
+
+    try:
+        client.update_table(
+            aws_retry=True,
+            TableName=module.params.get('name'),
+            **changes
+        )
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to update table")
+
+    if additional_global_index_changes:
+        for index in additional_global_index_changes:
+            try:
+                _update_table_with_long_retry(GlobalSecondaryIndexUpdates=[index], AttributeDefinitions=changes['AttributeDefinitions'])
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                module.fail_json_aws(e, msg="Failed to update table",
+                changes=changes,
+                additional_global_index_changes=additional_global_index_changes)
+
+    if module.params.get('wait'):
+        wait_exists()
+
+    return True
+
+
+def _update_tags(current_table):
+    _tags = module.params.get('tags')
+    if _tags is None:
+        return False
+
+    tags_to_add, tags_to_remove = compare_aws_tags(current_table['tags'], module.params.get('tags'),
+                                                   purge_tags=module.params.get('purge_tags'))
+
+    # If neither need updating we can return already
+    if not (tags_to_add or tags_to_remove):
+        return False
+
+    if module.check_mode:
+        return True
+
+    if tags_to_add:
+        try:
+            client.tag_resource(
+                aws_retry=True,
+                ResourceArn=current_table['arn'],
+                Tags=ansible_dict_to_boto3_tag_list(tags_to_add),
+            )
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg="Failed to tag table")
+    if tags_to_remove:
+        try:
+            client.untag_resource(
+                aws_retry=True,
+                ResourceArn=current_table['arn'],
+                TagKeys=tags_to_remove,
+            )
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg="Failed to untag table")
+
+    return True
+
+
+def update_table(current_table):
+    primary_index_changes = _primary_index_changes(current_table)
+    if primary_index_changes:
+        module.deprecate("DynamoDB does not support updating the Primary keys on a table.  "
+                         "Attempts to change the keys are currently ignored, but in future will "
+                         "result in a failure.  "
+                         "Changed paramters are {0}".format(primary_index_changes),
+                         version='3.0.0', collection_name='community.aws')
+
+    changed = False
+    changed |= _update_table(current_table)
+    changed |= _update_tags(current_table)
+
+    if module.params.get('wait'):
+        wait_exists()
+
+    return changed
+
+
+def create_table():
+    table_name = module.params.get('name')
+    hash_key_name = module.params.get('hash_key_name')
+
+    tags = ansible_dict_to_boto3_tag_list(module.params.get('tags') or {})
+
+    if not hash_key_name:
+        module.fail_json('"hash_key_name" must be provided when creating a new table.')
+
+    if module.check_mode:
+        return True
+
+    throughput = _generate_throughput()
+    attributes = _generate_attributes()
+    key_schema = _generate_schema()
+    local_indexes = _generate_local_indexes()
+    global_indexes = _generate_global_indexes()
+
+    params = dict(
+        TableName=table_name,
+        AttributeDefinitions=attributes,
+        KeySchema=key_schema,
+        ProvisionedThroughput=throughput,
+        Tags=tags,
+        # TODO (future)
+        # BillingMode,
+        # StreamSpecification,
+        # SSESpecification,
+    )
+    if local_indexes:
+        params['LocalSecondaryIndexes'] = local_indexes
+    if global_indexes:
+        params['GlobalSecondaryIndexes'] = global_indexes
+
+    try:
+        client.create_table(aws_retry=True, **params)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to create table')
+
+    if module.params.get('wait'):
+        wait_exists()
+
+    return True
+
+
+def delete_table(current_table):
+    if not current_table:
+        return False
+
+    if module.check_mode:
+        return True
+
+    table_name = module.params.get('name')
+
+    # If an index is mid-update then we have to wait for the update to complete
+    # before deletion will succeed
+    long_retry = AWSRetry.jittered_backoff(
+        retries=45, delay=5, max_delay=30,
+        catch_extra_error_codes=['LimitExceededException', 'ResourceInUseException'],
+    )
+
+    try:
+        long_retry(client.delete_table)(TableName=table_name)
+    except is_boto3_error_code('ResourceNotFoundException'):
+        return False
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg='Failed to delete table')
+
+    if module.params.get('wait'):
+        wait_not_exists()
+
+    return True
 
 
 def main():
+
+    global module
+    global client
+
+    # TODO (future) It would be good to split global and local indexes.  They have
+    # different parameters, use a separate namespace for names,
+    #  and local indexes can't be updated.
+    index_options = dict(
+        name=dict(type='str', required=True),
+        # It would be nice to make this optional, but because Local and Global
+        # indexes are mixed in here we need this to be able to tell to which
+        # group of indexes the index belongs.
+        type=dict(type='str', required=True, choices=INDEX_TYPE_OPTIONS),
+        hash_key_name=dict(type='str', required=False),
+        hash_key_type=dict(type='str', required=False, choices=KEY_TYPE_CHOICES),
+        range_key_name=dict(type='str', required=False),
+        range_key_type=dict(type='str', required=False, choices=KEY_TYPE_CHOICES),
+        includes=dict(type='list', required=False, elements='str'),
+        read_capacity=dict(type='int', required=False),
+        write_capacity=dict(type='int', required=False),
+    )
+
     argument_spec = dict(
         state=dict(default='present', choices=['present', 'absent']),
         name=dict(required=True, type='str'),
         hash_key_name=dict(type='str'),
-        hash_key_type=dict(default='STRING', type='str', choices=['STRING', 'NUMBER', 'BINARY']),
+        hash_key_type=dict(type='str', choices=KEY_TYPE_CHOICES),
         range_key_name=dict(type='str'),
-        range_key_type=dict(default='STRING', type='str', choices=['STRING', 'NUMBER', 'BINARY']),
-        read_capacity=dict(default=1, type='int'),
-        write_capacity=dict(default=1, type='int'),
-        indexes=dict(default=[], type='list', elements='dict'),
+        range_key_type=dict(type='str', choices=KEY_TYPE_CHOICES),
+        read_capacity=dict(type='int'),
+        write_capacity=dict(type='int'),
+        indexes=dict(default=[], type='list', elements='dict', options=index_options),
         tags=dict(type='dict'),
-        wait_for_active_timeout=dict(default=60, type='int'),
+        purge_tags=dict(type='bool', default=True),
+        wait=dict(type='bool', default=True),
+        wait_timeout=dict(default=120, type='int', aliases=['wait_for_active_timeout']),
     )
 
     module = AnsibleAWSModule(
@@ -476,36 +931,35 @@ def main():
         check_boto3=False,
     )
 
-    if not HAS_BOTO:
-        module.fail_json(msg='boto required for this module')
+    retry_decorator = AWSRetry.jittered_backoff(
+        catch_extra_error_codes=['LimitExceededException', 'ResourceInUseException', 'ResourceNotFoundException'],
+    )
+    client = module.client('dynamodb', retry_decorator=retry_decorator)
 
-    if not HAS_BOTO3 and module.params.get('tags'):
-        module.fail_json(msg='boto3 required when using tags for this module')
-
-    region, ec2_url, aws_connect_params = get_aws_connection_info(module)
-    if not region:
-        module.fail_json(msg='region must be specified')
-
-    try:
-        connection = connect_to_aws(boto.dynamodb2, region, **aws_connect_params)
-    except (NoAuthHandlerFound, AnsibleAWSError) as e:
-        module.fail_json(msg=str(e))
-
-    if module.params.get('tags'):
-        try:
-            boto3_dynamodb = module.client('dynamodb')
-            boto3_sts = module.client('sts')
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Failed to connect to AWS')
-    else:
-        boto3_dynamodb = None
-        boto3_sts = None
+    current_table = get_dynamodb_table()
+    changed = False
+    table = None
+    results = dict()
 
     state = module.params.get('state')
     if state == 'present':
-        create_or_update_dynamo_table(connection, module, boto3_dynamodb, boto3_sts, region)
+        if current_table:
+            changed |= update_table(current_table)
+        else:
+            changed |= create_table()
+        table = get_dynamodb_table()
     elif state == 'absent':
-        delete_dynamo_table(connection, module)
+        changed |= delete_table(current_table)
+
+    compat_results = compatability_results(table)
+    if compat_results:
+        results.update(compat_results)
+
+    results['changed'] = changed
+    if table:
+        results['table'] = table
+
+    module.exit_json(**results)
 
 
 if __name__ == '__main__':
