@@ -1,0 +1,47 @@
+---
+table_name: '{{ resource_prefix }}'
+
+table_index: 'id'
+table_index_type: 'NUMBER'
+
+range_index: 'variety'
+range_index_type: 'STRING'
+
+indexes:
+  - name: NamedIndex
+    type: global_include
+    hash_key_name: idx
+    range_key_name: create_time
+    includes:
+      - other_field
+      - other_field2
+    read_capacity: 10
+    write_capacity: 10
+  - name: AnotherIndex
+    type: global_all
+    hash_key_name: foo
+    range_key_name: bar
+    includes:
+      - another_field
+      - another_field2
+    read_capacity: 5
+    write_capacity: 5
+
+
+tags_default:
+  snake_case_key: snake_case_value
+  camelCaseKey: camelCaseValue
+  PascalCaseKey: PascalCaseValue
+  'key with spaces': value with spaces
+  'Upper With Spaces': Upper With Spaces
+
+partial_tags:
+  snake_case_key: snake_case_value
+  camelCaseKey: camelCaseValue
+
+updated_tags:
+  updated_snake_case_key: updated_snake_case_value
+  updatedCamelCaseKey: updatedCamelCaseValue
+  UpdatedPascalCaseKey: UpdatedPascalCaseValue
+  'updated key with spaces': updated value with spaces
+  'updated Upper With Spaces': Updated Upper With Spaces
