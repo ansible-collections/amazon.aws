@@ -457,6 +457,10 @@ def create_volume(module, ec2_conn, zone):
 
     volume = get_volume(module, ec2_conn)
 
+    if module.check_mode:
+        changed = True
+        return volume, changed
+
     if volume is None:
 
         try:
@@ -815,8 +819,9 @@ def main():
             if detach_vol_flag:
                 volume, attach_changed = detach_volume(module, ec2_conn, volume_dict=volume)
                 volume['attachments'] = []
-            volume_info = get_volume_info(module, volume)
-            module.exit_json(changed=True, volume=volume_info, device=device_name, volume_id=volume_info['id'], volume_type=volume_info['type'])
+                volume_info = get_volume_info(module, volume)
+                module.exit_json(changed=True, volume=volume_info, device=device_name, volume_id=volume_info['id'], volume_type=volume_info['type'])
+            module.exit_json(changed=True, device=device_name, volume_type=volume_type)
 
         if volume:
             volume, changed = update_volume(module, ec2_conn, volume)

@@ -714,6 +714,32 @@
           - 'test_instance.instance_ids[0] in vol_attach_result.volume.attachment_set | map(attribute="instance_id") | list'
           - 'test_instance_2.instance_ids[0] in vol_attach_result.volume.attachment_set | map(attribute="instance_id") | list'
 
+    # ==== Assert check mode ==================================================
+
+    - name: Create a volume (check_mode)
+      ec2_vol:
+        volume_size: 1
+        zone: "{{ availability_zone }}"
+        tags:
+          ResourcePrefix: "{{ resource_prefix }}"
+      register: check_create_result_vol
+
+    - assert:
+        that:
+          - check_create_result_vol is changed
+
+    - name: Attach a volume (check_mode)
+      ec2_vol:
+        instance: "{{ test_instance.instance_ids[0] }}"
+        volume_size: 2
+        volume_type: gp2
+        device_name: /dev/xvdf
+      register: check_vol_attach_result
+
+    - assert:
+        that:
+          - check_vol_attach_result is changed
+
     # ==== Cleanup ============================================================
 
   always:
