@@ -282,10 +282,6 @@
       name: '{{ table_name }}'
       read_capacity: 3
     register: update_read
-    # Can result in ResourceInUseException - change in flight
-    until: update_read is successful
-    retries: 15
-    delay: 10
 
   - name: Check results - Update table read capacity - idempotent
     assert:
@@ -388,10 +384,6 @@
       name: '{{ table_name }}'
       write_capacity: 3
     register: update_write
-    # Can result in ResourceInUseException - change in flight
-    until: update_write is successful
-    retries: 15
-    delay: 10
 
   - name: Check results - Update table write capacity - idempotent
     assert:
@@ -501,10 +493,6 @@
       range_key_name: '{{ range_index }}'
       range_key_type: '{{ range_index_type }}'
     register: update_range_index
-    # Can result in ResourceInUseException - change in flight
-    until: update_range_index is successful
-    retries: 15
-    delay: 10
 
   - name: Check results - Update table add range index - idempotent
     assert:
@@ -559,10 +547,6 @@
       name: '{{ table_name }}'
       indexes: '{{ indexes }}'
     register: update_indexes
-    # Can result in LimitExceededException - change in flight
-    until: update_indexes is successful
-    retries: 45
-    delay: 10
 
   - name: Check results - Update table add indexes
     assert:
@@ -617,10 +601,6 @@
       name: '{{ table_name }}'
       indexes: '{{ indexes }}'
     register: update_indexes
-    # Can result in LimitExceededException - change in flight
-    until: update_indexes is successful
-    retries: 45
-    delay: 10
 
   - name: Check results - Update table add indexes - idempotent
     assert:
@@ -675,10 +655,6 @@
       state: absent
       name: '{{ table_name }}'
     register: delete_table
-    # Updates don't support waiting yet, so retry until successful
-    until: delete_table is successful
-    retries: 45
-    delay: 10
 
   - name: Check results - Delete table
     assert:
@@ -705,10 +681,6 @@
       state: absent
       name: '{{ table_name }}'
     register: delete_table
-    # Deletion doesn't support waiting yet, so retry until successful
-    until: delete_table is successful
-    retries: 45
-    delay: 10
 
   - name: Check results - Delete table - idempotent
     assert:
@@ -727,7 +699,3 @@
       state: absent
       name: '{{ table_name }}'
     register: delete_table
-    # Can result in LimitExceededException or ResourceInUseException - changes in flight
-    until: delete_table is successful
-    retries: 40
-    delay: 10
