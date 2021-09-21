@@ -160,6 +160,7 @@ Parameters
                 </td>
                 <td>
                         <div>Database subnet group description.</div>
+                        <div>Required when <em>state=present</em>.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: description</div>
                 </td>
             </tr>
@@ -194,6 +195,7 @@ Parameters
                 </td>
                 <td>
                         <div>List of subnet IDs that make up the cluster subnet group.</div>
+                        <div>Required when <em>state=present</em>.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: subnets</div>
                 </td>
             </tr>
