@@ -764,6 +764,28 @@
         volume_count_before: "{{ check_instance_info_pre.results[0].instances[0].block_device_mappings | length }}"
         volume_count_after: "{{ check_instance_info_post.results[0].instances[0].block_device_mappings | length }}"
 
+    - name: Detach a volume (check_mode)
+      ec2_vol:
+        id: "{{ new_vol_attach_result.volume_id }}"
+        instance: ""
+      check_mode: true
+      register: check_mode_detach_result
+
+    - assert:
+        that:
+          - check_mode_detach_result is changed
+
+    - name: Delete a volume (check_mode)
+      ec2_vol:
+        id: "{{ new_vol_attach_result.volume_id}}"
+        state: absent
+      check_mode: true
+      register: check_mode_delete_result
+
+    - assert:
+        that:
+          - check_mode_delete_result is changed
+
     # ==== Cleanup ============================================================
 
   always:
