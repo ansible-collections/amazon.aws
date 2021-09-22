@@ -820,8 +820,8 @@ def main():
                 volume, attach_changed = detach_volume(module, ec2_conn, volume_dict=volume)
                 volume['attachments'] = []
                 volume_info = get_volume_info(module, volume)
-                module.exit_json(changed=True, volume=volume_info, device=device_name, volume_id=volume_info['id'], volume_type=volume_info['type'])
-            module.exit_json(changed=True, device=device_name, volume_type=volume_type)
+                module.exit_json(changed=True, msg='Would have detached volume if not in check mode', volume=volume_info, device=device_name, volume_id=volume_info['id'], volume_type=volume_info['type'])
+            module.exit_json(changed=True, msg='Would have created/updated volume if not in check mode', device=device_name, volume_type=volume_type)
 
         if volume:
             volume, changed = update_volume(module, ec2_conn, volume)
@@ -852,7 +852,7 @@ def main():
             module.fail_json('A volume name or id is required for deletion')
         if volume:
             if module.check_mode:
-                module.exit_json(changed=True)
+                module.exit_json(changed=True, msg='Would have deleted volume if not in check mode')
             detach_volume(module, ec2_conn, volume_dict=volume)
             changed = delete_volume(module, ec2_conn, volume_id=volume['volume_id'])
         module.exit_json(changed=changed)
