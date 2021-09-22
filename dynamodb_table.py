@@ -348,6 +348,7 @@ def _decode_index(index_data, attributes, type_prefix=''):
         index_map.update(_decode_primary_index(index_data))
 
         throughput = index_data.get('provisioned_throughput', {})
+        index_map['provisioned_throughput'] = throughput
         if throughput:
             index_map['read_capacity'] = throughput.get('read_capacity_units')
             index_map['write_capacity'] = throughput.get('write_capacity_units')
@@ -379,9 +380,13 @@ def compatability_results(current_table):
     global_indexes = current_table.get('_global_index_map', {})
     local_indexes = current_table.get('_local_index_map', {})
     for index in global_indexes:
-        indexes.append(global_indexes[index])
+        idx = dict(global_indexes[index])
+        idx.pop('provisioned_throughput', None)
+        indexes.append(idx)
     for index in local_indexes:
-        indexes.append(local_indexes[index])
+        idx = dict(local_indexes[index])
+        idx.pop('provisioned_throughput', None)
+        indexes.append(idx)
 
     compat_results = dict(
         hash_key_name=hash_key_name,
@@ -543,13 +548,16 @@ def _primary_index_changes(current_table):
     return changed
 
 
-def _throughput_changes(current_table):
+def _throughput_changes(current_table, params=None):
+
+    if not params:
+        params = module.params
 
     throughput = current_table.get('provisioned_throughput', {})
     read_capacity = throughput.get('read_capacity_units', None)
-    _read_capacity = module.params.get('read_capacity') or read_capacity
+    _read_capacity = params.get('read_capacity') or read_capacity
     write_capacity = throughput.get('write_capacity_units', None)
-    _write_capacity = module.params.get('write_capacity') or write_capacity
+    _write_capacity = params.get('write_capacity') or write_capacity
 
     if (read_capacity != _read_capacity) or (write_capacity != _write_capacity):
         return dict(
@@ -679,11 +687,7 @@ def _global_index_changes(current_table):
             # rather than dropping other changes on the floor
             _current = current_global_index_map[name]
             _new = global_index_map[name]
-            change = dict()
-            if _new['read_capacity'] != _current['read_capacity']:
-                change['ReadCapacityUnits'] = _new['read_capacity']
-            if _new['write_capacity'] != _current['write_capacity']:
-                change['WriteCapacityUnits'] = _new['write_capacity']
+            change = dict(_throughput_changes(_current, _new))
             if change:
                 update = dict(
                     IndexName=name,
@@ -746,9 +750,8 @@ def _update_table(current_table):
             try:
                 _update_table_with_long_retry(GlobalSecondaryIndexUpdates=[index], AttributeDefinitions=changes['AttributeDefinitions'])
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Failed to update table",
-                changes=changes,
-                additional_global_index_changes=additional_global_index_changes)
+                module.fail_json_aws(e, msg="Failed to update table", changes=changes,
+                                     additional_global_index_changes=additional_global_index_changes)
 
     if module.params.get('wait'):
         wait_exists()
@@ -957,6 +960,9 @@ def main():
 
     results['changed'] = changed
     if table:
+        # These are used to pass computed data about, not needed for users
+        table.pop('_global_index_map', None)
+        table.pop('_local_index_map', None)
         results['table'] = table
 
     module.exit_json(**results)
