@@ -831,6 +831,10 @@
       - update_index.write_capacity == 3
       - update_index.tags == tags_default
 
+  - name: Pause to allow index to finish updating
+    pause:
+      seconds: 20
+
   - name: Update table update index - idempotent - check_mode
     dynamodb_table:
       state: present

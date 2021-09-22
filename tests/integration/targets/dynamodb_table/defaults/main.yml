@@ -32,6 +32,9 @@ index_updated:
     type: global_include
     read_capacity: 3
     write_capacity: 3
+  - name: AnotherIndex
+    type: global_all
+    read_capacity: 4
 
 
 tags_default:
