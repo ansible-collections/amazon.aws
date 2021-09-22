@@ -91,7 +91,7 @@ EXAMPLES = '''
     device_name: /dev/sdb1
     description: snapshot of /data from DB123 taken 2013/11/28 12:18:32
 
-# Snapshot of volume with tagging #not done yet //
+# Snapshot of volume with tagging
 - amazon.aws.ec2_snapshot:
     instance_id: i-12345678
     device_name: /dev/sdb1
@@ -289,8 +289,7 @@ def create_snapshot(module, ec2, description=None, wait=None,
             }]
         try:
             if module.check_mode:
-                import q; q(volume)
-                module.exit_json(changed=True, volume_id=volume['VolumeId'], volume_size=volume['Size'])
+                module.exit_json(changed=True, msg='Would have created a snapshot if not in check mode', volume_id=volume['VolumeId'], volume_size=volume['Size'])
             snapshot = _create_snapshot(ec2, **params)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Failed to create snapshot")
@@ -325,7 +324,7 @@ def create_snapshot(module, ec2, description=None, wait=None,
 
 def delete_snapshot(module, ec2, snapshot_id):
     if module.check_mode:
-        module.exit_json(changed=True)
+        module.exit_json(changed=True, msg='Would have deleted snapshot if not in check mode')
     try:
         ec2.delete_snapshot(aws_retry=True, SnapshotId=snapshot_id)
     except is_boto3_error_code('InvalidSnapshot.NotFound'):
