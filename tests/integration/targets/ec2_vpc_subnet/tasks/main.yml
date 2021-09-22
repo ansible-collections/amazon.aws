@@ -40,6 +40,9 @@
           "tag:Name": '{{ec2_vpc_subnet_name}}'
       register: vpc_subnet_info
 
+    - debug:
+        msg: vpc_subnet_info
+
     - name: Assert info result is zero
       assert:
         that:
