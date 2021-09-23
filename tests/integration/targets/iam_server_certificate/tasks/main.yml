@@ -1,0 +1,34 @@
+---
+# iam_server_certificate integration tests
+#
+# Current module limitations:
+#
+- module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
+  # Check that the alias works
+  - iam_cert: {}
+    ignore_errors: true
+    register: iam_cert_alias
+
+  - iam_server_certificate: {}
+    ignore_errors: true
+    register: no_args
+
+  - assert:
+      that:
+      - iam_cert_alias is failed
+      - no_args is failed
+      - no_args.msg == iam_cert_alias.msg
+      - no_args.msg.startswith('missing required arguments')
+
+  always:
+  - debug: msg=test
+
+    ################################################
+    # TEARDOWN STARTS HERE
+    ################################################

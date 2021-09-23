@@ -20,7 +20,7 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: iam_cert
+module: iam_server_certificate
 version_added: 1.0.0
 short_description: Manage server certificates for use on ELBs and CloudFront
 description:
@@ -85,7 +85,7 @@ requirements:
 
 EXAMPLES = '''
 - name: Basic server certificate upload from local file
-  community.aws.iam_cert:
+  community.aws.iam_server_certificate:
     name: very_ssl
     state: present
     cert: "{{ lookup('file', 'path/to/cert') }}"
@@ -93,7 +93,7 @@ EXAMPLES = '''
     cert_chain: "{{ lookup('file', 'path/to/certchain') }}"
 
 - name: Basic server certificate upload
-  community.aws.iam_cert:
+  community.aws.iam_server_certificate:
     name: very_ssl
     state: present
     cert: path/to/cert
@@ -101,7 +101,7 @@ EXAMPLES = '''
     cert_chain: path/to/certchain
 
 - name: Server certificate upload using key string
-  community.aws.iam_cert:
+  community.aws.iam_server_certificate:
     name: very_ssl
     state: present
     path: "/a/cert/path/"
@@ -110,7 +110,7 @@ EXAMPLES = '''
     cert_chain: body_of_myverytrustedchain
 
 - name: Basic rename of existing certificate
-  community.aws.iam_cert:
+  community.aws.iam_server_certificate:
     name: very_ssl
     new_name: new_very_ssl
     state: present
