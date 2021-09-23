@@ -1,6 +1,0 @@
-bugfixes:
-- route53 - fix typo in waiter configuration that prevented management of the delays (https://github.com/ansible-collections/community.aws/pull/564).
-minor_changes:
-- route53 - add retries on ``PriorRequestNotComplete`` errors (https://github.com/ansible-collections/community.aws/pull/564).
-- route53 - update retry ``max_delay`` setting so that it can be set above 60 seconds (https://github.com/ansible-collections/community.aws/pull/564).
-- route53 - add rate-limiting retries while waiting for changes to propagate (https://github.com/ansible-collections/community.aws/pull/564).

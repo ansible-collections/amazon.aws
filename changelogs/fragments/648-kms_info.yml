@@ -1,4 +1,0 @@
-minor_changes:
-- kms_info - added a new ``keys_attr`` parameter to continue returning the key details in the ``keys`` attribute as well as the ``kms_keys`` attribute (https://github.com/ansible-collections/community.aws/pull/648).
-breaking_changes:
-- kms_info - key details are now returned in the ``kms_keys`` attribute rather than the ``keys`` attribute (https://github.com/ansible-collections/community.aws/pull/648).

@@ -1,4 +1,0 @@
-minor_changes:
-- elasticache_subnet_group - module migrated to boto3 AWS SDK (https://github.com/ansible-collections/community.aws/pull/723).
-- elasticache_subnet_group - add return values (https://github.com/ansible-collections/community.aws/pull/723).
-- elasticache_subnet_group - add support for check_mode (https://github.com/ansible-collections/community.aws/pull/723).

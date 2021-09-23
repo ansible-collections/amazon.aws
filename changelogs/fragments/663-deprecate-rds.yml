@@ -1,3 +1,0 @@
-deprecated_features:
-- rds - the boto based ``rds`` module has been deprecated in favour of the boto3 based ``rds_instance`` module.
-  The ``rds`` module will be removed in release 3.0.0 (https://github.com/ansible-collections/community.aws/pull/663).

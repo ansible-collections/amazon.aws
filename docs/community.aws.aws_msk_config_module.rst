@@ -1,14 +1,14 @@
-.. _community.aws.ec2_elb_module:
+.. _community.aws.aws_msk_config_module:
 
 
-*********************
-community.aws.ec2_elb
-*********************
+****************************
+community.aws.aws_msk_config
+****************************
 
-**De-registers or registers instances from EC2 ELBs**
+**Manage Amazon MSK cluster configurations.**
 
 
-Version added: 1.0.0
+Version added: 2.0.0
 
 .. contents::
    :local:
@@ -17,9 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- This module de-registers or registers an AWS EC2 instance from the ELBs that it belongs to.
-- Returns fact "ec2_elbs" which is a list of elbs attached to the instance if state=absent is passed as an argument.
-- Will be marked changed when called only if there are ELBs found to operate on.
+- Create, delete and modify Amazon MSK (Managed Streaming for Apache Kafka) cluster configurations.
 
 
 
@@ -27,8 +25,11 @@ Requirements
 ------------
 The below requirements are needed on the host that executes this module.
 
-- python >= 2.6
-- boto
+- boto3
+- boto3 >= 1.15.0
+- botocore >= 1.17.48
+- botocore >= 1.18.0
+- python >= 3.6
 
 
 Parameters
@@ -54,7 +55,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>AWS access key. If not set then the value of the AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY or EC2_ACCESS_KEY environment variable is used.</div>
+                        <div><code>AWS access key</code>. If not set then the value of the <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_ACCESS_KEY</code> or <code>EC2_ACCESS_KEY</code> environment variable is used.</div>
                         <div>If <em>profile</em> is set this parameter is ignored.</div>
                         <div>Passing the <em>aws_access_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
@@ -73,7 +74,7 @@ Parameters
                 </td>
                 <td>
                         <div>The location of a CA Bundle to use when validating SSL certificates.</div>
-                        <div>Only used for boto3 based modules.</div>
+                        <div>Not used by boto 2 based modules.</div>
                         <div>Note: The CA Bundle is read &#x27;module&#x27; side and may need to be explicitly copied from the controller if not run locally.</div>
                 </td>
             </tr>
@@ -106,10 +107,26 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>AWS secret key. If not set then the value of the AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY, or EC2_SECRET_KEY environment variable is used.</div>
+                        <div><code>AWS secret key</code>. If not set then the value of the <code>AWS_SECRET_ACCESS_KEY</code>, <code>AWS_SECRET_KEY</code>, or <code>EC2_SECRET_KEY</code> environment variable is used.</div>
                         <div>If <em>profile</em> is set this parameter is ignored.</div>
                         <div>Passing the <em>aws_secret_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>config</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Contents of the server.properties file.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: configuration</div>
                 </td>
             </tr>
             <tr>
@@ -134,18 +151,16 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>ec2_elbs</b>
+                    <b>description</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>
+                        <span style="color: purple">string</span>
                     </div>
                 </td>
                 <td>
                 </td>
                 <td>
-                        <div>List of ELB names, required for registration.</div>
-                        <div>The ec2_elbs fact should be used if there was a previous de-register.</div>
+                        <div>The description of the configuration.</div>
                 </td>
             </tr>
             <tr>
@@ -160,33 +175,31 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Url to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
+                        <div>URL to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_endpoint_url, endpoint_url</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>enable_availability_zone</b>
+                    <b>kafka_versions</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
+                        <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=string</span>
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
-                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
-                        </ul>
                 </td>
                 <td>
-                        <div>Whether to enable the availability zone of the instance on the target ELB if the availability zone has not already been enabled. If set to no, the task will fail if the availability zone is not enabled on the ELB.</div>
+                        <div>The versions of Apache Kafka with which you can use this MSK configuration.</div>
+                        <div>Required when <em>state=present</em>.</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>instance_id</b>
+                    <b>name</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
@@ -196,7 +209,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>EC2 Instance ID</div>
+                        <div>The name of the configuration.</div>
                 </td>
             </tr>
             <tr>
@@ -211,7 +224,6 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Uses a boto profile. Only works with boto &gt;= 2.24.0.</div>
                         <div>Using <em>profile</em> will override <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> and support for passing them at the same time as <em>profile</em> has been deprecated.</div>
                         <div><em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> will be made mutually exclusive with <em>profile</em> after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_profile</div>
@@ -245,7 +257,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>AWS STS security token. If not set then the value of the AWS_SECURITY_TOKEN or EC2_SECURITY_TOKEN environment variable is used.</div>
+                        <div><code>AWS STS security token</code>. If not set then the value of the <code>AWS_SECURITY_TOKEN</code> or <code>EC2_SECURITY_TOKEN</code> environment variable is used.</div>
                         <div>If <em>profile</em> is set this parameter is ignored.</div>
                         <div>Passing the <em>security_token</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_security_token, access_token</div>
@@ -258,17 +270,16 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>present</li>
+                                    <li><div style="color: blue"><b>present</b>&nbsp;&larr;</div></li>
                                     <li>absent</li>
                         </ul>
                 </td>
                 <td>
-                        <div>register or deregister the instance</div>
+                        <div>Create (<code>present</code>) or delete (<code>absent</code>) cluster configuration.</div>
                 </td>
             </tr>
             <tr>
@@ -287,42 +298,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>When set to &quot;no&quot;, SSL certificates will not be validated for boto versions &gt;= 2.6.0.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>wait</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
-                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
-                        </ul>
-                </td>
-                <td>
-                        <div>Wait for instance registration or deregistration to complete successfully before returning.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>wait_timeout</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">integer</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">0</div>
-                </td>
-                <td>
-                        <div>Number of seconds to wait for an instance to change state. If 0 then this module may return an error if a transient error occurs. If non-zero then any transient errors are ignored until the timeout is reached. Ignored when wait=no.</div>
+                        <div>When set to &quot;no&quot;, SSL certificates will not be validated for communication with the AWS APIs.</div>
                 </td>
             </tr>
     </table>
@@ -334,8 +310,9 @@ Notes
 
 .. note::
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
-   - Ansible uses the boto configuration file (typically ~/.boto) if no credentials are provided. See https://boto.readthedocs.io/en/latest/boto_config_tut.html
-   - ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be configured in the boto config file
+   - When no credentials are explicitly provided the AWS SDK (boto3) that Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``). See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html for more information.
+   - Modules based on the original AWS SDK (boto) may read their default configuration from different files. See https://boto.readthedocs.io/en/latest/boto_config_tut.html for more information.
+   - ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be defined in the configuration files.
 
 
 
@@ -344,23 +321,108 @@ Examples
 
 .. code-block:: yaml
 
-    # basic pre_task and post_task example
-    pre_tasks:
-      - name: Instance De-register
-        community.aws.ec2_elb:
-          instance_id: "{{ ansible_ec2_instance_id }}"
-          state: absent
-    roles:
-      - myrole
-    post_tasks:
-      - name: Instance Register
-        community.aws.ec2_elb:
-          instance_id: "{{ ansible_ec2_instance_id }}"
-          ec2_elbs: "{{ item }}"
-          state: present
-        loop: "{{ ec2_elbs }}"
+    # Note: These examples do not set authentication details, see the AWS Guide for details.
+
+    - aws_msk_config:
+        name: kafka-cluster-configuration
+        state: present
+        kafka_versions:
+          - 2.6.0
+          - 2.6.1
+        config:
+          auto.create.topics.enable: false
+          num.partitions: 1
+          default.replication.factor: 3
+          zookeeper.session.timeout.ms: 18000
+
+    - aws_msk_config:
+        name: kafka-cluster-configuration
+        state: absent
 
 
+
+Return Values
+-------------
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
+
+.. raw:: html
+
+    <table border=0 cellpadding=0 class="documentation-table">
+        <tr>
+            <th colspan="1">Key</th>
+            <th>Returned</th>
+            <th width="100%">Description</th>
+        </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>arn</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td><em>state=present</em></td>
+                <td>
+                            <div>The Amazon Resource Name (ARN) of the configuration.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">arn:aws:kafka:&lt;region&gt;:&lt;account&gt;:configuration/&lt;name&gt;/&lt;resource-id&gt;</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>response</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>The response from actual API call.</div>
+                    <br/>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>revision</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td><em>state=present</em></td>
+                <td>
+                            <div>The revision number.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">1</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>server_properties</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td><em>state=present</em></td>
+                <td>
+                            <div>Contents of the server.properties file.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">default.replication.factor=3
+    num.io.threads=8
+    zookeeper.session.timeout.ms=18000</div>
+                </td>
+            </tr>
+    </table>
+    <br/><br/>
 
 
 Status
@@ -370,4 +432,4 @@ Status
 Authors
 ~~~~~~~
 
-- John Jarvis (@jarv)
+- Daniil Kupchenko (@oukooveu)

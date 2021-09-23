@@ -1,4 +1,0 @@
-bugfixes:
-- ec2_vpc_peer - automatically retry when attempting to tag freshly created peering connections (https://github.com/ansible-collections/community.aws/pull/614).
-minor_changes:
-- ec2_vpc_peer - use shared code for tagging peering connections (https://github.com/ansible-collections/community.aws/pull/614).

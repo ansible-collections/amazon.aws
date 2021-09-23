@@ -59,6 +59,8 @@ Name | Description
 [community.aws.aws_inspector_target](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_inspector_target_module.rst)|Create, Update and Delete Amazon Inspector Assessment Targets
 [community.aws.aws_kms](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_kms_module.rst)|Perform various KMS management tasks.
 [community.aws.aws_kms_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_kms_info_module.rst)|Gather information about AWS KMS keys
+[community.aws.aws_msk_cluster](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_msk_cluster_module.rst)|Manage Amazon MSK clusters.
+[community.aws.aws_msk_config](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_msk_config_module.rst)|Manage Amazon MSK cluster configurations.
 [community.aws.aws_region_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_region_info_module.rst)|Gather information about AWS regions.
 [community.aws.aws_s3_bucket_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_s3_bucket_info_module.rst)|lists S3 buckets in AWS
 [community.aws.aws_s3_cors](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.aws_s3_cors_module.rst)|Manage CORS for S3 buckets in AWS
@@ -98,10 +100,7 @@ Name | Description
 [community.aws.ec2_customer_gateway_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_customer_gateway_info_module.rst)|Gather information about customer gateways in AWS
 [community.aws.ec2_eip](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_eip_module.rst)|manages EC2 elastic IP (EIP) addresses.
 [community.aws.ec2_eip_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_eip_info_module.rst)|List EC2 EIP details
-[community.aws.ec2_elb](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_elb_module.rst)|De-registers or registers instances from EC2 ELBs
 [community.aws.ec2_elb_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_elb_info_module.rst)|Gather information about EC2 Elastic Load Balancers in AWS
-[community.aws.ec2_instance](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_instance_module.rst)|Create & manage EC2 instances
-[community.aws.ec2_instance_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_instance_info_module.rst)|Gather information about ec2 instances in AWS
 [community.aws.ec2_launch_template](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_launch_template_module.rst)|Manage EC2 launch templates
 [community.aws.ec2_lc](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_lc_module.rst)|Create or delete AWS Autoscaling Launch Configurations
 [community.aws.ec2_lc_find](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_lc_find_module.rst)|Find AWS Autoscaling Launch Configurations
@@ -114,15 +113,8 @@ Name | Description
 [community.aws.ec2_transit_gateway](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_transit_gateway_module.rst)|Create and delete AWS Transit Gateways
 [community.aws.ec2_transit_gateway_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_transit_gateway_info_module.rst)|Gather information about ec2 transit gateways in AWS
 [community.aws.ec2_vpc_egress_igw](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_egress_igw_module.rst)|Manage an AWS VPC Egress Only Internet gateway
-[community.aws.ec2_vpc_endpoint](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_endpoint_module.rst)|Create and delete AWS VPC Endpoints.
-[community.aws.ec2_vpc_endpoint_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_endpoint_info_module.rst)|Retrieves AWS VPC endpoints details using AWS methods.
-[community.aws.ec2_vpc_endpoint_service_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_endpoint_service_info_module.rst)|retrieves AWS VPC endpoint service details
-[community.aws.ec2_vpc_igw](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_igw_module.rst)|Manage an AWS VPC Internet gateway
-[community.aws.ec2_vpc_igw_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_igw_info_module.rst)|Gather information about internet gateways in AWS
 [community.aws.ec2_vpc_nacl](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_nacl_module.rst)|create and delete Network ACLs.
 [community.aws.ec2_vpc_nacl_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_nacl_info_module.rst)|Gather information about Network ACLs in an AWS VPC
-[community.aws.ec2_vpc_nat_gateway](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_nat_gateway_module.rst)|Manage AWS VPC NAT Gateways.
-[community.aws.ec2_vpc_nat_gateway_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_nat_gateway_info_module.rst)|Retrieves AWS VPC Managed Nat Gateway details using AWS methods.
 [community.aws.ec2_vpc_peer](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_peer_module.rst)|create, delete, accept, and reject VPC peering connections between two VPCs.
 [community.aws.ec2_vpc_peering_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_peering_info_module.rst)|Retrieves AWS VPC Peering details using AWS methods.
 [community.aws.ec2_vpc_route_table](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_route_table_module.rst)|Manage route tables for AWS virtual private clouds
@@ -143,6 +135,7 @@ Name | Description
 [community.aws.ecs_taskdefinition_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ecs_taskdefinition_info_module.rst)|Describe a task definition in ECS
 [community.aws.efs](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.efs_module.rst)|create and maintain EFS file systems
 [community.aws.efs_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.efs_info_module.rst)|Get information about Amazon EFS file systems
+[community.aws.efs_tag](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.efs_tag_module.rst)|create and remove tags on Amazon EFS resources
 [community.aws.elasticache](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elasticache_module.rst)|Manage cache clusters in Amazon ElastiCache
 [community.aws.elasticache_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elasticache_info_module.rst)|Retrieve information for AWS ElastiCache clusters
 [community.aws.elasticache_parameter_group](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elasticache_parameter_group_module.rst)|Manage cache parameter groups in Amazon ElastiCache.
@@ -150,7 +143,6 @@ Name | Description
 [community.aws.elasticache_subnet_group](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elasticache_subnet_group_module.rst)|manage ElastiCache subnet groups
 [community.aws.elb_application_lb](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elb_application_lb_module.rst)|Manage an Application Load Balancer
 [community.aws.elb_application_lb_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elb_application_lb_info_module.rst)|Gather information about application ELBs in AWS
-[community.aws.elb_classic_lb](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elb_classic_lb_module.rst)|Creates or destroys Amazon ELB.
 [community.aws.elb_classic_lb_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elb_classic_lb_info_module.rst)|Gather information about EC2 Elastic Load Balancers in AWS
 [community.aws.elb_instance](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elb_instance_module.rst)|De-registers or registers instances from EC2 ELBs
 [community.aws.elb_network_lb](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elb_network_lb_module.rst)|Manage a Network Load Balancer

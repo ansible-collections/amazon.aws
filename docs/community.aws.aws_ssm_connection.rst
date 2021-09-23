@@ -137,6 +137,25 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>reconnection_retries</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">3</div>
+                </td>
+                    <td>
+                                <div>var: ansible_aws_ssm_retries</div>
+                    </td>
+                <td>
+                        <div>Number of attempts to connect.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>region</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -151,25 +170,6 @@ Parameters
                     </td>
                 <td>
                         <div>The region the EC2 instance is located.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>retries</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">integer</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">3</div>
-                </td>
-                    <td>
-                                <div>var: ansible_aws_ssm_retries</div>
-                    </td>
-                <td>
-                        <div>Number of attempts to connect.</div>
                 </td>
             </tr>
             <tr>
