@@ -1,0 +1,16 @@
+---
+# route53_health_check integration tests
+#
+# Module uses the following as an 'ID'
+# (the real ID is automatically assigned after creation)
+
+ip_address: 192.0.{{ 256 | random(seed=resource_prefix) }}.0
+fqdn:
+port:
+type:
+request_interval:
+
+# modifiable
+# - resource_path
+# - string_match
+# - failure_threshold

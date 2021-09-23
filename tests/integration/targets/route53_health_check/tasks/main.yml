@@ -1,0 +1,31 @@
+---
+# route53_health_check integration tests
+#
+# Module uses the following as an 'ID'
+# (the real ID is automatically assigned after creation)
+# - ip_address
+# - fqdn
+# - port
+# - type (immutable)
+# - request_interval (immutable)
+#
+# modifiable
+# - resource_path
+# - string_match
+# - failure_threshold
+#
+- module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  block:
+  - debug: msg=hello
+
+  always:
+  - debug: msg=hello
+
+    ################################################
+    # TEARDOWN STARTS HERE
+    ################################################
