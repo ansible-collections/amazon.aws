@@ -1,1 +1,2 @@
 ---
+cert_name: 'ansible-test-{{ tiny_prefix }}'

@@ -1,7 +1,13 @@
 ---
 # iam_server_certificate integration tests
 #
-# Current module limitations:
+# Note:
+#
+# AWS APIs only support renaming and/or updating
+# the *path*.
+#
+# It is not possible to update the cert/key/chain
+# without deleting the ceritifate
 #
 - module_defaults:
     group/aws:
@@ -10,12 +16,16 @@
       security_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region }}'
   block:
+  ################################################
+
   # Check that the alias works
-  - iam_cert: {}
+  - name: Test deprecated alias
+    iam_cert: {}
     ignore_errors: true
     register: iam_cert_alias
 
-  - iam_server_certificate: {}
+  - name: Test with no args
+    iam_server_certificate: {}
     ignore_errors: true
     register: no_args
 
@@ -26,9 +36,240 @@
       - no_args.msg == iam_cert_alias.msg
       - no_args.msg.startswith('missing required arguments')
 
+  ################################################
+
+  - include_tasks: 'generate-certs.yml'
+
+  ################################################
+
+  - name: Create Certificate
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      state: present
+      cert: '{{ lookup("file", path_cert_a) }}'
+      key: '{{ lookup("file", path_cert_key) }}'
+    register: create_cert
+
+  - name: check result - Create Certificate
+    assert:
+      that:
+      - create_cert is successful
+      - create_cert is changed
+
+  - name: Create Certificate - idempotency
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      state: present
+      cert: '{{ lookup("file", path_cert_a) }}'
+      key: '{{ lookup("file", path_cert_key) }}'
+    register: create_cert
+
+  - name: check result - Create Certificate - idempotency
+    assert:
+      that:
+      - create_cert is successful
+      - create_cert is not changed
+
+  ################################################
+
+  # Module explicitly blocks updating certs
+  - name: Update Certificate
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      state: present
+      cert: '{{ lookup("file", path_cert_b) }}'
+    register: update_cert
+    ignore_errors: True
+
+  - name: check result - Update Certificate
+    assert:
+      that:
+      - update_cert is failed
+      - '"already exists" in update_cert.msg'
+
+  ## AWS APIs provide no mechanism for accessing
+  ## any information about the key, and as such
+  ## the module can't tell if a key was updated.
+  # - name: Update Certificate
+  #   iam_server_certificate:
+  #     name: '{{ cert_name }}'
+  #     state: present
+  #     key: '{{ lookup("file", path_intermediate_key) }}'
+  #   register: update_cert
+  #   ignore_errors: True
+
+  ################################################
+
+  - name: Delete certificate
+    iam_cert:
+      name: '{{ cert_name }}'
+      state: absent
+    register: delete_cert
+
+  - name: Delete certificate - idempotency
+    iam_cert:
+      name: '{{ cert_name }}'
+      state: absent
+    register: delete_cert
+
+  ################################################
+
+  - name: Create Certificate with Chain and path
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      state: present
+      cert: '{{ lookup("file", path_cert_a) }}'
+      key: '{{ lookup("file", path_cert_key) }}'
+      cert_chain: '{{ lookup("file", path_intermediate_cert) }}'
+      path: '/example/'
+    register: create_cert
+
+  - name: check result - Create Certificate with Chain and path
+    assert:
+      that:
+      - create_cert is successful
+      - create_cert is changed
+
+  - name: Create Certificate with Chain and path - idempotency
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      state: present
+      cert: '{{ lookup("file", path_cert_a) }}'
+      key: '{{ lookup("file", path_cert_key) }}'
+      cert_chain: '{{ lookup("file", path_intermediate_cert) }}'
+      path: '/example/'
+    register: create_cert
+
+  - name: check result - Create Certificate with Chain and path - idempotency
+    assert:
+      that:
+      - create_cert is successful
+      - create_cert is not changed
+
+  ################################################
+
+  - name: Create Certificate with identical cert
+    iam_server_certificate:
+      name: '{{ cert_name }}-duplicate'
+      state: present
+      cert: '{{ lookup("file", path_cert_a) }}'
+      key: '{{ lookup("file", path_cert_key) }}'
+    register: create_duplicate
+    ignore_errors: True
+
+  - name: check result - Create Certificate with identical cert
+    assert:
+      that:
+      - create_duplicate is failed
+
+  ################################################
+
+  - name: Create Certificate with forced identical cert
+    iam_server_certificate:
+      name: '{{ cert_name }}-duplicate'
+      state: present
+      cert: '{{ lookup("file", path_cert_a) }}'
+      key: '{{ lookup("file", path_cert_key) }}'
+      dup_ok: true
+    register: create_duplicate
+    ignore_errors: True
+
+  - name: check result - Create Certificate with forced identical cert
+    assert:
+      that:
+      - create_duplicate is successful
+      - create_duplicate is changed
+
+  - name: Create Certificate with forced identical cert - idempotency
+    iam_server_certificate:
+      name: '{{ cert_name }}-duplicate'
+      state: present
+      cert: '{{ lookup("file", path_cert_a) }}'
+      key: '{{ lookup("file", path_cert_key) }}'
+      dup_ok: true
+    register: create_duplicate
+    ignore_errors: True
+
+  - name: check result - Create Certificate with forced identical cert - idempotency
+    assert:
+      that:
+      - create_duplicate is successful
+      - create_duplicate is not changed
+
+  ################################################
+
+  - name: Update certificate path
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      state: present
+      path: '/example/'
+      new_path: '/path/'
+    register: update_path
+    ignore_errors: True
+
+  - name: check result - Update certificate path
+    assert:
+      that:
+      - update_path is successful
+      - update_path is changed
+
+  # - name: Update certificate path - idempotency
+  #   iam_server_certificate:
+  #     name: '{{ cert_name }}'
+  #     state: present
+  #     path: '/example/'
+  #     new_path: '/path/'
+  #   register: update_path
+  #   ignore_errors: True
+
+  # - name: check result - Update certificate path - idempotency
+  #   assert:
+  #     that:
+  #     - update_path is successful
+  #     - update_path is not changed
+
+  ################################################
+
+  - name: Update certificate name
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      new_name: '{{ cert_name }}-renamed'
+      state: present
+    register: update_name
+    ignore_errors: True
+
+  - name: check result - Update certificate name
+    assert:
+      that:
+      - update_name is successful
+      - update_name is changed
+
+  # - name: Update certificate name - idempotency
+  #   iam_server_certificate:
+  #     name: '{{ cert_name }}'
+  #     new_name: '{{ cert_name }}-renamed'
+  #     state: present
+  #   register: update_name
+  #   ignore_errors: True
+
+  # - name: check result - Update certificate name - idempotency
+  #   assert:
+  #     that:
+  #     - update_name is successful
+  #     - update_name is not changed
+
   always:
-  - debug: msg=test
 
     ################################################
     # TEARDOWN STARTS HERE
     ################################################
+
+  - name: Delete certificate
+    iam_cert:
+      name: '{{ item }}'
+      state: absent
+    ignore_errors: true
+    loop:
+    - '{{ cert_name }}'
+    - '{{ cert_name }}-renamed'
+    - '{{ cert_name }}-duplicate'
