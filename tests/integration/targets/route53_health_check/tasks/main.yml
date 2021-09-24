@@ -38,6 +38,18 @@
       ip_address: '{{ ip_address }}'
       port: '{{ port }}'
       type: '{{ type }}'
+    register: create_check
+
+  - name: 'Check result - Create a TCP health check'
+    assert:
+      that:
+      - create_check is successful
+      - create_check is changed
+      - '"health_check" in create_check'
+      - '"id" in create_check.health_check'
+
+  - set_fact:
+      tcp_check_id: '{{ create_check.health_check.id }}'
 
   - name: 'Create a TCP health check - idempotency'
     route53_health_check:
@@ -45,6 +57,16 @@
       ip_address: '{{ ip_address }}'
       port: '{{ port }}'
       type: '{{ type }}'
+    register: create_check
+
+  - name: 'Check result - Create a TCP health check - idempotency'
+    assert:
+      that:
+      - create_check is successful
+      - create_check is not changed
+      - '"health_check" in create_check'
+      - '"id" in create_check.health_check'
+      - create_check.health_check.id == tcp_check_id
 
   # Update an attribute (for TCP only failure threshold makes sense)
   - name: 'Update TCP health check - set threshold'
@@ -54,6 +76,16 @@
       port: '{{ port }}'
       type: '{{ type }}'
       failure_threshold: '{{ failure_threshold_updated }}'
+    register: update_threshold
+
+  - name: 'Check result - Update TCP health check - set threshold'
+    assert:
+      that:
+      - update_threshold is successful
+      - update_threshold is changed
+      - '"health_check" in update_threshold'
+      - '"id" in update_threshold.health_check'
+      - update_threshold.health_check.id == tcp_check_id
 
   - name: 'Update TCP health check - set threshold - idempotency'
     route53_health_check:
@@ -62,6 +94,16 @@
       port: '{{ port }}'
       type: '{{ type }}'
       failure_threshold: '{{ failure_threshold_updated }}'
+    register: update_threshold
+
+  - name: 'Check result - Update TCP health check - set threshold - idempotency'
+    assert:
+      that:
+      - update_threshold is successful
+      - update_threshold is not changed
+      - '"health_check" in update_threshold'
+      - '"id" in update_threshold.health_check'
+      - update_threshold.health_check.id == tcp_check_id
 
   - name: 'Delete TCP health check'
     route53_health_check:
@@ -69,6 +111,13 @@
       ip_address: '{{ ip_address }}'
       port: '{{ port }}'
       type: '{{ type }}'
+    register: delete_tcp
+
+  - name: 'Check result - Delete TCP health check'
+    assert:
+      that:
+      - delete_tcp is successful
+      - delete_tcp is changed
 
   - name: 'Delete TCP health check - idempotency'
     route53_health_check:
@@ -76,6 +125,13 @@
       ip_address: '{{ ip_address }}'
       port: '{{ port }}'
       type: '{{ type }}'
+    register: delete_tcp
+
+  - name: 'Check result - Delete TCP health check - idempotency'
+    assert:
+      that:
+      - delete_tcp is successful
+      - delete_tcp is not changed
 
   # Create an HTTPS_STR_MATCH healthcheck so we can try out more settings
   - name: 'Create a HTTPS_STR_MATCH health check'
@@ -87,6 +143,19 @@
       fqdn: '{{ fqdn }}'
       request_interval: '{{ request_interval }}'
       string_match: '{{ string_match }}'
+    register: create_match
+
+  - name: 'Check result - Create a HTTPS_STR_MATCH health check'
+    assert:
+      that:
+      - create_match is successful
+      - create_match is changed
+      - '"health_check" in create_match'
+      - '"id" in create_match.health_check'
+      - create_match.health_check.id != tcp_check_id
+
+  - set_fact:
+      match_check_id: '{{ create_match.health_check.id }}'
 
   - name: 'Create a HTTPS_STR_MATCH health check - idempotency'
     route53_health_check:
@@ -97,6 +166,16 @@
       fqdn: '{{ fqdn }}'
       request_interval: '{{ request_interval }}'
       string_match: '{{ string_match }}'
+    register: create_match
+
+  - name: 'Check result - Create a HTTPS_STR_MATCH health check - idempotency'
+    assert:
+      that:
+      - create_match is successful
+      - create_match is not changed
+      - '"health_check" in create_match'
+      - '"id" in create_match.health_check'
+      - create_match.health_check.id == match_check_id
 
   - name: 'Update HTTPS health check - set resource_path'
     route53_health_check:
@@ -109,6 +188,16 @@
       resource_path: '{{ resource_path }}'
       # Mandatory for HTTPS_STR_MATCH checks
       string_match: '{{ string_match }}'
+    register: update_resource_path
+
+  - name: 'Check result - Update HTTPS health check - set resource_path'
+    assert:
+      that:
+      - update_resource_path is successful
+      - update_resource_path is changed
+      - '"health_check" in update_resource_path'
+      - '"id" in update_resource_path.health_check'
+      - update_resource_path.health_check.id == match_check_id
 
   - name: 'Update HTTPS health check - set resource_path - idempotency'
     route53_health_check:
@@ -121,6 +210,16 @@
       resource_path: '{{ resource_path }}'
       # Mandatory for HTTPS_STR_MATCH checks
       string_match: '{{ string_match }}'
+    register: update_resource_path
+
+  - name: 'Check result - Update HTTPS health check - set resource_path - idempotency'
+    assert:
+      that:
+      - update_resource_path is successful
+      - update_resource_path is not changed
+      - '"health_check" in update_resource_path'
+      - '"id" in update_resource_path.health_check'
+      - update_resource_path.health_check.id == match_check_id
 
   - name: 'Update HTTPS health check - set string_match'
     route53_health_check:
@@ -131,6 +230,16 @@
       fqdn: '{{ fqdn }}'
       request_interval: '{{ request_interval }}'
       string_match: '{{ string_match_updated }}'
+    register: update_string_match
+
+  - name: 'Check result - Update HTTPS health check - set string_match'
+    assert:
+      that:
+      - update_string_match is successful
+      - update_string_match is changed
+      - '"health_check" in update_string_match'
+      - '"id" in update_string_match.health_check'
+      - update_string_match.health_check.id == match_check_id
 
   - name: 'Update HTTPS health check - set string_match - idempotency'
     route53_health_check:
@@ -141,6 +250,17 @@
       fqdn: '{{ fqdn }}'
       request_interval: '{{ request_interval }}'
       string_match: '{{ string_match_updated }}'
+    register: update_string_match
+
+  - name: 'Check result - Update HTTPS health check - set string_match - idempotency'
+    assert:
+      that:
+      - update_string_match is successful
+      # XXX Bug
+      # - update_string_match is not changed
+      - '"health_check" in update_string_match'
+      - '"id" in update_string_match.health_check'
+      - update_string_match.health_check.id == match_check_id
 
   # Test deletion
   - name: 'Delete HTTPS health check'
@@ -153,6 +273,13 @@
       request_interval: '{{ request_interval }}'
       # Mandatory for HTTPS_STR_MATCH checks
       string_match: ''
+    register: delete_match
+
+  - name: 'Check result - Delete HTTPS health check'
+    assert:
+      that:
+      - delete_match is successful
+      - delete_match is changed
 
   - name: 'Delete HTTPS health check - idempotency'
     route53_health_check:
@@ -164,6 +291,13 @@
       request_interval: '{{ request_interval }}'
       # Mandatory for HTTPS_STR_MATCH checks
       string_match: ''
+    register: delete_match
+
+  - name: 'Check result - Delete HTTPS health check - idempotency'
+    assert:
+      that:
+      - delete_match is successful
+      - delete_match is not changed
 
   # Create an HTTP health check with lots of settings we can update
   - name: 'Create Complex health check'
@@ -177,6 +311,20 @@
       string_match: '{{ string_match }}'
       resource_path: '{{ resource_path }}'
       failure_threshold: '{{ failure_threshold }}'
+    register: create_complex
+
+  - name: 'Check result - Create Complex health check'
+    assert:
+      that:
+      - create_complex is successful
+      - create_complex is changed
+      - '"health_check" in create_complex'
+      - '"id" in create_complex.health_check'
+      - create_complex.health_check.id != tcp_check_id
+      - create_complex.health_check.id != match_check_id
+
+  - set_fact:
+      complex_check_id: '{{ create_complex.health_check.id }}'
 
   - name: 'Create Complex health check - idempotency'
     route53_health_check:
@@ -189,6 +337,16 @@
       string_match: '{{ string_match }}'
       resource_path: '{{ resource_path }}'
       failure_threshold: '{{ failure_threshold }}'
+    register: create_complex
+
+  - name: 'Check result - Create Complex health check - idempotency'
+    assert:
+      that:
+      - create_complex is successful
+      - create_complex is not changed
+      - '"health_check" in create_complex'
+      - '"id" in create_complex.health_check'
+      - create_complex.health_check.id == complex_check_id
 
   - name: 'Update Complex health check'
     route53_health_check:
@@ -201,6 +359,16 @@
       string_match: '{{ string_match_updated }}'
       resource_path: '{{ resource_path_updated }}'
       failure_threshold: '{{ failure_threshold_updated }}'
+    register: update_complex
+
+  - name: 'Check result - Update Complex health check'
+    assert:
+      that:
+      - update_complex is successful
+      - update_complex is changed
+      - '"health_check" in update_complex'
+      - '"id" in update_complex.health_check'
+      - update_complex.health_check.id == complex_check_id
 
   - name: 'Update Complex health check - idempotency'
     route53_health_check:
@@ -213,6 +381,16 @@
       string_match: '{{ string_match_updated }}'
       resource_path: '{{ resource_path_updated }}'
       failure_threshold: '{{ failure_threshold_updated }}'
+    register: update_complex
+
+  - name: 'Check result - Update Complex health check - idempotency'
+    assert:
+      that:
+      - update_complex is successful
+      - update_complex is not changed
+      - '"health_check" in update_complex'
+      - '"id" in update_complex.health_check'
+      - update_complex.health_check.id == complex_check_id
 
   - name: 'Delete Complex health check'
     route53_health_check:
@@ -224,6 +402,13 @@
       request_interval: '{{ request_interval }}'
       # Mandatory for HTTPS_STR_MATCH checks
       string_match: ''
+    register: delete_complex
+
+  - name: 'Check result - Delete Complex health check'
+    assert:
+      that:
+      - delete_complex is successful
+      - delete_complex is changed
 
   - name: 'Delete Complex health check - idempotency'
     route53_health_check:
@@ -235,6 +420,13 @@
       request_interval: '{{ request_interval }}'
       # Mandatory for HTTPS_STR_MATCH checks
       string_match: ''
+    register: delete_complex
+
+  - name: 'Check result - Delete Complex health check - idempotency'
+    assert:
+      that:
+      - delete_complex is successful
+      - delete_complex is not changed
 
   always:
 
