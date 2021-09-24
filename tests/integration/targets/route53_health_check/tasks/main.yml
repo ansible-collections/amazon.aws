@@ -21,11 +21,261 @@
       security_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region }}'
   block:
-  - debug: msg=hello
+  # Route53 can only test against routable IPs.  Request an EIP so some poor
+  # soul doesn't get randomly hit by our testing.
+  - name: Allocate an EIP we can test against
+    ec2_eip:
+      state: present
+    register: eip
+
+  - set_fact:
+      ip_address: '{{ eip.public_ip }}'
+
+  # Minimum possible definition
+  - name: 'Create a TCP health check'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+
+  - name: 'Create a TCP health check - idempotency'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+
+  # Update an attribute (for TCP only failure threshold makes sense)
+  - name: 'Update TCP health check - set threshold'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      failure_threshold: '{{ failure_threshold_updated }}'
+
+  - name: 'Update TCP health check - set threshold - idempotency'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      failure_threshold: '{{ failure_threshold_updated }}'
+
+  - name: 'Delete TCP health check'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+
+  - name: 'Delete TCP health check - idempotency'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+
+  # Create an HTTPS_STR_MATCH healthcheck so we can try out more settings
+  - name: 'Create a HTTPS_STR_MATCH health check'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match }}'
+
+  - name: 'Create a HTTPS_STR_MATCH health check - idempotency'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match }}'
+
+  - name: 'Update HTTPS health check - set resource_path'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      resource_path: '{{ resource_path }}'
+      # Mandatory for HTTPS_STR_MATCH checks
+      string_match: '{{ string_match }}'
+
+  - name: 'Update HTTPS health check - set resource_path - idempotency'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      resource_path: '{{ resource_path }}'
+      # Mandatory for HTTPS_STR_MATCH checks
+      string_match: '{{ string_match }}'
+
+  - name: 'Update HTTPS health check - set string_match'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match_updated }}'
+
+  - name: 'Update HTTPS health check - set string_match - idempotency'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match_updated }}'
+
+  # Test deletion
+  - name: 'Delete HTTPS health check'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      # Mandatory for HTTPS_STR_MATCH checks
+      string_match: ''
+
+  - name: 'Delete HTTPS health check - idempotency'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      # Mandatory for HTTPS_STR_MATCH checks
+      string_match: ''
+
+  # Create an HTTP health check with lots of settings we can update
+  - name: 'Create Complex health check'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match }}'
+      resource_path: '{{ resource_path }}'
+      failure_threshold: '{{ failure_threshold }}'
+
+  - name: 'Create Complex health check - idempotency'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match }}'
+      resource_path: '{{ resource_path }}'
+      failure_threshold: '{{ failure_threshold }}'
+
+  - name: 'Update Complex health check'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match_updated }}'
+      resource_path: '{{ resource_path_updated }}'
+      failure_threshold: '{{ failure_threshold_updated }}'
+
+  - name: 'Update Complex health check - idempotency'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      string_match: '{{ string_match_updated }}'
+      resource_path: '{{ resource_path_updated }}'
+      failure_threshold: '{{ failure_threshold_updated }}'
+
+  - name: 'Delete Complex health check'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      # Mandatory for HTTPS_STR_MATCH checks
+      string_match: ''
+
+  - name: 'Delete Complex health check - idempotency'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      # Mandatory for HTTPS_STR_MATCH checks
+      string_match: ''
 
   always:
-  - debug: msg=hello
 
     ################################################
     # TEARDOWN STARTS HERE
     ################################################
+
+  - name: 'Delete TCP health check'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+    ignore_errors: true
+
+  - name: 'Delete HTTPS health check'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_https_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      # Mandatory for HTTPS_STR_MATCH checks
+      string_match: ''
+    ignore_errors: true
+
+  - name: 'Delete Complex health check'
+    route53_health_check:
+      state: absent
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type_http_match }}'
+      fqdn: '{{ fqdn }}'
+      request_interval: '{{ request_interval }}'
+      # Mandatory for HTTPS_STR_MATCH checks
+      string_match: ''
+    ignore_errors: true
+
+  - name: release EIP
+    ec2_eip:
+      state: absent
+      public_ip: '{{ ip_address }}'
+    ignore_errors: true
