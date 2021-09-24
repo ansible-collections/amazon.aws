@@ -9,6 +9,9 @@
 # Tests ec2_snapshot_info:
 # - Listing snapshots for filter: tag
 #
+# Possible Bugs:
+# - check_mode not supported
+#
 - name: Integration testing for ec2_snapshot
   module_defaults:
     group/aws:
@@ -19,6 +22,7 @@
 
   collections:
     - community.aws
+
 
   block:
     - name: Gather availability zones
@@ -44,7 +48,7 @@
           - untagged_snapshot.snapshots| length == 1
           - untagged_snapshot.snapshots[0].volume_id == volume_detached.volume_id
 
-    - name: Setup an instance for testing, make sure volumes are attached before next task
+    - name: Setup an instance for testing
       ec2_instance:
         name: '{{ resource_prefix }}'
         instance_type: t2.nano
@@ -56,29 +60,25 @@
               volume_size: 8
               delete_on_termination: true
       register: instance
-      retries: 5
-      delay: 60
-      until: "instance.instances[0].block_device_mappings | length > 0 and instance.instances[0].block_device_mappings[-1].ebs.status =='attached'"
 
     - set_fact:
         volume_id: '{{ instance.instances[0].block_device_mappings[0].ebs.volume_id }}'
         instance_id: '{{ instance.instances[0].instance_id }}'
         device_name: '{{ instance.instances[0].block_device_mappings[0].device_name }}'
 
-    - name: Take snapshot (check mode)
-      ec2_snapshot:
-        instance_id: '{{ instance_id }}'
-        device_name: '{{ device_name }}'
-        snapshot_tags:
-          Test: '{{ resource_prefix }}'
-      check_mode: true
-      register: result
+#    JR: Check mode not supported
+#    - name: Take snapshot (check mode)
+#      ec2_snapshot:
+#        instance_id: '{{ instance_id }}'
+#        check_mode: true
+#        snapshot_tags:
+#          Test: '{{ resource_prefix }}'
+#      register: result
+#    - assert:
+#        that:
+#          - result is changed
 
-    - assert:
-        that:
-          - result is changed
-
-    - name: Take snapshot of volume - first
+    - name: Take snapshot of volume
       ec2_snapshot:
         volume_id: '{{ volume_id }}'
       register: result
@@ -105,7 +105,7 @@
         filters:
           "tag:Name": '{{ resource_prefix }}'
       register: info_check
-      check_mode: true
+      check_mode: yes
 
     - assert:
         that:
@@ -116,17 +116,18 @@
           - info_check.snapshots[0].volume_size == result.volume_size
           - info_check.snapshots[0].tags == result.tags
 
-    - name: Take snapshot if most recent >1hr (False) (check mode)
-      ec2_snapshot:
-        volume_id: '{{ volume_id }}'
-        snapshot_tags:
-          Name: '{{ resource_prefix }}'
-        last_snapshot_min_age: 60
-      check_mode: true
-      register: result
-    - assert:
-        that:
-          - result is not changed
+#    JR: Check mode not supported
+#    - name: Take snapshot if most recent >1hr (False) (check mode)
+#      ec2_snapshot:
+#        volume_id: '{{ volume_id }}'
+#        snapshot_tags:
+#          Name: '{{ resource_prefix }}'
+#        last_snapshot_min_age: 60
+#        check_mode: true
+#      register: result
+#    - assert:
+#        that:
+#          - result is not changed
 
     - name: Take snapshot if most recent >1hr (False)
       ec2_snapshot:
@@ -149,19 +150,20 @@
       pause:
         minutes: 1
 
-    - name: Take snapshot if most recent >1min (True) (check mode)
-      ec2_snapshot:
-        volume_id: '{{ volume_id }}'
-        snapshot_tags:
-          Name: '{{ resource_prefix }}'
-        last_snapshot_min_age: 1
-      check_mode: true
-      register: result
-    - assert:
-        that:
-          - result is changed
+#    JR: Check mode not supported
+#    - name: Take snapshot if most recent >1min (True) (check mode)
+#      ec2_snapshot:
+#        volume_id: '{{ volume_id }}'
+#        snapshot_tags:
+#          Name: '{{ resource_prefix }}'
+#        last_snapshot_min_age: 1
+#        check_mode: true
+#      register: result
+#    - assert:
+#        that:
+#          - result is changed
 
-    - name: Take snapshot if most recent >1min (True) - second
+    - name: Take snapshot if most recent >1min (True)
       ec2_snapshot:
         volume_id: '{{ volume_id }}'
         last_snapshot_min_age: 1
@@ -179,18 +181,18 @@
           - info_result.snapshots| length == 2
           - result.snapshot_id in ( info_result.snapshots | map(attribute='snapshot_id') | list )
 
-    - name: Take snapshot with a tag (check mode)
-      ec2_snapshot:
-        volume_id: '{{ volume_id }}'
-        snapshot_tags:
-          MyTag: '{{ resource_prefix }}'
-      check_mode: true
-      register: result
-    - assert:
-        that:
-          - result is changed
+#    JR: Check mode not supported
+#    - name: Take snapshot with a tag (check mode)
+#      ec2_snapshot:
+#        volume_id: '{{ volume_id }}'
+#        snapshot_tags:
+#          MyTag: '{{ resource_prefix }}'
+#      register: result
+#    - assert:
+#        that:
+#          - result is changed
 
-    - name: Take snapshot and tag it - third
+    - name: Take snapshot and tag it
       ec2_snapshot:
         volume_id: '{{ volume_id }}'
         snapshot_tags:
@@ -220,8 +222,11 @@
           "tag:Name": '{{ resource_prefix }}'
       register: info_result
 
-    - name: Generate extra snapshots - five more
-      ec2_snapshot:
+    - assert:
+        that:
+          - info_result.snapshots| length == 3
+
+    - ec2_snapshot:
         volume_id: '{{ volume_id }}'
         snapshot_tags:
           ResourcePrefix: '{{ resource_prefix }}'
@@ -236,12 +241,6 @@
     - name: Pause to allow creation to finish
       pause:
         minutes: 2
-
-    - name: Get info about all snapshots for this test
-      ec2_snapshot_info:
-          filters:
-            "tag:Name": '{{ resource_prefix }}'
-      register: info_result
 
     # check that snapshot_ids and max_results are mutually exclusive
     - name: Check that max_results and snapshot_ids are mutually exclusive

@@ -289,8 +289,7 @@ def create_snapshot(module, ec2, description=None, wait=None,
             }]
         try:
             if module.check_mode:
-                module.exit_json(changed=True, msg='Would have created a snapshot if not in check mode',
-                                 volume_id=volume['VolumeId'], volume_size=volume['Size'])
+                module.exit_json(changed=True, msg='Would have created a snapshot if not in check mode', volume_id=volume['VolumeId'], volume_size=volume['Size'])
             snapshot = _create_snapshot(ec2, **params)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Failed to create snapshot")
