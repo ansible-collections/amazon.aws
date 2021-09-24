@@ -169,7 +169,7 @@ options:
       - I(preserve_client_ip_enabled) is supported only by Network Load Balancers.
     type: bool
     required: false
-    version_added: 2.0.0
+    version_added: 2.1.0
   proxy_protocol_v2_enabled:
     description:
       - Indicates whether Proxy Protocol version 2 is enabled.
@@ -177,7 +177,7 @@ options:
       - I(proxy_protocol_v2_enabled) is supported only by Network Load Balancers.
     type: bool
     required: false
-    version_added: 2.0.0
+    version_added: 2.1.0
   wait:
     description:
       - Whether or not to wait for the target group.
