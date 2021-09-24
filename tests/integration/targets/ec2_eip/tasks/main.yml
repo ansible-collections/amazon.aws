@@ -662,6 +662,25 @@
       state: absent
       name: '{{ resource_prefix }}-vpc'
       cidr_block: '{{ vpc_cidr }}'
+
+  - name: Create an EIP outside a VPC
+    ec2_eip:
+      state: present
+      in_vpc: '{{ omit }}'
+    register: unbound_eip
+  - assert:
+      that:
+      - unbound_eip is successful
+      - unbound_eip is changed
+  - name: Release EIP
+    ec2_eip:
+      state: absent
+      public_ip: '{{ unbound_eip.public_ip }}'
+    register: release_unbound_eip
+  - assert:
+      that:
+      - release_unbound_eip is successful
+      - release_unbound_eip is changed
   # =====================================================
   always:
   - name: Cleanup instance (by id)
@@ -734,6 +753,12 @@
       state: absent
       public_ip: '{{ no_tagged_eip.public_ip }}'
     when: no_tagged_eip is changed
+    ignore_errors: true
+  - name: Cleanup unbound_eip
+    ec2_eip:
+      state: absent
+      public_ip: '{{ unbound_eip.public_ip }}'
+    when: unbound_eip is changed
     ignore_errors: true
   - name: Cleanup VPC
     ec2_vpc_net:
