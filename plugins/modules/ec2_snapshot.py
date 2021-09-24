@@ -71,12 +71,10 @@ options:
     required: false
     default: 0
     type: int
-
 author: "Will Thames (@willthames)"
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
 '''
 
 EXAMPLES = '''
@@ -84,13 +82,11 @@ EXAMPLES = '''
 - amazon.aws.ec2_snapshot:
     volume_id: vol-abcdef12
     description: snapshot of /data from DB123 taken 2013/11/28 12:18:32
-
 # Snapshot of volume mounted on device_name attached to instance_id
 - amazon.aws.ec2_snapshot:
     instance_id: i-12345678
     device_name: /dev/sdb1
     description: snapshot of /data from DB123 taken 2013/11/28 12:18:32
-
 # Snapshot of volume with tagging
 - amazon.aws.ec2_snapshot:
     instance_id: i-12345678
@@ -98,12 +94,10 @@ EXAMPLES = '''
     snapshot_tags:
         frequency: hourly
         source: /data
-
 # Remove a snapshot
 - amazon.aws.ec2_snapshot:
     snapshot_id: snap-abcd1234
     state: absent
-
 # Create a snapshot only if the most recent one is older than 1 hour
 - amazon.aws.ec2_snapshot:
     volume_id: vol-abcdef12
@@ -289,7 +283,8 @@ def create_snapshot(module, ec2, description=None, wait=None,
             }]
         try:
             if module.check_mode:
-                module.exit_json(changed=True, msg='Would have created a snapshot if not in check mode', volume_id=volume['VolumeId'], volume_size=volume['Size'])
+                module.exit_json(changed=True, msg='Would have created a snapshot if not in check mode',
+                                 volume_id=volume['VolumeId'], volume_size=volume['Size'])
             snapshot = _create_snapshot(ec2, **params)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Failed to create snapshot")
