@@ -412,13 +412,15 @@ def compatability_results(current_table):
         range_key_type=range_key_type,
         indexes=indexes,
         billing_mode=billing_mode,
-        read_capacity=throughput.get('read_capacity_units', None),
-        write_capacity=throughput.get('write_capacity_units', None),
         region=module.region,
         table_name=current_table.get('table_name', None),
         table_status=current_table.get('table_status', None),
         tags=current_table.get('tags', {}),
     )
+
+    if billing_mode == "PROVISIONED":
+        compat_results['read_capacity'] = throughput.get('read_capacity_units', None)
+        compat_results['write_capacity'] = throughput.get('write_capacity_units', None)
 
     return compat_results
 
