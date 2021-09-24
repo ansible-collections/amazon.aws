@@ -49,6 +49,12 @@ options:
       - Defaults to C('STRING') when creating a new range key.
     choices: ['STRING', 'NUMBER', 'BINARY']
     type: str
+  billing_mode:
+    description:
+      - Controls whether provisoned pr on-demand tables are created.
+    choices: ['PROVISIONED', 'PAY_PER_REQUEST']
+    default: 'PROVISIONED'
+    type: str
   read_capacity:
     description:
       - Read throughput capacity (units) to provision.
@@ -164,6 +170,14 @@ EXAMPLES = r'''
     region: us-east-1
     read_capacity: 10
     write_capacity: 10
+
+- name: Create pay-per-request table
+  community.aws.dynamodb_table:
+    name: my-table
+    region: us-east-1
+    hash_key_name: id
+    hash_key_type: STRING
+    billing_mode: PAY_PER_REQUEST
 
 - name: set index on existing dynamo table
   community.aws.dynamodb_table:
@@ -367,7 +381,10 @@ def compatability_results(current_table):
     if not current_table:
         return dict()
 
-    throughput = current_table.get('provisioned_throughput', {})
+    billing_mode = current_table.get('billing_mode')
+
+    if billing_mode == "PROVISIONED":
+        throughput = current_table.get('provisioned_throughput', {})
 
     primary_indexes = _decode_primary_index(current_table)
 
@@ -394,12 +411,13 @@ def compatability_results(current_table):
         range_key_name=range_key_name,
         range_key_type=range_key_type,
         indexes=indexes,
+        billing_mode=billing_mode,
         read_capacity=throughput.get('read_capacity_units', None),
+        write_capacity=throughput.get('write_capacity_units', None),
         region=module.region,
         table_name=current_table.get('table_name', None),
         table_status=current_table.get('table_status', None),
         tags=current_table.get('tags', {}),
-        write_capacity=throughput.get('write_capacity_units', None),
     )
 
     return compat_results
@@ -571,6 +589,13 @@ def _throughput_changes(current_table, params=None):
 def _generate_global_indexes():
     index_exists = dict()
     indexes = list()
+    billing_mode = module.params.get('billing_mode')
+
+    if billing_mode == "PROVISIONED":
+        is_provisioned = True
+    else:
+        is_provisioned = False
+
     for index in module.params.get('indexes'):
         if index.get('type') not in ['global_all', 'global_include', 'global_keys_only']:
             continue
@@ -579,7 +604,7 @@ def _generate_global_indexes():
             module.fail_json(msg='Duplicate key {0} in list of global indexes'.format(name))
         # Convert the type name to upper case and remove the global_
         index['type'] = index['type'].upper()[7:]
-        index = _generate_index(index)
+        index = _generate_index(index, include_throughput=is_provisioned)
         index_exists[name] = True
         indexes.append(index)
 
@@ -589,6 +614,7 @@ def _generate_global_indexes():
 def _generate_local_indexes():
     index_exists = dict()
     indexes = list()
+
     for index in module.params.get('indexes'):
         index = dict()
         if index.get('type') not in ['all', 'include', 'keys_only']:
@@ -708,20 +734,22 @@ def _local_index_changes(current_table):
 def _update_table(current_table):
     changes = dict()
     additional_global_index_changes = list()
+    billing_mode = module.params.get('billing_mode')
 
-    throughput_changes = _throughput_changes(current_table)
-    if throughput_changes:
-        changes['ProvisionedThroughput'] = throughput_changes
+    if billing_mode == "PROVISIONED":
+        throughput_changes = _throughput_changes(current_table)
+        if throughput_changes:
+            changes['ProvisionedThroughput'] = throughput_changes
 
-    global_index_changes = _global_index_changes(current_table)
-    if global_index_changes:
-        changes['GlobalSecondaryIndexUpdates'] = global_index_changes
-        # Only one index can be changed at a time, pass the first during the
-        # main update and deal with the others on a slow retry to wait for
-        # completion
-        if len(global_index_changes) > 1:
-            changes['GlobalSecondaryIndexUpdates'] = [global_index_changes[0]]
-            additional_global_index_changes = global_index_changes[1:]
+        global_index_changes = _global_index_changes(current_table)
+        if global_index_changes:
+            changes['GlobalSecondaryIndexUpdates'] = global_index_changes
+            # Only one index can be changed at a time, pass the first during the
+            # main update and deal with the others on a slow retry to wait for
+            # completion
+            if len(global_index_changes) > 1:
+                changes['GlobalSecondaryIndexUpdates'] = [global_index_changes[0]]
+                additional_global_index_changes = global_index_changes[1:]
 
     local_index_changes = _local_index_changes(current_table)
     if local_index_changes:
@@ -818,6 +846,7 @@ def update_table(current_table):
 def create_table():
     table_name = module.params.get('name')
     hash_key_name = module.params.get('hash_key_name')
+    billing_mode = module.params.get('billing_mode')
 
     tags = ansible_dict_to_boto3_tag_list(module.params.get('tags') or {})
 
@@ -827,7 +856,9 @@ def create_table():
     if module.check_mode:
         return True
 
-    throughput = _generate_throughput()
+    if billing_mode == "PROVISIONED":
+        throughput = _generate_throughput()
+
     attributes = _generate_attributes()
     key_schema = _generate_schema()
     local_indexes = _generate_local_indexes()
@@ -837,13 +868,15 @@ def create_table():
         TableName=table_name,
         AttributeDefinitions=attributes,
         KeySchema=key_schema,
-        ProvisionedThroughput=throughput,
         Tags=tags,
+        BillingMode=billing_mode
         # TODO (future)
-        # BillingMode,
         # StreamSpecification,
         # SSESpecification,
     )
+
+    if billing_mode == "PROVISIONED":
+        params['ProvisionedThroughput'] = throughput
     if local_indexes:
         params['LocalSecondaryIndexes'] = local_indexes
     if global_indexes:
@@ -919,6 +952,7 @@ def main():
         hash_key_type=dict(type='str', choices=KEY_TYPE_CHOICES),
         range_key_name=dict(type='str'),
         range_key_type=dict(type='str', choices=KEY_TYPE_CHOICES),
+        billing_mode=dict(default='PROVISIONED', type='str', choices=['PROVISIONED', 'PAY_PER_REQUEST']),
         read_capacity=dict(type='int'),
         write_capacity=dict(type='int'),
         indexes=dict(default=[], type='list', elements='dict', options=index_options),
