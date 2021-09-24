@@ -78,7 +78,7 @@
         that:
           - result is changed
 
-    - name: Take snapshot of volume - first
+    - name: Take snapshot of volume
       ec2_snapshot:
         volume_id: '{{ volume_id }}'
       register: result
@@ -161,7 +161,7 @@
         that:
           - result is changed
 
-    - name: Take snapshot if most recent >1min (True) - second
+    - name: Take snapshot if most recent >1min (True)
       ec2_snapshot:
         volume_id: '{{ volume_id }}'
         last_snapshot_min_age: 1
@@ -190,7 +190,7 @@
         that:
           - result is changed
 
-    - name: Take snapshot and tag it - third
+    - name: Take snapshot and tag it
       ec2_snapshot:
         volume_id: '{{ volume_id }}'
         snapshot_tags:
@@ -220,7 +220,7 @@
           "tag:Name": '{{ resource_prefix }}'
       register: info_result
 
-    - name: Generate extra snapshots - five more
+    - name: Generate extra snapshots
       ec2_snapshot:
         volume_id: '{{ volume_id }}'
         snapshot_tags:
