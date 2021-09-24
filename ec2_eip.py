@@ -344,10 +344,11 @@ def address_is_associated_with_device(ec2, module, address, device_id, is_instan
 
 def allocate_address(ec2, module, domain, reuse_existing_ip_allowed, check_mode, tag_dict=None, public_ipv4_pool=None):
     """ Allocate a new elastic IP address (when needed) and return it """
+    if not domain:
+        domain = 'standard'
+
     if reuse_existing_ip_allowed:
         filters = []
-        if not domain:
-            domain = 'standard'
         filters.append({'Name': 'domain', "Values": [domain]})
 
         if tag_dict is not None:
