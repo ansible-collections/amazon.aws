@@ -25,6 +25,7 @@ options:
   ip_address:
     description:
       - IP address of the end-point to check. Either this or I(fqdn) has to be provided.
+      - IP addresses must be publicly routable.
     type: str
   port:
     description:
@@ -111,7 +112,79 @@ EXAMPLES = '''
   community.aws.route53_health_check:
     state: absent
     fqdn: host1.example.com
+'''
 
+RETURN = r'''
+health_check:
+  description: Information about the health check.
+  returned: success
+  type: dict
+  contains:
+    action:
+      description: The action performed by the module.
+      type: str
+      returned: When a change is or would be made.
+      sample: 'updated'
+    id:
+      description: The Unique ID assigned by AWS to the health check.
+      type: str
+      returned: When the health check exists.
+      sample: 50ec8a13-9623-4c66-9834-dd8c5aedc9ba
+    health_check_version:
+      description: The version number of the health check.
+      type: int
+      returned: When the health check exists.
+      sample: 14
+    health_check_config:
+      description:
+        - Detailed information about the health check.
+        - May contain additional values from Route 53 health check
+          features not yet supported by this module.
+      type: dict
+      returned: When the health check exists.
+      contains:
+        type:
+          description: The type of the health check.
+          type: str
+          returned: When the health check exists.
+          sample: 'HTTPS_STR_MATCH'
+        failure_threshold:
+          description:
+            - The number of consecutive health checks that an endpoint must pass or fail for Amazon Route 53 to
+              change the current status of the endpoint from unhealthy to healthy or vice versa.
+          type: int
+          returned: When the health check exists.
+          sample: 3
+        fully_qualified_domain_name:
+          description: The FQDN configured for the health check to test.
+          type: str
+          returned: When the health check exists and an FQDN is configured.
+          sample: 'updated'
+        ip_address:
+          description: The IPv4 or IPv6 IP address of the endpoint to be queried.
+          type: str
+          returned: When the health check exists and a specific IP address is configured.
+          sample: ''
+        port:
+          description: The port on the endpoint that the health check will query.
+          type: str
+          returned: When the health check exists.
+          sample: 'updated'
+        request_interval:
+          description: The number of seconds between health check queries.
+          type: int
+          returned: When the health check exists.
+          sample: 30
+        resource_path:
+          description: The URI path to query when performing an HTTP/HTTPS based health check.
+          type: str
+          returned: When the health check exists and a resource path has been configured.
+          sample: '/healthz'
+        search_string:
+          description: A string that must be present in the response for a health check to be considered successful.
+          type: str
+          returned: When the health check exists and a search string has been configured.
+          sample: 'ALIVE'
 '''
 
 import uuid
