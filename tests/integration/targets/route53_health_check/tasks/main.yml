@@ -186,8 +186,6 @@
       fqdn: '{{ fqdn }}'
       request_interval: '{{ request_interval }}'
       resource_path: '{{ resource_path }}'
-      # Mandatory for HTTPS_STR_MATCH checks
-      string_match: '{{ string_match }}'
     register: update_resource_path
 
   - name: 'Check result - Update HTTPS health check - set resource_path'
@@ -208,8 +206,6 @@
       fqdn: '{{ fqdn }}'
       request_interval: '{{ request_interval }}'
       resource_path: '{{ resource_path }}'
-      # Mandatory for HTTPS_STR_MATCH checks
-      string_match: '{{ string_match }}'
     register: update_resource_path
 
   - name: 'Check result - Update HTTPS health check - set resource_path - idempotency'
@@ -270,8 +266,6 @@
       type: '{{ type_https_match }}'
       fqdn: '{{ fqdn }}'
       request_interval: '{{ request_interval }}'
-      # Mandatory for HTTPS_STR_MATCH checks
-      string_match: ''
     register: delete_match
 
   - name: 'Check result - Delete HTTPS health check'
@@ -288,8 +282,6 @@
       type: '{{ type_https_match }}'
       fqdn: '{{ fqdn }}'
       request_interval: '{{ request_interval }}'
-      # Mandatory for HTTPS_STR_MATCH checks
-      string_match: ''
     register: delete_match
 
   - name: 'Check result - Delete HTTPS health check - idempotency'
@@ -399,8 +391,6 @@
       type: '{{ type_http_match }}'
       fqdn: '{{ fqdn }}'
       request_interval: '{{ request_interval }}'
-      # Mandatory for HTTPS_STR_MATCH checks
-      string_match: ''
     register: delete_complex
 
   - name: 'Check result - Delete Complex health check'
@@ -417,8 +407,6 @@
       type: '{{ type_http_match }}'
       fqdn: '{{ fqdn }}'
       request_interval: '{{ request_interval }}'
-      # Mandatory for HTTPS_STR_MATCH checks
-      string_match: ''
     register: delete_complex
 
   - name: 'Check result - Delete Complex health check - idempotency'
@@ -449,8 +437,6 @@
       type: '{{ type_https_match }}'
       fqdn: '{{ fqdn }}'
       request_interval: '{{ request_interval }}'
-      # Mandatory for HTTPS_STR_MATCH checks
-      string_match: ''
     ignore_errors: true
 
   - name: 'Delete Complex health check'
@@ -461,8 +447,6 @@
       type: '{{ type_http_match }}'
       fqdn: '{{ fqdn }}'
       request_interval: '{{ request_interval }}'
-      # Mandatory for HTTPS_STR_MATCH checks
-      string_match: ''
     ignore_errors: true
 
   - name: release EIP
