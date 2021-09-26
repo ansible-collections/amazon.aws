@@ -277,8 +277,8 @@ def update_health_check(existing_check):
         return True, 'update'
 
     check_id = existing_check.get('Id')
+    # This makes sure we're starting from the version we think we are...
     version_id = existing_check.get('HealthCheckVersion', 1)
-    version_id += 1
     try:
         client.update_health_check(
             HealthCheckId=check_id,
