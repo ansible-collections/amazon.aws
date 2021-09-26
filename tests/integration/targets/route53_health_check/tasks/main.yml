@@ -256,8 +256,7 @@
     assert:
       that:
       - update_string_match is successful
-      # XXX Bug
-      # - update_string_match is not changed
+      - update_string_match is not changed
       - '"health_check" in update_string_match'
       - '"id" in update_string_match.health_check'
       - update_string_match.health_check.id == match_check_id
