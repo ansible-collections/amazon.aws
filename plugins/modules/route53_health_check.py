@@ -161,8 +161,7 @@ def find_health_check(ip_addr, fqdn, hc_type, request_interval, port):
                 config.get('FullyQualifiedDomainName', None) == fqdn and
                 config.get('Type') == hc_type and
                 config.get('RequestInterval') == request_interval and
-                config.get('Port', None) == port and
-                True
+                config.get('Port', None) == port
             ):
                 return check
 
