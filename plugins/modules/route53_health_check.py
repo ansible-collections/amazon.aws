@@ -44,7 +44,7 @@ options:
         health checks. The path can be any value for which your endpoint will
         return an HTTP status code of 2xx or 3xx when the endpoint is healthy,
         for example the file /docs/route53-health-check.html.
-      - Required for all checks except TCP.
+      - Mutually exclusive with I(type='TCP').
       - The path must begin with a /
       - Maximum 255 characters.
     type: str
@@ -74,15 +74,13 @@ options:
       - The number of consecutive health checks that an endpoint must pass or
         fail for Amazon Route 53 to change the current status of the endpoint
         from unhealthy to healthy or vice versa.
-    default: 3
+      - Will default to C(3) if not specified on creation.
     choices: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
     type: int
 author: "zimbatm (@zimbatm)"
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-requirements:
-- boto >= 2.49.0
 '''
 
 EXAMPLES = '''
@@ -119,162 +117,195 @@ EXAMPLES = '''
 import uuid
 
 try:
-    import boto.ec2
-    from boto.route53 import Route53Connection, exception
-    from boto.route53.healthcheck import HealthCheck
+    import botocore
 except ImportError:
     pass  # Handled by HAS_BOTO
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
-# Things that can't get changed:
-#  protocol
-#  ip_address or domain
-#  request_interval
-#  string_match if not previously enabled
-def find_health_check(conn, wanted):
+def _list_health_checks(**params):
+    try:
+        results = client.list_health_checks(aws_retry=True, **params)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to list health checks')
+    return results
+
+
+def find_health_check(ip_addr, fqdn, hc_type, request_interval, port):
     """Searches for health checks that have the exact same set of immutable values"""
 
-    results = conn.get_list_health_checks()
+    # In lieu of an Id we perform matches against the following values:
+    # - ip_addr
+    # - fqdn
+    # - type (immutable)
+    # - request_interval
+    # - port
+
+    # Because the list and route53 provides no 'filter' mechanism,
+    # the using a paginator would result in (on average) double the
+    # number of API calls and can get really slow.
+    # Additionally, we can't properly wrap the paginator, so retrying means
+    # starting from scratch with a paginator
+    results = _list_health_checks()
 
     while True:
-        for check in results.HealthChecks:
-            config = check.HealthCheckConfig
+        for check in results.get('HealthChecks'):
+            config = check.get('HealthCheckConfig')
             if (
-                config.get('IPAddress') == wanted.ip_addr and
-                config.get('FullyQualifiedDomainName') == wanted.fqdn and
-                config.get('Type') == wanted.hc_type and
-                config.get('RequestInterval') == str(wanted.request_interval) and
-                config.get('Port') == str(wanted.port)
+                config.get('IPAddress', None) == ip_addr and
+                config.get('FullyQualifiedDomainName', None) == fqdn and
+                config.get('Type') == hc_type and
+                config.get('RequestInterval') == request_interval and
+                config.get('Port', None) == port and
+                True
             ):
                 return check
 
-        if (results.IsTruncated == 'true'):
-            results = conn.get_list_health_checks(marker=results.NextMarker)
+        if results.get('IsTruncated', False):
+            results = _list_health_checks(Marker=results.get('NextMarker'))
         else:
             return None
 
 
-def to_health_check(config):
-    return HealthCheck(
-        config.get('IPAddress'),
-        int(config.get('Port')),
-        config.get('Type'),
-        config.get('ResourcePath'),
-        fqdn=config.get('FullyQualifiedDomainName'),
-        string_match=config.get('SearchString'),
-        request_interval=int(config.get('RequestInterval')),
-        failure_threshold=int(config.get('FailureThreshold')),
+def delete_health_check(check_id):
+    if not check_id:
+        return False, None
+
+    if module.check_mode:
+        return True, 'delete'
+
+    try:
+        client.delete_health_check(
+            aws_retry=True,
+            HealthCheckId=check_id,
+        )
+    except is_boto3_error_code('NoSuchHealthCheck'):
+        # Handle the deletion race condition as cleanly as possible
+        return False, None
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg='Failed to list health checks')
+
+    return True, 'delete'
+
+
+def create_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_in):
+
+    # In general, if a request is repeated with the same CallerRef it won't
+    # result in a duplicate check appearing.  This means we can safely use our
+    # retry decorators
+    caller_ref = str(uuid.uuid4())
+    missing_args = []
+
+    health_check = dict(
+        Type=type_in,
+        RequestInterval=request_interval_in,
+        Port=port_in,
     )
+    if ip_addr_in:
+        health_check['IPAddress'] = ip_addr_in
+    if fqdn_in:
+        health_check['FullyQualifiedDomainName'] = fqdn_in
+
+    if type_in in ['HTTP', 'HTTPS', 'HTTP_STR_MATCH', 'HTTPS_STR_MATCH']:
+        resource_path = module.params.get('resource_path')
+        # if not resource_path:
+        #     missing_args.append('resource_path')
+        if resource_path:
+            health_check['ResourcePath'] = resource_path
+    if type_in in ['HTTP_STR_MATCH', 'HTTPS_STR_MATCH']:
+        string_match = module.params.get('string_match')
+        if not string_match:
+            missing_args.append('string_match')
+        health_check['SearchString'] = module.params.get('string_match')
+
+    failure_threshold = module.params.get('failure_threshold')
+    if not failure_threshold:
+        failure_threshold = 3
+    health_check['FailureThreshold'] = failure_threshold
+
+    if missing_args:
+        module.fail_json(msg='missing required arguments for creation: {0}'.format(
+            ', '.join(missing_args)),
+        )
+
+    if module.check_mode:
+        return True, 'create', None
+
+    try:
+        result = client.create_health_check(
+            aws_retry=True,
+            CallerReference=caller_ref,
+            HealthCheckConfig=health_check,
+        )
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        module.fail_json_aws(e, msg='Failed to create health check.', health_check=health_check)
+
+    return True, 'create', result.get('HealthCheck').get('Id')
 
 
-def health_check_diff(a, b):
-    a = a.__dict__
-    b = b.__dict__
-    if a == b:
-        return {}
-    diff = {}
-    for key in set(a.keys()) | set(b.keys()):
-        if a.get(key) != b.get(key):
-            diff[key] = b.get(key)
-    return diff
+def update_health_check(existing_check):
+    # In theory it's also possible to update the IPAddress, Port and
+    # FullyQualifiedDomainName, however, because we use these in lieu of a
+    # 'Name' to uniquely identify the health check this isn't currently
+    # supported.  If we accepted an ID it would be possible to modify them.
+
+    changes = dict()
+    existing_config = existing_check.get('HealthCheckConfig')
+
+    resource_path = module.params.get('resource_path', None)
+    if resource_path and resource_path != existing_config.get('ResourcePath'):
+        changes['ResourcePath'] = resource_path
+
+    search_string = module.params.get('string_match', None)
+    if search_string and search_string != existing_config.get('SearchString'):
+        changes['SearchString'] = search_string
+
+    failure_threshold = module.params.get('failure_threshold', None)
+    if failure_threshold and failure_threshold != existing_config.get('FailureThreshold'):
+        changes['FailureThreshold'] = failure_threshold
+
+    # No changes...
+    if not changes:
+        return False, None
+
+    if module.check_mode:
+        return True, 'update'
+
+    check_id = existing_check.get('Id')
+    version_id = existing_check.get('HealthCheckVersion', 1)
+    version_id += 1
+    try:
+        client.update_health_check(
+            HealthCheckId=check_id,
+            HealthCheckVersion=version_id,
+            **changes,
+        )
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        module.fail_json_aws(e, msg='Failed to update health check.', id=check_id)
+
+    return True, 'update'
 
 
-def to_template_params(health_check):
-    params = {
-        'ip_addr_part': '',
-        'port': health_check.port,
-        'type': health_check.hc_type,
-        'resource_path_part': '',
-        'fqdn_part': '',
-        'string_match_part': '',
-        'request_interval': health_check.request_interval,
-        'failure_threshold': health_check.failure_threshold,
-    }
-    if health_check.ip_addr:
-        params['ip_addr_part'] = HealthCheck.XMLIpAddrPart % {'ip_addr': health_check.ip_addr}
-    if health_check.resource_path:
-        params['resource_path_part'] = XMLResourcePathPart % {'resource_path': health_check.resource_path}
-    if health_check.fqdn:
-        params['fqdn_part'] = HealthCheck.XMLFQDNPart % {'fqdn': health_check.fqdn}
-    if health_check.string_match:
-        params['string_match_part'] = HealthCheck.XMLStringMatchPart % {'string_match': health_check.string_match}
-    return params
+def describe_health_check(id):
+    if not id:
+        return dict()
 
+    try:
+        result = client.get_health_check(
+            aws_retry=True,
+            HealthCheckId=id,
+        )
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        module.fail_json_aws(e, msg='Failed to get health check.', id=id)
 
-XMLResourcePathPart = """<ResourcePath>%(resource_path)s</ResourcePath>"""
-
-POSTXMLBody = """
-    <CreateHealthCheckRequest xmlns="%(xmlns)s">
-        <CallerReference>%(caller_ref)s</CallerReference>
-        <HealthCheckConfig>
-            %(ip_addr_part)s
-            <Port>%(port)s</Port>
-            <Type>%(type)s</Type>
-            %(resource_path_part)s
-            %(fqdn_part)s
-            %(string_match_part)s
-            <RequestInterval>%(request_interval)s</RequestInterval>
-            <FailureThreshold>%(failure_threshold)s</FailureThreshold>
-        </HealthCheckConfig>
-    </CreateHealthCheckRequest>
-    """
-
-UPDATEHCXMLBody = """
-    <UpdateHealthCheckRequest xmlns="%(xmlns)s">
-        <HealthCheckVersion>%(health_check_version)s</HealthCheckVersion>
-        %(ip_addr_part)s
-        <Port>%(port)s</Port>
-        %(resource_path_part)s
-        %(fqdn_part)s
-        %(string_match_part)s
-        <FailureThreshold>%(failure_threshold)i</FailureThreshold>
-    </UpdateHealthCheckRequest>
-    """
-
-
-def create_health_check(conn, health_check, caller_ref=None):
-    if caller_ref is None:
-        caller_ref = str(uuid.uuid4())
-    uri = '/%s/healthcheck' % conn.Version
-    params = to_template_params(health_check)
-    params.update(xmlns=conn.XMLNameSpace, caller_ref=caller_ref)
-
-    xml_body = POSTXMLBody % params
-    response = conn.make_request('POST', uri, {'Content-Type': 'text/xml'}, xml_body)
-    body = response.read()
-    boto.log.debug(body)
-    if response.status == 201:
-        e = boto.jsonresponse.Element()
-        h = boto.jsonresponse.XmlHandler(e, None)
-        h.parse(body)
-        return e
-    else:
-        raise exception.DNSServerError(response.status, response.reason, body)
-
-
-def update_health_check(conn, health_check_id, health_check_version, health_check):
-    uri = '/%s/healthcheck/%s' % (conn.Version, health_check_id)
-    params = to_template_params(health_check)
-    params.update(
-        xmlns=conn.XMLNameSpace,
-        health_check_version=health_check_version,
-    )
-    xml_body = UPDATEHCXMLBody % params
-    response = conn.make_request('POST', uri, {'Content-Type': 'text/xml'}, xml_body)
-    body = response.read()
-    boto.log.debug(body)
-    if response.status not in (200, 204):
-        raise exception.DNSServerError(response.status,
-                                       response.reason,
-                                       body)
-    e = boto.jsonresponse.Element()
-    h = boto.jsonresponse.XmlHandler(e, None)
-    h.parse(body)
-    return e
+    health_check = result.get('HealthCheck', {})
+    health_check = camel_dict_to_snake_dict(health_check)
+    return health_check
 
 
 def main():
@@ -287,12 +318,26 @@ def main():
         fqdn=dict(),
         string_match=dict(),
         request_interval=dict(type='int', choices=[10, 30], default=30),
-        failure_threshold=dict(type='int', choices=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], default=3),
+        failure_threshold=dict(type='int', choices=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
     )
-    module = AnsibleAWSModule(argument_spec=argument_spec, check_boto3=False)
 
-    if not HAS_BOTO:
-        module.fail_json(msg='boto 2.27.0+ required for this module')
+    args_one_of = [
+        ['ip_address', 'fqdn'],
+    ]
+
+    args_if = [
+        ['type', 'TCP', ('port',)],
+    ]
+
+    global module
+    global client
+
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        required_one_of=args_one_of,
+        required_if=args_if,
+        supports_check_mode=True,
+    )
 
     state_in = module.params.get('state')
     ip_addr_in = module.params.get('ip_address')
@@ -304,63 +349,45 @@ def main():
     request_interval_in = module.params.get('request_interval')
     failure_threshold_in = module.params.get('failure_threshold')
 
-    if ip_addr_in is None and fqdn_in is None:
-        module.fail_json(msg="parameter 'ip_address' or 'fqdn' is required")
-
     # Default port
     if port_in is None:
         if type_in in ['HTTP', 'HTTP_STR_MATCH']:
             port_in = 80
         elif type_in in ['HTTPS', 'HTTPS_STR_MATCH']:
             port_in = 443
-        else:
-            module.fail_json(msg="parameter 'port' is required for 'type' TCP")
 
-    # string_match in relation with type
-    if type_in in ['HTTP_STR_MATCH', 'HTTPS_STR_MATCH']:
-        if string_match_in is None:
-            module.fail_json(msg="parameter 'string_match' is required for the HTTP(S)_STR_MATCH types")
-        elif len(string_match_in) > 255:
+    if string_match_in:
+        if type_in not in ['HTTP_STR_MATCH', 'HTTPS_STR_MATCH']:
+            module.fail_json(msg="parameter 'string_match' argument is only for the HTTP(S)_STR_MATCH types")
+        if len(string_match_in) > 255:
             module.fail_json(msg="parameter 'string_match' is limited to 255 characters max")
-    elif string_match_in:
-        module.fail_json(msg="parameter 'string_match' argument is only for the HTTP(S)_STR_MATCH types")
 
-    region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module)
-    # connect to the route53 endpoint
-    try:
-        conn = Route53Connection(**aws_connect_kwargs)
-    except boto.exception.BotoServerError as e:
-        module.fail_json(msg=e.error_message)
+    client = module.client('route53', retry_decorator=AWSRetry.jittered_backoff())
 
     changed = False
     action = None
     check_id = None
-    wanted_config = HealthCheck(ip_addr_in, port_in, type_in, resource_path_in, fqdn_in, string_match_in, request_interval_in, failure_threshold_in)
-    existing_check = find_health_check(conn, wanted_config)
+
+    existing_check = find_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_in)
+
     if existing_check:
-        check_id = existing_check.Id
-        existing_config = to_health_check(existing_check.HealthCheckConfig)
+        check_id = existing_check.get('Id')
 
-    if state_in == 'present':
+    if state_in == 'absent':
+        changed, action = delete_health_check(check_id)
+        check_id = None
+    elif state_in == 'present':
         if existing_check is None:
-            action = "create"
-            check_id = create_health_check(conn, wanted_config).HealthCheck.Id
-            changed = True
+            changed, action, check_id = create_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_in)
         else:
-            diff = health_check_diff(existing_config, wanted_config)
-            if diff:
-                action = "update"
-                update_health_check(conn, existing_check.Id, int(existing_check.HealthCheckVersion), wanted_config)
-                changed = True
-    elif state_in == 'absent':
-        if check_id:
-            action = "delete"
-            conn.delete_health_check(check_id)
-            changed = True
-    else:
-        module.fail_json(msg="Logic Error: Unknown state")
+            changed, action = update_health_check(existing_check)
 
-    module.exit_json(changed=changed, health_check=dict(id=check_id), action=action)
+    health_check = describe_health_check(id=check_id)
+    health_check['action'] = action
+    module.exit_json(
+        changed=changed,
+        health_check=health_check,
+    )
 
 
 if __name__ == '__main__':
