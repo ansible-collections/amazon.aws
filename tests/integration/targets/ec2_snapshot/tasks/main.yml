@@ -220,6 +220,10 @@
           "tag:Name": '{{ resource_prefix }}'
       register: info_result
 
+    - assert:
+        that:
+          - info_result.snapshots | length == 3
+
     - name: Generate extra snapshots
       ec2_snapshot:
         volume_id: '{{ volume_id }}'
