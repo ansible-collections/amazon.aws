@@ -78,7 +78,8 @@ options:
     description:
       - By default the module will not upload a certificate that is already uploaded into AWS.
       - If I(dup_ok=True), it will upload the certificate as long as the name is unique.
-      - Defaults to C(false).
+      - Currently defaults to C(false), this will default to C(true) in release
+        4.0.0.
     type: bool
 
 author: Jonathan I. Davila (@defionscode)
@@ -306,6 +307,12 @@ def main():
     new_name = module.params.get('new_name')
     new_path = module.params.get('new_path')
     dup_ok = module.params.get('dup_ok')
+
+    if dup_ok is None:
+        module.deprecate(
+            'The dup_ok module currently defaults to false, this will change in '
+            'release 4.0.0 to true.', version='4.0.0', collection_name='community.aws')
+
     if state == 'present' and not new_name and not new_path:
         cert, key, cert_chain = load_data(cert=module.params.get('cert'),
                                           key=module.params.get('key'),
