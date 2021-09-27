@@ -701,7 +701,7 @@ def main():
             ['volume_type', 'io1', ['iops']],
             ['volume_type', 'io2', ['iops']],
         ],
-        supports_check_mode=True
+        supports_check_mode=True,
     )
 
     param_id = module.params.get('id')
