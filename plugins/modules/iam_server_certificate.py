@@ -394,6 +394,7 @@ def main():
             ['new_name', 'cert'],
             ['new_name', 'cert_chain'],
         ],
+        supports_check_mode=True,
     )
 
     client = module.client('iam', retry_decorator=AWSRetry.jittered_backoff())
