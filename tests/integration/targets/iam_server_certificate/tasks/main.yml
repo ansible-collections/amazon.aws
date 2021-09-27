@@ -47,6 +47,21 @@
       cert_b_data: '{{ lookup("file", path_cert_b) }}'
       chain_cert_data: '{{ lookup("file", path_intermediate_cert) }}'
 
+  - name: Create Certificate - check_mode
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      state: present
+      cert: '{{ cert_a_data }}'
+      key: '{{ lookup("file", path_cert_key) }}'
+    register: create_cert
+    check_mode: true
+
+  - name: check result - Create Certificate - check_mode
+    assert:
+      that:
+      - create_cert is successful
+      - create_cert is changed
+
   - name: Create Certificate
     iam_server_certificate:
       name: '{{ cert_name }}'
@@ -71,6 +86,21 @@
       - create_cert.name == cert_name
       - create_cert.cert_path == '/'
       - create_cert.cert_body == cert_a_data
+
+  - name: Create Certificate - idempotency - check_mode
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      state: present
+      cert: '{{ cert_a_data }}'
+      key: '{{ lookup("file", path_cert_key) }}'
+    register: create_cert
+    check_mode: true
+
+  - name: check result - Create Certificate - idempotency
+    assert:
+      that:
+      - create_cert is successful
+      - create_cert is not changed
 
   - name: Create Certificate - idempotency
     iam_server_certificate:
@@ -100,15 +130,45 @@
   ################################################
 
   # Module explicitly blocks updating certs
+  - name: Update Certificate - check_mode
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      state: present
+      cert: '{{ cert_b_data }}'
+    register: update_cert
+    ignore_errors: true
+    check_mode: true
+
+  - name: check result - Update Certificate - check_mode
+    assert:
+      that:
+      - update_cert is failed
+      - '"not supported" in update_cert.msg'
+
   - name: Update Certificate
     iam_server_certificate:
       name: '{{ cert_name }}'
       state: present
       cert: '{{ cert_b_data }}'
     register: update_cert
-    ignore_errors: True
+    ignore_errors: true
 
   - name: check result - Update Certificate
+    assert:
+      that:
+      - update_cert is failed
+      - '"not supported" in update_cert.msg'
+
+  - name: Update Chaining Certificate - check_mode
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      state: present
+      cert_chain: '{{ chain_cert_data }}'
+    register: update_cert
+    ignore_errors: true
+    check_mode: true
+
+  - name: check result - Update Chaining Certificate - check_mode
     assert:
       that:
       - update_cert is failed
@@ -120,7 +180,7 @@
       state: present
       cert_chain: '{{ chain_cert_data }}'
     register: update_cert
-    ignore_errors: True
+    ignore_errors: true
 
   - name: check result - Update Chaining Certificate
     assert:
@@ -134,11 +194,43 @@
 
   ################################################
 
+  - name: Delete certificate - check_mode
+    iam_cert:
+      name: '{{ cert_name }}'
+      state: absent
+    register: delete_cert
+    check_mode: true
+
+  - name: check result - Delete certificate - check_mode
+    assert:
+      that:
+      - delete_cert is successful
+      - delete_cert is changed
+
   - name: Delete certificate
     iam_cert:
       name: '{{ cert_name }}'
       state: absent
     register: delete_cert
+
+  - name: check result - Delete certificate
+    assert:
+      that:
+      - delete_cert is successful
+      - delete_cert is changed
+
+  - name: Delete certificate - idempotency - check_mode
+    iam_cert:
+      name: '{{ cert_name }}'
+      state: absent
+    register: delete_cert
+    check_mode: true
+
+  - name: check result - Delete certificate - check_mode
+    assert:
+      that:
+      - delete_cert is successful
+      - delete_cert is not changed
 
   - name: Delete certificate - idempotency
     iam_cert:
@@ -146,7 +238,30 @@
       state: absent
     register: delete_cert
 
+  - name: check result - Delete certificate
+    assert:
+      that:
+      - delete_cert is successful
+      - delete_cert is not changed
+
   ################################################
+
+  - name: Create Certificate with Chain and path - check_mode
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      state: present
+      cert: '{{ cert_a_data }}'
+      key: '{{ lookup("file", path_cert_key) }}'
+      cert_chain: '{{ chain_cert_data }}'
+      path: '/example/'
+    register: create_cert
+    check_mode: true
+
+  - name: check result - Create Certificate with Chain and path - check_mode
+    assert:
+      that:
+      - create_cert is successful
+      - create_cert is changed
 
   - name: Create Certificate with Chain and path
     iam_server_certificate:
@@ -174,6 +289,23 @@
       - create_cert.name == cert_name
       - create_cert.cert_path == '/example/'
       - create_cert.cert_body == cert_a_data
+
+  - name: Create Certificate with Chain and path - idempotency - check_mode
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      state: present
+      cert: '{{ cert_a_data }}'
+      key: '{{ lookup("file", path_cert_key) }}'
+      cert_chain: '{{ chain_cert_data }}'
+      path: '/example/'
+    register: create_cert
+    check_mode: true
+
+  - name: check result - Create Certificate with Chain and path - idempotency - check_mode
+    assert:
+      that:
+      - create_cert is successful
+      - create_cert is not changed
 
   - name: Create Certificate with Chain and path - idempotency
     iam_server_certificate:
@@ -204,6 +336,20 @@
 
   ################################################
 
+  - name: Create Certificate with identical cert - check_mode
+    iam_server_certificate:
+      name: '{{ cert_name }}-duplicate'
+      state: present
+      cert: '{{ cert_a_data }}'
+      key: '{{ lookup("file", path_cert_key) }}'
+    register: create_duplicate
+    ignore_errors: true
+
+  - name: check result - Create Certificate with identical cert - check_mode
+    assert:
+      that:
+      - create_duplicate is failed
+
   - name: Create Certificate with identical cert
     iam_server_certificate:
       name: '{{ cert_name }}-duplicate'
@@ -211,7 +357,7 @@
       cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
     register: create_duplicate
-    ignore_errors: True
+    ignore_errors: true
 
   - name: check result - Create Certificate with identical cert
     assert:
@@ -219,6 +365,22 @@
       - create_duplicate is failed
 
   ################################################
+
+  - name: Create Certificate with forced identical cert - check_mode
+    iam_server_certificate:
+      name: '{{ cert_name }}-duplicate'
+      state: present
+      cert: '{{ cert_a_data }}'
+      key: '{{ lookup("file", path_cert_key) }}'
+      dup_ok: true
+    register: create_duplicate
+    check_mode: true
+
+  - name: check result - Create Certificate with forced identical cert - check_mode
+    assert:
+      that:
+      - create_duplicate is successful
+      - create_duplicate is changed
 
   - name: Create Certificate with forced identical cert
     iam_server_certificate:
@@ -228,7 +390,6 @@
       key: '{{ lookup("file", path_cert_key) }}'
       dup_ok: true
     register: create_duplicate
-    ignore_errors: True
 
   - name: check result - Create Certificate with forced identical cert
     assert:
@@ -247,6 +408,22 @@
       - create_duplicate.cert_path == '/'
       - create_duplicate.cert_body == cert_a_data
 
+  - name: Create Certificate with forced identical cert - idempotency - check_mode
+    iam_server_certificate:
+      name: '{{ cert_name }}-duplicate'
+      state: present
+      cert: '{{ cert_a_data }}'
+      key: '{{ lookup("file", path_cert_key) }}'
+      dup_ok: true
+    register: create_duplicate
+    check_mode: true
+
+  - name: check result - Create Certificate with forced identical cert - idempotency - check_mode
+    assert:
+      that:
+      - create_duplicate is successful
+      - create_duplicate is not changed
+
   - name: Create Certificate with forced identical cert - idempotency
     iam_server_certificate:
       name: '{{ cert_name }}-duplicate'
@@ -255,7 +432,6 @@
       key: '{{ lookup("file", path_cert_key) }}'
       dup_ok: true
     register: create_duplicate
-    ignore_errors: True
 
   - name: check result - Create Certificate with forced identical cert - idempotency
     assert:
@@ -276,6 +452,21 @@
 
   ################################################
 
+  - name: Update certificate path - check_mode
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      state: present
+      path: '/example/'
+      new_path: '/path/'
+    register: update_path
+    check_mode: true
+
+  - name: check result - Update certificate path - check_mode
+    assert:
+      that:
+      - update_path is successful
+      - update_path is changed
+
   - name: Update certificate path
     iam_server_certificate:
       name: '{{ cert_name }}'
@@ -283,7 +474,6 @@
       path: '/example/'
       new_path: '/path/'
     register: update_path
-    ignore_errors: True
 
   - name: check result - Update certificate path
     assert:
@@ -302,6 +492,21 @@
       - update_path.cert_path == '/path/'
       - update_path.cert_body == cert_a_data
 
+  - name: Update certificate path - idempotency - check_mode
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      state: present
+      path: '/example/'
+      new_path: '/path/'
+    register: update_path
+    check_mode: true
+
+  - name: check result - Update certificate path - idempotency - check_mode
+    assert:
+     that:
+     - update_path is successful
+     - update_path is not changed
+
   - name: Update certificate path - idempotency
     iam_server_certificate:
       name: '{{ cert_name }}'
@@ -309,7 +514,6 @@
       path: '/example/'
       new_path: '/path/'
     register: update_path
-    ignore_errors: True
 
   - name: check result - Update certificate path - idempotency
     assert:
@@ -319,13 +523,26 @@
 
   ################################################
 
+  - name: Update certificate name - check_mode
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      new_name: '{{ cert_name }}-renamed'
+      state: present
+    register: update_name
+    check_mode: true
+
+  - name: check result - Update certificate name - check_mode
+    assert:
+      that:
+      - update_name is successful
+      - update_name is changed
+
   - name: Update certificate name
     iam_server_certificate:
       name: '{{ cert_name }}'
       new_name: '{{ cert_name }}-renamed'
       state: present
     register: update_name
-    ignore_errors: True
 
   - name: check result - Update certificate name
     assert:
@@ -344,19 +561,43 @@
       - update_name.cert_path == '/path/'
       - update_name.cert_body == cert_a_data
 
+  - name: Update certificate name - idempotency - check_mode
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      new_name: '{{ cert_name }}-renamed'
+      state: present
+    register: update_name
+    check_mode: true
+
+  - name: check result - Update certificate name - idempotency - check_mode
+    assert:
+      that:
+      - update_name is successful
+      - update_name is not changed
+
   - name: Update certificate name - idempotency
     iam_server_certificate:
       name: '{{ cert_name }}'
       new_name: '{{ cert_name }}-renamed'
       state: present
     register: update_name
-    ignore_errors: True
 
   - name: check result - Update certificate name - idempotency
     assert:
       that:
       - update_name is successful
       - update_name is not changed
+      - '"arn" in update_name'
+      - '"cert_body" in update_name'
+      - '"cert_path" in update_name'
+      - '"expiration_date" in update_name'
+      - '"name" in update_name'
+      - '"upload_date" in update_name'
+      - update_name.arn.startswith('arn:aws')
+      - update_name.arn.endswith('-renamed')
+      - update_name.name.endswith('renamed')
+      - update_name.cert_path == '/path/'
+      - update_name.cert_body == cert_a_data
 
   always:
 
