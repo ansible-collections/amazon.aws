@@ -56,17 +56,23 @@ options:
   cert_chain:
     description:
       - The path to, or content of, the CA certificate chain in PEM encoded format.
-        As of 2.4 content is accepted. If the parameter is not a file, it is assumed to be content.
+      - If the parameter is not a file, it is assumed to be content.
+      - Passing a file name is deprecated, and support will be dropped in
+        version 4.0.0 of this collection.
     type: str
   cert:
     description:
       - The path to, or content of the certificate body in PEM encoded format.
-        As of 2.4 content is accepted. If the parameter is not a file, it is assumed to be content.
+      - If the parameter is not a file, it is assumed to be content.
+      - Passing a file name is deprecated, and support will be dropped in
+        version 4.0.0 of this collection.
     type: str
   key:
     description:
       - The path to, or content of the private key in PEM encoded format.
-        As of 2.4 content is accepted. If the parameter is not a file, it is assumed to be content.
+        If the parameter is not a file, it is assumed to be content.
+      - Passing a file name is deprecated, and support will be dropped in
+        version 4.0.0 of this collection.
     type: str
   dup_ok:
     description:
@@ -231,16 +237,31 @@ def load_data(cert, key, cert_chain):
     if cert and os.path.isfile(cert):
         with open(cert, 'r') as cert_fh:
             cert = cert_fh.read().rstrip()
+        module.deprecate(
+            'Passing a file name as the cert argument has been deprecated.  '
+            'Please use a lookup instead, see the documentation for examples.',
+            version='4.0.0', collection_name='community.aws')
     if key and os.path.isfile(key):
         with open(key, 'r') as key_fh:
             key = key_fh.read().rstrip()
+        module.deprecate(
+            'Passing a file name as the key argument has been deprecated.  '
+            'Please use a lookup instead, see the documentation for examples.',
+            version='4.0.0', collection_name='community.aws')
     if cert_chain and os.path.isfile(cert_chain):
         with open(cert_chain, 'r') as cert_chain_fh:
             cert_chain = cert_chain_fh.read()
+        module.deprecate(
+            'Passing a file name as the cert_chain argument has been deprecated.  '
+            'Please use a lookup instead, see the documentation for examples.',
+            version='4.0.0', collection_name='community.aws')
     return cert, key, cert_chain
 
 
 def main():
+
+    global module
+
     argument_spec = dict(
         state=dict(required=True, choices=['present', 'absent']),
         name=dict(required=True),
