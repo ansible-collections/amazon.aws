@@ -42,11 +42,16 @@
 
   ################################################
 
+  - set_fact:
+      cert_a_data: '{{ lookup("file", path_cert_a) }}'
+      cert_b_data: '{{ lookup("file", path_cert_b) }}'
+      chain_cert_data: '{{ lookup("file", path_intermediate_cert) }}'
+
   - name: Create Certificate
     iam_server_certificate:
       name: '{{ cert_name }}'
       state: present
-      cert: '{{ lookup("file", path_cert_a) }}'
+      cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
     register: create_cert
 
@@ -55,12 +60,23 @@
       that:
       - create_cert is successful
       - create_cert is changed
+      - '"arn" in create_cert'
+      - '"cert_body" in create_cert'
+      - '"cert_path" in create_cert'
+      - '"expiration_date" in create_cert'
+      - '"name" in create_cert'
+      - '"upload_date" in create_cert'
+      - create_cert.arn.startswith('arn:aws')
+      - create_cert.arn.endswith(cert_name)
+      - create_cert.name == cert_name
+      - create_cert.cert_path == '/'
+      - create_cert.cert_body == cert_a_data
 
   - name: Create Certificate - idempotency
     iam_server_certificate:
       name: '{{ cert_name }}'
       state: present
-      cert: '{{ lookup("file", path_cert_a) }}'
+      cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
     register: create_cert
 
@@ -69,6 +85,17 @@
       that:
       - create_cert is successful
       - create_cert is not changed
+      - '"arn" in create_cert'
+      - '"cert_body" in create_cert'
+      - '"cert_path" in create_cert'
+      - '"expiration_date" in create_cert'
+      - '"name" in create_cert'
+      - '"upload_date" in create_cert'
+      - create_cert.arn.startswith('arn:aws')
+      - create_cert.arn.endswith(cert_name)
+      - create_cert.name == cert_name
+      - create_cert.cert_path == '/'
+      - create_cert.cert_body == cert_a_data
 
   ################################################
 
@@ -77,7 +104,7 @@
     iam_server_certificate:
       name: '{{ cert_name }}'
       state: present
-      cert: '{{ lookup("file", path_cert_b) }}'
+      cert: '{{ cert_b_data }}'
     register: update_cert
     ignore_errors: True
 
@@ -118,9 +145,9 @@
     iam_server_certificate:
       name: '{{ cert_name }}'
       state: present
-      cert: '{{ lookup("file", path_cert_a) }}'
+      cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
-      cert_chain: '{{ lookup("file", path_intermediate_cert) }}'
+      cert_chain: '{{ chain_cert_data }}'
       path: '/example/'
     register: create_cert
 
@@ -129,14 +156,25 @@
       that:
       - create_cert is successful
       - create_cert is changed
+      - '"arn" in create_cert'
+      - '"cert_body" in create_cert'
+      - '"cert_path" in create_cert'
+      - '"expiration_date" in create_cert'
+      - '"name" in create_cert'
+      - '"upload_date" in create_cert'
+      - create_cert.arn.startswith('arn:aws')
+      - create_cert.arn.endswith(cert_name)
+      - create_cert.name == cert_name
+      - create_cert.cert_path == '/example/'
+      - create_cert.cert_body == cert_a_data
 
   - name: Create Certificate with Chain and path - idempotency
     iam_server_certificate:
       name: '{{ cert_name }}'
       state: present
-      cert: '{{ lookup("file", path_cert_a) }}'
+      cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
-      cert_chain: '{{ lookup("file", path_intermediate_cert) }}'
+      cert_chain: '{{ chain_cert_data }}'
       path: '/example/'
     register: create_cert
 
@@ -145,6 +183,17 @@
       that:
       - create_cert is successful
       - create_cert is not changed
+      - '"arn" in create_cert'
+      - '"cert_body" in create_cert'
+      - '"cert_path" in create_cert'
+      - '"expiration_date" in create_cert'
+      - '"name" in create_cert'
+      - '"upload_date" in create_cert'
+      - create_cert.arn.startswith('arn:aws')
+      - create_cert.arn.endswith(cert_name)
+      - create_cert.name == cert_name
+      - create_cert.cert_path == '/example/'
+      - create_cert.cert_body == cert_a_data
 
   ################################################
 
@@ -152,7 +201,7 @@
     iam_server_certificate:
       name: '{{ cert_name }}-duplicate'
       state: present
-      cert: '{{ lookup("file", path_cert_a) }}'
+      cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
     register: create_duplicate
     ignore_errors: True
@@ -168,7 +217,7 @@
     iam_server_certificate:
       name: '{{ cert_name }}-duplicate'
       state: present
-      cert: '{{ lookup("file", path_cert_a) }}'
+      cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
       dup_ok: true
     register: create_duplicate
@@ -179,12 +228,23 @@
       that:
       - create_duplicate is successful
       - create_duplicate is changed
+      - '"arn" in create_duplicate'
+      - '"cert_body" in create_duplicate'
+      - '"cert_path" in create_duplicate'
+      - '"expiration_date" in create_duplicate'
+      - '"name" in create_duplicate'
+      - '"upload_date" in create_duplicate'
+      - create_duplicate.arn.startswith('arn:aws')
+      - create_duplicate.arn.endswith('-duplicate')
+      - create_duplicate.name.endswith('duplicate')
+      - create_duplicate.cert_path == '/'
+      - create_duplicate.cert_body == cert_a_data
 
   - name: Create Certificate with forced identical cert - idempotency
     iam_server_certificate:
       name: '{{ cert_name }}-duplicate'
       state: present
-      cert: '{{ lookup("file", path_cert_a) }}'
+      cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
       dup_ok: true
     register: create_duplicate
@@ -195,6 +255,17 @@
       that:
       - create_duplicate is successful
       - create_duplicate is not changed
+      - '"arn" in create_duplicate'
+      - '"cert_body" in create_duplicate'
+      - '"cert_path" in create_duplicate'
+      - '"expiration_date" in create_duplicate'
+      - '"name" in create_duplicate'
+      - '"upload_date" in create_duplicate'
+      - create_duplicate.arn.startswith('arn:aws')
+      - create_duplicate.arn.endswith('-duplicate')
+      - create_duplicate.name.endswith('duplicate')
+      - create_duplicate.cert_path == '/'
+      - create_duplicate.cert_body == cert_a_data
 
   ################################################
 
@@ -212,6 +283,17 @@
       that:
       - update_path is successful
       - update_path is changed
+      - '"arn" in update_path'
+      - '"cert_body" in update_path'
+      # - '"cert_path" in update_path'
+      - '"expiration_date" in update_path'
+      - '"name" in update_path'
+      - '"upload_date" in update_path'
+      - update_path.arn.startswith('arn:aws')
+      - update_path.arn.endswith(cert_name)
+      # - update_path.name == cert_name
+      # - update_path.cert_path == '/path/'
+      - update_path.cert_body == cert_a_data
 
   # - name: Update certificate path - idempotency
   #   iam_server_certificate:
@@ -243,6 +325,17 @@
       that:
       - update_name is successful
       - update_name is changed
+      - '"arn" in update_name'
+      - '"cert_body" in update_name'
+      - '"cert_path" in update_name'
+      - '"expiration_date" in update_name'
+      # - '"name" in update_name'
+      - '"upload_date" in update_name'
+      - update_name.arn.startswith('arn:aws')
+      # - update_name.arn.endswith('-renamed')
+      # - update_name.name.endswith('renamed')
+      - update_name.cert_path == '/path/'
+      - update_name.cert_body == cert_a_data
 
   # - name: Update certificate name - idempotency
   #   iam_server_certificate:
