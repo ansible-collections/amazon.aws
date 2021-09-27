@@ -112,18 +112,25 @@
     assert:
       that:
       - update_cert is failed
-      - '"already exists" in update_cert.msg'
+      - '"not supported" in update_cert.msg'
 
-  ## AWS APIs provide no mechanism for accessing
-  ## any information about the key, and as such
-  ## the module can't tell if a key was updated.
-  # - name: Update Certificate
-  #   iam_server_certificate:
-  #     name: '{{ cert_name }}'
-  #     state: present
-  #     key: '{{ lookup("file", path_intermediate_key) }}'
-  #   register: update_cert
-  #   ignore_errors: True
+  - name: Update Chaining Certificate
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      state: present
+      cert_chain: '{{ chain_cert_data }}'
+    register: update_cert
+    ignore_errors: True
+
+  - name: check result - Update Chaining Certificate
+    assert:
+      that:
+      - update_cert is failed
+      - '"not supported" in update_cert.msg'
+
+  # AWS APIs provide no mechanism for accessing
+  # any information about the key, and as such
+  # the module can't tell if a key was updated.
 
   ################################################
 
@@ -285,30 +292,30 @@
       - update_path is changed
       - '"arn" in update_path'
       - '"cert_body" in update_path'
-      # - '"cert_path" in update_path'
+      - '"cert_path" in update_path'
       - '"expiration_date" in update_path'
       - '"name" in update_path'
       - '"upload_date" in update_path'
       - update_path.arn.startswith('arn:aws')
       - update_path.arn.endswith(cert_name)
-      # - update_path.name == cert_name
-      # - update_path.cert_path == '/path/'
+      - update_path.name == cert_name
+      - update_path.cert_path == '/path/'
       - update_path.cert_body == cert_a_data
 
-  # - name: Update certificate path - idempotency
-  #   iam_server_certificate:
-  #     name: '{{ cert_name }}'
-  #     state: present
-  #     path: '/example/'
-  #     new_path: '/path/'
-  #   register: update_path
-  #   ignore_errors: True
+  - name: Update certificate path - idempotency
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      state: present
+      path: '/example/'
+      new_path: '/path/'
+    register: update_path
+    ignore_errors: True
 
-  # - name: check result - Update certificate path - idempotency
-  #   assert:
-  #     that:
-  #     - update_path is successful
-  #     - update_path is not changed
+  - name: check result - Update certificate path - idempotency
+    assert:
+     that:
+     - update_path is successful
+     - update_path is not changed
 
   ################################################
 
@@ -329,27 +336,27 @@
       - '"cert_body" in update_name'
       - '"cert_path" in update_name'
       - '"expiration_date" in update_name'
-      # - '"name" in update_name'
+      - '"name" in update_name'
       - '"upload_date" in update_name'
       - update_name.arn.startswith('arn:aws')
-      # - update_name.arn.endswith('-renamed')
-      # - update_name.name.endswith('renamed')
+      - update_name.arn.endswith('-renamed')
+      - update_name.name.endswith('renamed')
       - update_name.cert_path == '/path/'
       - update_name.cert_body == cert_a_data
 
-  # - name: Update certificate name - idempotency
-  #   iam_server_certificate:
-  #     name: '{{ cert_name }}'
-  #     new_name: '{{ cert_name }}-renamed'
-  #     state: present
-  #   register: update_name
-  #   ignore_errors: True
+  - name: Update certificate name - idempotency
+    iam_server_certificate:
+      name: '{{ cert_name }}'
+      new_name: '{{ cert_name }}-renamed'
+      state: present
+    register: update_name
+    ignore_errors: True
 
-  # - name: check result - Update certificate name - idempotency
-  #   assert:
-  #     that:
-  #     - update_name is successful
-  #     - update_name is not changed
+  - name: check result - Update certificate name - idempotency
+    assert:
+      that:
+      - update_name is successful
+      - update_name is not changed
 
   always:
 
