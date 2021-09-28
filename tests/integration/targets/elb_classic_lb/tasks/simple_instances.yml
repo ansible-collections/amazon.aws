@@ -1,0 +1,411 @@
+---
+- name: Add SSH listener and health check to ELB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    listeners: "{{ ssh_listeners }}"
+    health_check: "{{ ssh_health_check }}"
+    purge_listeners: false
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - ssh_listener_tuples[0] in result.elb.listeners
+
+# Make sure that the instances are 'OK'
+
+- name: Wait for instance a
+  ec2_instance:
+    name: "ansible-test-{{ tiny_prefix }}-elb-a"
+    vpc_subnet_id: "{{ subnet_a }}"
+    instance_type: t2.micro
+    wait: true
+    security_group: "{{ sg_a }}"
+  register: ec2_instance_a
+
+- name: Wait for instance b
+  ec2_instance:
+    name: "ansible-test-{{ tiny_prefix }}-elb-b"
+    vpc_subnet_id: "{{ subnet_b }}"
+    instance_type: t2.micro
+    wait: true
+    security_group: "{{ sg_b }}"
+  register: ec2_instance_b
+
+- assert:
+    that:
+      - ec2_instance_a is successful
+      - ec2_instance_b is successful
+
+# ==============================================================
+
+- name: Add an instance to the LB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_a }}'
+    wait: true
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Add an instance to the LB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_a }}'
+    wait: true
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - instance_a in result.elb.instances
+      - instance_b not in result.elb.instances
+
+- name: Add an instance to the LB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_a }}'
+    wait: true
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Add an instance to the LB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_a }}'
+    wait: true
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - instance_a in result.elb.instances
+      - instance_b not in result.elb.instances
+
+# ==============================================================
+
+- name: Add second instance to the LB without purge (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_b }}'
+    purge_instance_ids: false
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Add second instance to the LB without purge
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_b }}'
+    purge_instance_ids: false
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - instance_a in result.elb.instances
+      - instance_b in result.elb.instances
+
+- name: Add second instance to the LB without purge - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_b }}'
+    purge_instance_ids: false
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Add second instance to the LB without purge - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_b }}'
+    purge_instance_ids: false
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - instance_a in result.elb.instances
+      - instance_b in result.elb.instances
+
+# ==============================================================
+
+- name: Both instances with purge - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_a }}'
+    - '{{ instance_b }}'
+    purge_instance_ids: true
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Both instances with purge - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_a }}'
+    - '{{ instance_b }}'
+    purge_instance_ids: true
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - instance_a in result.elb.instances
+      - instance_b in result.elb.instances
+
+- name: Both instances with purge - different order - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_b }}'
+    - '{{ instance_a }}'
+    purge_instance_ids: true
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Both instances with purge - different order - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_b }}'
+    - '{{ instance_a }}'
+    purge_instance_ids: true
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - instance_a in result.elb.instances
+      - instance_b in result.elb.instances
+
+# ==============================================================
+
+- name: Remove first instance from LB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_b }}'
+    purge_instance_ids: true
+    wait: true
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Remove first instance from LB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_b }}'
+    purge_instance_ids: true
+    wait: true
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - instance_a not in result.elb.instances
+      - instance_b in result.elb.instances
+
+- name: Remove first instance from LB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_b }}'
+    purge_instance_ids: true
+    wait: true
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Remove first instance from LB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_b }}'
+    purge_instance_ids: true
+    wait: true
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - instance_a not in result.elb.instances
+      - instance_b in result.elb.instances
+
+# ==============================================================
+
+- name: Switch instances in LB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_a }}'
+    purge_instance_ids: true
+    wait: true
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Switch instances in LB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_a }}'
+    purge_instance_ids: true
+    wait: true
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - instance_a in result.elb.instances
+      - instance_b not in result.elb.instances
+
+- name: Switch instances in LB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_a }}'
+    purge_instance_ids: true
+    wait: true
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Switch instances in LB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_a }}'
+    purge_instance_ids: true
+    wait: true
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - instance_a in result.elb.instances
+      - instance_b not in result.elb.instances
+
+# ==============================================================
+
+- name: Switch instances in LB - no wait (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_b }}'
+    purge_instance_ids: true
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Switch instances in LB - no wait
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_b }}'
+    purge_instance_ids: true
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - instance_a not in result.elb.instances
+      - instance_b in result.elb.instances
+
+- name: Switch instances in LB - no wait - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_b }}'
+    purge_instance_ids: true
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Switch instances in LB - no wait - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    instance_ids:
+    - '{{ instance_b }}'
+    purge_instance_ids: true
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - instance_a not in result.elb.instances
+      - instance_b in result.elb.instances

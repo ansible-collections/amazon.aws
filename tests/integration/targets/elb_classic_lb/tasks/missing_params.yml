@@ -1,0 +1,203 @@
+---
+# Test behaviour when mandatory params aren't passed
+- block:
+    # ============================================================
+
+    - name: test with no name
+      elb_classic_lb:
+        state: present
+      register: result
+      ignore_errors: true
+
+    - name: assert failure when called with no parameters
+      assert:
+        that:
+          - 'result.failed'
+          - '"missing required arguments" in result.msg'
+          - '"name" in result.msg'
+
+    - name: test with only name (state missing)
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+      register: result
+      ignore_errors: true
+
+    - name: assert failure when called with only name
+      assert:
+        that:
+          - 'result.failed'
+          - '"missing required arguments" in result.msg'
+          - '"state" in result.msg'
+
+    - elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        scheme: 'internal'
+        listeners:
+        - load_balancer_port: 80
+          instance_port: 80
+          protocol: http
+      register: result
+      ignore_errors: true
+
+    - name: assert failure when neither subnets nor AZs are provided on creation
+      assert:
+        that:
+          - 'result.failed'
+          - '"subnets" in result.msg'
+          - '"zones" in result.msg'
+
+    - elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        scheme: 'internal'
+        subnets: ['subnet-123456789']
+      register: result
+      ignore_errors: true
+
+    - name: assert failure when listeners not provided on creation
+      assert:
+        that:
+          - 'result.failed'
+          - '"listeners" in result.msg'
+
+    - elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        scheme: 'internal'
+        subnets: ['subnet-123456789']
+        listeners:
+        - load_balancer_port: 80
+          instance_port: 80
+          protocol: junk
+      register: result
+      ignore_errors: true
+
+    - name: assert failure when listeners contains invalid protocol
+      assert:
+        that:
+          - 'result.failed'
+          - '"protocol" in result.msg'
+          - '"junk" in result.msg'
+
+    - elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        scheme: 'internal'
+        subnets: ['subnet-123456789']
+        listeners:
+        - load_balancer_port: 80
+          instance_port: 80
+          protocol: http
+          instance_protocol: junk
+      register: result
+      ignore_errors: true
+
+    - name: assert failure when listeners contains invalid instance_protocol
+      assert:
+        that:
+          - 'result.failed'
+          - '"protocol" in result.msg'
+          - '"junk" in result.msg'
+
+    - elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        scheme: 'internal'
+        subnets: ['subnet-123456789']
+        listeners:
+        - load_balancer_port: 80
+          instance_port: 80
+          protocol: http
+        health_check:
+          ping_protocol: junk
+          ping_port: 80
+          interval: 5
+          timeout: 5
+          unhealthy_threshold: 5
+          healthy_threshold: 5
+      register: result
+      ignore_errors: true
+
+    - name: assert failure when healthcheck ping_protocol is invalid
+      assert:
+        that:
+          - 'result.failed'
+          - '"protocol" in result.msg'
+          - '"junk" in result.msg'
+
+    - elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        scheme: 'internal'
+        subnets: ['subnet-123456789']
+        listeners:
+        - load_balancer_port: 80
+          instance_port: 80
+          protocol: http
+        health_check:
+          ping_protocol: http
+          ping_port: 80
+          interval: 5
+          timeout: 5
+          unhealthy_threshold: 5
+          healthy_threshold: 5
+      register: result
+      ignore_errors: true
+
+    - name: assert failure when HTTP healthcheck missing a ping_path
+      assert:
+        that:
+          - 'result.failed'
+          - '"ping_path" in result.msg'
+
+    - elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        scheme: 'internal'
+        subnets: ['subnet-123456789']
+        listeners:
+        - load_balancer_port: 80
+          instance_port: 80
+          protocol: http
+        stickiness:
+          type: application
+      register: result
+      ignore_errors: true
+
+    - name: assert failure when app stickiness policy missing cookie name
+      assert:
+        that:
+          - 'result.failed'
+          - '"cookie" in result.msg'
+
+    - elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        scheme: 'internal'
+        subnets: ['subnet-123456789']
+        listeners:
+        - load_balancer_port: 80
+          instance_port: 80
+          protocol: http
+        access_logs:
+          interval: 60
+      register: result
+      ignore_errors: true
+
+    - name: assert failure when access log is missing a bucket
+      assert:
+        that:
+          - 'result.failed'
+          - '"s3_location" in result.msg'
+
+  always:
+
+    # ============================================================
+    - name: remove the test load balancer
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: absent
+        wait: true
+      register: result
+      ignore_errors: true

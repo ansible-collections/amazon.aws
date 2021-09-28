@@ -1,0 +1,116 @@
+---
+# Note: AWS doesn't support disabling health checks
+# ==============================================================
+- name: Non-HTTP Healthcheck (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    health_check: '{{ nonhttp_health_check }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Non-HTTP Healthcheck
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    health_check: '{{ nonhttp_health_check }}'
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - result.elb.health_check.healthy_threshold == nonhttp_health_check['healthy_threshold']
+      - result.elb.health_check.interval == nonhttp_health_check['interval']
+      - result.elb.health_check.target == nonhttp_health_check_target
+      - result.elb.health_check.timeout == nonhttp_health_check['response_timeout']
+      - result.elb.health_check.unhealthy_threshold == nonhttp_health_check['unhealthy_threshold']
+
+- name: Non-HTTP Healthcheck - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    health_check: '{{ nonhttp_health_check }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Non-HTTP Healthcheck - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    health_check: '{{ nonhttp_health_check }}'
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.elb.health_check.healthy_threshold == nonhttp_health_check['healthy_threshold']
+      - result.elb.health_check.interval == nonhttp_health_check['interval']
+      - result.elb.health_check.target == nonhttp_health_check_target
+      - result.elb.health_check.timeout == nonhttp_health_check['response_timeout']
+      - result.elb.health_check.unhealthy_threshold == nonhttp_health_check['unhealthy_threshold']
+
+# ==============================================================
+
+- name: Update Healthcheck (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    health_check: '{{ updated_health_check }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Update Healthcheck
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    health_check: '{{ updated_health_check }}'
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - result.elb.health_check.healthy_threshold == updated_health_check['healthy_threshold']
+      - result.elb.health_check.interval == updated_health_check['interval']
+      - result.elb.health_check.target == updated_health_check_target
+      - result.elb.health_check.timeout == updated_health_check['response_timeout']
+      - result.elb.health_check.unhealthy_threshold == updated_health_check['unhealthy_threshold']
+
+- name: Update Healthcheck - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    health_check: '{{ updated_health_check }}'
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Update Healthcheck - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    health_check: '{{ updated_health_check }}'
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.elb.health_check.healthy_threshold == updated_health_check['healthy_threshold']
+      - result.elb.health_check.interval == updated_health_check['interval']
+      - result.elb.health_check.target == updated_health_check_target
+      - result.elb.health_check.timeout == updated_health_check['response_timeout']
+      - result.elb.health_check.unhealthy_threshold == updated_health_check['unhealthy_threshold']

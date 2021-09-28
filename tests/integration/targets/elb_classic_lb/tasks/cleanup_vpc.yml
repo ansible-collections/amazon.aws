@@ -1,0 +1,29 @@
+---
+- name: delete security groups
+  ec2_group:
+    name: '{{ item }}'
+    state: absent
+  ignore_errors: true
+  loop:
+    - '{{ resource_prefix }}-a'
+    - '{{ resource_prefix }}-b'
+    - '{{ resource_prefix }}-c'
+
+- name: delete subnets
+  ec2_vpc_subnet:
+    vpc_id: '{{ setup_vpc.vpc.id }}'
+    cidr: '{{ item }}'
+    state: absent
+  ignore_errors: true
+  loop:
+    - '{{ subnet_cidr_1 }}'
+    - '{{ subnet_cidr_2 }}'
+    - '{{ subnet_cidr_3 }}'
+    - '{{ subnet_cidr_4 }}'
+
+- name: delete VPC
+  ec2_vpc_net:
+    cidr_block: '{{ vpc_cidr }}'
+    state: absent
+    name: '{{ resource_prefix }}'
+  ignore_errors: true

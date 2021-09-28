@@ -1,0 +1,10 @@
+---
+- name: list available AZs
+  aws_az_info:
+  register: region_azs
+
+- name: pick AZs for testing
+  set_fact:
+    availability_zone_a: "{{ region_azs.availability_zones[0].zone_name }}"
+    availability_zone_b: "{{ region_azs.availability_zones[1].zone_name }}"
+    availability_zone_c: "{{ region_azs.availability_zones[2].zone_name }}"

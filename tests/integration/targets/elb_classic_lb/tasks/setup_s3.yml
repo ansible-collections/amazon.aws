@@ -1,0 +1,26 @@
+---
+- name: Create S3 bucket for access logs
+  vars:
+    s3_logging_bucket: '{{ s3_logging_bucket_a }}'
+  s3_bucket:
+    name: '{{ s3_logging_bucket_a }}'
+    state: present
+    policy: "{{ lookup('template','s3_policy.j2') }}"
+  register: logging_bucket
+
+- assert:
+    that:
+      - logging_bucket is changed
+
+- name: Create S3 bucket for access logs
+  vars:
+    s3_logging_bucket: '{{ s3_logging_bucket_b }}'
+  s3_bucket:
+    name: '{{ s3_logging_bucket_b }}'
+    state: present
+    policy: "{{ lookup('template','s3_policy.j2') }}"
+  register: logging_bucket
+
+- assert:
+    that:
+      - logging_bucket is changed

@@ -1,0 +1,9 @@
+---
+- name: Delete instance
+  ec2_instance:
+    instance_ids:
+    - '{{ instance_a }}'
+    - '{{ instance_b }}'
+    state: absent
+    wait: true
+  ignore_errors: true

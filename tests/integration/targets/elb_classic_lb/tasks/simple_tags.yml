@@ -1,0 +1,141 @@
+---
+# ===========================================================
+# partial tags (no purge)
+# update tags (no purge)
+# update tags (with purge)
+# ===========================================================
+- name: Pass partial tags to ELB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    tags: "{{ partial_tags }}"
+    purge_tags: false
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Pass partial tags to ELB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    tags: "{{ partial_tags }}"
+    purge_tags: false
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.elb.tags == default_tags
+
+# ===========================================================
+
+- name: Add tags to ELB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    tags: "{{ updated_tags }}"
+    purge_tags: false
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Add tags to ELB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    tags: "{{ updated_tags }}"
+    purge_tags: false
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - result.elb.tags == ( default_tags | combine(updated_tags) )
+
+- name: Add tags to ELB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    tags: "{{ updated_tags }}"
+    purge_tags: false
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Add tags to ELB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    tags: "{{ updated_tags }}"
+    purge_tags: false
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.elb.tags == ( default_tags | combine(updated_tags) )
+
+# ===========================================================
+
+- name: Purge tags from ELB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    tags: "{{ updated_tags }}"
+    purge_tags: true
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Purge tags from ELB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    tags: "{{ updated_tags }}"
+    purge_tags: true
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - result.elb.tags == updated_tags
+
+- name: Purge tags from ELB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    tags: "{{ updated_tags }}"
+    purge_tags: true
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Purge tags from ELB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    tags: "{{ updated_tags }}"
+    purge_tags: true
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - result.elb.tags == updated_tags
+
+# ===========================================================

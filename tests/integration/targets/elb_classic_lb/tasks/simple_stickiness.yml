@@ -1,0 +1,390 @@
+---
+# ==============================================================
+- name: App Cookie Stickiness (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ app_stickiness }}"
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: App Cookie Stickiness
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ app_stickiness }}"
+  register: result
+
+- assert:
+    that:
+      - result is changed
+
+- name: App Cookie Stickiness - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ app_stickiness }}"
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: App Cookie Stickiness - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ app_stickiness }}"
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+
+# ==============================================================
+- name: Update App Cookie Stickiness (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ updated_app_stickiness }}"
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Update App Cookie Stickiness
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ updated_app_stickiness }}"
+  register: result
+
+- assert:
+    that:
+      - result is changed
+
+- name: Update App Cookie Stickiness - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ updated_app_stickiness }}"
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Update App Cookie Stickiness - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ updated_app_stickiness }}"
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+
+
+# ==============================================================
+
+- name: Disable Stickiness (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness:
+      enabled: false
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Disable Stickiness
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness:
+      enabled: false
+  register: result
+
+- assert:
+    that:
+      - result is changed
+
+- name: Disable Stickiness - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness:
+      enabled: false
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Disable Stickiness - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness:
+      enabled: false
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+
+# ==============================================================
+
+- name: Re-enable App Stickiness (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ app_stickiness }}"
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Re-enable App Stickiness
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ app_stickiness }}"
+  register: result
+
+- assert:
+    that:
+      - result is changed
+
+- name: Re-enable App Stickiness (check_mode) - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ app_stickiness }}"
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Re-enable App Stickiness - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ app_stickiness }}"
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+
+# ==============================================================
+- name: LB Stickiness (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ lb_stickiness }}"
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: LB Stickiness
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ lb_stickiness }}"
+  register: result
+
+- assert:
+    that:
+      - result is changed
+
+- name: LB Stickiness - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ lb_stickiness }}"
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: LB Stickiness - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ lb_stickiness }}"
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+
+# ==============================================================
+- name: Update LB Stickiness (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ updated_lb_stickiness }}"
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Update LB Stickiness
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ updated_lb_stickiness }}"
+  register: result
+
+- assert:
+    that:
+      - result is changed
+
+- name: Update LB Stickiness - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ updated_lb_stickiness }}"
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Update LB Stickiness - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ updated_lb_stickiness }}"
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+
+
+# ==============================================================
+
+- name: Disable Stickiness (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness:
+      enabled: false
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Disable Stickiness
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness:
+      enabled: false
+  register: result
+
+- assert:
+    that:
+      - result is changed
+
+- name: Disable Stickiness - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness:
+      enabled: false
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Disable Stickiness - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness:
+      enabled: false
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+
+# ==============================================================
+
+- name: Re-enable LB Stickiness (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ updated_lb_stickiness }}"
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Re-enable LB Stickiness
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ updated_lb_stickiness }}"
+  register: result
+
+- assert:
+    that:
+      - result is changed
+
+- name: Re-enable LB Stickiness - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ updated_lb_stickiness }}"
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Re-enable LB Stickiness - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    stickiness: "{{ updated_lb_stickiness }}"
+  register: result
+
+- assert:
+    that:
+      - result is not changed

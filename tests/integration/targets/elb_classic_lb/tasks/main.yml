@@ -1,0 +1,54 @@
+---
+# __Test Info__
+# Create a self signed cert and upload it to AWS
+# http://www.akadia.com/services/ssh_test_certificate.html
+# http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/ssl-server-cert.html
+
+# __Test Outline__
+#
+# __elb_classic_lb__
+# create test elb with listeners and certificate
+# change AZ's
+# change listeners
+# remove listeners
+# remove elb
+
+- module_defaults:
+    group/aws:
+      region: "{{ aws_region }}"
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+  collections:
+    - community.aws
+    - amazon.aws
+  block:
+
+    - include_tasks: missing_params.yml
+
+    - include_tasks: describe_region.yml
+    - include_tasks: setup_vpc.yml
+    - include_tasks: setup_instances.yml
+    - include_tasks: setup_s3.yml
+
+    - include_tasks: basic_public.yml
+    - include_tasks: basic_internal.yml
+    - include_tasks: schema_change.yml
+
+    - include_tasks: simple_changes.yml
+
+  always:
+
+    # ============================================================
+    # ELB should already be gone, but double-check
+    - name: remove the test load balancer
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: absent
+        wait: true
+      register: result
+      ignore_errors: true
+
+    - include_tasks: cleanup_s3.yml
+    - include_tasks: cleanup_instances.yml
+    - include_tasks: cleanup_vpc.yml

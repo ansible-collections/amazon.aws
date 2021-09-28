@@ -1,0 +1,292 @@
+---
+- block:
+    # For creation test some basic behaviour
+    - module_defaults:
+        elb_classic_lb:
+          # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
+          listeners: '{{ default_listeners }}'
+          wait: true
+          scheme: 'internal'
+          subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
+      block:
+        # ============================================================
+        # create test elb with listeners, certificate, and health check
+
+        - name: Create internal ELB (check_mode)
+          elb_classic_lb:
+            name: "{{ elb_name }}"
+            state: present
+          register: result
+          check_mode: true
+
+        - assert:
+            that:
+              - result is changed
+              - result.elb.status == "created"
+
+        - name: Create ELB
+          elb_classic_lb:
+            name: "{{ elb_name }}"
+            state: present
+          register: result
+
+        - assert:
+            that:
+              - result is changed
+              - result.elb.status == "created"
+              - availability_zone_a in result.elb.zones
+              - availability_zone_b in result.elb.zones
+              - subnet_a in result.elb.subnets
+              - subnet_b in result.elb.subnets
+
+        - name: Create internal ELB idempotency (check_mode)
+          elb_classic_lb:
+            name: "{{ elb_name }}"
+            state: present
+          register: result
+          check_mode: true
+
+        - assert:
+            that:
+              - result is not changed
+              - result.elb.status == "exists"
+
+        - name: Create internal ELB idempotency
+          elb_classic_lb:
+            name: "{{ elb_name }}"
+            state: present
+          register: result
+
+        - assert:
+            that:
+              - result is not changed
+              - result.elb.status == "exists"
+              - availability_zone_a in result.elb.zones
+              - availability_zone_b in result.elb.zones
+              - subnet_a in result.elb.subnets
+              - subnet_b in result.elb.subnets
+
+        - ec2_eni_info:
+            filters:
+              description: 'ELB {{ elb_name }}'
+          register: info
+
+        - assert:
+            that:
+              - info.network_interfaces | length > 0
+
+        - elb_classic_lb_info:
+            names: ['{{ elb_name }}']
+          register: info
+
+        - assert:
+            that:
+              - info.elbs | length > 0
+
+    # ============================================================
+    # Now we're outside of the creation we drop the defaults
+    # ============================================================
+
+    - name: Add a subnet - no purge (check_mode)
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        subnets: ['{{ subnet_c }}']
+      register: result
+      check_mode: true
+
+    - assert:
+        that:
+          - result is changed
+          - result.elb.status == "exists"
+
+    - name: Add a subnet - no purge
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        subnets: ['{{ subnet_c }}']
+      register: result
+
+    - assert:
+        that:
+          - result is changed
+          - result.elb.status == "exists"
+          - availability_zone_a in result.elb.zones
+          - availability_zone_b in result.elb.zones
+          - availability_zone_c in result.elb.zones
+          - subnet_a in result.elb.subnets
+          - subnet_b in result.elb.subnets
+          - subnet_c in result.elb.subnets
+
+    - name: Add a subnet - no purge - idempotency (check_mode)
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        subnets: ['{{ subnet_c }}']
+      register: result
+      check_mode: true
+
+    - assert:
+        that:
+          - result is not changed
+          - result.elb.status == "exists"
+
+    - name: Add a subnet - no purge - idempotency
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        subnets: ['{{ subnet_c }}']
+      register: result
+
+    - assert:
+        that:
+          - result is not changed
+          - result.elb.status == "exists"
+          - availability_zone_a in result.elb.zones
+          - availability_zone_b in result.elb.zones
+          - availability_zone_c in result.elb.zones
+          - subnet_a in result.elb.subnets
+          - subnet_b in result.elb.subnets
+          - subnet_c in result.elb.subnets
+
+    # While purging try adding a subnet from the same AZ as one we're purging.
+    # This is important because you can't add 2 AZs to an LB from the same AZ at
+    # the same time.
+    - name: Add a subnet - purge (check_mode)
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        subnets: ['{{ subnet_c }}', '{{ subnet_a2 }}']
+        purge_subnets: true
+      register: result
+      check_mode: true
+
+    - assert:
+        that:
+          - result is changed
+          - result.elb.status == "exists"
+
+    - name: Add a subnet - purge
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        subnets: ['{{ subnet_c }}', '{{ subnet_a2 }}']
+        purge_subnets: true
+      register: result
+
+    - assert:
+        that:
+          - result is changed
+          - result.elb.status == "exists"
+          - availability_zone_a in result.elb.zones
+          - availability_zone_b not in result.elb.zones
+          - availability_zone_c in result.elb.zones
+          - subnet_a not in result.elb.subnets
+          - subnet_b not in result.elb.subnets
+          - subnet_c in result.elb.subnets
+          - subnet_a2 in result.elb.subnets
+
+    - name: Add a subnet - purge - idempotency (check_mode)
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        subnets: ['{{ subnet_c }}', '{{ subnet_a2 }}']
+        purge_subnets: true
+      register: result
+      check_mode: true
+
+    - assert:
+        that:
+          - result is not changed
+          - result.elb.status == "exists"
+
+    - name: Add a subnet - purge - idempotency
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        subnets: ['{{ subnet_c }}', '{{ subnet_a2 }}']
+        purge_subnets: true
+      register: result
+
+    - assert:
+        that:
+          - result is not changed
+          - result.elb.status == "exists"
+          - availability_zone_a in result.elb.zones
+          - availability_zone_b not in result.elb.zones
+          - availability_zone_c in result.elb.zones
+          - subnet_a not in result.elb.subnets
+          - subnet_b not in result.elb.subnets
+          - subnet_c in result.elb.subnets
+          - subnet_a2 in result.elb.subnets
+
+    # ============================================================
+
+    - name: remove the test load balancer completely (check_mode)
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: absent
+        wait: true
+      register: result
+      check_mode: true
+
+    - name: assert the load balancer would be removed
+      assert:
+        that:
+          - result is changed
+          - 'result.elb.name == "{{ elb_name }}"'
+          - 'result.elb.status == "deleted"'
+
+    - name: remove the test load balancer completely
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: absent
+        wait: true
+      register: result
+
+    - name: assert the load balancer was removed
+      assert:
+        that:
+          - result is changed
+          - 'result.elb.name == "{{ elb_name }}"'
+          - 'result.elb.status == "deleted"'
+
+    - name: remove the test load balancer completely (idempotency) (check_mode)
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: absent
+        wait: true
+      register: result
+      check_mode: true
+
+    - name: assert the load balancer is gone
+      assert:
+        that:
+          - result is not changed
+          - 'result.elb.name == "{{ elb_name }}"'
+          - 'result.elb.status == "gone"'
+
+    - name: remove the test load balancer completely (idempotency)
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: absent
+        wait: true
+      register: result
+
+    - name: assert the load balancer is gone
+      assert:
+        that:
+          - result is not changed
+          - 'result.elb.name == "{{ elb_name }}"'
+          - 'result.elb.status == "gone"'
+
+  always:
+
+    # ============================================================
+    - name: remove the test load balancer
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: absent
+        wait: true
+      register: result
+      ignore_errors: true

@@ -1,0 +1,106 @@
+---
+- name: Assign Security Groups to ELB (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    security_group_ids: ['{{ sg_b }}']
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Assign Security Groups to ELB
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    security_group_ids: ['{{ sg_b }}']
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - sg_a not in result.elb.security_group_ids
+      - sg_b in result.elb.security_group_ids
+      - sg_c not in result.elb.security_group_ids
+
+- name: Assign Security Groups to ELB - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    security_group_ids: ['{{ sg_b }}']
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Assign Security Groups to ELB - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    security_group_ids: ['{{ sg_b }}']
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - sg_a not in result.elb.security_group_ids
+      - sg_b in result.elb.security_group_ids
+      - sg_c not in result.elb.security_group_ids
+
+#=====================================================================
+
+- name: Assign Security Groups to ELB by name (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    security_group_names: ['{{ resource_prefix }}-a', '{{ resource_prefix }}-c']
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is changed
+
+- name: Assign Security Groups to ELB by name
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    security_group_names: ['{{ resource_prefix }}-a', '{{ resource_prefix }}-c']
+  register: result
+
+- assert:
+    that:
+      - result is changed
+      - sg_a in result.elb.security_group_ids
+      - sg_b not in result.elb.security_group_ids
+      - sg_c in result.elb.security_group_ids
+
+- name: Assign Security Groups to ELB by name - idempotency (check_mode)
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    security_group_names: ['{{ resource_prefix }}-a', '{{ resource_prefix }}-c']
+  register: result
+  check_mode: true
+
+- assert:
+    that:
+      - result is not changed
+
+- name: Assign Security Groups to ELB by name - idempotency
+  elb_classic_lb:
+    name: "{{ elb_name }}"
+    state: present
+    security_group_names: ['{{ resource_prefix }}-a', '{{ resource_prefix }}-c']
+  register: result
+
+- assert:
+    that:
+      - result is not changed
+      - sg_a in result.elb.security_group_ids
+      - sg_b not in result.elb.security_group_ids
+      - sg_c in result.elb.security_group_ids
