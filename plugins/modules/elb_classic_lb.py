@@ -13,7 +13,7 @@ version_added: 1.0.0
 description:
   - Creates, updates or destroys an Amazon Elastic Load Balancer (ELB).
   - This module was renamed from M(ec2_elb_lb) to M(elb_classic_lb) in version
-    2.0.0 of the amazon.aws collection.
+    2.1.0 of the amazon.aws collection.
 short_description: creates, updates or destroys an Amazon ELB.
 author:
   - "Jim Dalton (@jsdalton)"
@@ -266,7 +266,7 @@ options:
       - When creating, deleting, or adding instances to an ELB, if I(wait=true)
         Ansible will wait for both the load balancer and related network interfaces
         to finish creating/deleting.
-      - Support for waiting when adding instances was added in release 2.0.0.
+      - Support for waiting when adding instances was added in release 2.1.0.
     type: bool
     default: false
   wait_timeout:
@@ -286,7 +286,7 @@ options:
       - Whether to remove existing tags that aren't passed in the I(tags) parameter.
     type: bool
     default: true
-    version_added: 2.0.0
+    version_added: 2.1.0
 
 extends_documentation_fragment:
 - amazon.aws.aws
