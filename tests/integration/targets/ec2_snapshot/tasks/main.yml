@@ -55,9 +55,8 @@
             ebs:
               volume_size: 8
               delete_on_termination: true
+        state: running
       register: instance
-      retries: 5
-      delay: 60
       until: "instance.instances[0].block_device_mappings | length > 0 and instance.instances[0].block_device_mappings[-1].ebs.status =='attached'"
 
     - set_fact:
@@ -300,11 +299,35 @@
         that:
           - info_result.snapshots | length == 3
 
+    # delete the tagged snapshot - check mode
+    - name: Delete the tagged snapshot (check mode)
+      ec2_snapshot:
+        state: absent
+        snapshot_id: '{{ tagged_snapshot_id }}'
+      register: delete_result_check_mode
+      check_mode: true
+
+    - assert:
+        that:
+          - delete_result_check_mode is changed
+
     # delete the tagged snapshot
     - name: Delete the tagged snapshot
       ec2_snapshot:
         state: absent
         snapshot_id: '{{ tagged_snapshot_id }}'
+
+    # delete the tagged snapshot again (results in InvalidSnapshot.NotFound)
+    - name: Delete already removed snapshot (check mode)
+      ec2_snapshot:
+        state: absent
+        snapshot_id: '{{ tagged_snapshot_id }}'
+      register: delete_result_second_check_mode
+      check_mode: true
+
+    - assert:
+        that:
+          - delete_result_second_check_mode is not changed
 
     - name: Get info about all snapshots for this test
       ec2_snapshot_info:

@@ -323,7 +323,11 @@ def create_snapshot(module, ec2, description=None, wait=None,
 
 def delete_snapshot(module, ec2, snapshot_id):
     if module.check_mode:
-        module.exit_json(changed=True, msg='Would have deleted snapshot if not in check mode')
+        try:
+            _describe_snapshots(ec2, SnapshotIds=[(snapshot_id)])
+            module.exit_json(changed=True, msg='Would have deleted snapshot if not in check mode')
+        except is_boto3_error_code('InvalidSnapshot.NotFound'):
+            module.exit_json(changed=False, msg='Invalid snapshot ID - snapshot not found')
     try:
         ec2.delete_snapshot(aws_retry=True, SnapshotId=snapshot_id)
     except is_boto3_error_code('InvalidSnapshot.NotFound'):
