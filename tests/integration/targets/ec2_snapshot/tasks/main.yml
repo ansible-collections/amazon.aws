@@ -49,15 +49,14 @@
         name: '{{ resource_prefix }}'
         instance_type: t2.nano
         image_id: '{{ ec2_ami_id }}'
-        wait: yes
         volumes:
           - device_name: /dev/xvda
             ebs:
               volume_size: 8
               delete_on_termination: true
         state: running
+        wait: true
       register: instance
-      until: "instance.instances[0].block_device_mappings | length > 0 and instance.instances[0].block_device_mappings[-1].ebs.status =='attached'"
 
     - set_fact:
         volume_id: '{{ instance.instances[0].block_device_mappings[0].ebs.volume_id }}'
@@ -239,12 +238,6 @@
     - name: Pause to allow creation to finish
       pause:
         minutes: 2
-
-    - name: Get info about all snapshots for this test
-      ec2_snapshot_info:
-          filters:
-            "tag:Name": '{{ resource_prefix }}'
-      register: info_result
 
     # check that snapshot_ids and max_results are mutually exclusive
     - name: Check that max_results and snapshot_ids are mutually exclusive
