@@ -1,0 +1,3 @@
+plugins/modules/cloudfront_info.py pylint:unnecessary-comprehension # (new test) Should be an easy fix, but testing is a challenge - test are broken and aliases require a wildcard cert in ACM
+plugins/modules/iam.py pylint:unnecessary-comprehension # no tests and module is deprecated
+plugins/modules/route53.py validate-modules:parameter-state-invalid-choice # route53_info needs improvements before we can deprecate this
