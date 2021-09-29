@@ -432,6 +432,8 @@ def update_volume(module, ec2_conn, volume):
         changed = iops_changed or size_changed or type_changed or throughput_changed or multi_attach_changed
 
         if changed:
+            if module.check_mode:
+                module.exit_json(changed=True, msg='Would have updated volume if not in check mode')
             response = ec2_conn.modify_volume(**req_obj)
 
             volume['size'] = response.get('VolumeModification').get('TargetSize')
@@ -458,8 +460,7 @@ def create_volume(module, ec2_conn, zone):
     volume = get_volume(module, ec2_conn)
 
     if module.check_mode:
-        changed = True
-        return volume, changed
+        module.exit_json(changed=True, msg='Would have created a volume if not in check mode', volume_type=volume_type)
 
     if volume is None:
 
@@ -609,18 +610,19 @@ def get_attachment_data(volume_dict, wanted_state=None):
 
 
 def detach_volume(module, ec2_conn, volume_dict):
+    if module.check_mode:
+        module.exit_json(changed=True, msg='Would have detached volume if not in check mode')
     changed = False
 
     attachment_data = get_attachment_data(volume_dict, wanted_state='attached')
     # The ID of the instance must be specified if you are detaching a Multi-Attach enabled volume.
-    if not module.check_mode:
-        for attachment in attachment_data:
-            ec2_conn.detach_volume(aws_retry=True, InstanceId=attachment['instance_id'], VolumeId=volume_dict['volume_id'])
-            waiter = ec2_conn.get_waiter('volume_available')
-            waiter.wait(
-                VolumeIds=[volume_dict['volume_id']],
-            )
-            changed = True
+    for attachment in attachment_data:
+        ec2_conn.detach_volume(aws_retry=True, InstanceId=attachment['instance_id'], VolumeId=volume_dict['volume_id'])
+        waiter = ec2_conn.get_waiter('volume_available')
+        waiter.wait(
+            VolumeIds=[volume_dict['volume_id']],
+        )
+        changed = True
 
     volume_dict = get_volume(module, ec2_conn, vol_id=volume_dict['volume_id'])
     return volume_dict, changed
@@ -814,14 +816,6 @@ def main():
                         device=device_name,
                         changed=False
                     )
-
-        if module.check_mode:
-            if detach_vol_flag:
-                volume, attach_changed = detach_volume(module, ec2_conn, volume_dict=volume)
-                volume['attachments'] = []
-                volume_info = get_volume_info(module, volume)
-                module.exit_json(changed=True, msg='Would have detached volume if not in check mode', volume=volume_info, device=device_name, volume_id=volume_info['id'], volume_type=volume_info['type'])
-            module.exit_json(changed=True, msg='Would have created/updated volume if not in check mode', device=device_name, volume_type=volume_type)
 
         if volume:
             volume, changed = update_volume(module, ec2_conn, volume)
