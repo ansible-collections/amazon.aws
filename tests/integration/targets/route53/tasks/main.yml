@@ -503,6 +503,42 @@
         - alias_record is not failed
         - alias_record is not changed
 
+  - name: 'Create a weighted record'
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: 'weighted.{{ zone_one }}'
+      type: CNAME
+      value: 'zid_test.{{ zone_one }}'
+      overwrite: True
+      identifier: "host1@www"
+      weight: 100
+      region: '{{ omit }}'
+    register: weighted_record
+  - name: 'This should be changed'
+    assert:
+      that:
+        - weighted_record is not failed
+        - weighted_record is changed
+
+  - name: 'Re-Create a weighted record'
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: 'weighted.{{ zone_one }}'
+      type: CNAME
+      value: 'zid_test.{{ zone_one }}'
+      overwrite: True
+      identifier: "host1@www"
+      weight: 100
+      region: '{{ omit }}'
+    register: weighted_record
+  - name: 'This should not be changed'
+    assert:
+      that:
+        - weighted_record is not failed
+        - weighted_record is not changed
+
   always:
   - route53_info:
       query: record_sets
@@ -521,6 +557,20 @@
     loop: '{{ z1_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
     when:
     - '"AliasTarget" in item'
+  - name: 'Loop over A/AAAA/CNAME records and delete them'
+    route53:
+      state: absent
+      zone: '{{ zone_one }}'
+      record: '{{ item.Name }}'
+      type: '{{ item.Type }}'
+      value: '{{ item.ResourceRecords | map(attribute="Value") | join(",") }}'
+      identifier: '{{ item.SetIdentifier }}'
+      region: '{{ omit }}'
+    ignore_errors: True
+    loop: '{{ z1_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
+    when:
+    - '"ResourceRecords" in item'
+    - '"SetIdentifier" in item'
   - name: 'Loop over A/AAAA/CNAME records and delete them'
     route53:
       state: absent
@@ -551,6 +601,21 @@
     loop: '{{ z2_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
     when:
     - '"AliasTarget" in item'
+  - name: 'Loop over A/AAAA/CNAME records and delete them'
+    route53:
+      state: absent
+      zone: '{{ zone_two }}'
+      record: '{{ item.Name }}'
+      type: '{{ item.Type }}'
+      value: '{{ item.ResourceRecords | map(attribute="Value") | join(",") }}'
+      identifier: '{{ item.SetIdentifier }}'
+      region: '{{ omit }}'
+      private_zone: true
+    ignore_errors: True
+    loop: '{{ z2_records.ResourceRecordSets | selectattr("Type", "in", ["A", "AAAA", "CNAME", "CAA"]) | list }}'
+    when:
+    - '"ResourceRecords" in item'
+    - '"SetIdentifier" in item'
   - name: 'Loop over A/AAAA/CNAME records and delete them'
     route53:
       state: absent
