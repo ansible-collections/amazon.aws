@@ -430,7 +430,7 @@ def get_ami_info(camel_image):
     )
 
 
-def create_image(module, connection):
+def create_image(module, connection): # needs check mode ---------------------------------------------------------
     instance_id = module.params.get('instance_id')
     name = module.params.get('name')
     wait = module.params.get('wait')
@@ -449,6 +449,13 @@ def create_image(module, connection):
     billing_products = module.params.get('billing_products')
     ramdisk_id = module.params.get('ramdisk_id')
     sriov_net_support = module.params.get('sriov_net_support')
+
+    if module.check_mode:
+        image = connection.describe_images(Filters=[{'Name':'name', 'Values':[str(name)]}])
+        if not image['Images']:
+            module.exit_json(changed=True, msg='Would have created a AMI if not in check mode')
+        else:
+            module.exit_json(changed=False, msg='Error registering image: AMI name is already in use by another AMI')
 
     try:
         params = {
@@ -544,7 +551,7 @@ def create_image(module, connection):
                      **get_ami_info(get_image_by_id(module, connection, image_id)))
 
 
-def deregister_image(module, connection):
+def deregister_image(module, connection): # needs check mode ----------------------------------------------------
     image_id = module.params.get('image_id')
     delete_snapshot = module.params.get('delete_snapshot')
     wait = module.params.get('wait')
@@ -597,7 +604,7 @@ def deregister_image(module, connection):
     module.exit_json(**exit_params)
 
 
-def update_image(module, connection, image_id):
+def update_image(module, connection, image_id): # needs check mode -----------------------------------------------
     launch_permissions = module.params.get('launch_permissions')
     image = get_image_by_id(module, connection, image_id)
     if image is None:
@@ -749,7 +756,8 @@ def main():
         argument_spec=argument_spec,
         required_if=[
             ['state', 'absent', ['image_id']],
-        ]
+        ],
+        supports_check_mode=True,
     )
 
     # Using a required_one_of=[['name', 'image_id']] overrides the message that should be provided by
