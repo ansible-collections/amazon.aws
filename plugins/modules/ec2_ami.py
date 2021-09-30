@@ -451,7 +451,7 @@ def create_image(module, connection):
     sriov_net_support = module.params.get('sriov_net_support')
 
     if module.check_mode:
-        image = connection.describe_images(Filters=[{'Name':'name', 'Values':[str(name)]}])
+        image = connection.describe_images(Filters=[{'Name': 'name', 'Values': [str(name)]}])
         if not image['Images']:
             module.exit_json(changed=True, msg='Would have created a AMI if not in check mode.')
         else:
@@ -633,8 +633,8 @@ def update_image(module, connection, image_id):
             try:
                 if not module.check_mode:
                     connection.modify_image_attribute(aws_retry=True,
-                                                  ImageId=image_id, Attribute='launchPermission',
-                                                  LaunchPermission=dict(Add=to_add, Remove=to_remove))
+                                                      ImageId=image_id, Attribute='launchPermission',
+                                                      LaunchPermission=dict(Add=to_add, Remove=to_remove))
                 changed = True
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                 module.fail_json_aws(e, msg="Error updating launch permissions of image %s" % image_id)
