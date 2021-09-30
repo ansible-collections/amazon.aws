@@ -430,7 +430,7 @@ def get_ami_info(camel_image):
     )
 
 
-def create_image(module, connection): # needs check mode ---------------------------------------------------------
+def create_image(module, connection):
     instance_id = module.params.get('instance_id')
     name = module.params.get('name')
     wait = module.params.get('wait')
@@ -453,7 +453,7 @@ def create_image(module, connection): # needs check mode -----------------------
     if module.check_mode:
         image = connection.describe_images(Filters=[{'Name':'name', 'Values':[str(name)]}])
         if not image['Images']:
-            module.exit_json(changed=True, msg='Would have created a AMI if not in check mode')
+            module.exit_json(changed=True, msg='Would have created a AMI if not in check mode.')
         else:
             module.exit_json(changed=False, msg='Error registering image: AMI name is already in use by another AMI')
 
@@ -551,7 +551,7 @@ def create_image(module, connection): # needs check mode -----------------------
                      **get_ami_info(get_image_by_id(module, connection, image_id)))
 
 
-def deregister_image(module, connection): # needs check mode ----------------------------------------------------
+def deregister_image(module, connection):
     image_id = module.params.get('image_id')
     delete_snapshot = module.params.get('delete_snapshot')
     wait = module.params.get('wait')
@@ -571,6 +571,8 @@ def deregister_image(module, connection): # needs check mode -------------------
 
     # When trying to re-deregister an already deregistered image it doesn't raise an exception, it just returns an object without image attributes.
     if 'ImageId' in image:
+        if module.check_mode:
+            module.exit_json(changed=True, msg='Would have deregistered AMI if not in check mode.')
         try:
             connection.deregister_image(aws_retry=True, ImageId=image_id)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -604,7 +606,7 @@ def deregister_image(module, connection): # needs check mode -------------------
     module.exit_json(**exit_params)
 
 
-def update_image(module, connection, image_id): # needs check mode -----------------------------------------------
+def update_image(module, connection, image_id):
     launch_permissions = module.params.get('launch_permissions')
     image = get_image_by_id(module, connection, image_id)
     if image is None:
@@ -629,7 +631,8 @@ def update_image(module, connection, image_id): # needs check mode -------------
 
         if to_add or to_remove:
             try:
-                connection.modify_image_attribute(aws_retry=True,
+                if not module.check_mode:
+                    connection.modify_image_attribute(aws_retry=True,
                                                   ImageId=image_id, Attribute='launchPermission',
                                                   LaunchPermission=dict(Add=to_add, Remove=to_remove))
                 changed = True
@@ -643,14 +646,16 @@ def update_image(module, connection, image_id): # needs check mode -------------
 
         if tags_to_remove:
             try:
-                connection.delete_tags(aws_retry=True, Resources=[image_id], Tags=[dict(Key=tagkey) for tagkey in tags_to_remove])
+                if not module.check_mode:
+                    connection.delete_tags(aws_retry=True, Resources=[image_id], Tags=[dict(Key=tagkey) for tagkey in tags_to_remove])
                 changed = True
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                 module.fail_json_aws(e, msg="Error updating tags")
 
         if tags_to_add:
             try:
-                connection.create_tags(aws_retry=True, Resources=[image_id], Tags=ansible_dict_to_boto3_tag_list(tags_to_add))
+                if not module.check_mode:
+                    connection.create_tags(aws_retry=True, Resources=[image_id], Tags=ansible_dict_to_boto3_tag_list(tags_to_add))
                 changed = True
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                 module.fail_json_aws(e, msg="Error updating tags")
@@ -658,12 +663,15 @@ def update_image(module, connection, image_id): # needs check mode -------------
     description = module.params.get('description')
     if description and description != image['Description']:
         try:
-            connection.modify_image_attribute(aws_retry=True, Attribute='Description ', ImageId=image_id, Description=dict(Value=description))
+            if not module.check_mode:
+                connection.modify_image_attribute(aws_retry=True, Attribute='Description ', ImageId=image_id, Description=dict(Value=description))
             changed = True
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Error setting description for image %s" % image_id)
 
     if changed:
+        if module.check_mode:
+            module.exit_json(changed=True, msg='Would have updated AMI if not in check mode.')
         module.exit_json(msg="AMI updated.", changed=True,
                          **get_ami_info(get_image_by_id(module, connection, image_id)))
     else:
