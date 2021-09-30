@@ -49,6 +49,73 @@ options:
     description:
       - Delivery policy to apply to the SNS topic.
     type: dict
+    suboptions:
+      http:
+        description:
+          - Delivery policy for HTTP(S) messages.
+          - See U(https://docs.aws.amazon.com/sns/latest/dg/sns-message-delivery-retries.html)
+            for more information.
+        type: dict
+        required: false
+        suboptions:
+          disableSubscriptionOverrides:
+            description:
+              - Applies this policy to all subscriptions, even if they have their own policies.
+            type: bool
+            required: false
+          defaultThrottlePolicy:
+            description:
+              - Throttle the rate of messages sent to subsriptions.
+            type: dict
+            suboptions:
+              maxReceivesPerSecond:
+                description:
+                  - The maximum number of deliveries per second per subscription.
+                type: int
+                required: true
+            required: false
+          defaultHealthyRetryPolicy:
+            description:
+              - Retry policy for HTTP(S) messages.
+            type: dict
+            required: true
+            suboptions:
+              minDelayTarget:
+                description:
+                 - The minimum delay for a retry.
+                type: int
+                required: true
+              maxDelayTarget:
+                description:
+                 - The maximum delay for a retry.
+                type: int
+                required: true
+              numRetries:
+                description:
+                 - The total number of retries.
+                type: int
+                required: true
+              numMaxDelayRetries:
+                description:
+                 - The number of retries with the maximum delay between them.
+                type: int
+                required: true
+              numMinDelayRetries:
+                description:
+                 - The number of retries with just the minimum delay between them.
+                type: int
+                required: true
+              numNoDelayRetries:
+                description:
+                 - The number of retries to be performmed immediately.
+                type: int
+                required: true
+              backoffFunction:
+                description:
+                 - The function for backoff between retries.
+                type: str
+                required: true
+                choices: ['arithmetic', 'exponential', 'geometric', 'linear']
   subscriptions:
     description:
       - List of subscriptions to apply to the topic. Note that AWS requires
@@ -225,8 +292,12 @@ try:
 except ImportError:
     pass  # handled by AnsibleAWSModule
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule, is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies, AWSRetry, camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.core import scrub_none_parameters
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
 
 class SnsTopicManager(object):
@@ -251,7 +322,7 @@ class SnsTopicManager(object):
         self.state = state
         self.display_name = display_name
         self.policy = policy
-        self.delivery_policy = delivery_policy
+        self.delivery_policy = scrub_none_parameters(delivery_policy) if delivery_policy else None
         self.subscriptions = subscriptions
         self.subscriptions_existing = []
         self.subscriptions_deleted = []
@@ -495,13 +566,39 @@ class SnsTopicManager(object):
 
 
 def main():
+
+    # We're kinda stuck with CamelCase here, it would be nice to switch to
+    # snake_case, but we'd need to purge out the alias entries
+    http_retry_args = dict(
+        minDelayTarget=dict(type='int', required=True),
+        maxDelayTarget=dict(type='int', required=True),
+        numRetries=dict(type='int', required=True),
+        numMaxDelayRetries=dict(type='int', required=True),
+        numMinDelayRetries=dict(type='int', required=True),
+        numNoDelayRetries=dict(type='int', required=True),
+        backoffFunction=dict(type='str', required=True, choices=['arithmetic', 'exponential', 'geometric', 'linear']),
+    )
+    http_delivery_args = dict(
+        defaultHealthyRetryPolicy=dict(type='dict', required=True, options=http_retry_args),
+        disableSubscriptionOverrides=dict(type='bool', required=False),
+        defaultThrottlePolicy=dict(
+            type='dict', required=False,
+            options=dict(
+                maxReceivesPerSecond=dict(type='int', required=True),
+            ),
+        ),
+    )
+    delivery_args = dict(
+        http=dict(type='dict', required=False, options=http_delivery_args),
+    )
+
     argument_spec = dict(
         name=dict(required=True),
         topic_type=dict(type='str', default='standard', choices=['standard', 'fifo']),
         state=dict(default='present', choices=['present', 'absent']),
         display_name=dict(),
         policy=dict(type='dict'),
-        delivery_policy=dict(type='dict'),
+        delivery_policy=dict(type='dict', options=delivery_args),
         subscriptions=dict(default=[], type='list', elements='dict'),
         purge_subscriptions=dict(type='bool', default=True),
     )
