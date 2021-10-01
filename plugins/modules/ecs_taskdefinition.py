@@ -518,6 +518,22 @@ options:
             - If I(launch_type=FARGATE), this field is required and is limited by the CPU.
         required: false
         type: str
+    placement_constraints:
+        version_added: 2.1.0
+        description:
+            - Placement constraint objects to use for the task.
+            - You can specify a maximum of 10 constraints per task.
+            - Task placement constraints are not supported for tasks run on Fargate.
+        required: false
+        type: list
+        elements: dict
+        suboptions:
+            type:
+                description: The type of constraint.
+                type: str
+            expression:
+                description: A cluster query language expression to apply to the constraint.
+                type: str
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -667,7 +683,7 @@ class EcsTaskManager:
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             return None
 
-    def register_task(self, family, task_role_arn, execution_role_arn, network_mode, container_definitions, volumes, launch_type, cpu, memory):
+    def register_task(self, family, task_role_arn, execution_role_arn, network_mode, container_definitions, volumes, launch_type, cpu, memory, placement_constraints):
         validated_containers = []
 
         # Ensures the number parameters are int as required by boto
@@ -721,6 +737,8 @@ class EcsTaskManager:
             params['requiresCompatibilities'] = [launch_type]
         if execution_role_arn:
             params['executionRoleArn'] = execution_role_arn
+        if placement_constraints:
+            params['placementConstraints'] = placement_constraints
 
         try:
             response = self.ecs.register_task_definition(aws_retry=True, **params)
@@ -780,7 +798,8 @@ def main():
         volumes=dict(required=False, type='list', elements='dict'),
         launch_type=dict(required=False, choices=['EC2', 'FARGATE']),
         cpu=dict(),
-        memory=dict(required=False, type='str')
+        memory=dict(required=False, type='str'),
+        placement_constraints=dict(required=False, type='list', elements='dict')
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec,
@@ -801,8 +820,12 @@ def main():
 
         network_mode = module.params['network_mode']
         launch_type = module.params['launch_type']
-        if launch_type == 'FARGATE' and network_mode != 'awsvpc':
-            module.fail_json(msg="To use FARGATE launch type, network_mode must be awsvpc")
+        placement_constraints = module.params['placement_constraints']
+        if launch_type == 'FARGATE':
+            if network_mode != 'awsvpc':
+                module.fail_json(msg="To use FARGATE launch type, network_mode must be awsvpc")
+            if placement_constraints:
+                module.fail_json(msg="Task placement constraints are not supported for tasks run on Fargate")
 
         for container in module.params['containers']:
             if container.get('links') and network_mode == 'awsvpc':
@@ -969,7 +992,8 @@ def main():
                                                                    volumes,
                                                                    module.params['launch_type'],
                                                                    module.params['cpu'],
-                                                                   module.params['memory'])
+                                                                   module.params['memory'],
+                                                                   module.params['placement_constraints'],)
             results['changed'] = True
 
     elif module.params['state'] == 'absent':

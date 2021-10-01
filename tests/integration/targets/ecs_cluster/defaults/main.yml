@@ -41,3 +41,6 @@ ecs_fargate_task_containers:
   - containerPort: "{{ ecs_task_container_port }}"
     hostPort: "{{ ecs_task_host_port|default(0) }}"
   #mountPoints: "{{ ecs_task_mount_points|default([]) }}"
+ecs_taskdefinition_placement_constraints:
+  - type: memberOf
+    expression: 'attribute:ecs.instance-type == t3.micro'
