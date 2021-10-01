@@ -58,15 +58,18 @@ volumes:
     returned: always
     contains:
         attachment_set:
-            description: Information about the volume attachments.
-            type: dict
-            sample: {
+            description:
+                - Information about the volume attachments.
+                - This was changed in version 2.0.0 from a dictionary to a list of dictionaries.
+            type: list
+            elements: dict
+            sample: [{
                 "attach_time": "2015-10-23T00:22:29.000Z",
                 "deleteOnTermination": "false",
                 "device": "/dev/sdf",
                 "instance_id": "i-8356263c",
                 "status": "attached"
-            }
+            }]
         create_time:
             description: The time stamp when volume creation was initiated.
             type: str
