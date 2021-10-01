@@ -71,12 +71,10 @@ options:
     required: false
     default: 0
     type: int
-
 author: "Will Thames (@willthames)"
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
 '''
 
 EXAMPLES = '''
@@ -288,6 +286,9 @@ def create_snapshot(module, ec2, description=None, wait=None,
                 'Tags': ansible_dict_to_boto3_tag_list(_tags),
             }]
         try:
+            if module.check_mode:
+                module.exit_json(changed=True, msg='Would have created a snapshot if not in check mode',
+                                 volume_id=volume['VolumeId'], volume_size=volume['Size'])
             snapshot = _create_snapshot(ec2, **params)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Failed to create snapshot")
@@ -321,6 +322,12 @@ def create_snapshot(module, ec2, description=None, wait=None,
 
 
 def delete_snapshot(module, ec2, snapshot_id):
+    if module.check_mode:
+        try:
+            _describe_snapshots(ec2, SnapshotIds=[(snapshot_id)])
+            module.exit_json(changed=True, msg='Would have deleted snapshot if not in check mode')
+        except is_boto3_error_code('InvalidSnapshot.NotFound'):
+            module.exit_json(changed=False, msg='Invalid snapshot ID - snapshot not found')
     try:
         ec2.delete_snapshot(aws_retry=True, SnapshotId=snapshot_id)
     except is_boto3_error_code('InvalidSnapshot.NotFound'):
@@ -364,6 +371,7 @@ def create_snapshot_ansible_module():
         required_if=required_if,
         required_one_of=required_one_of,
         required_together=required_together,
+        supports_check_mode=True,
     )
 
     return module
