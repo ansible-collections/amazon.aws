@@ -529,6 +529,9 @@ def create_image(module, connection):
         add_ec2_tags(connection, module, image_id, tags)
         if image_info and image_info.get('BlockDeviceMappings'):
             for mapping in image_info.get('BlockDeviceMappings'):
+                # We can only tag Ebs volumes
+                if 'Ebs' not in mapping:
+                    continue
                 add_ec2_tags(connection, module, mapping.get('Ebs').get('SnapshotId'), tags)
 
     if launch_permissions:
