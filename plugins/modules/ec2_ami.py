@@ -450,6 +450,13 @@ def create_image(module, connection):
     ramdisk_id = module.params.get('ramdisk_id')
     sriov_net_support = module.params.get('sriov_net_support')
 
+    if module.check_mode:
+        image = connection.describe_images(Filters=[{'Name': 'name', 'Values': [str(name)]}])
+        if not image['Images']:
+            module.exit_json(changed=True, msg='Would have created a AMI if not in check mode.')
+        else:
+            module.exit_json(changed=False, msg='Error registering image: AMI name is already in use by another AMI')
+
     try:
         params = {
             'Name': name,
@@ -564,6 +571,8 @@ def deregister_image(module, connection):
 
     # When trying to re-deregister an already deregistered image it doesn't raise an exception, it just returns an object without image attributes.
     if 'ImageId' in image:
+        if module.check_mode:
+            module.exit_json(changed=True, msg='Would have deregistered AMI if not in check mode.')
         try:
             connection.deregister_image(aws_retry=True, ImageId=image_id)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -622,9 +631,10 @@ def update_image(module, connection, image_id):
 
         if to_add or to_remove:
             try:
-                connection.modify_image_attribute(aws_retry=True,
-                                                  ImageId=image_id, Attribute='launchPermission',
-                                                  LaunchPermission=dict(Add=to_add, Remove=to_remove))
+                if not module.check_mode:
+                    connection.modify_image_attribute(aws_retry=True,
+                                                      ImageId=image_id, Attribute='launchPermission',
+                                                      LaunchPermission=dict(Add=to_add, Remove=to_remove))
                 changed = True
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                 module.fail_json_aws(e, msg="Error updating launch permissions of image %s" % image_id)
@@ -636,14 +646,16 @@ def update_image(module, connection, image_id):
 
         if tags_to_remove:
             try:
-                connection.delete_tags(aws_retry=True, Resources=[image_id], Tags=[dict(Key=tagkey) for tagkey in tags_to_remove])
+                if not module.check_mode:
+                    connection.delete_tags(aws_retry=True, Resources=[image_id], Tags=[dict(Key=tagkey) for tagkey in tags_to_remove])
                 changed = True
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                 module.fail_json_aws(e, msg="Error updating tags")
 
         if tags_to_add:
             try:
-                connection.create_tags(aws_retry=True, Resources=[image_id], Tags=ansible_dict_to_boto3_tag_list(tags_to_add))
+                if not module.check_mode:
+                    connection.create_tags(aws_retry=True, Resources=[image_id], Tags=ansible_dict_to_boto3_tag_list(tags_to_add))
                 changed = True
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                 module.fail_json_aws(e, msg="Error updating tags")
@@ -651,12 +663,15 @@ def update_image(module, connection, image_id):
     description = module.params.get('description')
     if description and description != image['Description']:
         try:
-            connection.modify_image_attribute(aws_retry=True, Attribute='Description ', ImageId=image_id, Description=dict(Value=description))
+            if not module.check_mode:
+                connection.modify_image_attribute(aws_retry=True, Attribute='Description ', ImageId=image_id, Description=dict(Value=description))
             changed = True
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             module.fail_json_aws(e, msg="Error setting description for image %s" % image_id)
 
     if changed:
+        if module.check_mode:
+            module.exit_json(changed=True, msg='Would have updated AMI if not in check mode.')
         module.exit_json(msg="AMI updated.", changed=True,
                          **get_ami_info(get_image_by_id(module, connection, image_id)))
     else:
@@ -749,7 +764,8 @@ def main():
         argument_spec=argument_spec,
         required_if=[
             ['state', 'absent', ['image_id']],
-        ]
+        ],
+        supports_check_mode=True,
     )
 
     # Using a required_one_of=[['name', 'image_id']] overrides the message that should be provided by
