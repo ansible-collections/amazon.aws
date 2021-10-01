@@ -127,7 +127,7 @@
       delivery_policy:
         http:
           defaultHealthyRetryPolicy:
-            minDelayTarget: 20
+            minDelayTarget: "20"
             maxDelayTarget: 20
             numRetries: 3
             numMaxDelayRetries: 0
@@ -153,7 +153,7 @@
       delivery_policy:
         http:
           defaultHealthyRetryPolicy:
-            minDelayTarget: 20
+            minDelayTarget: "20"
             maxDelayTarget: 20
             numRetries: 3
             numMaxDelayRetries: 0
@@ -179,7 +179,7 @@
       delivery_policy:
         http:
           defaultHealthyRetryPolicy:
-            minDelayTarget: 40
+            minDelayTarget: "40"
             maxDelayTarget: 40
             numRetries: 6
             numMaxDelayRetries: 0
