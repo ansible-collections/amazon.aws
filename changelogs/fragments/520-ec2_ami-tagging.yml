@@ -1,0 +1,2 @@
+minor_changes:
+- ec2_ami - use module_util helper for tagging AMIs (https://github.com/ansible-collections/amazon.aws/pull/520).
