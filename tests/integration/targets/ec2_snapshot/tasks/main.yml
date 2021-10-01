@@ -322,6 +322,16 @@
         that:
           - delete_result_second_check_mode is not changed
 
+    - name: Delete already removed snapshot (idempotent)
+      ec2_snapshot:
+        state: absent
+        snapshot_id: '{{ tagged_snapshot_id }}'
+      register: delete_result_second_idempotent
+
+    - assert:
+        that:
+          - delete_result_second_idempotent is not changed
+
     - name: Get info about all snapshots for this test
       ec2_snapshot_info:
         filters:
