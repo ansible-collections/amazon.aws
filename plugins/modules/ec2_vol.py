@@ -669,6 +669,8 @@ def get_mapped_block_device(instance_dict=None, device_name=None):
 
 
 def ensure_tags(module, connection, res_id, res_type, tags, purge_tags):
+    if module.check_mode:
+        return {}, True
     changed = ensure_ec2_tags(connection, module, res_id, res_type, tags, purge_tags, ['InvalidVolume.NotFound'])
     final_tags = describe_ec2_tags(connection, module, res_id, res_type)
 

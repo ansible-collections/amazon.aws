@@ -352,6 +352,19 @@
         that:
           - not changed_gp3_volume.changed
 
+    - name: change existing volume to gp3 (check_mode)
+      ec2_vol:
+        id: "{{ new_vol_attach_result.volume_id }}"
+        zone: "{{ availability_zone }}"
+        volume_type: gp3
+        modify_volume: yes
+      check_mode: true
+      register: changed_gp3_volume_check_mode
+
+    - assert:
+        that:
+          - changed_gp3_volume_check_mode is changed
+
     - name: change existing volume to gp3
       ec2_vol:
         id: "{{ new_vol_attach_result.volume_id }}"
