@@ -55,6 +55,9 @@
           '{{ec2_ami_name}}_instance_setup': 'integration_tests'
         security_group: '{{ setup_sg.group_id }}'
         vpc_subnet_id: '{{ setup_subnet.subnet.id }}'
+        volumes:
+          - device_name: /dev/sdc
+            virtual_name: ephemeral1
         wait: yes
       register: setup_instance
 
