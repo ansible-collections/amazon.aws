@@ -683,7 +683,8 @@ class EcsTaskManager:
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             return None
 
-    def register_task(self, family, task_role_arn, execution_role_arn, network_mode, container_definitions, volumes, launch_type, cpu, memory, placement_constraints):
+    def register_task(self, family, task_role_arn, execution_role_arn, network_mode, container_definitions,
+                      volumes, launch_type, cpu, memory, placement_constraints):
         validated_containers = []
 
         # Ensures the number parameters are int as required by boto
@@ -799,7 +800,8 @@ def main():
         launch_type=dict(required=False, choices=['EC2', 'FARGATE']),
         cpu=dict(),
         memory=dict(required=False, type='str'),
-        placement_constraints=dict(required=False, type='list', elements='dict', options=dict(type=dict(type='str'), expression=dict(type='str')))),
+        placement_constraints=dict(required=False, type='list', elements='dict',
+                                   options=dict(type=dict(type='str'), expression=dict(type='str'))),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec,
