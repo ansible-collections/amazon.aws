@@ -521,7 +521,7 @@ def attach_volume(module, ec2_conn, volume_dict, instance_dict, device_name):
     if attachment_data:
         if module.check_mode:
             if attachment_data[0].get('status') in ['attached', 'attaching']:
-                module.exit_json(changed=False, msg='IN CHECK MODE - volume already attached to instance: {1}.'.format(
+                module.exit_json(changed=False, msg='IN CHECK MODE - volume already attached to instance: {0}.'.format(
                                  attachment_data[0].get('instance_id', None)))
         if not volume_dict['multi_attach_enabled']:
             # volumes without MultiAttach Enabled can be attached to 1 instance only
