@@ -216,7 +216,12 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import add_ec2_tags
+
+
+def _generate_tag_specifications(tags):
+    tag_list = ansible_dict_to_boto3_tag_list(tags)
+    return [dict(ResourceType="vpc-endpoint", Tags=tag_list)]
+
 
 def get_endpoints(client, module, endpoint_id=None):
     params = dict()
@@ -249,7 +254,6 @@ def match_endpoints(route_table_ids, service_name, vpc_id, endpoint):
     if endpoint['VpcId'] == vpc_id and endpoint['ServiceName'] == service_name:
         sorted_endpoint_rt_ids = sorted(endpoint['RouteTableIds'])
         if sorted_endpoint_rt_ids == sorted_route_table_ids:
-
             found = True
     return found
 
@@ -323,6 +327,9 @@ def create_vpc_endpoint(client, module):
 
     if policy:
         params['PolicyDocument'] = json.dumps(policy)
+    
+    if module.params.get('tags'):
+        params["TagSpecifications"] = _generate_tag_specifications(module.params.get('tags'))
 
     try:
         changed = True
@@ -344,9 +351,6 @@ def create_vpc_endpoint(client, module):
         module.fail_json(msg="RouteAlreadyExists for one of the route tables - update is not allowed by the API")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to create VPC.")
-
-    if module.params.get('tags'):
-        changed |= add_ec2_tags(client, module, result['VpcEndpointId'], module.params.get('tags'))
 
     # describe and normalize iso datetime fields in result after adding tags
     normalized_result = get_endpoints(client, module, endpoint_id=result['VpcEndpointId'])['VpcEndpoints'][0]
