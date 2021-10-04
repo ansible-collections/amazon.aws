@@ -213,14 +213,10 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import normalize_boto3_result
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
-
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
-
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import add_ec2_tags
 
 def get_endpoints(client, module, endpoint_id=None):
     params = dict()
@@ -258,39 +254,6 @@ def match_endpoints(route_table_ids, service_name, vpc_id, endpoint):
     return found
 
 
-def ensure_tags(client, module, vpc_endpoint_id):
-    changed = False
-    tags = module.params['tags']
-    purge_tags = module.params['purge_tags']
-
-    filters = ansible_dict_to_boto3_filter_list({'resource-id': vpc_endpoint_id})
-    try:
-        current_tags = client.describe_tags(aws_retry=True, Filters=filters)
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Failed to describe tags for VPC Endpoint: {0}".format(vpc_endpoint_id))
-
-    tags_to_set, tags_to_unset = compare_aws_tags(boto3_tag_list_to_ansible_dict(current_tags.get('Tags')), tags, purge_tags=purge_tags)
-    if purge_tags and not tags:
-        tags_to_unset = current_tags
-
-    if tags_to_unset:
-        changed = True
-        if not module.check_mode:
-            try:
-                client.delete_tags(aws_retry=True, Resources=[vpc_endpoint_id], Tags=[dict(Key=tagkey) for tagkey in tags_to_unset])
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                module.fail_json_aws(e, msg="Unable to delete tags {0}".format(tags_to_unset))
-
-    if tags_to_set:
-        changed = True
-        if not module.check_mode:
-            try:
-                client.create_tags(aws_retry=True, Resources=[vpc_endpoint_id], Tags=ansible_dict_to_boto3_tag_list(tags_to_set))
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                module.fail_json_aws(e, msg="Unable to add tags {0}".format(tags_to_set))
-    return changed
-
-
 def setup_creation(client, module):
     endpoint_id = module.params.get('vpc_endpoint_id')
     route_table_ids = module.params.get('route_table_ids')
@@ -310,7 +273,9 @@ def setup_creation(client, module):
     if endpoint_id:
         # If we have an endpoint now, just ensure tags and exit
         if module.params.get('tags'):
-            changed = ensure_tags(client, module, endpoint_id)
+            changed |= ensure_ec2_tags(client, module, endpoint_id,
+                                       tags=module.params.get('tags'),
+                                       purge_tags=module.params.get('purge_tags'))
         normalized_result = get_endpoints(client, module, endpoint_id=endpoint_id)['VpcEndpoints'][0]
         return changed, camel_dict_to_snake_dict(normalized_result, ignore_list=['Tags'])
 
@@ -381,7 +346,7 @@ def create_vpc_endpoint(client, module):
         module.fail_json_aws(e, msg="Failed to create VPC.")
 
     if module.params.get('tags'):
-        ensure_tags(client, module, result['VpcEndpointId'])
+        changed |= add_ec2_tags(client, module, result['VpcEndpointId'], module.params.get('tags'))
 
     # describe and normalize iso datetime fields in result after adding tags
     normalized_result = get_endpoints(client, module, endpoint_id=result['VpcEndpointId'])['VpcEndpoints'][0]
