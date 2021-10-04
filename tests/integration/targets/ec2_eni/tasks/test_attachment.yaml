@@ -1,7 +1,8 @@
   # ============================================================
-- name: Ensure test instances are running
+# If we don't stop the instances they can get stuck "detaching"
+- name: Ensure test instances are stopped
   ec2_instance:
-    state: running
+    state: stopped
     instance_ids:
       - "{{ instance_id_1 }}"
       - "{{ instance_id_2 }}"
@@ -174,6 +175,13 @@
       - '"currently in use" in result.msg'
 
 # ============================================================
+- name: Ensure test instances is running (will block non-forced detachment)
+  ec2_instance:
+    state: running
+    instance_ids:
+      - "{{ instance_id_2 }}"
+    wait: True
+
 - name: delete an attached network interface with force_detach
   ec2_eni:
     force_detach: True
