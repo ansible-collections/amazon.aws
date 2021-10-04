@@ -433,7 +433,7 @@ def update_volume(module, ec2_conn, volume):
 
         if changed:
             if module.check_mode:
-                module.exit_json(changed=True, msg='Would have updated volume if not in check mode')
+                module.exit_json(changed=True, msg='Would have updated volume if not in check mode.')
             response = ec2_conn.modify_volume(**req_obj)
 
             volume['size'] = response.get('VolumeModification').get('TargetSize')
@@ -460,7 +460,7 @@ def create_volume(module, ec2_conn, zone):
     volume = get_volume(module, ec2_conn)
 
     if module.check_mode:
-        module.exit_json(changed=True, msg='Would have created a volume if not in check mode', volume_type=volume_type)
+        module.exit_json(changed=True, msg='Would have created a volume if not in check mode.')
 
     if volume is None:
 
@@ -519,6 +519,10 @@ def attach_volume(module, ec2_conn, volume_dict, instance_dict, device_name):
 
     attachment_data = get_attachment_data(volume_dict, wanted_state='attached')
     if attachment_data:
+        if module.check_mode:
+            if attachment_data[0].get('status') in ['attached', 'attaching']:
+                module.exit_json(changed=False, msg='IN CHECK MODE - volume already attached to instance: {1}.'.format(
+                                 attachment_data[0].get('instance_id', None)))
         if not volume_dict['multi_attach_enabled']:
             # volumes without MultiAttach Enabled can be attached to 1 instance only
             if attachment_data[0].get('instance_id', None) != instance_dict['instance_id']:
@@ -528,6 +532,8 @@ def attach_volume(module, ec2_conn, volume_dict, instance_dict, device_name):
                 return volume_dict, changed
 
     try:
+        if module.check_mode:
+            module.exit_json(changed=True, msg='Would have attached volume if not in check mode.')
         attach_response = ec2_conn.attach_volume(aws_retry=True, Device=device_name,
                                                  InstanceId=instance_dict['instance_id'],
                                                  VolumeId=volume_dict['volume_id'])
@@ -610,13 +616,13 @@ def get_attachment_data(volume_dict, wanted_state=None):
 
 
 def detach_volume(module, ec2_conn, volume_dict):
-    if module.check_mode:
-        module.exit_json(changed=True, msg='Would have detached volume if not in check mode')
     changed = False
 
     attachment_data = get_attachment_data(volume_dict, wanted_state='attached')
     # The ID of the instance must be specified if you are detaching a Multi-Attach enabled volume.
     for attachment in attachment_data:
+        if module.check_mode:
+            module.exit_json(changed=True, msg='Would have detached volume if not in check mode.')
         ec2_conn.detach_volume(aws_retry=True, InstanceId=attachment['instance_id'], VolumeId=volume_dict['volume_id'])
         waiter = ec2_conn.get_waiter('volume_available')
         waiter.wait(
@@ -848,7 +854,7 @@ def main():
             module.fail_json('A volume name or id is required for deletion')
         if volume:
             if module.check_mode:
-                module.exit_json(changed=True, msg='Would have deleted volume if not in check mode')
+                module.exit_json(changed=True, msg='Would have deleted volume if not in check mode.')
             detach_volume(module, ec2_conn, volume_dict=volume)
             changed = delete_volume(module, ec2_conn, volume_id=volume['volume_id'])
         module.exit_json(changed=changed)
