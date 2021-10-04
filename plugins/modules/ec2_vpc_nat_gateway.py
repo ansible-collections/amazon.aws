@@ -729,7 +729,7 @@ def pre_create(client, module, subnet_id, tags, purge_tags, allocation_id=None, 
 
             results = get_nat_gateways(client, module, subnet_id=subnet_id,
                                        nat_gateway_id=results['nat_gateway_id'])[0]
-            results['tags'] =  boto3_tag_list_to_ansible_dict(results['tags'])
+            results['tags'] = boto3_tag_list_to_ansible_dict(results['tags'])
 
             if changed:
                 return changed, msg, results
