@@ -372,9 +372,9 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.core import is_boto3_error_code
 from ..module_utils.ec2 import AWSRetry
-from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ..module_utils.ec2 import compare_aws_tags
+from ..module_utils.ec2 import ensure_ec2_tags
+from ..module_utils.ec2 import add_ec2_tags
 from ..module_utils.waiters import get_waiter
 
 
@@ -525,15 +525,14 @@ def create_image(module, connection):
         waiter.wait(ImageIds=[image_id], WaiterConfig=dict(Delay=delay, MaxAttempts=max_attempts))
 
     if tags:
-        resources_to_tag = [image_id]
         image_info = get_image_by_id(module, connection, image_id)
+        add_ec2_tags(connection, module, image_id, tags)
         if image_info and image_info.get('BlockDeviceMappings'):
             for mapping in image_info.get('BlockDeviceMappings'):
-                resources_to_tag.append(mapping.get('Ebs').get('SnapshotId'))
-        try:
-            connection.create_tags(aws_retry=True, Resources=resources_to_tag, Tags=ansible_dict_to_boto3_tag_list(tags))
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-            module.fail_json_aws(e, msg="Error tagging image")
+                # We can only tag Ebs volumes
+                if 'Ebs' not in mapping:
+                    continue
+                add_ec2_tags(connection, module, mapping.get('Ebs').get('SnapshotId'), tags)
 
     if launch_permissions:
         try:
@@ -641,24 +640,7 @@ def update_image(module, connection, image_id):
 
     desired_tags = module.params.get('tags')
     if desired_tags is not None:
-        current_tags = boto3_tag_list_to_ansible_dict(image.get('Tags'))
-        tags_to_add, tags_to_remove = compare_aws_tags(current_tags, desired_tags, purge_tags=module.params.get('purge_tags'))
-
-        if tags_to_remove:
-            try:
-                if not module.check_mode:
-                    connection.delete_tags(aws_retry=True, Resources=[image_id], Tags=[dict(Key=tagkey) for tagkey in tags_to_remove])
-                changed = True
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                module.fail_json_aws(e, msg="Error updating tags")
-
-        if tags_to_add:
-            try:
-                if not module.check_mode:
-                    connection.create_tags(aws_retry=True, Resources=[image_id], Tags=ansible_dict_to_boto3_tag_list(tags_to_add))
-                changed = True
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                module.fail_json_aws(e, msg="Error updating tags")
+        changed |= ensure_ec2_tags(connection, module, image_id, tags=desired_tags, purge_tags=module.params.get('purge_tags'))
 
     description = module.params.get('description')
     if description and description != image['Description']:

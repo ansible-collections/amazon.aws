@@ -46,21 +46,28 @@
       register: setup_sg
 
     - name: provision ec2 instance to create an image
-      ec2:
+      ec2_instance:
+        state: running
         key_name: '{{ setup_key.key.name }}'
         instance_type: t2.micro
-        state: present
-        image: '{{ ec2_ami_id }}'
-        wait: yes
-        instance_tags:
+        image_id: '{{ ec2_ami_id }}'
+        tags:
           '{{ec2_ami_name}}_instance_setup': 'integration_tests'
-        group_id: '{{ setup_sg.group_id }}'
+        security_group: '{{ setup_sg.group_id }}'
         vpc_subnet_id: '{{ setup_subnet.subnet.id }}'
+        volumes:
+          - device_name: /dev/sdc
+            virtual_name: ephemeral1
+        wait: yes
       register: setup_instance
+
+    - name: Store EC2 Instance ID
+      set_fact:
+        ec2_instance_id: '{{ setup_instance.instances[0].instance_id }}'
 
     - name: take a snapshot of the instance to create an image
       ec2_snapshot:
-        instance_id: '{{ setup_instance.instance_ids[0] }}'
+        instance_id: '{{ ec2_instance_id }}'
         device_name: '{{ ec2_ami_root_disk }}'
         state: present
       register: setup_snapshot
@@ -69,7 +76,7 @@
 
     - name: test clean failure if not providing image_id or name with state=present
       ec2_ami:
-        instance_id: '{{ setup_instance.instance_ids[0] }}'
+        instance_id: '{{ ec2_instance_id }}'
         state: present
         description: '{{ ec2_ami_description }}'
         tags:
@@ -89,7 +96,7 @@
 
     - name: create an image from the instance (check mode)
       ec2_ami:
-        instance_id: '{{ setup_instance.instance_ids[0] }}'
+        instance_id: '{{ ec2_instance_id }}'
         state: present
         name: '{{ ec2_ami_name }}_ami'
         description: '{{ ec2_ami_description }}'
@@ -107,7 +114,7 @@
 
     - name: create an image from the instance
       ec2_ami:
-        instance_id: '{{ setup_instance.instance_ids[0] }}'
+        instance_id: '{{ ec2_instance_id }}'
         state: present
         name: '{{ ec2_ami_name }}_ami'
         description: '{{ ec2_ami_description }}'
@@ -145,7 +152,7 @@
     - name: create an image from the instance with attached devices with no_device true (check mode)
       ec2_ami:
         name: '{{ ec2_ami_name }}_no_device_true_ami'
-        instance_id: '{{ setup_instance.instance_ids[0] }}'
+        instance_id: '{{ ec2_instance_id }}'
         device_mapping:
           - device_name: /dev/sda1
             volume_size: 10
@@ -167,7 +174,7 @@
     - name: create an image from the instance with attached devices with no_device true
       ec2_ami:
         name: '{{ ec2_ami_name }}_no_device_true_ami'
-        instance_id: '{{ setup_instance.instance_ids[0] }}'
+        instance_id: '{{ ec2_instance_id }}'
         device_mapping:
           - device_name: /dev/sda1
             volume_size: 10
@@ -193,7 +200,7 @@
     - name: create an image from the instance with attached devices with no_device false
       ec2_ami:
         name: '{{ ec2_ami_name }}_no_device_false_ami'
-        instance_id: '{{ setup_instance.instance_ids[0] }}'
+        instance_id: '{{ ec2_instance_id }}'
         device_mapping:
           - device_name: /dev/sda1
             volume_size: 10
@@ -292,7 +299,7 @@
 
     - name: delete the image (check mode)
       ec2_ami:
-        instance_id: '{{ setup_instance.instance_ids[0] }}'
+        instance_id: '{{ ec2_instance_id }}'
         state: absent
         delete_snapshot: yes
         name: '{{ ec2_ami_name }}_ami'
@@ -312,7 +319,7 @@
 
     - name: delete the image
       ec2_ami:
-        instance_id: '{{ setup_instance.instance_ids[0] }}'
+        instance_id: '{{ ec2_instance_id }}'
         state: absent
         delete_snapshot: yes
         name: '{{ ec2_ami_name }}_ami'
@@ -558,7 +565,7 @@
 
     - name: delete ami without deleting the snapshot (default is not to delete)
       ec2_ami:
-        instance_id: '{{ setup_instance.instance_ids[0] }}'
+        instance_id: '{{ ec2_instance_id }}'
         state: absent
         name: '{{ ec2_ami_name }}_ami'
         image_id: '{{ ec2_ami_image_id }}'
@@ -587,7 +594,7 @@
 
     - name: delete ami for a second time (check mode)
       ec2_ami:
-        instance_id: '{{ setup_instance.instance_ids[0] }}'
+        instance_id: '{{ ec2_instance_id }}'
         state: absent
         name: '{{ ec2_ami_name }}_ami'
         image_id: '{{ ec2_ami_image_id }}'
@@ -604,7 +611,7 @@
 
     - name: delete ami for a second time
       ec2_ami:
-        instance_id: '{{ setup_instance.instance_ids[0] }}'
+        instance_id: '{{ ec2_instance_id }}'
         state: absent
         name: '{{ ec2_ami_name }}_ami'
         image_id: '{{ ec2_ami_image_id }}'
@@ -660,15 +667,11 @@
       ignore_errors: yes
 
     - name: remove setup ec2 instance
-      ec2:
-        instance_type: t2.micro
-        instance_ids: '{{ setup_instance.instance_ids }}'
+      ec2_instance:
         state: absent
-        wait: yes
-        instance_tags:
-          '{{ec2_ami_name}}_instance_setup': 'integration_tests'
-        group_id: '{{ setup_sg.group_id }}'
-        vpc_subnet_id: '{{ setup_subnet.subnet.id }}'
+        instance_ids:
+        - '{{ ec2_instance_id }}'
+        wait: true
       ignore_errors: yes
 
     - name: remove setup keypair
