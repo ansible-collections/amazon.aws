@@ -640,6 +640,16 @@ def modify_eni(connection, module, eni):
     module.exit_json(changed=changed, interface=get_eni_info(eni))
 
 
+def _wait_for_detach(connection, module, eni_id):
+    try:
+        get_waiter(connection, 'network_interface_available').wait(
+            NetworkInterfaceIds=[eni_id],
+            WaiterConfig={'Delay': 5, 'MaxAttempts': 80},
+        )
+    except botocore.exceptions.WaiterError as e:
+        module.fail_json_aws(e, "Timeout waiting for ENI {0} to detach".format(eni_id))
+
+
 def delete_eni(connection, module):
 
     eni = uniquely_find_eni(connection, module)
@@ -655,10 +665,9 @@ def delete_eni(connection, module):
                 connection.detach_network_interface(
                     aws_retry=True,
                     AttachmentId=eni["Attachment"]["AttachmentId"],
-                    Force=True
+                    Force=True,
                 )
-                # Wait to allow detachment to finish
-                get_waiter(connection, 'network_interface_available').wait(NetworkInterfaceIds=[eni_id])
+                _wait_for_detach(connection, module, eni_id)
             connection.delete_network_interface(aws_retry=True, NetworkInterfaceId=eni_id)
             changed = True
         else:
@@ -684,10 +693,7 @@ def detach_eni(connection, eni, module):
             AttachmentId=eni["Attachment"]["AttachmentId"],
             Force=force_detach,
         )
-        get_waiter(connection, 'network_interface_available').wait(
-            NetworkInterfaceIds=[eni_id],
-            WaiterConfig={'Delay': 5, 'MaxAttempts': 80},
-        )
+        _wait_for_detach(connection, module, eni_id)
         return True
 
     return False
