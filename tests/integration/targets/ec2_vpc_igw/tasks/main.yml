@@ -18,7 +18,7 @@
       - '"internet_gateways" in igw_info'
 
   # ============================================================
-  - name: create a VPC
+  - name: Create a VPC
     ec2_vpc_net:
       name: '{{ vpc_name }}'
       state: present
@@ -45,6 +45,7 @@
       filters:
         attachment.vpc-id: '{{ vpc_result.vpc.id }}'
     register: igw_info
+
   - name: Assert success
     assert:
       that:
@@ -53,7 +54,7 @@
       - (igw_info.internet_gateways | length) == 0
 
   # ============================================================
-  - name: create internet gateway (expected changed=true) - CHECK_MODE
+  - name: Create internet gateway (expected changed=true) - CHECK_MODE
     ec2_vpc_igw:
       state: present
       vpc_id: '{{ vpc_result.vpc.id }}'
@@ -62,12 +63,13 @@
         Tag Two: two {{ resource_prefix }}
     register: vpc_igw_create
     check_mode: yes
-  - name: assert creation would happen (expected changed=true) - CHECK_MODE
+
+  - name: Assert creation would happen (expected changed=true) - CHECK_MODE
     assert:
       that:
       - vpc_igw_create is changed
 
-  - name: create internet gateway (expected changed=true)
+  - name: Create internet gateway (expected changed=true)
     ec2_vpc_igw:
       state: present
       vpc_id: '{{ vpc_result.vpc.id }}'
@@ -75,7 +77,8 @@
         tag_one: '{{ resource_prefix }} One'
         Tag Two: two {{ resource_prefix }}
     register: vpc_igw_create
-  - name: assert creation happened (expected changed=true)
+
+  - name: Assert creation happened (expected changed=true)
     assert:
       that:
       - vpc_igw_create is changed
@@ -92,11 +95,13 @@
     set_fact:
       igw_id: '{{ vpc_igw_create.gateway_id }}'
       vpc_id: '{{ vpc_result.vpc.id }}'
+
   - name: Search for internet gateway by VPC
     ec2_vpc_igw_info:
       filters:
         attachment.vpc-id: '{{ vpc_id }}'
     register: igw_info
+
   - name: Check standard IGW details
     assert:
       that:
@@ -124,11 +129,13 @@
       - current_igw.tags[1].value in [resource_prefix + " One", "two " + resource_prefix]
     vars:
       current_igw: '{{ igw_info.internet_gateways[0] }}'
+
   - name: Fetch IGW by ID
     ec2_vpc_igw_info:
       internet_gateway_ids: '{{ igw_id }}'
       convert_tags: yes
     register: igw_info
+
   - name: Check standard IGW details
     assert:
       that:
@@ -150,11 +157,13 @@
       - current_igw.tags["Tag Two"] == 'two {{ resource_prefix }}'
     vars:
       current_igw: '{{ igw_info.internet_gateways[0] }}'
+
   - name: Fetch IGW by ID (list)
     ec2_vpc_igw_info:
       internet_gateway_ids:
       - '{{ igw_id }}'
     register: igw_info
+
   - name: Check standard IGW details
     assert:
       that:
@@ -171,13 +180,15 @@
       - '"tags" in current_igw'
     vars:
       current_igw: '{{ igw_info.internet_gateways[0] }}'
-  - name: attempt to recreate internet gateway on VPC (expected changed=false) - CHECK_MODE
+
+  - name: Attempt to recreate internet gateway on VPC (expected changed=false) - CHECK_MODE
     ec2_vpc_igw:
       state: present
       vpc_id: '{{ vpc_result.vpc.id }}'
     register: vpc_igw_recreate
     check_mode: yes
-  - name: assert recreation would do nothing (expected changed=false) - CHECK_MODE
+
+  - name: Assert recreation would do nothing (expected changed=false) - CHECK_MODE
     assert:
       that:
       - vpc_igw_recreate is not changed
@@ -188,12 +199,13 @@
       - vpc_igw_create.tags["tag_one"] == '{{ resource_prefix }} One'
       - vpc_igw_create.tags["Tag Two"] == 'two {{ resource_prefix }}'
 
-  - name: attempt to recreate internet gateway on VPC (expected changed=false)
+  - name: Attempt to recreate internet gateway on VPC (expected changed=false)
     ec2_vpc_igw:
       state: present
       vpc_id: '{{ vpc_result.vpc.id }}'
     register: vpc_igw_recreate
-  - name: assert recreation did nothing (expected changed=false)
+
+  - name: Assert recreation did nothing (expected changed=false)
     assert:
       that:
       - vpc_igw_recreate is not changed
@@ -214,7 +226,8 @@
         Tag Two: two {{ resource_prefix }}
     register: vpc_igw_recreate
     check_mode: yes
-  - name: assert tag update would do nothing (expected changed=false) - CHECK_MODE
+
+  - name: Assert tag update would do nothing (expected changed=false) - CHECK_MODE
     assert:
       that:
       - vpc_igw_recreate is not changed
@@ -233,7 +246,8 @@
         tag_one: '{{ resource_prefix }} One'
         Tag Two: two {{ resource_prefix }}
     register: vpc_igw_recreate
-  - name: assert tag update did nothing (expected changed=false)
+
+  - name: Assert tag update did nothing (expected changed=false)
     assert:
       that:
       - vpc_igw_recreate is not changed
@@ -245,7 +259,7 @@
       - vpc_igw_recreate.tags["Tag Two"] == 'two {{ resource_prefix }}'
 
   # ============================================================
-  - name: Update the tags - remove and add - CHECK_MODE
+  - name: Update the tags (remove and add) - CHECK_MODE
     ec2_vpc_igw:
       state: present
       vpc_id: '{{ vpc_result.vpc.id }}'
@@ -254,7 +268,8 @@
         Tag Two: two {{ resource_prefix }}
     register: vpc_igw_update
     check_mode: yes
-  - name: assert tag update would happen (expected changed=true) - CHECK_MODE
+
+  - name: Assert tag update would happen (expected changed=true) - CHECK_MODE
     assert:
       that:
       - vpc_igw_update is changed
@@ -262,11 +277,8 @@
       - vpc_igw_update.vpc_id == vpc_id
       - '"tags" in vpc_igw_update'
       - vpc_igw_update.tags | length == 2
-      - vpc_igw_update.tags["tag_three"] == '{{ resource_prefix }} Three'
-      - vpc_igw_update.tags["Tag Two"] == 'two {{ resource_prefix }}'
 
-
-  - name: Update the tags - remove and add
+  - name: Update the tags (remove and add)
     ec2_vpc_igw:
       state: present
       vpc_id: '{{ vpc_result.vpc.id }}'
@@ -274,7 +286,8 @@
         tag_three: '{{ resource_prefix }} Three'
         Tag Two: two {{ resource_prefix }}
     register: vpc_igw_update
-  - name: assert tags are updated (expected changed=true)
+
+  - name: Assert tags are updated (expected changed=true)
     assert:
       that:
       - vpc_igw_update is changed
@@ -295,17 +308,14 @@
         tag_one: '{{ resource_prefix }} One'
     register: vpc_igw_update
     check_mode: yes
-  - name: assert tags would be added - CHECK_MODE
+
+  - name: Assert tags would be added - CHECK_MODE
     assert:
       that:
       - vpc_igw_update is changed
       - vpc_igw_update.gateway_id == igw_id
       - vpc_igw_update.vpc_id == vpc_id
       - '"tags" in vpc_igw_update'
-      - vpc_igw_update.tags | length == 3
-      - vpc_igw_update.tags["tag_one"] == '{{ resource_prefix }} One'
-      - vpc_igw_update.tags["tag_three"] == '{{ resource_prefix }} Three'
-      - vpc_igw_update.tags["Tag Two"] == 'two {{ resource_prefix }}'
 
   - name: Update the tags add without purge
     ec2_vpc_igw:
@@ -315,7 +325,8 @@
       tags:
         tag_one: '{{ resource_prefix }} One'
     register: vpc_igw_update
-  - name: assert tags added
+
+  - name: Assert tags added
     assert:
       that:
       - vpc_igw_update is changed
@@ -334,37 +345,32 @@
       state: present
       vpc_id: '{{ vpc_result.vpc.id }}'
       tags:
-        lowercase spaced: "hello cruel world \u2764\uFE0F"
-        Title Case: "Hello Cruel World \u2764\uFE0F"
-        CamelCase: "SimpleCamelCase \u2764\uFE0F"
-        snake_case: "simple_snake_case \u2764\uFE0F"
+        lowercase spaced: "hello cruel world"
+        Title Case: "Hello Cruel World"
+        CamelCase: "SimpleCamelCase"
+        snake_case: "simple_snake_case"
     register: vpc_igw_update
     check_mode: yes
-  - name: assert tag update would happen (expected changed=true) - CHECK_MODE
+
+  - name: Assert tag update would happen (expected changed=true) - CHECK_MODE
     assert:
       that:
       - vpc_igw_update is changed
       - vpc_igw_update.gateway_id == igw_id
       - vpc_igw_update.vpc_id == vpc_id
       - '"tags" in vpc_igw_update'
-      - vpc_igw_update.tags | length == 4
-      - "vpc_igw_update.tags[\"lowercase spaced\"] == 'hello cruel world \u2764\uFE0F\
-        '"
-      - "vpc_igw_update.tags[\"Title Case\"] == 'Hello Cruel World \u2764\uFE0F'"
-      - "vpc_igw_update.tags[\"CamelCase\"] == 'SimpleCamelCase \u2764\uFE0F'"
-      - "vpc_igw_update.tags[\"snake_case\"] == 'simple_snake_case \u2764\uFE0F'"
-
 
   - name: Update the tags - remove and add
     ec2_vpc_igw:
       state: present
       vpc_id: '{{ vpc_result.vpc.id }}'
       tags:
-        lowercase spaced: "hello cruel world \u2764\uFE0F"
-        Title Case: "Hello Cruel World \u2764\uFE0F"
-        CamelCase: "SimpleCamelCase \u2764\uFE0F"
-        snake_case: "simple_snake_case \u2764\uFE0F"
+        lowercase spaced: "hello cruel world"
+        Title Case: "Hello Cruel World"
+        CamelCase: "SimpleCamelCase"
+        snake_case: "simple_snake_case"
     register: vpc_igw_update
+
   - name: assert tags are updated (expected changed=true)
     assert:
       that:
@@ -373,18 +379,18 @@
       - vpc_igw_update.vpc_id == vpc_id
       - '"tags" in vpc_igw_update'
       - vpc_igw_update.tags | length == 4
-      - "vpc_igw_update.tags[\"lowercase spaced\"] == 'hello cruel world \u2764\uFE0F\
-        '"
-      - "vpc_igw_update.tags[\"Title Case\"] == 'Hello Cruel World \u2764\uFE0F'"
-      - "vpc_igw_update.tags[\"CamelCase\"] == 'SimpleCamelCase \u2764\uFE0F'"
-      - "vpc_igw_update.tags[\"snake_case\"] == 'simple_snake_case \u2764\uFE0F'"
+      - vpc_igw_update.tags["lowercase spaced"] == 'hello cruel world'
+      - vpc_igw_update.tags["Title Case"] == 'Hello Cruel World'
+      - vpc_igw_update.tags["CamelCase"] == 'SimpleCamelCase'
+      - vpc_igw_update.tags["snake_case"] == 'simple_snake_case'
 
   # ============================================================
   - name: Gather information about a filtered list of Internet Gateways using tags
     ec2_vpc_igw_info:
       filters:
-        tag:Title Case: "Hello Cruel World \u2764\uFE0F"
+        tag:Title Case: "Hello Cruel World"
     register: igw_info
+
   - name: Assert success
     assert:
       that:
@@ -393,13 +399,13 @@
       - igw_info.internet_gateways | selectattr("internet_gateway_id",'equalto',"{{
         igw_id }}")
 
-  - name: Gather information about a filtered list of Internet Gateways using tags
-      - CHECK_MODE
+  - name: Gather information about a filtered list of Internet Gateways using tags - CHECK_MODE
     ec2_vpc_igw_info:
       filters:
-        tag:Title Case: "Hello Cruel World \u2764\uFE0F"
+        tag:Title Case: "Hello Cruel World"
     register: igw_info
     check_mode: yes
+
   - name: Assert success - CHECK_MODE
     assert:
       that:
@@ -409,12 +415,12 @@
         igw_id }}")
 
   # ============================================================
-  - name: Gather information about a filtered list of Internet Gateways using tags
-      (no match)
+  - name: Gather information about a filtered list of Internet Gateways using tags (no match)
     ec2_vpc_igw_info:
       filters:
         tag:tag_one: '{{ resource_prefix }} One'
     register: igw_info
+
   - name: Assert success
     assert:
       that:
@@ -422,13 +428,13 @@
       - '"internet_gateways" in igw_info'
       - igw_info.internet_gateways | length == 0
 
-  - name: Gather information about a filtered list of Internet Gateways using tags
-      (no match) - CHECK_MODE
+  - name: Gather information about a filtered list of Internet Gateways using tags (no match) - CHECK_MODE
     ec2_vpc_igw_info:
       filters:
         tag:tag_one: '{{ resource_prefix }} One'
     register: igw_info
     check_mode: yes
+
   - name: Assert success - CHECK_MODE
     assert:
       that:
@@ -444,7 +450,8 @@
       tags: {}
     register: vpc_igw_update
     check_mode: yes
-  - name: assert tags would be removed - CHECK_MODE
+
+  - name: Assert tags would be removed - CHECK_MODE
     assert:
       that:
       - vpc_igw_update is changed
@@ -455,7 +462,8 @@
       vpc_id: '{{ vpc_result.vpc.id }}'
       tags: {}
     register: vpc_igw_update
-  - name: assert tags removed
+
+  - name: Assert tags removed
     assert:
       that:
       - vpc_igw_update is changed
@@ -465,23 +473,25 @@
       - vpc_igw_update.tags | length == 0
 
   # ============================================================
-  - name: test state=absent (expected changed=true) - CHECK_MODE
+  - name: Test state=absent (expected changed=true) - CHECK_MODE
     ec2_vpc_igw:
       state: absent
       vpc_id: '{{ vpc_result.vpc.id }}'
     register: vpc_igw_delete
     check_mode: yes
-  - name: assert state=absent (expected changed=true) - CHECK_MODE
+
+  - name: Assert state=absent (expected changed=true) - CHECK_MODE
     assert:
       that:
       - vpc_igw_delete is changed
 
-  - name: test state=absent (expected changed=true)
+  - name: Test state=absent (expected changed=true)
     ec2_vpc_igw:
       state: absent
       vpc_id: '{{ vpc_result.vpc.id }}'
     register: vpc_igw_delete
-  - name: assert state=absent (expected changed=true)
+
+  - name: Assert state=absent (expected changed=true)
     assert:
       that:
       - vpc_igw_delete is changed
@@ -493,6 +503,7 @@
       - '{{ igw_id }}'
     register: igw_info
     ignore_errors: true
+
   - name: Check IGW does not exist
     assert:
       that:
@@ -500,35 +511,38 @@
       - igw_info is failed
 
   # ============================================================
-  - name: test state=absent when already deleted (expected changed=false) - CHECK_MODE
+  - name: Test state=absent when already deleted (expected changed=false) - CHECK_MODE
     ec2_vpc_igw:
       state: absent
       vpc_id: '{{ vpc_result.vpc.id }}'
     register: vpc_igw_delete
     check_mode: yes
-  - name: assert state=absent (expected changed=false) - CHECK_MODE
+
+  - name: Assert state=absent (expected changed=false) - CHECK_MODE
     assert:
       that:
       - vpc_igw_delete is not changed
 
-  - name: test state=absent when already deleted (expected changed=false)
+  - name: Test state=absent when already deleted (expected changed=false)
     ec2_vpc_igw:
       state: absent
       vpc_id: '{{ vpc_result.vpc.id }}'
     register: vpc_igw_delete
-  - name: assert state=absent (expected changed=false)
+
+  - name: Assert state=absent (expected changed=false)
     assert:
       that:
       - vpc_igw_delete is not changed
 
   always:
     # ============================================================
-  - name: tidy up IGW
+  - name: Tidy up IGW
     ec2_vpc_igw:
       state: absent
       vpc_id: '{{ vpc_result.vpc.id }}'
     ignore_errors: true
-  - name: tidy up VPC
+
+  - name: Tidy up VPC
     ec2_vpc_net:
       name: '{{ vpc_name }}'
       state: absent
