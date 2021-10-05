@@ -526,8 +526,9 @@ def attach_volume(module, ec2_conn, volume_dict, instance_dict, device_name):
         if not volume_dict['multi_attach_enabled']:
             # volumes without MultiAttach Enabled can be attached to 1 instance only
             if attachment_data[0].get('instance_id', None) != instance_dict['instance_id']:
-                module.fail_json(msg="Volume {0} is already attached to another instance: {1}. Instance ID was: {2} and Instance_dict ID was: {3}".format(volume_dict['volume_id'],
-                                 attachment_data[0].get('instance_id', None), attachment_data[0].get('instance_id'), instance_dict.get('instance_id')))
+                module.fail_json(msg="Volume {0} is already attached to another instance: {1}. Instance ID was: {2} and Instance_dict ID was: {3}"
+                                 .format(volume_dict['volume_id'], attachment_data[0].get('instance_id', None), attachment_data[0].get('instance_id'),
+                                         instance_dict.get('instance_id')))
             else:
                 return volume_dict, changed
 
