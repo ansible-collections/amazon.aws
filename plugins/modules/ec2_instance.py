@@ -859,10 +859,10 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_er
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_security_group_ids_from_names
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 
 module = None
 
@@ -926,34 +926,6 @@ def tower_callback_script(tower_conf, windows=False, passwd=None):
                                    template_id=tower_conf['job_template_id'],
                                    host_config_key=tower_conf['host_config_key'])
     raise NotImplementedError("Only windows with remote-prep or non-windows with tower job callback supported so far.")
-
-
-def manage_tags(match, new_tags, purge_tags):
-    changed = False
-    old_tags = boto3_tag_list_to_ansible_dict(match.get('Tags', {}))
-    tags_to_set, tags_to_delete = compare_aws_tags(
-        old_tags, new_tags,
-        purge_tags=purge_tags,
-    )
-    if module.check_mode:
-        return bool(tags_to_delete or tags_to_set)
-    try:
-        if tags_to_set:
-            client.create_tags(
-                aws_retry=True,
-                Resources=[match['InstanceId']],
-                Tags=ansible_dict_to_boto3_tag_list(tags_to_set))
-            changed |= True
-        if tags_to_delete:
-            delete_with_current_values = dict((k, old_tags.get(k)) for k in tags_to_delete)
-            client.delete_tags(
-                aws_retry=True,
-                Resources=[match['InstanceId']],
-                Tags=ansible_dict_to_boto3_tag_list(delete_with_current_values))
-            changed |= True
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Could not update tags for instance {0}".format(match['InstanceId']))
-    return changed
 
 
 def build_volume_spec(params):
@@ -1254,21 +1226,11 @@ def build_top_level_options(params):
 
 
 def build_instance_tags(params, propagate_tags_to_volumes=True):
-    tags = params.get('tags', {})
+    tags = params.get('tags') or {}
     if params.get('name') is not None:
-        if tags is None:
-            tags = {}
         tags['Name'] = params.get('name')
-    return [
-        {
-            'ResourceType': 'volume',
-            'Tags': ansible_dict_to_boto3_tag_list(tags),
-        },
-        {
-            'ResourceType': 'instance',
-            'Tags': ansible_dict_to_boto3_tag_list(tags),
-        },
-    ]
+    specs = boto3_tag_specifications(tags, ['volume', 'instance'])
+    return specs
 
 
 def build_run_instance_spec(params):
@@ -1701,6 +1663,7 @@ def determine_iam_role(name_or_arn):
 def handle_existing(existing_matches, state):
     tags = dict(module.params.get('tags') or {})
     name = module.params.get('name')
+    purge_tags = module.params.get('purge_tags', False)
     if name:
         tags['Name'] = name
 
@@ -1708,7 +1671,7 @@ def handle_existing(existing_matches, state):
     all_changes = list()
 
     for instance in existing_matches:
-        changed |= manage_tags(instance, tags, module.params.get('purge_tags', False))
+        changed |= ensure_ec2_tags(client, module, instance['InstanceId'], tags=tags, purge_tags=purge_tags)
         changes = diff_instance_and_params(instance, module.params)
         for c in changes:
             if not module.check_mode:
