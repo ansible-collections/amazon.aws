@@ -27,7 +27,7 @@
       - vpc_result.vpc.state == 'available'
       - '"tags" in vpc_result.vpc'
 
-  - name: 'set fact: VPC ID'
+  - name: 'Set fact: VPC ID'
     set_fact:
       vpc_id: '{{ vpc_result.vpc.id }}'
 
@@ -166,8 +166,7 @@
   - name: 'set facts: NAT gateway ID'
     set_fact:
       nat_gateway_id: '{{ create_ngw.nat_gateway_id }}'
-      network_interface_id: '{{ create_ngw.nat_gateway_addresses[0].network_interface_id
-        }}'
+      network_interface_id: '{{ create_ngw.nat_gateway_addresses[0].network_interface_id }}'
 
 
   # ============================================================
@@ -315,7 +314,8 @@
       - '"allocation_id" in eip_result'
       - eip_result.allocation_id.startswith("eipalloc-")
       - '"public_ip" in eip_result'
-  - name: 'set fact: EIP allocation ID and EIP public IP'
+  
+  - name: 'Set fact: EIP allocation ID and EIP public IP'
     set_fact:
       second_eip_address: '{{ eip_result.public_ip }}'
       second_allocation_id: '{{ eip_result.allocation_id }}'
@@ -361,8 +361,7 @@
 
 
   # ============================================================
-  - name: Trying this again for idempotency - create new NAT gateway with eip address
-      - CHECK_MODE
+  - name: Trying this again for idempotency - create new NAT gateway with eip address - CHECK_MODE
     ec2_vpc_nat_gateway:
       subnet_id: '{{ subnet_id }}'
       eip_address: '{{ second_eip_address }}'
@@ -523,7 +522,7 @@
       - '"vpc_id" in create_ngw'
       - create_ngw.vpc_id == vpc_id
 
-  - name: 'set facts: NAT gateway ID'
+  - name: 'Set facts: NAT gateway ID'
     set_fact:
       ngw_id: '{{ create_ngw.nat_gateway_id }}'
 
@@ -582,8 +581,7 @@
 
 
   # ============================================================
-  - name: Gather information about a filtered list of NAT Gateways using tags and
-      state - CHECK_MODE
+  - name: Gather information about a filtered list of NAT Gateways using tags and state - CHECK_MODE
     ec2_vpc_nat_gateway_info:
       filters:
         tag:Tag Two: two {{ resource_prefix }}
@@ -615,8 +613,7 @@
     vars:
       second_ngw: '{{ ngw_info.result[0] }}'
 
-  - name: Gather information about a filtered list of NAT Gateways using tags and
-      state
+  - name: Gather information about a filtered list of NAT Gateways using tags and state
     ec2_vpc_nat_gateway_info:
       filters:
         tag:Tag Two: two {{ resource_prefix }}
@@ -649,7 +646,7 @@
 
 
   # ============================================================
-  - name: Update the tags - remove and add - CHECK_MODE
+  - name: Update the tags (remove and add) - CHECK_MODE
     ec2_vpc_nat_gateway:
       subnet_id: '{{ subnet_id }}'
       allocation_id: '{{ allocation_id }}'
@@ -669,13 +666,10 @@
       - '"subnet_id" in update_tags_ngw'
       - update_tags_ngw.subnet_id == subnet_id
       - '"tags" in update_tags_ngw'
-      - update_tags_ngw.tags | length == 2
-      - update_tags_ngw.tags["tag_three"] == '{{ resource_prefix }} Three'
-      - update_tags_ngw.tags["Tag Two"] == 'two {{ resource_prefix }}'
       - '"vpc_id" in update_tags_ngw'
       - update_tags_ngw.vpc_id == vpc_id
 
-  - name: Update the tags - remove and add
+  - name: Update the tags (remove and add)
     ec2_vpc_nat_gateway:
       subnet_id: '{{ subnet_id }}'
       allocation_id: '{{ allocation_id }}'
@@ -702,8 +696,7 @@
 
 
   # ============================================================
-  - name: Gather information about a filtered list of NAT Gateways using tags and
-      state (no match) - CHECK_MODE
+  - name: Gather information about a filtered list of NAT Gateways using tags and state (no match) - CHECK_MODE
     ec2_vpc_nat_gateway_info:
       filters:
         tag:tag_one: '{{ resource_prefix }} One'
@@ -754,10 +747,6 @@
       - '"subnet_id" in update_tags_ngw'
       - update_tags_ngw.subnet_id == subnet_id
       - '"tags" in update_tags_ngw'
-      - update_tags_ngw.tags | length == 3
-      - update_tags_ngw.tags["tag_one"] == '{{ resource_prefix }} One'
-      - update_tags_ngw.tags["tag_three"] == '{{ resource_prefix }} Three'
-      - update_tags_ngw.tags["Tag Two"] == 'two {{ resource_prefix }}'
       - '"vpc_id" in update_tags_ngw'
       - update_tags_ngw.vpc_id == vpc_id
 
@@ -807,7 +796,6 @@
       - '"subnet_id" in delete_tags_ngw'
       - delete_tags_ngw.subnet_id == subnet_id
       - '"tags" in delete_tags_ngw'
-      - delete_tags_ngw.tags | length == 0
       - '"vpc_id" in delete_tags_ngw'
       - delete_tags_ngw.vpc_id == vpc_id
 
@@ -818,7 +806,7 @@
       tags: {}
     register: delete_tags_ngw
 
-  - name: assert tags would be removed
+  - name: Assert tags would be removed
     assert:
       that:
       - delete_tags_ngw.changed
@@ -840,10 +828,10 @@
       allocation_id: '{{ allocation_id }}'
       purge_tags: no
       tags:
-        lowercase spaced: "hello cruel world \u2764\uFE0F"
-        Title Case: "Hello Cruel World \u2764\uFE0F"
-        CamelCase: "SimpleCamelCase \u2764\uFE0F"
-        snake_case: "simple_snake_case \u2764\uFE0F"
+        lowercase spaced: "hello cruel world"
+        Title Case: "Hello Cruel World"
+        CamelCase: "SimpleCamelCase"
+        snake_case: "simple_snake_case"
       wait: yes
     register: update_tags_ngw
     check_mode: yes
@@ -857,12 +845,6 @@
       - '"subnet_id" in update_tags_ngw'
       - update_tags_ngw.subnet_id == subnet_id
       - '"tags" in update_tags_ngw'
-      - update_tags_ngw.tags | length == 4
-      - "update_tags_ngw.tags[\"lowercase spaced\"] == 'hello cruel world \u2764\uFE0F\
-        '"
-      - "update_tags_ngw.tags[\"Title Case\"] == 'Hello Cruel World \u2764\uFE0F'"
-      - "update_tags_ngw.tags[\"CamelCase\"] == 'SimpleCamelCase \u2764\uFE0F'"
-      - "update_tags_ngw.tags[\"snake_case\"] == 'simple_snake_case \u2764\uFE0F'"
       - '"vpc_id" in update_tags_ngw'
       - update_tags_ngw.vpc_id == vpc_id
 
@@ -873,10 +855,10 @@
       allocation_id: '{{ allocation_id }}'
       purge_tags: no
       tags:
-        lowercase spaced: "hello cruel world \u2764\uFE0F"
-        Title Case: "Hello Cruel World \u2764\uFE0F"
-        CamelCase: "SimpleCamelCase \u2764\uFE0F"
-        snake_case: "simple_snake_case \u2764\uFE0F"
+        lowercase spaced: "hello cruel world"
+        Title Case: "Hello Cruel World"
+        CamelCase: "SimpleCamelCase"
+        snake_case: "simple_snake_case"
       wait: yes
     register: update_tags_ngw
 
@@ -890,11 +872,10 @@
       - update_tags_ngw.subnet_id == subnet_id
       - '"tags" in update_tags_ngw'
       - update_tags_ngw.tags | length == 4
-      - "update_tags_ngw.tags[\"lowercase spaced\"] == 'hello cruel world \u2764\uFE0F\
-        '"
-      - "update_tags_ngw.tags[\"Title Case\"] == 'Hello Cruel World \u2764\uFE0F'"
-      - "update_tags_ngw.tags[\"CamelCase\"] == 'SimpleCamelCase \u2764\uFE0F'"
-      - "update_tags_ngw.tags[\"snake_case\"] == 'simple_snake_case \u2764\uFE0F'"
+      - update_tags_ngw.tags["lowercase spaced"] == 'hello cruel world'
+      - update_tags_ngw.tags["Title Case"] == 'Hello Cruel World'
+      - update_tags_ngw.tags["CamelCase"] == 'SimpleCamelCase'
+      - update_tags_ngw.tags["snake_case"] == 'simple_snake_case'
       - '"vpc_id" in update_tags_ngw'
       - update_tags_ngw.vpc_id == vpc_id
 

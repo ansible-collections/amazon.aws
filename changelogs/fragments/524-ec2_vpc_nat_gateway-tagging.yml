@@ -1,0 +1,2 @@
+minor_changes:
+ - ec2_vpc_nat_gateway - use module_util helper for tagging (https://github.com/ansible-collections/amazon.aws/pull/524).
