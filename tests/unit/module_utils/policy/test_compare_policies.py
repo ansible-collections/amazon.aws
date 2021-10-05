@@ -8,10 +8,10 @@ __metaclass__ = type
 
 import unittest
 
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
+from ansible_collections.amazon.aws.plugins.module_utils.policy import compare_policies
 
 
-class Ec2UtilsComparePolicies(unittest.TestCase):
+class PolicyUtils(unittest.TestCase):
 
     # ========================================================
     # Setup some initial data that we can use within our tests
