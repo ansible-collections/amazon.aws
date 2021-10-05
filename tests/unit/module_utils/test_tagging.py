@@ -10,6 +10,7 @@ import unittest
 
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 
@@ -34,8 +35,14 @@ class Ec2Utils(unittest.TestCase):
             'lower case': 'lower case value'
         }
 
+        self.tag_minimal_boto3_list = [
+            {'Key': 'mykey', 'Value': 'myvalue'},
+        ]
+
+        self.tag_minimal_dict = {'mykey': 'myvalue'}
+
     # ========================================================
-    #   ec2.ansible_dict_to_boto3_tag_list
+    #   tagging.ansible_dict_to_boto3_tag_list
     # ========================================================
 
     def test_ansible_dict_to_boto3_tag_list(self):
@@ -45,7 +52,7 @@ class Ec2Utils(unittest.TestCase):
         self.assertEqual(sorted_converted_list, sorted_list)
 
     # ========================================================
-    #   ec2.boto3_tag_list_to_ansible_dict
+    #   tagging.boto3_tag_list_to_ansible_dict
     # ========================================================
 
     def test_boto3_tag_list_to_ansible_dict(self):
@@ -59,7 +66,7 @@ class Ec2Utils(unittest.TestCase):
         self.assertEqual(boto3_tag_list_to_ansible_dict([{}]), {})
 
     # ========================================================
-    #   ec2.compare_aws_tags
+    #   tagging.compare_aws_tags
     # ========================================================
 
     def test_compare_aws_tags_equal(self):
@@ -131,3 +138,34 @@ class Ec2Utils(unittest.TestCase):
         keys_to_set, keys_to_unset = compare_aws_tags(self.tag_example_dict, new_dict, purge_tags=True)
         self.assertEqual(new_keys, keys_to_set)
         self.assertEqual(['Normal case'], keys_to_unset)
+
+    # ========================================================
+    #   tagging.boto3_tag_specifications
+    # ========================================================
+
+    # Builds upon ansible_dict_to_boto3_tag_list, assume that if a minimal tag
+    # dictionary behaves as expected, then all will behave
+    def test_boto3_tag_specifications_no_type(self):
+        tag_specification = boto3_tag_specifications(self.tag_minimal_dict)
+        expected_specification = [{'Tags': self.tag_minimal_boto3_list}]
+        self.assertEqual(tag_specification, expected_specification)
+
+    def test_boto3_tag_specifications_string_type(self):
+        tag_specification = boto3_tag_specifications(self.tag_minimal_dict, 'instance')
+        expected_specification = [{'ResourceType': 'instance', 'Tags': self.tag_minimal_boto3_list}]
+        self.assertEqual(tag_specification, expected_specification)
+
+    def test_boto3_tag_specifications_single_type(self):
+        tag_specification = boto3_tag_specifications(self.tag_minimal_dict, ['instance'])
+        expected_specification = [{'ResourceType': 'instance', 'Tags': self.tag_minimal_boto3_list}]
+        self.assertEqual(tag_specification, expected_specification)
+
+    def test_boto3_tag_specifications_multipe_types(self):
+        tag_specification = boto3_tag_specifications(self.tag_minimal_dict, ['instance', 'volume'])
+        expected_specification = [
+            {'ResourceType': 'instance', 'Tags': self.tag_minimal_boto3_list},
+            {'ResourceType': 'volume', 'Tags': self.tag_minimal_boto3_list},
+        ]
+        sorted_tag_spec = sorted(tag_specification, key=lambda i: (i['ResourceType']))
+        sorted_expected = sorted(expected_specification, key=lambda i: (i['ResourceType']))
+        self.assertEqual(sorted_tag_spec, sorted_expected)
