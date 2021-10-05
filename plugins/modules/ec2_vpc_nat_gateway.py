@@ -266,7 +266,7 @@ def _describe_nat_gateways(client, **params):
 def _generate_tag_specifications(tags):
     tag_list = ansible_dict_to_boto3_tag_list(tags)
     return [dict(ResourceType="natgateway", Tags=tag_list)]
-    
+
 
 def wait_for_status(client, module, waiter_name, nat_gateway_id):
     wait_timeout = module.params.get('wait_timeout')
