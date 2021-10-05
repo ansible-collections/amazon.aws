@@ -262,9 +262,11 @@ def _describe_nat_gateways(client, **params):
     except is_boto3_error_code('InvalidNatGatewayID.NotFound'):
         return None
 
+
 def _generate_tag_specifications(tags):
     tag_list = ansible_dict_to_boto3_tag_list(tags)
     return [dict(ResourceType="natgateway", Tags=tag_list)]
+    
 
 def wait_for_status(client, module, waiter_name, nat_gateway_id):
     wait_timeout = module.params.get('wait_timeout')
@@ -891,7 +893,6 @@ def remove(client, module, nat_gateway_id, wait=False, release_eip=False):
             module.fail_json(
                 msg="Failed to release EIP {0}: {1}".format(allocation_id, msg)
             )
-    #results['tags'] = boto3_tag_list_to_ansible_dict(results['tags'])
 
     return changed, msg, results
 
