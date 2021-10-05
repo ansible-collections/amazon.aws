@@ -327,7 +327,6 @@ def create_vpc_endpoint(client, module):
 
     if policy:
         params['PolicyDocument'] = json.dumps(policy)
-    
     if module.params.get('tags'):
         params["TagSpecifications"] = _generate_tag_specifications(module.params.get('tags'))
 
