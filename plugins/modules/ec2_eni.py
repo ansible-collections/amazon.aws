@@ -302,10 +302,10 @@ except ImportError:
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.core import is_boto3_error_code
 from ..module_utils.ec2 import AWSRetry
-from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import get_ec2_security_group_ids_from_names
-from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ..module_utils.ec2 import compare_aws_tags
+from ..module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ..module_utils.tagging import boto3_tag_specifications
+from ..module_utils.ec2 import ensure_ec2_tags
 from ..module_utils.waiters import get_waiter
 
 
@@ -336,16 +336,10 @@ def get_eni_info(interface):
                       }
 
     if "TagSet" in interface:
-        tags = {}
-        name = None
-        for tag in interface["TagSet"]:
-            tags[tag["Key"]] = tag["Value"]
-            if tag["Key"] == "Name":
-                name = tag["Value"]
+        tags = boto3_tag_list_to_ansible_dict(interface["TagSet"])
+        if "Name" in tags:
+            interface_info["name"] = tags["Name"]
         interface_info["tags"] = tags
-
-        if name is not None:
-            interface_info["name"] = name
 
     if "Attachment" in interface:
         interface_info['attachment'] = {
@@ -429,9 +423,12 @@ def create_eni(connection, vpc_id, module):
     secondary_private_ip_addresses = module.params.get("secondary_private_ip_addresses")
     secondary_private_ip_address_count = module.params.get("secondary_private_ip_address_count")
     changed = False
-    tags = module.params.get("tags")
+
+    tags = module.params.get("tags") or dict()
     name = module.params.get("name")
-    purge_tags = module.params.get("purge_tags")
+    # Make sure that the 'name' parameter sets the Name tag
+    if name:
+        tags['Name'] = name
 
     try:
         args = {"SubnetId": subnet_id}
@@ -441,6 +438,9 @@ def create_eni(connection, vpc_id, module):
             args["Description"] = description
         if len(security_groups) > 0:
             args["Groups"] = security_groups
+        if tags:
+            args["TagSpecifications"] = boto3_tag_specifications(tags, types='network-interface')
+
         eni_dict = connection.create_network_interface(aws_retry=True, **args)
         eni = eni_dict["NetworkInterface"]
         # Once we have an ID make sure we're always modifying the same object
@@ -482,8 +482,6 @@ def create_eni(connection, vpc_id, module):
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
                 connection.delete_network_interface(aws_retry=True, NetworkInterfaceId=eni_id)
                 raise
-
-        manage_tags(eni, name, tags, purge_tags, connection)
 
         # Refresh the eni data
         eni = describe_eni(connection, module, eni_id)
@@ -633,13 +631,23 @@ def modify_eni(connection, module, eni):
             changed |= detach_eni(connection, eni, module)
             get_waiter(connection, 'network_interface_available').wait(NetworkInterfaceIds=[eni_id])
 
-        changed |= manage_tags(eni, name, tags, purge_tags, connection)
+        changed |= manage_tags(connection, module, eni, name, tags, purge_tags)
 
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, "Failed to modify eni {0}".format(eni_id))
 
     eni = describe_eni(connection, module, eni_id)
     module.exit_json(changed=changed, interface=get_eni_info(eni))
+
+
+def _wait_for_detach(connection, module, eni_id):
+    try:
+        get_waiter(connection, 'network_interface_available').wait(
+            NetworkInterfaceIds=[eni_id],
+            WaiterConfig={'Delay': 5, 'MaxAttempts': 80},
+        )
+    except botocore.exceptions.WaiterError as e:
+        module.fail_json_aws(e, "Timeout waiting for ENI {0} to detach".format(eni_id))
 
 
 def delete_eni(connection, module):
@@ -657,10 +665,9 @@ def delete_eni(connection, module):
                 connection.detach_network_interface(
                     aws_retry=True,
                     AttachmentId=eni["Attachment"]["AttachmentId"],
-                    Force=True
+                    Force=True,
                 )
-                # Wait to allow detachment to finish
-                get_waiter(connection, 'network_interface_available').wait(NetworkInterfaceIds=[eni_id])
+                _wait_for_detach(connection, module, eni_id)
             connection.delete_network_interface(aws_retry=True, NetworkInterfaceId=eni_id)
             changed = True
         else:
@@ -686,10 +693,7 @@ def detach_eni(connection, eni, module):
             AttachmentId=eni["Attachment"]["AttachmentId"],
             Force=force_detach,
         )
-        get_waiter(connection, 'network_interface_available').wait(
-            NetworkInterfaceIds=[eni_id],
-            WaiterConfig={'Delay': 5, 'MaxAttempts': 80},
-        )
+        _wait_for_detach(connection, module, eni_id)
         return True
 
     return False
@@ -786,42 +790,18 @@ def _get_vpc_id(connection, module, subnet_id):
         module.fail_json_aws(e, "Failed to get vpc_id for {0}".format(subnet_id))
 
 
-def manage_tags(eni, name, new_tags, purge_tags, connection):
-    changed = False
-
-    if "TagSet" in eni:
-        old_tags = boto3_tag_list_to_ansible_dict(eni['TagSet'])
-    elif new_tags:
-        old_tags = {}
-    else:
-        # No new tags and nothing in TagSet
-        return False
-
+def manage_tags(connection, module, eni, name, tags, purge_tags):
     # Do not purge tags unless tags is not None
-    if new_tags is None:
+    if tags is None:
         purge_tags = False
-        new_tags = {}
+        tags = {}
 
     if name:
-        new_tags['Name'] = name
+        tags['Name'] = name
 
-    tags_to_set, tags_to_delete = compare_aws_tags(
-        old_tags, new_tags,
-        purge_tags=purge_tags,
-    )
-    if tags_to_set:
-        connection.create_tags(
-            aws_retry=True,
-            Resources=[eni['NetworkInterfaceId']],
-            Tags=ansible_dict_to_boto3_tag_list(tags_to_set))
-        changed |= True
-    if tags_to_delete:
-        delete_with_current_values = dict((k, old_tags.get(k)) for k in tags_to_delete)
-        connection.delete_tags(
-            aws_retry=True,
-            Resources=[eni['NetworkInterfaceId']],
-            Tags=ansible_dict_to_boto3_tag_list(delete_with_current_values))
-        changed |= True
+    eni_id = eni['NetworkInterfaceId']
+
+    changed = ensure_ec2_tags(connection, module, eni_id, tags=tags, purge_tags=purge_tags)
     return changed
 
 
