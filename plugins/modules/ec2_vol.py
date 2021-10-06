@@ -432,6 +432,8 @@ def update_volume(module, ec2_conn, volume):
         changed = iops_changed or size_changed or type_changed or throughput_changed or multi_attach_changed
 
         if changed:
+            if module.check_mode:
+                module.exit_json(changed=True, msg='Would have updated volume if not in check mode.')
             response = ec2_conn.modify_volume(**req_obj)
 
             volume['size'] = response.get('VolumeModification').get('TargetSize')
@@ -456,6 +458,9 @@ def create_volume(module, ec2_conn, zone):
     multi_attach = module.params.get('multi_attach')
 
     volume = get_volume(module, ec2_conn)
+
+    if module.check_mode:
+        module.exit_json(changed=True, msg='Would have created a volume if not in check mode.')
 
     if volume is None:
 
@@ -514,15 +519,21 @@ def attach_volume(module, ec2_conn, volume_dict, instance_dict, device_name):
 
     attachment_data = get_attachment_data(volume_dict, wanted_state='attached')
     if attachment_data:
+        if module.check_mode:
+            if attachment_data[0].get('status') in ['attached', 'attaching']:
+                module.exit_json(changed=False, msg='IN CHECK MODE - volume already attached to instance: {0}.'.format(
+                                 attachment_data[0].get('instance_id', None)))
         if not volume_dict['multi_attach_enabled']:
             # volumes without MultiAttach Enabled can be attached to 1 instance only
             if attachment_data[0].get('instance_id', None) != instance_dict['instance_id']:
-                module.fail_json(msg="Volume {0} is already attached to another instance: {1}".format(volume_dict['volume_id'],
-                                 attachment_data[0].get('instance_id', None)))
+                module.fail_json(msg="Volume {0} is already attached to another instance: {1}."
+                                 .format(volume_dict['volume_id'], attachment_data[0].get('instance_id', None)))
             else:
                 return volume_dict, changed
 
     try:
+        if module.check_mode:
+            module.exit_json(changed=True, msg='Would have attached volume if not in check mode.')
         attach_response = ec2_conn.attach_volume(aws_retry=True, Device=device_name,
                                                  InstanceId=instance_dict['instance_id'],
                                                  VolumeId=volume_dict['volume_id'])
@@ -610,6 +621,8 @@ def detach_volume(module, ec2_conn, volume_dict):
     attachment_data = get_attachment_data(volume_dict, wanted_state='attached')
     # The ID of the instance must be specified if you are detaching a Multi-Attach enabled volume.
     for attachment in attachment_data:
+        if module.check_mode:
+            module.exit_json(changed=True, msg='Would have detached volume if not in check mode.')
         ec2_conn.detach_volume(aws_retry=True, InstanceId=attachment['instance_id'], VolumeId=volume_dict['volume_id'])
         waiter = ec2_conn.get_waiter('volume_available')
         waiter.wait(
@@ -662,6 +675,8 @@ def get_mapped_block_device(instance_dict=None, device_name=None):
 
 
 def ensure_tags(module, connection, res_id, res_type, tags, purge_tags):
+    if module.check_mode:
+        return {}, True
     changed = ensure_ec2_tags(connection, module, res_id, res_type, tags, purge_tags, ['InvalidVolume.NotFound'])
     final_tags = describe_ec2_tags(connection, module, res_id, res_type)
 
@@ -696,6 +711,7 @@ def main():
             ['volume_type', 'io1', ['iops']],
             ['volume_type', 'io2', ['iops']],
         ],
+        supports_check_mode=True,
     )
 
     param_id = module.params.get('id')
@@ -837,6 +853,8 @@ def main():
         if not name and not param_id:
             module.fail_json('A volume name or id is required for deletion')
         if volume:
+            if module.check_mode:
+                module.exit_json(changed=True, msg='Would have deleted volume if not in check mode.')
             detach_volume(module, ec2_conn, volume_dict=volume)
             changed = delete_volume(module, ec2_conn, volume_id=volume['volume_id'])
         module.exit_json(changed=changed)
