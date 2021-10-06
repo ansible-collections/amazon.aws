@@ -305,7 +305,7 @@ from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import get_ec2_security_group_ids_from_names
 from ..module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ..module_utils.tagging import boto3_tag_specifications
-from ..module_utils.tagging import ensure_ec2_tags
+from ..module_utils.ec2 import ensure_ec2_tags
 from ..module_utils.waiters import get_waiter
 
 
