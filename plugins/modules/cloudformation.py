@@ -449,7 +449,8 @@ def create_changeset(module, stack_params, cfn, events_limit):
                     module.fail_json_aws(err)
                 if newcs['Status'] == 'CREATE_PENDING' or newcs['Status'] == 'CREATE_IN_PROGRESS':
                     time.sleep(1)
-                elif newcs['Status'] == 'FAILED' and "The submitted information didn't contain changes" in newcs['StatusReason']:
+                elif newcs['Status'] == 'FAILED' and ("The submitted information didn't contain changes" in newcs['StatusReason']
+                                                      or "No updates are to be performed" in newcs['StatusReason']):
                     cfn.delete_change_set(aws_retry=True, ChangeSetName=cs['Id'])
                     result = dict(changed=False,
                                   output='The created Change Set did not contain any changes to this stack and was deleted.')
@@ -594,8 +595,8 @@ def check_mode_changeset(module, stack_params, cfn):
 
         reason = description.get('StatusReason')
 
-        if description['Status'] == 'FAILED' and "didn't contain changes" in description['StatusReason']:
-            return {'changed': False, 'msg': reason, 'meta': description['StatusReason']}
+        if description['Status'] == 'FAILED' and ("didn't contain changes" in reason or "No updates are to be performed" in reason):
+            return {'changed': False, 'msg': reason, 'meta': reason}
         return {'changed': True, 'msg': reason, 'meta': description['Changes']}
 
     except (botocore.exceptions.ValidationError, botocore.exceptions.ClientError) as err:
