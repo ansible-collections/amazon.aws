@@ -1,5 +1,5 @@
 minor_changes:
   - cloudformation - fix detection when there are no changes.
     Sometimes when there are no changes, the change set will have a status FAILED with StatusReason 
-    No updates are to be performed.
-    (https://github.com/ansible-collections/amazon.aws/pull/507)
+    No updates are to be performed
+    (https://github.com/ansible-collections/amazon.aws/pull/507).
