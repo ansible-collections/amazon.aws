@@ -215,13 +215,8 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import normalize_b
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
-
-
-def _generate_tag_specifications(tags):
-    tag_list = ansible_dict_to_boto3_tag_list(tags)
-    return [dict(ResourceType="vpc-endpoint", Tags=tag_list)]
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 
 
 def get_endpoints(client, module, endpoint_id=None):
@@ -279,6 +274,7 @@ def setup_creation(client, module):
         # If we have an endpoint now, just ensure tags and exit
         if module.params.get('tags'):
             changed |= ensure_ec2_tags(client, module, endpoint_id,
+                                       resource_type='vpc-endpoint',
                                        tags=module.params.get('tags'),
                                        purge_tags=module.params.get('purge_tags'))
         normalized_result = get_endpoints(client, module, endpoint_id=endpoint_id)['VpcEndpoints'][0]
@@ -328,8 +324,9 @@ def create_vpc_endpoint(client, module):
 
     if policy:
         params['PolicyDocument'] = json.dumps(policy)
+
     if module.params.get('tags'):
-        params["TagSpecifications"] = _generate_tag_specifications(module.params.get('tags'))
+        params["TagSpecifications"] = boto3_tag_specifications(module.params.get('tags'), ['vpc-endpoint'])
 
     try:
         changed = True

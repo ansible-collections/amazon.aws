@@ -468,7 +468,7 @@
       - '"nat_gateway_id" in delete_nat_gateway'
       - delete_nat_gateway.nat_gateway_id == nat_gateway_id
       - '"state" in delete_nat_gateway'
-      - delete_nat_gateway.state == 'deleted'
+      - delete_nat_gateway.state in ['deleted', 'deleting']
       - '"subnet_id" in delete_nat_gateway'
       - delete_nat_gateway.subnet_id == subnet_id
       - '"tags" in delete_nat_gateway'
@@ -539,7 +539,7 @@
     register: update_tags_ngw
     check_mode: yes
 
-  - name: assert tag update would do nothing (expected changed=false) - CHECK_MODE
+  - name: Assert tag update would do nothing (expected changed=false) - CHECK_MODE
     assert:
       that:
       - not update_tags_ngw.changed
@@ -564,7 +564,7 @@
       wait: yes
     register: update_tags_ngw
 
-  - name: assert tag update would do nothing (expected changed=false)
+  - name: Assert tag update would do nothing (expected changed=false)
     assert:
       that:
       - not update_tags_ngw.changed

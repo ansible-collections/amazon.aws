@@ -106,10 +106,10 @@ except ImportError:
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.waiters import get_waiter
 from ..module_utils.ec2 import AWSRetry
-from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import camel_dict_to_snake_dict
 from ..module_utils.ec2 import ensure_ec2_tags
+from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ..module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
 class AnsibleEc2Igw():
