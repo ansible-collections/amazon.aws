@@ -458,46 +458,57 @@ def create_or_update_bucket(s3_client, module, location):
     # Public access clock configuration
     current_public_access = {}
 
-    # -- Create / Update public access block
-    if public_access is not None:
-        try:
-            current_public_access = get_bucket_public_access(s3_client, name)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+    try:
+        current_public_access = get_bucket_public_access(s3_client, name)
+    except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
+        if public_access is not None:
             module.fail_json_aws(e, msg="Failed to get bucket public access configuration")
-        camel_public_block = snake_dict_to_camel_dict(public_access, capitalize_first=True)
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to get bucket public access configuration")
+    else:
+        # -- Create / Update public access block
+        if public_access is not None:
+            camel_public_block = snake_dict_to_camel_dict(public_access, capitalize_first=True)
 
-        if current_public_access == camel_public_block:
-            result['public_access_block'] = current_public_access
-        else:
-            put_bucket_public_access(s3_client, name, camel_public_block)
-            changed = True
-            result['public_access_block'] = camel_public_block
+            if current_public_access == camel_public_block:
+                result['public_access_block'] = current_public_access
+            else:
+                put_bucket_public_access(s3_client, name, camel_public_block)
+                changed = True
+                result['public_access_block'] = camel_public_block
 
-    # -- Delete public access block
-    if delete_public_access:
-        try:
-            current_public_access = get_bucket_public_access(s3_client, name)
-        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Failed to get bucket public access configuration")
-
-        if current_public_access == {}:
-            result['public_access_block'] = current_public_access
-        else:
-            delete_bucket_public_access(s3_client, name)
-            changed = True
-            result['public_access_block'] = {}
+        # -- Delete public access block
+        if delete_public_access:
+            if current_public_access == {}:
+                result['public_access_block'] = current_public_access
+            else:
+                delete_bucket_public_access(s3_client, name)
+                changed = True
+                result['public_access_block'] = {}
 
     # -- Bucket ownership
-    bucket_ownership = get_bucket_ownership_cntrl(s3_client, module, name)
-    result['object_ownership'] = bucket_ownership
-    if delete_object_ownership or object_ownership is not None:
+    try:
+        bucket_ownership = get_bucket_ownership_cntrl(s3_client, module, name)
+        result['object_ownership'] = bucket_ownership
+    except KeyError as e:
+        # Some non-AWS providers appear to return policy documents that aren't
+        # compatible with AWS, cleanly catch KeyError so users can continue to use
+        # other features.
+        if delete_object_ownership or object_ownership is not None:
+            module.fail_json_aws(e, msg="Failed to get bucket object ownership settings")
+    except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
+        if delete_object_ownership or object_ownership is not None:
+            module.fail_json_aws(e, msg="Failed to get bucket object ownership settings")
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+        module.fail_json_aws(e, msg="Failed to get bucket bucket object ownership settings")
+    else:
         if delete_object_ownership:
             # delete S3 buckect ownership
             if bucket_ownership is not None:
                 delete_bucket_ownership(s3_client, name)
                 changed = True
                 result['object_ownership'] = None
-        else:
+        elif object_ownership is not None:
             # update S3 bucket ownership
             if bucket_ownership != object_ownership:
                 put_bucket_ownership(s3_client, name, object_ownership)
