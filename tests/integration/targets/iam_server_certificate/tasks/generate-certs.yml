@@ -1,0 +1,65 @@
+################################################
+# Setup SSL certs to store in IAM
+################################################
+- name: 'Generate SSL Keys'
+  community.crypto.openssl_privatekey:
+    path: '{{ remote_tmp_dir }}/{{ item }}-key.pem'
+    size: 2048
+  loop:
+  - 'ca'
+  - 'cert1'
+  - 'cert2'
+
+- name: 'Generate CSRs'
+  community.crypto.openssl_csr:
+    path: '{{ remote_tmp_dir }}/{{ item }}.csr'
+    privatekey_path:  '{{ remote_tmp_dir }}/{{ item }}-key.pem'
+    common_name: '{{ item }}.ansible.test'
+    subject_alt_name: 'DNS:{{ item }}.ansible.test'
+    basic_constraints:
+    - 'CA:TRUE'
+  loop:
+  - 'ca'
+  - 'cert1'
+  - 'cert2'
+
+- name: 'Self-sign the "root"'
+  community.crypto.x509_certificate:
+    provider: selfsigned
+    path: '{{ remote_tmp_dir }}/ca.pem'
+    privatekey_path: '{{ remote_tmp_dir }}/ca-key.pem'
+    csr_path: '{{ remote_tmp_dir }}/ca.csr'
+
+- name: 'Sign the intermediate cert'
+  community.crypto.x509_certificate:
+    provider: ownca
+    path: '{{ remote_tmp_dir }}/cert1.pem'
+    csr_path: '{{ remote_tmp_dir }}/cert1.csr'
+    ownca_path: '{{ remote_tmp_dir }}/ca.pem'
+    ownca_privatekey_path: '{{ remote_tmp_dir }}/ca-key.pem'
+
+- name: 'Sign the end-cert'
+  community.crypto.x509_certificate:
+    provider: ownca
+    path: '{{ remote_tmp_dir }}/cert2.pem'
+    csr_path: '{{ remote_tmp_dir }}/cert2.csr'
+    ownca_path: '{{ remote_tmp_dir }}/cert1.pem'
+    ownca_privatekey_path: '{{ remote_tmp_dir }}/cert1-key.pem'
+
+- name: 'Re-Sign the end-cert'
+  community.crypto.x509_certificate:
+    provider: ownca
+    path: '{{ remote_tmp_dir }}/cert2-new.pem'
+    csr_path: '{{ remote_tmp_dir }}/cert2.csr'
+    ownca_path: '{{ remote_tmp_dir }}/cert1.pem'
+    ownca_privatekey_path: '{{ remote_tmp_dir }}/cert1-key.pem'
+
+- set_fact:
+    path_ca_cert: '{{ remote_tmp_dir }}/ca.pem'
+    path_ca_key: '{{ remote_tmp_dir }}/ca-key.pem'
+    path_intermediate_cert: '{{ remote_tmp_dir }}/cert1.pem'
+    path_intermediate_key: '{{ remote_tmp_dir }}/cert1-key.pem'
+    # Same key, updated cert
+    path_cert_a: '{{ remote_tmp_dir }}/cert2.pem'
+    path_cert_b: '{{ remote_tmp_dir }}/cert2-new.pem'
+    path_cert_key: '{{ remote_tmp_dir }}/cert2-key.pem'
