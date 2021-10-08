@@ -799,7 +799,7 @@ def main():
         launch_type=dict(required=False, choices=['EC2', 'FARGATE']),
         cpu=dict(),
         memory=dict(required=False, type='str'),
-        placement_constraints=dict(required=False, type='list', elements='dict')
+        placement_constraints=dict(required=False, type='list', elements='dict', options=dict(type=dict(type='str'), expression=dict(type='str')))),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec,
