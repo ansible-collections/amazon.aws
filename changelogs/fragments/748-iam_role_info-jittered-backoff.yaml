@@ -1,0 +1,2 @@
+bugfixes:
+  - iam_role_info - switch to jittered backoff to reduce rate limiting failures (https://github.com/ansible-collections/community.aws/pull/748).
