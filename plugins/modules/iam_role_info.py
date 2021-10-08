@@ -159,27 +159,23 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
-@AWSRetry.exponential_backoff()
 def list_iam_roles_with_backoff(client, **kwargs):
-    paginator = client.get_paginator('list_roles')
+    paginator = client.get_paginator('list_roles', aws_retry=True)
     return paginator.paginate(**kwargs).build_full_result()
 
 
-@AWSRetry.exponential_backoff()
 def list_iam_role_policies_with_backoff(client, role_name):
-    paginator = client.get_paginator('list_role_policies')
+    paginator = client.get_paginator('list_role_policies', aws_retry=True)
     return paginator.paginate(RoleName=role_name).build_full_result()['PolicyNames']
 
 
-@AWSRetry.exponential_backoff()
 def list_iam_attached_role_policies_with_backoff(client, role_name):
-    paginator = client.get_paginator('list_attached_role_policies')
+    paginator = client.get_paginator('list_attached_role_policies', aws_retry=True)
     return paginator.paginate(RoleName=role_name).build_full_result()['AttachedPolicies']
 
 
-@AWSRetry.exponential_backoff()
 def list_iam_instance_profiles_for_role_with_backoff(client, role_name):
-    paginator = client.get_paginator('list_instance_profiles_for_role')
+    paginator = client.get_paginator('list_instance_profiles_for_role', aws_retry=True)
     return paginator.paginate(RoleName=role_name).build_full_result()['InstanceProfiles']
 
 
@@ -210,7 +206,7 @@ def describe_iam_roles(module, client):
     path_prefix = module.params['path_prefix']
     if name:
         try:
-            roles = [client.get_role(RoleName=name)['Role']]
+            roles = [client.get_role(aws_retry=True, RoleName=name)['Role']]
         except is_boto3_error_code('NoSuchEntity'):
             return []
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
@@ -245,7 +241,7 @@ def main():
     if module._name == 'iam_role_facts':
         module.deprecate("The 'iam_role_facts' module has been renamed to 'iam_role_info'", date='2021-12-01', collection_name='community.aws')
 
-    client = module.client('iam')
+    client = module.client('iam', retry_decorator=AWSRetry.jittered_backoff())
 
     module.exit_json(changed=False, iam_roles=describe_iam_roles(module, client))
 
