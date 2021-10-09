@@ -159,23 +159,25 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
+@AWSRetry.jittered_backoff()
 def list_iam_roles_with_backoff(client, **kwargs):
-    paginator = client.get_paginator('list_roles', aws_retry=True)
+    paginator = client.get_paginator('list_roles')
     return paginator.paginate(**kwargs).build_full_result()
 
 
+@AWSRetry.jittered_backoff()
 def list_iam_role_policies_with_backoff(client, role_name):
-    paginator = client.get_paginator('list_role_policies', aws_retry=True)
+    paginator = client.get_paginator('list_role_policies')
     return paginator.paginate(RoleName=role_name).build_full_result()['PolicyNames']
 
-
+@AWSRetry.jittered_backoff()
 def list_iam_attached_role_policies_with_backoff(client, role_name):
-    paginator = client.get_paginator('list_attached_role_policies', aws_retry=True)
+    paginator = client.get_paginator('list_attached_role_policies')
     return paginator.paginate(RoleName=role_name).build_full_result()['AttachedPolicies']
 
-
+@AWSRetry.jittered_backoff()
 def list_iam_instance_profiles_for_role_with_backoff(client, role_name):
-    paginator = client.get_paginator('list_instance_profiles_for_role', aws_retry=True)
+    paginator = client.get_paginator('list_instance_profiles_for_role')
     return paginator.paginate(RoleName=role_name).build_full_result()['InstanceProfiles']
 
 
@@ -206,7 +208,7 @@ def describe_iam_roles(module, client):
     path_prefix = module.params['path_prefix']
     if name:
         try:
-            roles = [client.get_role(aws_retry=True, RoleName=name)['Role']]
+            roles = [client.get_role(RoleName=name, aws_retry=True)['Role']]
         except is_boto3_error_code('NoSuchEntity'):
             return []
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except

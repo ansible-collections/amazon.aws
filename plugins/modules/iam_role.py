@@ -214,8 +214,9 @@ def compare_assume_role_policy_doc(current_policy_doc, new_policy_doc):
         return False
 
 
+@AWSRetry.jittered_backoff()
 def _list_policies(connection):
-    paginator = connection.get_paginator('list_policies', aws_retry=True)
+    paginator = connection.get_paginator('list_policies')
     return paginator.paginate().build_full_result()['Policies']
 
 
