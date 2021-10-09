@@ -170,10 +170,12 @@ def list_iam_role_policies_with_backoff(client, role_name):
     paginator = client.get_paginator('list_role_policies')
     return paginator.paginate(RoleName=role_name).build_full_result()['PolicyNames']
 
+
 @AWSRetry.jittered_backoff()
 def list_iam_attached_role_policies_with_backoff(client, role_name):
     paginator = client.get_paginator('list_attached_role_policies')
     return paginator.paginate(RoleName=role_name).build_full_result()['AttachedPolicies']
+
 
 @AWSRetry.jittered_backoff()
 def list_iam_instance_profiles_for_role_with_backoff(client, role_name):
