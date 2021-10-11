@@ -1,0 +1,9 @@
+# reason: missing-policy
+# It should be possible to test iam_user by limiting which policies can be
+# attached to the users.
+# Careful review is needed prior to adding this to the main CI.
+unsupported
+
+cloud/aws
+
+iam_access_key_info

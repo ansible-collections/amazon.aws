@@ -162,6 +162,8 @@ action_groups:
   - elb_target_info
   - execute_lambda
   - iam
+  - iam_access_key
+  - iam_access_key_info
   - iam_cert
   - iam_group
   - iam_managed_policy
