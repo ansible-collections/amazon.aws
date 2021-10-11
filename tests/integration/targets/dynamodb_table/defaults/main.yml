@@ -1,5 +1,6 @@
 ---
 table_name: '{{ resource_prefix }}'
+table_name_on_demand: '{{ resource_prefix }}-pay-per-request'
 
 table_index: 'id'
 table_index_type: 'NUMBER'

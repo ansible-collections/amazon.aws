@@ -12,6 +12,7 @@
       security_token: '{{ security_token | default(omit) }}'
       region: '{{ aws_region }}'
   block:
+
   - include: "test_pay_per_request.yml"
 
   # ==============================================
@@ -907,4 +908,5 @@
     dynamodb_table:
       state: absent
       name: '{{ table_name }}'
+      wait: false
     register: delete_table
