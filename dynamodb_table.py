@@ -132,7 +132,7 @@ options:
     description:
       - How long (in seconds) to wait for creation / update / deletion to complete.
     aliases: ['wait_for_active_timeout']
-    default: 120
+    default: 300
     type: int
   wait:
     description:
@@ -593,12 +593,6 @@ def _throughput_changes(current_table, params=None):
 def _generate_global_indexes():
     index_exists = dict()
     indexes = list()
-    billing_mode = module.params.get('billing_mode')
-
-    if billing_mode == "PROVISIONED":
-        is_provisioned = True
-    else:
-        is_provisioned = False
 
     for index in module.params.get('indexes'):
         if index.get('type') not in ['global_all', 'global_include', 'global_keys_only']:
@@ -608,7 +602,7 @@ def _generate_global_indexes():
             module.fail_json(msg='Duplicate key {0} in list of global indexes'.format(name))
         # Convert the type name to upper case and remove the global_
         index['type'] = index['type'].upper()[7:]
-        index = _generate_index(index, include_throughput=is_provisioned)
+        index = _generate_index(index)
         index_exists[name] = True
         indexes.append(index)
 
@@ -666,7 +660,7 @@ def _generate_local_index_map(current_table):
     return local_index_map
 
 
-def _generate_index(index, include_throughput=True):
+def _generate_index(index):
     key_schema = _generate_schema(index)
     throughput = _generate_throughput(index)
     non_key_attributes = index['includes'] or []
@@ -689,7 +683,8 @@ def _generate_index(index, include_throughput=True):
         KeySchema=key_schema,
         Projection=projection,
     )
-    if include_throughput:
+
+    if module.params.get('billing_mode') == "PROVISIONED":
         idx['ProvisionedThroughput'] = throughput
 
     return idx
@@ -717,13 +712,15 @@ def _global_index_changes(current_table):
             # rather than dropping other changes on the floor
             _current = current_global_index_map[name]
             _new = global_index_map[name]
-            change = dict(_throughput_changes(_current, _new))
-            if change:
-                update = dict(
-                    IndexName=name,
-                    ProvisionedThroughput=change,
-                )
-                index_changes.append(dict(Update=update))
+
+            if module.params.get('billing_mode') == "PROVISIONED":
+                change = dict(_throughput_changes(_current, _new))
+                if change:
+                    update = dict(
+                        IndexName=name,
+                        ProvisionedThroughput=change,
+                    )
+                    index_changes.append(dict(Update=update))
 
     return index_changes
 
