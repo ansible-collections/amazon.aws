@@ -2,10 +2,6 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-__metaclass__ = type
-
-
 DOCUMENTATION = r'''
 ---
 module: dynamodb_table
@@ -455,6 +451,12 @@ def get_dynamodb_table():
     table['size'] = table['table_size_bytes']
     table['tags'] = tags
 
+    # billing_mode_summary is only set if the table is already PAY_PER_REQUEST
+    if 'billing_mode_summary' in table:
+        table['billing_mode'] = table['billing_mode_summary']['billing_mode']
+    else:
+        table['billing_mode'] = "PROVISIONED"
+
     # convert indexes into something we can easily search against
     attributes = table['attribute_definitions']
     global_index_map = dict()
@@ -736,22 +738,23 @@ def _local_index_changes(current_table):
 def _update_table(current_table):
     changes = dict()
     additional_global_index_changes = list()
-    billing_mode = module.params.get('billing_mode')
 
-    if billing_mode == "PROVISIONED":
-        throughput_changes = _throughput_changes(current_table)
-        if throughput_changes:
-            changes['ProvisionedThroughput'] = throughput_changes
+    throughput_changes = _throughput_changes(current_table)
+    if throughput_changes:
+        changes['ProvisionedThroughput'] = throughput_changes
 
-        global_index_changes = _global_index_changes(current_table)
-        if global_index_changes:
-            changes['GlobalSecondaryIndexUpdates'] = global_index_changes
-            # Only one index can be changed at a time, pass the first during the
-            # main update and deal with the others on a slow retry to wait for
-            # completion
-            if len(global_index_changes) > 1:
-                changes['GlobalSecondaryIndexUpdates'] = [global_index_changes[0]]
-                additional_global_index_changes = global_index_changes[1:]
+    if current_table.get('billing_mode') != module.params.get('billing_mode'):
+        changes['BillingMode'] = billing_mode
+
+    global_index_changes = _global_index_changes(current_table)
+    if global_index_changes:
+        changes['GlobalSecondaryIndexUpdates'] = global_index_changes
+        # Only one index can be changed at a time, pass the first during the
+        # main update and deal with the others on a slow retry to wait for
+        # completion
+        if len(global_index_changes) > 1:
+            changes['GlobalSecondaryIndexUpdates'] = [global_index_changes[0]]
+            additional_global_index_changes = global_index_changes[1:]
 
     local_index_changes = _local_index_changes(current_table)
     if local_index_changes:
@@ -961,7 +964,7 @@ def main():
         tags=dict(type='dict'),
         purge_tags=dict(type='bool', default=True),
         wait=dict(type='bool', default=True),
-        wait_timeout=dict(default=120, type='int', aliases=['wait_for_active_timeout']),
+        wait_timeout=dict(default=300, type='int', aliases=['wait_for_active_timeout']),
     )
 
     module = AnsibleAWSModule(
