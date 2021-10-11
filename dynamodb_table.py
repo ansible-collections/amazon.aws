@@ -453,7 +453,7 @@ def get_dynamodb_table():
 
     # billing_mode_summary is only set if the table is already PAY_PER_REQUEST
     if 'billing_mode_summary' in table:
-        table['billing_mode'] = table['billing_mode_summary']['billing_mode']
+        table['billing_mode'] = "PAY_PER_REQUEST"
     else:
         table['billing_mode'] = "PROVISIONED"
 
@@ -744,7 +744,7 @@ def _update_table(current_table):
         changes['ProvisionedThroughput'] = throughput_changes
 
     if current_table.get('billing_mode') != module.params.get('billing_mode'):
-        changes['BillingMode'] = billing_mode
+        changes['BillingMode'] = module.params.get('billing_mode')
 
     global_index_changes = _global_index_changes(current_table)
     if global_index_changes:
