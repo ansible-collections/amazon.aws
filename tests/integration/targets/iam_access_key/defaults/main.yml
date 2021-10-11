@@ -1,0 +1,2 @@
+---
+test_user:  '{{ resource_prefix }}'
