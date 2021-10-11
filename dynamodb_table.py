@@ -660,7 +660,7 @@ def _generate_local_index_map(current_table):
     return local_index_map
 
 
-def _generate_index(index):
+def _generate_index(index, include_throughput=True):
     key_schema = _generate_schema(index)
     throughput = _generate_throughput(index)
     non_key_attributes = index['includes'] or []
