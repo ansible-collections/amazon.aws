@@ -22,6 +22,13 @@ options:
     choices: [ 'present', 'absent' ]
     type: str
     default: 'present'
+  disabled:
+    description:
+      - Stops Route 53 from performing health checks.
+      - See the AWS documentation for more details on the exact implications.
+        U(https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/health-checks-creating-values.html)
+      - Defaults to C(true) when creating a new health check.
+    type: bool
   ip_address:
     description:
       - IP address of the end-point to check. Either this or I(fqdn) has to be provided.
@@ -185,6 +192,11 @@ health_check:
           type: str
           returned: When the health check exists and a search string has been configured.
           sample: 'ALIVE'
+        disabled:
+          description: Whether the health check has been disabled or not.
+          type: bool
+          returned: When the health check exists.
+          sample: false
 '''
 
 import uuid
@@ -278,6 +290,8 @@ def create_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_
         RequestInterval=request_interval_in,
         Port=port_in,
     )
+    if module.params.get('disabled') is not None:
+        health_check['Disabled'] = module.params.get('disabled')
     if ip_addr_in:
         health_check['IPAddress'] = ip_addr_in
     if fqdn_in:
@@ -341,6 +355,10 @@ def update_health_check(existing_check):
     if failure_threshold and failure_threshold != existing_config.get('FailureThreshold'):
         changes['FailureThreshold'] = failure_threshold
 
+    disabled = module.params.get('disabled', None)
+    if disabled is not None and disabled != existing_config.get('Disabled'):
+        changes['Disabled'] = module.params.get('disabled')
+
     # No changes...
     if not changes:
         return False, None
@@ -383,6 +401,7 @@ def describe_health_check(id):
 def main():
     argument_spec = dict(
         state=dict(choices=['present', 'absent'], default='present'),
+        disabled=dict(type='bool'),
         ip_address=dict(),
         port=dict(type='int'),
         type=dict(required=True, choices=['HTTP', 'HTTPS', 'HTTP_STR_MATCH', 'HTTPS_STR_MATCH', 'TCP']),
