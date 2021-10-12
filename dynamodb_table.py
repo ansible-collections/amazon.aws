@@ -455,9 +455,10 @@ def get_dynamodb_table():
     table['size'] = table['table_size_bytes']
     table['tags'] = tags
 
-    # billing_mode_summary is only set if the table is already PAY_PER_REQUEST
+    # billing_mode_summary doesn't always seem to be set but is always set for PAY_PER_REQUEST
+    # and when updating the billing_mode
     if 'billing_mode_summary' in table:
-        table['billing_mode'] = "PAY_PER_REQUEST"
+        table['billing_mode'] = table['billing_mode_summary']['billing_mode']
     else:
         table['billing_mode'] = "PROVISIONED"
 
@@ -750,12 +751,6 @@ def _update_table(current_table):
     global_index_changes = _global_index_changes(current_table)
     if global_index_changes:
         changes['GlobalSecondaryIndexUpdates'] = global_index_changes
-        # Only one index can be changed at a time, pass the first during the
-        # main update and deal with the others on a slow retry to wait for
-        # completion
-        if len(global_index_changes) > 1:
-            changes['GlobalSecondaryIndexUpdates'] = [global_index_changes[0]]
-            additional_global_index_changes = global_index_changes[1:]
 
     local_index_changes = _local_index_changes(current_table)
     if local_index_changes:
