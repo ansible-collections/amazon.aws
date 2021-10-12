@@ -1798,6 +1798,10 @@ def build_filters():
 
         if module.params.get('name'):
             filters['tag:Name'] = [module.params.get('name')]
+        elif module.params.get('tags'):
+            name_tag = module.params.get('tags').get('Name', None)
+            if name_tag:
+                filters['tag:Name'] = [name_tag]
 
         if module.params.get('image_id'):
             filters['image-id'] = [module.params.get('image_id')]

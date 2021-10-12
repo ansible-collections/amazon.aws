@@ -1,0 +1,489 @@
+- block:
+
+  - name: "Create a new instance (check_mode)"
+    ec2_instance:
+      state: present
+      name: "{{ resource_prefix }}-test-basic"
+      instance_type: "{{ ec2_instance_type }}"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: create_instance
+    check_mode: true
+
+  - assert:
+      that:
+      - create_instance is not failed
+      - create_instance is changed
+      - '"instance_ids" not in create_instance'
+      - '"ec2:RunInstances" not in create_instance.resource_actions'
+
+  - name: "Create a new instance"
+    ec2_instance:
+      state: present
+      name: "{{ resource_prefix }}-test-basic"
+      instance_type: "{{ ec2_instance_type }}"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: create_instance
+
+  - assert:
+      that:
+      - create_instance is not failed
+      - create_instance is changed
+      - '"ec2:RunInstances" in create_instance.resource_actions'
+      - '"instance_ids" in create_instance'
+      - create_instance.instance_ids | length == 1
+      - create_instance.instance_ids[0].startswith("i-")
+
+  - name: "Save instance ID"
+    set_fact:
+      create_instance_id_1: "{{ create_instance.instance_ids[0] }}"
+
+  - name: "Create a new instance - idempotency (check_mode)"
+    ec2_instance:
+      state: present
+      name: "{{ resource_prefix }}-test-basic"
+      instance_type: "{{ ec2_instance_type }}"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: create_instance
+    check_mode: true
+
+  - assert:
+      that:
+      - create_instance is not failed
+      - create_instance is not changed
+      - '"ec2:RunInstances" not in create_instance.resource_actions'
+      - '"instance_ids" in create_instance'
+      - create_instance.instance_ids | length == 1
+      - create_instance.instance_ids[0] == create_instance_id_1
+
+  - name: "Create a new instance - idempotency"
+    ec2_instance:
+      state: present
+      name: "{{ resource_prefix }}-test-basic"
+      instance_type: "{{ ec2_instance_type }}"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: create_instance
+
+  - assert:
+      that:
+      - create_instance is not failed
+      - create_instance is not changed
+      - '"ec2:RunInstances" not in create_instance.resource_actions'
+      - '"instance_ids" in create_instance'
+      - create_instance.instance_ids | length == 1
+      - create_instance.instance_ids[0] == create_instance_id_1
+
+################################################################
+
+  - name: "Create a new instance with a different name (check_mode)"
+    ec2_instance:
+      state: present
+      name: "{{ resource_prefix }}-test-basic-2"
+      instance_type: "{{ ec2_instance_type }}"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: create_instance_2
+    check_mode: true
+
+  - assert:
+      that:
+      - create_instance_2 is not failed
+      - create_instance_2 is changed
+      - '"instance_ids" not in create_instance_2'
+      - '"ec2:RunInstances" not in create_instance_2.resource_actions'
+
+  - name: "Create a new instance with a different name"
+    ec2_instance:
+      state: present
+      name: "{{ resource_prefix }}-test-basic-2"
+      instance_type: "{{ ec2_instance_type }}"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: create_instance_2
+
+  - assert:
+      that:
+      - create_instance_2 is not failed
+      - create_instance_2 is changed
+      - '"ec2:RunInstances" in create_instance_2.resource_actions'
+      - '"instance_ids" in create_instance_2'
+      - create_instance_2.instance_ids | length == 1
+      - create_instance_2.instance_ids[0].startswith("i-")
+      - create_instance_2.instance_ids[0] != create_instance_id_1
+
+  - name: "Save instance ID"
+    set_fact:
+      create_instance_id_2: "{{ create_instance_2.instance_ids[0] }}"
+
+  - name: "Create a new instance with a different name - idempotency (check_mode)"
+    ec2_instance:
+      state: present
+      name: "{{ resource_prefix }}-test-basic-2"
+      instance_type: "{{ ec2_instance_type }}"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: create_instance_2
+    check_mode: true
+
+  - assert:
+      that:
+      - create_instance_2 is not failed
+      - create_instance_2 is not changed
+      - '"ec2:RunInstances" not in create_instance_2.resource_actions'
+      - '"instance_ids" in create_instance_2'
+      - create_instance_2.instance_ids | length == 1
+      - create_instance_2.instance_ids[0] == create_instance_id_2
+
+  - name: "Create a new instance with a different name - idempotency"
+    ec2_instance:
+      state: present
+      name: "{{ resource_prefix }}-test-basic-2"
+      instance_type: "{{ ec2_instance_type }}"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: create_instance_2
+
+  - assert:
+      that:
+      - create_instance_2 is not failed
+      - create_instance_2 is not changed
+      - '"ec2:RunInstances" not in create_instance_2.resource_actions'
+      - '"instance_ids" in create_instance_2'
+      - create_instance_2.instance_ids | length == 1
+      - create_instance_2.instance_ids[0] == create_instance_id_2
+
+################################################################
+
+  - name: "Create a new instance with a different name in tags (check_mode)"
+    ec2_instance:
+      state: present
+      instance_type: "{{ ec2_instance_type }}"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        Name: "{{ resource_prefix }}-test-basic-tag"
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: create_instance_tag
+    check_mode: true
+
+  - assert:
+      that:
+      - create_instance_tag is not failed
+      - create_instance_tag is changed
+      - '"instance_ids" not in create_instance_tag'
+      - '"ec2:RunInstances" not in create_instance_tag.resource_actions'
+
+  - name: "Create a new instance with a different name in tags"
+    ec2_instance:
+      state: present
+      instance_type: "{{ ec2_instance_type }}"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        Name: "{{ resource_prefix }}-test-basic-tag"
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: create_instance_tag
+
+  - assert:
+      that:
+      - create_instance_tag is not failed
+      - create_instance_tag is changed
+      - '"ec2:RunInstances" in create_instance_tag.resource_actions'
+      - '"instance_ids" in create_instance_tag'
+      - create_instance_tag.instance_ids | length == 1
+      - create_instance_tag.instance_ids[0].startswith("i-")
+      - create_instance_tag.instance_ids[0] != create_instance_id_1
+      - create_instance_tag.instance_ids[0] != create_instance_id_2
+
+  - name: "Save instance ID"
+    set_fact:
+      create_instance_id_tag: "{{ create_instance_tag.instance_ids[0] }}"
+
+  - name: "Create a new instance with a different name in tags - idempotency (check_mode)"
+    ec2_instance:
+      state: present
+      instance_type: "{{ ec2_instance_type }}"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        Name: "{{ resource_prefix }}-test-basic-tag"
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: create_instance_tag
+    check_mode: true
+
+  - assert:
+      that:
+      - create_instance_tag is not failed
+      - create_instance_tag is not changed
+      - '"ec2:RunInstances" not in create_instance_tag.resource_actions'
+      - '"instance_ids" in create_instance_tag'
+      - create_instance_tag.instance_ids | length == 1
+      - create_instance_tag.instance_ids[0] == create_instance_id_tag
+
+  - name: "Create a new instance with a different name in tags - idempotency"
+    ec2_instance:
+      state: present
+      instance_type: "{{ ec2_instance_type }}"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        Name: "{{ resource_prefix }}-test-basic-tag"
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: create_instance_tag
+
+  - assert:
+      that:
+      - create_instance_tag is not failed
+      - create_instance_tag is not changed
+      - '"ec2:RunInstances" not in create_instance_tag.resource_actions'
+      - '"instance_ids" in create_instance_tag'
+      - create_instance_tag.instance_ids | length == 1
+      - create_instance_tag.instance_ids[0] == create_instance_id_tag
+
+################################################################
+
+  - name: "Terminate instance based on name parameter (check_mode)"
+    ec2_instance:
+      state: absent
+      name: "{{ resource_prefix }}-test-basic"
+      wait: true
+    register: terminate_name
+    check_mode: true
+
+  - assert:
+      that:
+      - terminate_name is not failed
+      - terminate_name is changed
+      - '"ec2:TerminateInstances" not in terminate_name.resource_actions'
+      - '"terminate_failed" in terminate_name'
+      - '"terminate_success" in terminate_name'
+      - terminate_name.terminate_failed | length == 0
+      - terminate_name.terminate_success | length == 1
+      - terminate_name.terminate_success[0] == create_instance_id_1
+
+  - name: "Terminate instance based on name parameter"
+    ec2_instance:
+      state: absent
+      name: "{{ resource_prefix }}-test-basic"
+      wait: true
+    register: terminate_name
+
+  - assert:
+      that:
+      - terminate_name is not failed
+      - terminate_name is changed
+      - '"ec2:TerminateInstances" in terminate_name.resource_actions'
+      - '"terminate_failed" in terminate_name'
+      - '"terminate_success" in terminate_name'
+      - terminate_name.terminate_failed | length == 0
+      - terminate_name.terminate_success | length == 1
+      - terminate_name.terminate_success[0] == create_instance_id_1
+
+  - name: "Terminate instance based on name parameter - idempotency (check_mode)"
+    ec2_instance:
+      state: absent
+      name: "{{ resource_prefix }}-test-basic"
+      wait: true
+    register: terminate_name
+    check_mode: true
+
+  - assert:
+      that:
+      - terminate_name is not failed
+      - terminate_name is not changed
+      - '"ec2:TerminateInstances" not in terminate_name.resource_actions'
+      - '"terminate_failed" not in terminate_name'
+      - '"terminate_success" not in terminate_name'
+
+  - name: "Terminate instance based on name parameter - idempotency"
+    ec2_instance:
+      state: absent
+      name: "{{ resource_prefix }}-test-basic"
+      wait: true
+    register: terminate_name
+
+  - assert:
+      that:
+      - terminate_name is not failed
+      - terminate_name is not changed
+      - '"ec2:TerminateInstances" not in terminate_name.resource_actions'
+      - '"terminate_failed" not in terminate_name'
+      - '"terminate_success" not in terminate_name'
+
+################################################################
+
+  - name: "Terminate instance based on name tag (check_mode)"
+    ec2_instance:
+      state: absent
+      tags:
+        Name: "{{ resource_prefix }}-test-basic-tag"
+      wait: true
+    register: terminate_tag
+    check_mode: true
+
+  - assert:
+      that:
+      - terminate_tag is not failed
+      - terminate_tag is changed
+      - '"ec2:TerminateInstances" not in terminate_tag.resource_actions'
+      - '"terminate_failed" in terminate_tag'
+      - '"terminate_success" in terminate_tag'
+      - terminate_tag.terminate_failed | length == 0
+      - terminate_tag.terminate_success | length == 1
+      - terminate_tag.terminate_success[0] == create_instance_id_tag
+
+  - name: "Terminate instance based on name tag"
+    ec2_instance:
+      state: absent
+      tags:
+        Name: "{{ resource_prefix }}-test-basic-tag"
+      wait: true
+    register: terminate_tag
+
+  - assert:
+      that:
+      - terminate_tag is not failed
+      - terminate_tag is changed
+      - '"ec2:TerminateInstances" in terminate_tag.resource_actions'
+      - '"terminate_failed" in terminate_tag'
+      - '"terminate_success" in terminate_tag'
+      - terminate_tag.terminate_failed | length == 0
+      - terminate_tag.terminate_success | length == 1
+      - terminate_tag.terminate_success[0] == create_instance_id_tag
+
+  - name: "Terminate instance based on name tag - idempotency (check_mode)"
+    ec2_instance:
+      state: absent
+      tags:
+        Name: "{{ resource_prefix }}-test-basic-tag"
+      wait: true
+    register: terminate_tag
+    check_mode: true
+
+  - assert:
+      that:
+      - terminate_tag is not failed
+      - terminate_tag is not changed
+      - '"ec2:TerminateInstances" not in terminate_tag.resource_actions'
+      - '"terminate_failed" not in terminate_tag'
+      - '"terminate_success" not in terminate_tag'
+
+  - name: "Terminate instance based on name tag - idempotency"
+    ec2_instance:
+      state: absent
+      tags:
+        Name: "{{ resource_prefix }}-test-basic-tag"
+      wait: true
+    register: terminate_tag
+
+  - assert:
+      that:
+      - terminate_tag is not failed
+      - terminate_tag is not changed
+      - '"ec2:TerminateInstances" not in terminate_tag.resource_actions'
+      - '"terminate_failed" not in terminate_tag'
+      - '"terminate_success" not in terminate_tag'
+
+################################################################
+
+  - name: "Terminate instance based on id (check_mode)"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ create_instance_id_2 }}"
+      wait: true
+    register: terminate_id
+    check_mode: true
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is changed
+      - '"ec2:TerminateInstances" not in terminate_id.resource_actions'
+      - '"terminate_failed" in terminate_id'
+      - '"terminate_success" in terminate_id'
+      - terminate_id.terminate_failed | length == 0
+      - terminate_id.terminate_success | length == 1
+      - terminate_id.terminate_success[0] == create_instance_id_2
+
+  - name: "Terminate instance based on id"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ create_instance_id_2 }}"
+      wait: true
+    register: terminate_id
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is changed
+      - '"ec2:TerminateInstances" in terminate_id.resource_actions'
+      - '"terminate_failed" in terminate_id'
+      - '"terminate_success" in terminate_id'
+      - terminate_id.terminate_failed | length == 0
+      - terminate_id.terminate_success | length == 1
+      - terminate_id.terminate_success[0] == create_instance_id_2
+
+  - name: "Terminate instance based on id - idempotency (check_mode)"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ create_instance_id_2 }}"
+      wait: true
+    register: terminate_id
+    check_mode: true
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is not changed
+      - '"ec2:TerminateInstances" not in terminate_id.resource_actions'
+      - '"terminate_failed" not in terminate_id'
+      - '"terminate_success" not in terminate_id'
+
+  - name: "Terminate instance based on id - idempotency"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ create_instance_id_2 }}"
+      wait: true
+    register: terminate_id
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is not changed
+      - '"ec2:TerminateInstances" not in terminate_id.resource_actions'
+      - '"terminate_failed" not in terminate_id'
+      - '"terminate_success" not in terminate_id'
+
+################################################################
+
+  always:
+  - name: "Terminate instance_no_wait instances"
+    ec2_instance:
+      state: absent
+      filters:
+        "tag:TestId": "{{ ec2_instance_tag_TestId }}"
+      wait: yes
+    ignore_errors: yes
