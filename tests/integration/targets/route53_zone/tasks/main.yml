@@ -66,6 +66,7 @@
         state: present
         tags:
           TestTag: "{{ resource_prefix }}"
+          another_tag: "{{ resource_prefix }} again"
       register: output
 
     - assert:
@@ -74,6 +75,7 @@
           - output.comment == 'original comment'
           - output.name == '{{ resource_prefix }}.public.'
           - output.tags.TestTag == '{{ resource_prefix }}'
+          - output.tags.another_tag == '{{ resource_prefix }} again'
           - not output.private_zone
 
     - name: Do an idemptotent update of a public zone (CHECK MODE)
@@ -83,6 +85,7 @@
         state: present
         tags:
           TestTag: "{{ resource_prefix }}"
+          another_tag: "{{ resource_prefix }} again"
       register: output
       check_mode: yes
 
@@ -92,6 +95,7 @@
           - output.comment == 'original comment'
           - output.name == '{{ resource_prefix }}.public.'
           - output.tags.TestTag == '{{ resource_prefix }}'
+          - output.tags.another_tag == '{{ resource_prefix }} again'
           - not output.private_zone
 
     # ============================================================
