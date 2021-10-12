@@ -29,6 +29,7 @@ options:
         U(https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/health-checks-creating-values.html)
       - Defaults to C(true) when creating a new health check.
     type: bool
+    version_added: 2.1.0
   ip_address:
     description:
       - IP address of the end-point to check. Either this or I(fqdn) has to be provided.
