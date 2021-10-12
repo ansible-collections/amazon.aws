@@ -2,6 +2,10 @@
 # Copyright: Ansible Project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+from __future__ import absolute_import, division, print_function
+__metaclass__ = type
+
+
 DOCUMENTATION = r'''
 ---
 module: dynamodb_table
@@ -684,7 +688,7 @@ def _generate_index(index, include_throughput=True):
         Projection=projection,
     )
 
-    if module.params.get('billing_mode') == "PROVISIONED":
+    if include_throughput and module.params.get('billing_mode') == "PROVISIONED":
         idx['ProvisionedThroughput'] = throughput
 
     return idx

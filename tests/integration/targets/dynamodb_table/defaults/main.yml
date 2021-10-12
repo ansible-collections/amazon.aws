@@ -1,12 +1,12 @@
 ---
-table_name: '{{ resource_prefix }}'
-table_name_on_demand: '{{ resource_prefix }}-pay-per-request'
+table_name: "{{ resource_prefix }}"
+table_name_on_demand: "{{ resource_prefix }}-pay-per-request"
 
-table_index: 'id'
-table_index_type: 'NUMBER'
+table_index: "id"
+table_index_type: "NUMBER"
 
-range_index: 'variety'
-range_index_type: 'STRING'
+range_index: "variety"
+range_index_type: "STRING"
 
 indexes:
   - name: NamedIndex
@@ -53,13 +53,12 @@ index_updated:
     type: global_all
     read_capacity: 4
 
-
 tags_default:
   snake_case_key: snake_case_value
   camelCaseKey: camelCaseValue
   PascalCaseKey: PascalCaseValue
-  'key with spaces': value with spaces
-  'Upper With Spaces': Upper With Spaces
+  "key with spaces": value with spaces
+  "Upper With Spaces": Upper With Spaces
 
 partial_tags:
   snake_case_key: snake_case_value
@@ -69,5 +68,5 @@ updated_tags:
   updated_snake_case_key: updated_snake_case_value
   updatedCamelCaseKey: updatedCamelCaseValue
   UpdatedPascalCaseKey: UpdatedPascalCaseValue
-  'updated key with spaces': updated value with spaces
-  'updated Upper With Spaces': Updated Upper With Spaces
+  "updated key with spaces": updated value with spaces
+  "updated Upper With Spaces": Updated Upper With Spaces
