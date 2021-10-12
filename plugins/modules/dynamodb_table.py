@@ -751,6 +751,14 @@ def _update_table(current_table):
     global_index_changes = _global_index_changes(current_table)
     if global_index_changes:
         changes['GlobalSecondaryIndexUpdates'] = global_index_changes
+        # Only one index can be changed at a time except if changing the billing mode, pass the first during the
+        # main update and deal with the others on a slow retry to wait for
+        # completion
+
+        if current_table.get('billing_mode') == module.params.get('billing_mode'):
+            if len(global_index_changes) > 1:
+                changes['GlobalSecondaryIndexUpdates'] = [global_index_changes[0]]
+                additional_global_index_changes = global_index_changes[1:]
 
     local_index_changes = _local_index_changes(current_table)
     if local_index_changes:
