@@ -16,7 +16,6 @@ short_description: Find AWS Autoscaling Launch Configurations
 description:
   - Returns list of matching Launch Configurations for a given name, along with other useful information.
   - Results can be sorted and sliced.
-  - It depends on boto.
   - Based on the work by Tom Bamford U(https://github.com/tombamford)
 
 author: "Jose Armesto (@fiunchinho)"
