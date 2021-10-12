@@ -150,6 +150,7 @@ tags:
 import time
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.community.aws.plugins.module_utils.route53 import manage_tags
+from ansible_collections.community.aws.plugins.module_utils.route53 import get_tags
 
 try:
     from botocore.exceptions import BotoCoreError, ClientError
@@ -197,14 +198,20 @@ def create(module, client, matching_zones):
         'name': zone_in,
         'delegation_set_id': delegation_set_id,
         'zone_id': None,
-        'tags': tags,
-        'purge_tags': purge_tags,
     }
 
     if private_zone:
         changed, result = create_or_update_private(module, client, matching_zones, record)
     else:
         changed, result = create_or_update_public(module, client, matching_zones, record)
+
+    zone_id = result.get('zone_id')
+    if zone_id:
+        if tags is not None:
+            changed |= manage_tags(module, client, 'hostedzone', zone_id, tags, purge_tags)
+        result['tags'] = get_tags(module, client, 'hostedzone', zone_id)
+    else:
+        result['tags'] = tags
 
     return changed, result
 
@@ -321,9 +328,6 @@ def create_or_update_public(module, client, matching_zones, record):
         record['zone_id'] = zone_details['Id'].replace('/hostedzone/', '')
         record['name'] = zone_details['Name']
         record['delegation_set_id'] = zone_delegation_set_details.get('Id', '').replace('/delegationset/', '')
-
-        if record['tags'] or record['purge_tags']:
-            changed = manage_tags(module, client, 'hostedzone', record, zone_details['Id'].replace('/hostedzone/', ''))
 
     return changed, record
 
