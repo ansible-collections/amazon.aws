@@ -53,7 +53,6 @@ options:
     description:
       - Controls whether provisoned pr on-demand tables are created.
     choices: ['PROVISIONED', 'PAY_PER_REQUEST']
-    default: 'PROVISIONED'
     type: str
   read_capacity:
     description:
@@ -383,9 +382,6 @@ def compatability_results(current_table):
 
     billing_mode = current_table.get('billing_mode')
 
-    if billing_mode == "PROVISIONED":
-        throughput = current_table.get('provisioned_throughput', {})
-
     primary_indexes = _decode_primary_index(current_table)
 
     hash_key_name = primary_indexes.get('hash_key_name')
@@ -419,6 +415,7 @@ def compatability_results(current_table):
     )
 
     if billing_mode == "PROVISIONED":
+        throughput = current_table.get('provisioned_throughput', {})
         compat_results['read_capacity'] = throughput.get('read_capacity_units', None)
         compat_results['write_capacity'] = throughput.get('write_capacity_units', None)
 
@@ -595,9 +592,14 @@ def _throughput_changes(current_table, params=None):
     return dict()
 
 
-def _generate_global_indexes():
+def _generate_global_indexes(billing_mode):
     index_exists = dict()
     indexes = list()
+
+    include_throughput = True
+
+    if billing_mode == "PAY_PER_REQUEST":
+        include_throughput = False
 
     for index in module.params.get('indexes'):
         if index.get('type') not in ['global_all', 'global_include', 'global_keys_only']:
@@ -607,7 +609,7 @@ def _generate_global_indexes():
             module.fail_json(msg='Duplicate key {0} in list of global indexes'.format(name))
         # Convert the type name to upper case and remove the global_
         index['type'] = index['type'].upper()[7:]
-        index = _generate_index(index)
+        index = _generate_index(index, include_throughput)
         index_exists[name] = True
         indexes.append(index)
 
@@ -689,7 +691,7 @@ def _generate_index(index, include_throughput=True):
         Projection=projection,
     )
 
-    if include_throughput and module.params.get('billing_mode') == "PROVISIONED":
+    if include_throughput:
         idx['ProvisionedThroughput'] = throughput
 
     return idx
@@ -704,11 +706,19 @@ def _global_index_changes(current_table):
     current_global_index_map = current_table['_global_index_map']
     global_index_map = _generate_global_index_map(current_table)
 
+    current_billing_mode = current_table.get('billing_mode')
+
+    include_throughput = True
+
+    if module.params.get('billing_mode', current_billing_mode) == "PAY_PER_REQUEST":
+        include_throughput = False
+
     index_changes = list()
 
     # TODO (future) it would be nice to add support for deleting an index
     for name in global_index_map:
-        idx = dict(_generate_index(global_index_map[name]))
+
+        idx = dict(_generate_index(global_index_map[name], include_throughput=include_throughput))
         if name not in current_global_index_map:
             index_changes.append(dict(Create=idx))
         else:
@@ -718,7 +728,7 @@ def _global_index_changes(current_table):
             _current = current_global_index_map[name]
             _new = global_index_map[name]
 
-            if module.params.get('billing_mode') == "PROVISIONED":
+            if include_throughput:
                 change = dict(_throughput_changes(_current, _new))
                 if change:
                     update = dict(
@@ -745,8 +755,11 @@ def _update_table(current_table):
     if throughput_changes:
         changes['ProvisionedThroughput'] = throughput_changes
 
-    if current_table.get('billing_mode') != module.params.get('billing_mode'):
-        changes['BillingMode'] = module.params.get('billing_mode')
+    current_billing_mode = current_table.get('billing_mode')
+    new_billing_mode = module.params.get('billing_mode', current_billing_mode)
+
+    if current_billing_mode != new_billing_mode:
+        changes['BillingMode'] = new_billing_mode
 
     global_index_changes = _global_index_changes(current_table)
     if global_index_changes:
@@ -755,7 +768,7 @@ def _update_table(current_table):
         # main update and deal with the others on a slow retry to wait for
         # completion
 
-        if current_table.get('billing_mode') == module.params.get('billing_mode'):
+        if current_billing_mode == new_billing_mode:
             if len(global_index_changes) > 1:
                 changes['GlobalSecondaryIndexUpdates'] = [global_index_changes[0]]
                 additional_global_index_changes = global_index_changes[1:]
@@ -871,7 +884,7 @@ def create_table():
     attributes = _generate_attributes()
     key_schema = _generate_schema()
     local_indexes = _generate_local_indexes()
-    global_indexes = _generate_global_indexes()
+    global_indexes = _generate_global_indexes(billing_mode)
 
     params = dict(
         TableName=table_name,
@@ -961,7 +974,7 @@ def main():
         hash_key_type=dict(type='str', choices=KEY_TYPE_CHOICES),
         range_key_name=dict(type='str'),
         range_key_type=dict(type='str', choices=KEY_TYPE_CHOICES),
-        billing_mode=dict(default='PROVISIONED', type='str', choices=['PROVISIONED', 'PAY_PER_REQUEST']),
+        billing_mode=dict(type='str', choices=['PROVISIONED', 'PAY_PER_REQUEST']),
         read_capacity=dict(type='int'),
         write_capacity=dict(type='int'),
         indexes=dict(default=[], type='list', elements='dict', options=index_options),
