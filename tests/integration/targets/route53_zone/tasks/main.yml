@@ -118,6 +118,7 @@
         comment: updated comment
         state: present
         purge_tags: true
+        tags: {}
       register: output
 
     - assert:
@@ -132,6 +133,7 @@
         comment: updated comment for check
         state: present
         purge_tags: true
+        tags: {}
       register: output
       check_mode: yes
 
