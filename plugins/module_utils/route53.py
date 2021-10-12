@@ -22,6 +22,13 @@ def manage_tags(module, client, resource_type, resource_spec, resource_id):
         old_tags, new_tags,
         purge_tags=resource_spec['purge_tags'],
     )
+
+    if not tags_to_set and not tags_to_delete:
+        return False
+
+    if module.check_mode:
+        return True
+
     # boto3 does not provide create/remove functions for tags in Route 53,
     # neither it works with empty values as parameters to change_tags_for_resource,
     # so we need to call the change function twice
@@ -37,6 +44,4 @@ def manage_tags(module, client, resource_type, resource_spec, resource_id):
             ResourceId=resource_id,
             RemoveTagKeys=tags_to_delete,
         )
-    if tags_to_set or tags_to_delete:
-        return True
-    return False
+    return True
