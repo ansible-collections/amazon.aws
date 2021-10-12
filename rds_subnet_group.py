@@ -15,7 +15,7 @@ module: rds_subnet_group
 version_added: 1.0.0
 short_description: manage RDS database subnet groups
 description:
-     - Creates, modifies, and deletes RDS database subnet groups. This module has a dependency on python-boto >= 2.5.
+     - Creates, modifies, and deletes RDS database subnet groups.
 options:
   state:
     description:
@@ -142,7 +142,7 @@ def create_result(changed, subnet_group=None):
 
 def create_subnet_list(subnets):
     '''
-    Construct a list of subnet ids from a list of subnets dicts returned by boto.
+    Construct a list of subnet ids from a list of subnets dicts returned by boto3.
     Parameters:
         subnets (list): A list of subnets definitions.
         @see https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/rds.html#RDS.Client.describe_db_subnet_groups

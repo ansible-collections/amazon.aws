@@ -353,7 +353,7 @@ def main():
     client = module.client('storagegateway')
 
     if client is None:  # this should never happen
-        module.fail_json(msg='Unknown error, failed to create storagegateway client, no information from boto.')
+        module.fail_json(msg='Unknown error, failed to create storagegateway client, no information available.')
 
     SGWInformationManager(client, module).fetch()
 
