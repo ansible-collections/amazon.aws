@@ -65,6 +65,7 @@
         - test_iam_user.path == '{{ test_path }}'
         - test_iam_user.user_id is not none
         - test_iam_user.user_name == '{{ test_user }}'
+        - test_iam_user.tags | length == 0
 
   - name: get info on IAM user(s)
     iam_user_info:
@@ -86,6 +87,7 @@
         - iam_user_info.iam_users[0].path == test_iam_user.path
         - iam_user_info.iam_users[0].user_id == test_iam_user.user_id
         - iam_user_info.iam_users[0].user_name == test_iam_user.user_name
+        - iam_user_info.iam_users[0].tags | length == 0
 
   - name: get info on IAM user(s) on path
     iam_user_info:
@@ -100,6 +102,125 @@
         - iam_user_info.iam_users[0].path == test_iam_user.path
         - iam_user_info.iam_users[0].user_id == test_iam_user.user_id
         - iam_user_info.iam_users[0].user_name == test_iam_user.user_name
+        - iam_user_info.iam_users[0].tags | length == 0
+
+  - name: 'Add Tag'
+    iam_user:
+      name: '{{ test_user }}'
+      state: present
+      tags:
+        TagA: ValueA
+    register: iam_user
+  - assert:
+      that:
+          - iam_user is changed
+          - iam_user.iam_user.user.user_name == test_user
+          - iam_user.iam_user.user.tags | length == 1
+          - '"TagA" in iam_user.iam_user.user.tags'
+          - iam_user.iam_user.user.tags.TagA == "ValueA"
+
+  - name: 'Add Tag (no change)'
+    iam_user:
+      name: '{{ test_user }}'
+      state: present
+      tags:
+        TagA: ValueA
+    register: iam_user
+  - assert:
+      that:
+          - iam_user is not changed
+          - iam_user.iam_user.user.user_name == test_user
+          - iam_user.iam_user.user.tags | length == 1
+          - '"TagA" in iam_user.iam_user.user.tags'
+          - iam_user.iam_user.user.tags.TagA == "ValueA"
+
+  - name: 'Extend Tags'
+    iam_user:
+      name: '{{ test_user }}'
+      state: present
+      purge_tags: no
+      tags:
+        tag_b: "value_b"
+        "Tag C": "Value C"
+        "tag d": "value d"
+    register: iam_user
+  - assert:
+      that:
+          - iam_user is changed
+          - iam_user.iam_user.user.user_name == test_user
+          - iam_user.iam_user.user.tags | length == 4
+          - '"TagA" in iam_user.iam_user.user.tags'
+          - '"tag_b" in iam_user.iam_user.user.tags'
+          - '"Tag C" in iam_user.iam_user.user.tags'
+          - '"tag d" in iam_user.iam_user.user.tags'
+          - iam_user.iam_user.user.tags.TagA == "ValueA"
+          - iam_user.iam_user.user.tags.tag_b == "value_b"
+          - iam_user.iam_user.user.tags["Tag C"] == "Value C"
+          - iam_user.iam_user.user.tags["tag d"] == "value d"
+
+  - name: 'Create user without Tag (no change)'
+    iam_user:
+      name: '{{ test_user }}'
+      state: present
+    register: iam_user
+  - assert:
+      that:
+          - iam_user is not changed
+          - iam_user.iam_user.user.user_name == test_user
+          - iam_user.iam_user.user.tags | length == 4
+
+  - name: 'Remove all Tags (check mode)'
+    iam_user:
+      name: '{{ test_user }}'
+      state: present
+      tags: {}
+    check_mode: yes
+    register: iam_user
+  - assert:
+      that:
+          - iam_user is changed
+
+  - name: 'Remove 3 Tags'
+    iam_user:
+      name: '{{ test_user }}'
+      state: present
+      tags:
+        TagA: ValueA
+    register: iam_user
+  - assert:
+      that:
+          - iam_user is changed
+          - iam_user.iam_user.user.user_name == test_user
+          - iam_user.iam_user.user.tags | length == 1
+          - '"TagA" in iam_user.iam_user.user.tags'
+          - iam_user.iam_user.user.tags.TagA == "ValueA"
+
+  - name: 'Change Tag'
+    iam_user:
+      name: '{{ test_user }}'
+      state: present
+      tags:
+        TagA: AnotherValueA
+    register: iam_user
+  - assert:
+      that:
+          - iam_user is changed
+          - iam_user.iam_user.user.user_name == test_user
+          - iam_user.iam_user.user.tags | length == 1
+          - '"TagA" in iam_user.iam_user.user.tags'
+          - iam_user.iam_user.user.tags.TagA == "AnotherValueA"
+  
+  - name: 'Remove All Tags'
+    iam_user:
+      name: '{{ test_user }}'
+      state: present
+      tags: {}
+    register: iam_user
+  - assert:
+      that:
+          - iam_user is changed
+          - iam_user.iam_user.user.user_name == test_user
+          - iam_user.iam_user.user.tags | length == 0
 
   # ===========================================
   # Test Managed Policy management
@@ -292,6 +413,7 @@
         - iam_user_info.iam_users[0].path == test_iam_user.path
         - iam_user_info.iam_users[0].user_id == test_iam_user.user_id
         - iam_user_info.iam_users[0].user_name == test_iam_user.user_name
+        - iam_user_info.iam_users[0].tags | length == 0
 
   - name: remove user from group
     iam_group:
