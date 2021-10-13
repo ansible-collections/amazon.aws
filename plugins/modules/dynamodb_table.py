@@ -868,7 +868,10 @@ def update_table(current_table):
 def create_table():
     table_name = module.params.get('name')
     hash_key_name = module.params.get('hash_key_name')
-    billing_mode = module.params.get('billing_mode', 'PROVISIONED')
+    billing_mode = module.params.get('billing_mode')
+
+    if billing_mode == None:
+        billing_mode = "PROVISIONED"
 
     tags = ansible_dict_to_boto3_tag_list(module.params.get('tags') or {})
 
