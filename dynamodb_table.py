@@ -878,7 +878,7 @@ def create_table():
     hash_key_name = module.params.get('hash_key_name')
     billing_mode = module.params.get('billing_mode')
 
-    if billing_mode == None:
+    if billing_mode is None:
         billing_mode = "PROVISIONED"
 
     tags = ansible_dict_to_boto3_tag_list(module.params.get('tags') or {})
