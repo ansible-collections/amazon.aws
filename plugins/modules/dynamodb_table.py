@@ -708,9 +708,14 @@ def _global_index_changes(current_table):
 
     current_billing_mode = current_table.get('billing_mode')
 
+    if module.params.get('billing_mode') is None:
+        billing_mode = current_billing_mode
+    else:
+        billing_mode = module.params.get('billing_mode')
+
     include_throughput = True
 
-    if module.params.get('billing_mode', current_billing_mode) == "PAY_PER_REQUEST":
+    if billing_mode == "PAY_PER_REQUEST":
         include_throughput = False
 
     index_changes = list()
@@ -756,7 +761,10 @@ def _update_table(current_table):
         changes['ProvisionedThroughput'] = throughput_changes
 
     current_billing_mode = current_table.get('billing_mode')
-    new_billing_mode = module.params.get('billing_mode', current_billing_mode)
+    new_billing_mode = module.params.get('billing_mode')
+
+    if new_billing_mode is None:
+        new_billing_mode = current_billing_mode
 
     if current_billing_mode != new_billing_mode:
         changes['BillingMode'] = new_billing_mode
