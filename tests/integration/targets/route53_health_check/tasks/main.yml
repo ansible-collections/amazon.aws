@@ -13,6 +13,7 @@
 # - resource_path
 # - string_match
 # - failure_threshold
+# - disabled
 #
 - module_defaults:
     group/aws:
@@ -67,6 +68,7 @@
       - create_check.health_check.action == 'create'
       - '"health_check_config" in create_check.health_check'
       - '"type" in _check_config'
+      - '"disabled" in _check_config'
       - '"failure_threshold" in _check_config'
       - '"request_interval" in _check_config'
       - '"fully_qualified_domain_name" not in _check_config'
@@ -74,6 +76,7 @@
       - '"port" in _check_config'
       - '"resource_path" not in _check_config'
       - '"search_string" not in _check_config'
+      - _check_config.disabled == false
       - _check_config.type == 'TCP'
       - _check_config.failure_threshold == 3
       - _check_config.request_interval == 30
@@ -123,6 +126,7 @@
       - create_check.health_check.action is none
       - '"health_check_config" in create_check.health_check'
       - '"type" in _check_config'
+      - '"disabled" in _check_config'
       - '"failure_threshold" in _check_config'
       - '"request_interval" in _check_config'
       - '"fully_qualified_domain_name" not in _check_config'
@@ -130,6 +134,7 @@
       - '"port" in _check_config'
       - '"resource_path" not in _check_config'
       - '"search_string" not in _check_config'
+      - _check_config.disabled == false
       - _check_config.type == 'TCP'
       - _check_config.request_interval == 30
       - _check_config.failure_threshold == 3
@@ -139,7 +144,7 @@
       _health_check: '{{ create_check.health_check }}'
       _check_config: '{{ _health_check.health_check_config }}'
 
-  # Update an attribute (for TCP only failure threshold makes sense)
+  # Update an attribute
   - name: 'Update TCP health check - set threshold - check_mode'
     route53_health_check:
       state: present
@@ -178,6 +183,7 @@
       - create_check.health_check.action is none
       - '"health_check_config" in create_check.health_check'
       - '"type" in _check_config'
+      - '"disabled" in _check_config'
       - '"failure_threshold" in _check_config'
       - '"request_interval" in _check_config'
       - '"fully_qualified_domain_name" not in _check_config'
@@ -185,6 +191,7 @@
       - '"port" in _check_config'
       - '"resource_path" not in _check_config'
       - '"search_string" not in _check_config'
+      - _check_config.disabled == false
       - _check_config.type == 'TCP'
       - _check_config.request_interval == 30
       - _check_config.failure_threshold == failure_threshold_updated
@@ -232,6 +239,7 @@
       - create_check.health_check.action is none
       - '"health_check_config" in create_check.health_check'
       - '"type" in _check_config'
+      - '"disabled" in _check_config'
       - '"failure_threshold" in _check_config'
       - '"request_interval" in _check_config'
       - '"fully_qualified_domain_name" not in _check_config'
@@ -239,6 +247,119 @@
       - '"port" in _check_config'
       - '"resource_path" not in _check_config'
       - '"search_string" not in _check_config'
+      - _check_config.disabled == false
+      - _check_config.type == 'TCP'
+      - _check_config.request_interval == 30
+      - _check_config.failure_threshold == failure_threshold_updated
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+    vars:
+      _health_check: '{{ update_threshold.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - name: 'Update TCP health check - set disabled - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      disabled: true
+    register: update_threshold
+    check_mode: true
+
+  - name: 'Check result - Update TCP health check - set disabled - check_mode'
+    assert:
+      that:
+      - update_threshold is successful
+      - update_threshold is changed
+
+  - name: 'Update TCP health check - set disabled'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      disabled: true
+    register: update_threshold
+
+  - name: 'Check result - Update TCP health check - set disabled'
+    assert:
+      that:
+      - update_threshold is successful
+      - update_threshold is changed
+      - '"health_check" in update_threshold'
+      - '"id" in _health_check'
+      - _health_check.id == tcp_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" not in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" not in _check_config'
+      - '"search_string" not in _check_config'
+      - _check_config.disabled == true
+      - _check_config.type == 'TCP'
+      - _check_config.request_interval == 30
+      - _check_config.failure_threshold == failure_threshold_updated
+      - _check_config.ip_address == ip_address
+      - _check_config.port == port
+    vars:
+      _health_check: '{{ update_threshold.health_check }}'
+      _check_config: '{{ _health_check.health_check_config }}'
+
+  - name: 'Update TCP health check - set disabled - idempotency - check_mode'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      disabled: true
+    register: update_threshold
+    check_mode: true
+
+  - name: 'Check result - Update TCP health check - set disabled - idempotency - check_mode'
+    assert:
+      that:
+      - update_threshold is successful
+      - update_threshold is not changed
+
+  - name: 'Update TCP health check - set disabled - idempotency'
+    route53_health_check:
+      state: present
+      ip_address: '{{ ip_address }}'
+      port: '{{ port }}'
+      type: '{{ type }}'
+      disabled: true
+    register: update_threshold
+
+  - name: 'Check result - Update TCP health check - set disabled - idempotency'
+    assert:
+      that:
+      - update_threshold is successful
+      - update_threshold is not changed
+      - '"health_check" in update_threshold'
+      - '"id" in _health_check'
+      - _health_check.id == tcp_check_id
+      - '"action" in _health_check'
+      - '"health_check_version" in _health_check'
+      - create_check.health_check.action is none
+      - '"health_check_config" in create_check.health_check'
+      - '"type" in _check_config'
+      - '"disabled" in _check_config'
+      - '"failure_threshold" in _check_config'
+      - '"request_interval" in _check_config'
+      - '"fully_qualified_domain_name" not in _check_config'
+      - '"ip_address" in _check_config'
+      - '"port" in _check_config'
+      - '"resource_path" not in _check_config'
+      - '"search_string" not in _check_config'
+      - _check_config.disabled == true
       - _check_config.type == 'TCP'
       - _check_config.request_interval == 30
       - _check_config.failure_threshold == failure_threshold_updated
@@ -350,6 +471,7 @@
       - create_check.health_check.action is none
       - '"health_check_config" in create_check.health_check'
       - '"type" in _check_config'
+      - '"disabled" in _check_config'
       - '"failure_threshold" in _check_config'
       - '"request_interval" in _check_config'
       - '"fully_qualified_domain_name" in _check_config'
@@ -357,6 +479,7 @@
       - '"port" in _check_config'
       - '"resource_path" not in _check_config'
       - '"search_string" in _check_config'
+      - _check_config.disabled == false
       - _check_config.type == 'HTTPS_STR_MATCH'
       - _check_config.request_interval == request_interval
       - _check_config.failure_threshold == 3
@@ -413,6 +536,7 @@
       - create_check.health_check.action is none
       - '"health_check_config" in create_check.health_check'
       - '"type" in _check_config'
+      - '"disabled" in _check_config'
       - '"failure_threshold" in _check_config'
       - '"request_interval" in _check_config'
       - '"fully_qualified_domain_name" in _check_config'
@@ -420,6 +544,7 @@
       - '"port" in _check_config'
       - '"resource_path" not in _check_config'
       - '"search_string" in _check_config'
+      - _check_config.disabled == false
       - _check_config.type == type_https_match
       - _check_config.request_interval == request_interval
       - _check_config.failure_threshold == 3
@@ -473,6 +598,7 @@
       - create_check.health_check.action is none
       - '"health_check_config" in create_check.health_check'
       - '"type" in _check_config'
+      - '"disabled" in _check_config'
       - '"failure_threshold" in _check_config'
       - '"request_interval" in _check_config'
       - '"fully_qualified_domain_name" in _check_config'
@@ -480,6 +606,7 @@
       - '"port" in _check_config'
       - '"resource_path" in _check_config'
       - '"search_string" in _check_config'
+      - _check_config.disabled == false
       - _check_config.type == type_https_match
       - _check_config.request_interval == request_interval
       - _check_config.failure_threshold == 3
@@ -534,6 +661,7 @@
       - create_check.health_check.action is none
       - '"health_check_config" in create_check.health_check'
       - '"type" in _check_config'
+      - '"disabled" in _check_config'
       - '"failure_threshold" in _check_config'
       - '"request_interval" in _check_config'
       - '"fully_qualified_domain_name" in _check_config'
@@ -541,6 +669,7 @@
       - '"port" in _check_config'
       - '"resource_path" in _check_config'
       - '"search_string" in _check_config'
+      - _check_config.disabled == false
       - _check_config.type == type_https_match
       - _check_config.request_interval == request_interval
       - _check_config.failure_threshold == 3
@@ -595,6 +724,7 @@
       - create_check.health_check.action is none
       - '"health_check_config" in create_check.health_check'
       - '"type" in _check_config'
+      - '"disabled" in _check_config'
       - '"failure_threshold" in _check_config'
       - '"request_interval" in _check_config'
       - '"fully_qualified_domain_name" in _check_config'
@@ -602,6 +732,7 @@
       - '"port" in _check_config'
       - '"resource_path" in _check_config'
       - '"search_string" in _check_config'
+      - _check_config.disabled == false
       - _check_config.type == type_https_match
       - _check_config.request_interval == request_interval
       - _check_config.failure_threshold == 3
@@ -656,6 +787,7 @@
       - create_check.health_check.action is none
       - '"health_check_config" in create_check.health_check'
       - '"type" in _check_config'
+      - '"disabled" in _check_config'
       - '"failure_threshold" in _check_config'
       - '"request_interval" in _check_config'
       - '"fully_qualified_domain_name" in _check_config'
@@ -663,6 +795,7 @@
       - '"port" in _check_config'
       - '"resource_path" in _check_config'
       - '"search_string" in _check_config'
+      - _check_config.disabled == false
       - _check_config.type == type_https_match
       - _check_config.request_interval == request_interval
       - _check_config.failure_threshold == 3
@@ -754,6 +887,7 @@
       string_match: '{{ string_match }}'
       resource_path: '{{ resource_path }}'
       failure_threshold: '{{ failure_threshold }}'
+      disabled: true
     register: create_complex
     check_mode: true
 
@@ -774,6 +908,7 @@
       string_match: '{{ string_match }}'
       resource_path: '{{ resource_path }}'
       failure_threshold: '{{ failure_threshold }}'
+      disabled: true
     register: create_complex
 
   - name: 'Check result - Create Complex health check'
@@ -790,6 +925,7 @@
       - create_check.health_check.action is none
       - '"health_check_config" in create_check.health_check'
       - '"type" in _check_config'
+      - '"disabled" in _check_config'
       - '"failure_threshold" in _check_config'
       - '"request_interval" in _check_config'
       - '"fully_qualified_domain_name" in _check_config'
@@ -797,6 +933,7 @@
       - '"port" in _check_config'
       - '"resource_path" in _check_config'
       - '"search_string" in _check_config'
+      - _check_config.disabled == true
       - _check_config.type == type_http_match
       - _check_config.request_interval == request_interval
       - _check_config.failure_threshold == failure_threshold
@@ -823,6 +960,7 @@
       string_match: '{{ string_match }}'
       resource_path: '{{ resource_path }}'
       failure_threshold: '{{ failure_threshold }}'
+      disabled: true
     register: create_complex
     check_mode: true
 
@@ -843,6 +981,7 @@
       string_match: '{{ string_match }}'
       resource_path: '{{ resource_path }}'
       failure_threshold: '{{ failure_threshold }}'
+      disabled: true
     register: create_complex
 
   - name: 'Check result - Create Complex health check - idempotency'
@@ -858,6 +997,7 @@
       - create_check.health_check.action is none
       - '"health_check_config" in create_check.health_check'
       - '"type" in _check_config'
+      - '"disabled" in _check_config'
       - '"failure_threshold" in _check_config'
       - '"request_interval" in _check_config'
       - '"fully_qualified_domain_name" in _check_config'
@@ -865,6 +1005,7 @@
       - '"port" in _check_config'
       - '"resource_path" in _check_config'
       - '"search_string" in _check_config'
+      - _check_config.disabled == true
       - _check_config.type == type_http_match
       - _check_config.request_interval == request_interval
       - _check_config.failure_threshold == failure_threshold
@@ -923,6 +1064,7 @@
       - create_check.health_check.action is none
       - '"health_check_config" in create_check.health_check'
       - '"type" in _check_config'
+      - '"disabled" in _check_config'
       - '"failure_threshold" in _check_config'
       - '"request_interval" in _check_config'
       - '"fully_qualified_domain_name" in _check_config'
@@ -930,6 +1072,7 @@
       - '"port" in _check_config'
       - '"resource_path" in _check_config'
       - '"search_string" in _check_config'
+      - _check_config.disabled == true
       - _check_config.type == type_http_match
       - _check_config.request_interval == request_interval
       - _check_config.failure_threshold == failure_threshold_updated
@@ -988,6 +1131,7 @@
       - create_check.health_check.action is none
       - '"health_check_config" in create_check.health_check'
       - '"type" in _check_config'
+      - '"disabled" in _check_config'
       - '"failure_threshold" in _check_config'
       - '"request_interval" in _check_config'
       - '"fully_qualified_domain_name" in _check_config'
@@ -995,6 +1139,7 @@
       - '"port" in _check_config'
       - '"resource_path" in _check_config'
       - '"search_string" in _check_config'
+      - _check_config.disabled == true
       - _check_config.type == type_http_match
       - _check_config.request_interval == request_interval
       - _check_config.failure_threshold == failure_threshold_updated
