@@ -63,9 +63,16 @@ options:
     type: dict
   mode:
     description:
-      - Switches the module behaviour between C(PUT) (upload), C(GET) (download), C(geturl) (return download URL, Ansible 1.3+),
-        C(getstr) (download object as string (1.3+)), C(list) (list keys, Ansible 2.0+), C(create) (bucket), C(delete) (bucket),
-        delobj (delete object, Ansible 2.0+) and C(copy) object that is already stored in another (bucket).
+      - Switches the module behaviour between
+      - 'C(PUT): upload'
+      - 'C(GET): download'
+      - 'C(geturl): return download URL'
+      - 'C(getstr): download object as string'
+      - 'C(list): list keys'
+      - 'C(create): create bucket'
+      - 'C(delete): delete bucket'
+      - 'C(delobj): delete object'
+      - 'C(copy): copy object that is already stored in another bucket'
     required: true
     choices: ['get', 'put', 'delete', 'create', 'geturl', 'getstr', 'delobj', 'list', 'copy']
     type: str
