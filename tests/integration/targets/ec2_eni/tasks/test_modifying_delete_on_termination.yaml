@@ -23,6 +23,22 @@
 
 # ============================================================
 
+- name: enable delete_on_termination (check mode)
+  ec2_eni:
+    instance_id: "{{ instance_id_2 }}"
+    device_index: 1
+    private_ip_address: "{{ ip_1 }}"
+    subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+    state: present
+    attached: True
+    delete_on_termination: True
+  check_mode: true
+  register: result_check_mode
+
+- assert:
+    that:
+      - result_check_mode.changed
+
 - name: enable delete_on_termination
   ec2_eni:
     instance_id: "{{ instance_id_2 }}"
@@ -45,6 +61,22 @@
   vars:
     _interface_0: '{{ eni_info.network_interfaces[0] }}'
 
+- name: test idempotent behavior enabling delete_on_termination (check mode)
+  ec2_eni:
+    instance_id: "{{ instance_id_2 }}"
+    device_index: 1
+    private_ip_address: "{{ ip_1 }}"
+    subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+    state: present
+    attached: True
+    delete_on_termination: True
+  check_mode: true
+  register: result_check_mode
+
+- assert:
+    that:
+      - not result_check_mode.changed
+
 - name: test idempotent behavior enabling delete_on_termination
   ec2_eni:
     instance_id: "{{ instance_id_2 }}"
@@ -62,6 +94,22 @@
       - result.interface.attachment.delete_on_termination == true
 
 # ============================================================
+
+- name: disable delete_on_termination (check mode)
+  ec2_eni:
+    instance_id: "{{ instance_id_2 }}"
+    device_index: 1
+    private_ip_address: "{{ ip_1 }}"
+    subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+    state: present
+    attached: True
+    delete_on_termination: False
+  check_mode: true
+  register: result_check_mode
+
+- assert:
+    that:
+      - result_check_mode.changed
 
 - name: disable delete_on_termination
   ec2_eni:

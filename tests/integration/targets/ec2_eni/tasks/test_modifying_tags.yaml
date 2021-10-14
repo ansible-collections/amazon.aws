@@ -13,6 +13,20 @@
       - result.interface.name is undefined
 
   # ============================================================
+- name: add tags to the network interface (check mode)
+  ec2_eni:
+    eni_id: "{{ eni_id_1 }}"
+    state: present
+    name: "{{ resource_prefix }}"
+    tags:
+      CreatedBy: "{{ resource_prefix }}"
+  check_mode: true
+  register: result_check_mode
+
+- assert:
+    that:
+      - result_check_mode.changed
+
 - name: add tags to the network interface
   ec2_eni:
     eni_id: "{{ eni_id_1 }}"
@@ -44,6 +58,18 @@
     _interface_0: '{{ eni_info.network_interfaces[0] }}'
 
   # ============================================================
+- name: test idempotence by using the Name tag and the subnet (check mode)
+  ec2_eni:
+    name: "{{ resource_prefix }}"
+    state: present
+    subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+  check_mode: true
+  register: result_check_mode
+
+- assert:
+    that:
+      - not result_check_mode.changed
+
 - name: test idempotence by using the Name tag and the subnet
   ec2_eni:
     name: "{{ resource_prefix }}"
@@ -57,6 +83,18 @@
       - result.interface.id == eni_id_1
 
   # ============================================================
+- name: test tags are not purged if tags are null even if name is provided (check mode)
+  ec2_eni:
+    name: "{{ resource_prefix }}"
+    state: present
+    subnet_id: "{{ vpc_subnet_result.subnet.id }}"
+  check_mode: true
+  register: result_check_mode
+
+- assert:
+    that:
+      - not result_check_mode.changed
+
 - name: test tags are not purged if tags are null even if name is provided
   ec2_eni:
     name: "{{ resource_prefix }}"

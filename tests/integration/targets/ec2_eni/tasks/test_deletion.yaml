@@ -1,5 +1,18 @@
 ---
 # ============================================================
+- name: test deleting the unattached network interface by using the ID (check mode)
+  ec2_eni:
+    eni_id: "{{ eni_id_1 }}"
+    name: "{{ resource_prefix }}"
+    subnet_id: "{{ vpc_subnet_id }}"
+    state: absent
+  check_mode: True
+  register: result_check_mode
+
+- assert:
+    that:
+      - result_check_mode.changed
+
 - name: test deleting the unattached network interface by using the ID
   ec2_eni:
     eni_id: "{{ eni_id_1 }}"
@@ -17,6 +30,19 @@
       - result.interface is undefined
       - '"network_interfaces" in eni_info'
       - eni_id_1 not in ( eni_info.network_interfaces | selectattr('id') | map(attribute='id') | list )
+
+- name: test removing the network interface by ID is idempotent (check mode)
+  ec2_eni:
+    eni_id: "{{ eni_id_1 }}"
+    name: "{{ resource_prefix }}"
+    subnet_id: "{{ vpc_subnet_id }}"
+    state: absent
+  check_mode: True
+  register: result_check_mode
+
+- assert:
+    that:
+      - not result_check_mode.changed
 
 - name: test removing the network interface by ID is idempotent
   ec2_eni:
