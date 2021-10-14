@@ -308,7 +308,7 @@ from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import get_ec2_security_group_ids_from_names
 from ..module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ..module_utils.tagging import boto3_tag_specifications
-from ..module_utils.ec2 import compare_aws_tags
+from ..module_utils.ec2 import ensure_ec2_tags
 from ..module_utils.waiters import get_waiter
 
 
@@ -820,16 +820,6 @@ def _get_vpc_id(connection, module, subnet_id):
 
 
 def manage_tags(connection, module, eni, name, tags, purge_tags):
-    changed = False
-
-    if "TagSet" in eni:
-        old_tags = boto3_tag_list_to_ansible_dict(eni['TagSet'])
-    elif tags:
-        old_tags = {}
-    else:
-        # No new tags and nothing in TagSet
-        return False
-
     # Do not purge tags unless tags is not None
     if tags is None:
         purge_tags = False
@@ -838,27 +828,9 @@ def manage_tags(connection, module, eni, name, tags, purge_tags):
     if name:
         tags['Name'] = name
 
-    tags_to_set, tags_to_delete = compare_aws_tags(
-        old_tags, tags,
-        purge_tags=purge_tags,
-    )
-    if tags_to_set:
-        if module.check_mode:
-            return True
-        connection.create_tags(
-            aws_retry=True,
-            Resources=[eni['NetworkInterfaceId']],
-            Tags=ansible_dict_to_boto3_tag_list(tags_to_set))
-        changed |= True
-    if tags_to_delete:
-        if module.check_mode:
-            return True
-        delete_with_current_values = dict((k, old_tags.get(k)) for k in tags_to_delete)
-        connection.delete_tags(
-            aws_retry=True,
-            Resources=[eni['NetworkInterfaceId']],
-            Tags=ansible_dict_to_boto3_tag_list(delete_with_current_values))
-        changed |= True
+    eni_id = eni['NetworkInterfaceId']
+
+    changed = ensure_ec2_tags(connection, module, eni_id, tags=tags, purge_tags=purge_tags)
     return changed
 
 
