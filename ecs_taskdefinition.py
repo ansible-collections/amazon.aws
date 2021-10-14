@@ -471,7 +471,6 @@ options:
     network_mode:
         description:
             - The Docker networking mode to use for the containers in the task.
-            - C(awsvpc) mode was added in Ansible 2.5
             - Windows containers must use I(network_mode=default), which will utilize docker NAT networking.
             - Setting I(network_mode=default) for a Linux container will use C(bridge) mode.
         required: false

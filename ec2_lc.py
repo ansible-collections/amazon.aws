@@ -21,7 +21,6 @@ description:
 notes:
   - Amazon ASG Autoscaling Launch Configurations are immutable once created, so modifying the configuration after it is changed will not modify the
     launch configuration on AWS. You must create a new config and assign it to the ASG instead.
-  - encrypted volumes are supported on versions >= 2.4
 
 
 author:
@@ -188,9 +187,7 @@ extends_documentation_fragment:
 
 EXAMPLES = r'''
 
-# create a launch configuration using an AMI image and instance type as a basis
-
-- name: note that encrypted volumes are only supported in >= Ansible 2.4
+- name: create a launch configuration with an encrypted volume
   community.aws.ec2_lc:
     name: special
     image_id: ami-XXX
