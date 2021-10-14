@@ -448,7 +448,7 @@ def create_eni(connection, vpc_id, module):
         cidr_block = connection.describe_subnets(SubnetIds=[str(subnet_id)])['Subnets'][0]['CidrBlock']
         valid_private_ip = ip_address(private_ip_address) in ip_network(cidr_block)
         if not valid_private_ip:
-                module.fail_json(changed=False, msg="Error: cannot create ENI - Address does not fall within the subnet's address range.")
+            module.fail_json(changed=False, msg="Error: cannot create ENI - Address does not fall within the subnet's address range.")
         if module.check_mode:
             module.exit_json(changed=True, msg="Would have created ENI if not in check mode.")
 
