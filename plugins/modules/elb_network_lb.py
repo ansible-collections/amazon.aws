@@ -108,7 +108,7 @@ options:
     description:
       - Create or destroy the load balancer.
       - The current default is C(absent).  However, this behavior is inconsistent with other modules
-        and as such the default will change to C(present) in 2.14.
+        and as such the default will change to C(present) in a release after 2022-06-01.
         To maintain the existing behavior explicitly set I(state=absent).
     choices: [ 'present', 'absent' ]
     type: str
@@ -452,7 +452,7 @@ def main():
     if state is None:
         # See below, unless state==present we delete.  Ouch.
         module.deprecate('State currently defaults to absent.  This is inconsistent with other modules'
-                         ' and the default will be changed to `present` in Ansible 2.14',
+                         ' and the default will be changed to `present` in a release after 2022-06-01',
                          date='2022-06-01', collection_name='community.aws')
 
     # Quick check of listeners parameters
