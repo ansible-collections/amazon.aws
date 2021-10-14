@@ -55,7 +55,6 @@ extends_documentation_fragment:
 
 requirements:
 - cryptography
-- boto >= 2.49.0
 notes:
     - As of Ansible 2.4, this module requires the python cryptography module rather than the
       older pycrypto module.
@@ -110,11 +109,15 @@ try:
 except ImportError:
     HAS_CRYPTOGRAPHY = False
 
+try:
+    import botocore
+except ImportError:
+    pass  # Handled by AnsibleAWSModule
+
 from ansible.module_utils._text import to_bytes
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ec2_connect
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 def setup_module_object():
@@ -128,6 +131,14 @@ def setup_module_object():
     )
     module = AnsibleAWSModule(argument_spec=argument_spec)
     return module
+
+
+def _get_password(module, client, instance_id):
+    try:
+        data = client.get_password_data(aws_retry=True, InstanceId=instance_id)['PasswordData']
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        module.fail_json_aws(e, msg='Failed to get password data')
+    return data
 
 
 def ec2_win_password(module):
@@ -144,21 +155,21 @@ def ec2_win_password(module):
     wait = module.params.get('wait')
     wait_timeout = module.params.get('wait_timeout')
 
-    ec2 = ec2_connect(module)
+    client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
     if wait:
         start = datetime.datetime.now()
         end = start + datetime.timedelta(seconds=wait_timeout)
 
         while datetime.datetime.now() < end:
-            data = ec2.get_password_data(instance_id)
+            data = _get_password(module, client, instance_id)
             decoded = b64decode(data)
             if not decoded:
                 time.sleep(5)
             else:
                 break
     else:
-        data = ec2.get_password_data(instance_id)
+        data = _get_password(module, client, instance_id)
         decoded = b64decode(data)
 
     if wait and datetime.datetime.now() >= end:
@@ -197,9 +208,6 @@ def ec2_win_password(module):
 
 def main():
     module = setup_module_object()
-
-    if not HAS_BOTO:
-        module.fail_json(msg='Boto required for this module.')
 
     if not HAS_CRYPTOGRAPHY:
         module.fail_json(msg='cryptography package required for this module.')
