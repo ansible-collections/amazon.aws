@@ -10,10 +10,9 @@ DOCUMENTATION = '''
 ---
 module: ec2_win_password
 version_added: 1.0.0
-short_description: Gets the default administrator password for ec2 windows instances
+short_description: Gets the default administrator password for EC2 Windows instances
 description:
     - Gets the default administrator password from any EC2 Windows instance. The instance is referenced by its id (e.g. C(i-XXXXXXX)).
-    - This module has a dependency on python-boto.
 author: "Rick Mendes (@rickmendes)"
 options:
   instance_id:
@@ -55,9 +54,6 @@ extends_documentation_fragment:
 
 requirements:
 - cryptography
-notes:
-    - As of Ansible 2.4, this module requires the python cryptography module rather than the
-      older pycrypto module.
 '''
 
 EXAMPLES = '''
@@ -129,7 +125,8 @@ def setup_module_object():
         wait=dict(type='bool', default=False, required=False),
         wait_timeout=dict(default=120, required=False, type='int'),
     )
-    module = AnsibleAWSModule(argument_spec=argument_spec)
+    mutually_exclusive = [['key_file', 'key_data']]
+    module = AnsibleAWSModule(argument_spec=argument_spec, mutually_exclusive=mutually_exclusive)
     return module
 
 
