@@ -43,7 +43,7 @@ options:
     type: json
   managed_policies:
     description:
-      - A list of managed policy ARNs or, since Ansible 2.4, a list of either managed policy ARNs or friendly names.
+      - A list of managed policy ARNs, managed policy ARNs or friendly names.
       - To remove all policies set I(purge_polices=true) and I(managed_policies=[None]).
       - To embed an inline policy, use M(community.aws.iam_policy).
     aliases: ['managed_policy']
