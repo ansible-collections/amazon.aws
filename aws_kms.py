@@ -44,7 +44,7 @@ options:
     - (deprecated) Grant or deny access.
     - Used for modifying the Key Policy rather than modifying a grant and only
       works on the default policy created through the AWS Console.
-    - This option has been deprecated, and will be removed in 2.13. Use I(policy) instead.
+    - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
     default: grant
     choices: [ grant, deny ]
     aliases:
@@ -56,7 +56,7 @@ options:
     - One of I(policy_role_name) or I(policy_role_arn) are required.
     - Used for modifying the Key Policy rather than modifying a grant and only
       works on the default policy created through the AWS Console.
-    - This option has been deprecated, and will be removed in 2.13. Use I(policy) instead.
+    - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
     required: false
     aliases:
     - role_name
@@ -67,7 +67,7 @@ options:
     - One of I(policy_role_name) or I(policy_role_arn) are required.
     - Used for modifying the Key Policy rather than modifying a grant and only
       works on the default policy created through the AWS Console.
-    - This option has been deprecated, and will be removed in 2.13. Use I(policy) instead.
+    - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
     type: str
     required: false
     aliases:
@@ -78,7 +78,7 @@ options:
     - Required when I(policy_mode=grant).
     - Used for modifying the Key Policy rather than modifying a grant and only
       works on the default policy created through the AWS Console.
-    - This option has been deprecated, and will be removed in 2.13. Use I(policy) instead.
+    - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
     required: false
     aliases:
     - grant_types
@@ -90,7 +90,7 @@ options:
     - Only cleans if changes are being made.
     - Used for modifying the Key Policy rather than modifying a grant and only
       works on the default policy created through the AWS Console.
-    - This option has been deprecated, and will be removed in 2.13. Use I(policy) instead.
+    - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
     type: bool
     default: true
     aliases:

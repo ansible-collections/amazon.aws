@@ -57,7 +57,7 @@ options:
   purge_policies:
     description:
       - When I(purge_policies=true) any managed policies not listed in I(managed_policies) will be detatched.
-      - By default I(purge_policies=true).  In Ansible 2.14 this will be changed to I(purge_policies=false).
+      - By default I(purge_policies=true).  In a release after 2022-06-01 this will be changed to I(purge_policies=false).
     type: bool
     aliases: ['purge_policy', 'purge_managed_policies']
   state:
@@ -621,7 +621,7 @@ def main():
                               supports_check_mode=True)
 
     if module.params.get('purge_policies') is None:
-        module.deprecate('In Ansible 2.14 the default value of purge_policies will change from true to false.'
+        module.deprecate('After 2022-06-01 the default value of purge_policies will change from true to false.'
                          '  To maintain the existing behaviour explicitly set purge_policies=true', date='2022-06-01', collection_name='community.aws')
 
     if module.params.get('boundary'):

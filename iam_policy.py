@@ -36,7 +36,7 @@ options:
     description:
       - The path to the properly json formatted policy file.
       - Mutually exclusive with I(policy_json).
-      - This option has been deprecated and will be removed in 2.14.  The existing behavior can be
+      - This option has been deprecated and will be removed in a release after 2022-06-01.  The existing behavior can be
         reproduced by using the I(policy_json) option and reading the file using the lookup plugin.
     type: str
   policy_json:
@@ -53,9 +53,10 @@ options:
     type: str
   skip_duplicates:
     description:
-      - When I(skip_duplicates=true) the module looks for any policies that match the document you pass in.  If there is a match it will not make
-        a new policy object with the same rules.
-      - The current default is C(true).  However, this behavior can be confusing and as such the default will change to C(false) in 2.14.  To maintain
+      - When I(skip_duplicates=true) the module looks for any policies that match the document you pass in.
+        If there is a match it will not make a new policy object with the same rules.
+      - The current default is C(true).  However, this behavior can be confusing and as such the default will
+        change to C(false) in a release after 2022-06-01.  To maintain
         the existing behavior explicitly set I(skip_duplicates=true).
     type: bool
 
@@ -304,13 +305,13 @@ def main():
 
     if (skip_duplicates is None):
         module.deprecate('The skip_duplicates behaviour has caused confusion and'
-                         ' will be disabled by default in Ansible 2.14',
+                         ' will be disabled by default in a release after 2022-06-01',
                          date='2022-06-01', collection_name='community.aws')
         skip_duplicates = True
 
     if module.params.get('policy_document'):
         module.deprecate('The policy_document option has been deprecated and'
-                         ' will be removed in Ansible 2.14',
+                         ' will be removed in a release after 2022-06-01',
                          date='2022-06-01', collection_name='community.aws')
 
     args = dict(
