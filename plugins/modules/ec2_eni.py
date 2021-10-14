@@ -293,7 +293,8 @@ interface:
 '''
 
 import time
-from ipaddress import ip_address, ip_network
+from ipaddress import ip_address
+from ipaddress import ip_network
 
 try:
     import botocore.exceptions
@@ -446,9 +447,9 @@ def create_eni(connection, vpc_id, module):
         # check if provided private_ip_address is within the subnet's address range
         cidr_block = connection.describe_subnets(SubnetIds=[str(subnet_id)])['Subnets'][0]['CidrBlock']
         valid_private_ip = ip_address(private_ip_address) in ip_network(cidr_block)
+        if not valid_private_ip:
+                module.fail_json(changed=False, msg="Error: cannot create ENI - Address does not fall within the subnet's address range.")
         if module.check_mode:
-            if not valid_private_ip:
-                module.exit_json(changed=False, msg="Error: cannot create ENI - Address does not fall within the subnet's address range.")
             module.exit_json(changed=True, msg="Would have created ENI if not in check mode.")
 
         eni_dict = connection.create_network_interface(aws_retry=True, **args)
@@ -679,7 +680,7 @@ def delete_eni(connection, module):
         module.exit_json(changed=False)
 
     if module.check_mode:
-        module.exit_json(changed=True, msg="Would have deleted eni if not in check mode.")
+        module.exit_json(changed=True, msg="Would have deleted ENI if not in check mode.")
 
     eni_id = eni["NetworkInterfaceId"]
     force_detach = module.params.get("force_detach")
