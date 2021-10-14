@@ -1,0 +1,2 @@
+minor_changes:
+- route53_zone - add support for tagging Route 53 zones (https://github.com/ansible-collections/community.aws/pull/565).
