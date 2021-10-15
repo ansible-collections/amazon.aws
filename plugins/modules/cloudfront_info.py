@@ -173,7 +173,7 @@ EXAMPLES = '''
 
 # When the module is called as cloudfront_facts, return values are published
 # in ansible_facts['cloudfront'][<id>] and can be used as follows.
-# Note that this is deprecated and will stop working in Ansible 2.13.
+# Note that this is deprecated and will stop working in a release after 2021-12-01.
 - name: Gather facts
   community.aws.cloudfront_facts:
     distribution: true
