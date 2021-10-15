@@ -13,6 +13,8 @@
       region: '{{ aws_region }}'
   block:
 
+  - include: "test_pay_per_request.yml"
+
   # ==============================================
 
   - name: Create table - check_mode
@@ -906,4 +908,5 @@
     dynamodb_table:
       state: absent
       name: '{{ table_name }}'
+      wait: false
     register: delete_table

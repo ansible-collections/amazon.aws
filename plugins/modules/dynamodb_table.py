@@ -49,6 +49,11 @@ options:
       - Defaults to C('STRING') when creating a new range key.
     choices: ['STRING', 'NUMBER', 'BINARY']
     type: str
+  billing_mode:
+    description:
+      - Controls whether provisoned pr on-demand tables are created.
+    choices: ['PROVISIONED', 'PAY_PER_REQUEST']
+    type: str
   read_capacity:
     description:
       - Read throughput capacity (units) to provision.
@@ -130,7 +135,7 @@ options:
     description:
       - How long (in seconds) to wait for creation / update / deletion to complete.
     aliases: ['wait_for_active_timeout']
-    default: 120
+    default: 300
     type: int
   wait:
     description:
@@ -164,6 +169,14 @@ EXAMPLES = r'''
     region: us-east-1
     read_capacity: 10
     write_capacity: 10
+
+- name: Create pay-per-request table
+  community.aws.dynamodb_table:
+    name: my-table
+    region: us-east-1
+    hash_key_name: id
+    hash_key_type: STRING
+    billing_mode: PAY_PER_REQUEST
 
 - name: set index on existing dynamo table
   community.aws.dynamodb_table:
@@ -367,7 +380,7 @@ def compatability_results(current_table):
     if not current_table:
         return dict()
 
-    throughput = current_table.get('provisioned_throughput', {})
+    billing_mode = current_table.get('billing_mode')
 
     primary_indexes = _decode_primary_index(current_table)
 
@@ -394,13 +407,17 @@ def compatability_results(current_table):
         range_key_name=range_key_name,
         range_key_type=range_key_type,
         indexes=indexes,
-        read_capacity=throughput.get('read_capacity_units', None),
+        billing_mode=billing_mode,
         region=module.region,
         table_name=current_table.get('table_name', None),
         table_status=current_table.get('table_status', None),
         tags=current_table.get('tags', {}),
-        write_capacity=throughput.get('write_capacity_units', None),
     )
+
+    if billing_mode == "PROVISIONED":
+        throughput = current_table.get('provisioned_throughput', {})
+        compat_results['read_capacity'] = throughput.get('read_capacity_units', None)
+        compat_results['write_capacity'] = throughput.get('write_capacity_units', None)
 
     return compat_results
 
@@ -434,6 +451,13 @@ def get_dynamodb_table():
     table['id'] = table['table_id']
     table['size'] = table['table_size_bytes']
     table['tags'] = tags
+
+    # billing_mode_summary doesn't always seem to be set but is always set for PAY_PER_REQUEST
+    # and when updating the billing_mode
+    if 'billing_mode_summary' in table:
+        table['billing_mode'] = table['billing_mode_summary']['billing_mode']
+    else:
+        table['billing_mode'] = "PROVISIONED"
 
     # convert indexes into something we can easily search against
     attributes = table['attribute_definitions']
@@ -568,9 +592,15 @@ def _throughput_changes(current_table, params=None):
     return dict()
 
 
-def _generate_global_indexes():
+def _generate_global_indexes(billing_mode):
     index_exists = dict()
     indexes = list()
+
+    include_throughput = True
+
+    if billing_mode == "PAY_PER_REQUEST":
+        include_throughput = False
+
     for index in module.params.get('indexes'):
         if index.get('type') not in ['global_all', 'global_include', 'global_keys_only']:
             continue
@@ -579,7 +609,7 @@ def _generate_global_indexes():
             module.fail_json(msg='Duplicate key {0} in list of global indexes'.format(name))
         # Convert the type name to upper case and remove the global_
         index['type'] = index['type'].upper()[7:]
-        index = _generate_index(index)
+        index = _generate_index(index, include_throughput)
         index_exists[name] = True
         indexes.append(index)
 
@@ -589,6 +619,7 @@ def _generate_global_indexes():
 def _generate_local_indexes():
     index_exists = dict()
     indexes = list()
+
     for index in module.params.get('indexes'):
         index = dict()
         if index.get('type') not in ['all', 'include', 'keys_only']:
@@ -659,6 +690,7 @@ def _generate_index(index, include_throughput=True):
         KeySchema=key_schema,
         Projection=projection,
     )
+
     if include_throughput:
         idx['ProvisionedThroughput'] = throughput
 
@@ -674,11 +706,24 @@ def _global_index_changes(current_table):
     current_global_index_map = current_table['_global_index_map']
     global_index_map = _generate_global_index_map(current_table)
 
+    current_billing_mode = current_table.get('billing_mode')
+
+    if module.params.get('billing_mode') is None:
+        billing_mode = current_billing_mode
+    else:
+        billing_mode = module.params.get('billing_mode')
+
+    include_throughput = True
+
+    if billing_mode == "PAY_PER_REQUEST":
+        include_throughput = False
+
     index_changes = list()
 
     # TODO (future) it would be nice to add support for deleting an index
     for name in global_index_map:
-        idx = dict(_generate_index(global_index_map[name]))
+
+        idx = dict(_generate_index(global_index_map[name], include_throughput=include_throughput))
         if name not in current_global_index_map:
             index_changes.append(dict(Create=idx))
         else:
@@ -687,13 +732,15 @@ def _global_index_changes(current_table):
             # rather than dropping other changes on the floor
             _current = current_global_index_map[name]
             _new = global_index_map[name]
-            change = dict(_throughput_changes(_current, _new))
-            if change:
-                update = dict(
-                    IndexName=name,
-                    ProvisionedThroughput=change,
-                )
-                index_changes.append(dict(Update=update))
+
+            if include_throughput:
+                change = dict(_throughput_changes(_current, _new))
+                if change:
+                    update = dict(
+                        IndexName=name,
+                        ProvisionedThroughput=change,
+                    )
+                    index_changes.append(dict(Update=update))
 
     return index_changes
 
@@ -713,15 +760,26 @@ def _update_table(current_table):
     if throughput_changes:
         changes['ProvisionedThroughput'] = throughput_changes
 
+    current_billing_mode = current_table.get('billing_mode')
+    new_billing_mode = module.params.get('billing_mode')
+
+    if new_billing_mode is None:
+        new_billing_mode = current_billing_mode
+
+    if current_billing_mode != new_billing_mode:
+        changes['BillingMode'] = new_billing_mode
+
     global_index_changes = _global_index_changes(current_table)
     if global_index_changes:
         changes['GlobalSecondaryIndexUpdates'] = global_index_changes
-        # Only one index can be changed at a time, pass the first during the
+        # Only one index can be changed at a time except if changing the billing mode, pass the first during the
         # main update and deal with the others on a slow retry to wait for
         # completion
-        if len(global_index_changes) > 1:
-            changes['GlobalSecondaryIndexUpdates'] = [global_index_changes[0]]
-            additional_global_index_changes = global_index_changes[1:]
+
+        if current_billing_mode == new_billing_mode:
+            if len(global_index_changes) > 1:
+                changes['GlobalSecondaryIndexUpdates'] = [global_index_changes[0]]
+                additional_global_index_changes = global_index_changes[1:]
 
     local_index_changes = _local_index_changes(current_table)
     if local_index_changes:
@@ -818,6 +876,10 @@ def update_table(current_table):
 def create_table():
     table_name = module.params.get('name')
     hash_key_name = module.params.get('hash_key_name')
+    billing_mode = module.params.get('billing_mode')
+
+    if billing_mode is None:
+        billing_mode = "PROVISIONED"
 
     tags = ansible_dict_to_boto3_tag_list(module.params.get('tags') or {})
 
@@ -827,23 +889,27 @@ def create_table():
     if module.check_mode:
         return True
 
-    throughput = _generate_throughput()
+    if billing_mode == "PROVISIONED":
+        throughput = _generate_throughput()
+
     attributes = _generate_attributes()
     key_schema = _generate_schema()
     local_indexes = _generate_local_indexes()
-    global_indexes = _generate_global_indexes()
+    global_indexes = _generate_global_indexes(billing_mode)
 
     params = dict(
         TableName=table_name,
         AttributeDefinitions=attributes,
         KeySchema=key_schema,
-        ProvisionedThroughput=throughput,
         Tags=tags,
+        BillingMode=billing_mode
         # TODO (future)
-        # BillingMode,
         # StreamSpecification,
         # SSESpecification,
     )
+
+    if billing_mode == "PROVISIONED":
+        params['ProvisionedThroughput'] = throughput
     if local_indexes:
         params['LocalSecondaryIndexes'] = local_indexes
     if global_indexes:
@@ -919,13 +985,14 @@ def main():
         hash_key_type=dict(type='str', choices=KEY_TYPE_CHOICES),
         range_key_name=dict(type='str'),
         range_key_type=dict(type='str', choices=KEY_TYPE_CHOICES),
+        billing_mode=dict(type='str', choices=['PROVISIONED', 'PAY_PER_REQUEST']),
         read_capacity=dict(type='int'),
         write_capacity=dict(type='int'),
         indexes=dict(default=[], type='list', elements='dict', options=index_options),
         tags=dict(type='dict'),
         purge_tags=dict(type='bool', default=True),
         wait=dict(type='bool', default=True),
-        wait_timeout=dict(default=120, type='int', aliases=['wait_for_active_timeout']),
+        wait_timeout=dict(default=300, type='int', aliases=['wait_for_active_timeout']),
     )
 
     module = AnsibleAWSModule(
