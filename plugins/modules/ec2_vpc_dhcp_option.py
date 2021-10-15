@@ -250,46 +250,12 @@ except ImportError:
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.core import is_boto3_error_code
 from ..module_utils.ec2 import AWSRetry
-from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import camel_dict_to_snake_dict
-from ..module_utils.ec2 import compare_aws_tags
 from ..module_utils.ec2 import normalize_ec2_vpc_dhcp_config
-
-
-def ensure_tags(client, module, dhcp_options_id, tags, purge_tags):
-    changed = False
-    tags_to_unset = False
-    tags_to_set = False
-
-    if module.check_mode and dhcp_options_id is None:
-        # We can't describe tags without an option id, we might get here when creating a new option set in check_mode
-        return changed
-
-    current_tags = boto3_tag_list_to_ansible_dict(client.describe_tags(aws_retry=True, Filters=[{'Name': 'resource-id', 'Values': [dhcp_options_id]}])['Tags'])
-
-    if tags:
-        tags_to_set, tags_to_unset = compare_aws_tags(current_tags, tags, purge_tags=purge_tags)
-    if purge_tags and not tags:
-        tags_to_unset = current_tags
-
-    if tags_to_unset:
-        changed = True
-        if not module.check_mode:
-            try:
-                client.delete_tags(aws_retry=True, Resources=[dhcp_options_id], Tags=[dict(Key=tagkey) for tagkey in tags_to_unset])
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                module.fail_json_aws(e, msg="Unable to delete tags {0}".format(tags_to_unset))
-
-    if tags_to_set:
-        changed = True
-        if not module.check_mode:
-            try:
-                client.create_tags(aws_retry=True, Resources=[dhcp_options_id], Tags=ansible_dict_to_boto3_tag_list(tags_to_set))
-            except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-                module.fail_json_aws(e, msg="Unable to add tags {0}".format(tags_to_set))
-
-    return changed
+from ..module_utils.ec2 import ensure_ec2_tags
+from ..module_utils.tagging import boto3_tag_specifications
+from ..module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ..module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
 def fetch_dhcp_options_for_vpc(client, module, vpc_id):
@@ -401,6 +367,8 @@ def create_dhcp_option_set(client, module, new_config):
     changed = True
     desired_config = normalize_ec2_vpc_dhcp_config(new_config)
     create_config = []
+    tags_list = []
+
     for option in ['domain-name', 'domain-name-servers', 'ntp-servers', 'netbios-name-servers']:
         if desired_config.get(option):
             create_config.append({'Key': option, 'Values': desired_config[option]})
@@ -408,9 +376,12 @@ def create_dhcp_option_set(client, module, new_config):
         # We need to listify this one
         create_config.append({'Key': 'netbios-node-type', 'Values': [desired_config['netbios-node-type']]})
 
+    if module.params.get('tags'):
+        tags_list = boto3_tag_specifications(module.params['tags'], ['dhcp-options'])
+
     try:
         if not module.check_mode:
-            dhcp_options = client.create_dhcp_options(aws_retry=True, DhcpConfigurations=create_config)
+            dhcp_options = client.create_dhcp_options(aws_retry=True, DhcpConfigurations=create_config, TagSpecifications=tags_list)
             return changed, dhcp_options['DhcpOptions']['DhcpOptionsId']
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Unable to create dhcp option set")
@@ -530,8 +501,8 @@ def main():
                 if new_config == existing_config:
                     dhcp_options_id = existing_id
                     if tags or purge_tags:
-                        tags_changed = ensure_tags(client, module, dhcp_options_id, tags, purge_tags)
-                        changed = changed or tags_changed
+                        changed |= ensure_ec2_tags(client, module, dhcp_options_id, resource_type='dhcp-options',
+                                                   tags=tags, purge_tags=purge_tags)
                     return_config = normalize_ec2_vpc_dhcp_config(new_config)
                     results = get_dhcp_options_info(client, module, dhcp_options_id)
                     module.exit_json(changed=changed, new_options=return_config, dhcp_options_id=dhcp_options_id, dhcp_options=results)
@@ -553,11 +524,10 @@ def main():
     if not found:
         # If we still don't have an options ID, create it
         changed, dhcp_options_id = create_dhcp_option_set(client, module, new_config)
-
-    if tags or purge_tags:
-        # q('tags? ', module.params['dbg'])
-        tags_changed = ensure_tags(client, module, dhcp_options_id, tags, purge_tags)
-        changed = (changed or tags_changed)
+    else:
+        if tags or purge_tags:
+            changed |= ensure_ec2_tags(client, module, dhcp_options_id, resource_type='dhcp-options',
+                                       tags=tags, purge_tags=purge_tags)
 
     # If we were given a vpc_id, then attach the options we now have to that before we finish
     if vpc_id:

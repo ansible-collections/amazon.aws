@@ -243,15 +243,14 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ..module_utils.ec2 import AWSRetry
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.core import is_boto3_error_code
 from ..module_utils.waiters import get_waiter
+from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import camel_dict_to_snake_dict
-from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import describe_ec2_tags
 from ..module_utils.ec2 import ensure_ec2_tags
+from ..module_utils.tagging import boto3_tag_specifications
 
 
 @AWSRetry.jittered_backoff(retries=10)
@@ -261,11 +260,6 @@ def _describe_nat_gateways(client, **params):
         return paginator.paginate(**params).build_full_result()['NatGateways']
     except is_boto3_error_code('InvalidNatGatewayID.NotFound'):
         return None
-
-
-def _generate_tag_specifications(tags):
-    tag_list = ansible_dict_to_boto3_tag_list(tags)
-    return [dict(ResourceType="natgateway", Tags=tag_list)]
 
 
 def wait_for_status(client, module, waiter_name, nat_gateway_id):
@@ -623,7 +617,7 @@ def create(client, module, subnet_id, allocation_id, tags, client_token=None,
         params['ClientToken'] = client_token
 
     if tags:
-        params["TagSpecifications"] = _generate_tag_specifications(tags)
+        params["TagSpecifications"] = boto3_tag_specifications(tags, ['natgateway'])
 
     if module.check_mode:
         changed = True

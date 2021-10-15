@@ -63,17 +63,6 @@ class FakeModule(object):
 @patch.object(dhcp_module.AnsibleAWSModule, 'client')
 class TestDhcpModule(ModuleTestCase):
 
-    def test_create_dhcp_config(self, client_mock):
-        self.params = test_module_params
-        result = dhcp_module.create_dhcp_config(self)
-
-        assert result == test_create_config
-
-    def test_create_dhcp_option_set(self, client_mock):
-        self.check_mode = False
-        dhcp_module.create_dhcp_option_set(client_mock, self, test_create_config)
-        client_mock.create_dhcp_options.assert_called_once_with(DhcpConfigurations=test_create_option_set, aws_retry=True)
-
     def test_normalize_config(self, client_mock):
         result = dhcp_module.normalize_ec2_vpc_dhcp_config(test_create_config)
 
