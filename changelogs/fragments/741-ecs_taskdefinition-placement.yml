@@ -1,0 +1,2 @@
+minor_changes:
+  - ecs_taskdefinition - add ``placement_constraints`` option (https://github.com/ansible-collections/community.aws/pull/741).

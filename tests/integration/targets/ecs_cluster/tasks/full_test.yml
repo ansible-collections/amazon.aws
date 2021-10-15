@@ -576,6 +576,35 @@
     - name: attempt to get facts from missing task definition
       ecs_taskdefinition_info:
         task_definition: "{{ ecs_task_name }}-vpc:{{ ecs_task_definition.taskdefinition.revision + 1}}"
+    
+    - name: Create another task definition with placement constraints
+      ecs_taskdefinition:
+        containers: "{{ ecs_task_containers }}"
+        family: "{{ ecs_task_name }}-constraints"
+        state: present
+        placement_constraints: "{{ ecs_taskdefinition_placement_constraints }}"
+      register: ecs_task_definition_constraints
+    
+    - name: Check that task definition has been created
+      assert:
+        that:
+          - ecs_task_definition_constraints is changed
+          - ecs_task_definition_constraints.taskdefinition.placementConstraints[0].type == "{{ ecs_taskdefinition_placement_constraints[0].type }}"
+          - ecs_task_definition_constraints.taskdefinition.placementConstraints[0].expression == "{{ ecs_taskdefinition_placement_constraints[0].expression }}"
+    
+    - name: Remove ecs task definition with placement constraints
+      ecs_taskdefinition:
+        containers: "{{ ecs_task_containers }}"
+        family: "{{ ecs_task_name }}-constraints"
+        revision: "{{ ecs_task_definition.taskdefinition.revision }}"
+        state: absent
+      register: ecs_task_definition_constraints_delete
+  
+    - name: Check that task definition has been deleted
+      assert:
+        that:
+          - ecs_task_definition_constraints_delete is changed
+
 
     # ============================================================
     # Begin tests for Fargate
