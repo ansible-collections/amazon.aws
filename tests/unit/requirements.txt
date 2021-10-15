@@ -4,3 +4,4 @@ boto3
 boto
 
 placebo
+cryptography
