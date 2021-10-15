@@ -174,7 +174,7 @@ options:
     type: str
   state:
     description:
-      - Create, terminate, start, stop or restart instances. The state 'restarted' was added in Ansible 2.2.
+      - Create, terminate, start, stop or restart instances.
       - When I(state=absent), I(instance_ids) is required.
       - When I(state=running), I(state=stopped) or I(state=restarted) then either I(instance_ids) or I(instance_tags) is required.
     default: 'present'
