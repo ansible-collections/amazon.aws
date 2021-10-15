@@ -1,5 +1,18 @@
 ---
 # ============================================================
+- name: create a network interface (check mode)
+  ec2_eni:
+    device_index: 1
+    private_ip_address: "{{ ip_1 }}"
+    subnet_id: "{{ vpc_subnet_id }}"
+    state: present
+  check_mode: true
+  register: result_check_mode
+
+- assert:
+    that:
+      - result_check_mode.changed
+
 - name: create a network interface
   ec2_eni:
     device_index: 1
@@ -76,6 +89,19 @@
       - _interface_0.tag_set is mapping
       - '"vpc_id" in _interface_0'
       - _interface_0.vpc_id == vpc_id
+
+- name: test idempotence by using the same private_ip_address (check mode)
+  ec2_eni:
+    device_index: 1
+    private_ip_address: "{{ ip_1 }}"
+    subnet_id: "{{ vpc_subnet_id }}"
+    state: present
+  check_mode: true
+  register: result_check_mode
+
+- assert:
+    that:
+      - not result_check_mode.changed
 
 - name: test idempotence by using the same private_ip_address
   ec2_eni:
