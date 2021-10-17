@@ -97,22 +97,25 @@ addresses:
 
 '''
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (ansible_dict_to_boto3_filter_list,
-                                                                     boto3_tag_list_to_ansible_dict,
-                                                                     camel_dict_to_snake_dict,
-                                                                     )
 try:
     from botocore.exceptions import (BotoCoreError, ClientError)
 except ImportError:
     pass  # caught by imported AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+
 
 def get_eips_details(module):
-    connection = module.client('ec2')
+    connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
     filters = module.params.get("filters")
     try:
         response = connection.describe_addresses(
+            aws_retry=True,
             Filters=ansible_dict_to_boto3_filter_list(filters)
         )
     except (BotoCoreError, ClientError) as e:
