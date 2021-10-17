@@ -64,6 +64,16 @@ options:
          network interface or instance to be re-associated with the specified instance or interface.
     default: false
     type: bool
+  tags:
+    description: A dictionary of tags to apply to the EIP.
+    type: dict
+    version_added: 2.1.0
+  purge_tags:
+    description: Whether the I(tags) argument should cause tags not in the
+      dictionary to be removed.
+    default: True
+    type: bool
+    version_added: 2.1.0
   tag_name:
     description:
       - When I(reuse_existing_ip_allowed=true), supplement with this option to only reuse
@@ -227,6 +237,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSM
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 
 
 def associate_ip_and_device(ec2, module, address, private_ip_address, device_id, allow_reassociation, check_mode, is_instance=True):
@@ -247,7 +258,7 @@ def associate_ip_and_device(ec2, module, address, private_ip_address, device_id,
                     params['AllocationId'] = address['AllocationId']
                 else:
                     params['PublicIp'] = address['PublicIp']
-                res = ec2.associate_address(**params)
+                res = ec2.associate_address(aws_retry=True, **params)
             except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
                 msg = "Couldn't associate Elastic IP address with instance '{0}'".format(device_id)
                 module.fail_json_aws(e, msg=msg)
@@ -535,6 +546,8 @@ def main():
         allow_reassociation=dict(type='bool', default=False),
         wait_timeout=dict(type='int', removed_at_date='2022-06-01', removed_from_collection='community.aws'),
         private_ip_address=dict(),
+        tags=dict(required=False, type='dict'),
+        purge_tags=dict(required=False, type='bool', default=True),
         tag_name=dict(),
         tag_value=dict(),
         public_ipv4_pool=dict()
@@ -563,6 +576,8 @@ def main():
     tag_name = module.params.get('tag_name')
     tag_value = module.params.get('tag_value')
     public_ipv4_pool = module.params.get('public_ipv4_pool')
+    tags = module.params.get('tags')
+    purge_tags = module.params.get('purge_tags')
 
     if instance_id:
         is_instance = True
@@ -575,6 +590,7 @@ def main():
                 module.fail_json(msg="If you are specifying an ENI, in_vpc must be true")
             is_instance = False
 
+    # Tags for *searching* for an EIP.
     tag_dict = generate_tag_dict(module, tag_name, tag_value)
 
     try:
@@ -603,6 +619,10 @@ def main():
                     'public_ip': address['PublicIp'],
                     'allocation_id': address['AllocationId']
                 }
+
+            result['changed'] |= ensure_ec2_tags(
+                ec2, module, result['allocation_id'],
+                resource_type='elastic-ip', tags=tags, purge_tags=purge_tags)
         else:
             if device_id:
                 disassociated = ensure_absent(
