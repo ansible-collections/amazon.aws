@@ -1,0 +1,2 @@
+minor_changes:
+- route53_health_check - add support for tagging health checks (https://github.com/ansible-collections/community.aws/pull/765).
