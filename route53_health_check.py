@@ -86,6 +86,17 @@ options:
       - Will default to C(3) if not specified on creation.
     choices: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
     type: int
+  tags:
+    description:
+      - A hash/dictionary of tags to set on the health check.
+    type: dict
+    version_added: 2.1.0
+  purge_tags:
+    description:
+      - Delete any tags not specified in I(tags).
+    default: false
+    type: bool
+    version_added: 2.1.0
 author: "zimbatm (@zimbatm)"
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -198,6 +209,11 @@ health_check:
           type: bool
           returned: When the health check exists.
           sample: false
+    tags:
+      description: A dictionary representing the tags on the health check.
+      type: dict
+      returned: When the health check exists.
+      sample: '{"my_key": "my_value"}'
 '''
 
 import uuid
@@ -212,6 +228,8 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.community.aws.plugins.module_utils.route53 import get_tags
+from ansible_collections.community.aws.plugins.module_utils.route53 import manage_tags
 
 
 def _list_health_checks(**params):
@@ -332,7 +350,8 @@ def create_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg='Failed to create health check.', health_check=health_check)
 
-    return True, 'create', result.get('HealthCheck').get('Id')
+    check_id = result.get('HealthCheck').get('Id')
+    return True, 'create', check_id
 
 
 def update_health_check(existing_check):
@@ -396,6 +415,8 @@ def describe_health_check(id):
 
     health_check = result.get('HealthCheck', {})
     health_check = camel_dict_to_snake_dict(health_check)
+    tags = get_tags(module, client, 'healthcheck', id)
+    health_check['tags'] = tags
     return health_check
 
 
@@ -411,6 +432,8 @@ def main():
         string_match=dict(),
         request_interval=dict(type='int', choices=[10, 30], default=30),
         failure_threshold=dict(type='int', choices=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+        tags=dict(type='dict'),
+        purge_tags=dict(type='bool', default=False),
     )
 
     args_one_of = [
@@ -473,6 +496,9 @@ def main():
             changed, action, check_id = create_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_in)
         else:
             changed, action = update_health_check(existing_check)
+        if check_id:
+            changed |= manage_tags(module, client, 'healthcheck', check_id,
+                                   module.params.get('tags'), module.params.get('purge_tags'))
 
     health_check = describe_health_check(id=check_id)
     health_check['action'] = action
