@@ -1,0 +1,90 @@
+---
+# Parameter Checks
+- name: "Friendly message when creating an instance profile and adding a boundary profile"
+  iam_role:
+    name: "{{ test_role }}"
+    boundary: "{{ boundary_policy }}"
+  register: iam_role
+  ignore_errors: yes
+
+- assert:
+    that:
+      - iam_role is failed
+      - '"boundary policy" in iam_role.msg'
+      - '"create_instance_profile" in iam_role.msg'
+      - '"false" in iam_role.msg'
+
+- name: "Friendly message when boundary profile is not an ARN"
+  iam_role:
+    name: "{{ test_role }}"
+    boundary: "AWSDenyAll"
+    create_instance_profile: no
+  register: iam_role
+  ignore_errors: yes
+
+- assert:
+    that:
+      - iam_role is failed
+      - '"Boundary policy" in iam_role.msg'
+      - '"ARN" in iam_role.msg'
+
+- name: 'Friendly message when "present" without assume_role_policy_document'
+  module_defaults: { iam_role: {} }
+  iam_role:
+    name: "{{ test_role }}"
+  register: iam_role
+  ignore_errors: yes
+
+- assert:
+    that:
+      - iam_role is failed
+      - 'iam_role.msg.startswith("state is present but all of the following are missing")'
+      - '"assume_role_policy_document" in iam_role.msg'
+
+- name: "Maximum Session Duration needs to be between 1 and 12 hours"
+  iam_role:
+    name: "{{ test_role }}"
+    max_session_duration: 3599
+  register: iam_role
+  ignore_errors: yes
+
+- assert:
+    that:
+      - iam_role is failed
+      - '"max_session_duration must be between" in iam_role.msg'
+
+- name: "Maximum Session Duration needs to be between 1 and 12 hours"
+  iam_role:
+    name: "{{ test_role }}"
+    max_session_duration: 43201
+  register: iam_role
+  ignore_errors: yes
+
+- assert:
+    that:
+      - iam_role is failed
+      - '"max_session_duration must be between" in iam_role.msg'
+
+- name: "Role Paths must start with /"
+  iam_role:
+    name: "{{ test_role }}"
+    path: "test/"
+  register: iam_role
+  ignore_errors: yes
+
+- assert:
+    that:
+      - iam_role is failed
+      - '"path must begin and end with /" in iam_role.msg'
+
+- name: "Role Paths must end with /"
+  iam_role:
+    name: "{{ test_role }}"
+    path: "/test"
+  register: iam_role
+  ignore_errors: yes
+
+- assert:
+    that:
+      - iam_role is failed
+      - '"path must begin and end with /" in iam_role.msg'
