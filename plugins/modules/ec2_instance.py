@@ -211,6 +211,11 @@ options:
     description:
     - Name of the SSH access key to assign to the instance - must exist in the region the instance is created.
     type: str
+  count:
+    description:
+    - Number of instances to launch.
+    - If specified number is more instances than Amazon EC2 can launch in the target Availability Zone, no instances are launched.
+    type: int
   availability_zone:
     description:
     - Specify an availability zone to use the default subnet it. Useful if not specifying the I(vpc_subnet_id) parameter.
@@ -426,6 +431,17 @@ EXAMPLES = '''
     metadata_options:
       http_endpoint: enabled
       http_tokens: optional
+- name: start multiple instances
+  amazon.aws.ec2_instance:
+    instance_type: t3.small
+    image_id: ami-123456
+    count: 5
+    region: us-east-2
+    network:
+      assign_public_ip: yes
+      security_group: default
+      vpc_subnet_id: subnet-0123456
+    state: present
 '''
 
 RETURN = '''
@@ -1234,7 +1250,6 @@ def build_instance_tags(params, propagate_tags_to_volumes=True):
 
 
 def build_run_instance_spec(params):
-
     spec = dict(
         ClientToken=uuid.uuid4().hex,
         MaxCount=1,
@@ -1249,6 +1264,11 @@ def build_run_instance_spec(params):
     # IAM profile
     if params.get('instance_role'):
         spec['IamInstanceProfile'] = dict(Arn=determine_iam_role(params.get('instance_role')))
+
+    # Instance count specified
+    if params.get('count'):
+        spec['MinCount'] = params['count']
+        spec['MaxCount'] = params['count']
 
     spec['InstanceType'] = params['instance_type']
     return spec
@@ -1699,7 +1719,7 @@ def handle_existing(existing_matches, state):
     return result
 
 
-def ensure_present(existing_matches, desired_module_state):
+def ensure_present(desired_module_state):
     tags = dict(module.params.get('tags') or {})
     name = module.params.get('name')
     if name:
@@ -1809,7 +1829,6 @@ def build_filters():
             filters['image-id'] = [module.params.get('image', {}).get('id')]
     return filters
 
-
 def main():
     global module
     global client
@@ -1835,6 +1854,7 @@ def main():
         filters=dict(type='dict', default=None),
         launch_template=dict(type='dict'),
         key_name=dict(type='str'),
+        count=dict(type='int', required=False),
         cpu_credit_specification=dict(type='str', choices=['standard', 'unlimited']),
         cpu_options=dict(type='dict', options=dict(
             core_count=dict(type='int', required=True),
@@ -1865,7 +1885,6 @@ def main():
         supports_check_mode=True
     )
     result = dict()
-
     if module.params.get('network'):
         if module.params.get('network').get('interfaces'):
             if module.params.get('security_group'):
@@ -1884,9 +1903,10 @@ def main():
 
     if module.params.get('filters') is None:
         module.params['filters'] = build_filters()
+    if module.params.get('count'):
+        result = ensure_present(desired_module_state=state)
 
     existing_matches = find_instances(filters=module.params.get('filters'))
-
     if state in ('terminated', 'absent'):
         if existing_matches:
             result = ensure_instance_state(state)
@@ -1901,7 +1921,7 @@ def main():
             warn_if_cpu_options_changed(match)
         result = handle_existing(existing_matches, state)
     else:
-        result = ensure_present(existing_matches=existing_matches, desired_module_state=state)
+        result = ensure_present(desired_module_state=state)
 
     module.exit_json(**result)
 
