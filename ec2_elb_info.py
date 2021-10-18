@@ -109,7 +109,7 @@ class ElbInformation(object):
         elb_tags = self.connection.get_list('DescribeTags', params, [('member', Tag)])
         return dict((tag.Key, tag.Value) for tag in elb_tags if hasattr(tag, 'Key'))
 
-    @AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+    @AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
     def _get_elb_connection(self):
         return connect_to_aws(boto.ec2.elb, self.region, **self.aws_connect_params)
 
@@ -158,7 +158,7 @@ class ElbInformation(object):
             health_check_dict['ping_path'] = path
         return health_check_dict
 
-    @AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+    @AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
     def _get_elb_info(self, elb):
         elb_info = {
             'name': elb.name,
@@ -202,7 +202,7 @@ class ElbInformation(object):
 
     def list_elbs(self):
         elb_array, token = [], None
-        get_elb_with_backoff = AWSRetry.backoff(tries=5, delay=5, backoff=2.0)(self.connection.get_all_load_balancers)
+        get_elb_with_backoff = AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)(self.connection.get_all_load_balancers)
         while True:
             all_elbs = get_elb_with_backoff(marker=token)
             token = all_elbs.next_marker

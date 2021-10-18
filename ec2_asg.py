@@ -639,21 +639,21 @@ ASG_ATTRIBUTES = ('AvailabilityZones', 'DefaultCooldown', 'DesiredCapacity',
 
 INSTANCE_ATTRIBUTES = ('instance_id', 'health_status', 'lifecycle_state', 'launch_config_name')
 
-backoff_params = dict(tries=10, delay=3, backoff=1.5)
+backoff_params = dict(retries=10, delay=3, backoff=1.5)
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def describe_autoscaling_groups(connection, group_name):
     pg = connection.get_paginator('describe_auto_scaling_groups')
     return pg.paginate(AutoScalingGroupNames=[group_name]).build_full_result().get('AutoScalingGroups', [])
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def deregister_lb_instances(connection, lb_name, instance_id):
     connection.deregister_instances_from_load_balancer(LoadBalancerName=lb_name, Instances=[dict(InstanceId=instance_id)])
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def describe_instance_health(connection, lb_name, instances):
     params = dict(LoadBalancerName=lb_name)
     if instances:
@@ -661,28 +661,28 @@ def describe_instance_health(connection, lb_name, instances):
     return connection.describe_instance_health(**params)
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def describe_target_health(connection, target_group_arn, instances):
     return connection.describe_target_health(TargetGroupArn=target_group_arn, Targets=instances)
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def suspend_asg_processes(connection, asg_name, processes):
     connection.suspend_processes(AutoScalingGroupName=asg_name, ScalingProcesses=processes)
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def resume_asg_processes(connection, asg_name, processes):
     connection.resume_processes(AutoScalingGroupName=asg_name, ScalingProcesses=processes)
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def describe_launch_configurations(connection, launch_config_name):
     pg = connection.get_paginator('describe_launch_configurations')
     return pg.paginate(LaunchConfigurationNames=[launch_config_name]).build_full_result()
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def describe_launch_templates(connection, launch_template):
     if launch_template['launch_template_id'] is not None:
         try:
@@ -698,12 +698,12 @@ def describe_launch_templates(connection, launch_template):
             module.fail_json(msg="No launch template found matching: %s" % launch_template)
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def create_asg(connection, **params):
     connection.create_auto_scaling_group(**params)
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def put_notification_config(connection, asg_name, topic_arn, notification_types):
     connection.put_notification_configuration(
         AutoScalingGroupName=asg_name,
@@ -712,7 +712,7 @@ def put_notification_config(connection, asg_name, topic_arn, notification_types)
     )
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def del_notification_config(connection, asg_name, topic_arn):
     connection.delete_notification_configuration(
         AutoScalingGroupName=asg_name,
@@ -720,37 +720,37 @@ def del_notification_config(connection, asg_name, topic_arn):
     )
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def attach_load_balancers(connection, asg_name, load_balancers):
     connection.attach_load_balancers(AutoScalingGroupName=asg_name, LoadBalancerNames=load_balancers)
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def detach_load_balancers(connection, asg_name, load_balancers):
     connection.detach_load_balancers(AutoScalingGroupName=asg_name, LoadBalancerNames=load_balancers)
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def attach_lb_target_groups(connection, asg_name, target_group_arns):
     connection.attach_load_balancer_target_groups(AutoScalingGroupName=asg_name, TargetGroupARNs=target_group_arns)
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def detach_lb_target_groups(connection, asg_name, target_group_arns):
     connection.detach_load_balancer_target_groups(AutoScalingGroupName=asg_name, TargetGroupARNs=target_group_arns)
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def update_asg(connection, **params):
     connection.update_auto_scaling_group(**params)
 
 
-@AWSRetry.backoff(catch_extra_error_codes=['ScalingActivityInProgress'], **backoff_params)
+@AWSRetry.jittered_backoff(catch_extra_error_codes=['ScalingActivityInProgress'], **backoff_params)
 def delete_asg(connection, asg_name, force_delete):
     connection.delete_auto_scaling_group(AutoScalingGroupName=asg_name, ForceDelete=force_delete)
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def terminate_asg_instance(connection, instance_id, decrement_capacity):
     connection.terminate_instance_in_auto_scaling_group(InstanceId=instance_id,
                                                         ShouldDecrementDesiredCapacity=decrement_capacity)

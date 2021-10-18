@@ -123,23 +123,23 @@ class SAMLProviderManager:
             self.module.fail_json_aws(e, msg="Unknown boto error")
 
     # use retry decorator for boto3 calls
-    @AWSRetry.backoff(tries=3, delay=5)
+    @AWSRetry.jittered_backoff(retries=3, delay=5)
     def _list_saml_providers(self):
         return self.conn.list_saml_providers()
 
-    @AWSRetry.backoff(tries=3, delay=5)
+    @AWSRetry.jittered_backoff(retries=3, delay=5)
     def _get_saml_provider(self, arn):
         return self.conn.get_saml_provider(SAMLProviderArn=arn)
 
-    @AWSRetry.backoff(tries=3, delay=5)
+    @AWSRetry.jittered_backoff(retries=3, delay=5)
     def _update_saml_provider(self, arn, metadata):
         return self.conn.update_saml_provider(SAMLProviderArn=arn, SAMLMetadataDocument=metadata)
 
-    @AWSRetry.backoff(tries=3, delay=5)
+    @AWSRetry.jittered_backoff(retries=3, delay=5)
     def _create_saml_provider(self, metadata, name):
         return self.conn.create_saml_provider(SAMLMetadataDocument=metadata, Name=name)
 
-    @AWSRetry.backoff(tries=3, delay=5)
+    @AWSRetry.jittered_backoff(retries=3, delay=5)
     def _delete_saml_provider(self, arn):
         return self.conn.delete_saml_provider(SAMLProviderArn=arn)
 

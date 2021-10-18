@@ -265,7 +265,7 @@ def delete_lag(client, lag_id):
                                  exception=e)
 
 
-@AWSRetry.backoff(tries=5, delay=2, backoff=2.0, catch_extra_error_codes=['DirectConnectClientException'])
+@AWSRetry.jittered_backoff(retries=5, delay=2, backoff=2.0, catch_extra_error_codes=['DirectConnectClientException'])
 def _update_lag(client, lag_id, lag_name, min_links):
     params = {}
     if min_links:

@@ -66,10 +66,10 @@ except ImportError:
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
-backoff_params = dict(tries=5, delay=1, backoff=1.5)
+backoff_params = dict(retries=5, delay=1, backoff=1.5)
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def describe_subnet_group(connection, subnet_group):
     """checks if instance exists"""
     try:
@@ -80,18 +80,18 @@ def describe_subnet_group(connection, subnet_group):
         return {'ReplicationSubnetGroups': []}
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def replication_subnet_group_create(connection, **params):
     """ creates the replication subnet group """
     return connection.create_replication_subnet_group(**params)
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def replication_subnet_group_modify(connection, **modify_params):
     return connection.modify_replication_subnet_group(**modify_params)
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def replication_subnet_group_delete(module, connection):
     subnetid = module.params.get('identifier')
     delete_parameters = dict(ReplicationSubnetGroupIdentifier=subnetid)

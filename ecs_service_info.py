@@ -148,7 +148,7 @@ class EcsServiceManager:
         self.module = module
         self.ecs = module.client('ecs')
 
-    @AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+    @AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
     def list_services_with_backoff(self, **kwargs):
         paginator = self.ecs.get_paginator('list_services')
         try:
@@ -156,7 +156,7 @@ class EcsServiceManager:
         except is_boto3_error_code('ClusterNotFoundException') as e:
             self.module.fail_json_aws(e, "Could not find cluster to list services")
 
-    @AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+    @AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
     def describe_services_with_backoff(self, **kwargs):
         return self.ecs.describe_services(**kwargs)
 

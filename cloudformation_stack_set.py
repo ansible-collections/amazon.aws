@@ -361,7 +361,7 @@ def compare_stack_instances(cfn, stack_set_name, accounts, regions):
     return (desired_stack_instances - existing_stack_instances), existing_stack_instances, (existing_stack_instances - desired_stack_instances)
 
 
-@AWSRetry.backoff(tries=3, delay=4)
+@AWSRetry.jittered_backoff(retries=3, delay=4)
 def stack_set_facts(cfn, stack_set_name):
     try:
         ss = cfn.describe_stack_set(StackSetName=stack_set_name)['StackSet']

@@ -434,19 +434,19 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
 def get_iam_roles_with_backoff(connection):
     paginator = connection.get_paginator('list_roles')
     return paginator.paginate().build_full_result()
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
 def get_kms_keys_with_backoff(connection):
     paginator = connection.get_paginator('list_keys')
     return paginator.paginate().build_full_result()
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
 def get_kms_aliases_with_backoff(connection):
     paginator = connection.get_paginator('list_aliases')
     return paginator.paginate().build_full_result()
@@ -465,30 +465,30 @@ def get_kms_aliases_lookup(connection):
     return _aliases
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
 def get_kms_tags_with_backoff(connection, key_id, **kwargs):
     return connection.list_resource_tags(KeyId=key_id, **kwargs)
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
 def get_kms_grants_with_backoff(connection, key_id):
     params = dict(KeyId=key_id)
     paginator = connection.get_paginator('list_grants')
     return paginator.paginate(**params).build_full_result()
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
 def get_kms_metadata_with_backoff(connection, key_id):
     return connection.describe_key(KeyId=key_id)
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
 def list_key_policies_with_backoff(connection, key_id):
     paginator = connection.get_paginator('list_key_policies')
     return paginator.paginate(KeyId=key_id).build_full_result()
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
 def get_key_policy_with_backoff(connection, key_id, policy_name):
     return connection.get_key_policy(KeyId=key_id, PolicyName=policy_name)
 

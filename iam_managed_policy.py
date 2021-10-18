@@ -141,7 +141,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
 def list_policies_with_backoff(iam):
     paginator = iam.get_paginator('list_policies')
     return paginator.paginate(Scope='Local').build_full_result()

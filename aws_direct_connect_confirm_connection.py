@@ -69,10 +69,10 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSM
 from ansible_collections.amazon.aws.plugins.module_utils.direct_connect import DirectConnectError
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
-retry_params = {"tries": 10, "delay": 5, "backoff": 1.2, "catch_extra_error_codes": ["DirectConnectClientException"]}
+retry_params = {"retries": 10, "delay": 5, "backoff": 1.2, "catch_extra_error_codes": ["DirectConnectClientException"]}
 
 
-@AWSRetry.backoff(**retry_params)
+@AWSRetry.jittered_backoff(**retry_params)
 def describe_connections(client, params):
     return client.describe_connections(**params)
 
