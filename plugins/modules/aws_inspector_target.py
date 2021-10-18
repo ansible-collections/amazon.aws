@@ -110,7 +110,7 @@ except ImportError:
     pass  # caught by AnsibleAWSModule
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(retries=5, delay=5, backoff=2.0)
 def main():
     argument_spec = dict(
         name=dict(required=True),

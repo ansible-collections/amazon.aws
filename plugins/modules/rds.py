@@ -943,13 +943,13 @@ def await_resource(conn, resource, status, module):
             if resource.name is None:
                 module.fail_json(msg="There was a problem waiting for RDS snapshot %s" % resource.snapshot)
             # Back off if we're getting throttled, since we're just waiting anyway
-            resource = AWSRetry.backoff(tries=5, delay=20, backoff=1.5)(conn.get_db_snapshot)(resource.name)
+            resource = AWSRetry.jittered_backoff(retries=5, delay=20, backoff=1.5)(conn.get_db_snapshot)(resource.name)
         else:
             # Temporary until all the rds2 commands have their responses parsed
             if resource.name is None:
                 module.fail_json(msg="There was a problem waiting for RDS instance %s" % resource.instance)
             # Back off if we're getting throttled, since we're just waiting anyway
-            resource = AWSRetry.backoff(tries=5, delay=20, backoff=1.5)(conn.get_db_instance)(resource.name)
+            resource = AWSRetry.jittered_backoff(retries=5, delay=20, backoff=1.5)(conn.get_db_instance)(resource.name)
             if resource is None:
                 break
         # Some RDS resources take much longer than others to be ready. Check

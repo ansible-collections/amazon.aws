@@ -175,10 +175,10 @@ except ImportError:
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
-backoff_params = dict(tries=5, delay=1, backoff=1.5)
+backoff_params = dict(retries=5, delay=1, backoff=1.5)
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def describe_endpoints(connection, endpoint_identifier):
     """ checks if the endpoint exists """
     try:
@@ -189,7 +189,7 @@ def describe_endpoints(connection, endpoint_identifier):
         return {'Endpoints': []}
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def dms_delete_endpoint(client, **params):
     """deletes the DMS endpoint based on the EndpointArn"""
     if module.params.get('wait'):
@@ -198,19 +198,19 @@ def dms_delete_endpoint(client, **params):
         return client.delete_endpoint(**params)
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def dms_create_endpoint(client, **params):
     """ creates the DMS endpoint"""
     return client.create_endpoint(**params)
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def dms_modify_endpoint(client, **params):
     """ updates the endpoint"""
     return client.modify_endpoint(**params)
 
 
-@AWSRetry.backoff(**backoff_params)
+@AWSRetry.jittered_backoff(**backoff_params)
 def get_endpoint_deleted_waiter(client):
     return client.get_waiter('endpoint_deleted')
 

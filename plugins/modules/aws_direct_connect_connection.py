@@ -167,7 +167,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.direct_connect import d
 from ansible_collections.amazon.aws.plugins.module_utils.direct_connect import disassociate_connection_and_lag
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
-retry_params = {"tries": 10, "delay": 5, "backoff": 1.2, "catch_extra_error_codes": ["DirectConnectClientException"]}
+retry_params = {"retries": 10, "delay": 5, "backoff": 1.2, "catch_extra_error_codes": ["DirectConnectClientException"]}
 
 
 def connection_status(client, connection_id):
@@ -179,7 +179,7 @@ def connection_exists(client, connection_id=None, connection_name=None, verify=T
     if connection_id:
         params['connectionId'] = connection_id
     try:
-        response = AWSRetry.backoff(**retry_params)(client.describe_connections)(**params)
+        response = AWSRetry.jittered_backoff(**retry_params)(client.describe_connections)(**params)
     except (BotoCoreError, ClientError) as e:
         if connection_id:
             msg = "Failed to describe DirectConnect ID {0}".format(connection_id)
@@ -227,7 +227,7 @@ def create_connection(client, location, bandwidth, name, lag_id):
         params['lagId'] = lag_id
 
     try:
-        connection = AWSRetry.backoff(**retry_params)(client.create_connection)(**params)
+        connection = AWSRetry.jittered_backoff(**retry_params)(client.create_connection)(**params)
     except (BotoCoreError, ClientError) as e:
         raise DirectConnectError(msg="Failed to create DirectConnect connection {0}".format(name),
                                  last_traceback=traceback.format_exc(),
@@ -242,7 +242,7 @@ def changed_properties(current_status, location, bandwidth):
     return current_bandwidth != bandwidth or current_location != location
 
 
-@AWSRetry.backoff(**retry_params)
+@AWSRetry.jittered_backoff(**retry_params)
 def update_associations(client, latest_state, connection_id, lag_id):
     changed = False
     if 'lagId' in latest_state and lag_id != latest_state['lagId']:
@@ -277,7 +277,7 @@ def ensure_present(client, connection_id, connection_name, location, bandwidth, 
     return False, connection_id
 
 
-@AWSRetry.backoff(**retry_params)
+@AWSRetry.jittered_backoff(**retry_params)
 def ensure_absent(client, connection_id):
     changed = False
     if connection_id:

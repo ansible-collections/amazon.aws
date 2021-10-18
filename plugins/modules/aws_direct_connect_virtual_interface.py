@@ -267,7 +267,7 @@ def try_except_ClientError(failure_msg):
     def wrapper(f):
         def run_func(*args, **kwargs):
             try:
-                result = AWSRetry.backoff(tries=8, delay=5, catch_extra_error_codes=['DirectConnectClientException'])(f)(*args, **kwargs)
+                result = AWSRetry.jittered_backoff(retries=8, delay=5, catch_extra_error_codes=['DirectConnectClientException'])(f)(*args, **kwargs)
             except (ClientError, BotoCoreError) as e:
                 raise DirectConnectError(failure_msg, traceback.format_exc(), e)
             return result
