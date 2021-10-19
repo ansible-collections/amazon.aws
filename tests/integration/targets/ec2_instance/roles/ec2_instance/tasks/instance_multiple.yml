@@ -1,0 +1,106 @@
+- block:
+
+  - name: "Create multiple instance (check_mode)"
+    ec2_instance:
+      instance_type: "{{ ec2_instance_type }}"
+      min_count: 2
+      max_count: 5
+      region: "{{ aws_region }}"
+      image_id: "{{ ec2_ami_id }}"
+      state: present
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+    register: create_multiple_instances
+    check_mode: true
+
+  - assert:
+      that:
+      - create_multiple_instances is not failed
+      - create_multiple_instances is changed
+      - '"instance_ids" not in create_multiple_instances'
+      - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
+
+  - name: "Create multiple instances"
+    ec2_instance:
+      instance_type: "{{ ec2_instance_type }}"
+      min_count: 2
+      max_count: 5
+      region: "{{ aws_region }}"
+      image_id: "{{ ec2_ami_id }}"
+      state: present
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+    register: create_multiple_instances
+
+  - assert:
+      that:
+      - create_multiple_instances is not failed
+      - create_multiple_instances is changed
+      - '"ec2:RunInstances" in create_multiple_instances.resource_actions'
+      - '"instance_ids" in create_multiple_instances'
+      - create_multiple_instances.instance_ids | length >= 2
+      - create_multiple_instances.instance_ids | length <= 5
+
+  - name: "Save instance IDs"
+    set_fact:
+      created_instance_ids: "{{ create_multiple_instances.instance_ids }}"
+
+################################################################
+
+  - name: "Terminate instance based on id (check_mode)"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ item }}"
+      wait: true
+    register: terminate_id
+    check_mode: true
+    loop: "{{ created_instance_ids }}"
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is changed
+
+  - name: "Terminate instance based on id"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ item }}"
+      wait: true
+    register: terminate_id
+    loop: "{{ created_instance_ids }}"
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is changed
+
+  - name: "Terminate instance based on id - idempotency (check_mode)"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ item }}"
+      wait: true
+    register: terminate_id
+    check_mode: true
+    loop: "{{ created_instance_ids }}"
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is not changed
+
+  - name: "Terminate instance based on id - idempotency"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ item }}"
+      wait: true
+    register: terminate_id
+    loop: "{{ created_instance_ids }}"
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is not changed

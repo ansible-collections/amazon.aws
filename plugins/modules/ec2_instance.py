@@ -211,10 +211,15 @@ options:
     description:
     - Name of the SSH access key to assign to the instance - must exist in the region the instance is created.
     type: str
-  count:
+  min_count:
     description:
-    - Number of instances to launch.
-    - If specified number is more instances than Amazon EC2 can launch in the target Availability Zone, no instances are launched.
+    - The minimum number of instances to launch.
+    - If min_count is more than Amazon EC2 can launch in the target Availability Zone, no instances are launched.
+    type: int
+  max_count:
+    description:
+    - The maximum number of instances to launch.
+    - If max_count is more than Amazon EC2 can launch in the target Availability Zone, launches the largest possible number of instances above min_count.
     type: int
   availability_zone:
     description:
@@ -1265,10 +1270,11 @@ def build_run_instance_spec(params):
     if params.get('instance_role'):
         spec['IamInstanceProfile'] = dict(Arn=determine_iam_role(params.get('instance_role')))
 
-    # Instance count specified
-    if params.get('count'):
-        spec['MinCount'] = params['count']
-        spec['MaxCount'] = params['count']
+    # Instance count
+    if module.params.get('min_count'):
+        spec['MinCount'] = params['min_count']
+    if module.params.get('max_count'):
+        spec['MaxCount'] = params['max_count']
 
     spec['InstanceType'] = params['instance_type']
     return spec
@@ -1829,6 +1835,7 @@ def build_filters():
             filters['image-id'] = [module.params.get('image', {}).get('id')]
     return filters
 
+
 def main():
     global module
     global client
@@ -1854,7 +1861,8 @@ def main():
         filters=dict(type='dict', default=None),
         launch_template=dict(type='dict'),
         key_name=dict(type='str'),
-        count=dict(type='int', required=False),
+        min_count=dict(type='int'),
+        max_count=dict(type='int'),
         cpu_credit_specification=dict(type='str', choices=['standard', 'unlimited']),
         cpu_options=dict(type='dict', options=dict(
             core_count=dict(type='int', required=True),
@@ -1903,10 +1911,16 @@ def main():
 
     if module.params.get('filters') is None:
         module.params['filters'] = build_filters()
-    if module.params.get('count'):
-        result = ensure_present(desired_module_state=state)
 
     existing_matches = find_instances(filters=module.params.get('filters'))
+
+    # If min_count or max_count_specified
+    if module.params.get('min_count') or module.params.get('max_count'):
+        # Min count cannot be smaller than max count
+        if module.params.get('min_count') > module.params.get('max_count'):
+            module.fail_json(changed=False, msg='min_count cannot be greater than max_count.')
+        result = ensure_present(desired_module_state=state)
+
     if state in ('terminated', 'absent'):
         if existing_matches:
             result = ensure_instance_state(state)
