@@ -86,7 +86,8 @@ options:
   subnet_mappings:
     description:
       - A list of dicts containing the IDs of the subnets to attach to the load balancer. You can also specify the allocation ID of an Elastic IP
-        to attach to the load balancer. You can specify one Elastic IP address per subnet.
+        to attach to the load balancer or the internal IP address for an internal load balancer. You can specify one Elastic IP address or internal
+        address per subnet.
       - This parameter is mutually exclusive with I(subnets).
     type: list
     elements: dict
@@ -161,6 +162,21 @@ EXAMPLES = r'''
     subnet_mappings:
       - SubnetId: subnet-012345678
         AllocationId: eipalloc-aabbccdd
+    listeners:
+      - Protocol: TCP # Required. The protocol for connections from clients to the load balancer (TCP, TLS, UDP or TCP_UDP) (case-sensitive).
+        Port: 80 # Required. The port on which the load balancer is listening.
+        DefaultActions:
+          - Type: forward # Required. Only 'forward' is accepted at this time
+            TargetGroupName: mytargetgroup # Required. The name of the target group
+    state: present
+
+- name: Create an internal ELB with a specified IP address
+  community.aws.elb_network_lb:
+    name: myelb
+    scheme: internal
+    subnet_mappings:
+      - SubnetId: subnet-012345678
+        PrivateIPv4Address: 192.168.0.1 # Must be an address from within the CIDR of the subnet.
     listeners:
       - Protocol: TCP # Required. The protocol for connections from clients to the load balancer (TCP, TLS, UDP or TCP_UDP) (case-sensitive).
         Port: 80 # Required. The port on which the load balancer is listening.
