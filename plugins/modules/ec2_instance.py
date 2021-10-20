@@ -440,7 +440,8 @@ EXAMPLES = '''
   amazon.aws.ec2_instance:
     instance_type: t3.small
     image_id: ami-123456
-    count: 5
+    min_count: 3
+    max_count: 5
     region: us-east-2
     network:
       assign_public_ip: yes
