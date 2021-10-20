@@ -243,3 +243,21 @@
       - eni_id_2 in ( eni_info.network_interfaces | selectattr('id') | map(attribute='id') | list )
       - ec2_ips[0] in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
       - ec2_ips[1] in ( eni_info.network_interfaces | map(attribute='private_ip_addresses') | flatten | map(attribute='private_ip_address') | list )
+
+
+# =========================================================
+
+- name: create another network interface without private_ip_address
+  ec2_eni:
+    device_index: 1
+    subnet_id: "{{ vpc_subnet_id }}"
+    state: present
+  register: result_no_private_ip
+
+- assert:
+    that:
+      - result_no_private_ip.changed
+
+- name: save the second network interface ID for cleanup
+  set_fact:
+    eni_id_3: "{{ result_no_private_ip.interface.id }}"
