@@ -1,0 +1,17 @@
+---
+# defaults file for ec2_elb_lb
+elb_name_1: 'ansible-test-{{ tiny_prefix }}-1'
+elb_name_2: 'ansible-test-{{ tiny_prefix }}-2'
+
+vpc_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/16'
+subnet_cidr_1: '10.{{ 256 | random(seed=resource_prefix) }}.1.0/24'
+subnet_cidr_2: '10.{{ 256 | random(seed=resource_prefix) }}.2.0/24'
+
+availability_zone_a: '{{ ec2_availability_zone_names[0] }}'
+availability_zone_b: '{{ ec2_availability_zone_names[1] }}'
+
+elb_listeners:
+  - protocol: tcp
+    load_balancer_port: 80
+    instance_port: 80
+    instance_protocol: tcp

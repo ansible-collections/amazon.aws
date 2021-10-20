@@ -1,0 +1,110 @@
+---
+- name: Get ASG info
+  ec2_asg_info:
+    name: "ansible-test-{{ tiny_prefix }}-elb$"
+  register: asg_info
+
+- name: Store Instance ID from ASG
+  set_fact:
+    instance_asg: '{{ asg_info.results[0].instances[0].instance_id }}'
+
+- name: 'Remove an instance from ELB (check_mode)'
+  elb_instance:
+    instance_id: '{{ instance_asg }}'
+    state: 'absent'
+    wait_timeout: 60
+  register: remove_instance
+  check_mode: true
+
+- elb_classic_lb_info:
+    names: '{{ elb_name_1 }}'
+  register: elb_info_1
+- elb_classic_lb_info:
+    names: '{{ elb_name_2 }}'
+  register: elb_info_2
+
+- assert:
+    that:
+    - remove_instance is successful
+    # - remove_instance is changed
+    # It really shouldn't be returning a fact here
+    - '"ansible_facts" in remove_instance'
+    - '"ec2_elbs" in remove_instance.ansible_facts'
+    - elb_name_1 in remove_instance.ansible_facts.ec2_elbs
+    - elb_name_2 in remove_instance.ansible_facts.ec2_elbs
+    # Check the real state didn't change
+    - instance_asg in elb_info_1.elbs[0].instances_inservice
+    - instance_asg in elb_info_2.elbs[0].instances_inservice
+
+- name: 'Remove an instance from ELB'
+  elb_instance:
+    instance_id: '{{ instance_asg }}'
+    state: 'absent'
+    wait_timeout: 60
+  register: remove_instance
+
+- elb_classic_lb_info:
+    names: '{{ elb_name_1 }}'
+  register: elb_info_1
+- elb_classic_lb_info:
+    names: '{{ elb_name_2 }}'
+  register: elb_info_2
+
+- assert:
+    that:
+    - remove_instance is successful
+    - remove_instance is changed
+    # It really shouldn't be returning a fact here
+    - '"ansible_facts" in remove_instance'
+    - '"ec2_elbs" in remove_instance.ansible_facts'
+    - elb_name_1 in remove_instance.ansible_facts.ec2_elbs
+    - elb_name_2 in remove_instance.ansible_facts.ec2_elbs
+    # Check the real state
+    - instance_asg not in elb_info_1.elbs[0].instances_inservice
+    - instance_asg not in elb_info_2.elbs[0].instances_inservice
+
+- name: 'Remove an instance from ELB - idempotency (check_mode)'
+  elb_instance:
+    instance_id: '{{ instance_asg }}'
+    state: 'absent'
+    wait_timeout: 60
+  register: remove_instance
+  check_mode: true
+
+- elb_classic_lb_info:
+    names: '{{ elb_name_1 }}'
+  register: elb_info_1
+- elb_classic_lb_info:
+    names: '{{ elb_name_2 }}'
+  register: elb_info_2
+
+- assert:
+    that:
+    - remove_instance is successful
+    - remove_instance is not changed
+    # Check the real state
+    - instance_asg not in elb_info_1.elbs[0].instances_inservice
+    - instance_asg not in elb_info_2.elbs[0].instances_inservice
+
+- name: 'Remove an instance from ELB - idempotency'
+  elb_instance:
+    instance_id: '{{ instance_asg }}'
+    state: 'absent'
+    wait_timeout: 60
+  register: remove_instance
+
+- elb_classic_lb_info:
+    names: '{{ elb_name_1 }}'
+  register: elb_info_1
+- elb_classic_lb_info:
+    names: '{{ elb_name_2 }}'
+  register: elb_info_2
+
+- assert:
+    that:
+    - remove_instance is successful
+    # XXX always returns the ELBs the ASG belongs to
+    # - remove_instance is not changed
+    # Check the real state
+    - instance_asg not in elb_info_1.elbs[0].instances_inservice
+    - instance_asg not in elb_info_2.elbs[0].instances_inservice

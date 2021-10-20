@@ -1,0 +1,16 @@
+---
+- name: remove the public load balancer
+  elb_classic_lb:
+    name: "{{ elb_name_1 }}"
+    state: absent
+    wait: true
+  register: result
+  ignore_errors: true
+
+- name: remove the private load balancer
+  elb_classic_lb:
+    name: "{{ elb_name_2 }}"
+    state: absent
+    wait: true
+  register: result
+  ignore_errors: true

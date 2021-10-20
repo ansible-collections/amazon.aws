@@ -1,0 +1,52 @@
+---
+- name: Create instance a
+  ec2_instance:
+    name: "ansible-test-{{ tiny_prefix }}-elb-a"
+    image_id: "{{ ec2_ami_id }}"
+    vpc_subnet_id: "{{ subnet_a }}"
+    instance_type: t3.micro
+    wait: false
+    security_group: "{{ sg_a }}"
+  register: ec2_instance_a
+
+- name: Create instance b
+  ec2_instance:
+    name: "ansible-test-{{ tiny_prefix }}-elb-b"
+    image_id: "{{ ec2_ami_id }}"
+    vpc_subnet_id: "{{ subnet_b }}"
+    instance_type: t3.micro
+    wait: false
+    security_group: "{{ sg_a }}"
+  register: ec2_instance_b
+
+- name: store the Instance IDs
+  set_fact:
+    instance_a: "{{ ec2_instance_a.instance_ids[0] }}"
+    instance_b: "{{ ec2_instance_b.instance_ids[0] }}"
+
+- name: Create a Launch Template
+  ec2_lc:
+    name: "ansible-test-{{ tiny_prefix }}-elb"
+    image_id: "{{ ec2_ami_id }}"
+    security_groups: "{{ sg_a }}"
+    instance_type: t3.micro
+    assign_public_ip: no
+  register: ec2_lc_a
+
+- name: Create an ASG
+  ec2_asg:
+    name: "ansible-test-{{ tiny_prefix }}-elb"
+    load_balancers:
+    - "{{ elb_name_1 }}"
+    - "{{ elb_name_2 }}"
+    launch_config_name: "ansible-test-{{ tiny_prefix }}-elb"
+    availability_zones:
+    - "{{ availability_zone_a }}"
+    min_size: 0
+    max_size: 1
+    desired_capacity: 1
+    wait_timeout: 600
+    health_check_period: 60
+    vpc_zone_identifier:
+    - "{{ subnet_a }}"
+  register: ec2_asg_a

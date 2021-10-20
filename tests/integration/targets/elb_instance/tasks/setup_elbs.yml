@@ -1,0 +1,45 @@
+---
+
+- name: Create a private load balancer with 1 AZ enabled
+  elb_classic_lb:
+    name: "{{ elb_name_1 }}"
+    state: present
+    scheme: 'internal'
+    subnets: ['{{ subnet_a }}']
+    listeners: '{{ elb_listeners }}'
+    wait: true
+    health_check:
+      ping_protocol: TCP
+      ping_port: 22
+      healthy_threshold: 2
+      unhealthy_threshold: 2
+      interval: 5
+      timeout: 2
+  register: result
+
+- assert:
+    that:
+    - result is changed
+    - result.elb.status == "created"
+
+- name: Create a private load balancer with 2 AZs enabled
+  elb_classic_lb:
+    name: "{{ elb_name_2 }}"
+    state: present
+    scheme: 'internal'
+    subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
+    listeners: '{{ elb_listeners }}'
+    wait: true
+    health_check:
+      ping_protocol: TCP
+      ping_port: 22
+      healthy_threshold: 2
+      unhealthy_threshold: 2
+      interval: 5
+      timeout: 2
+  register: result
+
+- assert:
+    that:
+    - result is changed
+    - result.elb.status == "created"

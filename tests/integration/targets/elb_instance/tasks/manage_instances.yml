@@ -1,0 +1,357 @@
+---
+- name: 'Wait for instances to be OK'
+  ec2_instance:
+    instance_ids:
+    - '{{ instance_a }}'
+    - '{{ instance_b }}'
+    state: 'started'
+
+- name: 'Add an instance to two ELBs (check_mode)'
+  elb_instance:
+    instance_id: '{{ instance_a }}'
+    state: 'present'
+    ec2_elbs:
+    - '{{ elb_name_1 }}'
+    - '{{ elb_name_2 }}'
+    wait_timeout: 60
+  register: add_instance
+  check_mode: true
+
+- elb_classic_lb_info:
+    names: '{{ elb_name_1 }}'
+  register: elb_info_1
+- elb_classic_lb_info:
+    names: '{{ elb_name_2 }}'
+  register: elb_info_2
+
+- assert:
+    that:
+    - add_instance is successful
+    # - add_instance is changed
+    # It really shouldn't be returning a fact here
+    - '"ansible_facts" in add_instance'
+    - '"ec2_elbs" in add_instance.ansible_facts'
+    - elb_name_1 in add_instance.ansible_facts.ec2_elbs
+    - elb_name_2 in add_instance.ansible_facts.ec2_elbs
+    # Check the real state didn't change
+    - instance_a not in elb_info_1.elbs[0].instances_inservice
+    - instance_a not in elb_info_2.elbs[0].instances_inservice
+
+- name: 'Add an instance to two ELBs'
+  elb_instance:
+    instance_id: '{{ instance_a }}'
+    state: 'present'
+    ec2_elbs:
+    - '{{ elb_name_1 }}'
+    - '{{ elb_name_2 }}'
+    wait_timeout: 60
+  register: add_instance
+
+- elb_classic_lb_info:
+    names: '{{ elb_name_1 }}'
+  register: elb_info_1
+- elb_classic_lb_info:
+    names: '{{ elb_name_2 }}'
+  register: elb_info_2
+
+- assert:
+    that:
+    - add_instance is successful
+    - add_instance is changed
+    # It really shouldn't be returning a fact here
+    - '"ansible_facts" in add_instance'
+    - '"ec2_elbs" in add_instance.ansible_facts'
+    - elb_name_1 in add_instance.ansible_facts.ec2_elbs
+    - elb_name_2 in add_instance.ansible_facts.ec2_elbs
+    # Check the real state
+    - instance_a in elb_info_1.elbs[0].instances_inservice
+    - instance_a in elb_info_2.elbs[0].instances_inservice
+
+- name: 'Add an instance to two ELBs - idempotency (check_mode)'
+  elb_instance:
+    instance_id: '{{ instance_a }}'
+    state: 'present'
+    ec2_elbs:
+    - '{{ elb_name_1 }}'
+    - '{{ elb_name_2 }}'
+    wait_timeout: 60
+  register: add_instance
+  check_mode: true
+
+- elb_classic_lb_info:
+    names: '{{ elb_name_1 }}'
+  register: elb_info_1
+- elb_classic_lb_info:
+    names: '{{ elb_name_2 }}'
+  register: elb_info_2
+
+- assert:
+    that:
+    - add_instance is successful
+    - add_instance is not changed
+    # Check the real state didn't change
+    - instance_a in elb_info_1.elbs[0].instances_inservice
+    - instance_a in elb_info_2.elbs[0].instances_inservice
+
+- name: 'Add an instance to two ELBs - idempotency'
+  elb_instance:
+    instance_id: '{{ instance_a }}'
+    state: 'present'
+    ec2_elbs:
+    - '{{ elb_name_1 }}'
+    - '{{ elb_name_2 }}'
+    wait_timeout: 60
+  register: add_instance
+
+- elb_classic_lb_info:
+    names: '{{ elb_name_1 }}'
+  register: elb_info_1
+- elb_classic_lb_info:
+    names: '{{ elb_name_2 }}'
+  register: elb_info_2
+
+- assert:
+    that:
+    - add_instance is successful
+    - add_instance is not changed
+    # Check the real state didn't change
+    - instance_a in elb_info_1.elbs[0].instances_inservice
+    - instance_a in elb_info_2.elbs[0].instances_inservice
+
+###############################################################################
+
+- name: 'Add an instance to an ELB in wrong AZ (check_mode)'
+  elb_instance:
+    instance_id: '{{ instance_b }}'
+    state: 'present'
+    ec2_elbs:
+    - '{{ elb_name_1 }}'
+    wait_timeout: 60
+  register: add_instance
+  check_mode: true
+  ignore_errors: true
+
+- elb_classic_lb_info:
+    names: '{{ elb_name_1 }}'
+  register: elb_info_1
+
+- assert:
+    that:
+    #  - add_instance is failed
+    # Check the real state didn't change
+    - instance_b not in elb_info_1.elbs[0].instances_inservice
+
+- name: 'Add an instance to an ELB in wrong AZ'
+  elb_instance:
+    instance_id: '{{ instance_b }}'
+    state: 'present'
+    ec2_elbs:
+    - '{{ elb_name_1 }}'
+    wait_timeout: 60
+  register: add_instance
+  ignore_errors: true
+
+- elb_classic_lb_info:
+    names: '{{ elb_name_1 }}'
+  register: elb_info_1
+
+- assert:
+    that:
+    - add_instance is failed
+    - instance_b not in elb_info_1.elbs[0].instances_inservice
+
+################################################################################
+# Currently doesn't support adding an AZ if you're not using the default VPC
+#
+# - name: 'Add an instance to an ELB with enable_availability_zone (check_mode)'
+#   elb_instance:
+#     instance_id: '{{ instance_b }}'
+#     state: 'present'
+#     ec2_elbs:
+#     - '{{ elb_name_1 }}'
+#     wait_timeout: 60
+#   register: add_instance
+#   check_mode: true
+#   ignore_errors: true
+#
+# - elb_classic_lb_info:
+#     names: '{{ elb_name_1 }}'
+#   register: elb_info_1
+#
+# - assert:
+#     that:
+#     - add_instance is successful
+#     # - add_instance is changed
+#
+# - name: 'Add an instance to an ELB with enable_availability_zone'
+#   elb_instance:
+#     instance_id: '{{ instance_b }}'
+#     state: 'present'
+#     ec2_elbs:
+#     - '{{ elb_name_1 }}'
+#     wait_timeout: 60
+#   register: add_instance
+#   ignore_errors: true
+#
+# - elb_classic_lb_info:
+#     names: '{{ elb_name_1 }}'
+#   register: elb_info_1
+#
+# - assert:
+#     that:
+#     - add_instance is successful
+#     - add_instance is changed
+#
+# - name: 'Add an instance to an ELB with enable_availability_zone - idempotency (check_mode)'
+#   elb_instance:
+#     instance_id: '{{ instance_b }}'
+#     state: 'present'
+#     ec2_elbs:
+#     - '{{ elb_name_1 }}'
+#     wait_timeout: 60
+#   register: add_instance
+#   check_mode: true
+#   ignore_errors: true
+#
+# - elb_classic_lb_info:
+#     names: '{{ elb_name_2 }}'
+#   register: elb_info_1
+#
+# - assert:
+#     that:
+#     - add_instance is successful
+#     - add_instance is not changed
+#
+# - name: 'Add an instance to an ELB with enable_availability_zone - idempotency'
+#   elb_instance:
+#     instance_id: '{{ instance_b }}'
+#     state: 'present'
+#     ec2_elbs:
+#     - '{{ elb_name_1 }}'
+#     wait_timeout: 60
+#   register: add_instance
+#   ignore_errors: true
+#
+# - elb_classic_lb_info:
+#     names: '{{ elb_name_1 }}'
+#   register: elb_info_1
+#
+# - assert:
+#     that:
+#     - add_instance is successful
+#     - add_instance is not changed
+#
+################################################################################
+
+
+- name: 'Remove an instance from two ELBs (check_mode)'
+  elb_instance:
+    instance_id: '{{ instance_a }}'
+    state: 'absent'
+    ec2_elbs:
+    - '{{ elb_name_1 }}'
+    - '{{ elb_name_2 }}'
+    wait_timeout: 60
+  register: remove_instance
+  check_mode: true
+
+- elb_classic_lb_info:
+    names: '{{ elb_name_1 }}'
+  register: elb_info_1
+- elb_classic_lb_info:
+    names: '{{ elb_name_2 }}'
+  register: elb_info_2
+
+- assert:
+    that:
+    - remove_instance is successful
+    # - remove_instance is changed
+    # It really shouldn't be returning a fact here
+    - '"ansible_facts" in remove_instance'
+    - '"ec2_elbs" in remove_instance.ansible_facts'
+    - elb_name_1 in remove_instance.ansible_facts.ec2_elbs
+    - elb_name_2 in remove_instance.ansible_facts.ec2_elbs
+    # Check the real state didn't change
+    - instance_a in elb_info_1.elbs[0].instances_inservice
+    - instance_a in elb_info_2.elbs[0].instances_inservice
+
+- name: 'Remove an instance from two ELBs'
+  elb_instance:
+    instance_id: '{{ instance_a }}'
+    state: 'absent'
+    ec2_elbs:
+    - '{{ elb_name_1 }}'
+    - '{{ elb_name_2 }}'
+    wait_timeout: 60
+  register: remove_instance
+
+- elb_classic_lb_info:
+    names: '{{ elb_name_1 }}'
+  register: elb_info_1
+- elb_classic_lb_info:
+    names: '{{ elb_name_2 }}'
+  register: elb_info_2
+
+- assert:
+    that:
+    - remove_instance is successful
+    - remove_instance is changed
+    # It really shouldn't be returning a fact here
+    - '"ansible_facts" in remove_instance'
+    - '"ec2_elbs" in remove_instance.ansible_facts'
+    - elb_name_1 in remove_instance.ansible_facts.ec2_elbs
+    - elb_name_2 in remove_instance.ansible_facts.ec2_elbs
+    # Check the real state
+    - instance_a not in elb_info_1.elbs[0].instances_inservice
+    - instance_a not in elb_info_2.elbs[0].instances_inservice
+
+- name: 'Remove an instance from two ELBs - idempotency (check_mode)'
+  elb_instance:
+    instance_id: '{{ instance_a }}'
+    state: 'absent'
+    ec2_elbs:
+    - '{{ elb_name_1 }}'
+    - '{{ elb_name_2 }}'
+    wait_timeout: 60
+  register: remove_instance
+  check_mode: true
+
+- elb_classic_lb_info:
+    names: '{{ elb_name_1 }}'
+  register: elb_info_1
+- elb_classic_lb_info:
+    names: '{{ elb_name_2 }}'
+  register: elb_info_2
+
+- assert:
+    that:
+    - remove_instance is successful
+    - remove_instance is not changed
+    # Check the real state didn't change
+    - instance_a not in elb_info_1.elbs[0].instances_inservice
+    - instance_a not in elb_info_2.elbs[0].instances_inservice
+
+- name: 'Remove an instance from two ELBs - idempotency'
+  elb_instance:
+    instance_id: '{{ instance_a }}'
+    state: 'absent'
+    ec2_elbs:
+    - '{{ elb_name_1 }}'
+    - '{{ elb_name_2 }}'
+    wait_timeout: 60
+  register: remove_instance
+
+- elb_classic_lb_info:
+    names: '{{ elb_name_1 }}'
+  register: elb_info_1
+- elb_classic_lb_info:
+    names: '{{ elb_name_2 }}'
+  register: elb_info_2
+
+- assert:
+    that:
+    - remove_instance is successful
+    - remove_instance is not changed
+    # Check the real state didn't change
+    - instance_a not in elb_info_1.elbs[0].instances_inservice
+    - instance_a not in elb_info_2.elbs[0].instances_inservice

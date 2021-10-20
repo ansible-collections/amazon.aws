@@ -1,3 +1,5 @@
-ec2_ami_name: 'Fedora-Cloud-Base-*.x86_64*'
 ec2_ami_owner_id: '125523088429'
-ec2_ami_ssh_user: 'fedora'
+#ec2_ami_name: 'Fedora-Cloud-Base-*.x86_64*'
+ec2_ami_name: 'CentOS Stream 9 x86_64*'
+#ec2_ami_ssh_user: 'fedora'
+ec2_ami_ssh_user: 'centos'

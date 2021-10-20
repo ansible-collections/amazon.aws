@@ -1,0 +1,29 @@
+---
+- module_defaults:
+    group/aws:
+      region: "{{ aws_region }}"
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+  collections:
+    - community.aws
+    - amazon.aws
+  block:
+    # ============================================================
+
+    - include_tasks: setup_vpc.yml
+    - include_tasks: setup_elbs.yml
+    - include_tasks: setup_instances.yml
+
+    # ============================================================
+
+    - include_tasks: manage_instances.yml
+    - include_tasks: manage_asgs.yml
+
+  always:
+
+    # ============================================================
+
+    - include_tasks: cleanup_elbs.yml
+    - include_tasks: cleanup_instances.yml
+    - include_tasks: cleanup_vpc.yml
