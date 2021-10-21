@@ -173,6 +173,24 @@ options:
       - policy to apply to the KMS key.
       - See U(https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html)
     type: json
+  key_spec:
+    aliases:
+      - customer_master_key_spec
+    description:
+      - Specifies the type of KMS key to create.
+      - The specification is not changeable once the key is created.
+    type: str
+    default: SYMMETRIC_DEFAULT
+    choices: ['SYMMETRIC_DEFAULT', 'RSA_2048', 'RSA_3072', 'RSA_4096', 'ECC_NIST_P256', 'ECC_NIST_P384', 'ECC_NIST_P521', 'ECC_SECG_P256K1']
+    version_added: 2.1.0
+  key_usage:
+    description:
+      - Determines the cryptographic operations for which you can use the KMS key.
+      - The usage is not changeable once the key is created.
+    type: str
+    default: ENCRYPT_DECRYPT
+    choices: ['ENCRYPT_DECRYPT', 'SIGN_VERIFY']
+    version_added: 2.1.0
 author:
   - Ted Timmons (@tedder)
   - Will Thames (@willthames)
@@ -852,9 +870,12 @@ def update_key(connection, module, key):
 
 
 def create_key(connection, module):
+    key_usage = module.params.get('key_usage')
+    key_spec = module.params.get('key_spec')
     params = dict(BypassPolicyLockoutSafetyCheck=False,
                   Tags=ansible_dict_to_boto3_tag_list(module.params['tags'], tag_name_key_name='TagKey', tag_value_key_name='TagValue'),
-                  KeyUsage='ENCRYPT_DECRYPT',
+                  KeyUsage=key_usage,
+                  CustomerMasterKeySpec=key_spec,
                   Origin='AWS_KMS')
 
     if module.check_mode:
@@ -1067,7 +1088,10 @@ def main():
         policy=dict(type='json'),
         purge_grants=dict(type='bool', default=False),
         state=dict(default='present', choices=['present', 'absent']),
-        enable_key_rotation=(dict(type='bool'))
+        enable_key_rotation=(dict(type='bool')),
+        key_spec=dict(type='str', default='SYMMETRIC_DEFAULT', aliases=['customer_master_key_spec'],
+                      choices=['SYMMETRIC_DEFAULT', 'RSA_2048', 'RSA_3072', 'RSA_4096', 'ECC_NIST_P256', 'ECC_NIST_P384', 'ECC_NIST_P521', 'ECC_SECG_P256K1']),
+        key_usage=dict(type='str', default='ENCRYPT_DECRYPT', choices=['ENCRYPT_DECRYPT', 'SIGN_VERIFY']),
     )
 
     module = AnsibleAWSModule(

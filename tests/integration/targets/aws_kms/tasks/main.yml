@@ -74,6 +74,8 @@
           - create_kms.key_state == "Enabled"
           - create_kms.tags['Hello'] == 'World'
           - create_kms.enable_key_rotation == false
+          - create_kms.key_usage == 'ENCRYPT_DECRYPT'
+          - create_kms.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
 
     - name: Save IDs for later
       set_fact:
@@ -492,6 +494,28 @@
           - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days <= 7
           - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days >= 6
 
+    # ============================================================
+    # test different key usage and specs
+    - name: create kms key with different specs
+      aws_kms:
+        alias: '{{ kms_role_name }}-diff-spec-usage'
+        purge_grants: yes
+        key_spec: ECC_NIST_P256
+        key_usage: SIGN_VERIFY
+      register: create_diff_kms
+
+    - name: verify different specs on kms key
+      assert:
+        that:
+          - '"key_id" in create_diff_kms'
+          - create_diff_kms.key_id | length >= 36
+          - not create_diff_kms.key_id.startswith("arn:aws")
+          - '"key_arn" in create_diff_kms'
+          - create_diff_kms.key_arn.endswith(create_diff_kms.key_id)
+          - create_diff_kms.key_arn.startswith("arn:aws")
+          - create_diff_kms.key_usage == 'SIGN_VERIFY'
+          - create_diff_kms.customer_master_key_spec == 'ECC_NIST_P256'
+
   always:
     # ============================================================
     #   CLEAN-UP
@@ -499,6 +523,14 @@
       aws_kms:
         state: absent
         alias: '{{ kms_key_alias }}'
+        pending_window: 7
+      register: destroy_result
+      ignore_errors: True
+
+    - name: delete kms key with different specs
+      aws_kms:
+        state: absent
+        alias: '{{ kms_role_name }}-diff-spec-usage'
         pending_window: 7
       register: destroy_result
       ignore_errors: True
