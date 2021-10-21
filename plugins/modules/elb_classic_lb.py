@@ -757,15 +757,15 @@ class ElbManager(object):
     def _update_descriptions(self):
         try:
             self.elb = self._get_elb()
-        except (botocore.exceptions.ClientException, botocore.exceptions.BotoCoreError) as e:
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self.module.fail_json_aws(e, msg='Unable to describe load balancer')
         try:
             self.elb_attributes = self._get_elb_attributes()
-        except (botocore.exceptions.ClientException, botocore.exceptions.BotoCoreError) as e:
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self.module.fail_json_aws(e, msg='Unable to describe load balancer attributes')
         try:
             self.elb_policies = self._get_elb_policies()
-        except (botocore.exceptions.ClientException, botocore.exceptions.BotoCoreError) as e:
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self.module.fail_json_aws(e, msg='Unable to describe load balancer policies')
         try:
             self.elb_health = self._get_elb_instance_health()
@@ -926,7 +926,7 @@ class ElbManager(object):
                 self.module.fail_json_aws(e, msg="Failed to create load balancer")
             try:
                 self.elb_attributes = self._get_elb_attributes()
-            except (botocore.exceptions.ClientException, botocore.exceptions.BotoCoreError) as e:
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 self.module.fail_json_aws(e, msg='Unable to describe load balancer attributes')
             self._wait_created()
 
@@ -947,7 +947,7 @@ class ElbManager(object):
                     self.module.fail_json_aws(e, msg="Failed to recreate load balancer")
                 try:
                     self.elb_attributes = self._get_elb_attributes()
-                except (botocore.exceptions.ClientException, botocore.exceptions.BotoCoreError) as e:
+                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     self.module.fail_json_aws(e, msg='Unable to describe load balancer attributes')
             else:
                 self._set_subnets()
