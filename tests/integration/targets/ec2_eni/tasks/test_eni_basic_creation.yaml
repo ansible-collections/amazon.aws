@@ -258,6 +258,6 @@
     that:
       - result_no_private_ip.changed
 
-- name: save the second network interface ID for cleanup
+- name: save the third network interface ID for cleanup
   set_fact:
     eni_id_3: "{{ result_no_private_ip.interface.id }}"
