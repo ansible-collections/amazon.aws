@@ -11,4 +11,5 @@
   block:
 
     - include_tasks: network_force_new_deployment.yml
+    - include_tasks: force_service_deletion.yml
     - include_tasks: full_test.yml
