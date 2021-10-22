@@ -1,0 +1,77 @@
+---
+#TODO: test availability_zone and multi_az
+- block:
+    - name: Ensure the resource doesn't exist
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: absent
+        skip_final_snapshot: True
+      register: result
+
+    - assert:
+        that:
+          - not result.changed
+      ignore_errors: yes
+
+    - name: Create an enhanced monitoring role
+      iam_role:
+        assume_role_policy_document: "{{ lookup('file','files/enhanced_monitoring_assume_policy.json') }}"
+        name: "{{ instance_id }}-role"
+        state: present
+        managed_policy: "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+      register: enhanced_monitoring_role
+
+    - name: Create a mariadb instance
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        engine: mariadb
+        engine_version: "{{ mariadb_engine_version }}"
+        allow_major_version_upgrade: true
+        username: "{{ username }}"
+        password: "{{ password }}"
+        db_instance_class: "{{ db_instance_class }}"
+        allocated_storage: "{{ allocated_storage }}"
+      register: result
+
+    - assert:
+        that:
+          - result.changed
+          - "result.db_instance_identifier == '{{ instance_id }}'"
+
+    - name: Modify the instance name without immediate application
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        new_id: "{{ modified_instance_id }}"
+        password: "{{ password }}"
+        apply_immediately: False
+      register: result
+
+    - assert:
+        that:
+          - result.changed
+          - 'result.db_instance_identifier == "{{ instance_id }}"'
+
+    - name: Immediately apply the pending update
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        new_id: "{{ modified_instance_id }}"
+        apply_immediately: True
+      register: result
+
+    - assert:
+        that:
+          - result.changed
+          - 'result.db_instance_identifier == "{{ modified_instance_id }}"'
+
+  always:
+    - name: Delete the instance
+      rds_instance:
+        id: "{{ item }}"
+        state: absent
+        skip_final_snapshot: True
+        wait: false
+      loop: ["{{ instance_id }}", "{{ modified_instance_id }}"]
+      ignore_errors: yes

@@ -1,0 +1,113 @@
+---
+#TODO: test availability_zone and multi_az
+- block:
+    - name: Ensure the resource doesn't exist
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: absent
+        skip_final_snapshot: True
+      register: result
+
+    - assert:
+        that:
+          - not result.changed
+      ignore_errors: yes
+
+    - name: Create an enhanced monitoring role
+      iam_role:
+        assume_role_policy_document: "{{ lookup('file','files/enhanced_monitoring_assume_policy.json') }}"
+        name: "{{ instance_id }}-role"
+        state: present
+        managed_policy: "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+      register: enhanced_monitoring_role
+
+    - name: Create a mariadb instance
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        engine: mariadb
+        engine_version: "{{ mariadb_engine_version }}"
+        allow_major_version_upgrade: true
+        username: "{{ username }}"
+        password: "{{ password }}"
+        db_instance_class: "{{ db_instance_class }}"
+        allocated_storage: "{{ allocated_storage }}"
+      register: result
+
+    - assert:
+        that:
+          - result.changed
+          - "result.db_instance_identifier == '{{ instance_id }}'"
+
+    # TODO: test modifying db_subnet_group_name, db_security_groups, db_parameter_group_name, option_group_name,
+    # monitoring_role_arn, monitoring_interval, domain, domain_iam_role_name, cloudwatch_logs_export_configuration
+
+    # Test multiple modifications including enabling enhanced monitoring
+
+    - name: Modify several attributes
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        allocated_storage: 30
+        db_instance_class: "{{ modified_db_instance_class }}"
+        backup_retention_period: 2
+        preferred_backup_window: "05:00-06:00"
+        preferred_maintenance_window: "{{ preferred_maintenance_window }}"
+        engine_version: "{{ mariadb_engine_version_2 }}"
+        allow_major_version_upgrade: true
+        auto_minor_version_upgrade: false
+        monitoring_interval: "{{ monitoring_interval }}"
+        monitoring_role_arn: "{{ enhanced_monitoring_role.arn }}"
+        port: 1150
+        max_allocated_storage: 100
+        apply_immediately: True
+      register: result
+
+    - assert:
+        that:
+          - result.changed
+          - '"allocated_storage" in result.pending_modified_values or result.allocated_storage == 30'
+          - '"max_allocated_storage" in result.pending_modified_values or result.max_allocated_storage == 100'
+          - '"port" in result.pending_modified_values or result.endpoint.port == 1150'
+          - '"db_instance_class" in result.pending_modified_values or result.db_instance_class == modified_db_instance_class'
+          - '"engine_version" in result.pending_modified_values or result.engine_version == mariadb_engine_version_2'
+          - '"monitoring_interval" in result.pending_modified_values or result.monitoring_interval == monitoring_interval'
+
+    - name: Idempotence modifying several pending attributes
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        allocated_storage: 30
+        db_instance_class: "{{ modified_db_instance_class }}"
+        backup_retention_period: 2
+        preferred_backup_window: "05:00-06:00"
+        preferred_maintenance_window: "{{ preferred_maintenance_window }}"
+        engine_version: "{{ mariadb_engine_version_2 }}"
+        allow_major_version_upgrade: true
+        auto_minor_version_upgrade: false
+        monitoring_interval: "{{ monitoring_interval }}"
+        monitoring_role_arn: "{{ enhanced_monitoring_role.arn }}"
+        port: 1150
+        max_allocated_storage: 100
+      register: result
+      retries: 30
+      delay: 10
+      until: result is not failed
+
+    - assert:
+        that:
+          - not result.changed
+          - '"allocated_storage" in result.pending_modified_values or result.allocated_storage == 30'
+          - '"max_allocated_storage" in result.pending_modified_values or result.max_allocated_storage == 100'
+          - '"port" in result.pending_modified_values or result.endpoint.port == 1150'
+          - '"db_instance_class" in result.pending_modified_values or result.db_instance_class == modified_db_instance_class'
+          - '"engine_version" in result.pending_modified_values or result.engine_version == mariadb_engine_version_2'
+
+  always:
+    - name: Delete the instance
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: absent
+        skip_final_snapshot: True
+        wait: false
+      ignore_errors: yes

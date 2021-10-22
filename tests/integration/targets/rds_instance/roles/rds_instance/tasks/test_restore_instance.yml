@@ -16,7 +16,7 @@
 
       - name: Create a source DB instance
         rds_instance:
-          id: "{{ instance_id }}"
+          id: "{{ instance_id }}-s"
           state: present
           engine: mysql
           backup_retention_period: 1
@@ -29,13 +29,13 @@
       - assert:
           that:
             - source_db.changed
-            - "source_db.db_instance_identifier == '{{ instance_id }}'"
+            - "source_db.db_instance_identifier == '{{ instance_id }}-s'"
 
       - name: Create a point in time DB instance
         rds_instance:
-          id: "{{ instance_id }}-point-in-time"
+          id: "{{ instance_id }}"
           state: present
-          source_db_instance_identifier: "{{ instance_id }}"
+          source_db_instance_identifier: "{{ instance_id }}-s"
           creation_source: instance
           engine: mysql
           username: "{{ username }}"
@@ -47,9 +47,9 @@
 
       - name: Test idempotence with a point in time replica
         rds_instance:
-          id: "{{ instance_id }}-point-in-time"
+          id: "{{ instance_id }}"
           state: present
-          source_db_instance_identifier: "{{ instance_id }}"
+          source_db_instance_identifier: "{{ instance_id }}-s"
           creation_source: instance
           engine: mysql
           username: "{{ username }}"
@@ -62,20 +62,22 @@
       - assert:
           that:
             - not result.changed
+            - "result.db_instance_identifier == '{{ instance_id }}'"
 
     always:
 
       - name: Remove the DB instance
         rds_instance:
-          id: "{{ instance_id }}"
+          id: "{{ instance_id }}-s"
           state: absent
           skip_final_snapshot: True
+          wait: false
         ignore_errors: yes
-
 
       - name: Remove the point in time restored DB
         rds_instance:
-          id: "{{ instance_id }}-point-in-time"
+          id: "{{ instance_id }}"
           state: absent
           skip_final_snapshot: True
+          wait: false
         ignore_errors: yes

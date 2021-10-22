@@ -113,6 +113,7 @@
           id: "{{ item }}"
           state: absent
           skip_final_snapshot: True
+          wait: false
         loop:
           - "{{ instance_id }}"
           - "{{ modified_instance_id }}"
@@ -123,4 +124,5 @@
           cluster_id: "{{ cluster_id }}"
           state: absent
           skip_final_snapshot: True
+          wait: false
         ignore_errors: yes

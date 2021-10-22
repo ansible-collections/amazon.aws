@@ -137,6 +137,7 @@
           state: absent
           skip_final_snapshot: True
           region: "{{ region_src }}"
+          wait: false
         ignore_errors: yes
 
       - name: Remove the DB replica
@@ -145,4 +146,5 @@
           state: absent
           skip_final_snapshot: True
           region: "{{ region_dest }}"
+          wait: false
         ignore_errors: yes
