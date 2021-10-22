@@ -23,14 +23,12 @@
           db_instance_class: "{{ oracle_ee_db_instance_class }}"
           allocated_storage: "{{ allocated_storage }}"
           storage_encrypted: True
-          processor_features: "{{ processor_features }}"
+          processor_features: {}
         register: result
 
       - assert:
           that:
             - result.changed
-            - 'result.processor_features.coreCount == "{{ processor_features.coreCount }}"'
-            - 'result.processor_features.threadsPerCore == "{{ processor_features.threadsPerCore }}"'
 
       - name: Check mode - modify the processor features
         rds_instance:
@@ -71,32 +69,6 @@
             - 'result.pending_modified_values.processor_features.coreCount == "{{ modified_processor_features.coreCount }}"'
             - 'result.pending_modified_values.processor_features.threadsPerCore == "{{ modified_processor_features.threadsPerCore }}"'
 
-      - name: Check mode - use the default processor features
-        rds_instance:
-          id: "{{ instance_id }}"
-          state: present
-          processor_features: {}
-          apply_immediately: True
-        register: result
-
-      - assert:
-          that:
-            - result.changed
-
-      - name: Use the default processor features
-        rds_instance:
-          id: "{{ instance_id }}"
-          state: present
-          processor_features: {}
-          apply_immediately: True
-        register: result
-
-      - assert:
-          that:
-            - result.changed
-            - 'result.pending_modified_values.processor_features.coreCount == "DEFAULT"'
-            - 'result.pending_modified_values.processor_features.threadsPerCore == "DEFAULT"'
-
     always:
 
       - name: Delete the DB instance
@@ -104,6 +76,7 @@
           id: "{{ instance_id }}"
           state: absent
           skip_final_snapshot: True
+          wait: false
         register: result
 
       - assert:

@@ -192,11 +192,3 @@
         retries: 30
         until: vpc_result is not failed
         delay: 10
-
-      - name: Ensure the resource doesn't exist
-        rds_instance:
-          id: "{{ instance_id }}"
-          state: absent
-          skip_final_snapshot: True
-        register: result
-        ignore_errors: yes

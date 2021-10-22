@@ -1,246 +1,159 @@
 ---
-  - block:
+- block:
+    - name: Ensure the resource doesn't exist
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: absent
+        skip_final_snapshot: True
+      register: result
 
-      - name: Ensure the resource doesn't exist
-        rds_instance:
-          id: "{{ instance_id }}"
-          state: absent
-          skip_final_snapshot: True
-        register: result
+    - assert:
+        that:
+          - not result.changed
+      ignore_errors: yes
 
-      - assert:
-          that:
-            - not result.changed
-        ignore_errors: yes
+    - name: Create a mariadb instance
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        engine: mariadb
+        username: "{{ username }}"
+        password: "{{ password }}"
+        db_instance_class: "{{ db_instance_class }}"
+        allocated_storage: "{{ allocated_storage }}"
+        tags:
+          Name: "{{ instance_id }}"
+          Created_by: Ansible rds_instance tests
+      register: result
 
-      - name: Check Mode - Create a mariadb instance
-        rds_instance:
-          id: "{{ instance_id }}"
-          state: present
-          engine: mariadb
-          username: "{{ username }}"
-          password: "{{ password }}"
-          db_instance_class: "{{ db_instance_class }}"
-          allocated_storage: "{{ allocated_storage }}"
-        register: result
-        check_mode: yes
+    - assert:
+        that:
+          - result.changed
+          - "result.db_instance_identifier == '{{ instance_id }}'"
+          - "result.tags | length == 2"
+          - "result.tags.Name == '{{ instance_id }}'"
+          - "result.tags.Created_by == 'Ansible rds_instance tests'"
 
-      - assert:
-          that:
-            - result.changed
+    # Test stopping / rebooting instances
+    - name: Check mode - reboot a stopped instance
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: rebooted
+      register: result
+      check_mode: yes
 
-      - name: Create a mariadb instance
-        rds_instance:
-          id: "{{ instance_id }}"
-          state: present
-          engine: mariadb
-          username: "{{ username }}"
-          password: "{{ password }}"
-          db_instance_class: "{{ db_instance_class }}"
-          allocated_storage: "{{ allocated_storage }}"
-        register: result
+    - assert:
+        that:
+          - result.changed
 
-      - assert:
-          that:
-            - result.changed
-            - "result.db_instance_identifier == '{{ instance_id }}'"
+    - name: Reboot a stopped instance
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: rebooted
+      register: result
 
-      - name: Idempotence
-        rds_instance:
-          id: '{{ instance_id }}'
-          state: present
-          engine: mariadb
-          username: "{{ username }}"
-          password: "{{ password }}"
-          db_instance_class: "{{ db_instance_class }}"
-          allocated_storage: "{{ allocated_storage }}"
-        register: result
+    - assert:
+        that:
+          - result.changed
 
-      - assert:
-          that:
-            - not result.changed
-            - result.db_instance_identifier
+    - name: Check Mode - stop the instance
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: stopped
+      register: result
+      check_mode: yes
 
-      - name: Idempotence with minimal options
-        rds_instance:
-          id: '{{ instance_id }}'
-          state: present
-        register: result
+    - assert:
+        that:
+          - result.changed
 
-      - assert:
-          that:
-            - not result.changed
-            - result.db_instance_identifier
+    - name: Stop the instance
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: stopped
+      register: result
 
-      - name: Check Mode - stop the instance
-        rds_instance:
-          id: '{{ instance_id }}'
-          state: stopped
-        register: result
-        check_mode: yes
+    - assert:
+        that:
+          - result.changed
 
-      - assert:
-          that:
-            - result.changed
+    - name: Check Mode - idempotence
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: stopped
+      register: result
+      check_mode: yes
 
-      - name: Stop the instance
-        rds_instance:
-          id: '{{ instance_id }}'
-          state: stopped
-        register: result
+    - assert:
+        that:
+          - not result.changed
 
-      - assert:
-          that:
-            - result.changed
+    - name: Idempotence
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: stopped
+      register: result
 
-      - name: Check Mode - idempotence
-        rds_instance:
-          id: '{{ instance_id }}'
-          state: stopped
-        register: result
-        check_mode: yes
+    - assert:
+        that:
+          - not result.changed
 
-      - assert:
-          that:
-            - not result.changed
+    - name: Check Mode - start the instance
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: started
+      register: result
+      check_mode: yes
 
-      - name: Idempotence
-        rds_instance:
-          id: '{{ instance_id }}'
-          state: stopped
-        register: result
+    - assert:
+        that:
+          - result.changed
 
-      - assert:
-          that:
-            - not result.changed
+    - name: Start the instance
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: started
+      register: result
 
-      - name: Check mode - reboot a stopped instance
-        rds_instance:
-          id: '{{ instance_id }}'
-          state: rebooted
-        register: result
-        check_mode: yes
+    - assert:
+        that:
+          - result.changed
 
-      - assert:
-          that:
-            - result.changed
+    # Test final snapshot on deletion
+    - name: Delete the DB instance
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: absent
+        final_snapshot_identifier: "{{ instance_id }}"
+      register: result
 
-      - name: Reboot a stopped instance
-        rds_instance:
-          id: '{{ instance_id }}'
-          state: rebooted
-        register: result
+    - assert:
+        that:
+          - result.changed
+          - "result.final_snapshot.db_instance_identifier == '{{ instance_id }}'"
 
-      - assert:
-          that:
-            - result.changed
+    - name: Check that snapshot exists
+      rds_snapshot_info:
+        db_snapshot_identifier: "{{ instance_id }}"
+      register: result
 
-      - name: Check Mode - start the instance
-        rds_instance:
-          id: '{{ instance_id }}'
-          state: started
-        register: result
-        check_mode: yes
+    - assert:
+        that:
+          - "result.snapshots | length == 1"
+          - "result.snapshots.0.engine == 'mariadb'"
 
-      - assert:
-          that:
-            - not result.changed
+  always:
+    - name: remove snapshot
+      rds_snapshot:
+        db_snapshot_identifier: "{{ resource_prefix }}-test-snapshot"
+        state: absent
+        wait: false
+      ignore_errors: yes
 
-      - name: Stop the instance
-        rds_instance:
-          id: '{{ instance_id }}'
-          state: stopped
-
-      - name: Start the instance
-        rds_instance:
-          id: '{{ instance_id }}'
-          state: started
-        register: result
-
-      - assert:
-          that:
-            - result.changed
-
-      - name: take a snapshot
-        rds_snapshot:
-          db_instance_identifier: '{{ instance_id }}'
-          db_snapshot_identifier: '{{ resource_prefix }}-test-snapshot'
-          state: present
-          wait: yes
-
-      - name: take a snapshot - idempotence
-        rds_snapshot:
-          db_instance_identifier: '{{ instance_id }}'
-          db_snapshot_identifier: '{{ resource_prefix }}-test-snapshot'
-          state: present
-        register: result
-
-      - assert:
-          that:
-            - not result.changed
-
-      - name: check snapshot is ok
-        rds_snapshot_info:
-          db_snapshot_identifier: '{{ resource_prefix }}-test-snapshot'
-        register: result
-
-      - assert:
-          that:
-            - (result.snapshots | length) == 1
-
-      - name: remove a snapshot without wait
-        rds_snapshot:
-          db_snapshot_identifier: '{{ resource_prefix }}-test-snapshot'
-          state: absent
-        register: result
-
-      - assert:
-          that:
-            - result.changed
-
-      - name: remove a snapshot without wait - idempotence
-        rds_snapshot:
-          db_snapshot_identifier: '{{ resource_prefix }}-test-snapshot'
-          state: absent
-          wait: yes
-        register: result
-
-      - assert:
-          that:
-            - not result.changed
-
-      - name: remove a snapshot with wait - idempotence
-        rds_snapshot:
-          db_snapshot_identifier: '{{ resource_prefix }}-test-snapshot'
-          state: absent
-          wait: yes
-        register: result
-
-      - assert:
-          that:
-            - not result.changed
-
-      - name: check snapshot is removed
-        rds_snapshot_info:
-          db_snapshot_identifier: '{{ resource_prefix }}-test-snapshot'
-        register: result
-
-      - assert:
-          that:
-            - not result.snapshots
-
-    always:
-
-      - name: remove snapshot
-        rds_snapshot:
-          db_snapshot_identifier: '{{ resource_prefix }}-test-snapshot'
-          state: absent
-          wait: yes
-        ignore_errors: yes
-
-      - name: Remove DB instance
-        rds_instance:
-          id: '{{ instance_id }}'
-          state: absent
-          skip_final_snapshot: True
-        ignore_errors: yes
+    - name: Remove DB instance
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: absent
+        skip_final_snapshot: True
+        wait: false
+      ignore_errors: yes

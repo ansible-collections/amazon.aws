@@ -6,6 +6,6 @@
 - hosts: all
   gather_facts: no
   strategy: free
-  serial: 5
+  serial: 8
   roles:
     - rds_instance

@@ -1,15 +1,12 @@
 [tests]
 states
-tags
-modification
-bad_options
+modify
+modify_complex
 processor_features
-encryption
-final_snapshot
 read_replica
 vpc_security_groups
 restore_instance
-snapshot
+tagging
 
 # TODO: uncomment after adding rds_cluster module
 # aurora
