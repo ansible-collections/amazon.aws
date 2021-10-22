@@ -113,6 +113,7 @@
         loop:
           - "{{ eni_id_1 | default(omit) }}"
           - "{{ eni_id_2 | default(omit) }}"
+          - "{{ eni_id_3 | default(omit) }}"
 
       - name: terminate the instances
         ec2_instance:
