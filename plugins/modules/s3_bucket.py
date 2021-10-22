@@ -963,7 +963,7 @@ def main():
     s3_client = get_s3_client(module, aws_connect_kwargs, location, ceph, s3_url)
 
     if s3_client is None:  # this should never happen
-        module.fail_json(msg='Unknown error, failed to create s3 connection, no information from boto.')
+        module.fail_json(msg='Unknown error, failed to create s3 connection, no information available.')
 
     state = module.params.get("state")
     encryption = module.params.get("encryption")
