@@ -1,5 +1,3 @@
-# reason: missing-policy
-# reason: slow
-unsupported
+slow
 
 cloud/aws
