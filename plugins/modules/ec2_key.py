@@ -47,6 +47,17 @@ options:
       - This option has no effect since version 2.5 and will be removed after 2022-06-01.
     type: int
     required: false
+  tags:
+    description:
+      - A dictionary of tags to set on the key pair.
+    type: dict
+    version_added: 2.1.0
+  purge_tags:
+    description:
+      - Delete any tags not specified in I(tags).
+    default: false
+    type: bool
+    version_added: 2.1.0
 
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -114,6 +125,16 @@ key:
       returned: when state is present
       type: str
       sample: my_keypair
+    id:
+      description: id of the keypair
+      returned: when state is present
+      type: str
+      sample: key-123456789abc
+    tags:
+      description: a dictionary representing the tags attached to the key pair
+      returned: when state is present
+      type: dict
+      sample: '{"my_key": "my value"}'
     private_key:
       description: private key of a newly created keypair
       returned: when a new keypair is created by AWS (key_material is not provided)
@@ -135,14 +156,21 @@ from ansible.module_utils._text import to_bytes
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.core import is_boto3_error_code
 from ..module_utils.ec2 import AWSRetry
+from ..module_utils.ec2 import ensure_ec2_tags
+from ..module_utils.tagging import boto3_tag_specifications
+from ..module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
 def extract_key_data(key):
 
     data = {
         'name': key['KeyName'],
-        'fingerprint': key['KeyFingerprint']
+        'fingerprint': key['KeyFingerprint'],
+        'id': key['KeyPairId'],
+        'tags': {},
     }
+    if 'Tags' in key:
+        data['tags'] = boto3_tag_list_to_ansible_dict(key['Tags'])
     if 'KeyMaterial' in key:
         data['private_key'] = key['KeyMaterial']
     return data
@@ -162,7 +190,7 @@ def get_key_fingerprint(module, ec2_client, key_material):
         random_name = "ansible-" + str(uuid.uuid4())
         name_in_use = find_key_pair(module, ec2_client, random_name)
 
-    temp_key = import_key_pair(module, ec2_client, random_name, key_material)
+    temp_key = _import_key_pair(module, ec2_client, random_name, key_material)
     delete_key_pair(module, ec2_client, random_name, finish_task=False)
     return temp_key['KeyFingerprint']
 
@@ -182,40 +210,54 @@ def find_key_pair(module, ec2_client, name):
 
 def create_key_pair(module, ec2_client, name, key_material, force):
 
+    tags = module.params.get('tags')
+    purge_tags = module.params.get('purge_tags')
     key = find_key_pair(module, ec2_client, name)
+    tag_spec = boto3_tag_specifications(tags, ['key-pair'])
+    changed = False
     if key:
         if key_material and force:
-            if not module.check_mode:
-                new_fingerprint = get_key_fingerprint(module, ec2_client, key_material)
-                if key['KeyFingerprint'] != new_fingerprint:
+            new_fingerprint = get_key_fingerprint(module, ec2_client, key_material)
+            if key['KeyFingerprint'] != new_fingerprint:
+                changed = True
+                if not module.check_mode:
                     delete_key_pair(module, ec2_client, name, finish_task=False)
-                    key = import_key_pair(module, ec2_client, name, key_material)
-                    key_data = extract_key_data(key)
-                    module.exit_json(changed=True, key=key_data, msg="key pair updated")
-            else:
-                # Assume a change will be made in check mode since a comparison can't be done
-                module.exit_json(changed=True, key=extract_key_data(key), msg="key pair updated")
+                    key = _import_key_pair(module, ec2_client, name, key_material, tag_spec)
+                key_data = extract_key_data(key)
+                module.exit_json(changed=True, key=key_data, msg="key pair updated")
+        changed |= ensure_ec2_tags(ec2_client, module, key['KeyPairId'], tags=tags, purge_tags=purge_tags)
+        key = find_key_pair(module, ec2_client, name)
         key_data = extract_key_data(key)
-        module.exit_json(changed=False, key=key_data, msg="key pair already exists")
+        module.exit_json(changed=changed, key=key_data, msg="key pair already exists")
     else:
         # key doesn't exist, create it now
         key_data = None
         if not module.check_mode:
             if key_material:
-                key = import_key_pair(module, ec2_client, name, key_material)
+                key = _import_key_pair(module, ec2_client, name, key_material, tag_spec)
             else:
-                try:
-                    key = ec2_client.create_key_pair(aws_retry=True, KeyName=name)
-                except botocore.exceptions.ClientError as err:
-                    module.fail_json_aws(err, msg="error creating key")
+                key = _create_key_pair(module, ec2_client, name, tag_spec)
             key_data = extract_key_data(key)
         module.exit_json(changed=True, key=key_data, msg="key pair created")
 
 
-def import_key_pair(module, ec2_client, name, key_material):
-
+def _create_key_pair(module, ec2_client, name, tag_spec):
+    params = dict(KeyName=name)
+    if tag_spec:
+        params['TagSpecifications'] = tag_spec
     try:
-        key = ec2_client.import_key_pair(aws_retry=True, KeyName=name, PublicKeyMaterial=to_bytes(key_material))
+        key = ec2_client.create_key_pair(aws_retry=True, **params)
+    except botocore.exceptions.ClientError as err:
+        module.fail_json_aws(err, msg="error creating key")
+    return key
+
+
+def _import_key_pair(module, ec2_client, name, key_material, tag_spec=None):
+    params = dict(KeyName=name, PublicKeyMaterial=to_bytes(key_material))
+    if tag_spec:
+        params['TagSpecifications'] = tag_spec
+    try:
+        key = ec2_client.import_key_pair(aws_retry=True, **params)
     except botocore.exceptions.ClientError as err:
         module.fail_json_aws(err, msg="error importing key")
     return key
@@ -243,6 +285,8 @@ def main():
         key_material=dict(no_log=False),
         force=dict(type='bool', default=True),
         state=dict(default='present', choices=['present', 'absent']),
+        tags=dict(type='dict'),
+        purge_tags=dict(type='bool', default=False),
         wait=dict(type='bool', removed_at_date='2022-06-01', removed_from_collection='amazon.aws'),
         wait_timeout=dict(type='int', removed_at_date='2022-06-01', removed_from_collection='amazon.aws')
     )
