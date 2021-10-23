@@ -3,12 +3,12 @@ files:
   docs/:
     labels: docs
   $connection/:
-    labels: connection 
+    labels: connection
   $connection/aws_ssm.py:
   $modules/:
     authors: wimnat
     maintainers: $team_aws
-    ignore: erydo joshsouza nadirollo seiffert tedder willthames
+    ignore: erydo joshsouza nadirollo seiffert tedder willthames wimnat
     label: modules
   $modules/_aws_region_facts.py:
     authors: Sodki
@@ -28,8 +28,6 @@ files:
     authors: iiibrad
   $modules/_ec2_elb_facts.py:
     authors: mjschultz nand0p
-  $modules/_ec2_instance_facts.py:
-    authors: michaeljs1990 wimnat
   $modules/_ec2_lc_facts.py:
     authors: psykotox
   $modules/_ec2_placement_group_facts.py:
@@ -159,17 +157,8 @@ files:
     authors: rickmendes
   $modules/ec2_eip_info.py:
     authors: iiibrad
-  $modules/ec2_elb.py:
-    authors: jarv
   $modules/ec2_elb_info.py:
     authors: mjschultz nand0p
-  $modules/ec2_instance.py:
-    authors: ryansb
-    maintainers: $team_aws Shaps
-    labels: ec2_instance
-    ignore: erydo nadirollo ryansb simplesteph
-  $modules/ec2_instance_info.py:
-    authors: michaeljs1990 wimnat
   $modules/ec2_launch_template.py:
     authors: ryansb
     ignore: erydo nadirollo ryansb simplesteph
@@ -189,24 +178,17 @@ files:
     authors: Deepakkothandan
   $modules/ec2_vpc_egress_igw.py:
     authors: shepdelacreme
-  $modules/ec2_vpc_igw.py:
-    authors: erydo
-  $modules/ec2_vpc_igw_info.py:
-    authors: naslanidis
   $modules/ec2_vpc_nacl.py:
     authors: mmochan
   $modules/ec2_vpc_nacl_info.py:
     authors: brandond
-  $modules/ec2_vpc_nat_gateway.py:
-    authors: Etherdaemon jonhadfield linuxdynasty
-  $modules/ec2_vpc_nat_gateway_info.py:
-    authors: Etherdaemon
   $modules/ec2_vpc_peer.py:
     authors: mmochan
   $modules/ec2_vpc_peering_info.py:
     authors: Etherdaemon
   $modules/ec2_vpc_route_table.py:
     authors: erydo willthames wimnat
+    ignore: wimnat
   $modules/ec2_vpc_vpn.py:
     authors: s-hertel
     maintainers: jillr tremble
@@ -241,8 +223,6 @@ files:
     authors: willthames
   $modules/elasticache_subnet_group.py:
     authors: timmahoney
-  $modules/elb_classic_lb.py:
-    authors: jsdalton
   $modules/elb_classic_lb_info.py:
     authors: mjschultz nand0p
   $modules/elb_instance.py:
@@ -254,12 +234,7 @@ files:
     ignore: erydo nadirollo ryansb simplesteph
   $modules/iam.py:
     authors: defionscode seiffert
-    labels: iam
     ignore: defionscode joshsouza ryansb seiffert tedder
-  $modules/iam_cert.py:
-    authors: defionscode
-    labels: iam_cert
-    ignore: defionscode joshsouza ryansb simplesteph
   $modules/iam_group.py:
     authors: infectsoldier naslanidis
   $modules/iam_managed_policy.py:
@@ -279,6 +254,9 @@ files:
     authors: willthames
   $modules/iam_saml_federation.py:
     authors: aidan- axc450
+  $modules/iam_server_certificate.py:
+    authors: defionscode
+    ignore: defionscode joshsouza ryansb simplesteph
   $modules/iam_server_certificate_info.py:
     authors: linuxdynasty
   $modules/iam_user.py:
@@ -298,7 +276,6 @@ files:
     authors: nickball prasadkatti
   $modules/rds.py:
     authors: bpennypacker willthames
-    labels: rds
     ignore: bpennypacker erydo nadirollo seiffert tedder
   $modules/rds_instance.py:
     authors: s-hertel
@@ -308,7 +285,6 @@ files:
   $modules/rds_param_group.py:
     authors: tastychutney willthames
     maintainers: $team_aws scottanderson42
-    labels: rds_param_group
   $modules/rds_snapshot.py:
     authors: mikedlr willthames
   $modules/rds_snapshot_info.py:
@@ -316,14 +292,12 @@ files:
   $modules/rds_subnet_group.py:
     authors: tastychutney
     maintainers: $team_aws scottanderson42
-    labels: rds_subnet_group
   $modules/redshift.py:
     authors: j-carl rafaeldriutti
   $modules/redshift_cross_region_snapshots.py:
     authors: captainkerk
   $modules/route53.py:
     authors: bpennypacker jimbydamonk
-    labels: route53
     ignore: bpennypacker erydo nadirollo seiffert tedder
   $modules/route53_health_check.py:
     authors: zimbatm
@@ -353,7 +327,6 @@ files:
     labels: integrations
   tests/units/:
     labels: units
-    
 macros:
   connection: plugins/connection
   modules: plugins/modules
