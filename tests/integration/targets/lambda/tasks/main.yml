@@ -59,7 +59,7 @@
   - name: test with no role or handler
     lambda:
       name: ansible-testing-fake-should-not-be-created
-      runtime: python2.7
+      runtime: python3.6
     register: result
     ignore_errors: true
   - name: assert failure when called with no parameters
@@ -73,7 +73,7 @@
   - name: test state=present with security group but no vpc
     lambda:
       name: '{{ lambda_function_name }}'
-      runtime: 'python2.7'
+      runtime: 'python3.6'
       role: '{{ lambda_role_name }}'
       zip_file: '{{ zip_res.dest }}'
       handler: '{{ omit }}'
@@ -97,7 +97,7 @@
   - name: test state=present - upload the lambda
     lambda:
       name: '{{ lambda_function_name }}'
-      runtime: python2.7
+      runtime: python3.6
       handler: mini_lambda.handler
       role: '{{ lambda_role_name }}'
       zip_file: '{{ zip_res.dest }}'
@@ -157,7 +157,7 @@
   - name: reset config updates for the following tests
     lambda:
       name: '{{lambda_function_name}}'
-      runtime: python2.7
+      runtime: python3.6
       tracing_mode: PassThrough
       handler: mini_lambda.handler
       role: '{{ lambda_role_name }}'
@@ -167,7 +167,7 @@
       that:
       - result is not failed
       - result.changed == True
-      - result.configuration.runtime == 'python2.7'
+      - result.configuration.runtime == 'python3.6'
       - result.configuration.tracing_config.mode == 'PassThrough'
 
   # Query the Lambda
@@ -181,7 +181,7 @@
       that:
       - lambda_infos_all is not failed
       - lambda_infos_all.function[lambda_function_name].function_name == lambda_function_name
-      - lambda_infos_all.function[lambda_function_name].runtime == "python2.7"
+      - lambda_infos_all.function[lambda_function_name].runtime == "python3.6"
       - lambda_infos_all.function[lambda_function_name].versions is defined
       - lambda_infos_all.function[lambda_function_name].aliases is defined
       - lambda_infos_all.function[lambda_function_name].policy is defined
@@ -253,7 +253,7 @@
   - name: test state=present with all nullable variables explicitly set to null
     lambda:
       name: '{{lambda_function_name}}'
-      runtime: python2.7
+      runtime: python3.6
       role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'
       handler: mini_lambda.handler
@@ -272,7 +272,7 @@
   - name: test putting an environment variable changes lambda
     lambda:
       name: '{{lambda_function_name}}'
-      runtime: python2.7
+      runtime: python3.6
       handler: mini_lambda.handler
       role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'
@@ -325,7 +325,7 @@
   - name: parallel lambda creation 1/4
     lambda:
       name: '{{lambda_function_name}}_1'
-      runtime: python2.7
+      runtime: python3.6
       handler: mini_lambda.handler
       role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'
@@ -334,7 +334,7 @@
   - name: parallel lambda creation 2/4
     lambda:
       name: '{{lambda_function_name}}_2'
-      runtime: python2.7
+      runtime: python3.6
       handler: mini_lambda.handler
       role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'
@@ -343,7 +343,7 @@
   - name: parallel lambda creation 3/4
     lambda:
       name: '{{lambda_function_name}}_3'
-      runtime: python2.7
+      runtime: python3.6
       handler: mini_lambda.handler
       role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'
@@ -352,7 +352,7 @@
   - name: parallel lambda creation 4/4
     lambda:
       name: '{{lambda_function_name}}_4'
-      runtime: python2.7
+      runtime: python3.6
       handler: mini_lambda.handler
       role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'
