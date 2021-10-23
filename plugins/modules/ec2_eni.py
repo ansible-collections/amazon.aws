@@ -304,7 +304,6 @@ except ImportError:
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.core import is_boto3_error_code
 from ..module_utils.ec2 import AWSRetry
-from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ..module_utils.ec2 import get_ec2_security_group_ids_from_names
 from ..module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ..module_utils.tagging import boto3_tag_specifications
