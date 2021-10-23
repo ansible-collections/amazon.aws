@@ -29,7 +29,7 @@ files:
   $modules/:
     authors: wimnat
     maintainers: $team_aws
-    ignore: erydo nadirollo seiffert tedder
+    ignore: erydo nadirollo seiffert tedder wimnat
     labels: modules
   $modules/_aws_az_facts.py:
     authors: Sodki
