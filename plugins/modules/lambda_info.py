@@ -58,7 +58,6 @@ EXAMPLES = '''
 - name: List all function
   community.aws.lambda_info:
     query: all
-    max_items: 20
   register: output
 - name: show Lambda information
   ansible.builtin.debug:
@@ -89,6 +88,13 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+
+
+@AWSRetry.jittered_backoff()
+def _paginate(client, function, **params):
+    paginator = client.get_paginator(function)
+    return paginator.paginate(**params).build_full_result()
 
 
 def fix_return(node):
@@ -127,14 +133,8 @@ def alias_details(client, module):
 
     function_name = module.params.get('function_name')
     if function_name:
-        params = dict()
-        if module.params.get('max_items'):
-            params['MaxItems'] = module.params.get('max_items')
-
-        if module.params.get('next_marker'):
-            params['Marker'] = module.params.get('next_marker')
         try:
-            lambda_info.update(aliases=client.list_aliases(FunctionName=function_name, **params)['Aliases'])
+            lambda_info.update(aliases=_paginate(client, 'list_aliases', FunctionName=function_name)['Aliases'])
         except is_boto3_error_code('ResourceNotFoundException'):
             lambda_info.update(aliases=[])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
@@ -153,9 +153,6 @@ def all_details(client, module):
     :param module: Ansible module reference
     :return dict:
     """
-
-    if module.params.get('max_items') or module.params.get('next_marker'):
-        module.fail_json(msg='Cannot specify max_items nor next_marker for query=all.')
 
     lambda_info = dict()
 
@@ -187,21 +184,14 @@ def config_details(client, module):
     function_name = module.params.get('function_name')
     if function_name:
         try:
-            lambda_info.update(client.get_function_configuration(FunctionName=function_name))
+            lambda_info.update(client.get_function_configuration(aws_retry=True, FunctionName=function_name))
         except is_boto3_error_code('ResourceNotFoundException'):
             lambda_info.update(function={})
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Trying to get {0} configuration".format(function_name))
     else:
-        params = dict()
-        if module.params.get('max_items'):
-            params['MaxItems'] = module.params.get('max_items')
-
-        if module.params.get('next_marker'):
-            params['Marker'] = module.params.get('next_marker')
-
         try:
-            lambda_info.update(function_list=client.list_functions(**params)['Functions'])
+            lambda_info.update(function_list=_paginate(client, 'list_functions')['Functions'])
         except is_boto3_error_code('ResourceNotFoundException'):
             lambda_info.update(function_list=[])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
@@ -234,14 +224,8 @@ def mapping_details(client, module):
     if module.params.get('event_source_arn'):
         params['EventSourceArn'] = module.params.get('event_source_arn')
 
-    if module.params.get('max_items'):
-        params['MaxItems'] = module.params.get('max_items')
-
-    if module.params.get('next_marker'):
-        params['Marker'] = module.params.get('next_marker')
-
     try:
-        lambda_info.update(mappings=client.list_event_source_mappings(**params)['EventSourceMappings'])
+        lambda_info.update(mappings=_paginate(client, 'list_event_source_mappings', **params)['EventSourceMappings'])
     except is_boto3_error_code('ResourceNotFoundException'):
         lambda_info.update(mappings=[])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
@@ -262,16 +246,13 @@ def policy_details(client, module):
     :return dict:
     """
 
-    if module.params.get('max_items') or module.params.get('next_marker'):
-        module.fail_json(msg='Cannot specify max_items nor next_marker for query=policy.')
-
     lambda_info = dict()
 
     function_name = module.params.get('function_name')
     if function_name:
         try:
             # get_policy returns a JSON string so must convert to dict before reassigning to its key
-            lambda_info.update(policy=json.loads(client.get_policy(FunctionName=function_name)['Policy']))
+            lambda_info.update(policy=json.loads(client.get_policy(aws_retry=True, FunctionName=function_name)['Policy']))
         except is_boto3_error_code('ResourceNotFoundException'):
             lambda_info.update(policy={})
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
@@ -295,15 +276,8 @@ def version_details(client, module):
 
     function_name = module.params.get('function_name')
     if function_name:
-        params = dict()
-        if module.params.get('max_items'):
-            params['MaxItems'] = module.params.get('max_items')
-
-        if module.params.get('next_marker'):
-            params['Marker'] = module.params.get('next_marker')
-
         try:
-            lambda_info.update(versions=client.list_versions_by_function(FunctionName=function_name, **params)['Versions'])
+            lambda_info.update(versions=_paginate(client, 'list_versions_by_function', FunctionName=function_name)['Versions'])
         except is_boto3_error_code('ResourceNotFoundException'):
             lambda_info.update(versions=[])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
@@ -343,7 +317,7 @@ def main():
         if len(function_name) > 64:
             module.fail_json(msg='Function name "{0}" exceeds 64 character limit'.format(function_name))
 
-    client = module.client('lambda')
+    client = module.client('lambda', retry_decorator=AWSRetry.jittered_backoff())
 
     invocations = dict(
         aliases='alias_details',
