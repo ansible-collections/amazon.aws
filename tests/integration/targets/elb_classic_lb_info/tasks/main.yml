@@ -1,0 +1,311 @@
+---
+# __Test Info__
+# Create a self signed cert and upload it to AWS
+# http://www.akadia.com/services/ssh_test_certificate.html
+# http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/ssl-server-cert.html
+
+# __Test Outline__
+#
+# __elb_classic_lb__
+# create test elb with listeners and certificate
+# change AZ's
+# change listeners
+# remove listeners
+# remove elb
+
+# __elb_classic_lb_info_
+# get nonexistent load balancer
+
+- module_defaults:
+    group/aws:
+      region: "{{ ec2_region }}"
+      ec2_access_key: "{{ ec2_access_key }}"
+      ec2_secret_key: "{{ ec2_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+  block:
+
+    # ============================================================
+    # create test elb with listeners, certificate, and health check
+
+    - name: Create ELB
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        zones:
+          - "{{ ec2_region }}a"
+          - "{{ ec2_region }}b"
+        listeners:
+          - protocol: http
+            load_balancer_port: 80
+            instance_port: 80
+          - protocol: http
+            load_balancer_port: 8080
+            instance_port: 8080
+        health_check:
+            ping_protocol: http
+            ping_port: 80
+            ping_path: "/index.html"
+            response_timeout: 5
+            interval: 30
+            unhealthy_threshold: 2
+            healthy_threshold: 10
+      register: create
+
+    - assert:
+        that:
+          - create is changed
+          # We rely on these for the info test, make sure they're what we expect
+          - '"{{ ec2_region }}a" in create.elb.zones'
+          - '"{{ ec2_region }}b" in create.elb.zones'
+          - create.elb.health_check.healthy_threshold == 10
+          - create.elb.health_check.interval == 30
+          - create.elb.health_check.target == "HTTP:80/index.html"
+          - create.elb.health_check.timeout == 5
+          - create.elb.health_check.unhealthy_threshold == 2
+          - '[80, 80, "HTTP", "HTTP"] in create.elb.listeners'
+          - '[8080, 8080, "HTTP", "HTTP"] in create.elb.listeners'
+
+    - name: Get ELB info
+      elb_classic_lb_info:
+        names: "{{ elb_name }}"
+      register: info
+
+    - assert:
+        that:
+          - info.elbs|length == 1
+          - elb.availability_zones|length == 2
+          - '"{{ ec2_region }}a" in elb.availability_zones'
+          - '"{{ ec2_region }}b" in elb.availability_zones'
+          - elb.health_check.healthy_threshold == 10
+          - elb.health_check.interval == 30
+          - elb.health_check.target == "HTTP:80/index.html"
+          - elb.health_check.timeout == 5
+          - elb.health_check.unhealthy_threshold == 2
+          - '{"instance_port": 80, "instance_protocol": "HTTP", "load_balancer_port": 80, "protocol": "HTTP"} == listeners[0]'
+          - '{"instance_port": 8080, "instance_protocol": "HTTP", "load_balancer_port": 8080, "protocol": "HTTP"} == listeners[1]'
+      vars:
+        elb: "{{ info.elbs[0] }}"
+        listeners: "{{ elb.listener_descriptions|map(attribute='listener')|sort(attribute='load_balancer_port') }}"
+
+    # ============================================================
+
+    # check ports, would be cool, but we are at the mercy of AWS
+    # to start things in a timely manner
+
+    #- name: check to make sure 80 is listening
+    #  wait_for: host={{ info.elb.dns_name }} port=80 timeout=600
+    #  register: result
+
+    #- name: assert can connect to port#
+    #  assert: 'result.state == "started"'
+
+    #- name: check to make sure 443 is listening
+    #  wait_for: host={{ info.elb.dns_name }} port=443 timeout=600
+    #  register: result
+
+    #- name: assert can connect to port#
+    #  assert: 'result.state == "started"'
+
+    # ============================================================
+
+    # Change AZ's
+
+    - name: Change AZ's
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        zones:
+          - "{{ ec2_region }}c"
+        listeners:
+          - protocol: http
+            load_balancer_port: 80
+            instance_port: 80
+        purge_zones: yes
+        health_check:
+            ping_protocol: http
+            ping_port: 80
+            ping_path: "/index.html"
+            response_timeout: 5
+            interval: 30
+            unhealthy_threshold: 2
+            healthy_threshold: 10
+      register: update_az
+
+    - assert:
+        that:
+          - update_az is changed
+          - update_az.elb.zones[0] == "{{ ec2_region }}c"
+
+    - name: Get ELB info after changing AZ's
+      elb_classic_lb_info:
+        names: "{{ elb_name }}"
+      register: info
+
+    - assert:
+        that:
+          - elb.availability_zones|length == 1
+          - '"{{ ec2_region }}c" in elb.availability_zones[0]'
+      vars:
+        elb: "{{ info.elbs[0] }}"
+
+    # ============================================================
+
+    # Update AZ's
+
+    - name: Update AZ's
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        zones:
+          - "{{ ec2_region }}a"
+          - "{{ ec2_region }}b"
+          - "{{ ec2_region }}c"
+        listeners:
+          - protocol: http
+            load_balancer_port: 80
+            instance_port: 80
+        purge_zones: yes
+      register: update_az
+
+    - assert:
+        that:
+          - update_az is changed
+          - '"{{ ec2_region }}a" in update_az.elb.zones'
+          - '"{{ ec2_region }}b" in update_az.elb.zones'
+          - '"{{ ec2_region }}c" in update_az.elb.zones'
+
+    - name: Get ELB info after updating AZ's
+      elb_classic_lb_info:
+        names: "{{ elb_name }}"
+      register: info
+
+    - assert:
+        that:
+          - elb.availability_zones|length == 3
+          - '"{{ ec2_region }}a" in elb.availability_zones'
+          - '"{{ ec2_region }}b" in elb.availability_zones'
+          - '"{{ ec2_region }}c" in elb.availability_zones'
+      vars:
+        elb: "{{ info.elbs[0] }}"
+
+    # ============================================================
+
+    # Purge Listeners
+
+    - name: Purge Listeners
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        zones:
+          - "{{ ec2_region }}a"
+          - "{{ ec2_region }}b"
+          - "{{ ec2_region }}c"
+        listeners:
+          - protocol: http
+            load_balancer_port: 80
+            instance_port: 81
+        purge_listeners: yes
+      register: purge_listeners
+
+    - assert:
+        that:
+          - purge_listeners is changed
+          - '[80, 81, "HTTP", "HTTP"] in purge_listeners.elb.listeners'
+          - purge_listeners.elb.listeners|length == 1
+
+    - name: Get ELB info after purging listeners
+      elb_classic_lb_info:
+        names: "{{ elb_name }}"
+      register: info
+
+    - assert:
+        that:
+          - elb.listener_descriptions|length == 1
+          - '{"instance_port": 81, "instance_protocol": "HTTP", "load_balancer_port": 80, "protocol": "HTTP"} == elb.listener_descriptions[0].listener'
+      vars:
+        elb: "{{ info.elbs[0] }}"
+
+
+    # ============================================================
+
+    # add Listeners
+
+    - name: Add Listeners
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        zones:
+          - "{{ ec2_region }}a"
+          - "{{ ec2_region }}b"
+          - "{{ ec2_region }}c"
+        listeners:
+          - protocol: http
+            load_balancer_port: 8081
+            instance_port: 8081
+        purge_listeners: no
+      register: update_listeners
+
+    - assert:
+        that:
+          - update_listeners is changed
+          - '[80, 81, "HTTP", "HTTP"] in update_listeners.elb.listeners'
+          - '[8081, 8081, "HTTP", "HTTP"] in update_listeners.elb.listeners'
+          - update_listeners.elb.listeners|length == 2
+
+    - name: Get ELB info after adding listeners
+      elb_classic_lb_info:
+        names: "{{ elb_name }}"
+      register: info
+
+    - assert:
+        that:
+          - elb.listener_descriptions|length == 2
+          - '{"instance_port": 81, "instance_protocol": "HTTP", "load_balancer_port": 80, "protocol": "HTTP"} == listeners[0]'
+          - '{"instance_port": 8081, "instance_protocol": "HTTP", "load_balancer_port": 8081, "protocol": "HTTP"} == listeners[1]'
+      vars:
+        elb: "{{ info.elbs[0] }}"
+        listeners: "{{ elb.listener_descriptions|map(attribute='listener')|sort(attribute='load_balancer_port') }}"
+
+    # ============================================================
+
+    # Test getting nonexistent load balancer
+    - name: get nonexistent load balancer
+      elb_classic_lb_info:
+        names: "invalid-elb"
+      register: info
+
+    - assert:
+        that:
+          - info.elbs|length==0
+
+    # Test getting a valid and nonexistent load balancer
+    - name: get nonexistent load balancer
+      elb_classic_lb_info:
+        names: ["{{ elb_name }}", "invalid-elb"]
+      register: info
+
+    - assert:
+        that:
+          - info.elbs|length==1
+          - info.elbs[0].load_balancer_name == elb_name
+
+    # ============================================================
+
+    - name: get all load balancers
+      elb_classic_lb_info:
+        names: "{{ omit }}"
+      register: info
+
+    - assert:
+        that:
+          - info.elbs|length>0
+
+  always:
+
+    # ============================================================
+    - name: remove the test load balancer completely
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: absent
+      register: result
+      ignore_errors: true
