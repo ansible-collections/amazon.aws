@@ -372,9 +372,10 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.core import is_boto3_error_code
 from ..module_utils.ec2 import AWSRetry
-from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import ensure_ec2_tags
 from ..module_utils.ec2 import add_ec2_tags
+from ..module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ..module_utils.tagging import boto3_tag_specifications
 from ..module_utils.waiters import get_waiter
 
 
@@ -494,6 +495,8 @@ def create_image(module, connection):
         if instance_id:
             params['InstanceId'] = instance_id
             params['NoReboot'] = no_reboot
+            if tags and module.botocore_at_least('1.19.30'):
+                params['TagSpecifications'] = boto3_tag_specifications(tags, types=['image', 'snapshot'])
             image_id = connection.create_image(aws_retry=True, **params).get('ImageId')
         else:
             if architecture:
@@ -524,7 +527,7 @@ def create_image(module, connection):
         waiter = get_waiter(connection, 'image_available')
         waiter.wait(ImageIds=[image_id], WaiterConfig=dict(Delay=delay, MaxAttempts=max_attempts))
 
-    if tags:
+    if tags and 'TagSpecifications' not in params:
         image_info = get_image_by_id(module, connection, image_id)
         add_ec2_tags(connection, module, image_id, tags)
         if image_info and image_info.get('BlockDeviceMappings'):
