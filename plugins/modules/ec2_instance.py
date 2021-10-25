@@ -452,7 +452,7 @@ EXAMPLES = '''
       vpc_subnet_id: subnet-0123456
     state: present
 
-# launches 3 instances
+# launches multiple instances - specific number of instances
 - name: start specific number of multiple instances
   amazon.aws.ec2_instance:
     instance_type: t3.small
