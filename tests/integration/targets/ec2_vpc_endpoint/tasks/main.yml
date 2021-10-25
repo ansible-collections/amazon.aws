@@ -754,6 +754,51 @@
       that:
       - interface_endpoint_delete_check is changed
 
+  - name: Create a subnet
+    ec2_vpc_subnet:
+      state: present
+      vpc_id: '{{ vpc_id }}'
+      az: "{{ aws_region}}a"
+      cidr: "{{ vpc_cidr }}"
+    register: interface_endpoint_create_subnet_check
+
+  - name: Create a security group
+    ec2_group:
+      name: securitygroup-prodext
+      description: "security group for Ansible interface endpoint"
+      state: present
+      vpc_id: "{{ vpc.vpc.id }}"
+      rules:
+        - proto: tcp
+          from_port: 1
+          to_port: 65535
+          cidr_ip: 0.0.0.0/0
+    register: interface_endpoint_create_sg_check
+
+  - name: Create interface endpoint attached to a subnet
+    ec2_vpc_endpoint:
+      state: present
+      vpc_id: '{{ vpc_id }}'
+      service: '{{ endpoint_service_a }}'
+      vpc_endpoint_type: Interface
+      vpc_endpoint_subnets: "{{ interface_endpoint_create_subnet_check.subnet.id') }}"
+      vpc_endpoint_security_groups: "{{ interface_endpoint_create_sg_check.group_id }}"
+    register: create_interface_endpoint_with_sg_subnets
+  - name: Check that the interface endpoint was created properly
+    assert:
+      that:
+        - create_interface_endpoint_with_sg_subnets is changed
+        - create_interface_endpoint_with_sg_subnets.result.vpc_endpoint_type == "Interface"
+
+  - name: Delete interface endpoint
+    ec2_vpc_endpoint:
+      state: absent
+      vpc_endpoint_id: "{{ create_interface_endpoint_with_sg_subnets.result.vpc_endpoint_id }}"
+    register: create_interface_endpoint_with_sg_subnets_delete_check
+  - assert:
+      that:
+        - create_interface_endpoint_with_sg_subnets_delete_check is changed
+
   # ============================================================
   # BEGIN POST-TEST CLEANUP
   always:
