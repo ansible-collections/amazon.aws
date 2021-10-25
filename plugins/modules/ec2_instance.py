@@ -425,6 +425,7 @@ EXAMPLES = '''
     tags:
       Env: "eni_on"
     instance_type: t2.micro
+
 - name: start an instance with metadata options
   amazon.aws.ec2_instance:
     name: "public-metadataoptions-instance"
@@ -436,12 +437,28 @@ EXAMPLES = '''
     metadata_options:
       http_endpoint: enabled
       http_tokens: optional
+
+# launches maximum possible number of instances above min_count but not more than max_count
 - name: start multiple instances
   amazon.aws.ec2_instance:
     instance_type: t3.small
     image_id: ami-123456
     min_count: 3
     max_count: 5
+    region: us-east-2
+    network:
+      assign_public_ip: yes
+      security_group: default
+      vpc_subnet_id: subnet-0123456
+    state: present
+
+# launches 3 instances
+- name: start specific number of multiple instances
+  amazon.aws.ec2_instance:
+    instance_type: t3.small
+    image_id: ami-123456
+    min_count: 3
+    max_count: 3
     region: us-east-2
     network:
       assign_public_ip: yes
