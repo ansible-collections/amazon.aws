@@ -1,0 +1,2 @@
+minor_changes:
+- ec2_key - add support for tagging key pairs (https://github.com/ansible-collections/amazon.aws/pull/548).

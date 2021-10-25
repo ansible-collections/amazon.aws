@@ -94,6 +94,9 @@ def ansible_dict_to_boto3_tag_list(tags_dict, tag_name_key_name='Key', tag_value
         ]
     """
 
+    if not tags_dict:
+        return []
+
     tags_list = []
     for k, v in tags_dict.items():
         tags_list.append({tag_name_key_name: k, tag_value_key_name: to_native(v)})
@@ -127,6 +130,8 @@ def boto3_tag_specifications(tags_dict, types=None):
     Returns:
         List: List of dictionaries representing an AWS Tag Specification
     """
+    if not tags_dict:
+        return None
     specifications = list()
     tag_list = ansible_dict_to_boto3_tag_list(tags_dict)
 
