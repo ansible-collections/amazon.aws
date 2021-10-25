@@ -1,0 +1,18 @@
+---
+option_group_name: "{{ resource_prefix }}rds-option-group"
+engine_name: mysql
+major_engine_version: 5.6
+option_group_description: "{{ resource_prefix }}rds-option-group test"
+instance_id: "{{ resource_prefix }}"
+username: test
+password: test12345678
+db_instance_class: db.t2.small
+storage_encrypted_db_instance_class: db.t2.small
+allocated_storage: 20
+vpc_name: "{{ resource_prefix }}-vpc"
+vpc_seed: "{{ resource_prefix }}"
+vpc_cidr: "10.0.0.0/16"
+subnet_cidr: "10.0.{{ 256 | random(seed=vpc_seed) }}.0/24"
+sg_1_name: "{{ resource_prefix }}-sg-1"
+sg_2_name: "{{ resource_prefix }}-sg-2"
+sg_3_name: "{{ resource_prefix }}-sg-3"
