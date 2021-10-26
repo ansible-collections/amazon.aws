@@ -215,11 +215,15 @@ options:
     description:
     - The minimum number of instances to launch.
     - If min_count is more than Amazon EC2 can launch in the target Availability Zone, no instances are launched.
+    - If min_count and max_count are not specified then a single instance will be launched.
+    default: 1
     type: int
   max_count:
     description:
     - The maximum number of instances to launch.
     - If max_count is more than Amazon EC2 can launch in the target Availability Zone, launches the largest possible number of instances above min_count.
+    - If min_count and max_count are not specified then a single instance will be launched.
+    default: 1
     type: int
   availability_zone:
     description:
@@ -1275,8 +1279,6 @@ def build_instance_tags(params, propagate_tags_to_volumes=True):
 def build_run_instance_spec(params):
     spec = dict(
         ClientToken=uuid.uuid4().hex,
-        MaxCount=1,
-        MinCount=1,
     )
     # network parameters
     spec['NetworkInterfaces'] = build_network_spec(params)
@@ -1288,7 +1290,7 @@ def build_run_instance_spec(params):
     if params.get('instance_role'):
         spec['IamInstanceProfile'] = dict(Arn=determine_iam_role(params.get('instance_role')))
 
-    # Instance count
+    # Set Instance count
     if module.params.get('min_count'):
         spec['MinCount'] = params['min_count']
     if module.params.get('max_count'):
@@ -1879,8 +1881,8 @@ def main():
         filters=dict(type='dict', default=None),
         launch_template=dict(type='dict'),
         key_name=dict(type='str'),
-        min_count=dict(type='int'),
-        max_count=dict(type='int'),
+        min_count=dict(type='int', default=1),
+        max_count=dict(type='int', default=1),
         cpu_credit_specification=dict(type='str', choices=['standard', 'unlimited']),
         cpu_options=dict(type='dict', options=dict(
             core_count=dict(type='int', required=True),
@@ -1932,11 +1934,12 @@ def main():
 
     existing_matches = find_instances(filters=module.params.get('filters'))
 
-    # If min_count or max_count_specified
-    if module.params.get('min_count') or module.params.get('max_count'):
-        # Min count cannot be smaller than max count
-        if module.params.get('min_count') > module.params.get('max_count'):
-            module.fail_json(changed=False, msg='min_count cannot be greater than max_count.')
+    # Min count cannot be smaller than max count
+    if module.params.get('min_count') > module.params.get('max_count'):
+        module.fail_json(changed=False, msg='min_count cannot be greater than max_count.')
+
+    # Launching multiple instances if count value specified
+    if module.params.get('max_count') > 1:
         result = ensure_present(desired_module_state=state)
 
     if state in ('terminated', 'absent'):
