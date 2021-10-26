@@ -288,6 +288,10 @@ options:
     default: true
     version_added: 2.1.0
 
+notes:
+- The ec2_elb fact currently set by this module has been deprecated and will no
+  longer be set after release 4.0.0 of the collection.
+
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
