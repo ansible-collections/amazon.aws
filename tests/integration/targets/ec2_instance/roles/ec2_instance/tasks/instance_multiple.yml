@@ -55,7 +55,7 @@
       wait: true
     register: terminate_id
     check_mode: true
-    loop: "{{ created_instance_ids }}"
+    with_items: "{{ created_instance_ids }}"
 
   - assert:
       that:
@@ -69,7 +69,7 @@
       - "{{ item }}"
       wait: true
     register: terminate_id
-    loop: "{{ created_instance_ids }}"
+    with_items: "{{ created_instance_ids }}"
 
   - assert:
       that:
@@ -84,7 +84,7 @@
       wait: true
     register: terminate_id
     check_mode: true
-    loop: "{{ created_instance_ids }}"
+    with_items: "{{ created_instance_ids }}"
 
   - assert:
       that:
@@ -98,7 +98,7 @@
       - "{{ item }}"
       wait: true
     register: terminate_id
-    loop: "{{ created_instance_ids }}"
+    with_items: "{{ created_instance_ids }}"
 
   - assert:
       that:

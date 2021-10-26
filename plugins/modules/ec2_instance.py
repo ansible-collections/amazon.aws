@@ -214,15 +214,15 @@ options:
   min_count:
     description:
     - The minimum number of instances to launch.
-    - If min_count is more than Amazon EC2 can launch in the target Availability Zone, no instances are launched.
-    - If min_count and max_count are not specified then a single instance will be launched.
+    - If I(min_count) is more than Amazon EC2 can launch in the target Availability Zone, no instances are launched.
+    - If I(min_count) and I(max_count) are not specified then a single instance will be launched.
     default: 1
     type: int
   max_count:
     description:
     - The maximum number of instances to launch.
-    - If max_count is more than Amazon EC2 can launch in the target Availability Zone, launches the largest possible number of instances above min_count.
-    - If min_count and max_count are not specified then a single instance will be launched.
+    - If I(max_count) is more than Amazon EC2 can launch in the target Availability Zone, launches the largest possible number of instances above min_count.
+    - If I(min_count) and I(max_count) are not specified then a single instance will be launched.
     default: 1
     type: int
   availability_zone:
@@ -1291,10 +1291,8 @@ def build_run_instance_spec(params):
         spec['IamInstanceProfile'] = dict(Arn=determine_iam_role(params.get('instance_role')))
 
     # Set Instance count
-    if module.params.get('min_count'):
-        spec['MinCount'] = params['min_count']
-    if module.params.get('max_count'):
-        spec['MaxCount'] = params['max_count']
+    spec['MinCount'] = params['min_count']
+    spec['MaxCount'] = params['max_count']
 
     spec['InstanceType'] = params['instance_type']
     return spec
