@@ -1,7 +1,7 @@
 ---
 - name: Get ASG info
   ec2_asg_info:
-    name: "ansible-test-{{ tiny_prefix }}-elb$"
+    name: "{{ asg_name }}$"
   register: asg_info
 
 - name: Store Instance ID from ASG
@@ -26,7 +26,10 @@
 - assert:
     that:
     - remove_instance is successful
-    # - remove_instance is changed
+    - remove_instance is changed
+    - '"updated_elbs" in remove_instance'
+    - elb_name_1 in remove_instance.updated_elbs
+    - elb_name_2 in remove_instance.updated_elbs
     # It really shouldn't be returning a fact here
     - '"ansible_facts" in remove_instance'
     - '"ec2_elbs" in remove_instance.ansible_facts'
@@ -54,6 +57,9 @@
     that:
     - remove_instance is successful
     - remove_instance is changed
+    - '"updated_elbs" in remove_instance'
+    - elb_name_1 in remove_instance.updated_elbs
+    - elb_name_2 in remove_instance.updated_elbs
     # It really shouldn't be returning a fact here
     - '"ansible_facts" in remove_instance'
     - '"ec2_elbs" in remove_instance.ansible_facts'
@@ -82,6 +88,9 @@
     that:
     - remove_instance is successful
     - remove_instance is not changed
+    - '"updated_elbs" in remove_instance'
+    - elb_name_1 not in remove_instance.updated_elbs
+    - elb_name_2 not in remove_instance.updated_elbs
     # Check the real state
     - instance_asg not in elb_info_1.elbs[0].instances_inservice
     - instance_asg not in elb_info_2.elbs[0].instances_inservice
@@ -103,8 +112,10 @@
 - assert:
     that:
     - remove_instance is successful
-    # XXX always returns the ELBs the ASG belongs to
-    # - remove_instance is not changed
+    - remove_instance is not changed
+    - '"updated_elbs" in remove_instance'
+    - elb_name_1 not in remove_instance.updated_elbs
+    - elb_name_2 not in remove_instance.updated_elbs
     # Check the real state
     - instance_asg not in elb_info_1.elbs[0].instances_inservice
     - instance_asg not in elb_info_2.elbs[0].instances_inservice

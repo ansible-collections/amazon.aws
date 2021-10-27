@@ -1,7 +1,7 @@
 ---
 - name: Create instance a
   ec2_instance:
-    name: "ansible-test-{{ tiny_prefix }}-elb-a"
+    name: "{{ instance_name_1 }}"
     image_id: "{{ ec2_ami_id }}"
     vpc_subnet_id: "{{ subnet_a }}"
     instance_type: t3.micro
@@ -11,7 +11,7 @@
 
 - name: Create instance b
   ec2_instance:
-    name: "ansible-test-{{ tiny_prefix }}-elb-b"
+    name: "{{ instance_name_2 }}"
     image_id: "{{ ec2_ami_id }}"
     vpc_subnet_id: "{{ subnet_b }}"
     instance_type: t3.micro
@@ -26,7 +26,7 @@
 
 - name: Create a Launch Template
   ec2_lc:
-    name: "ansible-test-{{ tiny_prefix }}-elb"
+    name: "{{ lc_name }}"
     image_id: "{{ ec2_ami_id }}"
     security_groups: "{{ sg_a }}"
     instance_type: t3.micro
@@ -35,11 +35,11 @@
 
 - name: Create an ASG
   ec2_asg:
-    name: "ansible-test-{{ tiny_prefix }}-elb"
+    name: "{{ asg_name }}"
     load_balancers:
     - "{{ elb_name_1 }}"
     - "{{ elb_name_2 }}"
-    launch_config_name: "ansible-test-{{ tiny_prefix }}-elb"
+    launch_config_name: "{{ lc_name }}"
     availability_zones:
     - "{{ availability_zone_a }}"
     min_size: 0

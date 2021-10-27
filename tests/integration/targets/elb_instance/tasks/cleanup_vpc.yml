@@ -5,8 +5,8 @@
     state: absent
   ignore_errors: true
   loop:
-    - '{{ resource_prefix }}-a'
-    - '{{ resource_prefix }}-b'
+    - '{{ sg_name_1 }}'
+    - '{{ sg_name_2 }}'
 
 - name: delete subnets
   ec2_vpc_subnet:
@@ -22,5 +22,5 @@
   ec2_vpc_net:
     cidr_block: '{{ vpc_cidr }}'
     state: absent
-    name: '{{ resource_prefix }}'
+    name: '{{ vpc_name }}'
   ignore_errors: true

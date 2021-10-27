@@ -4,9 +4,9 @@
   ec2_vpc_net:
     cidr_block: '{{ vpc_cidr }}'
     state: present
-    name: '{{ resource_prefix }}'
+    name: '{{ vpc_name }}'
     resource_tags:
-      Name: '{{ resource_prefix }}'
+      Name: '{{ vpc_name }}'
   register: setup_vpc
 
 - name: create a subnet
@@ -17,7 +17,7 @@
     cidr: '{{ subnet_cidr_1 }}'
     state: present
     resource_tags:
-      Name: '{{ resource_prefix }}-a'
+      Name: '{{ subnet_name_1 }}'
   register: setup_subnet_1
 
 - name: create a subnet
@@ -28,12 +28,12 @@
     cidr: '{{ subnet_cidr_2 }}'
     state: present
     resource_tags:
-      Name: '{{ resource_prefix }}-b'
+      Name: '{{ subnet_name_2 }}'
   register: setup_subnet_2
 
 - name: create a security group
   ec2_group:
-    name: '{{ resource_prefix }}-a'
+    name: '{{ sg_name_1 }}'
     description: 'created by Ansible integration tests'
     state: present
     vpc_id: '{{ setup_vpc.vpc.id }}'
@@ -46,7 +46,7 @@
 
 - name: create a security group
   ec2_group:
-    name: '{{ resource_prefix }}-b'
+    name: '{{ sg_name_2 }}'
     description: 'created by Ansible integration tests'
     state: present
     vpc_id: '{{ setup_vpc.vpc.id }}'

@@ -10,14 +10,14 @@
 
 - name: Delete ASG
   ec2_asg:
-    name: "ansible-test-{{ tiny_prefix }}-elb"
+    name: '{{ asg_name }}'
     state: absent
   ignore_errors: true
   register: ec2_asg_a
 
 - name: Delete Launch Template
   ec2_lc:
-    name: "ansible-test-{{ tiny_prefix }}-elb"
+    name: '{{ lc_name }}'
     state: absent
   ignore_errors: true
   register: ec2_lc_a
