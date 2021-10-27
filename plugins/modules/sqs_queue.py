@@ -119,7 +119,7 @@ delay_seconds:
 kms_master_key_id:
     description: The ID of an AWS-managed customer master key (CMK) for Amazon SQS or a custom CMK.
     type: str
-    returned: always
+    returned: if value exists
     sample: alias/MyAlias
 kms_data_key_reuse_period_seconds:
     description: The length of time, in seconds, for which Amazon SQS can reuse a data key to encrypt or decrypt messages before calling AWS KMS again.
