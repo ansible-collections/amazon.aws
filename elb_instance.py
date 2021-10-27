@@ -14,8 +14,6 @@ short_description: De-registers or registers instances from EC2 ELBs
 description:
   - This module de-registers or registers an AWS EC2 instance from the ELBs
     that it belongs to.
-  - Returns fact "ec2_elbs" which is a list of elbs attached to the instance
-    if state=absent is passed as an argument.
   - Will be marked changed when called only if there are ELBs found to operate on.
 author: "John Jarvis (@jarv)"
 options:
@@ -27,13 +25,13 @@ options:
     type: str
   instance_id:
     description:
-      - EC2 Instance ID
+      - EC2 Instance ID.
     required: true
     type: str
   ec2_elbs:
     description:
-      - List of ELB names, required for registration.
-      - The ec2_elbs fact should be used if there was a previous de-register.
+      - List of ELB names
+      - Required when I(state=present).
     type: list
     elements: str
   enable_availability_zone:
@@ -56,11 +54,12 @@ options:
       - Ignored when I(wait=no).
     default: 0
     type: int
+notes:
+- The ec2_elb fact currently set by this module has been deprecated and will no
+  longer be set after release 4.0.0 of the collection.
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-requirements:
-- boto >= 2.49.0
 '''
 
 EXAMPLES = r"""
@@ -70,6 +69,7 @@ pre_tasks:
     community.aws.elb_instance:
       instance_id: "{{ ansible_ec2_instance_id }}"
       state: absent
+    register: deregister_instances
     delegate_to: localhost
 roles:
   - myrole
@@ -77,90 +77,120 @@ post_tasks:
   - name: Instance Register
     community.aws.elb_instance:
       instance_id: "{{ ansible_ec2_instance_id }}"
-      ec2_elbs: "{{ item }}"
+      ec2_elbs: "{{ deregister_instances.updated_elbs }}"
       state: present
     delegate_to: localhost
-    loop: "{{ ec2_elbs }}"
 """
 
-import time
+RETURN = '''
+updated_elbs:
+  description: A list of ELB names that the instance has been added to or removed from.
+  returned: always
+  type: list
+  elements: str
+'''
 
 try:
-    import boto
-    import boto.ec2
-    import boto.ec2.autoscale
-    import boto.ec2.elb
+    import botocore
 except ImportError:
-    pass  # Handled by HAS_BOTO
+    pass  # Handled by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AnsibleAWSError
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import connect_to_aws
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 class ElbManager:
     """Handles EC2 instance ELB registration and de-registration"""
 
-    def __init__(self, module, instance_id=None, ec2_elbs=None,
-                 region=None, **aws_connect_params):
+    def __init__(self, module, instance_id=None, ec2_elbs=None):
+        retry_decorator = AWSRetry.jittered_backoff()
         self.module = module
+        self.client_asg = module.client('autoscaling', retry_decorator=retry_decorator)
+        self.client_ec2 = module.client('ec2', retry_decorator=retry_decorator)
+        self.client_elb = module.client('elb', retry_decorator=retry_decorator)
         self.instance_id = instance_id
-        self.region = region
-        self.aws_connect_params = aws_connect_params
         self.lbs = self._get_instance_lbs(ec2_elbs)
         self.changed = False
+        self.updated_elbs = set()
 
     def deregister(self, wait, timeout):
         """De-register the instance from all ELBs and wait for the ELB
         to report it out-of-service"""
 
         for lb in self.lbs:
-            initial_state = self._get_instance_health(lb)
-            if initial_state is None:
-                # Instance isn't registered with this load
-                # balancer. Ignore it and try the next one.
+            instance_ids = [i['InstanceId'] for i in lb['Instances']]
+            if self.instance_id not in instance_ids:
                 continue
 
-            # The instance is not associated with any load balancer so nothing to do
-            if not self._get_instance_lbs():
-                return
+            self.updated_elbs.add(lb['LoadBalancerName'])
 
-            lb.deregister_instances([self.instance_id])
+            if self.module.check_mode:
+                self.changed = True
+                continue
+
+            try:
+                self.client_elb.deregister_instances_from_load_balancer(
+                    aws_retry=True,
+                    LoadBalancerName=lb['LoadBalancerName'],
+                    Instances=[{"InstanceId": self.instance_id}],
+                )
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                self.module.fail_json_aws(e, 'Failed to deregister instance from load balancer',
+                                          load_balancer=lb, instance=self.instance_id)
 
             # The ELB is changing state in some way. Either an instance that's
             # InService is moving to OutOfService, or an instance that's
             # already OutOfService is being deregistered.
             self.changed = True
 
-            if wait:
-                self._await_elb_instance_state(lb, 'OutOfService', initial_state, timeout)
+        for lb in self.lbs:
+            self._await_elb_instance_state(lb, 'Deregistered', timeout)
 
     def register(self, wait, enable_availability_zone, timeout):
         """Register the instance for all ELBs and wait for the ELB
         to report the instance in-service"""
         for lb in self.lbs:
-            initial_state = self._get_instance_health(lb)
+            instance_ids = [i['InstanceId'] for i in lb['Instances']]
+            if self.instance_id in instance_ids:
+                continue
+
+            self.updated_elbs.add(lb['LoadBalancerName'])
 
             if enable_availability_zone:
-                self._enable_availailability_zone(lb)
+                self.changed |= self._enable_availailability_zone(lb)
 
-            lb.register_instances([self.instance_id])
-
-            if wait:
-                self._await_elb_instance_state(lb, 'InService', initial_state, timeout)
-            else:
-                # We cannot assume no change was made if we don't wait
-                # to find out
+            if self.module.check_mode:
                 self.changed = True
+                continue
+
+            try:
+                self.client_elb.register_instances_with_load_balancer(
+                    aws_retry=True,
+                    LoadBalancerName=lb['LoadBalancerName'],
+                    Instances=[{"InstanceId": self.instance_id}],
+                )
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                self.module.fail_json_aws(e, 'Failed to register instance with load balancer',
+                                          load_balancer=lb, instance=self.instance_id)
+
+            self.changed = True
+
+        for lb in self.lbs:
+            self._await_elb_instance_state(lb, 'InService', timeout)
+
+    @AWSRetry.jittered_backoff()
+    def _describe_elbs(self, **params):
+        paginator = self.client_elb.get_paginator('describe_load_balancers')
+        results = paginator.paginate(**params).build_full_result()
+        return results['LoadBalancerDescriptions']
 
     def exists(self, lbtest):
         """ Verify that the named ELB actually exists """
 
         found = False
         for lb in self.lbs:
-            if lb.name == lbtest:
+            if lb['LoadBalancerName'] == lbtest:
                 found = True
                 break
         return found
@@ -170,63 +200,59 @@ class ElbManager:
         Returns True if the zone was enabled or False if no change was made.
         lb: load balancer"""
         instance = self._get_instance()
-        if instance.placement in lb.availability_zones:
+        desired_zone = instance['Placement']['AvailabilityZone']
+
+        if desired_zone in lb['AvailabilityZones']:
             return False
 
-        lb.enable_zones(zones=instance.placement)
+        if self.module.check_mode:
+            return True
 
-        # If successful, the new zone will have been added to
-        # lb.availability_zones
-        return instance.placement in lb.availability_zones
+        try:
+            self.client_elb.enable_availability_zones_for_load_balancer(
+                aws_retry=True,
+                LoadBalancerName=lb['LoadBalancerName'],
+                AvailabilityZones=[desired_zone],
+            )
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            self.module.fail_json_aws(e, 'Failed to enable AZ on load balancers',
+                                      load_balancer=lb, zone=desired_zone)
 
-    def _await_elb_instance_state(self, lb, awaited_state, initial_state, timeout):
-        """Wait for an ELB to change state
-        lb: load balancer
-        awaited_state : state to poll for (string)"""
+        return True
 
-        wait_timeout = time.time() + timeout
-        while True:
-            instance_state = self._get_instance_health(lb)
+    def _await_elb_instance_state(self, lb, awaited_state, timeout):
+        """Wait for an ELB to change state"""
+        if self.module.check_mode:
+            return
 
-            if not instance_state:
-                msg = ("The instance %s could not be put in service on %s."
-                       " Reason: Invalid Instance")
-                self.module.fail_json(msg=msg % (self.instance_id, lb))
+        initial_state = self._get_instance_health(lb)
 
-            if instance_state.state == awaited_state:
-                # Check the current state against the initial state, and only set
-                # changed if they are different.
-                if (initial_state is None) or (instance_state.state != initial_state.state):
-                    self.changed = True
-                break
-            elif self._is_instance_state_pending(instance_state):
-                # If it's pending, we'll skip further checks and continue waiting
-                pass
-            elif (awaited_state == 'InService'
-                  and instance_state.reason_code == "Instance"
-                  and time.time() >= wait_timeout):
-                # If the reason_code for the instance being out of service is
-                # "Instance" this indicates a failure state, e.g. the instance
-                # has failed a health check or the ELB does not have the
-                # instance's availability zone enabled. The exact reason why is
-                # described in InstantState.description.
-                msg = ("The instance %s could not be put in service on %s."
-                       " Reason: %s")
-                self.module.fail_json(msg=msg % (self.instance_id,
-                                                 lb,
-                                                 instance_state.description))
-            time.sleep(1)
+        if awaited_state == initial_state:
+            return
 
-    def _is_instance_state_pending(self, instance_state):
-        """
-        Determines whether the instance_state is "pending", meaning there is
-        an operation under way to bring it in service.
-        """
-        # This is messy, because AWS provides no way to distinguish between
-        # an instance that is is OutOfService because it's pending vs. OutOfService
-        # because it's failing health checks. So we're forced to analyze the
-        # description, which is likely to be brittle.
-        return (instance_state and 'pending' in instance_state.description)
+        if awaited_state == 'InService':
+            waiter = self.client_elb.get_waiter('instance_in_service')
+        elif awaited_state == 'Deregistered':
+            waiter = self.client_elb.get_waiter('instance_deregistered')
+        elif awaited_state == 'OutOfService':
+            waiter = self.client_elb.get_waiter('instance_deregistered')
+        else:
+            self.module.fail_json(msg='Could not wait for unknown state', awaited_state=awaited_state)
+
+        try:
+            waiter.wait(
+                LoadBalancerName=lb['LoadBalancerName'],
+                Instances=[{"InstanceId": self.instance_id}],
+                WaiterConfig={'Delay': 1, 'MaxAttempts': timeout},
+            )
+        except botocore.exceptions.WaiterError as e:
+            self.module.fail_json_aws(e, msg='Timeout waiting for instance to reach desired state',
+                                      awaited_state=awaited_state)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            self.module.fail_json_aws(e, msg='Error while waiting for instance to reach desired state',
+                                      awaited_state=awaited_state)
+
+        return
 
     def _get_instance_health(self, lb):
         """
@@ -234,13 +260,20 @@ class ElbManager:
         certain error conditions.
         """
         try:
-            status = lb.get_instance_health([self.instance_id])[0]
-        except boto.exception.BotoServerError as e:
-            if e.error_code == 'InvalidInstance':
-                return None
-            else:
-                raise
-        return status
+            status = self.client_elb.describe_instance_health(
+                aws_retry=True,
+                LoadBalancerName=lb['LoadBalancerName'],
+                Instances=[{'InstanceId': self.instance_id}],
+            )['InstanceStates']
+        except is_boto3_error_code('InvalidInstance'):
+            return None
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+            self.module.fail_json_aws(e, msg='Failed to get instance health')
+
+        if not status:
+            return None
+
+        return status[0]['State']
 
     def _get_instance_lbs(self, ec2_elbs=None):
         """Returns a list of ELBs attached to self.instance_id
@@ -248,36 +281,29 @@ class ElbManager:
                   for elb lookup instead of returning what elbs
                   are attached to self.instance_id"""
 
+        list_params = dict()
         if not ec2_elbs:
             ec2_elbs = self._get_auto_scaling_group_lbs()
 
-        try:
-            elb = connect_to_aws(boto.ec2.elb, self.region, **self.aws_connect_params)
-        except (boto.exception.NoAuthHandlerFound, AnsibleAWSError) as e:
-            self.module.fail_json(msg=str(e))
+        if ec2_elbs:
+            list_params['LoadBalancerNames'] = ec2_elbs
 
-        elbs = []
-        marker = None
-        while True:
-            try:
-                newelbs = elb.get_all_load_balancers(marker=marker)
-                marker = newelbs.next_marker
-                elbs.extend(newelbs)
-                if not marker:
-                    break
-            except TypeError:
-                # Older version of boto do not allow for params
-                elbs = elb.get_all_load_balancers()
-                break
+        try:
+            elbs = self._describe_elbs(**list_params)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            self.module.fail_json_aws(e, 'Failed to describe load balancers')
 
         if ec2_elbs:
-            lbs = sorted([lb for lb in elbs if lb.name in ec2_elbs], key=lambda lb: lb.__repr__())
-        else:
-            lbs = []
-            for lb in elbs:
-                for info in lb.instances:
-                    if self.instance_id == info.id:
-                        lbs.append(lb)
+            return elbs
+
+        # If ec2_elbs wasn't specified, then filter out LBs we're not a member
+        # of.
+        lbs = []
+        for lb in elbs:
+            instance_ids = [i['InstanceId'] for i in lb['Instances']]
+            if self.instance_id in instance_ids:
+                lbs.append(lb)
+
         return lbs
 
     def _get_auto_scaling_group_lbs(self):
@@ -285,34 +311,42 @@ class ElbManager:
            indirectly through its auto scaling group membership"""
 
         try:
-            asg = connect_to_aws(boto.ec2.autoscale, self.region, **self.aws_connect_params)
-        except (boto.exception.NoAuthHandlerFound, AnsibleAWSError) as e:
-            self.module.fail_json(msg=str(e))
+            asg_instances = self.client_asg.describe_auto_scaling_instances(
+                aws_retry=True,
+                InstanceIds=[self.instance_id])['AutoScalingInstances']
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            self.module.fail_json_aws(e, msg='Failed to describe ASG Instance')
 
-        asg_instances = asg.get_all_autoscaling_instances([self.instance_id])
         if len(asg_instances) > 1:
             self.module.fail_json(msg="Illegal state, expected one auto scaling group instance.")
 
         if not asg_instances:
-            asg_elbs = []
-        else:
-            asg_name = asg_instances[0].group_name
+            # Instance isn't a member of an ASG
+            return []
 
-            asgs = asg.get_all_groups([asg_name])
-            if len(asg_instances) != 1:
-                self.module.fail_json(msg="Illegal state, expected one auto scaling group.")
+        asg_name = asg_instances[0]['AutoScalingGroupName']
 
-            asg_elbs = asgs[0].load_balancers
+        try:
+            asg_instances = self.client_asg.describe_auto_scaling_groups(
+                aws_retry=True,
+                AutoScalingGroupNames=[asg_name])['AutoScalingGroups']
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            self.module.fail_json_aws(e, msg='Failed to describe ASG Instance')
 
-        return asg_elbs
+        if len(asg_instances) != 1:
+            self.module.fail_json(msg="Illegal state, expected one auto scaling group.")
+
+        return asg_instances[0]['LoadBalancerNames']
 
     def _get_instance(self):
-        """Returns a boto.ec2.InstanceObject for self.instance_id"""
+        """Returns the description of an instance"""
         try:
-            ec2 = connect_to_aws(boto.ec2, self.region, **self.aws_connect_params)
-        except (boto.exception.NoAuthHandlerFound, AnsibleAWSError) as e:
-            self.module.fail_json(msg=str(e))
-        return ec2.get_only_instances(instance_ids=[self.instance_id])[0]
+            result = self.client_ec2.describe_instances(
+                aws_retry=True,
+                InstanceIds=[self.instance_id])
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            self.module.fail_json_aws(e, msg='Failed to describe ASG Instance')
+        return result['Reservations'][0]['Instances'][0]
 
 
 def main():
@@ -324,48 +358,43 @@ def main():
         wait={'required': False, 'default': True, 'type': 'bool'},
         wait_timeout={'required': False, 'default': 0, 'type': 'int'},
     )
+    required_if = [
+        ('state', 'present', ['ec2_elbs']),
+    ]
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
+        required_if=required_if,
         supports_check_mode=True,
-        check_boto3=False,
     )
-
-    if not HAS_BOTO:
-        module.fail_json(msg='boto required for this module')
-
-    region, ec2_url, aws_connect_params = get_aws_connection_info(module)
-
-    if not region:
-        module.fail_json(msg="Region must be specified as a parameter, in EC2_REGION or AWS_REGION environment variables or in boto configuration file")
 
     ec2_elbs = module.params['ec2_elbs']
     wait = module.params['wait']
     enable_availability_zone = module.params['enable_availability_zone']
     timeout = module.params['wait_timeout']
-
-    if module.params['state'] == 'present' and 'ec2_elbs' not in module.params:
-        module.fail_json(msg="ELBs are required for registration")
-
     instance_id = module.params['instance_id']
-    elb_man = ElbManager(module, instance_id, ec2_elbs, region=region, **aws_connect_params)
+
+    elb_man = ElbManager(module, instance_id, ec2_elbs)
 
     if ec2_elbs is not None:
         for elb in ec2_elbs:
             if not elb_man.exists(elb):
-                msg = "ELB %s does not exist" % elb
-                module.fail_json(msg=msg)
+                module.fail_json(msg="ELB {0} does not exist".format(elb))
 
-    if not module.check_mode:
-        if module.params['state'] == 'present':
-            elb_man.register(wait, enable_availability_zone, timeout)
-        elif module.params['state'] == 'absent':
-            elb_man.deregister(wait, timeout)
+    if module.params['state'] == 'present':
+        elb_man.register(wait, enable_availability_zone, timeout)
+    elif module.params['state'] == 'absent':
+        elb_man.deregister(wait, timeout)
 
-    ansible_facts = {'ec2_elbs': [lb.name for lb in elb_man.lbs]}
-    ec2_facts_result = dict(changed=elb_man.changed, ansible_facts=ansible_facts)
+    # XXX We're not an _fact module we shouldn't be returning a fact and poluting
+    # the namespace
+    ansible_facts = {'ec2_elbs': [lb['LoadBalancerName'] for lb in elb_man.lbs]}
 
-    module.exit_json(**ec2_facts_result)
+    module.exit_json(
+        changed=elb_man.changed,
+        ansible_facts=ansible_facts,
+        updated_elbs=list(elb_man.updated_elbs),
+    )
 
 
 if __name__ == '__main__':
