@@ -96,6 +96,15 @@ options:
             - How long the module should wait (in seconds) for desired state before returning. Zero means wait as long as necessary.
         default: 0
         type: int
+    transition_to_ia:
+        description:
+            - How many days before objects transition to the lower-cost EFS Infrequent Access (IA) storage class.
+            - If set to the string C(None), any existing lifecyle policy will be removed, and objects will not transition
+              to an IA storage class.
+            - If this parameter is absent, any existing lifecycle policy will not be affected.
+        choices: ['None', '7', '14', '30', '60', '90']
+        type: str
+        version_added: 2.1.0
 
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -121,6 +130,24 @@ EXAMPLES = r'''
     name: myTestEFS
     tags:
         name: myAnotherTestTag
+    targets:
+        - subnet_id: subnet-7654fdca
+          security_groups: [ "sg-4c5d6f7a" ]
+
+- name: Set a lifecycle policy
+  community.aws.efs:
+    state: present
+    name: myTestEFS
+    transition_to_ia: 7
+    targets:
+        - subnet_id: subnet-7654fdca
+          security_groups: [ "sg-4c5d6f7a" ]
+
+- name: Remove a lifecycle policy
+  community.aws.efs:
+    state: present
+    name: myTestEFS
+    transition_to_ia: None
     targets:
         - subnet_id: subnet-7654fdca
           security_groups: [ "sg-4c5d6f7a" ]
@@ -459,6 +486,27 @@ class EFSConnection(object):
                     self.module.fail_json_aws(e, msg="Unable to update file system.")
         return changed
 
+    def update_lifecycle_policy(self, name, transition_to_ia):
+        """
+        Update filesystem with new lifecycle policy.
+        """
+        changed = False
+        state = self.get_file_system_state(name)
+        if state in [self.STATE_AVAILABLE, self.STATE_CREATING]:
+            fs_id = self.get_file_system_id(name)
+            current_policies = self.connection.describe_lifecycle_configuration(FileSystemId=fs_id)
+            if transition_to_ia == 'None':
+                LifecyclePolicies = []
+            else:
+                LifecyclePolicies = [{'TransitionToIA': 'AFTER_' + transition_to_ia + '_DAYS'}]
+            if current_policies.get('LifecyclePolicies') != LifecyclePolicies:
+                response = self.connection.put_lifecycle_configuration(
+                    FileSystemId=fs_id,
+                    LifecyclePolicies=LifecyclePolicies,
+                )
+                changed = True
+        return changed
+
     def converge_file_system(self, name, tags, purge_tags, targets, throughput_mode, provisioned_throughput_in_mibps):
         """
          Change attributes (mount targets and tags) of filesystem by name
@@ -680,6 +728,7 @@ def main():
         tags=dict(required=False, type="dict", default={}),
         targets=dict(required=False, type="list", default=[], elements='dict'),
         performance_mode=dict(required=False, type='str', choices=["general_purpose", "max_io"], default="general_purpose"),
+        transition_to_ia=dict(required=False, type='str', choices=["None", "7", "14", "30", "60", "90"], default=None),
         throughput_mode=dict(required=False, type='str', choices=["bursting", "provisioned"], default=None),
         provisioned_throughput_in_mibps=dict(required=False, type='float'),
         wait=dict(required=False, type="bool", default=False),
@@ -707,6 +756,7 @@ def main():
     kms_key_id = module.params.get('kms_key_id')
     performance_mode = performance_mode_translations[module.params.get('performance_mode')]
     purge_tags = module.params.get('purge_tags')
+    transition_to_ia = module.params.get('transition_to_ia')
     throughput_mode = module.params.get('throughput_mode')
     provisioned_throughput_in_mibps = module.params.get('provisioned_throughput_in_mibps')
     state = str(module.params.get('state')).lower()
@@ -720,6 +770,8 @@ def main():
         changed = connection.update_file_system(name, throughput_mode, provisioned_throughput_in_mibps) or changed
         changed = connection.converge_file_system(name=name, tags=tags, purge_tags=purge_tags, targets=targets,
                                                   throughput_mode=throughput_mode, provisioned_throughput_in_mibps=provisioned_throughput_in_mibps) or changed
+        if transition_to_ia:
+            changed |= connection.update_lifecycle_policy(name, transition_to_ia)
         result = first_or_default(connection.get_file_systems(CreationToken=name))
 
     elif state == 'absent':
