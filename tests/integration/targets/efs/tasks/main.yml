@@ -234,6 +234,76 @@
         that: "{{efs_result_assertions}}"
 
     # ============================================================
+    - name: Efs configure IA transition
+      efs:
+        state: present
+        name: "{{ efs_name }}-test-efs"
+        tags:
+            Name: "{{ efs_name }}-test-tag"
+            Purpose: file-storage
+        targets:
+            - subnet_id: "{{testing_subnet_a.subnet.id}}"
+            - subnet_id: "{{testing_subnet_b.subnet.id}}"
+        transition_to_ia: 60
+      register: efs_result
+
+    - assert:
+        that:
+          - efs_result is changed
+
+    - name: Efs configure IA transition - idempotency
+      efs:
+        state: present
+        name: "{{ efs_name }}-test-efs"
+        tags:
+            Name: "{{ efs_name }}-test-tag"
+            Purpose: file-storage
+        targets:
+            - subnet_id: "{{testing_subnet_a.subnet.id}}"
+            - subnet_id: "{{testing_subnet_b.subnet.id}}"
+        transition_to_ia: 60
+      register: efs_result
+
+    - assert:
+        that:
+          - efs_result is not changed
+
+    # ============================================================
+    - name: Efs remove IA transition
+      efs:
+        state: present
+        name: "{{ efs_name }}-test-efs"
+        tags:
+            Name: "{{ efs_name }}-test-tag"
+            Purpose: file-storage
+        targets:
+            - subnet_id: "{{testing_subnet_a.subnet.id}}"
+            - subnet_id: "{{testing_subnet_b.subnet.id}}"
+        transition_to_ia: None
+      register: efs_result
+
+    - assert:
+        that:
+          - efs_result is changed
+
+    - name: Efs remove IA transition - idempotency
+      efs:
+        state: present
+        name: "{{ efs_name }}-test-efs"
+        tags:
+            Name: "{{ efs_name }}-test-tag"
+            Purpose: file-storage
+        targets:
+            - subnet_id: "{{testing_subnet_a.subnet.id}}"
+            - subnet_id: "{{testing_subnet_b.subnet.id}}"
+        transition_to_ia: None
+      register: efs_result
+
+    - assert:
+        that:
+          - efs_result is not changed
+
+    # ============================================================
     - name: Query unknown EFS by tag
       efs_info:
         tags:
