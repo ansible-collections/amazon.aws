@@ -82,7 +82,10 @@ def handle_errors(module, exception, method_name, parameters):
 
     changed = True
     error_code = exception.response['Error']['Code']
-    if method_name == 'modify_db_instance' and error_code == 'InvalidParameterCombination':
+    if (
+        (method_name == 'modify_db_instance' or method_name == 'modify_db_cluster') and
+        error_code == 'InvalidParameterCombination'
+    ):
         if 'No modifications were requested' in to_text(exception):
             changed = False
         elif 'ModifyDbCluster API' in to_text(exception):
@@ -94,10 +97,23 @@ def handle_errors(module, exception, method_name, parameters):
             changed = False
         else:
             module.fail_json_aws(exception, msg='Unable to {0}'.format(get_rds_method_attribute(method_name, module).operation_description))
+    elif method_name == 'promote_read_replica_db_cluster' and error_code == 'InvalidDBClusterStateFault':
+        if 'DB Cluster that is not a read replica' in to_text(exception):
+            changed = False
+        else:
+            module.fail_json_aws(exception, msg='Unable to {0}'.format(get_rds_method_attribute(method_name, module).operation_description))
     elif method_name == 'create_db_instance' and exception.response['Error']['Code'] == 'InvalidParameterValue':
         accepted_engines = [
             'aurora', 'aurora-mysql', 'aurora-postgresql', 'mariadb', 'mysql', 'oracle-ee', 'oracle-se',
             'oracle-se1', 'oracle-se2', 'postgres', 'sqlserver-ee', 'sqlserver-ex', 'sqlserver-se', 'sqlserver-web'
+        ]
+        if parameters.get('Engine') not in accepted_engines:
+            module.fail_json_aws(exception, msg='DB engine {0} should be one of {1}'.format(parameters.get('Engine'), accepted_engines))
+        else:
+            module.fail_json_aws(exception, msg='Unable to {0}'.format(get_rds_method_attribute(method_name, module).operation_description))
+    elif method_name == 'create_db_cluster' and exception.response['Error']['Code'] == 'InvalidParameterValue':
+        accepted_engines = [
+            'aurora', 'aurora-mysql', 'aurora-postgresql'
         ]
         if parameters.get('Engine') not in accepted_engines:
             module.fail_json_aws(exception, msg='DB engine {0} should be one of {1}'.format(parameters.get('Engine'), accepted_engines))
@@ -122,6 +138,11 @@ def call_method(client, module, method_name, parameters):
                 if wait:
                     wait_for_status(client, module, module.params['db_instance_identifier'], method_name)
                 result = AWSRetry.jittered_backoff(catch_extra_error_codes=['InvalidDBInstanceState'])(method)(**parameters)
+            elif method_name == 'modify_db_cluster':
+                # check if cluster is in an available state first, if possible
+                if wait:
+                    wait_for_status(client, module, module.params['db_cluster_identifier'], method_name)
+                result = AWSRetry.jittered_backoff(catch_extra_error_codes=['InvalidDBClusterStateFault'])(method)(**parameters)
             else:
                 result = AWSRetry.jittered_backoff()(method)(**parameters)
         except (BotoCoreError, ClientError) as e:
@@ -191,10 +212,10 @@ def wait_for_status(client, module, identifier, method_name):
         raise NotImplementedError("method {0} hasn't been added to the whitelist of handled methods".format(method_name))
 
 
-def get_tags(client, module, cluster_arn):
+def get_tags(client, module, resource_arn):
     try:
         return boto3_tag_list_to_ansible_dict(
-            client.list_tags_for_resource(ResourceName=cluster_arn)['TagList']
+            client.list_tags_for_resource(ResourceName=resource_arn)['TagList']
         )
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(e, msg="Unable to describe tags")
