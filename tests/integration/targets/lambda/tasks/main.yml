@@ -129,6 +129,10 @@
       tracing_mode: Active
       handler: mini_lambda.handler
       role: '{{ lambda_role_name }}'
+      tags:
+        CamelCase: 'ACamelCaseValue'
+        snake_case: 'a_snake_case_value'
+        'Spaced key': 'A value with spaces'
     register: update_result
   - name: assert that update succeeded
     assert:
@@ -145,6 +149,10 @@
       tracing_mode: Active
       handler: mini_lambda.handler
       role: '{{ lambda_role_name }}'
+      tags:
+        CamelCase: 'ACamelCaseValue'
+        snake_case: 'a_snake_case_value'
+        'Spaced key': 'A value with spaces'
     register: update_result
   - name: assert that update succeeded
     assert:
@@ -189,6 +197,7 @@
       - lambda_infos_all.function[lambda_function_name].description == ""
       - lambda_infos_all.function[lambda_function_name].function_arn is defined
       - lambda_infos_all.function[lambda_function_name].handler == "mini_lambda.handler"
+      - lambda_infos_all.function[lambda_function_name].tags is defined
 
   - name: lambda_info | Gather version infos for given lambda function
     lambda_info:

@@ -1,0 +1,2 @@
+minor_changes:
+- lambda_info - add support for tags (https://github.com/ansible-collections/community.aws/pull/375).
