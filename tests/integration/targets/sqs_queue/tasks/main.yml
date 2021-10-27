@@ -1,22 +1,26 @@
 ---
 - name: Main test block
+
   module_defaults:
     group/aws:
       aws_access_key: "{{ aws_access_key }}"
       aws_secret_key: "{{ aws_secret_key }}"
       security_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
+
   block:
   - block:
     - name: Test creating SQS queue
       sqs_queue:
         name: "{{ resource_prefix }}{{ 1000 | random }}"
       register: create_result
+
     - name: Assert SQS queue created
       assert:
         that:
           - create_result.changed
           - create_result.region == "{{ aws_region }}"
+
     always:
     - name: Test deleting SQS queue
       sqs_queue:
@@ -26,19 +30,23 @@
       retries: 3
       delay: 3
       until: delete_result.changed
+
     - name: Assert SQS queue deleted
       assert:
         that:
           - delete_result.changed
+
     - name: Test delete SQS queue that doesn't exist
       sqs_queue:
         name: "{{ resource_prefix }}{{ 1000 | random }}"
         state: absent
       register: delete_result
+
     - name: Assert delete non-existant queue returns cleanly
       assert:
         that:
           - delete_result.changed == False
+
   - name: Test queue features
     block:
       - name: Test create queue with attributes
@@ -46,6 +54,8 @@
           name: "{{ resource_prefix }}{{ 1000 | random }}"
           default_visibility_timeout: 900
           delivery_delay: 900
+          # Test SSE
+          kms_master_key_id: alias/aws/sqs
           maximum_message_size: 9009
           message_retention_period: 900
           receive_message_wait_time: 10
@@ -55,18 +65,21 @@
               Effect: Allow
               Action: "*"
         register: create_result
+
       - name: Assert queue created with configuration
         assert:
           that:
             - create_result.changed
             - create_result.default_visibility_timeout == 900
             - create_result.delivery_delay == 900
+            - create_result.kms_master_key_id == "alias/aws/sqs"
             - create_result.maximum_message_size == 9009
             - create_result.message_retention_period == 900
             - create_result.receive_message_wait_time == 10
             - create_result.policy.Version == "2012-10-17"
             - create_result.policy.Statement[0].Effect == "Allow"
             - create_result.policy.Statement[0].Action == "*"
+
       - name: Test idempotentcy
         sqs_queue:
           name: "{{ create_result.name }}"
@@ -80,11 +93,14 @@
             Statement:
               Effect: Allow
               Action: "*"
+          kms_master_key_id: alias/aws/sqs
         register: create_result
+
       - name: Assert nothing changed
         assert:
           that:
             - not create_result.changed
+
       - name: Test update
         sqs_queue:
           name: "{{ create_result.name }}"
@@ -99,12 +115,14 @@
               Effect: Allow
               Action: "*"
         register: create_result
+
       - name: Assert queue updated with configuration
         assert:
           that:
             - create_result.changed
             - create_result.default_visibility_timeout == 899
             - create_result.delivery_delay == 899
+            - create_result.kms_master_key_id == "alias/aws/sqs"
             - create_result.maximum_message_size == 9008
             - create_result.message_retention_period == 899
             - create_result.receive_message_wait_time == 9
@@ -120,12 +138,14 @@
         retries: 3
         delay: 3
         until: delete_result.changed
+
   - name: Test queue with redrive
     block:
       - name: Creating dead letter queue
         sqs_queue:
           name: "{{ resource_prefix }}{{ 1000 | random }}"
         register: dead_letter_queue
+
       - name: Test create queue with redrive_policy
         sqs_queue:
           name: "{{ resource_prefix }}{{ 1000 | random }}"
@@ -133,6 +153,7 @@
             maxReceiveCount: 5
             deadLetterTargetArn: "{{ dead_letter_queue.queue_arn }}"
         register: create_result
+
       - name: Assert queue created with configuration
         assert:
           that:
@@ -148,6 +169,7 @@
         with_items:
           - { name: "{{ create_result.name }}" }
           - { name: "{{ dead_letter_queue.name }}" }
+
   - name: Test FIFO queue
     block:
       - name: Creating FIFO queue
@@ -156,10 +178,12 @@
           queue_type: fifo
           content_based_deduplication: yes
         register: create_result
+
       - name: Assert queue created with configuration
         assert:
           that:
             - create_result.changed
+
     always:
       - name: Cleaning up queue
         sqs_queue:

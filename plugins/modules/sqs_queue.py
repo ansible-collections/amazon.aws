@@ -290,6 +290,7 @@ def describe_queue(client, queue_url):
 
 def create_or_update_sqs_queue(client, module):
     is_fifo = (module.params.get('queue_type') == 'fifo')
+    kms_master_key_id = module.params.get('kms_master_key_id')
     queue_name = get_queue_name(module, is_fifo)
     result = dict(
         name=queue_name,
@@ -300,8 +301,14 @@ def create_or_update_sqs_queue(client, module):
     queue_url = get_queue_url(client, queue_name)
     result['queue_url'] = queue_url
 
+    # Create a dict() to hold attributes that will be passed to boto3
+    create_attributes = {}
+
     if not queue_url:
-        create_attributes = {'FifoQueue': 'true'} if is_fifo else {}
+        if is_fifo:
+            create_attributes['FifoQueue'] = "True"
+        if kms_master_key_id:
+            create_attributes['KmsMasterKeyId'] = kms_master_key_id
         result['changed'] = True
         if module.check_mode:
             return result
@@ -385,7 +392,7 @@ def update_sqs_queue(module, client, queue_url):
     if changed and not check_mode:
         client.set_queue_attributes(QueueUrl=queue_url, Attributes=attributes_to_set, aws_retry=True)
 
-    return changed, existing_attributes.get('queue_arn'),
+    return changed, existing_attributes.get('queue_arn')
 
 
 def delete_sqs_queue(client, module):
