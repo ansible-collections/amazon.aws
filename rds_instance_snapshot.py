@@ -10,7 +10,7 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: rds_snapshot
+module: rds_instance_snapshot
 version_added: 1.0.0
 short_description: manage Amazon RDS snapshots.
 description:
@@ -66,12 +66,12 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 - name: Create snapshot
-  community.aws.rds_snapshot:
+  community.aws.rds_instance_snapshot:
     db_instance_identifier: new-database
     db_snapshot_identifier: new-database-snapshot
 
 - name: Delete snapshot
-  community.aws.rds_snapshot:
+  community.aws.rds_instance_snapshot:
     db_snapshot_identifier: new-database-snapshot
     state: absent
 '''
