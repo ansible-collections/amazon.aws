@@ -190,6 +190,7 @@ action_groups:
   - rds_instance_info
   - rds_param_group
   - rds_snapshot
+  - rds_instance_snapshot
   - rds_snapshot_info
   - rds_subnet_group
   - rds_option_group
@@ -520,3 +521,10 @@ plugin_routing:
         warning_text: >-
           route53_facts was renamed in Ansible 2.9 to route53_info.
           Please update your tasks.
+    rds_snapshot:
+       redirect: community.aws.rds_instance_snapshot
+       deprecation:
+         removal_version: 4.0.0
+         warning_text: >-
+           rds_snapshot has been renamed to rds_instance_snapshot.
+           Please update your tasks.
