@@ -144,7 +144,7 @@
 
   always:
     - name: remove snapshot
-      rds_snapshot:
+      rds_instance_snapshot:
         db_snapshot_identifier: "{{ resource_prefix }}-test-snapshot"
         state: absent
         wait: false
