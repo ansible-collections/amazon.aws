@@ -1,69 +1,69 @@
 requires_ansible: '>=2.9.10'
 action_groups:
   aws:
-  - aws_s3
-  - ec2
-  - aws_secret
-  - cloudfront_facts
-  - iam
-  - rds
-  - ec2
   - aws_az_facts
-  - aws_caller_facts
-  - cloudformation_facts
-  - ec2_ami_facts
-  - ec2_eni_facts
-  - ec2_group_facts
-  - ec2_snapshot_facts
-  - ec2_vol_facts
-  - ec2_vpc_dhcp_option_facts
-  - ec2_vpc_net_facts
-  - ec2_vpc_subnet_facts
   - aws_az_info
+  - aws_caller_facts
   - aws_caller_info
   - aws_s3
+  - aws_s3
+  - aws_secret
   - cloudformation
+  - cloudformation_facts
   - cloudformation_info
+  - cloudfront_facts
+  - ec2
+  - ec2
   - ec2
   - ec2_ami
+  - ec2_ami_facts
   - ec2_ami_info
   - ec2_elb_lb
   - ec2_eni
+  - ec2_eni_facts
   - ec2_eni_info
   - ec2_group
+  - ec2_group_facts
   - ec2_group_info
   - ec2_instance
   - ec2_instance_info
   - ec2_key
   - ec2_snapshot
+  - ec2_snapshot_facts
   - ec2_snapshot_info
   - ec2_spot_instance
   - ec2_spot_instance_info
   - ec2_tag
   - ec2_tag_info
   - ec2_vol
+  - ec2_vol_facts
   - ec2_vol_info
   - ec2_vpc_dhcp_option
+  - ec2_vpc_dhcp_option_facts
   - ec2_vpc_dhcp_option_info
-  - ec2_vpc_net
-  - ec2_vpc_net_info
-  - ec2_vpc_subnet
-  - ec2_vpc_subnet_info
-  - elb_classic_lb
-  - s3_bucket
-  - ec2_vpc_endpoint_facts
   - ec2_vpc_endpoint
+  - ec2_vpc_endpoint_facts
   - ec2_vpc_endpoint_info
   - ec2_vpc_endpoint_service_info
-  - ec2_vpc_igw_facts
   - ec2_vpc_igw
+  - ec2_vpc_igw_facts
   - ec2_vpc_igw_info
-  - ec2_vpc_route_table_facts
-  - ec2_vpc_route_table
-  - ec2_vpc_route_table_info
-  - ec2_vpc_nat_gateway_facts
   - ec2_vpc_nat_gateway
+  - ec2_vpc_nat_gateway_facts
   - ec2_vpc_nat_gateway_info
+  - ec2_vpc_net
+  - ec2_vpc_net_facts
+  - ec2_vpc_net_info
+  - ec2_vpc_route_table
+  - ec2_vpc_route_table_facts
+  - ec2_vpc_route_table_info
+  - ec2_vpc_subnet
+  - ec2_vpc_subnet_facts
+  - ec2_vpc_subnet_info
+  - elb_classic_lb
+  - iam
+  - rds
+  - s3_bucket
 plugin_routing:
   modules:
     aws_az_facts:
