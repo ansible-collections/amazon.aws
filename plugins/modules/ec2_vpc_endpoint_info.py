@@ -19,7 +19,7 @@ options:
       - Specifies the query action to take.
       - I(query=endpoints) returns information about AWS VPC endpoints.
       - Retrieving information about services using I(query=services) has been
-        deprecated in favour of the M(ec2_vpc_endpoint_service_info) module.
+        deprecated in favour of the M(amazon.aws.ec2_vpc_endpoint_service_info) module.
       - The I(query) option has been deprecated and will be removed after 2022-12-01.
     required: False
     choices:

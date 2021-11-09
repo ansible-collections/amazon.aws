@@ -14,7 +14,7 @@ short_description: create, terminate, start or stop an instance in ec2
 deprecated:
   removed_in: 4.0.0
   why: The ec2 module is based upon a deprecated version of the AWS SDK.
-  alternative: Use M(ec2_instance).
+  alternative: Use M(amazon.aws.ec2_instance).
 description:
     - Creates or terminates ec2 instances.
     - >
