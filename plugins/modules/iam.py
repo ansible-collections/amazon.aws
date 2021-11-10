@@ -13,7 +13,9 @@ version_added: 1.0.0
 deprecated:
   removed_in: 3.0.0
   why: The iam module is based upon a deprecated version of the AWS SDK.
-  alternative: Use M(iam_user), M(iam_group), M(iam_role), M(iam_policy) and M(iam_managed_policy) modules.
+  alternative: >-
+    Use M(community.aws.iam_user), M(community.aws.iam_group), M(community.aws.iam_role), M(community.aws.iam_policy)
+    and M(community.aws.iam_managed_policy) modules.
 
 short_description: Manage IAM users, groups, roles and keys
 description:

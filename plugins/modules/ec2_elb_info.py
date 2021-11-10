@@ -24,7 +24,7 @@ version_added: 1.0.0
 deprecated:
   removed_in: 3.0.0
   why: The ec2_elb_info is based upon a deprecated version of the AWS SDK.
-  alternative: Use M(elb_classic_lb_info).
+  alternative: Use M(community.aws.elb_classic_lb_info).
 short_description: Gather information about EC2 Elastic Load Balancers in AWS
 description:
     - Gather information about EC2 Elastic Load Balancers in AWS

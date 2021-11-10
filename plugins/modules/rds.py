@@ -13,7 +13,7 @@ version_added: 1.0.0
 deprecated:
   removed_in: 3.0.0
   why: The rds module is based upon a deprecated version of the AWS SDK.
-  alternative: Use M(rds_instance), M(rds_instance_info), and M(rds_snapshot).
+  alternative: Use M(community.aws.rds_instance), M(community.aws.rds_instance_info), and M(community.aws.rds_instance_snapshot).
 short_description: create, delete, or modify Amazon rds instances, rds snapshots, and related facts
 description:
     - Creates, deletes, or modifies rds resources.
