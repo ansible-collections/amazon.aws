@@ -1,2 +1,0 @@
-bugfixes:
-- s3_bucket - update error handling to better support DigitalOcean Space (https://github.com/ansible-collections/amazon.aws/issues/508).

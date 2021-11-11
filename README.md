@@ -49,7 +49,6 @@ Name | Description
 [amazon.aws.ec2](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_module.rst)|create, terminate, start or stop an instance in ec2
 [amazon.aws.ec2_ami](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_ami_module.rst)|Create or destroy an image (AMI) in ec2
 [amazon.aws.ec2_ami_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_ami_info_module.rst)|Gather information about ec2 AMIs
-[amazon.aws.ec2_elb_lb](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_elb_lb_module.rst)|Creates, updates or destroys an Amazon ELB.
 [amazon.aws.ec2_eni](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_eni_module.rst)|Create and optionally attach an Elastic Network Interface (ENI) to an instance
 [amazon.aws.ec2_eni_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_eni_info_module.rst)|Gather information about ec2 ENI interfaces in AWS
 [amazon.aws.ec2_group](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_group_module.rst)|maintain an ec2 VPC security group.
@@ -81,6 +80,7 @@ Name | Description
 [amazon.aws.ec2_vpc_route_table_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_route_table_info_module.rst)|Gather information about ec2 VPC route tables in AWS
 [amazon.aws.ec2_vpc_subnet](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_subnet_module.rst)|Manage subnets in AWS virtual private clouds
 [amazon.aws.ec2_vpc_subnet_info](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.ec2_vpc_subnet_info_module.rst)|Gather information about ec2 VPC subnets in AWS
+[amazon.aws.elb_classic_lb](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.elb_classic_lb_module.rst)|creates, updates or destroys an Amazon ELB.
 [amazon.aws.s3_bucket](https://github.com/ansible-collections/amazon.aws/blob/main/docs/amazon.aws.s3_bucket_module.rst)|Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID
 
 <!--end collection content-->

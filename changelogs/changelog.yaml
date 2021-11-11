@@ -520,3 +520,74 @@ releases:
       name: ec2_spot_instance_info
       namespace: ''
     release_date: '2021-09-03'
+  2.1.0:
+    changes:
+      bugfixes:
+      - AWS action group - added missing ``ec2_instance_facts`` entry (https://github.com/ansible-collections/amazon.aws/issues/557)
+      - ec2_ami - fix problem when creating an AMI from an instance with ephemeral
+        volumes (https://github.com/ansible-collections/amazon.aws/issues/511).
+      - ec2_instance - ensure that ec2_instance falls back to the tag(Name) parameter
+        when no filter and no name parameter is passed (https://github.com/ansible-collections/amazon.aws/issues/526).
+      - s3_bucket - update error handling to better support DigitalOcean Space (https://github.com/ansible-collections/amazon.aws/issues/508).
+      deprecated_features:
+      - ec2_classic_lb - setting of the ``ec2_elb`` fact has been deprecated and will
+        be removed in release 4.0.0 of the collection. The module now returns ``elb``
+        which can be accessed using the register keyword (https://github.com/ansible-collections/amazon.aws/pull/552).
+      minor_changes:
+      - aws_service_ip_ranges - add new option ``ipv6_prefixes`` to get only IPV6
+        addresses and prefixes for Amazon services (https://github.com/ansible-collections/amazon.aws/pull/430)
+      - cloudformation - fix detection when there are no changes. Sometimes when there
+        are no changes, the change set will have a status FAILED with StatusReason
+        No updates are to be performed (https://github.com/ansible-collections/amazon.aws/pull/507).
+      - ec2_ami - add check_mode support (https://github.com/ansible-collections/amazon.aws/pull/516).
+      - ec2_ami - use module_util helper for tagging AMIs (https://github.com/ansible-collections/amazon.aws/pull/520).
+      - ec2_elb_lb - module renamed to ``elb_classic_lb`` (https://github.com/ansible-collections/amazon.aws/pull/377).
+      - ec2_eni - add check mode support (https://github.com/ansible-collections/amazon.aws/pull/534).
+      - ec2_eni - use module_util helper for tagging ENIs (https://github.com/ansible-collections/amazon.aws/pull/522).
+      - ec2_instance - use module_util helpers for tagging (https://github.com/ansible-collections/amazon.aws/pull/527).
+      - ec2_key - add support for tagging key pairs (https://github.com/ansible-collections/amazon.aws/pull/548).
+      - ec2_snapshot - add check_mode support (https://github.com/ansible-collections/amazon.aws/pull/512).
+      - ec2_vol - add check_mode support (https://github.com/ansible-collections/amazon.aws/pull/509).
+      - ec2_vpc_dhcp_option - use module_util helpers for tagging (https://github.com/ansible-collections/amazon.aws/pull/531).
+      - ec2_vpc_endpoint - added ``vpc_endpoint_security_groups`` parameter to support
+        defining the security group attached to an interface endpoint (https://github.com/ansible-collections/amazon.aws/pull/544).
+      - ec2_vpc_endpoint - added ``vpc_endpoint_subnets`` parameter to support defining
+        the subnet attached to an interface or gateway endpoint (https://github.com/ansible-collections/amazon.aws/pull/544).
+      - ec2_vpc_endpoint - use module_util helper for tagging (https://github.com/ansible-collections/amazon.aws/pull/525).
+      - ec2_vpc_endpoint - use module_util helpers for tagging (https://github.com/ansible-collections/amazon.aws/pull/531).
+      - ec2_vpc_igw - use module_util helper for tagging (https://github.com/ansible-collections/amazon.aws/pull/523).
+      - ec2_vpc_igw - use module_util helpers for tagging (https://github.com/ansible-collections/amazon.aws/pull/531).
+      - ec2_vpc_nat_gateway - use module_util helper for tagging (https://github.com/ansible-collections/amazon.aws/pull/524).
+      - ec2_vpc_nat_gateway - use module_util helpers for tagging (https://github.com/ansible-collections/amazon.aws/pull/531).
+      - elb_classic_lb - added retries on common AWS temporary API failures (https://github.com/ansible-collections/amazon.aws/pull/377).
+      - elb_classic_lb - added support for check_mode (https://github.com/ansible-collections/amazon.aws/pull/377).
+      - elb_classic_lb - added support for wait during creation (https://github.com/ansible-collections/amazon.aws/pull/377).
+      - elb_classic_lb - added support for wait during instance addition and removal
+        (https://github.com/ansible-collections/amazon.aws/pull/377).
+      - elb_classic_lb - migrated to boto3 SDK (https://github.com/ansible-collections/amazon.aws/pull/377).
+      - elb_classic_lb - various error messages changed due to refactor (https://github.com/ansible-collections/amazon.aws/pull/377).
+      - module_utils.ec2 - moved generic tagging helpers into module_utils.tagging
+        (https://github.com/ansible-collections/amazon.aws/pull/527).
+      - module_utils.tagging - add new helper to generate TagSpecification lists (https://github.com/ansible-collections/amazon.aws/pull/527).
+    fragments:
+    - 377-ec2_elb_lb-boto3.yml
+    - 430-add_support_for_ipv6_addresses.yml
+    - 507-fix_cloudformation_changeset_detection.yml
+    - 508-s3_bucket-digital_ocean.yml
+    - 509-ec2_vol_add_check_mode_support.yml
+    - 512-ec2_snapshot_add_check_mode_support.yml.yml
+    - 516-ec2_ami_add_check_mode_support.yml
+    - 520-ec2_ami-tagging.yml
+    - 522-ec2_eni-tagging.yml
+    - 523-ec2_vpc_igw-tagging.yml
+    - 524-ec2_vpc_nat_gateway-tagging.yml
+    - 525-ec2_vpc_endpoint-tagging.yml
+    - 526-ec2_instance_search_tags.yml
+    - 527-ec2_instance-tagging.yml
+    - 531-use_tags_handlers.yml
+    - 534-ec2_eni_add_check_mode_support.yml
+    - 544-vpc-endpoint-add-subnets-sg-option.yml
+    - 548-ec2_key-tagging.yml
+    - 552-elb_classic_lb-fact.yml
+    - 557-action_group-missing-entry.yml
+    release_date: '2021-11-11'

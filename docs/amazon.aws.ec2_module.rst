@@ -18,7 +18,7 @@ DEPRECATED
 ----------
 :Removed in collection release after 
 :Why: The ec2 module is based upon a deprecated version of the AWS SDK.
-:Alternative: Use :ref:`ec2_instance <ec2_instance_module>`.
+:Alternative: Use :ref:`amazon.aws.ec2_instance <amazon.aws.ec2_instance_module>`.
 
 
 
@@ -660,7 +660,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Create, terminate, start, stop or restart instances. The state &#x27;restarted&#x27; was added in Ansible 2.2.</div>
+                        <div>Create, terminate, start, stop or restart instances.</div>
                         <div>When <em>state=absent</em>, <em>instance_ids</em> is required.</div>
                         <div>When <em>state=running</em>, <em>state=stopped</em> or <em>state=restarted</em> then either <em>instance_ids</em> or <em>instance_tags</em> is required.</div>
                 </td>

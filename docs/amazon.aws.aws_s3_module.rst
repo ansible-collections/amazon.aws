@@ -474,7 +474,16 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Switches the module behaviour between <code>PUT</code> (upload), <code>GET</code> (download), <code>geturl</code> (return download URL, Ansible 1.3+), <code>getstr</code> (download object as string (1.3+)), <code>list</code> (list keys, Ansible 2.0+), <code>create</code> (bucket), <code>delete</code> (bucket), delobj (delete object, Ansible 2.0+) and <code>copy</code> object that is already stored in another (bucket).</div>
+                        <div>Switches the module behaviour between</div>
+                        <div><code>PUT</code>: upload</div>
+                        <div><code>GET</code>: download</div>
+                        <div><code>geturl</code>: return download URL</div>
+                        <div><code>getstr</code>: download object as string</div>
+                        <div><code>list</code>: list keys</div>
+                        <div><code>create</code>: create bucket</div>
+                        <div><code>delete</code>: delete bucket</div>
+                        <div><code>delobj</code>: delete object</div>
+                        <div><code>copy</code>: copy object that is already stored in another bucket</div>
                 </td>
             </tr>
             <tr>
