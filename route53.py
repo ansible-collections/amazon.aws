@@ -697,7 +697,7 @@ def main():
         changed=True,
         diff=dict(
             before=formatted_aws,
-            after=formatted_record if command != 'delete' else {},
+            after=formatted_record if command_in != 'delete' else {},
             resource_record_sets=rr_sets,
         ),
     )
