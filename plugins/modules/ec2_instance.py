@@ -55,6 +55,22 @@ options:
         Only required when instance is not already present.
     default: t2.micro
     type: str
+  count:
+    description:
+      - Number of instances to launch.
+    default: 1
+    type: int
+  exact_count:
+    description:
+      - An integer value which indicates how many instances that match the 'count_tag' parameter should be running.
+        Instances are either created or terminated based on this value.
+    type: int
+  count_tag:
+    description:
+      - Used with I(exact_count) to determine how many nodes based on a specific tag criteria should be running.
+        This can be expressed in multiple ways and is shown in the EXAMPLES section.  For instance, one can request 25 servers
+        that are tagged with C(class=webserver). The specified tag must already exist or be passed in as the I(instance_tags) option.
+    type: raw
   user_data:
     description:
       - Opaque blob of data which is made available to the ec2 instance
@@ -211,20 +227,6 @@ options:
     description:
     - Name of the SSH access key to assign to the instance - must exist in the region the instance is created.
     type: str
-  min_count:
-    description:
-    - The minimum number of instances to launch.
-    - If I(min_count) is more than Amazon EC2 can launch in the target Availability Zone, no instances are launched.
-    - If I(min_count) and I(max_count) are not specified then a single instance will be launched.
-    default: 1
-    type: int
-  max_count:
-    description:
-    - The maximum number of instances to launch.
-    - If I(max_count) is more than Amazon EC2 can launch in the target Availability Zone, launches the largest possible number of instances above min_count.
-    - If I(min_count) and I(max_count) are not specified then a single instance will be launched.
-    default: 1
-    type: int
   availability_zone:
     description:
     - Specify an availability zone to use the default subnet it. Useful if not specifying the I(vpc_subnet_id) parameter.
@@ -1269,7 +1271,7 @@ def build_top_level_options(params):
 
 
 def build_instance_tags(params, propagate_tags_to_volumes=True):
-    tags = params.get('tags') or {}
+    tags = params.get('tags') or params.get('count_tag') or {}
     if params.get('name') is not None:
         tags['Name'] = params.get('name')
     specs = boto3_tag_specifications(tags, ['volume', 'instance'])
@@ -1455,7 +1457,6 @@ def find_instances(ids=None, filters=None):
             if not key.startswith("tag:"):
                 filters[key.replace("_", "-")] = filters.pop(key)
         params = dict(Filters=ansible_dict_to_boto3_filter_list(filters))
-
     try:
         results = _describe_instances(**params)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
@@ -1744,11 +1745,10 @@ def handle_existing(existing_matches, state):
 
 
 def ensure_present(desired_module_state):
-    tags = dict(module.params.get('tags') or {})
+    tags = dict(module.params.get('tags') or module.params.get('count_tag') or {})
     name = module.params.get('name')
     if name:
         tags['Name'] = name
-
     try:
         instance_spec = build_run_instance_spec(module.params)
         # If check mode is enabled,suspend 'ensure function'.
@@ -1802,6 +1802,69 @@ def ensure_present(desired_module_state):
         )
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to create new EC2 instance")
+
+
+def enforce_count(module):
+
+    exact_count = module.params.get('exact_count')
+    count_tag = module.params.get('count_tag')
+
+    # fail if exact_count specified without a fitering on a tag
+    if count_tag is None:
+        module.fail_json(msg="you must use the 'count_tag' option to ensure exact_count")
+
+    # get the number of running instances with count_tag
+    custom_filter = {}
+    for item in count_tag.items():
+        key_name = "tag:" + item[0]
+        custom_filter['Name'] = key_name
+        custom_filter['Values'] = [count_tag[item[0]]]
+    describe_response = client.describe_instances(Filters=[custom_filter])
+
+    instances = []
+    for reservation in describe_response['Reservations']:
+        for instance in reservation['Instances']:
+            if instance['State']['Name'] in ['running']:
+                instances.append(instance)
+
+    if len(instances) == exact_count:
+        result = dict(
+            changed=False,
+            msg='{0} instances already running, nothing to do'.format(exact_count),
+        )
+
+    elif len(instances) < exact_count:
+        changed = True
+        to_launch = exact_count - len(instances)
+        # make min_count and max_count exact same number to
+        # launch specific number of instances
+        module.params['min_count'] = to_launch
+        module.params['max_count'] = to_launch
+        # launch instances
+        try:
+            result = ensure_present(desired_module_state='present')
+        except botocore.exceptions.ClientError as e:
+            module.fail_json(e, msg='Unable to launch instances')
+    elif len(instances) > exact_count:
+        changed = True
+        to_terminate = len(instances) - exact_count
+        # get the instance ids of instances with the count tag on them
+        all_instance_ids = sorted([x['InstanceId'] for x in instances])
+        terminate_ids = all_instance_ids[0:to_terminate]
+        instances = [x for x in instances if x['InstanceId'] not in terminate_ids]
+        # terminate instances
+        try:
+            result = client.terminate_instances(InstanceIds=terminate_ids)
+            await_instances(terminate_ids, desired_module_state='terminated', force_wait=True)
+        except botocore.exceptions.ClientError as e:
+            module.fail_json(e, msg='Unable to terminate instances')
+        result = dict(
+            changed=changed,
+            msg='Successfully terminated instances.',
+            terminated_ids=terminate_ids,
+        )
+
+    return result
 
 
 def run_instances(**instance_spec):
@@ -1861,7 +1924,7 @@ def main():
         state=dict(default='present', choices=['present', 'started', 'running', 'stopped', 'restarted', 'rebooted', 'terminated', 'absent']),
         wait=dict(default=True, type='bool'),
         wait_timeout=dict(default=600, type='int'),
-        # count=dict(default=1, type='int'),
+        count=dict(type='int', default='1'),
         image=dict(type='dict'),
         image_id=dict(type='str'),
         instance_type=dict(default='t2.micro', type='str'),
@@ -1879,8 +1942,8 @@ def main():
         filters=dict(type='dict', default=None),
         launch_template=dict(type='dict'),
         key_name=dict(type='str'),
-        min_count=dict(type='int', default=1),
-        max_count=dict(type='int', default=1),
+        exact_count=dict(type='int', default=None),
+        count_tag=dict(type='raw'),
         cpu_credit_specification=dict(type='str', choices=['standard', 'unlimited']),
         cpu_options=dict(type='dict', options=dict(
             core_count=dict(type='int', required=True),
@@ -1907,6 +1970,9 @@ def main():
             ['availability_zone', 'vpc_subnet_id'],
             ['tower_callback', 'user_data'],
             ['image_id', 'image'],
+            ['exact_count', 'count'],
+            ['exact_count', 'state'],
+            ['exact_count', 'instance_ids'],
         ],
         supports_check_mode=True
     )
@@ -1932,13 +1998,10 @@ def main():
 
     existing_matches = find_instances(filters=module.params.get('filters'))
 
-    # Min count cannot be smaller than max count
-    if module.params.get('min_count') > module.params.get('max_count'):
-        module.fail_json(changed=False, msg='min_count cannot be greater than max_count.')
-
-    # Launching multiple instances if count value specified
-    if module.params.get('max_count') > 1:
-        result = ensure_present(desired_module_state=state)
+    # set the number of instances to be launched if count is provided
+    if module.params.get('count'):
+        module.params['min_count'] = module.params.get('count')
+        module.params['max_count'] = module.params.get('count')
 
     if state in ('terminated', 'absent'):
         if existing_matches:
@@ -1948,11 +2011,13 @@ def main():
                 msg='No matching instances found',
                 changed=False,
             )
-    elif existing_matches:
-        for match in existing_matches:
-            warn_if_public_ip_assignment_changed(match)
-            warn_if_cpu_options_changed(match)
-        result = handle_existing(existing_matches, state)
+    elif module.params.get('exact_count'):
+        result = enforce_count(module)
+    # elif existing_matches:
+    #     for match in existing_matches:
+    #         warn_if_public_ip_assignment_changed(match)
+    #         warn_if_cpu_options_changed(match)
+    #     result = handle_existing(existing_matches, state)
     else:
         result = ensure_present(desired_module_state=state)
 
