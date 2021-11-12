@@ -541,6 +541,8 @@ releases:
         No updates are to be performed (https://github.com/ansible-collections/amazon.aws/pull/507).
       - ec2_ami - add check_mode support (https://github.com/ansible-collections/amazon.aws/pull/516).
       - ec2_ami - use module_util helper for tagging AMIs (https://github.com/ansible-collections/amazon.aws/pull/520).
+      - ec2_ami - when creating an AMI from an instance pass the tagging options at
+        creation time (https://github.com/ansible-collections/amazon.aws/pull/551).
       - ec2_elb_lb - module renamed to ``elb_classic_lb`` (https://github.com/ansible-collections/amazon.aws/pull/377).
       - ec2_eni - add check mode support (https://github.com/ansible-collections/amazon.aws/pull/534).
       - ec2_eni - use module_util helper for tagging ENIs (https://github.com/ansible-collections/amazon.aws/pull/522).
@@ -588,6 +590,7 @@ releases:
     - 534-ec2_eni_add_check_mode_support.yml
     - 544-vpc-endpoint-add-subnets-sg-option.yml
     - 548-ec2_key-tagging.yml
+    - 551-ec2_ami-tag-on-create.yml
     - 552-elb_classic_lb-fact.yml
     - 557-action_group-missing-entry.yml
     release_date: '2021-11-11'
