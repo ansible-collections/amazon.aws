@@ -637,6 +637,11 @@ def main():
             ns = get_hosted_zone_nameservers(route53, zone_id)
 
         formatted_aws = format_record(aws_record, zone_in, zone_id)
+
+        if formatted_aws is None:
+            # record does not exist
+            module.exit_json(changed=False, set=[], nameservers=ns, resource_record_sets=[])
+
         rr_sets = [camel_dict_to_snake_dict(aws_record)]
         module.exit_json(changed=False, set=formatted_aws, nameservers=ns, resource_record_sets=rr_sets)
 

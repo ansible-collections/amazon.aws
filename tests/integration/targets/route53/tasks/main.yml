@@ -417,6 +417,20 @@
         - get_result.set.ResourceRecords[0].Value == "192.0.2.1"
         - get_result.set.Type == "A"
 
+  - name: Get a record that does not exist
+    route53:
+      state: get
+      zone: "{{ zone_two }}"
+      record: "notfound.{{ zone_two }}"
+      type: A
+      private_zone: true
+    register: get_result
+  - assert:
+      that:
+        - get_result.nameservers|length > 0
+        - get_result.set|length == 0
+        - get_result.resource_record_sets|length == 0
+
   - name: Create same A record using zone non-qualified domain
     route53:
       state: present
