@@ -386,6 +386,7 @@
       that:
         - wc_a_record is not failed
         - wc_a_record is changed
+        - wc_a_record.diff.after == {}
 
   # Tests on zone two (private zone)
   - name: Create A record using zone fqdn
