@@ -48,6 +48,15 @@ EXAMPLES = '''
     filters:
       attachment.status: attached
 
+# Gather information about all volumes related to an EC2 Instance
+# register information to `volumes` variable
+# Replaces functionality of `amazon.aws.ec2_vol` - `state: list`
+- name: get volume(s) info from EC2 Instance
+  amazon.aws.ec2_vol_info:
+    filters:
+      attachment.instance-id: "i-000111222333"
+  register: volumes
+
 '''
 
 RETURN = '''
