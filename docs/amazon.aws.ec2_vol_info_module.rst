@@ -280,7 +280,6 @@ Examples
       amazon.aws.ec2_vol_info:
         filters:
           attachment.instance-id: "i-000111222333"
-        region: "us-east-1"
       register: volumes
 
 
@@ -320,15 +319,17 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <b>attachment_set</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">dictionary</span>
+                      <span style="color: purple">list</span>
+                       / <span style="color: purple">elements=dictionary</span>
                     </div>
                 </td>
                 <td></td>
                 <td>
                             <div>Information about the volume attachments.</div>
+                            <div>This was changed in version 2.0.0 from a dictionary to a list of dictionaries.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;attach_time&#x27;: &#x27;2015-10-23T00:22:29.000Z&#x27;, &#x27;deleteOnTermination&#x27;: &#x27;false&#x27;, &#x27;device&#x27;: &#x27;/dev/sdf&#x27;, &#x27;instance_id&#x27;: &#x27;i-8356263c&#x27;, &#x27;status&#x27;: &#x27;attached&#x27;}</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[{&#x27;attach_time&#x27;: &#x27;2015-10-23T00:22:29.000Z&#x27;, &#x27;deleteOnTermination&#x27;: &#x27;false&#x27;, &#x27;device&#x27;: &#x27;/dev/sdf&#x27;, &#x27;instance_id&#x27;: &#x27;i-8356263c&#x27;, &#x27;status&#x27;: &#x27;attached&#x27;}]</div>
                 </td>
             </tr>
             <tr>

@@ -198,7 +198,7 @@ Parameters
                         <div>Defaults to <code>endpoints</code>.</div>
                         <div>Specifies the query action to take.</div>
                         <div><em>query=endpoints</em> returns information about AWS VPC endpoints.</div>
-                        <div>Retrieving information about services using <em>query=services</em> has been deprecated in favour of the <span class='module'>ec2_vpc_endpoint_service_info</span> module.</div>
+                        <div>Retrieving information about services using <em>query=services</em> has been deprecated in favour of the <span class='module'>amazon.aws.ec2_vpc_endpoint_service_info</span> module.</div>
                         <div>The <em>query</em> option has been deprecated and will be removed after 2022-12-01.</div>
                 </td>
             </tr>

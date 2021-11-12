@@ -1,2 +1,0 @@
-bugfixes:
-- AWS action group - added missing ``ec2_instance_facts`` entry (https://github.com/ansible-collections/amazon.aws/issues/557)

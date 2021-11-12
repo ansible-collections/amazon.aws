@@ -1,4 +1,0 @@
-minor_changes:
-  - aws_service_ip_ranges - add new option ``ipv6_prefixes``
-    to get only IPV6 addresses and prefixes for Amazon services
-    (https://github.com/ansible-collections/amazon.aws/pull/430)
