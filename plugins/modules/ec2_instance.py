@@ -893,6 +893,7 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
+
 from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
@@ -1805,66 +1806,69 @@ def ensure_present(desired_module_state):
 
 
 def enforce_count(module):
-
     exact_count = module.params.get('exact_count')
     count_tag = module.params.get('count_tag')
-
+    changed = False
     # fail if exact_count specified without a fitering on a tag
     if count_tag is None:
         module.fail_json(msg="you must use the 'count_tag' option to ensure exact_count")
 
-    # get the number of running instances with count_tag
-    custom_filter = {}
-    for item in count_tag.items():
-        key_name = "tag:" + item[0]
-        custom_filter['Name'] = key_name
-        custom_filter['Values'] = [count_tag[item[0]]]
-    describe_response = client.describe_instances(Filters=[custom_filter])
+    try:
+        # get the number of running instances with count_tag
+        custom_filter = {}
+        for item in count_tag.items():
+            key_name = "tag:" + item[0]
+            custom_filter['Name'] = key_name
+            custom_filter['Values'] = [count_tag[item[0]]]
+        describe_response = client.describe_instances(Filters=[custom_filter])
 
-    instances = []
-    for reservation in describe_response['Reservations']:
-        for instance in reservation['Instances']:
-            if instance['State']['Name'] in ['running']:
-                instances.append(instance)
+        instances = []
+        for reservation in describe_response['Reservations']:
+            for instance in reservation['Instances']:
+                if instance['State']['Name'] in ['running']:
+                    instances.append(instance)
 
-    if len(instances) == exact_count:
-        result = dict(
-            changed=False,
-            msg='{0} instances already running, nothing to do'.format(exact_count),
-        )
+        if len(instances) == exact_count:
+            result = dict(
+                changed=False,
+                msg='{0} instances already running, nothing to do'.format(exact_count),
+            )
 
-    elif len(instances) < exact_count:
-        changed = True
-        to_launch = exact_count - len(instances)
-        # make min_count and max_count exact same number to
-        # launch specific number of instances
-        module.params['min_count'] = to_launch
-        module.params['max_count'] = to_launch
-        # launch instances
-        try:
-            result = ensure_present(desired_module_state='present')
-        except botocore.exceptions.ClientError as e:
-            module.fail_json(e, msg='Unable to launch instances')
-    elif len(instances) > exact_count:
-        changed = True
-        to_terminate = len(instances) - exact_count
-        # get the instance ids of instances with the count tag on them
-        all_instance_ids = sorted([x['InstanceId'] for x in instances])
-        terminate_ids = all_instance_ids[0:to_terminate]
-        instances = [x for x in instances if x['InstanceId'] not in terminate_ids]
-        # terminate instances
-        try:
-            result = client.terminate_instances(InstanceIds=terminate_ids)
-            await_instances(terminate_ids, desired_module_state='terminated', force_wait=True)
-        except botocore.exceptions.ClientError as e:
-            module.fail_json(e, msg='Unable to terminate instances')
-        result = dict(
-            changed=changed,
-            msg='Successfully terminated instances.',
-            terminated_ids=terminate_ids,
-        )
+        elif len(instances) < exact_count:
+            changed = True
+            to_launch = exact_count - len(instances)
+            # make min_count and max_count exact same number to
+            # launch specific number of instances
+            module.params['min_count'] = to_launch
+            module.params['max_count'] = to_launch
+            # launch instances
+            try:
+                result = ensure_present(desired_module_state='present')
+            except botocore.exceptions.ClientError as e:
+                module.fail_json(e, msg='Unable to launch instances')
+        elif len(instances) > exact_count:
+            changed = True
+            to_terminate = len(instances) - exact_count
+            # get the instance ids of instances with the count tag on them
+            all_instance_ids = sorted([x['InstanceId'] for x in instances])
+            terminate_ids = all_instance_ids[0:to_terminate]
+            instances = [x for x in instances if x['InstanceId'] not in terminate_ids]
+            # terminate instances
+            try:
+                result = client.terminate_instances(InstanceIds=terminate_ids)
+                await_instances(terminate_ids, desired_module_state='terminated', force_wait=True)
+            except botocore.exceptions.ClientError as e:
+                module.fail_json(e, msg='Unable to terminate instances')
+            result = dict(
+                changed=changed,
+                msg='Successfully terminated instances.',
+                terminated_ids=terminate_ids,
+            )
 
-    return result
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        module.fail_json_aws(e, msg="Failed to enforce instance count")
+
+    module.exit_json(changed=changed, result=result)
 
 
 def run_instances(**instance_spec):
@@ -2002,7 +2006,6 @@ def main():
     if module.params.get('count'):
         module.params['min_count'] = module.params.get('count')
         module.params['max_count'] = module.params.get('count')
-
     if state in ('terminated', 'absent'):
         if existing_matches:
             result = ensure_instance_state(state)
@@ -2011,13 +2014,15 @@ def main():
                 msg='No matching instances found',
                 changed=False,
             )
+    elif existing_matches and not module.params.get('count'):
+        for match in existing_matches:
+            warn_if_public_ip_assignment_changed(match)
+            warn_if_cpu_options_changed(match)
+        result = handle_existing(existing_matches, state)
     elif module.params.get('exact_count'):
-        result = enforce_count(module)
-    # elif existing_matches:
-    #     for match in existing_matches:
-    #         warn_if_public_ip_assignment_changed(match)
-    #         warn_if_cpu_options_changed(match)
-    #     result = handle_existing(existing_matches, state)
+        enforce_count(module)
+    elif module.params.get('count'):
+        result = ensure_present(desired_module_state=state)
     else:
         result = ensure_present(desired_module_state=state)
 
