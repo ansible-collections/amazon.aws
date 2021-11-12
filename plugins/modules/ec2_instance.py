@@ -1754,8 +1754,6 @@ def enforce_count(existing_matches, module):
     try:
         # get the number of running instances with the filter tag
         instances = existing_matches
-        import q; q(instances)
-        q(len(instances))
         if len(instances) == exact_count:
             result = dict(
                 changed=False,
@@ -1768,7 +1766,6 @@ def enforce_count(existing_matches, module):
             module.params['to_launch'] = to_launch
             # launch instances
             try:
-                q('here, ', to_launch)
                 result = ensure_present(existing_matches=instances, desired_module_state='present')
             except botocore.exceptions.ClientError as e:
                 module.fail_json(e, msg='Unable to launch instances')
@@ -1779,6 +1776,8 @@ def enforce_count(existing_matches, module):
             all_instance_ids = sorted([x['InstanceId'] for x in instances])
             terminate_ids = all_instance_ids[0:to_terminate]
             instances = [x for x in instances if x['InstanceId'] not in terminate_ids]
+            if module.check_mode:
+                module.exit_json(changed=True, msg='Would have terminated following instances if not in check mode {}'.format(terminate_ids))
             # terminate instances
             try:
                 result = client.terminate_instances(InstanceIds=terminate_ids)
@@ -1810,6 +1809,7 @@ def ensure_present(existing_matches, desired_module_state):
             module.exit_json(
                 changed=True,
                 spec=instance_spec,
+                msg='Would have launched instances if not in check_mode.',
             )
         instance_response = run_instances(**instance_spec)
         instances = instance_response['Instances']
@@ -1999,7 +1999,7 @@ def main():
             )
     elif module.params.get('exact_count'):
         enforce_count(existing_matches, module)
-    elif existing_matches and module.params.get('count') == 1:
+    elif existing_matches and not module.params.get('count'):
         for match in existing_matches:
             warn_if_public_ip_assignment_changed(match)
             warn_if_cpu_options_changed(match)
