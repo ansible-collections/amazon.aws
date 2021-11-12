@@ -58,19 +58,12 @@ options:
   count:
     description:
       - Number of instances to launch.
-    default: 1
     type: int
   exact_count:
     description:
-      - An integer value which indicates how many instances that match the 'count_tag' parameter should be running.
+      - An integer value which indicates how many instances that match the I(filters) parameter should be running.
         Instances are either created or terminated based on this value.
     type: int
-  count_tag:
-    description:
-      - Used with I(exact_count) to determine how many nodes based on a specific tag criteria should be running.
-        This can be expressed in multiple ways and is shown in the EXAMPLES section.  For instance, one can request 25 servers
-        that are tagged with C(class=webserver). The specified tag must already exist or be passed in as the I(instance_tags) option.
-    type: raw
   user_data:
     description:
       - Opaque blob of data which is made available to the ec2 instance
@@ -455,7 +448,7 @@ EXAMPLES = '''
       assign_public_ip: yes
       security_group: default
       vpc_subnet_id: subnet-0123456
-    count_tag:
+    tags:
       foo: bar
 
 # launches multiple instances - specific number of instances
@@ -1274,8 +1267,6 @@ def build_top_level_options(params):
 
 def build_instance_tags(params, propagate_tags_to_volumes=True):
     tags = params.get('tags') or {}
-    if module.params.get('exact_count'):
-        tags = module.params.get('count_tag')
     if params.get('name') is not None:
         tags['Name'] = params.get('name')
     specs = boto3_tag_specifications(tags, ['volume', 'instance'])
@@ -1286,6 +1277,8 @@ def build_run_instance_spec(params):
 
     spec = dict(
         ClientToken=uuid.uuid4().hex,
+        MaxCount=1,
+        MinCount=1,
     )
     # network parameters
     spec['NetworkInterfaces'] = build_network_spec(params)
@@ -1297,8 +1290,13 @@ def build_run_instance_spec(params):
     if params.get('instance_role'):
         spec['IamInstanceProfile'] = dict(Arn=determine_iam_role(params.get('instance_role')))
 
-    spec['MaxCount'] = module.params.get('count')
-    spec['MinCount'] = module.params.get('count')
+    if module.params.get('exact_count'):
+        spec['MaxCount'] = module.params.get('to_launch')
+        spec['MinCount'] = module.params.get('to_launch')
+
+    if module.params.get('count'):
+        spec['MaxCount'] = module.params.get('count')
+        spec['MinCount'] = module.params.get('count')
 
     spec['InstanceType'] = params['instance_type']
     return spec
@@ -1749,29 +1747,15 @@ def handle_existing(existing_matches, state):
     return result
 
 
-def enforce_count(module):
+def enforce_count(existing_matches, module):
     exact_count = module.params.get('exact_count')
-    count_tag = module.params.get('count_tag')
     changed = False
-    # fail if exact_count specified without a fitering on a tag
-    if count_tag is None:
-        module.fail_json(msg="you must use the 'count_tag' option to ensure exact_count")
 
     try:
-        # get the number of running instances with count_tag
-        custom_filter = {}
-        for item in count_tag.items():
-            key_name = "tag:" + item[0]
-            custom_filter['Name'] = key_name
-            custom_filter['Values'] = [count_tag[item[0]]]
-        describe_response = client.describe_instances(Filters=[custom_filter])
-
-        instances = []
-        for reservation in describe_response['Reservations']:
-            for instance in reservation['Instances']:
-                if instance['State']['Name'] in ['running']:
-                    instances.append(instance)
-
+        # get the number of running instances with the filter tag
+        instances = existing_matches
+        import q; q(instances)
+        q(len(instances))
         if len(instances) == exact_count:
             result = dict(
                 changed=False,
@@ -1781,13 +1765,11 @@ def enforce_count(module):
         elif len(instances) < exact_count:
             changed = True
             to_launch = exact_count - len(instances)
-            # make min_count and max_count exact same number to
-            # launch specific number of instances
-            module.params['min_count'] = to_launch
-            module.params['max_count'] = to_launch
+            module.params['to_launch'] = to_launch
             # launch instances
             try:
-                result = ensure_present(existing_matches=None, desired_module_state='present')
+                q('here, ', to_launch)
+                result = ensure_present(existing_matches=instances, desired_module_state='present')
             except botocore.exceptions.ClientError as e:
                 module.fail_json(e, msg='Unable to launch instances')
         elif len(instances) > exact_count:
@@ -1817,8 +1799,6 @@ def enforce_count(module):
 
 def ensure_present(existing_matches, desired_module_state):
     tags = dict(module.params.get('tags') or {})
-    if module.params.get('exact_count'):
-        tags = dict(module.params.get('count_tag'))
     name = module.params.get('name')
     if name:
         tags['Name'] = name
@@ -1935,9 +1915,8 @@ def main():
         state=dict(default='present', choices=['present', 'started', 'running', 'stopped', 'restarted', 'rebooted', 'terminated', 'absent']),
         wait=dict(default=True, type='bool'),
         wait_timeout=dict(default=600, type='int'),
-        count=dict(default=1, type='int'),
+        count=dict(type='int'),
         exact_count=dict(type='int'),
-        count_tag=dict(type='raw'),
         image=dict(type='dict'),
         image_id=dict(type='str'),
         instance_type=dict(default='t2.micro', type='str'),
@@ -2019,7 +1998,7 @@ def main():
                 changed=False,
             )
     elif module.params.get('exact_count'):
-        enforce_count(module)
+        enforce_count(existing_matches, module)
     elif existing_matches and module.params.get('count') == 1:
         for match in existing_matches:
             warn_if_public_ip_assignment_changed(match)
