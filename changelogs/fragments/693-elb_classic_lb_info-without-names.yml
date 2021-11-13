@@ -1,2 +1,0 @@
-bugfixes:
-- elb_classic_lb_info - fix empty list returned when names not defined (https://github.com/ansible-collections/community.aws/pull/693).

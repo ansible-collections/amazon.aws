@@ -212,6 +212,7 @@ Parameters
                                     <li>mappings</li>
                                     <li>policy</li>
                                     <li>versions</li>
+                                    <li>tags</li>
                         </ul>
                 </td>
                 <td>
@@ -308,7 +309,6 @@ Examples
     - name: List all function
       community.aws.lambda_info:
         query: all
-        max_items: 20
       register: output
     - name: show Lambda information
       ansible.builtin.debug:

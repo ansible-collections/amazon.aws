@@ -123,7 +123,7 @@ Name | Description
 [community.aws.ec2_vpc_vgw_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_vgw_info_module.rst)|Gather information about virtual gateways in AWS
 [community.aws.ec2_vpc_vpn](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_vpn_module.rst)|Create, modify, and delete EC2 VPN connections.
 [community.aws.ec2_vpc_vpn_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_vpc_vpn_info_module.rst)|Gather information about VPN Connections in AWS.
-[community.aws.ec2_win_password](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_win_password_module.rst)|Gets the default administrator password for ec2 windows instances
+[community.aws.ec2_win_password](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_win_password_module.rst)|Gets the default administrator password for EC2 Windows instances
 [community.aws.ecs_attribute](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ecs_attribute_module.rst)|manage ecs attributes
 [community.aws.ecs_cluster](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ecs_cluster_module.rst)|Create or terminate ECS clusters.
 [community.aws.ecs_ecr](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ecs_ecr_module.rst)|Manage Elastic Container Registry repositories
@@ -152,7 +152,8 @@ Name | Description
 [community.aws.elb_target_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elb_target_info_module.rst)|Gathers which target groups a target is associated with.
 [community.aws.execute_lambda](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.execute_lambda_module.rst)|Execute an AWS Lambda function
 [community.aws.iam](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.iam_module.rst)|Manage IAM users, groups, roles and keys
-[community.aws.iam_cert](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.iam_cert_module.rst)|Manage server certificates for use on ELBs and CloudFront
+[community.aws.iam_access_key](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.iam_access_key_module.rst)|Manage AWS IAM User access keys
+[community.aws.iam_access_key_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.iam_access_key_info_module.rst)|fetch information about AWS IAM User access keys
 [community.aws.iam_group](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.iam_group_module.rst)|Manage AWS IAM groups
 [community.aws.iam_managed_policy](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.iam_managed_policy_module.rst)|Manage User Managed IAM policies
 [community.aws.iam_mfa_device_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.iam_mfa_device_info_module.rst)|List the MFA (Multi-Factor Authentication) devices registered for a user
@@ -162,6 +163,7 @@ Name | Description
 [community.aws.iam_role](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.iam_role_module.rst)|Manage AWS IAM roles
 [community.aws.iam_role_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.iam_role_info_module.rst)|Gather information on IAM roles
 [community.aws.iam_saml_federation](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.iam_saml_federation_module.rst)|Maintain IAM SAML federation configuration.
+[community.aws.iam_server_certificate](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.iam_server_certificate_module.rst)|Manage server certificates for use on ELBs and CloudFront
 [community.aws.iam_server_certificate_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.iam_server_certificate_info_module.rst)|Retrieve the information of a server certificate
 [community.aws.iam_user](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.iam_user_module.rst)|Manage AWS IAM users
 [community.aws.iam_user_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.iam_user_info_module.rst)|Gather IAM user(s) facts in AWS
@@ -176,8 +178,10 @@ Name | Description
 [community.aws.rds](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.rds_module.rst)|create, delete, or modify Amazon rds instances, rds snapshots, and related facts
 [community.aws.rds_instance](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.rds_instance_module.rst)|Manage RDS instances
 [community.aws.rds_instance_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.rds_instance_info_module.rst)|obtain information about one or more RDS instances
+[community.aws.rds_instance_snapshot](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.rds_instance_snapshot_module.rst)|manage Amazon RDS snapshots.
+[community.aws.rds_option_group](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.rds_option_group_module.rst)|rds_option_group module
+[community.aws.rds_option_group_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.rds_option_group_info_module.rst)|rds_option_group_info module
 [community.aws.rds_param_group](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.rds_param_group_module.rst)|manage RDS parameter groups
-[community.aws.rds_snapshot](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.rds_snapshot_module.rst)|manage Amazon RDS snapshots.
 [community.aws.rds_snapshot_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.rds_snapshot_info_module.rst)|obtain information about one or more RDS snapshots
 [community.aws.rds_subnet_group](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.rds_subnet_group_module.rst)|manage RDS database subnet groups
 [community.aws.redshift](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.redshift_module.rst)|create, delete, or modify an Amazon Redshift instance
@@ -185,7 +189,7 @@ Name | Description
 [community.aws.redshift_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.redshift_info_module.rst)|Gather information about Redshift cluster(s)
 [community.aws.redshift_subnet_group](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.redshift_subnet_group_module.rst)|manage Redshift cluster subnet groups
 [community.aws.route53](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.route53_module.rst)|add or delete entries in Amazons Route 53 DNS service
-[community.aws.route53_health_check](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.route53_health_check_module.rst)|Add or delete health-checks in Amazons Route53 DNS service
+[community.aws.route53_health_check](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.route53_health_check_module.rst)|Manage health-checks in Amazons Route53 DNS service
 [community.aws.route53_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.route53_info_module.rst)|Retrieves route53 details using AWS methods
 [community.aws.route53_zone](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.route53_zone_module.rst)|add or delete Route53 zones
 [community.aws.s3_bucket_notification](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.s3_bucket_notification_module.rst)|Creates, updates or deletes S3 Bucket notification for lambda

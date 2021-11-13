@@ -1,7 +1,0 @@
-minor_changes:
-- elb_instance - the module has been migrated to the boto3 AWS SDK (https://github.com/ansible-collections/community.aws/pull/773).
-- elb_instance - added new ``updated_elbs`` return value (https://github.com/ansible-collections/community.aws/pull/773).
-deprecated_features:
-- elb_instance - setting of the ``ec2_elb`` fact has been deprecated and will be removed in release 4.0.0 of the collection.
-  See the module documentation for an alternative example using the register keyword
-  (https://github.com/ansible-collections/community.aws/pull/773).

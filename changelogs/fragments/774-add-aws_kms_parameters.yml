@@ -1,2 +1,0 @@
-minor_changes:
-- aws_kms - add support for ``kms_spec`` and ``kms_usage`` parameter (https://github.com/ansible-collections/community.aws/pull/774).

@@ -1,2 +1,0 @@
-bugfixes:
-- elb_instance - Python 3 compatability fix (https://github.com/ansible-collections/community.aws/issues/384).

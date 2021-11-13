@@ -198,7 +198,7 @@ Parameters
                 <td>
                         <div>The path to the properly json formatted policy file.</div>
                         <div>Mutually exclusive with <em>policy_json</em>.</div>
-                        <div>This option has been deprecated and will be removed in 2.14.  The existing behavior can be reproduced by using the <em>policy_json</em> option and reading the file using the lookup plugin.</div>
+                        <div>This option has been deprecated and will be removed in a release after 2022-06-01.  The existing behavior can be reproduced by using the <em>policy_json</em> option and reading the file using the lookup plugin.</div>
                 </td>
             </tr>
             <tr>
@@ -301,8 +301,8 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>When <em>skip_duplicates=true</em> the module looks for any policies that match the document you pass in.  If there is a match it will not make a new policy object with the same rules.</div>
-                        <div>The current default is <code>true</code>.  However, this behavior can be confusing and as such the default will change to <code>false</code> in 2.14.  To maintain the existing behavior explicitly set <em>skip_duplicates=true</em>.</div>
+                        <div>When <em>skip_duplicates=true</em> the module looks for any policies that match the document you pass in. If there is a match it will not make a new policy object with the same rules.</div>
+                        <div>The current default is <code>true</code>.  However, this behavior can be confusing and as such the default will change to <code>false</code> in a release after 2022-06-01.  To maintain the existing behavior explicitly set <em>skip_duplicates=true</em>.</div>
                 </td>
             </tr>
             <tr>

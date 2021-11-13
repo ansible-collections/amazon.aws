@@ -1,2 +1,0 @@
-minor_changes:
-  - iam_role - Added `wait` option for IAM role creation / updates (https://github.com/ansible-collections/community.aws/pull/767).

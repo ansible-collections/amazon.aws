@@ -1,2 +1,0 @@
-minor_changes:
-- cloudfront_distribution - add ``TLSv1.2_2021`` security policy for viewer connections (https://github.com/ansible-collections/community.aws/pull/707).

@@ -248,7 +248,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A list of managed policy ARNs or, since Ansible 2.4, a list of either managed policy ARNs or friendly names.</div>
+                        <div>A list of managed policy ARNs, managed policy ARNs or friendly names.</div>
                         <div>To remove all policies set <em>purge_polices=true</em> and <em>managed_policies=[None]</em>.</div>
                         <div>To embed an inline policy, use <span class='module'>community.aws.iam_policy</span>.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: managed_policy</div>
@@ -336,7 +336,7 @@ Parameters
                 </td>
                 <td>
                         <div>When <em>purge_policies=true</em> any managed policies not listed in <em>managed_policies</em> will be detatched.</div>
-                        <div>By default <em>purge_policies=true</em>.  In Ansible 2.14 this will be changed to <em>purge_policies=false</em>.</div>
+                        <div>By default <em>purge_policies=true</em>.  In a release after 2022-06-01 this will be changed to <em>purge_policies=false</em>.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: purge_policy, purge_managed_policies</div>
                 </td>
             </tr>
@@ -444,6 +444,41 @@ Parameters
                 </td>
                 <td>
                         <div>When set to &quot;no&quot;, SSL certificates will not be validated for communication with the AWS APIs.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>wait</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
+                        </ul>
+                </td>
+                <td>
+                        <div>When <em>wait=True</em> the module will wait for up to <em>wait_timeout</em> seconds for IAM role creation before returning.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>wait_timeout</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">120</div>
+                </td>
+                <td>
+                        <div>How long (in seconds) to wait for creation / update to complete.</div>
                 </td>
             </tr>
     </table>

@@ -334,6 +334,55 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>key_spec</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.1.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>SYMMETRIC_DEFAULT</b>&nbsp;&larr;</div></li>
+                                    <li>RSA_2048</li>
+                                    <li>RSA_3072</li>
+                                    <li>RSA_4096</li>
+                                    <li>ECC_NIST_P256</li>
+                                    <li>ECC_NIST_P384</li>
+                                    <li>ECC_NIST_P521</li>
+                                    <li>ECC_SECG_P256K1</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Specifies the type of KMS key to create.</div>
+                        <div>The specification is not changeable once the key is created.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: customer_master_key_spec</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>key_usage</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.1.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>ENCRYPT_DECRYPT</b>&nbsp;&larr;</div></li>
+                                    <li>SIGN_VERIFY</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Determines the cryptographic operations for which you can use the KMS key.</div>
+                        <div>The usage is not changeable once the key is created.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>pending_window</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -386,7 +435,7 @@ Parameters
                         <div>(deprecated) If adding/removing a role and invalid grantees are found, remove them. These entries will cause an update to fail in all known cases.</div>
                         <div>Only cleans if changes are being made.</div>
                         <div>Used for modifying the Key Policy rather than modifying a grant and only works on the default policy created through the AWS Console.</div>
-                        <div>This option has been deprecated, and will be removed in 2.13. Use <em>policy</em> instead.</div>
+                        <div>This option has been deprecated, and will be removed in a release after 2021-12-01. Use <em>policy</em> instead.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: clean_invalid_entries</div>
                 </td>
             </tr>
@@ -406,7 +455,7 @@ Parameters
                         <div>(deprecated) List of grants to give to user/role. Likely &quot;role,role grant&quot; or &quot;role,role grant,admin&quot;.</div>
                         <div>Required when <em>policy_mode=grant</em>.</div>
                         <div>Used for modifying the Key Policy rather than modifying a grant and only works on the default policy created through the AWS Console.</div>
-                        <div>This option has been deprecated, and will be removed in 2.13. Use <em>policy</em> instead.</div>
+                        <div>This option has been deprecated, and will be removed in a release after 2021-12-01. Use <em>policy</em> instead.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: grant_types</div>
                 </td>
             </tr>
@@ -428,7 +477,7 @@ Parameters
                 <td>
                         <div>(deprecated) Grant or deny access.</div>
                         <div>Used for modifying the Key Policy rather than modifying a grant and only works on the default policy created through the AWS Console.</div>
-                        <div>This option has been deprecated, and will be removed in 2.13. Use <em>policy</em> instead.</div>
+                        <div>This option has been deprecated, and will be removed in a release after 2021-12-01. Use <em>policy</em> instead.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: mode</div>
                 </td>
             </tr>
@@ -447,7 +496,7 @@ Parameters
                         <div>(deprecated) ARN of role to allow/deny access.</div>
                         <div>One of <em>policy_role_name</em> or <em>policy_role_arn</em> are required.</div>
                         <div>Used for modifying the Key Policy rather than modifying a grant and only works on the default policy created through the AWS Console.</div>
-                        <div>This option has been deprecated, and will be removed in 2.13. Use <em>policy</em> instead.</div>
+                        <div>This option has been deprecated, and will be removed in a release after 2021-12-01. Use <em>policy</em> instead.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: role_arn</div>
                 </td>
             </tr>
@@ -466,7 +515,7 @@ Parameters
                         <div>(deprecated) Role to allow/deny access.</div>
                         <div>One of <em>policy_role_name</em> or <em>policy_role_arn</em> are required.</div>
                         <div>Used for modifying the Key Policy rather than modifying a grant and only works on the default policy created through the AWS Console.</div>
-                        <div>This option has been deprecated, and will be removed in 2.13. Use <em>policy</em> instead.</div>
+                        <div>This option has been deprecated, and will be removed in a release after 2021-12-01. Use <em>policy</em> instead.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: role_name</div>
                 </td>
             </tr>

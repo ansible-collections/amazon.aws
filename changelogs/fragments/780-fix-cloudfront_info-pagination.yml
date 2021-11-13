@@ -1,2 +1,0 @@
-bugfixes:
-  - cloudfront_info - Switch to native boto3 paginators to fix reported bug when over 100 distributions exist (https://github.com/ansible-collections/community.aws/issues/769).

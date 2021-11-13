@@ -1,7 +1,0 @@
-deprecated_features:
-- iam_server_certificate - the default value for the ``dup_ok`` parameter is
-  currently ``false``, in version 4.0.0 this will be updated to ``true``.  To
-  preserve the current behaviour explicitly set the ``dup_ok`` parameter to ``false`` (https://github.com/ansible-collections/community.aws/pull/737).
-minor_changes:
-- iam_server_certificate - migrate module to using the boto3 SDK (https://github.com/ansible-collections/community.aws/pull/737).
-- iam_server_certificate - add support for check_mode (https://github.com/ansible-collections/community.aws/pull/737).

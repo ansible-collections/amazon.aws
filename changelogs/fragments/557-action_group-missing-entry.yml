@@ -1,2 +1,0 @@
-bugfixes:
-- AWS action group - added missing ``aws_direct_connect_confirm_connection`` and ``efs_tag`` entries (https://github.com/ansible-collections/amazon.aws/issues/557).

@@ -18,7 +18,7 @@ DEPRECATED
 ----------
 :Removed in collection release after 
 :Why: The ec2_elb_info is based upon a deprecated version of the AWS SDK.
-:Alternative: Use :ref:`elb_classic_lb_info <elb_classic_lb_info_module>`.
+:Alternative: Use :ref:`community.aws.elb_classic_lb_info <community.aws.elb_classic_lb_info_module>`.
 
 
 

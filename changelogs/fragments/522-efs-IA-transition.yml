@@ -1,2 +1,0 @@
-minor_changes:
-- efs - add ``transition_to_ia`` parameter to support specifying the number of days before transitioning data to inactive storage (https://github.com/ansible-collections/community.aws/pull/522).

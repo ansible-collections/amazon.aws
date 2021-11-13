@@ -214,6 +214,26 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>purge_tags</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.1.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Delete any tags not specified in the task that are on the zone. This means you have to specify all the desired tags on each task affecting a zone.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>region</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -262,6 +282,22 @@ Parameters
                 </td>
                 <td>
                         <div>Whether or not the zone should exist or not.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>tags</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.1.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>A hash/dictionary of tags to add to the new instance or to add/remove from an existing one.</div>
                 </td>
             </tr>
             <tr>
@@ -372,6 +408,21 @@ Examples
         comment: reusable delegation set example
         delegation_set_id: A1BCDEF2GHIJKL
 
+    - name: create a public zone with tags
+      community.aws.route53_zone:
+        zone: example.com
+        comment: this is an example
+        tags:
+            Owner: Ansible Team
+
+    - name: modify a public zone, removing all previous tags and adding a new one
+      community.aws.route53_zone:
+        zone: example.com
+        comment: this is an example
+        tags:
+            Support: Ansible Community
+        purge_tags: true
+
 
 
 Return Values
@@ -452,6 +503,21 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">True</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>tags</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>when tags are defined</td>
+                <td>
+                            <div>tags associated with the zone</div>
+                    <br/>
                 </td>
             </tr>
             <tr>

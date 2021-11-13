@@ -18,7 +18,6 @@ Version added: 1.0.0
 Synopsis
 --------
 - This module de-registers or registers an AWS EC2 instance from the ELBs that it belongs to.
-- Returns fact "ec2_elbs" which is a list of elbs attached to the instance if state=absent is passed as an argument.
 - Will be marked changed when called only if there are ELBs found to operate on.
 
 
@@ -27,10 +26,9 @@ Requirements
 ------------
 The below requirements are needed on the host that executes this module.
 
-- boto >= 2.49.0
+- python >= 3.6
 - boto3 >= 1.15.0
 - botocore >= 1.18.0
-- python >= 3.6
 
 
 Parameters
@@ -146,8 +144,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>List of ELB names, required for registration.</div>
-                        <div>The ec2_elbs fact should be used if there was a previous de-register.</div>
+                        <div>List of ELB names</div>
+                        <div>Required when <em>state=present</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -199,7 +197,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>EC2 Instance ID</div>
+                        <div>EC2 Instance ID.</div>
                 </td>
             </tr>
             <tr>
@@ -338,6 +336,7 @@ Notes
 -----
 
 .. note::
+   - The ec2_elb fact currently set by this module has been deprecated and will no longer be set after release 4.0.0 of the collection.
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
    - When no credentials are explicitly provided the AWS SDK (boto3) that Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``). See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html for more information.
    - Modules based on the original AWS SDK (boto) may read their default configuration from different files. See https://boto.readthedocs.io/en/latest/boto_config_tut.html for more information.
@@ -356,6 +355,7 @@ Examples
         community.aws.elb_instance:
           instance_id: "{{ ansible_ec2_instance_id }}"
           state: absent
+        register: deregister_instances
         delegate_to: localhost
     roles:
       - myrole
@@ -363,12 +363,42 @@ Examples
       - name: Instance Register
         community.aws.elb_instance:
           instance_id: "{{ ansible_ec2_instance_id }}"
-          ec2_elbs: "{{ item }}"
+          ec2_elbs: "{{ deregister_instances.updated_elbs }}"
           state: present
         delegate_to: localhost
-        loop: "{{ ec2_elbs }}"
 
 
+
+Return Values
+-------------
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
+
+.. raw:: html
+
+    <table border=0 cellpadding=0 class="documentation-table">
+        <tr>
+            <th colspan="1">Key</th>
+            <th>Returned</th>
+            <th width="100%">Description</th>
+        </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>updated_elbs</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                       / <span style="color: purple">elements=string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>A list of ELB names that the instance has been added to or removed from.</div>
+                    <br/>
+                </td>
+            </tr>
+    </table>
+    <br/><br/>
 
 
 Status

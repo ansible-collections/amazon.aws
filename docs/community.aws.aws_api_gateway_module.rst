@@ -19,7 +19,6 @@ Synopsis
 --------
 - Allows for the management of API Gateway APIs.
 - Normally you should give the api_id since there is no other stable guaranteed unique identifier for the API.  If you do not give api_id then a new API will be created each time this is run.
-- Beware that there are very hard limits on the rate that you can call API Gateway's REST API.  You may need to patch your boto.  See https://github.com/boto/boto3/issues/876 and discuss it with your AWS rep.
 - swagger_file and swagger_text are passed directly on to AWS transparently whilst swagger_dict is an ansible dict which is converted to JSON before the API definitions are uploaded.
 
 

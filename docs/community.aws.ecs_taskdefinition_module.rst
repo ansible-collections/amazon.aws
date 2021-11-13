@@ -1871,11 +1871,62 @@ Parameters
                 </td>
                 <td>
                         <div>The Docker networking mode to use for the containers in the task.</div>
-                        <div><code>awsvpc</code> mode was added in Ansible 2.5</div>
                         <div>Windows containers must use <em>network_mode=default</em>, which will utilize docker NAT networking.</div>
                         <div>Setting <em>network_mode=default</em> for a Linux container will use <code>bridge</code> mode.</div>
                 </td>
             </tr>
+            <tr>
+                <td colspan="4">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>placement_constraints</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=dictionary</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.1.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Placement constraint objects to use for the task.</div>
+                        <div>You can specify a maximum of 10 constraints per task.</div>
+                        <div>Task placement constraints are not supported for tasks run on Fargate.</div>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>expression</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>A cluster query language expression to apply to the constraint.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>type</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The type of constraint.</div>
+                </td>
+            </tr>
+
             <tr>
                 <td colspan="4">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>

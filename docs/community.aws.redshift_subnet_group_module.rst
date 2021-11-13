@@ -25,10 +25,9 @@ Requirements
 ------------
 The below requirements are needed on the host that executes this module.
 
-- boto >= 2.49.0
+- python >= 3.6
 - boto3 >= 1.15.0
 - botocore >= 1.18.0
-- python >= 3.6
 
 
 Parameters
@@ -134,6 +133,22 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>description</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Cluster subnet group description.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: group_description</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>ec2_url</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -150,24 +165,7 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>group_description</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>Database subnet group description.</div>
-                        <div>Required when <em>state=present</em>.</div>
-                        <div style="font-size: small; color: darkgreen"><br/>aliases: description</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>group_name</b>
+                    <b>name</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
@@ -178,25 +176,7 @@ Parameters
                 </td>
                 <td>
                         <div>Cluster subnet group name.</div>
-                        <div style="font-size: small; color: darkgreen"><br/>aliases: name</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>group_subnets</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>List of subnet IDs that make up the cluster subnet group.</div>
-                        <div>Required when <em>state=present</em>.</div>
-                        <div style="font-size: small; color: darkgreen"><br/>aliases: subnets</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: group_name</div>
                 </td>
             </tr>
             <tr>
@@ -257,17 +237,34 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>present</li>
+                                    <li><div style="color: blue"><b>present</b>&nbsp;&larr;</div></li>
                                     <li>absent</li>
                         </ul>
                 </td>
                 <td>
-                        <div>Specifies whether the subnet should be present or absent.</div>
+                        <div>Specifies whether the subnet group should be present or absent.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>subnets</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>List of subnet IDs that make up the cluster subnet group.</div>
+                        <div>At least one subnet must be provided when creating a cluster subnet group.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: group_subnets</div>
                 </td>
             </tr>
             <tr>
@@ -340,19 +337,37 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>group</b>
+                    <b>cluster_subnet_group</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">complex</span>
+                      <span style="color: purple">dictionary</span>
                     </div>
                 </td>
                 <td>success</td>
                 <td>
-                            <div>dictionary containing all Redshift subnet group information</div>
+                            <div>A dictionary containing information about the Redshift subnet group.</div>
                     <br/>
                 </td>
             </tr>
                                 <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>description</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>when the cache subnet group exists</td>
+                <td>
+                            <div>The description of the cache subnet group.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">Redshift subnet</div>
+                </td>
+            </tr>
+            <tr>
                     <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
@@ -362,12 +377,31 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                       <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td>success</td>
+                <td>when the cache subnet group exists</td>
                 <td>
-                            <div>name of the Redshift subnet group</div>
+                            <div>Name of the Redshift subnet group.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">redshift_subnet_group_name</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>subnet_ids</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                       / <span style="color: purple">elements=string</span>
+                    </div>
+                </td>
+                <td>when the cache subnet group exists</td>
+                <td>
+                            <div>The IDs of the subnets beloging to the Redshift subnet group.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[&#x27;subnet-aaaaaaaa&#x27;, &#x27;subnet-bbbbbbbb&#x27;]</div>
                 </td>
             </tr>
             <tr>
@@ -380,9 +414,9 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                       <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td>success</td>
+                <td>when the cache subnet group exists</td>
                 <td>
-                            <div>Id of the VPC where the subnet is located</div>
+                            <div>Id of the VPC where the subnet is located.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">vpc-aabb1122</div>

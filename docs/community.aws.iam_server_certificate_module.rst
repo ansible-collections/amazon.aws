@@ -1,11 +1,11 @@
-.. _community.aws.iam_module:
+.. _community.aws.iam_server_certificate_module:
 
 
-*****************
-community.aws.iam
-*****************
+************************************
+community.aws.iam_server_certificate
+************************************
 
-**Manage IAM users, groups, roles and keys**
+**Manage server certificates for use on ELBs and CloudFront**
 
 
 Version added: 1.0.0
@@ -14,17 +14,10 @@ Version added: 1.0.0
    :local:
    :depth: 1
 
-DEPRECATED
-----------
-:Removed in collection release after 
-:Why: The iam module is based upon a deprecated version of the AWS SDK.
-:Alternative: Use :ref:`community.aws.iam_user <community.aws.iam_user_module>`, :ref:`community.aws.iam_group <community.aws.iam_group_module>`, :ref:`community.aws.iam_role <community.aws.iam_role_module>`, :ref:`community.aws.iam_policy <community.aws.iam_policy_module>` and :ref:`community.aws.iam_managed_policy <community.aws.iam_managed_policy_module>` modules.
-
-
 
 Synopsis
 --------
-- Allows for the management of IAM users, user API keys, groups, roles.
+- Allows for the management of server certificates.
 
 
 
@@ -49,47 +42,6 @@ Parameters
             <th>Choices/<font color="blue">Defaults</font></th>
             <th width="100%">Comments</th>
         </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>access_key_ids</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>A list of the keys that you want affected by the <em>access_key_state</em> parameter.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>access_key_state</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>create</li>
-                                    <li>remove</li>
-                                    <li>active</li>
-                                    <li>inactive</li>
-                                    <li>Create</li>
-                                    <li>Remove</li>
-                                    <li>Active</li>
-                                    <li>Inactive</li>
-                        </ul>
-                </td>
-                <td>
-                        <div>When type is user, it creates, removes, deactivates or activates a user&#x27;s access key(s). Note that actions apply only to keys specified.</div>
-                </td>
-            </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
@@ -163,6 +115,40 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>cert</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The path to, or content of the certificate body in PEM encoded format.</div>
+                        <div>If the parameter is not a file, it is assumed to be content.</div>
+                        <div>Passing a file name is deprecated, and support will be dropped in version 4.0.0 of this collection.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>cert_chain</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The path to, or content of, the CA certificate chain in PEM encoded format.</div>
+                        <div>If the parameter is not a file, it is assumed to be content.</div>
+                        <div>Passing a file name is deprecated, and support will be dropped in version 4.0.0 of this collection.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>debug_botocore_endpoint_logs</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -177,6 +163,27 @@ Parameters
                 </td>
                 <td>
                         <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>dup_ok</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>By default the module will not upload a certificate that is already uploaded into AWS.</div>
+                        <div>If <em>dup_ok=True</em>, it will upload the certificate as long as the name is unique.</div>
+                        <div>Currently defaults to <code>false</code>, this will default to <code>true</code> in release 4.0.0.</div>
                 </td>
             </tr>
             <tr>
@@ -198,54 +205,17 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>groups</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>A list of groups the user should belong to. When <em>state=update</em>, will gracefully remove groups not listed.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>iam_type</b>
+                    <b>key</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>user</li>
-                                    <li>group</li>
-                                    <li>role</li>
-                        </ul>
                 </td>
                 <td>
-                        <div>Type of IAM resource.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>key_count</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">integer</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">1</div>
-                </td>
-                <td>
-                        <div>When <em>access_key_state=create</em> it will ensure this quantity of keys are present.</div>
+                        <div>The path to, or content of the private key in PEM encoded format. If the parameter is not a file, it is assumed to be content.</div>
+                        <div>Passing a file name is deprecated, and support will be dropped in version 4.0.0 of this collection.</div>
                 </td>
             </tr>
             <tr>
@@ -261,7 +231,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Name of IAM resource to create or identify.</div>
+                        <div>Name of certificate to add, update or remove.</div>
                 </td>
             </tr>
             <tr>
@@ -276,7 +246,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>When <em>state=update</em>, will replace <em>name</em> with <em>new_name</em> on IAM resource.</div>
+                        <div>When <em>state=present</em>, this will update the name of the cert.</div>
+                        <div>The <em>cert</em>, <em>key</em> and <em>cert_chain</em> parameters will be ignored if this is defined.</div>
                 </td>
             </tr>
             <tr>
@@ -291,23 +262,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>When <em>state=update</em>, will replace the path with new_path on the IAM resource.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>password</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>When <em>type=user</em> and either <em>state=present</em> or <em>state=update</em>, define the users login password.</div>
-                        <div>Note that this will always return &#x27;changed&#x27;.</div>
+                        <div>When <em>state=present</em>, this will update the path of the cert.</div>
+                        <div>The <em>cert</em>, <em>key</em> and <em>cert_chain</em> parameters will be ignored if this is defined.</div>
                 </td>
             </tr>
             <tr>
@@ -323,8 +279,7 @@ Parameters
                         <b>Default:</b><br/><div style="color: blue">"/"</div>
                 </td>
                 <td>
-                        <div>When creating or updating, specify the desired path of the resource.</div>
-                        <div>If <em>state=present</em>, it will replace the current path to match what is passed in when they do not match.</div>
+                        <div>When creating or updating, specify the desired path of the certificate.</div>
                 </td>
             </tr>
             <tr>
@@ -392,64 +347,11 @@ Parameters
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
                                     <li>present</li>
                                     <li>absent</li>
-                                    <li>update</li>
                         </ul>
                 </td>
                 <td>
-                        <div>Whether to create, delete or update the IAM resource. Note, roles cannot be updated.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>trust_policy</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The inline (JSON or YAML) trust policy document that grants an entity permission to assume the role.</div>
-                        <div>Mutually exclusive with <em>trust_policy_filepath</em>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>trust_policy_filepath</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The path to the trust policy document that grants an entity permission to assume the role.</div>
-                        <div>Mutually exclusive with <em>trust_policy</em>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>update_password</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>always</b>&nbsp;&larr;</div></li>
-                                    <li>on_create</li>
-                        </ul>
-                </td>
-                <td>
-                        <div>When to update user passwords.</div>
-                        <div><em>update_password=always</em> will ensure the password is set to <em>password</em>.</div>
-                        <div><em>update_password=on_create</em> will only set the password for newly created users.</div>
+                        <div>Whether to create (or update) or delete the certificate.</div>
+                        <div>If <em>new_path</em> or <em>new_name</em> is defined, specifying present will attempt to make an update these.</div>
                 </td>
             </tr>
             <tr>
@@ -479,7 +381,6 @@ Notes
 -----
 
 .. note::
-   - Currently boto does not support the removal of Managed Policies, the module will error out if your user/group/role has managed policies when you try to do state=absent. They will need to be removed manually.
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
    - When no credentials are explicitly provided the AWS SDK (boto3) that Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``). See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html for more information.
    - Modules based on the original AWS SDK (boto) may read their default configuration from different files. See https://boto.readthedocs.io/en/latest/boto_config_tut.html for more information.
@@ -492,114 +393,45 @@ Examples
 
 .. code-block:: yaml
 
-    # Basic user creation example
-    - name: Create two new IAM users with API keys
-      community.aws.iam:
-        iam_type: user
-        name: "{{ item }}"
+    - name: Basic server certificate upload from local file
+      community.aws.iam_server_certificate:
+        name: very_ssl
         state: present
-        password: "{{ temp_pass }}"
-        access_key_state: create
-      loop:
-        - jcleese
-        - mpython
+        cert: "{{ lookup('file', 'path/to/cert') }}"
+        key: "{{ lookup('file', 'path/to/key') }}"
+        cert_chain: "{{ lookup('file', 'path/to/certchain') }}"
 
-    # Advanced example, create two new groups and add the pre-existing user
-    # jdavila to both groups.
-    - name: Create Two Groups, Mario and Luigi
-      community.aws.iam:
-        iam_type: group
-        name: "{{ item }}"
+    - name: Basic server certificate upload
+      community.aws.iam_server_certificate:
+        name: very_ssl
         state: present
-      loop:
-         - Mario
-         - Luigi
-      register: new_groups
+        cert: path/to/cert
+        key: path/to/key
+        cert_chain: path/to/certchain
 
-    - name: Update user
-      community.aws.iam:
-        iam_type: user
-        name: jdavila
-        state: update
-        groups: "{{ item.created_group.group_name }}"
-      loop: "{{ new_groups.results }}"
-
-    # Example of role with custom trust policy for Lambda service
-    - name: Create IAM role with custom trust relationship
-      community.aws.iam:
-        iam_type: role
-        name: AAALambdaTestRole
+    - name: Server certificate upload using key string
+      community.aws.iam_server_certificate:
+        name: very_ssl
         state: present
-        trust_policy:
-          Version: '2012-10-17'
-          Statement:
-          - Action: sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
+        path: "/a/cert/path/"
+        cert: body_of_somecert
+        key: vault_body_of_privcertkey
+        cert_chain: body_of_myverytrustedchain
+
+    - name: Basic rename of existing certificate
+      community.aws.iam_server_certificate:
+        name: very_ssl
+        new_name: new_very_ssl
+        state: present
 
 
-
-Return Values
--------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
-
-.. raw:: html
-
-    <table border=0 cellpadding=0 class="documentation-table">
-        <tr>
-            <th colspan="1">Key</th>
-            <th>Returned</th>
-            <th width="100%">Description</th>
-        </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>role_result</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>if iam_type=role and state=present</td>
-                <td>
-                            <div>the IAM.role dict returned by Boto</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;arn&#x27;: &#x27;arn:aws:iam::A1B2C3D4E5F6:role/my-new-role&#x27;, &#x27;assume_role_policy_document&#x27;: &#x27;...truncated...&#x27;, &#x27;create_date&#x27;: &#x27;2017-09-02T14:32:23Z&#x27;, &#x27;path&#x27;: &#x27;/&#x27;, &#x27;role_id&#x27;: &#x27;AROAA1B2C3D4E5F6G7H8I&#x27;, &#x27;role_name&#x27;: &#x27;my-new-role&#x27;}</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>roles</b>
-                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
-                    <div style="font-size: small">
-                      <span style="color: purple">list</span>
-                    </div>
-                </td>
-                <td>if iam_type=role and state=present</td>
-                <td>
-                            <div>a list containing the name of the currently defined roles</div>
-                    <br/>
-                        <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[&#x27;my-new-role&#x27;, &#x27;my-existing-role-1&#x27;, &#x27;my-existing-role-2&#x27;, &#x27;my-existing-role-3&#x27;, &#x27;my-existing-role-...&#x27;]</div>
-                </td>
-            </tr>
-    </table>
-    <br/><br/>
 
 
 Status
 ------
 
 
-- This module will be removed in version 3.0.0. *[deprecated]*
-- For more information see `DEPRECATED`_.
-
-
 Authors
 ~~~~~~~
 
 - Jonathan I. Davila (@defionscode)
-- Paul Seiffert (@seiffert)

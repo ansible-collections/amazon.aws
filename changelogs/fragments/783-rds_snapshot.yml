@@ -1,3 +1,0 @@
-deprecated_features:
- - rds_snapshot - the rds_snapshot module has been renamed to rds_instance_snapshot.
-   The usage of the module has not changed. The rds_snapshot alias will be removed in version 4.0.0 (https://github.com/ansible-collections/community.aws/pull/783).

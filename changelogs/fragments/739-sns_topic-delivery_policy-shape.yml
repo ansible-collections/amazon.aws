@@ -1,2 +1,0 @@
-bugfixes:
-- sns_topic - define suboptions for delivery_policy option (https://github.com/ansible-collections/community.aws/issues/713).

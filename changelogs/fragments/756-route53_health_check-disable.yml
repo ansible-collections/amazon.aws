@@ -1,2 +1,0 @@
-minor_changes:
-- route53_health_check - added support for disabling health checks (https://github.com/ansible-collections/community.aws/pull/756).

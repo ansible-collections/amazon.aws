@@ -1,2 +1,0 @@
-bugfixes:
-  - route53 - add missing set identifier in resource_record_set (https://github.com/ansible-collections/community.aws/pull/595).

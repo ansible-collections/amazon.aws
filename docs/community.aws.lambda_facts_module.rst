@@ -388,7 +388,7 @@ Status
 ------
 
 
-- This module will be removed in version . *[deprecated]*
+- This module will be removed in a release after 2021-12-01. *[deprecated]*
 - For more information see `DEPRECATED`_.
 
 

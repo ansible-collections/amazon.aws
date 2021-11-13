@@ -605,7 +605,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                       <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td>always</td>
+                <td>if value exists</td>
                 <td>
                             <div>The ID of an AWS-managed customer master key (CMK) for Amazon SQS or a custom CMK.</div>
                     <br/>

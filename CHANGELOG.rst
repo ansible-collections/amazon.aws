@@ -5,6 +5,95 @@ community.aws Release Notes
 .. contents:: Topics
 
 
+v2.1.0
+======
+
+Minor Changes
+-------------
+
+- aws_config_delivery_channel - replaced use of deprecated backoff decorator (https://github.com/ansible-collections/community.aws/pull/764).
+- aws_direct_connect_confirm_connection - replaced use of deprecated backoff decorator (https://github.com/ansible-collections/community.aws/pull/764).
+- aws_direct_connect_connection - replaced use of deprecated backoff decorator (https://github.com/ansible-collections/community.aws/pull/764).
+- aws_direct_connect_link_aggregation_group - replaced use of deprecated backoff decorator (https://github.com/ansible-collections/community.aws/pull/764).
+- aws_direct_connect_virtual_interface - replaced use of deprecated backoff decorator (https://github.com/ansible-collections/community.aws/pull/764).
+- aws_inspector_target - replaced use of deprecated backoff decorator (https://github.com/ansible-collections/community.aws/pull/764).
+- aws_kms - add support for ``kms_spec`` and ``kms_usage`` parameter (https://github.com/ansible-collections/community.aws/pull/774).
+- aws_kms - replaced use of deprecated backoff decorator (https://github.com/ansible-collections/community.aws/pull/764).
+- aws_kms_info - replaced use of deprecated backoff decorator (https://github.com/ansible-collections/community.aws/pull/764).
+- cloudformation_stack_set - replaced use of deprecated backoff decorator (https://github.com/ansible-collections/community.aws/pull/764).
+- cloudfront_distribution - add ``TLSv1.2_2021`` security policy for viewer connections (https://github.com/ansible-collections/community.aws/pull/707).
+- dms_endpoint - replaced use of deprecated backoff decorator (https://github.com/ansible-collections/community.aws/pull/764).
+- dms_replication_subnet_group - replaced use of deprecated backoff decorator (https://github.com/ansible-collections/community.aws/pull/764).
+- dynamodb_table - add support for setting the `billing_mode` option (https://github.com/ansible-collections/community.aws/pull/753).
+- dynamodb_table - the module has been updated to use the boto3 AWS SDK (https://github.com/ansible-collections/community.aws/pull/726).
+- ec2_asg - replaced use of deprecated backoff decorator (https://github.com/ansible-collections/community.aws/pull/764).
+- ec2_eip - added support for tagging EIPs (https://github.com/ansible-collections/community.aws/pull/332).
+- ec2_eip_info - added automatic retries for common temporary API failures (https://github.com/ansible-collections/community.aws/pull/332).
+- ec2_eip_info - added support for tagging EIPs (https://github.com/ansible-collections/community.aws/pull/332).
+- ec2_elb_info - replaced use of deprecated backoff decorator (https://github.com/ansible-collections/community.aws/pull/764).
+- ec2_win_password - module updated to use the boto3 AWS SDK (https://github.com/ansible-collections/community.aws/pull/759).
+- ecs_service - added support for forcing deletion of a service (https://github.com/ansible-collections/community.aws/pull/228).
+- ecs_service_info - replaced use of deprecated backoff decorator (https://github.com/ansible-collections/community.aws/pull/764).
+- ecs_taskdefinition - add ``placement_constraints`` option (https://github.com/ansible-collections/community.aws/pull/741).
+- efs - add ``transition_to_ia`` parameter to support specifying the number of days before transitioning data to inactive storage (https://github.com/ansible-collections/community.aws/pull/522).
+- elb_instance - added new ``updated_elbs`` return value (https://github.com/ansible-collections/community.aws/pull/773).
+- elb_instance - the module has been migrated to the boto3 AWS SDK (https://github.com/ansible-collections/community.aws/pull/773).
+- elb_target_group - add ``preserve_client_ip_enabled`` option (https://github.com/ansible-collections/community.aws/pull/670).
+- elb_target_group - add ``proxy_protocol_v2_enabled`` option (https://github.com/ansible-collections/community.aws/pull/670).
+- iam_managed_policy - replaced use of deprecated backoff decorator (https://github.com/ansible-collections/community.aws/pull/764).
+- iam_role - Added `wait` option for IAM role creation / updates (https://github.com/ansible-collections/community.aws/pull/767).
+- iam_saml_federation - replaced use of deprecated backoff decorator (https://github.com/ansible-collections/community.aws/pull/764).
+- iam_server_certificate - add support for check_mode (https://github.com/ansible-collections/community.aws/pull/737).
+- iam_server_certificate - migrate module to using the boto3 SDK (https://github.com/ansible-collections/community.aws/pull/737).
+- lambda_info - add automatic retries for recoverable errors (https://github.com/ansible-collections/community.aws/pull/777).
+- lambda_info - add support for tags (https://github.com/ansible-collections/community.aws/pull/375).
+- lambda_info - use paginator for list queries (https://github.com/ansible-collections/community.aws/pull/777).
+- rds - replaced use of deprecated backoff decorator (https://github.com/ansible-collections/community.aws/pull/764).
+- redshift_subnet_group - added support for check_mode (https://github.com/ansible-collections/community.aws/pull/724).
+- redshift_subnet_group - the ``group_description`` option has been renamed to ``description`` and is now optional. The old parameter name will continue to work (https://github.com/ansible-collections/community.aws/pull/724).
+- redshift_subnet_group - the ``group_subnets`` option has been renamed to ``subnets`` and is now only required when creating a new group. The old parameter name will continue to work (https://github.com/ansible-collections/community.aws/pull/724).
+- redshift_subnet_group - the module has been migrated to the boto3 AWS SDK (https://github.com/ansible-collections/community.aws/pull/724).
+- route53_health_check - add support for tagging health checks (https://github.com/ansible-collections/community.aws/pull/765).
+- route53_health_check - added support for check_mode (https://github.com/ansible-collections/community.aws/pull/734).
+- route53_health_check - added support for disabling health checks (https://github.com/ansible-collections/community.aws/pull/756).
+- route53_health_check - migrated to boto3 SDK (https://github.com/ansible-collections/community.aws/pull/734).
+- route53_zone - add support for tagging Route 53 zones (https://github.com/ansible-collections/community.aws/pull/565).
+- sqs_queue - Providing a kms_master_key_id will now enable SSE properly (https://github.com/ansible-collections/community.aws/pull/762)
+
+Deprecated Features
+-------------------
+
+- dynamodb_table - DynamoDB does not support specifying non-key-attributes when creating an ``ALL`` index.  Passing ``includes`` for such indexes is currently ignored but will result in failures after version 3.0.0 (https://github.com/ansible-collections/community.aws/pull/726).
+- dynamodb_table - DynamoDB does not support updating the primary indexes on a table.  Attempts to make such changes are currently ignored but will result in failures after version 3.0.0 (https://github.com/ansible-collections/community.aws/pull/726).
+- elb_instance - setting of the ``ec2_elb`` fact has been deprecated and will be removed in release 4.0.0 of the collection. See the module documentation for an alternative example using the register keyword (https://github.com/ansible-collections/community.aws/pull/773).
+- iam_cert - the iam_cert module has been renamed to iam_server_certificate for consistency with the companion iam_server_certificate_info module. The usage of the module has not changed.  The iam_cert alias will be removed in version 4.0.0 (https://github.com/ansible-collections/community.aws/pull/728).
+- iam_server_certificate - Passing file names to the ``cert``, ``chain_cert`` and ``key`` parameters has been deprecated. We recommend using a lookup plugin to read the files instead, see the documentation for an example (https://github.com/ansible-collections/community.aws/pull/735).
+- iam_server_certificate - the default value for the ``dup_ok`` parameter is currently ``false``, in version 4.0.0 this will be updated to ``true``.  To preserve the current behaviour explicitly set the ``dup_ok`` parameter to ``false`` (https://github.com/ansible-collections/community.aws/pull/737).
+- rds_snapshot - the rds_snapshot module has been renamed to rds_instance_snapshot. The usage of the module has not changed. The rds_snapshot alias will be removed in version 4.0.0 (https://github.com/ansible-collections/community.aws/pull/783).
+
+Bugfixes
+--------
+
+- AWS action group - added missing ``aws_direct_connect_confirm_connection`` and ``efs_tag`` entries (https://github.com/ansible-collections/amazon.aws/issues/557).
+- cloudfront_info - Switch to native boto3 paginators to fix reported bug when over 100 distributions exist (https://github.com/ansible-collections/community.aws/issues/769).
+- ec2_eip - fix bug when allocating an EIP but not associating it to a VPC (https://github.com/ansible-collections/community.aws/pull/731).
+- elb_classic_lb_info - fix empty list returned when names not defined (https://github.com/ansible-collections/community.aws/pull/693).
+- elb_instance - Python 3 compatability fix (https://github.com/ansible-collections/community.aws/issues/384).
+- iam_role_info - switch to jittered backoff to reduce rate limiting failures (https://github.com/ansible-collections/community.aws/pull/748).
+- rds_instance - Fixed issue with enabling enhanced monitoring on a pre-existing RDS instance (https://github.com/ansible-collections/community.aws/pull/747).
+- route53 - add missing set identifier in resource_record_set (https://github.com/ansible-collections/community.aws/pull/595).
+- route53 - fix diff mode when deleting records (https://github.com/ansible-collections/community.aws/pull/802).
+- route53 - return empty result for nonexistent records (https://github.com/ansible-collections/community.aws/pull/799).
+- sns_topic - define suboptions for delivery_policy option (https://github.com/ansible-collections/community.aws/issues/713).
+
+New Modules
+-----------
+
+- iam_access_key - Manage AWS IAM User access keys
+- iam_access_key_info - fetch information about AWS IAM User access keys
+- rds_option_group - rds_option_group module
+- rds_option_group_info - rds_option_group_info module
+
 v2.0.0
 ======
 

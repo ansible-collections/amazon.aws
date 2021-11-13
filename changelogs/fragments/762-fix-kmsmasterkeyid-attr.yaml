@@ -1,2 +1,0 @@
-minor_changes:
-- sqs_queue - Providing a kms_master_key_id will now enable SSE properly (https://github.com/ansible-collections/community.aws/pull/762)

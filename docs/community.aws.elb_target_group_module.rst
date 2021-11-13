@@ -320,6 +320,28 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>preserve_client_ip_enabled</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.1.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Indicates whether client IP preservation is enabled.</div>
+                        <div>The default is disabled if the target group type is <code>ip</code> address and the target group protocol is <code>tcp</code> or <code>tls</code>. Otherwise, the default is enabled. Client IP preservation cannot be disabled for <code>udp</code> and <code>tcp_udp</code> target groups.</div>
+                        <div><em>preserve_client_ip_enabled</em> is supported only by Network Load Balancers.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>profile</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -361,6 +383,28 @@ Parameters
                 </td>
                 <td>
                         <div>The protocol to use for routing traffic to the targets. Required when <em>state</em> is <code>present</code>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>proxy_protocol_v2_enabled</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.1.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Indicates whether Proxy Protocol version 2 is enabled.</div>
+                        <div>The value is <code>true</code> or <code>false</code>.</div>
+                        <div><em>proxy_protocol_v2_enabled</em> is supported only by Network Load Balancers.</div>
                 </td>
             </tr>
             <tr>

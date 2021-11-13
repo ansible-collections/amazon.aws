@@ -5,7 +5,7 @@
 community.aws.ec2_win_password
 ******************************
 
-**Gets the default administrator password for ec2 windows instances**
+**Gets the default administrator password for EC2 Windows instances**
 
 
 Version added: 1.0.0
@@ -18,7 +18,6 @@ Version added: 1.0.0
 Synopsis
 --------
 - Gets the default administrator password from any EC2 Windows instance. The instance is referenced by its id (e.g. ``i-XXXXXXX``).
-- This module has a dependency on python-boto.
 
 
 
@@ -26,7 +25,6 @@ Requirements
 ------------
 The below requirements are needed on the host that executes this module.
 
-- boto >= 2.49.0
 - boto3 >= 1.15.0
 - botocore >= 1.18.0
 - cryptography
@@ -325,7 +323,6 @@ Notes
 -----
 
 .. note::
-   - As of Ansible 2.4, this module requires the python cryptography module rather than the older pycrypto module.
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
    - When no credentials are explicitly provided the AWS SDK (boto3) that Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``). See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html for more information.
    - Modules based on the original AWS SDK (boto) may read their default configuration from different files. See https://boto.readthedocs.io/en/latest/boto_config_tut.html for more information.

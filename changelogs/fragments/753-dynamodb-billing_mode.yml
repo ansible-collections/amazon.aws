@@ -1,2 +1,0 @@
-minor_changes:
-  - dynamodb_table - add support for setting the `billing_mode` option (https://github.com/ansible-collections/community.aws/pull/753).

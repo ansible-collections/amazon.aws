@@ -27,10 +27,9 @@ Requirements
 ------------
 The below requirements are needed on the host that executes this module.
 
-- boto >= 2.49.0
+- python >= 3.6
 - boto3 >= 1.15.0
 - botocore >= 1.18.0
-- python >= 3.6
 
 
 Parameters
@@ -117,6 +116,25 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>billing_mode</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>PROVISIONED</li>
+                                    <li>PAY_PER_REQUEST</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Controls whether provisoned pr on-demand tables are created.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>debug_botocore_endpoint_logs</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -162,7 +180,7 @@ Parameters
                 </td>
                 <td>
                         <div>Name of the hash key.</div>
-                        <div>Required when <code>state=present</code>.</div>
+                        <div>Required when <em>state=present</em> and table doesn&#x27;t exist.</div>
                 </td>
             </tr>
             <tr>
@@ -176,13 +194,14 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>STRING</b>&nbsp;&larr;</div></li>
+                                    <li>STRING</li>
                                     <li>NUMBER</li>
                                     <li>BINARY</li>
                         </ul>
                 </td>
                 <td>
                         <div>Type of the hash key.</div>
+                        <div>Defaults to <code>&#x27;STRING&#x27;</code> when creating a new table.</div>
                 </td>
             </tr>
             <tr>
@@ -212,13 +231,14 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
                 </td>
                 <td>
                         <div>The name of the hash-based key.</div>
+                        <div>Required if index doesn&#x27;t already exist.</div>
+                        <div>Can not be modified once the index has been created.</div>
                 </td>
             </tr>
             <tr>
@@ -232,9 +252,16 @@ Parameters
                     </div>
                 </td>
                 <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>STRING</li>
+                                    <li>NUMBER</li>
+                                    <li>BINARY</li>
+                        </ul>
                 </td>
                 <td>
                         <div>The type of the hash-based key.</div>
+                        <div>Defaults to <code>&#x27;STRING&#x27;</code> when creating a new index.</div>
+                        <div>Can not be modified once the index has been created.</div>
                 </td>
             </tr>
             <tr>
@@ -245,6 +272,7 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=string</span>
                     </div>
                 </td>
                 <td>
@@ -284,6 +312,7 @@ Parameters
                 </td>
                 <td>
                         <div>The name of the range-based key.</div>
+                        <div>Can not be modified once the index has been created.</div>
                 </td>
             </tr>
             <tr>
@@ -297,9 +326,16 @@ Parameters
                     </div>
                 </td>
                 <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>STRING</li>
+                                    <li>NUMBER</li>
+                                    <li>BINARY</li>
+                        </ul>
                 </td>
                 <td>
                         <div>The type of the range-based key.</div>
+                        <div>Defaults to <code>&#x27;STRING&#x27;</code> when creating a new index.</div>
+                        <div>Can not be modified once the index has been created.</div>
                 </td>
             </tr>
             <tr>
@@ -330,10 +366,17 @@ Parameters
                     </div>
                 </td>
                 <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>all</li>
+                                    <li>global_all</li>
+                                    <li>global_include</li>
+                                    <li>global_keys_only</li>
+                                    <li>include</li>
+                                    <li>keys_only</li>
+                        </ul>
                 </td>
                 <td>
                         <div>The type of index.</div>
-                        <div>Valid types: <code>all</code>, <code>global_all</code>, <code>global_include</code>, <code>global_keys_only</code>, <code>include</code>, <code>keys_only</code></div>
                 </td>
             </tr>
             <tr>
@@ -389,6 +432,25 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>purge_tags</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Remove tags not listed in <em>tags</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>range_key_name</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -412,13 +474,14 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>STRING</b>&nbsp;&larr;</div></li>
+                                    <li>STRING</li>
                                     <li>NUMBER</li>
                                     <li>BINARY</li>
                         </ul>
                 </td>
                 <td>
                         <div>Type of the range key.</div>
+                        <div>Defaults to <code>&#x27;STRING&#x27;</code> when creating a new range key.</div>
                 </td>
             </tr>
             <tr>
@@ -431,10 +494,10 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <b>Default:</b><br/><div style="color: blue">1</div>
                 </td>
                 <td>
                         <div>Read throughput capacity (units) to provision.</div>
+                        <div>Defaults to <code>1</code> when creating a new table.</div>
                 </td>
             </tr>
             <tr>
@@ -503,7 +566,7 @@ Parameters
                 </td>
                 <td>
                         <div>A hash/dictionary of tags to add to the new instance or for starting/stopping instance by tag.</div>
-                        <div>For example: <code>{&quot;key&quot;:&quot;value&quot;}</code> and <code>{&quot;key&quot;:&quot;value&quot;,&quot;key2&quot;:&quot;value2&quot;}</code></div>
+                        <div>For example: <code>{&quot;key&quot;:&quot;value&quot;}</code> or <code>{&quot;key&quot;:&quot;value&quot;,&quot;key2&quot;:&quot;value2&quot;}</code></div>
                 </td>
             </tr>
             <tr>
@@ -528,17 +591,37 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>wait_for_active_timeout</b>
+                    <b>wait</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
+                        </ul>
+                </td>
+                <td>
+                        <div>When <em>wait=True</em> the module will wait for up to <em>wait_timeout</em> seconds for table creation or deletion to complete before returning.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>wait_timeout</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">integer</span>
                     </div>
                 </td>
                 <td>
-                        <b>Default:</b><br/><div style="color: blue">60</div>
+                        <b>Default:</b><br/><div style="color: blue">300</div>
                 </td>
                 <td>
-                        <div>how long before wait gives up, in seconds. only used when tags is set</div>
+                        <div>How long (in seconds) to wait for creation / update / deletion to complete.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: wait_for_active_timeout</div>
                 </td>
             </tr>
             <tr>
@@ -551,10 +634,10 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <b>Default:</b><br/><div style="color: blue">1</div>
                 </td>
                 <td>
                         <div>Write throughput capacity (units) to provision.</div>
+                        <div>Defaults to <code>1</code> when creating a new table.</div>
                 </td>
             </tr>
     </table>
@@ -596,6 +679,14 @@ Examples
         region: us-east-1
         read_capacity: 10
         write_capacity: 10
+
+    - name: Create pay-per-request table
+      community.aws.dynamodb_table:
+        name: my-table
+        region: us-east-1
+        hash_key_name: id
+        hash_key_type: STRING
+        billing_mode: PAY_PER_REQUEST
 
     - name: set index on existing dynamo table
       community.aws.dynamodb_table:

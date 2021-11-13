@@ -1,7 +1,0 @@
-minor_changes:
-- redshift_subnet_group - the module has been migrated to the boto3 AWS SDK (https://github.com/ansible-collections/community.aws/pull/724).
-- redshift_subnet_group - added support for check_mode (https://github.com/ansible-collections/community.aws/pull/724).
-- redshift_subnet_group - the ``group_description`` option has been renamed to ``description`` and is now optional.
-  The old parameter name will continue to work (https://github.com/ansible-collections/community.aws/pull/724).
-- redshift_subnet_group - the ``group_subnets`` option has been renamed to ``subnets`` and is now only required when creating a new group.
-  The old parameter name will continue to work (https://github.com/ansible-collections/community.aws/pull/724).

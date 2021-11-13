@@ -19,7 +19,6 @@ Synopsis
 --------
 - Returns list of matching Launch Configurations for a given name, along with other useful information.
 - Results can be sorted and sliced.
-- It depends on boto.
 - Based on the work by Tom Bamford https://github.com/tombamford
 
 

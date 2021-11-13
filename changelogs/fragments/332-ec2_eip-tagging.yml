@@ -1,4 +1,0 @@
-minor_changes:
-- ec2_eip - added support for tagging EIPs (https://github.com/ansible-collections/community.aws/pull/332).
-- ec2_eip_info - added support for tagging EIPs (https://github.com/ansible-collections/community.aws/pull/332).
-- ec2_eip_info - added automatic retries for common temporary API failures (https://github.com/ansible-collections/community.aws/pull/332).

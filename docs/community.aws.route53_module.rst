@@ -409,7 +409,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Specifies the state of the resource record. As of Ansible 2.4, the <em>command</em> option has been changed to <em>state</em> as default and the choices <code>present</code> and <code>absent</code> have been added, but <em>command</em> still works as well.</div>
+                        <div>Specifies the state of the resource record.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: command</div>
                 </td>
             </tr>

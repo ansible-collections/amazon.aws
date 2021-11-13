@@ -1,2 +1,0 @@
-bugfixes:
-- ec2_eip - fix bug when allocating an EIP but not associating it to a VPC (https://github.com/ansible-collections/community.aws/pull/731).

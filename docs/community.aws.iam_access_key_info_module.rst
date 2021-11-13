@@ -1,14 +1,14 @@
-.. _community.aws.iam_cert_module:
+.. _community.aws.iam_access_key_info_module:
 
 
-**********************
-community.aws.iam_cert
-**********************
+*********************************
+community.aws.iam_access_key_info
+*********************************
 
-**Manage server certificates for use on ELBs and CloudFront**
+**fetch information about AWS IAM User access keys**
 
 
-Version added: 1.0.0
+Version added: 2.1.0
 
 .. contents::
    :local:
@@ -17,7 +17,8 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Allows for the management of server certificates.
+- Fetches information AWS IAM user access keys.
+- Note: It is not possible to fetch the secret access key.
 
 
 
@@ -25,10 +26,9 @@ Requirements
 ------------
 The below requirements are needed on the host that executes this module.
 
-- boto >= 2.49.0
+- python >= 3.6
 - boto3 >= 1.15.0
 - botocore >= 1.18.0
-- python >= 3.6
 
 
 Parameters
@@ -115,36 +115,6 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>cert</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The path to, or content of the certificate body in PEM encoded format. As of 2.4 content is accepted. If the parameter is not a file, it is assumed to be content.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>cert_chain</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The path to, or content of, the CA certificate chain in PEM encoded format. As of 2.4 content is accepted. If the parameter is not a file, it is assumed to be content.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>debug_botocore_endpoint_logs</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -164,27 +134,6 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>dup_ok</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
-                                    <li>yes</li>
-                        </ul>
-                </td>
-                <td>
-                        <div>By default the module will not upload a certificate that is already uploaded into AWS.</div>
-                        <div>If <em>dup_ok=True</em>, it will upload the certificate as long as the name is unique.</div>
-                        <div>Defaults to <code>false</code>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>ec2_url</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -196,85 +145,6 @@ Parameters
                 <td>
                         <div>URL to use to connect to EC2 or your Eucalyptus cloud (by default the module will use EC2 endpoints). Ignored for modules where region is required. Must be specified for all other modules if region is not used. If not set then the value of the EC2_URL environment variable, if any, is used.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_endpoint_url, endpoint_url</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>key</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The path to, or content of the private key in PEM encoded format. As of 2.4 content is accepted. If the parameter is not a file, it is assumed to be content.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>name</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>Name of certificate to add, update or remove.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>new_name</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>When <em>state=present</em>, this will update the name of the cert.</div>
-                        <div>The <em>cert</em>, <em>key</em> and <em>cert_chain</em> parameters will be ignored if this is defined.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>new_path</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>When <em>state=present</em>, this will update the path of the cert.</div>
-                        <div>The <em>cert</em>, <em>key</em> and <em>cert_chain</em> parameters will be ignored if this is defined.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>path</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">"/"</div>
-                </td>
-                <td>
-                        <div>When creating or updating, specify the desired path of the certificate.</div>
                 </td>
             </tr>
             <tr>
@@ -331,7 +201,7 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>state</b>
+                    <b>user_name</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
@@ -339,14 +209,10 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>present</li>
-                                    <li>absent</li>
-                        </ul>
                 </td>
                 <td>
-                        <div>Whether to create (or update) or delete the certificate.</div>
-                        <div>If <em>new_path</em> or <em>new_name</em> is defined, specifying present will attempt to make an update these.</div>
+                        <div>The name of the IAM User to which the keys belong.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: username</div>
                 </td>
             </tr>
             <tr>
@@ -388,38 +254,119 @@ Examples
 
 .. code-block:: yaml
 
-    - name: Basic server certificate upload from local file
-      community.aws.iam_cert:
-        name: very_ssl
-        state: present
-        cert: "{{ lookup('file', 'path/to/cert') }}"
-        key: "{{ lookup('file', 'path/to/key') }}"
-        cert_chain: "{{ lookup('file', 'path/to/certchain') }}"
+    # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-    - name: Basic server certificate upload
-      community.aws.iam_cert:
-        name: very_ssl
-        state: present
-        cert: path/to/cert
-        key: path/to/key
-        cert_chain: path/to/certchain
-
-    - name: Server certificate upload using key string
-      community.aws.iam_cert:
-        name: very_ssl
-        state: present
-        path: "/a/cert/path/"
-        cert: body_of_somecert
-        key: vault_body_of_privcertkey
-        cert_chain: body_of_myverytrustedchain
-
-    - name: Basic rename of existing certificate
-      community.aws.iam_cert:
-        name: very_ssl
-        new_name: new_very_ssl
-        state: present
+    - name: Fetch Access keys for a user
+      community.aws.iam_access_key_info:
+        user_name: example_user
 
 
+
+Return Values
+-------------
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
+
+.. raw:: html
+
+    <table border=0 cellpadding=0 class="documentation-table">
+        <tr>
+            <th colspan="2">Key</th>
+            <th>Returned</th>
+            <th width="100%">Description</th>
+        </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>access_key</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                       / <span style="color: purple">elements=dictionary</span>
+                    </div>
+                </td>
+                <td>When the key exists.</td>
+                <td>
+                            <div>A dictionary containing all the access key information.</div>
+                    <br/>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>access_key_id</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The ID for the access key.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">AKIA1EXAMPLE1EXAMPLE</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>create_date</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The date and time, in ISO 8601 date-time format, when the access key was created.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">2021-10-09T13:25:42+00:00</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>status</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The status of the key.</div>
+                            <div><code>Active</code> means it can be used.</div>
+                            <div><code>Inactive</code> means it can not be used.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">Inactive</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>user_name</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>success</td>
+                <td>
+                            <div>The name of the IAM user to which the key is attached.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">example_user</div>
+                </td>
+            </tr>
+
+    </table>
+    <br/><br/>
 
 
 Status
@@ -429,4 +376,4 @@ Status
 Authors
 ~~~~~~~
 
-- Jonathan I. Davila (@defionscode)
+- Mark Chappell (@tremble)

@@ -1,2 +1,0 @@
-bugfixes:
-- route53 -  fix diff mode when deleting records (https://github.com/ansible-collections/community.aws/pull/801).

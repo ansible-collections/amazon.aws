@@ -1,3 +1,0 @@
-minor_changes:
-- route53_health_check - migrated to boto3 SDK (https://github.com/ansible-collections/community.aws/pull/734).
-- route53_health_check - added support for check_mode (https://github.com/ansible-collections/community.aws/pull/734).

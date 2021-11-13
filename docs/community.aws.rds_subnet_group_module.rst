@@ -17,7 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Creates, modifies, and deletes RDS database subnet groups. This module has a dependency on python-boto >= 2.5.
+- Creates, modifies, and deletes RDS database subnet groups.
 
 
 

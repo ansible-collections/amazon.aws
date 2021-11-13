@@ -18,7 +18,7 @@ DEPRECATED
 ----------
 :Removed in collection release after 
 :Why: The rds module is based upon a deprecated version of the AWS SDK.
-:Alternative: Use :ref:`rds_instance <rds_instance_module>`, :ref:`rds_instance_info <rds_instance_info_module>`, and :ref:`rds_snapshot <rds_snapshot_module>`.
+:Alternative: Use :ref:`community.aws.rds_instance <community.aws.rds_instance_module>`, :ref:`community.aws.rds_instance_info <community.aws.rds_instance_info_module>`, and :ref:`community.aws.rds_instance_snapshot <community.aws.rds_instance_snapshot_module>`.
 
 
 

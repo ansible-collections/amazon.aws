@@ -1,2 +1,0 @@
-minor_changes:
-- ecs_service - added support for forcing deletion of a service (https://github.com/ansible-collections/community.aws/pull/228).
