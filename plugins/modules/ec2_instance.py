@@ -23,6 +23,7 @@ options:
   instance_ids:
     description:
       - If you specify one or more instance IDs, only instances that have the specified IDs are returned.
+      - Mutually exclusive with I(exact_count).
     type: list
     elements: str
   state:
@@ -36,6 +37,7 @@ options:
       - "I(state=restarted): convenience alias for I(state=stopped) immediately followed by I(state=started)"
       - "I(state=terminated): ensures an existing instance is terminated."
       - "I(state=absent): alias for I(state=terminated)"
+      - Mutually exclusive with I(exact_count).
     choices: [present, terminated, running, started, stopped, restarted, rebooted, absent]
     default: present
     type: str
@@ -58,11 +60,13 @@ options:
   count:
     description:
       - Number of instances to launch.
+      - Mutually exclusive with I(exact_count).
     type: int
   exact_count:
     description:
       - An integer value which indicates how many instances that match the I(filters) parameter should be running.
-        Instances are either created or terminated based on this value.
+      - Instances are either created or terminated based on this value.
+      - Mutually exclusive with I(count), I(state), and I(instance_ids).
     type: int
   user_data:
     description:
@@ -1752,12 +1756,11 @@ def enforce_count(existing_matches, module):
     changed = False
 
     try:
-        # get the number of running instances with the filter tag
         instances = existing_matches
         if len(instances) == exact_count:
-            result = dict(
+            module.exit_json(
                 changed=False,
-                msg='{0} instances already running, nothing to do'.format(exact_count),
+                msg='{0} instances already running, nothing to do.'.format(exact_count)
             )
 
         elif len(instances) < exact_count:
@@ -1766,11 +1769,10 @@ def enforce_count(existing_matches, module):
             module.params['to_launch'] = to_launch
             # launch instances
             try:
-                result = ensure_present(existing_matches=instances, desired_module_state='present')
+                ensure_present(existing_matches=instances, desired_module_state='present')
             except botocore.exceptions.ClientError as e:
                 module.fail_json(e, msg='Unable to launch instances')
         elif len(instances) > exact_count:
-            changed = True
             to_terminate = len(instances) - exact_count
             # get the instance ids of instances with the count tag on them
             all_instance_ids = sorted([x['InstanceId'] for x in instances])
@@ -1784,16 +1786,14 @@ def enforce_count(existing_matches, module):
                 await_instances(terminate_ids, desired_module_state='terminated', force_wait=True)
             except botocore.exceptions.ClientError as e:
                 module.fail_json(e, msg='Unable to terminate instances')
-            result = dict(
-                changed=changed,
+            module.exit_json(
+                changed=True,
                 msg='Successfully terminated instances.',
                 terminated_ids=terminate_ids,
             )
 
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to enforce instance count")
-
-    module.exit_json(changed=changed, result=result)
 
 
 def ensure_present(existing_matches, desired_module_state):
