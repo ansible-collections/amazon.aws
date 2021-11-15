@@ -1779,7 +1779,7 @@ def enforce_count(existing_matches, module):
             terminate_ids = all_instance_ids[0:to_terminate]
             instances = [x for x in instances if x['InstanceId'] not in terminate_ids]
             if module.check_mode:
-                module.exit_json(changed=True, msg='Would have terminated following instances if not in check mode {}'.format(terminate_ids))
+                module.exit_json(changed=True, msg='Would have terminated following instances if not in check mode {0}'.format(terminate_ids))
             # terminate instances
             try:
                 result = client.terminate_instances(InstanceIds=terminate_ids)
