@@ -1753,7 +1753,6 @@ def handle_existing(existing_matches, state):
 
 def enforce_count(existing_matches, module):
     exact_count = module.params.get('exact_count')
-    changed = False
 
     try:
         current_count = len(existing_matches)
