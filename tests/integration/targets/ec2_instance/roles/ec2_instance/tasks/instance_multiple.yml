@@ -75,7 +75,7 @@
       - terminate_id is not failed
       - terminate_id is changed
 
-  - name: "Terminate instance based on id - idempotency (check_mode)"
+  - name: "Terminate instance based on id - Idempotency (check_mode)"
     ec2_instance:
       state: absent
       instance_ids:
@@ -89,7 +89,7 @@
       - terminate_id is not failed
       - terminate_id is not changed
 
-  - name: "Terminate instance based on id - idempotency"
+  - name: "Terminate instance based on id - Idempotency"
     ec2_instance:
       state: absent
       instance_ids:
@@ -143,7 +143,7 @@
       - '"instance_ids" in create_multiple_instances'
       - create_multiple_instances.instance_ids | length == 5
 
-  - name: "Enforce instance count - launch 5 instances (check_mode - idempotency)"
+  - name: "Enforce instance count - launch 5 instances (check_mode - Idempotency)"
     ec2_instance:
       instance_type: "{{ ec2_instance_type }}"
       exact_count: 5
@@ -181,7 +181,7 @@
       - '"instance_ids" not in create_multiple_instances'
       - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
 
-  - name: "Enforce instance count - Terminate 2 instances (check_mode)"
+  - name: "Enforce instance count to 3 - Terminate 2 instances (check_mode)"
     ec2_instance:
       instance_type: "{{ ec2_instance_type }}"
       exact_count: 3
@@ -200,7 +200,7 @@
       - '"instance_ids" not in terminate_multiple_instances'
       - '"ec2:RunInstances" not in terminate_multiple_instances.resource_actions'
 
-  - name: "Enforce instance count - Terminate 2 instances"
+  - name: "Enforce instance count to 3 - Terminate 2 instances"
     ec2_instance:
       instance_type: "{{ ec2_instance_type }}"
       exact_count: 3
@@ -219,7 +219,7 @@
       - '"terminated_ids" in terminate_multiple_instances'
       - terminate_multiple_instances.terminated_ids | length == 2
 
-  - name: "Enforce instance count - Terminate 2 instances (check_mode - idempotency)"
+  - name: "Enforce instance count to 3 - Terminate 2 instances (check_mode - Idempotency)"
     ec2_instance:
       instance_type: "{{ ec2_instance_type }}"
       exact_count: 3
@@ -238,7 +238,7 @@
       - '"instance_ids" not in terminate_multiple_instances'
       - '"ec2:TerminateInstances" not in terminate_multiple_instances.resource_actions'
 
-  - name: "Enforce instance count - Terminate 2 instances (idempotentcy)"
+  - name: "Enforce instance count to 3 - Terminate 2 instances (Idempotency)"
     ec2_instance:
       instance_type: "{{ ec2_instance_type }}"
       exact_count: 3
@@ -256,7 +256,7 @@
       - '"instance_ids" not in terminate_multiple_instances'
       - '"ec2:TerminateInstances" not in terminate_multiple_instances.resource_actions'
 
-  - name: "Enforce instance count - Launch 3 more instances (check_mode)"
+  - name: "Enforce instance count to 6 - Launch 3 more instances (check_mode)"
     ec2_instance:
       instance_type: "{{ ec2_instance_type }}"
       exact_count: 6
@@ -276,7 +276,7 @@
       - '"instance_ids" not in create_multiple_instances'
       - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
 
-  - name: "Enforce instance count - Launch 3 more instances"
+  - name: "Enforce instance count to 6 - Launch 3 more instances"
     ec2_instance:
       instance_type: "{{ ec2_instance_type }}"
       exact_count: 6
@@ -288,6 +288,9 @@
       wait: true
     register: create_multiple_instances
 
+  - name: debug is here
+    debug: msg="{{ create_multiple_instances.instance_ids }}"
+
   - assert:
       that:
       - create_multiple_instances is not failed
@@ -295,7 +298,7 @@
       - '"instance_ids" in create_multiple_instances'
       - create_multiple_instances.instance_ids | length == 3
 
-  - name: "Enforce instance count - Launch 3 more instances (check_mode - idempotency)"
+  - name: "Enforce instance count to 6 - Launch 3 more instances (check_mode - Idempotency)"
     ec2_instance:
       instance_type: "{{ ec2_instance_type }}"
       exact_count: 6
@@ -315,7 +318,7 @@
       - '"instance_ids" not in create_multiple_instances'
       - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
 
-  - name: "Enforce instance count - Launch 3 more instances (idempotency)"
+  - name: "Enforce instance count to 6 - Launch 3 more instances (Idempotency)"
     ec2_instance:
       instance_type: "{{ ec2_instance_type }}"
       exact_count: 6
@@ -382,7 +385,7 @@
       - terminate_id is not failed
       - terminate_id is changed
 
-  - name: "Terminate instance based on id - idempotency (check_mode)"
+  - name: "Terminate instance based on id - Idempotency (check_mode)"
     ec2_instance:
       state: absent
       instance_ids:
@@ -397,7 +400,7 @@
       - terminate_id is not failed
       - terminate_id is not changed
 
-  - name: "Terminate instance based on id - idempotency"
+  - name: "Terminate instance based on id - Idempotency"
     ec2_instance:
       state: absent
       instance_ids:

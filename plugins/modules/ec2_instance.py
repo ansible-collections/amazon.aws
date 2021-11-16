@@ -1756,28 +1756,26 @@ def enforce_count(existing_matches, module):
     changed = False
 
     try:
-        instances = existing_matches
-        if len(instances) == exact_count:
+        current_count = len(existing_matches)
+        if current_count == exact_count:
             module.exit_json(
                 changed=False,
                 msg='{0} instances already running, nothing to do.'.format(exact_count)
             )
 
-        elif len(instances) < exact_count:
-            changed = True
-            to_launch = exact_count - len(instances)
+        elif current_count < exact_count:
+            to_launch = exact_count - current_count
             module.params['to_launch'] = to_launch
             # launch instances
             try:
-                ensure_present(existing_matches=instances, desired_module_state='present')
+                ensure_present(existing_matches=existing_matches, desired_module_state='present')
             except botocore.exceptions.ClientError as e:
                 module.fail_json(e, msg='Unable to launch instances')
-        elif len(instances) > exact_count:
-            to_terminate = len(instances) - exact_count
+        elif current_count > exact_count:
+            to_terminate = current_count - exact_count
             # get the instance ids of instances with the count tag on them
-            all_instance_ids = sorted([x['InstanceId'] for x in instances])
+            all_instance_ids = sorted([x['InstanceId'] for x in existing_matches])
             terminate_ids = all_instance_ids[0:to_terminate]
-            instances = [x for x in instances if x['InstanceId'] not in terminate_ids]
             if module.check_mode:
                 module.exit_json(changed=True, msg='Would have terminated following instances if not in check mode {0}'.format(terminate_ids))
             # terminate instances
