@@ -388,6 +388,45 @@
         - wc_a_record is changed
         - wc_a_record.diff.after == {}
 
+  - name: create a record with different TTL
+    community.aws.route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: 'localhost.{{ zone_one }}'
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+    register: ttl30
+  - name: check return values
+    assert:
+      that:
+        - ttl30.diff.resource_record_sets[0].ttl == 30
+        - ttl30 is changed
+
+  - name: delete previous record without mention ttl and value
+    community.aws.route53:
+      state: absent
+      zone: '{{ zone_one }}'
+      record: 'localhost.{{ zone_one }}'
+      type: A
+    register: ttl30
+  - name: check if record is deleted
+    assert:
+      that:
+        - ttl30 is changed
+
+  - name: immutable delete previous record without mention ttl and value
+    community.aws.route53:
+      state: absent
+      zone: '{{ zone_one }}'
+      record: 'localhost.{{ zone_one }}'
+      type: A
+    register: ttl30
+  - name: check if record was deleted
+    assert:
+      that:
+        - ttl30 is not changed
+
   # Tests on zone two (private zone)
   - name: Create A record using zone fqdn
     route53:
