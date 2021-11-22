@@ -69,7 +69,6 @@ options:
   value:
     description:
       - The new value when creating a DNS record.  YAML lists or multiple comma-spaced values are allowed for non-alias records.
-      - When deleting a record all values for the record must be specified or Route 53 will not delete it.
     type: list
     elements: str
   overwrite:
@@ -513,8 +512,6 @@ def main():
         required_if=(
             ('state', 'present', ['value']),
             ('state', 'create', ['value']),
-            ('state', 'absent', ['value']),
-            ('state', 'delete', ['value']),
         ),
         # failover, region and weight are mutually exclusive
         mutually_exclusive=[
@@ -607,6 +604,10 @@ def main():
         'HealthCheckId': health_check_in,
         'SetIdentifier': identifier_in,
     })
+    if command_in == 'delete' and aws_record is not None:
+        resource_record_set['TTL'] = aws_record.get('TTL')
+        if not resource_record_set['ResourceRecords']:
+            resource_record_set['ResourceRecords'] = aws_record.get('ResourceRecords')
 
     if alias_in:
         resource_record_set['AliasTarget'] = dict(

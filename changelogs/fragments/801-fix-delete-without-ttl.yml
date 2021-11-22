@@ -1,0 +1,2 @@
+minor_changes:
+- route53 - ``ttl``  and ``value`` are not required for deleting records (https://github.com/ansible-collections/community.aws/pull/801).
