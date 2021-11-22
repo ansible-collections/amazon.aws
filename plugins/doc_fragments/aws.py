@@ -77,8 +77,8 @@ options:
     type: dict
 requirements:
   - python >= 3.6
-  - boto3 >= 1.15.0
-  - botocore >= 1.18.0
+  - boto3 >= 1.16.0
+  - botocore >= 1.19.0
 notes:
   - If parameters are not set within the module, the following
     environment variables can be used in decreasing order of precedence
