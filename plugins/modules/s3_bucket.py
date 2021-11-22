@@ -17,7 +17,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: s3_bucket
 version_added: 1.0.0
@@ -153,7 +153,7 @@ notes:
       I(requester_pays) is C(False), I(policy), I(tags), and I(versioning) are C(None).
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create a simple S3 bucket
@@ -241,6 +241,63 @@ EXAMPLES = '''
     name: mys3bucket
     state: present
     policy: "null"
+'''
+
+RETURN = r'''
+encryption:
+    description:
+        - Server-side encryption of the objects in the S3 bucket.
+    type: str
+    returned: I(state=present)
+    sample: ''
+name:
+    description: Name of the S3 bucket.
+    type: str
+    returned: I(state=present)
+    sample: "2d3ce10a8210d36d6b4d23b822892074complex"
+object_ownership:
+    description: S3 bucket's ownership controls.
+    type: str
+    returned: I(state=present)
+    sample: "BucketOwnerPreferred"
+policy:
+    description: S3 bucket's policy.
+    type: dict
+    returned: I(state=present)
+    sample: {
+        "Statement": [
+            {
+                "Action": "s3:GetObject",
+                "Effect": "Allow",
+                "Principal": "*",
+                "Resource": "arn:aws:s3:::2d3ce10a8210d36d6b4d23b822892074complex/*",
+                "Sid": "AddPerm"
+            }
+        ],
+        "Version": "2012-10-17"
+    }
+requester_pays:
+    description:
+        - Indicates that the requester was successfully charged for the request.
+    type: str
+    returned: I(state=present)
+    sample: ''
+tags:
+    description: S3 bucket's tags.
+    type: dict
+    returned: I(state=present)
+    sample: {
+        "Tag1": "tag1",
+        "Tag2": "tag2"
+    }
+versioning:
+    description: S3 bucket's versioning configuration.
+    type: dict
+    returned: I(state=present)
+    sample: {
+        "MfaDelete": "Disabled",
+        "Versioning": "Enabled"
+    }
 '''
 
 import json
