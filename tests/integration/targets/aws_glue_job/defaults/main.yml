@@ -1,0 +1,12 @@
+---
+glue_job_name: "{{ resource_prefix }}"
+glue_job_description: Test job
+glue_job_command_script_location: "s3://test-s3-bucket-glue/job.py"
+glue_job_temp_dir: "s3://test-s3-bucket-glue/temp/"
+# IAM role names have to be less than 64 characters
+# The 8 digit identifier at the end of resource_prefix helps determine during
+# which test something was created and allows tests to be run in parallel
+# Shippable resource_prefixes are in the format shippable-123456-123, so in those cases
+# we need both sets of digits to keep the resource name unique
+unique_id: "{{ resource_prefix | regex_search('(\\d+-?)(\\d+)$') }}"
+glue_job_role_name: "ansible-test-{{ unique_id }}-glue-job"

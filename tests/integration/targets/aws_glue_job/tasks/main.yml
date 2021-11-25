@@ -1,0 +1,304 @@
+---
+- name: aws_glue_job integration tests
+  collections:
+    - amazon.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    # AWS CLI is needed until there's a module to get info about Glue jobs
+    - name: Install AWS CLI
+      pip:
+        name: awscli
+        state: present
+
+    - name: Create minimal Glue job role
+      iam_role:
+        name: "{{ glue_job_role_name }}"
+        assume_role_policy_document:
+          Version: "2008-10-17"
+          Statement:
+            - Action: "sts:AssumeRole"
+              Effect: Allow
+              Principal:
+                Service: glue.amazonaws.com
+        create_instance_profile: false
+        managed_policies:
+          - "arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess"
+
+    - name: Create Glue job (check mode)
+      aws_glue_job:
+        name: "{{ glue_job_name }}"
+        command_python_version: 3
+        command_script_location: "{{ glue_job_command_script_location }}"
+        default_arguments:
+          "--TempDir": "{{ glue_job_temp_dir }}"
+        description: "{{ glue_job_description }}"
+        glue_version: "2.0"
+        role: "{{ glue_job_role_name }}"
+        tags:
+          Environment: Test
+          Product: Glue
+        state: present
+      check_mode: true
+      register: glue_job_check
+
+    - name: Verity that Glue job was not created in check mode
+      assert:
+        that:
+          - glue_job_check.changed
+          - glue_job_check.description is not defined
+
+    - name: Create Glue job
+      aws_glue_job:
+        name: "{{ glue_job_name }}"
+        command_python_version: 3
+        command_script_location: "{{ glue_job_command_script_location }}"
+        default_arguments:
+          "--TempDir": "{{ glue_job_temp_dir }}"
+        description: "{{ glue_job_description }}"
+        glue_version: "2.0"
+        role: "{{ glue_job_role_name }}"
+        tags:
+          Environment: Test
+          Product: Glue
+        state: present
+      register: glue_job
+
+    - name: Get info on Glue job
+      command: "aws glue get-job --job-name {{ glue_job_name }}"
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: job_info_query
+
+    - name: Convert it to an object
+      set_fact:
+        job_info: "{{ job_info_query.stdout | from_json }}"
+
+    - name: Verity that Glue job was created
+      assert:
+        that:
+          - glue_job.changed
+          - glue_job.command.python_version == job_info["Job"]["Command"]["PythonVersion"]
+          - glue_job.command.script_location == job_info["Job"]["Command"]["ScriptLocation"]
+          - glue_job.default_arguments == job_info["Job"]["DefaultArguments"]
+          - glue_job.description == job_info["Job"]["Description"]
+          - glue_job.glue_version == job_info["Job"]["GlueVersion"]
+          - glue_job.role == job_info["Job"]["Role"]
+
+    - name: Create Glue job (idempotent) (check mode)
+      aws_glue_job:
+        name: "{{ glue_job_name }}"
+        command_python_version: 3
+        command_script_location: "{{ glue_job_command_script_location }}"
+        default_arguments:
+          "--TempDir": "{{ glue_job_temp_dir }}"
+        description: "{{ glue_job_description }}"
+        glue_version: "2.0"
+        role: "{{ glue_job_role_name }}"
+        tags:
+          Environment: Test
+          Product: Glue
+        state: present
+      check_mode: true
+      register: glue_job_idempotent_check
+
+    - name: Get info on Glue job
+      command: "aws glue get-job --job-name {{ glue_job_name }}"
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: job_info_query_idempotent_check
+
+    - name: Convert it to an object
+      set_fact:
+        job_info_idempotent_check: "{{ job_info_query_idempotent_check.stdout | from_json }}"
+
+    - name: Verity that Glue job was not modified in check mode
+      assert:
+        that:
+          - not glue_job_idempotent_check.changed
+          - job_info["Job"]["Name"] == job_info_idempotent_check["Job"]["Name"]
+          - job_info["Job"]["Command"]["PythonVersion"] == job_info_idempotent_check["Job"]["Command"]["PythonVersion"]
+          - job_info["Job"]["Command"]["ScriptLocation"] == job_info_idempotent_check["Job"]["Command"]["ScriptLocation"]
+          - job_info["Job"]["DefaultArguments"] == job_info_idempotent_check["Job"]["DefaultArguments"]
+          - job_info["Job"]["Description"] == job_info_idempotent_check["Job"]["Description"]
+          - job_info["Job"]["GlueVersion"] == job_info_idempotent_check["Job"]["GlueVersion"]
+          - job_info["Job"]["Role"] == job_info_idempotent_check["Job"]["Role"]
+
+    - name: Create Glue job (idempotent)
+      aws_glue_job:
+        name: "{{ glue_job_name }}"
+        command_python_version: 3
+        command_script_location: "{{ glue_job_command_script_location }}"
+        default_arguments:
+          "--TempDir": "{{ glue_job_temp_dir }}"
+        description: "{{ glue_job_description }}"
+        glue_version: "2.0"
+        role: "{{ glue_job_role_name }}"
+        tags:
+          Environment: Test
+          Product: Glue
+        state: present
+      register: glue_job_idempotent
+
+    - name: Get info on Glue job
+      command: "aws glue get-job --job-name {{ glue_job_name }}"
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: job_info_query_idempotent
+
+    - name: Convert it to an object
+      set_fact:
+        job_info_idempotent: "{{ job_info_query_idempotent.stdout | from_json }}"
+
+    - name: Verity that Glue job was not modified
+      assert:
+        that:
+          - not glue_job_idempotent.changed
+          - job_info["Job"]["Name"] == job_info_idempotent["Job"]["Name"]
+          - job_info["Job"]["Command"]["PythonVersion"] == job_info_idempotent["Job"]["Command"]["PythonVersion"]
+          - job_info["Job"]["Command"]["ScriptLocation"] == job_info_idempotent["Job"]["Command"]["ScriptLocation"]
+          - job_info["Job"]["DefaultArguments"] == job_info_idempotent["Job"]["DefaultArguments"]
+          - job_info["Job"]["Description"] == job_info_idempotent["Job"]["Description"]
+          - job_info["Job"]["GlueVersion"] == job_info_idempotent["Job"]["GlueVersion"]
+          - job_info["Job"]["Role"] == job_info_idempotent["Job"]["Role"]
+
+    - name: Update Glue job (check mode)
+      aws_glue_job:
+        name: "{{ glue_job_name }}"
+        command_python_version: 2
+        command_script_location: "{{ glue_job_command_script_location }}"
+        default_arguments:
+          "--TempDir": "{{ glue_job_temp_dir }}subfolder/"
+        description: "{{ glue_job_description }}"
+        glue_version: "0.9"
+        role: "{{ glue_job_role_name }}"
+        tags:
+          Environment: Test
+        state: present
+      check_mode: true
+      register: glue_job_update_check
+
+    - name: Get info on Glue job
+      command: "aws glue get-job --job-name {{ glue_job_name }}"
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: job_info_query_update_check
+
+    - name: Convert it to an object
+      set_fact:
+        job_info_update_check: "{{ job_info_query_update_check.stdout | from_json }}"
+
+    - name: Verity that Glue job was not modified in check mode
+      assert:
+        that:
+          - glue_job_update_check.changed
+          - glue_job_update_check.command.python_version == job_info_update_check["Job"]["Command"]["PythonVersion"]
+          - glue_job_update_check.command.script_location == job_info_update_check["Job"]["Command"]["ScriptLocation"]
+          - glue_job_update_check.default_arguments == job_info_update_check["Job"]["DefaultArguments"]
+          - glue_job_update_check.description == job_info_update_check["Job"]["Description"]
+          - glue_job_update_check.glue_version == job_info_update_check["Job"]["GlueVersion"]
+          - glue_job_update_check.role == job_info_update_check["Job"]["Role"]
+
+    - name: Update Glue job
+      aws_glue_job:
+        name: "{{ glue_job_name }}"
+        command_python_version: 2
+        command_script_location: "{{ glue_job_command_script_location }}"
+        default_arguments:
+          "--TempDir": "{{ glue_job_temp_dir }}subfolder/"
+        description: "{{ glue_job_description }}"
+        glue_version: "0.9"
+        role: "{{ glue_job_role_name }}"
+        tags:
+          Environment: Test
+        state: present
+      register: glue_job_update
+
+    - name: Get info on Glue job
+      command: "aws glue get-job --job-name {{ glue_job_name }}"
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: job_info_query_update
+
+    - name: Convert it to an object
+      set_fact:
+        job_info_update: "{{ job_info_query_update.stdout | from_json }}"
+
+    - name: Verity that Glue job was modified
+      assert:
+        that:
+          - glue_job_update.changed
+          - glue_job_update.command.python_version == job_info_update["Job"]["Command"]["PythonVersion"]
+          - glue_job_update.command.script_location == job_info_update["Job"]["Command"]["ScriptLocation"]
+          - glue_job_update.default_arguments == job_info_update["Job"]["DefaultArguments"]
+          - glue_job_update.description == job_info_update["Job"]["Description"]
+          - glue_job_update.glue_version == job_info_update["Job"]["GlueVersion"]
+          - glue_job_update.role == job_info_update["Job"]["Role"]
+
+    - name: Delete Glue job (check mode)
+      aws_glue_job:
+        name: "{{ glue_job_name }}"
+        state: absent
+      check_mode: true
+      register: glue_job_delete_check
+
+    - name: Get info on Glue job
+      command: "aws glue get-job --job-name {{ glue_job_name }}"
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: job_info_query_delete_check
+
+    - name: Convert it to an object
+      set_fact:
+        job_info_delete_check: "{{ job_info_query_delete_check.stdout | from_json }}"
+
+    - name: Verity that Glue job was not deleted in check mode
+      assert:
+        that:
+          - glue_job_delete_check.changed
+          - job_info["Job"]["Name"] == job_info_delete_check["Job"]["Name"]
+
+    - name: Delete Glue job
+      aws_glue_job:
+        name: "{{ glue_job_name }}"
+        state: absent
+      register: glue_job_delete
+
+    - name: Verity that Glue job was deleted
+      assert:
+        that:
+          - glue_job_delete.changed
+
+  always:
+    - name: Delete Glue job
+      aws_glue_job:
+        name: "{{ glue_job_name }}"
+        state: absent
+      ignore_errors: true
+    - name: Delete Glue job role
+      iam_role:
+        name: "{{ glue_job_role_name }}"
+        state: absent
+      ignore_errors: true

@@ -1,0 +1,5 @@
+minor_changes:
+  - aws_glue_job - Added ``glue_version`` parameter (https://github.com/ansible-collections/community.aws/pull/480).
+  - aws_glue_job - Added ``command_python_version`` parameter (https://github.com/ansible-collections/community.aws/pull/480).
+  - aws_glue_job - Added support for check mode (https://github.com/ansible-collections/community.aws/pull/480).
+  - aws_glue_job - Added support for tags (https://github.com/ansible-collections/community.aws/pull/480).
