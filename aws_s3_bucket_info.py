@@ -80,7 +80,6 @@ options:
       bucket_ownership_controls:
         description:
         - Retrive S3 ownership controls.
-        - Access to bucket ownership controls requires botocore>=1.18.11.
         type: bool
         default: False
       bucket_website:
@@ -594,9 +593,6 @@ def main():
     if is_old_facts:
         module.deprecate("The 'aws_s3_bucket_facts' module has been renamed to 'aws_s3_bucket_info', "
                          "and the renamed one no longer returns ansible_facts", date='2021-12-01', collection_name='community.aws')
-
-    if module.params.get("bucket_ownership_controls"):
-        module.require_botocore_at_least('1.18.11', reason='to retreive bucket ownership controls')
 
     # Get parameters
     name = module.params.get("name")
