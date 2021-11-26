@@ -10,7 +10,7 @@ author:
 requirements:
   - python >= 3.6
   - boto3
-  - botocore >= 1.18.0
+  - botocore >= 1.19.0
 extends_documentation_fragment:
 - amazon.aws.aws_credentials
 - amazon.aws.aws_region

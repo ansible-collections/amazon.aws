@@ -20,10 +20,10 @@ class TestMinimalVersions(object):
     # Prepare some data for use in our testing
     # ========================================================
     def setup_method(self):
-        self.MINIMAL_BOTO3 = '1.15.0'
-        self.MINIMAL_BOTOCORE = '1.18.0'
-        self.OLD_BOTO3 = '1.14.999'
-        self.OLD_BOTOCORE = '1.17.999'
+        self.MINIMAL_BOTO3 = '1.16.0'
+        self.MINIMAL_BOTOCORE = '1.19.0'
+        self.OLD_BOTO3 = '1.15.999'
+        self.OLD_BOTOCORE = '1.18.999'
 
     # ========================================================
     #   Test we don't warn when using valid versions
@@ -142,8 +142,8 @@ class TestMinimalVersions(object):
     # ========================================================
     @pytest.mark.parametrize("stdin", [{}], indirect=["stdin"])
     def test_warn_boto3_and_botocore(self, monkeypatch, stdin, capfd):
-        monkeypatch.setattr(botocore, "__version__", "1.15.999")
-        monkeypatch.setattr(boto3, "__version__", "1.12.999")
+        monkeypatch.setattr(botocore, "__version__", self.OLD_BOTOCORE)
+        monkeypatch.setattr(boto3, "__version__", self.OLD_BOTO3)
 
         # Create a minimal module that we can call
         module = AnsibleAWSModule(argument_spec=dict())

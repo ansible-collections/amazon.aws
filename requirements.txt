@@ -2,7 +2,7 @@
 # - tests/unit/constraints.txt
 # - tests/integration/constraints.txt
 # - tests/integration/targets/setup_botocore_pip
-botocore>=1.18.0
-boto3>=1.15.0
+botocore>=1.19.0
+boto3>=1.16.0
 # Final released version
 boto>=2.49.0
