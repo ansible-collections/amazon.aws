@@ -37,7 +37,6 @@ options:
       - "I(state=restarted): convenience alias for I(state=stopped) immediately followed by I(state=started)"
       - "I(state=terminated): ensures an existing instance is terminated."
       - "I(state=absent): alias for I(state=terminated)"
-      - Mutually exclusive with I(exact_count).
     choices: [present, terminated, running, started, stopped, restarted, rebooted, absent]
     default: present
     type: str
@@ -60,13 +59,15 @@ options:
   count:
     description:
       - Number of instances to launch.
+      - Setting this value will result in always launching new instances.
       - Mutually exclusive with I(exact_count).
     type: int
   exact_count:
     description:
       - An integer value which indicates how many instances that match the I(filters) parameter should be running.
       - Instances are either created or terminated based on this value.
-      - Mutually exclusive with I(count), I(state), and I(instance_ids).
+      - If termination takes place, least recently created instances will be terminated based on Launch Time.
+      - Mutually exclusive with I(count), I(instance_ids).
     type: int
   user_data:
     description:
@@ -1751,7 +1752,7 @@ def handle_existing(existing_matches, state):
     return result
 
 
-def enforce_count(existing_matches, module):
+def enforce_count(existing_matches, module, desired_module_state):
     exact_count = module.params.get('exact_count')
 
     try:
@@ -1767,13 +1768,15 @@ def enforce_count(existing_matches, module):
             module.params['to_launch'] = to_launch
             # launch instances
             try:
-                ensure_present(existing_matches=existing_matches, desired_module_state='present')
+                ensure_present(existing_matches=existing_matches, desired_module_state=desired_module_state)
             except botocore.exceptions.ClientError as e:
                 module.fail_json(e, msg='Unable to launch instances')
         elif current_count > exact_count:
             to_terminate = current_count - exact_count
+            # sort the instances from least recent to most recent based on launch time
+            existing_matches = sorted(existing_matches, key=lambda inst: inst['LaunchTime'])
             # get the instance ids of instances with the count tag on them
-            all_instance_ids = sorted([x['InstanceId'] for x in existing_matches])
+            all_instance_ids = [x['InstanceId'] for x in existing_matches]
             terminate_ids = all_instance_ids[0:to_terminate]
             if module.check_mode:
                 module.exit_json(changed=True, msg='Would have terminated following instances if not in check mode {0}'.format(terminate_ids))
@@ -1958,7 +1961,6 @@ def main():
             ['tower_callback', 'user_data'],
             ['image_id', 'image'],
             ['exact_count', 'count'],
-            ['exact_count', 'state'],
             ['exact_count', 'instance_ids'],
         ],
         supports_check_mode=True
@@ -1995,7 +1997,7 @@ def main():
                 changed=False,
             )
     elif module.params.get('exact_count'):
-        enforce_count(existing_matches, module)
+        enforce_count(existing_matches, module, desired_module_state=state)
     elif existing_matches and not module.params.get('count'):
         for match in existing_matches:
             warn_if_public_ip_assignment_changed(match)
