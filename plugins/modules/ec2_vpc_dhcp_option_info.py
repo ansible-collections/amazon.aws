@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: Gather information about dhcp options sets in AWS
 description:
     - Gather information about dhcp options sets in AWS.
-    - This module was called C(ec2_vpc_dhcp_option_facts) before Ansible 2.9. The usage did not change.
 author: "Nick Aslanidis (@naslanidis)"
 options:
   filters:
@@ -187,9 +186,6 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True
     )
-    if module._name == 'ec2_vpc_dhcp_option_facts':
-        module.deprecate("The 'ec2_vpc_dhcp_option_facts' module has been renamed to 'ec2_vpc_dhcp_option_info'",
-                         date='2021-12-01', collection_name='amazon.aws')
 
     client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 

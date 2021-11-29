@@ -13,8 +13,6 @@ version_added: 1.0.0
 short_description: Obtain information about an AWS CloudFormation stack
 description:
   - Gets information about an AWS CloudFormation stack.
-  - This module was called C(amazon.aws.cloudformation_facts) before Ansible 2.9, returning C(ansible_facts).
-    Note that the M(amazon.aws.cloudformation_info) module no longer returns C(ansible_facts)!
 author:
     - Justin Menga (@jmenga)
     - Kevin Coming (@waffie1)
@@ -70,16 +68,6 @@ EXAMPLES = '''
 - debug:
     msg: "{{ output['cloudformation']['my-cloudformation-stack'] }}"
 
-# When the module is called as cloudformation_facts, return values are published
-# in ansible_facts['cloudformation'][<stack_name>] and can be used as follows.
-# Note that this is deprecated and will stop working in Ansible after 2021-12-01.
-
-- amazon.aws.cloudformation_facts:
-    stack_name: my-cloudformation-stack
-
-- debug:
-    msg: "{{ ansible_facts['cloudformation']['my-cloudformation-stack'] }}"
-
 # Get stack outputs, when you have the stack name available as a fact
 - set_fact:
     stack_name: my-awesome-stack
@@ -103,7 +91,7 @@ EXAMPLES = '''
     stack_policy: true
 
 # Fail if the stack doesn't exist
-- name: try to get facts about a stack but fail if it doesn't exist
+- name: try to get info about a stack but fail if it doesn't exist
   amazon.aws.cloudformation_info:
     stack_name: nonexistent-stack
     all_facts: yes
@@ -291,17 +279,9 @@ def main():
     )
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
-    is_old_facts = module._name == 'cloudformation_facts'
-    if is_old_facts:
-        module.deprecate("The 'cloudformation_facts' module has been renamed to 'cloudformation_info', "
-                         "and the renamed one no longer returns ansible_facts", date='2021-12-01', collection_name='amazon.aws')
-
     service_mgr = CloudFormationServiceManager(module)
 
-    if is_old_facts:
-        result = {'ansible_facts': {'cloudformation': {}}}
-    else:
-        result = {'cloudformation': {}}
+    result = {'cloudformation': {}}
 
     for stack_description in service_mgr.describe_stacks(module.params.get('stack_name')):
         facts = {'stack_description': stack_description}
@@ -328,16 +308,6 @@ def main():
             facts['stack_events'] = service_mgr.describe_stack_events(stack_name)
         if all_facts or module.params.get('stack_change_sets'):
             facts['stack_change_sets'] = service_mgr.describe_stack_change_sets(stack_name)
-
-        if is_old_facts:
-            result['ansible_facts']['cloudformation'][stack_name] = facts
-        else:
-            result['cloudformation'][stack_name] = camel_dict_to_snake_dict(facts, ignore_list=('stack_outputs',
-                                                                                                'stack_parameters',
-                                                                                                'stack_policy',
-                                                                                                'stack_resources',
-                                                                                                'stack_tags',
-                                                                                                'stack_template'))
 
     module.exit_json(changed=False, **result)
 

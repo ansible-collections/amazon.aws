@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: Gather information about internet gateways in AWS
 description:
     - Gather information about internet gateways in AWS.
-    - This module was called C(ec2_vpc_igw_facts) before Ansible 2.9. The usage did not change.
 author: "Nick Aslanidis (@naslanidis)"
 options:
   filters:
@@ -159,8 +158,6 @@ def main():
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
-    if module._name == 'ec2_vpc_igw_facts':
-        module.deprecate("The 'ec2_vpc_igw_facts' module has been renamed to 'ec2_vpc_igw_info'", date='2021-12-01', collection_name='amazon.aws')
 
     if module.params.get('convert_tags') is None:
         module.deprecate('This module currently returns boto3 style tags by default.  '
