@@ -47,7 +47,7 @@ options:
     description:
       - Maximum number of items to return for various get/list requests.
     required: false
-    type: str
+    type: int
   next_marker:
     description:
       - "Some requests such as list_command: hosted_zones will return a maximum
@@ -72,7 +72,7 @@ options:
     description:
       - The type of DNS record.
     required: false
-    choices: [ 'A', 'CNAME', 'MX', 'AAAA', 'TXT', 'PTR', 'SRV', 'SPF', 'CAA', 'NS' ]
+    choices: [ 'A', 'CNAME', 'MX', 'AAAA', 'TXT', 'PTR', 'SRV', 'SPF', 'CAA', 'NS', 'NAPTR', 'SOA', 'DS' ]
     type: str
   dns_name:
     description:
@@ -228,9 +228,13 @@ def get_hosted_zone(client, module):
 
 def reusable_delegation_set_details(client, module):
     params = dict()
+
     if not module.params.get('delegation_set_id'):
+        # Set PaginationConfig with max_items
         if module.params.get('max_items'):
-            params['MaxItems'] = module.params.get('max_items')
+            params['PaginationConfig'] = dict(
+                MaxItems=module.params.get('max_items')
+            )
 
         if module.params.get('next_marker'):
             params['Marker'] = module.params.get('next_marker')
@@ -246,8 +250,11 @@ def reusable_delegation_set_details(client, module):
 def list_hosted_zones(client, module):
     params = dict()
 
+    # Set PaginationConfig with max_items
     if module.params.get('max_items'):
-        params['MaxItems'] = module.params.get('max_items')
+        params['PaginationConfig'] = dict(
+            MaxItems=module.params.get('max_items')
+        )
 
     if module.params.get('next_marker'):
         params['Marker'] = module.params.get('next_marker')
@@ -272,8 +279,11 @@ def list_hosted_zones_by_name(client, module):
     if module.params.get('dns_name'):
         params['DNSName'] = module.params.get('dns_name')
 
+    # Set PaginationConfig with max_items
     if module.params.get('max_items'):
-        params['MaxItems'] = module.params.get('max_items')
+        params['PaginationConfig'] = dict(
+            MaxItems=module.params.get('max_items')
+        )
 
     return client.list_hosted_zones_by_name(**params)
 
@@ -340,11 +350,14 @@ def get_resource_tags(client, module):
 def list_health_checks(client, module):
     params = dict()
 
-    if module.params.get('max_items'):
-        params['MaxItems'] = module.params.get('max_items')
-
     if module.params.get('next_marker'):
         params['Marker'] = module.params.get('next_marker')
+
+    # Set PaginationConfig with max_items
+    if module.params.get('max_items'):
+        params['PaginationConfig'] = dict(
+            MaxItems=module.params.get('max_items')
+        )
 
     paginator = client.get_paginator('list_health_checks')
     health_checks = paginator.paginate(**params).build_full_result()['HealthChecks']
@@ -362,19 +375,25 @@ def record_sets_details(client, module):
     else:
         module.fail_json(msg="Hosted Zone Id is required")
 
-    if module.params.get('max_items'):
-        params['MaxItems'] = module.params.get('max_items')
-
     if module.params.get('start_record_name'):
         params['StartRecordName'] = module.params.get('start_record_name')
 
+    # Check that both params are set if type is applied
     if module.params.get('type') and not module.params.get('start_record_name'):
         module.fail_json(msg="start_record_name must be specified if type is set")
-    elif module.params.get('type'):
+
+    if module.params.get('type'):
         params['StartRecordType'] = module.params.get('type')
+
+    # Set PaginationConfig with max_items
+    if module.params.get('max_items'):
+        params['PaginationConfig'] = dict(
+            MaxItems=module.params.get('max_items')
+        )
 
     paginator = client.get_paginator('list_resource_record_sets')
     record_sets = paginator.paginate(**params).build_full_result()['ResourceRecordSets']
+
     return {
         "ResourceRecordSets": record_sets,
         "list": record_sets,
@@ -420,12 +439,12 @@ def main():
         ], required=True),
         change_id=dict(),
         hosted_zone_id=dict(),
-        max_items=dict(),
+        max_items=dict(type='int'),
         next_marker=dict(),
         delegation_set_id=dict(),
         start_record_name=dict(),
-        type=dict(choices=[
-            'A', 'CNAME', 'MX', 'AAAA', 'TXT', 'PTR', 'SRV', 'SPF', 'CAA', 'NS'
+        type=dict(type='str', choices=[
+            'A', 'CNAME', 'MX', 'AAAA', 'TXT', 'PTR', 'SRV', 'SPF', 'CAA', 'NS', 'NAPTR', 'SOA', 'DS'
         ]),
         dns_name=dict(),
         resource_id=dict(type='list', aliases=['resource_ids'], elements='str'),
