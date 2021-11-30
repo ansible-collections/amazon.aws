@@ -23,6 +23,7 @@ options:
   instance_ids:
     description:
       - If you specify one or more instance IDs, only instances that have the specified IDs are returned.
+      - Mutually exclusive with I(exact_count).
     type: list
     elements: str
   state:
@@ -55,6 +56,19 @@ options:
         Only required when instance is not already present.
     default: t2.micro
     type: str
+  count:
+    description:
+      - Number of instances to launch.
+      - Setting this value will result in always launching new instances.
+      - Mutually exclusive with I(exact_count).
+    type: int
+  exact_count:
+    description:
+      - An integer value which indicates how many instances that match the I(filters) parameter should be running.
+      - Instances are either created or terminated based on this value.
+      - If termination takes place, least recently created instances will be terminated based on Launch Time.
+      - Mutually exclusive with I(count), I(instance_ids).
+    type: int
   user_data:
     description:
       - Opaque blob of data which is made available to the ec2 instance
@@ -415,6 +429,7 @@ EXAMPLES = '''
     tags:
       Env: "eni_on"
     instance_type: t2.micro
+
 - name: start an instance with metadata options
   amazon.aws.ec2_instance:
     name: "public-metadataoptions-instance"
@@ -426,6 +441,35 @@ EXAMPLES = '''
     metadata_options:
       http_endpoint: enabled
       http_tokens: optional
+
+# ensure number of instances running with a tag matches exact_count
+- name: start multiple instances
+  amazon.aws.ec2_instance:
+    instance_type: t3.small
+    image_id: ami-123456
+    exact_count: 5
+    region: us-east-2
+    network:
+      assign_public_ip: yes
+      security_group: default
+      vpc_subnet_id: subnet-0123456
+    tags:
+      foo: bar
+
+# launches multiple instances - specific number of instances
+- name: start specific number of multiple instances
+  amazon.aws.ec2_instance:
+    instance_type: t3.small
+    image_id: ami-123456
+    count: 3
+    region: us-east-2
+    network:
+      assign_public_ip: yes
+      security_group: default
+      vpc_subnet_id: subnet-0123456
+    state: present
+    tags:
+      foo: bar
 '''
 
 RETURN = '''
@@ -848,6 +892,7 @@ try:
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
+
 from ansible.module_utils._text import to_native
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
@@ -1249,6 +1294,14 @@ def build_run_instance_spec(params):
     # IAM profile
     if params.get('instance_role'):
         spec['IamInstanceProfile'] = dict(Arn=determine_iam_role(params.get('instance_role')))
+
+    if module.params.get('exact_count'):
+        spec['MaxCount'] = module.params.get('to_launch')
+        spec['MinCount'] = module.params.get('to_launch')
+
+    if module.params.get('count'):
+        spec['MaxCount'] = module.params.get('count')
+        spec['MinCount'] = module.params.get('count')
 
     spec['InstanceType'] = params['instance_type']
     return spec
@@ -1699,6 +1752,50 @@ def handle_existing(existing_matches, state):
     return result
 
 
+def enforce_count(existing_matches, module, desired_module_state):
+    exact_count = module.params.get('exact_count')
+
+    try:
+        current_count = len(existing_matches)
+        if current_count == exact_count:
+            module.exit_json(
+                changed=False,
+                msg='{0} instances already running, nothing to do.'.format(exact_count)
+            )
+
+        elif current_count < exact_count:
+            to_launch = exact_count - current_count
+            module.params['to_launch'] = to_launch
+            # launch instances
+            try:
+                ensure_present(existing_matches=existing_matches, desired_module_state=desired_module_state)
+            except botocore.exceptions.ClientError as e:
+                module.fail_json(e, msg='Unable to launch instances')
+        elif current_count > exact_count:
+            to_terminate = current_count - exact_count
+            # sort the instances from least recent to most recent based on launch time
+            existing_matches = sorted(existing_matches, key=lambda inst: inst['LaunchTime'])
+            # get the instance ids of instances with the count tag on them
+            all_instance_ids = [x['InstanceId'] for x in existing_matches]
+            terminate_ids = all_instance_ids[0:to_terminate]
+            if module.check_mode:
+                module.exit_json(changed=True, msg='Would have terminated following instances if not in check mode {0}'.format(terminate_ids))
+            # terminate instances
+            try:
+                result = client.terminate_instances(InstanceIds=terminate_ids)
+                await_instances(terminate_ids, desired_module_state='terminated', force_wait=True)
+            except botocore.exceptions.ClientError as e:
+                module.fail_json(e, msg='Unable to terminate instances')
+            module.exit_json(
+                changed=True,
+                msg='Successfully terminated instances.',
+                terminated_ids=terminate_ids,
+            )
+
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        module.fail_json_aws(e, msg="Failed to enforce instance count")
+
+
 def ensure_present(existing_matches, desired_module_state):
     tags = dict(module.params.get('tags') or {})
     name = module.params.get('name')
@@ -1712,6 +1809,7 @@ def ensure_present(existing_matches, desired_module_state):
             module.exit_json(
                 changed=True,
                 spec=instance_spec,
+                msg='Would have launched instances if not in check_mode.',
             )
         instance_response = run_instances(**instance_spec)
         instances = instance_response['Instances']
@@ -1817,7 +1915,8 @@ def main():
         state=dict(default='present', choices=['present', 'started', 'running', 'stopped', 'restarted', 'rebooted', 'terminated', 'absent']),
         wait=dict(default=True, type='bool'),
         wait_timeout=dict(default=600, type='int'),
-        # count=dict(default=1, type='int'),
+        count=dict(type='int'),
+        exact_count=dict(type='int'),
         image=dict(type='dict'),
         image_id=dict(type='str'),
         instance_type=dict(default='t2.micro', type='str'),
@@ -1861,6 +1960,8 @@ def main():
             ['availability_zone', 'vpc_subnet_id'],
             ['tower_callback', 'user_data'],
             ['image_id', 'image'],
+            ['exact_count', 'count'],
+            ['exact_count', 'instance_ids'],
         ],
         supports_check_mode=True
     )
@@ -1895,7 +1996,9 @@ def main():
                 msg='No matching instances found',
                 changed=False,
             )
-    elif existing_matches:
+    elif module.params.get('exact_count'):
+        enforce_count(existing_matches, module, desired_module_state=state)
+    elif existing_matches and not module.params.get('count'):
         for match in existing_matches:
             warn_if_public_ip_assignment_changed(match)
             warn_if_cpu_options_changed(match)

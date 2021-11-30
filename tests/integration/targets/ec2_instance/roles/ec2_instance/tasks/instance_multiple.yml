@@ -1,0 +1,415 @@
+- block:
+
+################################################################
+
+  - name: "Create multiple instance (check_mode)"
+    ec2_instance:
+      instance_type: "{{ ec2_instance_type }}"
+      count: 5
+      region: "{{ aws_region }}"
+      image_id: "{{ ec2_ami_id }}"
+      state: present
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+    register: create_multiple_instances
+    check_mode: true
+
+  - assert:
+      that:
+      - create_multiple_instances is not failed
+      - create_multiple_instances is changed
+      - '"instance_ids" not in create_multiple_instances'
+      - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
+
+  - name: "Create multiple instances"
+    ec2_instance:
+      instance_type: "{{ ec2_instance_type }}"
+      count: 5
+      region: "{{ aws_region }}"
+      image_id: "{{ ec2_ami_id }}"
+      state: present
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: create_multiple_instances
+
+  - assert:
+      that:
+      - create_multiple_instances is not failed
+      - create_multiple_instances is changed
+      - '"ec2:RunInstances" in create_multiple_instances.resource_actions'
+      - '"instance_ids" in create_multiple_instances'
+      - create_multiple_instances.instance_ids | length == 5
+
+  - name: "Save instance IDs"
+    set_fact:
+      created_instance_ids: "{{ create_multiple_instances.instance_ids }}"
+
+# Terminate instances created in count test
+
+  - name: "Terminate instance based on id (check_mode)"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ item }}"
+    register: terminate_id
+    check_mode: true
+    with_items: "{{ created_instance_ids }}"
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is changed
+
+  - name: "Terminate instance based on id"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ item }}"
+      wait: true
+    register: terminate_id
+    with_items: "{{ created_instance_ids }}"
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is changed
+
+  - name: "Terminate instance based on id - Idempotency (check_mode)"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ item }}"
+    register: terminate_id
+    check_mode: true
+    with_items: "{{ created_instance_ids }}"
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is not changed
+
+  - name: "Terminate instance based on id - Idempotency"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ item }}"
+    register: terminate_id
+    with_items: "{{ created_instance_ids }}"
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is not changed
+
+################################################################
+
+  - name: "Enforce instance count - launch 5 instances (check_mode)"
+    ec2_instance:
+      instance_type: "{{ ec2_instance_type }}"
+      exact_count: 5
+      region: "{{ aws_region }}"
+      name: "{{ resource_prefix }}-test-enf_cnt"
+      image_id: "{{ ec2_ami_id }}"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+    register: create_multiple_instances
+    check_mode: true
+
+  - assert:
+      that:
+      - create_multiple_instances is not failed
+      - create_multiple_instances is changed
+      - '"instance_ids" not in create_multiple_instances'
+      - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
+
+  - name: "Enforce instance count - launch 5 instances"
+    ec2_instance:
+      instance_type: "{{ ec2_instance_type }}"
+      exact_count: 5
+      region: "{{ aws_region }}"
+      image_id: "{{ ec2_ami_id }}"
+      name: "{{ resource_prefix }}-test-enf_cnt"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: create_multiple_instances
+
+  - assert:
+      that:
+      - create_multiple_instances is not failed
+      - create_multiple_instances is changed
+      - '"ec2:RunInstances" in create_multiple_instances.resource_actions'
+      - '"instance_ids" in create_multiple_instances'
+      - create_multiple_instances.instance_ids | length == 5
+
+  - name: "Enforce instance count - launch 5 instances (check_mode - Idempotency)"
+    ec2_instance:
+      instance_type: "{{ ec2_instance_type }}"
+      exact_count: 5
+      region: "{{ aws_region }}"
+      image_id: "{{ ec2_ami_id }}"
+      name: "{{ resource_prefix }}-test-enf_cnt"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+    register: create_multiple_instances
+    check_mode: true
+
+  - assert:
+      that:
+      - create_multiple_instances is not failed
+      - create_multiple_instances is not changed
+      - '"instance_ids" not in create_multiple_instances'
+      - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
+
+  - name: "Enforce instance count - launch 5 instances (Idempotency)"
+    ec2_instance:
+      instance_type: "{{ ec2_instance_type }}"
+      exact_count: 5
+      region: "{{ aws_region }}"
+      image_id: "{{ ec2_ami_id }}"
+      name: "{{ resource_prefix }}-test-enf_cnt"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: create_multiple_instances
+
+  - assert:
+      that:
+      - create_multiple_instances is not failed
+      - create_multiple_instances is not changed
+      - '"instance_ids" not in create_multiple_instances'
+      - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
+
+  - name: "Enforce instance count to 3 - Terminate 2 instances (check_mode)"
+    ec2_instance:
+      instance_type: "{{ ec2_instance_type }}"
+      exact_count: 3
+      region: "{{ aws_region }}"
+      image_id: "{{ ec2_ami_id }}"
+      name: "{{ resource_prefix }}-test-enf_cnt"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+    register: terminate_multiple_instances
+    check_mode: true
+
+  - assert:
+      that:
+      - terminate_multiple_instances is not failed
+      - terminate_multiple_instances is changed
+      - '"instance_ids" not in terminate_multiple_instances'
+      - '"ec2:RunInstances" not in terminate_multiple_instances.resource_actions'
+
+  - name: "Enforce instance count to 3 - Terminate 2 instances"
+    ec2_instance:
+      instance_type: "{{ ec2_instance_type }}"
+      exact_count: 3
+      region: "{{ aws_region }}"
+      image_id: "{{ ec2_ami_id }}"
+      name: "{{ resource_prefix }}-test-enf_cnt"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: terminate_multiple_instances
+
+  - assert:
+      that:
+      - terminate_multiple_instances is not failed
+      - terminate_multiple_instances is changed
+      - '"terminated_ids" in terminate_multiple_instances'
+      - terminate_multiple_instances.terminated_ids | length == 2
+
+  - name: "Enforce instance count to 3 - Terminate 2 instances (check_mode - Idempotency)"
+    ec2_instance:
+      instance_type: "{{ ec2_instance_type }}"
+      exact_count: 3
+      region: "{{ aws_region }}"
+      image_id: "{{ ec2_ami_id }}"
+      name: "{{ resource_prefix }}-test-enf_cnt"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+    register: terminate_multiple_instances
+    check_mode: true
+
+  - assert:
+      that:
+      - terminate_multiple_instances is not failed
+      - terminate_multiple_instances is not changed
+      - '"instance_ids" not in terminate_multiple_instances'
+      - '"ec2:TerminateInstances" not in terminate_multiple_instances.resource_actions'
+
+  - name: "Enforce instance count to 3 - Terminate 2 instances (Idempotency)"
+    ec2_instance:
+      instance_type: "{{ ec2_instance_type }}"
+      exact_count: 3
+      region: "{{ aws_region }}"
+      image_id: "{{ ec2_ami_id }}"
+      name: "{{ resource_prefix }}-test-enf_cnt"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+    register: terminate_multiple_instances
+
+  - assert:
+      that:
+      - terminate_multiple_instances is not failed
+      - terminate_multiple_instances is not changed
+      - '"instance_ids" not in terminate_multiple_instances'
+      - '"ec2:TerminateInstances" not in terminate_multiple_instances.resource_actions'
+
+  - name: "Enforce instance count to 6 - Launch 3 more instances (check_mode)"
+    ec2_instance:
+      instance_type: "{{ ec2_instance_type }}"
+      exact_count: 6
+      region: "{{ aws_region }}"
+      image_id: "{{ ec2_ami_id }}"
+      name: "{{ resource_prefix }}-test-enf_cnt"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    check_mode: true
+    register: create_multiple_instances
+
+  - assert:
+      that:
+      - create_multiple_instances is not failed
+      - create_multiple_instances is changed
+      - '"instance_ids" not in create_multiple_instances'
+      - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
+
+  - name: "Enforce instance count to 6 - Launch 3 more instances"
+    ec2_instance:
+      instance_type: "{{ ec2_instance_type }}"
+      exact_count: 6
+      region: "{{ aws_region }}"
+      image_id: "{{ ec2_ami_id }}"
+      name: "{{ resource_prefix }}-test-enf_cnt"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: create_multiple_instances
+
+  - name: debug is here
+    debug: msg="{{ create_multiple_instances.instance_ids }}"
+
+  - assert:
+      that:
+      - create_multiple_instances is not failed
+      - create_multiple_instances is changed
+      - '"instance_ids" in create_multiple_instances'
+      - create_multiple_instances.instance_ids | length == 3
+
+  - name: "Enforce instance count to 6 - Launch 3 more instances (check_mode - Idempotency)"
+    ec2_instance:
+      instance_type: "{{ ec2_instance_type }}"
+      exact_count: 6
+      region: "{{ aws_region }}"
+      image_id: "{{ ec2_ami_id }}"
+      name: "{{ resource_prefix }}-test-enf_cnt"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    check_mode: true
+    register: create_multiple_instances
+
+  - assert:
+      that:
+      - create_multiple_instances is not failed
+      - create_multiple_instances is not changed
+      - '"instance_ids" not in create_multiple_instances'
+      - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
+
+  - name: "Enforce instance count to 6 - Launch 3 more instances (Idempotency)"
+    ec2_instance:
+      instance_type: "{{ ec2_instance_type }}"
+      exact_count: 6
+      region: "{{ aws_region }}"
+      image_id: "{{ ec2_ami_id }}"
+      name: "{{ resource_prefix }}-test-enf_cnt"
+      tags:
+        TestId: "{{ ec2_instance_tag_TestId }}"
+      wait: true
+    register: create_multiple_instances
+
+  - assert:
+      that:
+      - create_multiple_instances is not failed
+      - create_multiple_instances is not changed
+      - '"instance_ids" not in create_multiple_instances'
+      - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
+
+
+  - name: Gather information about any running instance with Name ending with "-test-enf_cnt"
+    ec2_instance_info:
+      region: "{{ ec2_region }}"
+      filters:
+        "tag:Name": "*-test-enf_cnt"
+        instance-state-name: [ "running"]
+    register: test_instances
+
+  - name: set fact
+    set_fact: test_instances_ids="{{ test_instances.instances[item].instance_id }}"
+    loop: "{{ range(0, test_instances.instances | length) | list }}"
+    register: test_instances_list
+
+  - name: Make a list of ids
+    set_fact: instances_to_terminate="{{ test_instances_list.results | map(attribute='ansible_facts.test_instances_ids') | list }}"
+
+# Terminate instances created in enforce count test
+
+  - name: "Terminate instance based on id (check_mode)"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ item }}"
+      wait: true
+    register: terminate_id
+    check_mode: true
+    with_items: "{{ instances_to_terminate }}"
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is changed
+
+  - name: "Terminate instance based on id"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ item }}"
+      wait: true
+    register: terminate_id
+    with_items: "{{ instances_to_terminate }}"
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is changed
+
+  - name: "Terminate instance based on id - Idempotency (check_mode)"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ item }}"
+      wait: true
+    register: terminate_id
+    check_mode: true
+    with_items: "{{ instances_to_terminate }}"
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is not changed
+
+  - name: "Terminate instance based on id - Idempotency"
+    ec2_instance:
+      state: absent
+      instance_ids:
+      - "{{ item }}"
+      wait: true
+    register: terminate_id
+    with_items: "{{ instances_to_terminate }}"
+
+  - assert:
+      that:
+      - terminate_id is not failed
+      - terminate_id is not changed

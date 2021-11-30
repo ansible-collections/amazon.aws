@@ -1,5 +1,6 @@
 [tests]
 instance_minimal
+instance_multiple
 checkmode_tests
 termination_protection
 ebs_optimized
