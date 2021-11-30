@@ -62,6 +62,7 @@ options:
       - Setting this value will result in always launching new instances.
       - Mutually exclusive with I(exact_count).
     type: int
+    version_added: 2.2.0
   exact_count:
     description:
       - An integer value which indicates how many instances that match the I(filters) parameter should be running.
@@ -69,6 +70,7 @@ options:
       - If termination takes place, least recently created instances will be terminated based on Launch Time.
       - Mutually exclusive with I(count), I(instance_ids).
     type: int
+    version_added: 2.2.0
   user_data:
     description:
       - Opaque blob of data which is made available to the ec2 instance
