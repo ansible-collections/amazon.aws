@@ -309,6 +309,12 @@ def main():
         if all_facts or module.params.get('stack_change_sets'):
             facts['stack_change_sets'] = service_mgr.describe_stack_change_sets(stack_name)
 
+        result['cloudformation'][stack_name] = camel_dict_to_snake_dict(facts, ignore_list=('stack_outputs',
+                                                                                            'stack_parameters',
+                                                                                            'stack_policy',
+                                                                                            'stack_resources',
+                                                                                            'stack_tags',
+                                                                                            'stack_template'))
     module.exit_json(changed=False, **result)
 
 
