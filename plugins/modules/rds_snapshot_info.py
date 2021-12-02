@@ -16,7 +16,6 @@ short_description: obtain information about one or more RDS snapshots
 description:
   - Obtain information about one or more RDS snapshots. These can be for unclustered snapshots or snapshots of clustered DBs (Aurora).
   - Aurora snapshot information may be obtained if no identifier parameters are passed or if one of the cluster parameters are passed.
-  - This module was called C(rds_snapshot_facts) before Ansible 2.9. The usage did not change.
 options:
   db_snapshot_identifier:
     description:
@@ -373,8 +372,6 @@ def main():
         supports_check_mode=True,
         mutually_exclusive=[['db_snapshot_identifier', 'db_instance_identifier', 'db_cluster_identifier', 'db_cluster_snapshot_identifier']]
     )
-    if module._name == 'rds_snapshot_facts':
-        module.deprecate("The 'rds_snapshot_facts' module has been renamed to 'rds_snapshot_info'", date='2021-12-01', collection_name='community.aws')
 
     conn = module.client('rds', retry_decorator=AWSRetry.jittered_backoff(retries=10))
     results = dict()
