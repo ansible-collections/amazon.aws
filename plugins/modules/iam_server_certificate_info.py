@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: Retrieve the information of a server certificate
 description:
   - Retrieve the attributes of a server certificate.
-  - This module was called C(iam_server_certificate_facts) before Ansible 2.9. The usage did not change.
 author: "Allen Sanabria (@linuxdynasty)"
 options:
   name:
@@ -146,10 +145,6 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True,
     )
-
-    if module._name == 'iam_server_certificate_facts':
-        module.deprecate("The 'iam_server_certificate_facts' module has been renamed to 'iam_server_certificate_info'",
-                         date='2021-12-01', collection_name='community.aws')
 
     try:
         iam = module.client('iam')
