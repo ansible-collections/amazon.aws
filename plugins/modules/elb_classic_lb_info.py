@@ -24,7 +24,6 @@ version_added: 1.0.0
 short_description: Gather information about EC2 Elastic Load Balancers in AWS
 description:
     - Gather information about EC2 Elastic Load Balancers in AWS
-    - This module was called C(elb_classic_lb_facts) before Ansible 2.9. The usage did not change.
 author:
   - "Michael Schultz (@mjschultz)"
   - "Fernando Jose Pando (@nand0p)"
@@ -218,8 +217,6 @@ def main():
     )
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               supports_check_mode=True)
-    if module._name == 'elb_classic_lb_facts':
-        module.deprecate("The 'elb_classic_lb_facts' module has been renamed to 'elb_classic_lb_info'", date='2021-12-01', collection_name='community.aws')
 
     connection = module.client('elb', retry_decorator=AWSRetry.jittered_backoff(retries=MAX_AWS_RETRIES, delay=MAX_AWS_DELAY))
 
