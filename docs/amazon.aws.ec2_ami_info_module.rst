@@ -18,7 +18,6 @@ Version added: 1.0.0
 Synopsis
 --------
 - Gather information about ec2 AMIs
-- This module was called ``amazon.aws.ec2_ami_facts`` before Ansible 2.9. The usage did not change.
 
 
 

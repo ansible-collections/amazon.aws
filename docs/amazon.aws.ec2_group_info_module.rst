@@ -18,7 +18,6 @@ Version added: 1.0.0
 Synopsis
 --------
 - Gather information about ec2 security groups in AWS.
-- This module was called ``amazon.aws.ec2_group_facts`` before Ansible 2.9. The usage did not change.
 
 
 

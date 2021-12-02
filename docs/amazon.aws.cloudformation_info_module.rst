@@ -18,7 +18,6 @@ Version added: 1.0.0
 Synopsis
 --------
 - Gets information about an AWS CloudFormation stack.
-- This module was called ``amazon.aws.cloudformation_facts`` before Ansible 2.9, returning ``ansible_facts``. Note that the :ref:`amazon.aws.cloudformation_info <amazon.aws.cloudformation_info_module>` module no longer returns ``ansible_facts``!
 
 
 
@@ -376,16 +375,6 @@ Examples
     - debug:
         msg: "{{ output['cloudformation']['my-cloudformation-stack'] }}"
 
-    # When the module is called as cloudformation_facts, return values are published
-    # in ansible_facts['cloudformation'][<stack_name>] and can be used as follows.
-    # Note that this is deprecated and will stop working in Ansible after 2021-12-01.
-
-    - amazon.aws.cloudformation_facts:
-        stack_name: my-cloudformation-stack
-
-    - debug:
-        msg: "{{ ansible_facts['cloudformation']['my-cloudformation-stack'] }}"
-
     # Get stack outputs, when you have the stack name available as a fact
     - set_fact:
         stack_name: my-awesome-stack
@@ -409,7 +398,7 @@ Examples
         stack_policy: true
 
     # Fail if the stack doesn't exist
-    - name: try to get facts about a stack but fail if it doesn't exist
+    - name: try to get info about a stack but fail if it doesn't exist
       amazon.aws.cloudformation_info:
         stack_name: nonexistent-stack
         all_facts: yes

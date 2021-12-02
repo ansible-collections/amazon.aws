@@ -26,7 +26,7 @@ The below requirements are needed on the local Ansible controller node that exec
 
 - python >= 3.6
 - boto3
-- botocore >= 1.18.0
+- botocore >= 1.19.0
 
 
 Parameters

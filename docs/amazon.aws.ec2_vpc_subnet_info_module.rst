@@ -18,7 +18,6 @@ Version added: 1.0.0
 Synopsis
 --------
 - Gather information about ec2 VPC subnets in AWS
-- This module was called ``ec2_vpc_subnet_facts`` before Ansible 2.9. The usage did not change.
 
 
 
