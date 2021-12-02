@@ -1,0 +1,351 @@
+---
+- name: "ec2_asg_scheduled_action integration tests"
+  collections:
+    - amazon.aws
+    - community.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - name: Run tests in virtualenv
+      vars:
+        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
+      block:
+        ## Set up the testing dependencies: VPC, subnet, security group, and launch configuration
+        - name: Find AMI to use
+          ec2_ami_info:
+            owners: "amazon"
+            filters:
+              name: "{{ ec2_ami_name }}"
+          register: ec2_amis
+
+        - name: Set ec2_ami_image fact
+          set_fact:
+            ec2_ami_image: "{{ ec2_amis.images[0].image_id }}"
+
+        - name: Create VPC for use in testing
+          ec2_vpc_net:
+            name: "{{ resource_prefix }}-vpc"
+            cidr_block: 10.55.77.0/24
+            tenancy: default
+          register: testing_vpc
+
+        - name: Create subnet for use in testing
+          ec2_vpc_subnet:
+            state: present
+            vpc_id: "{{ testing_vpc.vpc.id }}"
+            cidr: 10.55.77.0/24
+            az: "{{ aws_region }}a"
+            resource_tags:
+              Name: "{{ resource_prefix }}-subnet"
+          register: testing_subnet
+
+        - name: create a security group with the vpc created in the ec2_setup
+          ec2_group:
+            name: "{{ resource_prefix }}-sg"
+            description: a security group for ansible tests
+            vpc_id: "{{ testing_vpc.vpc.id }}"
+            rules:
+              - proto: tcp
+                from_port: 22
+                to_port: 22
+                cidr_ip: 0.0.0.0/0
+              - proto: tcp
+                from_port: 80
+                to_port: 80
+                cidr_ip: 0.0.0.0/0
+          register: sg
+
+        - name: ensure launch configs exist
+          ec2_lc:
+            name: "{{ resource_prefix }}-lc"
+            assign_public_ip: true
+            image_id: "{{ ec2_ami_image }}"
+            security_groups: "{{ sg.group_id }}"
+            instance_type: t3.micro
+
+        - name: Create ASG ready
+          ec2_asg:
+            name: "{{ resource_prefix }}-asg"
+            launch_config_name: "{{ resource_prefix }}-lc"
+            desired_capacity: 1
+            min_size: 1
+            max_size: 2
+            vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
+            state: present
+            wait_for_instances: yes
+          register: output
+
+        - assert:
+            that:
+              - "output.viable_instances == 1"
+
+        ## Create minimal basic scheduled action
+        - name: Create basic scheduled_action - check_mode
+          ec2_asg_scheduled_action:
+            autoscaling_group_name: "{{ resource_prefix }}-asg"
+            scheduled_action_name: "{{ resource_prefix }}-test"
+            start_time: 2022 October 25 08:00 UTC
+            recurrence: 40 22 * * 1-5
+            desired_capacity: 2
+            state: present
+          register: scheduled_action
+          check_mode: True
+
+        - name: Check results - Create basic scheduled_action - check_mode
+          assert:
+            that:
+              - scheduled_action is successful
+              - scheduled_action is changed
+
+        - name: Create basic scheduled_action
+          ec2_asg_scheduled_action:
+            autoscaling_group_name: "{{ resource_prefix }}-asg"
+            scheduled_action_name: "{{ resource_prefix }}-test"
+            start_time: 2022 October 25 08:00 UTC
+            recurrence: 40 22 * * 1-5
+            desired_capacity: 2
+            state: present
+          register: scheduled_action
+
+        - name: Check results - Create basic scheduled_action
+          assert:
+            that:
+              - scheduled_action is successful
+              - scheduled_action is changed
+              - scheduled_action.scheduled_action_name == "{{ resource_prefix }}-test"
+              - scheduled_action.desired_capacity == 2
+
+        - name: Create basic scheduled_action - idempotent
+          ec2_asg_scheduled_action:
+            autoscaling_group_name: "{{ resource_prefix }}-asg"
+            scheduled_action_name: "{{ resource_prefix }}-test"
+            start_time: 2022 October 25 08:00 UTC
+            recurrence: 40 22 * * 1-5
+            desired_capacity: 2
+            state: present
+          register: scheduled_action
+
+        - name: Check results - Create advanced scheduled_action - idempotent
+          assert:
+            that:
+              - scheduled_action is successful
+              - scheduled_action is not changed
+
+        ## Update minimal basic scheduled action
+        - name: Update basic scheduled_action - check_mode
+          ec2_asg_scheduled_action:
+            autoscaling_group_name: "{{ resource_prefix }}-asg"
+            scheduled_action_name: "{{ resource_prefix }}-test"
+            start_time: 2022 October 25 08:00 UTC
+            recurrence: 40 22 * * 1-5
+            desired_capacity: 3
+            min_size: 3
+            state: present
+          register: scheduled_action
+          check_mode: True
+
+        - name: Check results - Update basic scheduled_action - check_mode
+          assert:
+            that:
+              - scheduled_action is successful
+              - scheduled_action is changed
+
+        - name: Update basic scheduled_action
+          ec2_asg_scheduled_action:
+            autoscaling_group_name: "{{ resource_prefix }}-asg"
+            scheduled_action_name: "{{ resource_prefix }}-test"
+            start_time: 2022 October 25 08:00 UTC
+            recurrence: 40 22 * * 1-5
+            desired_capacity: 3
+            min_size: 3
+            state: present
+          register: scheduled_action
+
+        - name: Check results - Update basic scheduled_action
+          assert:
+            that:
+              - scheduled_action is successful
+              - scheduled_action is changed
+              - scheduled_action.scheduled_action_name == "{{ resource_prefix }}-test"
+              - scheduled_action.desired_capacity == 3
+              - scheduled_action.min_size == 3
+
+        - name: Update basic scheduled_action - idempotent
+          ec2_asg_scheduled_action:
+            autoscaling_group_name: "{{ resource_prefix }}-asg"
+            scheduled_action_name: "{{ resource_prefix }}-test"
+            start_time: 2022 October 25 08:00 UTC
+            recurrence: 40 22 * * 1-5
+            desired_capacity: 3
+            min_size: 3
+            state: present
+          register: scheduled_action
+
+        - name: Check results - Update advanced scheduled_action - idempotent
+          assert:
+            that:
+              - scheduled_action is successful
+              - scheduled_action is not changed
+
+        ## Create advanced scheduled action
+        - name: Create advanced scheduled_action - check_mode
+          ec2_asg_scheduled_action:
+            autoscaling_group_name: "{{ resource_prefix }}-asg"
+            scheduled_action_name: "{{ resource_prefix }}-test"
+            start_time: 2022 October 25 09:00 UTC
+            end_time: 2022 October 25 10:00 UTC
+            time_zone: Europe/London
+            recurrence: 40 22 * * 1-5
+            min_size: 2
+            max_size: 5
+            desired_capacity: 2
+            state: present
+          register: advanced_scheduled_action
+          check_mode: True
+
+        - name: Check results - Create basic scheduled_action - check_mode
+          assert:
+            that:
+              - advanced_scheduled_action is successful
+              - advanced_scheduled_action is changed
+
+        - name: Create advanced scheduled_action
+          ec2_asg_scheduled_action:
+            autoscaling_group_name: "{{ resource_prefix }}-asg"
+            scheduled_action_name: "{{ resource_prefix }}-test1"
+            start_time: 2022 October 25 09:00 UTC
+            end_time: 2022 October 25 10:00 UTC
+            time_zone: Europe/London
+            recurrence: 40 22 * * 1-5
+            min_size: 2
+            max_size: 5
+            desired_capacity: 2
+            state: present
+          register: advanced_scheduled_action
+
+        - name: Check results - Create advanced scheduled_action
+          assert:
+            that:
+              - advanced_scheduled_action is successful
+              - advanced_scheduled_action is changed
+              - advanced_scheduled_action.scheduled_action_name == "{{ resource_prefix }}-test1"
+              - advanced_scheduled_action.desired_capacity == 2
+              - advanced_scheduled_action.min_size == 2
+              - advanced_scheduled_action.max_size == 5
+              - advanced_scheduled_action.time_zone == "Europe/London"
+
+        - name: Create advanced scheduled_action - idempotent
+          ec2_asg_scheduled_action:
+            autoscaling_group_name: "{{ resource_prefix }}-asg"
+            scheduled_action_name: "{{ resource_prefix }}-test1"
+            start_time: 2022 October 25 09:00 UTC
+            end_time: 2022 October 25 10:00 UTC
+            time_zone: Europe/London
+            recurrence: 40 22 * * 1-5
+            min_size: 2
+            max_size: 5
+            desired_capacity: 2
+            state: present
+          register: advanced_scheduled_action
+
+        - name: Check results - Create basic scheduled_action - idempotent
+          assert:
+            that:
+              - advanced_scheduled_action is successful
+              - advanced_scheduled_action is not changed
+
+        ## Delete scheduled action
+        - name: Delete scheduled_action - check_mode
+          ec2_asg_scheduled_action:
+            autoscaling_group_name: "{{ resource_prefix }}-asg"
+            scheduled_action_name: "{{ resource_prefix }}-test1"
+            state: absent
+          register: scheduled_action_deletion
+          check_mode: True
+
+        - name: Delete scheduled_action - check_mode
+          assert:
+            that:
+              - scheduled_action_deletion is successful
+              - scheduled_action_deletion is changed
+
+        - name: Delete scheduled_action
+          ec2_asg_scheduled_action:
+            autoscaling_group_name: "{{ resource_prefix }}-asg"
+            scheduled_action_name: "{{ resource_prefix }}-test1"
+            state: absent
+          register: scheduled_action_deletion
+
+        - name: Delete scheduled_action
+          assert:
+            that:
+              - scheduled_action_deletion is successful
+              - scheduled_action_deletion is changed
+
+        - name: Delete scheduled_action - idempotent
+          ec2_asg_scheduled_action:
+            autoscaling_group_name: "{{ resource_prefix }}-asg"
+            scheduled_action_name: "{{ resource_prefix }}-test1"
+            state: absent
+          register: scheduled_action_deletion
+
+        - name: Delete scheduled_action - idempotent
+          assert:
+            that:
+              - scheduled_action_deletion is successful
+              - scheduled_action_deletion is not changed
+
+  always:
+    - name: Remove ASG
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        state: absent
+      register: removed
+      until: removed is not failed
+      ignore_errors: yes
+      retries: 10
+
+    # Remove the testing dependencies
+    - name: Remove launch configs
+      ec2_lc:
+        name: "{{ resource_prefix }}-lc"
+        state: absent
+      register: removed
+      until: removed is not failed
+      ignore_errors: yes
+      retries: 10
+
+    - name: Remove the security group
+      ec2_group:
+        name: "{{ resource_prefix }}-sg"
+        description: a security group for ansible tests
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        state: absent
+      register: removed
+      until: removed is not failed
+      ignore_errors: yes
+      retries: 10
+
+    - name: Remove the subnet
+      ec2_vpc_subnet:
+        state: absent
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        cidr: 10.55.77.0/24
+      register: removed
+      until: removed is not failed
+      ignore_errors: yes
+      retries: 10
+
+    - name: Remove the VPC
+      ec2_vpc_net:
+        name: "{{ resource_prefix }}-vpc"
+        cidr_block: 10.55.77.0/24
+        state: absent
+      register: removed
+      until: removed is not failed
+      ignore_errors: yes
+      retries: 10

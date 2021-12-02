@@ -10,3 +10,5 @@ virtualenv
 awscli
 # Used for comparing SSH Public keys to the Amazon fingerprints
 pycrypto
+# Used by ec2_asg_scheduled_action
+python-dateutil

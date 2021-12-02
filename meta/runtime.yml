@@ -65,6 +65,7 @@ action_groups:
   - ec2_ami_copy
   - ec2_asg
   - ec2_asg_info
+  - ec2_asg_scheduled_action
   - ec2_asg_lifecycle_hook
   - ec2_customer_gateway
   - ec2_customer_gateway_info
