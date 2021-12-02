@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: List EC2 Placement Group(s) details
 description:
     - List details of EC2 Placement Group(s).
-    - This module was called C(ec2_placement_group_facts) before Ansible 2.9. The usage did not change.
 author: "Brad Macpherson (@iiibrad)"
 options:
   names:
@@ -114,9 +113,6 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True
     )
-    if module._module._name == 'ec2_placement_group_facts':
-        module._module.deprecate("The 'ec2_placement_group_facts' module has been renamed to 'ec2_placement_group_info'",
-                                 date='2021-12-01', collection_name='community.aws')
 
     connection = module.client('ec2')
 

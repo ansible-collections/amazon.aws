@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: Gather information about VPN Connections in AWS.
 description:
     - Gather information about VPN Connections in AWS.
-    - This module was called C(ec2_vpc_vpn_facts) before Ansible 2.9. The usage did not change.
 author: Madhura Naniwadekar (@Madhura-CSI)
 options:
   filters:
@@ -204,8 +203,6 @@ def main():
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               mutually_exclusive=[['vpn_connection_ids', 'filters']],
                               supports_check_mode=True)
-    if module._module._name == 'ec2_vpc_vpn_facts':
-        module._module.deprecate("The 'ec2_vpc_vpn_facts' module has been renamed to 'ec2_vpc_vpn_info'", date='2021-12-01', collection_name='community.aws')
 
     connection = module.client('ec2')
 

@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: Get information about Amazon EFS file systems
 description:
     - This module can be used to search Amazon EFS file systems.
-    - This module was called C(efs_facts) before Ansible 2.9, returning C(ansible_facts).
       Note that the M(community.aws.efs_info) module no longer returns C(ansible_facts)!
 author:
     - "Ryan Sydnor (@ryansydnor)"
@@ -363,10 +362,6 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               supports_check_mode=True)
-    is_old_facts = module._name == 'efs_facts'
-    if is_old_facts:
-        module.deprecate("The 'efs_facts' module has been renamed to 'efs_info', "
-                         "and the renamed one no longer returns ansible_facts", date='2021-12-01', collection_name='community.aws')
 
     connection = EFSConnection(module)
 
@@ -387,10 +382,7 @@ def main():
         targets = [(item, prefix_to_attr(item)) for item in targets]
         file_systems_info = [item for item in file_systems_info if has_targets(item['mount_targets'], targets)]
 
-    if is_old_facts:
-        module.exit_json(changed=False, ansible_facts={'efs': file_systems_info})
-    else:
-        module.exit_json(changed=False, efs=file_systems_info)
+    module.exit_json(changed=False, efs=file_systems_info)
 
 
 if __name__ == '__main__':

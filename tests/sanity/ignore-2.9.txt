@@ -1,46 +1,9 @@
-plugins/modules/aws_acm_info.py pylint:ansible-deprecated-no-version
 plugins/modules/aws_kms.py pylint:ansible-deprecated-no-version
-plugins/modules/aws_kms_info.py pylint:ansible-deprecated-no-version
-plugins/modules/aws_region_info.py pylint:ansible-deprecated-no-version
-plugins/modules/aws_s3_bucket_info.py pylint:ansible-deprecated-no-version
-plugins/modules/aws_sgw_info.py pylint:ansible-deprecated-no-version
-plugins/modules/aws_waf_info.py pylint:ansible-deprecated-no-version
-plugins/modules/cloudfront_info.py pylint:ansible-deprecated-no-version
-plugins/modules/cloudwatchlogs_log_group_info.py pylint:ansible-deprecated-no-version
-plugins/modules/ec2_asg_info.py pylint:ansible-deprecated-no-version
-plugins/modules/ec2_customer_gateway_info.py pylint:ansible-deprecated-no-version
-plugins/modules/ec2_eip_info.py pylint:ansible-deprecated-no-version
-plugins/modules/ec2_elb_info.py validate-modules:deprecation-mismatch  # Ansible 2.9 docs don't support deprecation properly
-plugins/modules/ec2_elb_info.py validate-modules:invalid-documentation  # Ansible 2.9 docs don't support deprecation properly
-plugins/modules/ec2_lc_info.py pylint:ansible-deprecated-no-version
 plugins/modules/ec2_metric_alarm.py pylint:ansible-deprecated-no-version
-plugins/modules/ec2_placement_group_info.py pylint:ansible-deprecated-no-version
-plugins/modules/ec2_vpc_nacl_info.py pylint:ansible-deprecated-no-version
-plugins/modules/ec2_vpc_peering_info.py pylint:ansible-deprecated-no-version
-plugins/modules/ec2_vpc_route_table_info.py pylint:ansible-deprecated-no-version
-plugins/modules/ec2_vpc_vgw_info.py pylint:ansible-deprecated-no-version
-plugins/modules/ec2_vpc_vpn_info.py pylint:ansible-deprecated-no-version
-plugins/modules/ecs_service_info.py pylint:ansible-deprecated-no-version
-plugins/modules/ecs_taskdefinition_info.py pylint:ansible-deprecated-no-version
-plugins/modules/efs_info.py pylint:ansible-deprecated-no-version
-plugins/modules/elasticache_info.py pylint:ansible-deprecated-no-version
-plugins/modules/elb_application_lb_info.py pylint:ansible-deprecated-no-version
-plugins/modules/elb_classic_lb_info.py pylint:ansible-deprecated-no-version
 plugins/modules/elb_network_lb.py pylint:ansible-deprecated-no-version
-plugins/modules/elb_target_group_info.py pylint:ansible-deprecated-no-version
-plugins/modules/elb_target_info.py pylint:ansible-deprecated-no-version
 plugins/modules/iam.py validate-modules:deprecation-mismatch  # Ansible 2.9 docs don't support deprecation properly
 plugins/modules/iam.py validate-modules:invalid-documentation  # Ansible 2.9 docs don't support deprecation properly
-plugins/modules/iam_mfa_device_info.py pylint:ansible-deprecated-no-version
 plugins/modules/iam_policy.py pylint:ansible-deprecated-no-version
 plugins/modules/iam_role.py pylint:ansible-deprecated-no-version
-plugins/modules/iam_role_info.py pylint:ansible-deprecated-no-version
-plugins/modules/iam_server_certificate_info.py pylint:ansible-deprecated-no-version
-plugins/modules/lambda_facts.py validate-modules:deprecation-mismatch
-plugins/modules/lambda_facts.py validate-modules:invalid-documentation
 plugins/modules/rds.py validate-modules:deprecation-mismatch  # Ansible 2.9 docs don't support deprecation properly
 plugins/modules/rds.py validate-modules:invalid-documentation  # Ansible 2.9 docs don't support deprecation properly
-plugins/modules/rds_instance_info.py pylint:ansible-deprecated-no-version
-plugins/modules/rds_snapshot_info.py pylint:ansible-deprecated-no-version
-plugins/modules/redshift_info.py pylint:ansible-deprecated-no-version
-plugins/modules/route53_info.py pylint:ansible-deprecated-no-version

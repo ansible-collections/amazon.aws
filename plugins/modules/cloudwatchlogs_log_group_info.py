@@ -14,7 +14,6 @@ version_added: 1.0.0
 short_description: Get information about log_group in CloudWatchLogs
 description:
     - Lists the specified log groups. You can list all your log groups or filter the results by prefix.
-    - This module was called C(cloudwatchlogs_log_group_facts) before Ansible 2.9. The usage did not change.
 author:
     - Willian Ricardo (@willricardo) <willricardo@gmail.com>
 options:
@@ -98,9 +97,6 @@ def main():
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
-    if module._name == 'cloudwatchlogs_log_group_facts':
-        module.deprecate("The 'cloudwatchlogs_log_group_facts' module has been renamed to 'cloudwatchlogs_log_group_info'",
-                         date='2021-12-01', collection_name='community.aws')
 
     try:
         logs = module.client('logs')

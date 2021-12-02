@@ -13,8 +13,6 @@ version_added: 1.0.0
 short_description: Obtain facts about an AWS CloudFront distribution
 description:
   - Gets information about an AWS CloudFront distribution.
-  - This module was called C(cloudfront_facts) before Ansible 2.9, returning C(ansible_facts).
-    Note that the M(community.aws.cloudfront_info) module no longer returns C(ansible_facts)!
 author: Willem van Ketwich (@wilvk)
 options:
     distribution_id:
@@ -170,22 +168,6 @@ EXAMPLES = '''
   register: result_website
 - ansible.builtin.debug:
     msg: "{{ result_website['cloudfront']['www.my-website.com'] }}"
-
-# When the module is called as cloudfront_facts, return values are published
-# in ansible_facts['cloudfront'][<id>] and can be used as follows.
-# Note that this is deprecated and will stop working in a release after 2021-12-01.
-- name: Gather facts
-  community.aws.cloudfront_facts:
-    distribution: true
-    distribution_id: my-cloudfront-distribution-id
-- ansible.builtin.debug:
-    msg: "{{ ansible_facts['cloudfront']['my-cloudfront-distribution-id'] }}"
-
-- community.aws.cloudfront_facts:
-    distribution: true
-    domain_name_alias: www.my-website.com
-- ansible.builtin.debug:
-    msg: "{{ ansible_facts['cloudfront']['www.my-website.com'] }}"
 
 - name: Get all information about an invalidation for a distribution.
   community.aws.cloudfront_info:
@@ -545,10 +527,6 @@ def main():
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
-    is_old_facts = module._name == 'cloudfront_facts'
-    if is_old_facts:
-        module.deprecate("The 'cloudfront_facts' module has been renamed to 'cloudfront_info', "
-                         "and the renamed one no longer returns ansible_facts", date='2021-12-01', collection_name='community.aws')
 
     service_mgr = CloudFrontServiceManager(module)
 
@@ -658,10 +636,8 @@ def main():
 
     result['changed'] = False
     result['cloudfront'].update(facts)
-    if is_old_facts:
-        module.exit_json(msg="Retrieved CloudFront facts.", ansible_facts=result)
-    else:
-        module.exit_json(msg="Retrieved CloudFront info.", **result)
+
+    module.exit_json(msg="Retrieved CloudFront info.", **result)
 
 
 if __name__ == '__main__':

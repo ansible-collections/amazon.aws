@@ -12,7 +12,6 @@ short_description: Gathers which target groups a target is associated with.
 description:
   - This module will search through every target group in a region to find
     which ones have registered a given instance ID or IP.
-  - This module was called C(elb_target_facts) before Ansible 2.9. The usage did not change.
 
 author: "Yaakov Kuperman (@yaakov-github)"
 options:
@@ -412,8 +411,6 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True,
     )
-    if module._name == 'elb_target_facts':
-        module.deprecate("The 'elb_target_facts' module has been renamed to 'elb_target_info'", date='2021-12-01', collection_name='community.aws')
 
     instance_id = module.params["instance_id"]
     get_unused_target_groups = module.params["get_unused_target_groups"]

@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: List the MFA (Multi-Factor Authentication) devices registered for a user
 description:
     - List the MFA (Multi-Factor Authentication) devices registered for a user
-    - This module was called C(iam_mfa_device_facts) before Ansible 2.9. The usage did not change.
 author: Victor Costan (@pwnall)
 options:
   user_name:
@@ -91,8 +90,6 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True,
     )
-    if module._name == 'iam_mfa_device_facts':
-        module.deprecate("The 'iam_mfa_device_facts' module has been renamed to 'iam_mfa_device_info'", date='2021-12-01', collection_name='community.aws')
 
     try:
         connection = module.client('iam')

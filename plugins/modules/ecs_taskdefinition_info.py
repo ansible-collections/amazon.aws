@@ -14,7 +14,6 @@ short_description: Describe a task definition in ECS
 notes:
     - For details of the parameters and returns see
       U(http://boto3.readthedocs.io/en/latest/reference/services/ecs.html#ECS.Client.describe_task_definition)
-    - This module was called C(ecs_taskdefinition_facts) before Ansible 2.9. The usage did not change.
 description:
     - Describes a task definition in ECS.
 author:
@@ -313,9 +312,6 @@ def main():
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
-    if module._name == 'ecs_taskdefinition_facts':
-        module.deprecate("The 'ecs_taskdefinition_facts' module has been renamed to 'ecs_taskdefinition_info'",
-                         date='2021-12-01', collection_name='community.aws')
 
     ecs = module.client('ecs')
 

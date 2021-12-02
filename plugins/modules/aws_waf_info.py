@@ -12,7 +12,6 @@ short_description: Retrieve information for WAF ACLs, Rule , Conditions and Filt
 version_added: 1.0.0
 description:
   - Retrieve information for WAF ACLs, Rule , Conditions and Filters.
-  - This module was called C(aws_waf_facts) before Ansible 2.9. The usage did not change.
 options:
   name:
     description:
@@ -125,8 +124,6 @@ def main():
         waf_regional=dict(type='bool', default=False)
     )
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
-    if module._name == 'aws_waf_facts':
-        module.deprecate("The 'aws_waf_facts' module has been renamed to 'aws_waf_info'", date='2021-12-01', collection_name='community.aws')
 
     resource = 'waf' if not module.params['waf_regional'] else 'waf-regional'
     client = module.client(resource)

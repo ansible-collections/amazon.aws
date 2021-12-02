@@ -12,7 +12,6 @@ short_description: Retrieves route53 details using AWS methods
 version_added: 1.0.0
 description:
     - Gets various details related to Route53 zone, record set or health check details.
-    - This module was called C(route53_facts) before Ansible 2.9. The usage did not change.
 options:
   query:
     description:
@@ -474,8 +473,6 @@ def main():
         ],
         check_boto3=False,
     )
-    if module._name == 'route53_facts':
-        module.deprecate("The 'route53_facts' module has been renamed to 'route53_info'", date='2021-12-01', collection_name='community.aws')
 
     try:
         route53 = module.client('route53')

@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: Gather information about ec2 Auto Scaling Groups (ASGs) in AWS
 description:
   - Gather information about ec2 Auto Scaling Groups (ASGs) in AWS
-  - This module was called C(ec2_asg_facts) before Ansible 2.9. The usage did not change.
 author: "Rob White (@wimnat)"
 options:
   name:
@@ -443,9 +442,6 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True,
     )
-
-    if module._name == 'ec2_asg_facts':
-        module.deprecate("The 'ec2_asg_facts' module has been renamed to 'ec2_asg_info'", date='2021-12-01', collection_name='community.aws')
 
     asg_name = module.params.get('name')
     asg_tags = module.params.get('tags')

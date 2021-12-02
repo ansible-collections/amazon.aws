@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: Gather information about AWS KMS keys
 description:
     - Gather information about AWS KMS keys including tags and grants
-    - This module was called C(aws_kms_facts) before Ansible 2.9. The usage did not change.
 author: "Will Thames (@willthames)"
 options:
   alias:
@@ -458,8 +457,6 @@ def main():
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               mutually_exclusive=[['alias', 'filters', 'key_id']],
                               supports_check_mode=True)
-    if module._name == 'aws_kms_facts':
-        module.deprecate("The 'aws_kms_facts' module has been renamed to 'aws_kms_info'", date='2021-12-01', collection_name='community.aws')
 
     try:
         connection = module.client('kms')
