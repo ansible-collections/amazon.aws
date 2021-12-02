@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: List EC2 EIP details
 description:
     - List details of EC2 Elastic IP addresses.
-    - This module was called C(ec2_eip_facts) before Ansible 2.9. The usage did not change.
 author: "Brad Macpherson (@iiibrad)"
 options:
   filters:
@@ -137,8 +136,6 @@ def main():
         ),
         supports_check_mode=True
     )
-    if module._module._name == 'ec2_eip_facts':
-        module._module.deprecate("The 'ec2_eip_facts' module has been renamed to 'ec2_eip_info'", date='2021-12-01', collection_name='community.aws')
 
     module.exit_json(changed=False, addresses=get_eips_details(module))
 
