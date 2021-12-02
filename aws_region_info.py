@@ -12,7 +12,6 @@ short_description: Gather information about AWS regions.
 version_added: 1.0.0
 description:
     - Gather information about AWS regions.
-    - This module was called C(aws_region_facts) before Ansible 2.9. The usage did not change.
 author: 'Henrique Rodrigues (@Sodki)'
 options:
   filters:
@@ -72,8 +71,6 @@ def main():
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
-    if module._name == 'aws_region_facts':
-        module.deprecate("The 'aws_region_facts' module has been renamed to 'aws_region_info'", date='2021-12-01', collection_name='community.aws')
 
     connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 

@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: Gather information about application ELBs in AWS
 description:
     - Gather information about application ELBs in AWS
-    - This module was called C(elb_application_lb_facts) before Ansible 2.9. The usage did not change.
 author: Rob White (@wimnat)
 options:
   load_balancer_arns:
@@ -254,9 +253,6 @@ def main():
         mutually_exclusive=[['load_balancer_arns', 'names']],
         supports_check_mode=True,
     )
-    if module._name == 'elb_application_lb_facts':
-        module.deprecate("The 'elb_application_lb_facts' module has been renamed to 'elb_application_lb_info'",
-                         date='2021-12-01', collection_name='community.aws')
 
     try:
         connection = module.client('elbv2')

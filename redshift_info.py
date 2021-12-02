@@ -15,7 +15,6 @@ author: "Jens Carl (@j-carl)"
 short_description: Gather information about Redshift cluster(s)
 description:
   - Gather information about Redshift cluster(s).
-  - This module was called C(redshift_facts) before Ansible 2.9. The usage did not change.
 options:
   cluster_identifier:
     description:
@@ -334,8 +333,6 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True
     )
-    if module._name == 'redshift_facts':
-        module.deprecate("The 'redshift_facts' module has been renamed to 'redshift_info'", date='2021-12-01', collection_name='community.aws')
 
     cluster_identifier = module.params.get('cluster_identifier')
     cluster_tags = module.params.get('tags')

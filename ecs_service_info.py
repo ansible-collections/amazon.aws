@@ -13,8 +13,6 @@ version_added: 1.0.0
 short_description: List or describe services in ECS
 description:
     - Lists or describes services in ECS.
-    - This module was called C(ecs_service_facts) before Ansible 2.9, returning C(ansible_facts).
-      Note that the M(community.aws.ecs_service_info) module no longer returns C(ansible_facts)!
 author:
     - "Mark Chance (@Java1Guy)"
     - "Darek Kaczynski (@kaczynskid)"
@@ -220,10 +218,6 @@ def main():
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
-    is_old_facts = module._name == 'ecs_service_facts'
-    if is_old_facts:
-        module.deprecate("The 'ecs_service_facts' module has been renamed to 'ecs_service_info', "
-                         "and the renamed one no longer returns ansible_facts", date='2021-12-01', collection_name='community.aws')
 
     show_details = module.params.get('details')
 
@@ -241,10 +235,7 @@ def main():
     else:
         ecs_info = task_mgr.list_services(module.params['cluster'])
 
-    if is_old_facts:
-        module.exit_json(changed=False, ansible_facts=ecs_info, **ecs_info)
-    else:
-        module.exit_json(changed=False, **ecs_info)
+    module.exit_json(changed=False, **ecs_info)
 
 
 if __name__ == '__main__':

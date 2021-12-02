@@ -15,7 +15,6 @@ version_added: 1.0.0
 short_description: Fetch AWS Storage Gateway information
 description:
     - Fetch AWS Storage Gateway information
-    - This module was called C(aws_sgw_facts) before Ansible 2.9. The usage did not change.
 author: Loic Blot (@nerzhul) <loic.blot@unix-experience.fr>
 options:
   gather_local_disks:
@@ -348,8 +347,6 @@ def main():
         supports_check_mode=True,
     )
 
-    if module._name == 'aws_sgw_facts':
-        module.deprecate("The 'aws_sgw_facts' module has been renamed to 'aws_sgw_info'", date='2021-12-01', collection_name='community.aws')
     client = module.client('storagegateway')
 
     if client is None:  # this should never happen

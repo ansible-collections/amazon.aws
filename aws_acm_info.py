@@ -12,7 +12,6 @@ short_description: Retrieve certificate information from AWS Certificate Manager
 version_added: 1.0.0
 description:
   - Retrieve information for ACM certificates
-  - This module was called C(aws_acm_facts) before Ansible 2.9. The usage did not change.
   - Note that this will not return information about uploaded keys of size 4096 bits, due to a limitation of the ACM API.
 options:
   certificate_arn:
@@ -274,9 +273,6 @@ def main():
     )
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
     acm_info = ACMServiceManager(module)
-
-    if module._name == 'aws_acm_facts':
-        module.deprecate("The 'aws_acm_facts' module has been renamed to 'aws_acm_info'", date='2021-12-01', collection_name='community.aws')
 
     client = module.client('acm')
 

@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: Gather information on IAM roles
 description:
     - Gathers information about IAM roles.
-    - This module was called C(iam_role_facts) before Ansible 2.9. The usage did not change.
 author:
     - "Will Thames (@willthames)"
 options:
@@ -242,8 +241,6 @@ def main():
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               supports_check_mode=True,
                               mutually_exclusive=[['name', 'path_prefix']])
-    if module._name == 'iam_role_facts':
-        module.deprecate("The 'iam_role_facts' module has been renamed to 'iam_role_info'", date='2021-12-01', collection_name='community.aws')
 
     client = module.client('iam', retry_decorator=AWSRetry.jittered_backoff())
 

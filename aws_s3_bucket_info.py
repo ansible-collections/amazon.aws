@@ -16,8 +16,6 @@ author: "Gerben Geijteman (@hyperized)"
 short_description: lists S3 buckets in AWS
 description:
     - Lists S3 buckets and details about those buckets.
-    - This module was called C(aws_s3_bucket_facts) before Ansible 2.9, returning C(ansible_facts).
-      Note that the M(community.aws.aws_s3_bucket_info) module no longer returns C(ansible_facts)!
 options:
   name:
     description:
@@ -589,10 +587,6 @@ def main():
 
     # Including ec2 argument spec
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True, mutually_exclusive=mutually_exclusive)
-    is_old_facts = module._name == 'aws_s3_bucket_facts'
-    if is_old_facts:
-        module.deprecate("The 'aws_s3_bucket_facts' module has been renamed to 'aws_s3_bucket_info', "
-                         "and the renamed one no longer returns ansible_facts", date='2021-12-01', collection_name='community.aws')
 
     # Get parameters
     name = module.params.get("name")
@@ -623,11 +617,7 @@ def main():
     else:
         result['buckets'] = bucket_list
 
-    # Send exit
-    if is_old_facts:
-        module.exit_json(msg="Retrieved s3 facts.", ansible_facts=result)
-    else:
-        module.exit_json(msg="Retrieved s3 info.", **result)
+    module.exit_json(msg="Retrieved s3 info.", **result)
 
 
 # MAIN

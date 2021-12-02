@@ -12,7 +12,6 @@ short_description: Retrieve information for AWS ElastiCache clusters
 version_added: 1.0.0
 description:
   - Retrieve information from AWS ElastiCache clusters
-  - This module was called C(elasticache_facts) before Ansible 2.9. The usage did not change.
 options:
   name:
     description:
@@ -294,8 +293,6 @@ def main():
         name=dict(required=False),
     )
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
-    if module._name == 'elasticache_facts':
-        module.deprecate("The 'elasticache_facts' module has been renamed to 'elasticache_info'", date='2021-12-01', collection_name='community.aws')
 
     client = module.client('elasticache')
 

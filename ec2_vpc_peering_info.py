@@ -12,7 +12,6 @@ short_description: Retrieves AWS VPC Peering details using AWS methods.
 version_added: 1.0.0
 description:
   - Gets various details related to AWS VPC Peers
-  - This module was called C(ec2_vpc_peering_facts) before Ansible 2.9. The usage did not change.
 options:
   peer_connection_ids:
     description:
@@ -235,8 +234,6 @@ def main():
 
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               supports_check_mode=True,)
-    if module._name == 'ec2_vpc_peering_facts':
-        module.deprecate("The 'ec2_vpc_peering_facts' module has been renamed to 'ec2_vpc_peering_info'", date='2021-12-01', collection_name='community.aws')
 
     try:
         ec2 = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())

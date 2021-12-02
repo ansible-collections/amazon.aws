@@ -15,7 +15,6 @@ version_added: 1.0.0
 short_description: obtain information about one or more RDS instances
 description:
   - Obtain information about one or more RDS instances.
-  - This module was called C(rds_instance_facts) before Ansible 2.9. The usage did not change.
 options:
   db_instance_identifier:
     description:
@@ -398,8 +397,6 @@ def main():
         argument_spec=argument_spec,
         supports_check_mode=True,
     )
-    if module._name == 'rds_instance_facts':
-        module.deprecate("The 'rds_instance_facts' module has been renamed to 'rds_instance_info'", date='2021-12-01', collection_name='community.aws')
 
     conn = module.client('rds', retry_decorator=AWSRetry.jittered_backoff(retries=10))
 

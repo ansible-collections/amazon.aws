@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: Gather information about ELB target groups in AWS
 description:
     - Gather information about ELB target groups in AWS
-    - This module was called C(elb_target_group_facts) before Ansible 2.9. The usage did not change.
 author: Rob White (@wimnat)
 options:
   load_balancer_arn:
@@ -299,8 +298,6 @@ def main():
         mutually_exclusive=[['load_balancer_arn', 'target_group_arns', 'names']],
         supports_check_mode=True,
     )
-    if module._name == 'elb_target_group_facts':
-        module.deprecate("The 'elb_target_group_facts' module has been renamed to 'elb_target_group_info'", date='2021-12-01', collection_name='community.aws')
 
     try:
         connection = module.client('elbv2')
