@@ -648,4 +648,4 @@ releases:
     - 574-botocore-1-19-0.yml
     - 575-deprecate-boto.yml
     - remove_deprecated_facts.yml
-    release_date: '2021-12-02'
+    release_date: '2021-12-06'
