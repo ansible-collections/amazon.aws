@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: Gather information about ec2 volume snapshots in AWS
 description:
     - Gather information about ec2 volume snapshots in AWS.
-    - This module was called C(ec2_snapshot_facts) before Ansible 2.9. The usage did not change.
 author:
     - "Rob White (@wimnat)"
     - Aubin Bikouo (@abikouo)
@@ -283,8 +282,6 @@ def main():
         ],
         supports_check_mode=True
     )
-    if module._name == 'ec2_snapshot_facts':
-        module.deprecate("The 'ec2_snapshot_facts' module has been renamed to 'ec2_snapshot_info'", date='2021-12-01', collection_name='amazon.aws')
 
     connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 

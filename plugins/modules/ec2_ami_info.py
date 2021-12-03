@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: Gather information about ec2 AMIs
 description:
   - Gather information about ec2 AMIs
-  - This module was called C(amazon.aws.ec2_ami_facts) before Ansible 2.9. The usage did not change.
 author:
   - Prasad Katti (@prasadkatti)
 options:
@@ -274,8 +273,6 @@ def main():
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
-    if module._module._name == 'ec2_ami_facts':
-        module._module.deprecate("The 'ec2_ami_facts' module has been renamed to 'ec2_ami_info'", date='2021-12-01', collection_name='amazon.aws')
 
     ec2_client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 

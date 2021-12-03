@@ -11,7 +11,6 @@ short_description: Retrieves AWS VPC endpoints details using AWS methods.
 version_added: 1.0.0
 description:
   - Gets various details related to AWS VPC endpoints.
-  - This module was called C(ec2_vpc_endpoint_facts) before Ansible 2.9. The usage did not change.
 options:
   query:
     description:
@@ -170,8 +169,6 @@ def main():
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
-    if module._name == 'ec2_vpc_endpoint_facts':
-        module.deprecate("The 'ec2_vpc_endpoint_facts' module has been renamed to 'ec2_vpc_endpoint_info'", date='2021-12-01', collection_name='amazon.aws')
 
     # Validate Requirements
     try:

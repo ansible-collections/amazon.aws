@@ -13,7 +13,6 @@ version_added: 1.0.0
 short_description: Gather information about ec2 security groups in AWS.
 description:
     - Gather information about ec2 security groups in AWS.
-    - This module was called C(amazon.aws.ec2_group_facts) before Ansible 2.9. The usage did not change.
 author:
 - Henrique Rodrigues (@Sodki)
 options:
@@ -109,8 +108,6 @@ def main():
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
-    if module._name == 'ec2_group_facts':
-        module.deprecate("The 'ec2_group_facts' module has been renamed to 'ec2_group_info'", date='2021-12-01', collection_name='amazon.aws')
 
     connection = module.client('ec2', AWSRetry.jittered_backoff())
 
