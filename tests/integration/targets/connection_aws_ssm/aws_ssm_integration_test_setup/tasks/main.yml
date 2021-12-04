@@ -28,26 +28,30 @@
         linux_ami_id: '{{ latest_linux_ami.image_id }}'
         windows_ami_id: '{{ latest_windows_ami.image_id }}'
 
-    - name: Install Session Manager Plugin for Debian/Ubuntu
+    - name: Install Session Manager Plugin for Fedora/Debian/Ubuntu
       include_tasks: debian.yml
       when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
       register: install_plugin_debian
 
     - name: Install Session Manager Plugin for RedHat/Amazon
       include_tasks: redhat.yml
-      when: ansible_distribution == "CentOS" or ansible_distribution == "RedHat" or ansible_distribution == "Amazon"
+      when: ansible_distribution in ["CentOS", "RedHat", "Amazon", "Fedora"]
       register: install_plugin_redhat
 
-    - name: Fail if the plugin was not installed
-      fail:
-        msg: The distribution does not contain the required Session Manager Plugin
-      when:
-        - install_plugin_debian is skipped
-        - install_plugin_redhat is skipped
+    - block:
+        - name: Fail if the plugin was not installed
+          fail:
+            msg: The distribution does not contain the required Session Manager Plugin
+          when:
+            - install_plugin_debian is skipped
+            - install_plugin_redhat is skipped
+      always:
+        - debug:
+            var: ansible_distribution
 
     - name: Ensure IAM instance role exists
       iam_role:
-        name: "ansible-test-{{resource_prefix}}-aws-ssm-role"
+        name: "ansible-test-{{tiny_prefix}}-aws-ssm-role"
         assume_role_policy_document: "{{ lookup('file','ec2-trust-policy.json') }}"
         state: present
         create_instance_profile: yes
@@ -99,10 +103,16 @@
       wait_for_connection:
         delay: 360
 
-    - name: Create S3 bucket
-      s3_bucket:
-        name: "{{resource_prefix}}-aws-ssm-s3"
-      register: s3_output
+    - name: create a key
+      aws_kms:
+        alias: '{{ resource_prefix }}-kms'
+        tags:
+          ansible-test: '{{ resource_prefix }}'
+
+    # - name: Create S3 bucket
+    #   s3_bucket:
+    #     name: "{{resource_prefix}}-aws-ssm-s3"
+    #   register: s3_output
 
     - name: Create Inventory file
       template:
@@ -128,11 +138,11 @@
         src: ec2_windows_vars_to_delete.yml.j2
       ignore_errors: yes
 
-    - name: Create S3 vars_to_delete.yml
-      template:
-        dest: "{{playbook_dir}}/s3_vars_to_delete.yml"
-        src: s3_vars_to_delete.yml.j2
-      ignore_errors: yes
+    # - name: Create S3 vars_to_delete.yml
+    #   template:
+    #     dest: "{{playbook_dir}}/s3_vars_to_delete.yml"
+    #     src: s3_vars_to_delete.yml.j2
+    #   ignore_errors: yes
 
     - name: Create IAM Role vars_to_delete.yml
       template:

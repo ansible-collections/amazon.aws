@@ -5,7 +5,9 @@
     mode: '0440'
   tags: setup_infra
 - name: Install SSM Plugin
+  become: true
   yum:
     name: /tmp/session-manager-plugin.rpm
     state: present
+    disable_gpg_check: true
   tags: setup_infra

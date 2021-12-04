@@ -2,10 +2,4 @@
 # This test suite can take almost 25 minutes (on a good day)
 disabled # Test is currently broken on Deb-based systems, and dependant ../connection dir access in ansible/default-test-container
 unstable
-
 cloud/aws
-
-destructive
-non_local
-needs/root
-needs/target/connection

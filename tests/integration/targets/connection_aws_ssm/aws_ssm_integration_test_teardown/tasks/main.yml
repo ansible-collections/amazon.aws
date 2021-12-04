@@ -78,6 +78,11 @@
       ignore_errors: yes
       when: iam_role_vars_file.stat.exists == true
 
+    - name: Delete the KMS key
+      aws_kms:
+        state: absent
+        alias: '{{ resource_prefix }}-kms'
+
     - name: Delete AWS keys environement
       file:
         path: "{{playbook_dir}}/aws-env-vars.sh"

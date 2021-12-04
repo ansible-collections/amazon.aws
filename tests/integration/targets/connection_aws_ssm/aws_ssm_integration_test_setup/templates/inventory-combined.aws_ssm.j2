@@ -20,10 +20,12 @@ aws_ssm_linux
 
 [aws_ssm:vars]
 ansible_connection=community.aws.aws_ssm
-ansible_aws_ssm_bucket_name={{s3_output.name}}
+ansible_aws_ssm_bucket_name={{s3_bucket_name}}
 ansible_aws_ssm_plugin=/usr/local/sessionmanagerplugin/bin/session-manager-plugin
 ansible_python_interpreter=/usr/bin/env python
 local_tmp=/tmp/ansible-local-
+ansible_aws_ssm_bucket_sse_mode='aws:kms'
+ansible_aws_ssm_bucket_sse_kms_key_id=alias/{{ resource_prefix }}-kms
 
 # support tests that target testhost
 [testhost:children]
