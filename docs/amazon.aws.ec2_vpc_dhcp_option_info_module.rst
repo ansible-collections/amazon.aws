@@ -18,7 +18,6 @@ Version added: 1.0.0
 Synopsis
 --------
 - Gather information about dhcp options sets in AWS.
-- This module was called ``ec2_vpc_dhcp_option_facts`` before Ansible 2.9. The usage did not change.
 
 
 

@@ -132,6 +132,24 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>count</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.2.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Number of instances to launch.</div>
+                        <div>Setting this value will result in always launching new instances.</div>
+                        <div>Mutually exclusive with <em>exact_count</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>cpu_credit_specification</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -281,6 +299,25 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>exact_count</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.2.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>An integer value which indicates how many instances that match the <em>filters</em> parameter should be running.</div>
+                        <div>Instances are either created or terminated based on this value.</div>
+                        <div>If termination takes place, least recently created instances will be terminated based on Launch Time.</div>
+                        <div>Mutually exclusive with <em>count</em>, <em>instance_ids</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>filters</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -388,6 +425,7 @@ Parameters
                 </td>
                 <td>
                         <div>If you specify one or more instance IDs, only instances that have the specified IDs are returned.</div>
+                        <div>Mutually exclusive with <em>exact_count</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -1295,6 +1333,7 @@ Examples
         tags:
           Env: "eni_on"
         instance_type: t2.micro
+
     - name: start an instance with metadata options
       amazon.aws.ec2_instance:
         name: "public-metadataoptions-instance"
@@ -1306,6 +1345,35 @@ Examples
         metadata_options:
           http_endpoint: enabled
           http_tokens: optional
+
+    # ensure number of instances running with a tag matches exact_count
+    - name: start multiple instances
+      amazon.aws.ec2_instance:
+        instance_type: t3.small
+        image_id: ami-123456
+        exact_count: 5
+        region: us-east-2
+        network:
+          assign_public_ip: yes
+          security_group: default
+          vpc_subnet_id: subnet-0123456
+        tags:
+          foo: bar
+
+    # launches multiple instances - specific number of instances
+    - name: start specific number of multiple instances
+      amazon.aws.ec2_instance:
+        instance_type: t3.small
+        image_id: ami-123456
+        count: 3
+        region: us-east-2
+        network:
+          assign_public_ip: yes
+          security_group: default
+          vpc_subnet_id: subnet-0123456
+        state: present
+        tags:
+          foo: bar
 
 
 

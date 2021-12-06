@@ -594,3 +594,58 @@ releases:
     - 552-elb_classic_lb-fact.yml
     - 557-action_group-missing-entry.yml
     release_date: '2021-11-11'
+  3.0.0:
+    changes:
+      breaking_changes:
+      - aws_caller_facts - Remove deprecated ``aws_caller_facts`` alias.  Please use
+        ``aws_caller_info`` instead.
+      - cloudformation_facts - Remove deprecated ``cloudformation_facts`` alias.  Please
+        use ``cloudformation_info`` instead.
+      - ec2_ami_facts - Remove deprecated ``ec2_ami_facts`` alias.  Please use ``ec2_ami_info``
+        instead.
+      - ec2_eni_facts - Remove deprecated ``ec2_eni_facts`` alias.  Please use ``ec2_eni_info``
+        instead.
+      - ec2_group_facts - Remove deprecated ``ec2_group_facts`` alias.  Please use
+        ``ec2_group_info`` instead.
+      - ec2_instance_facts - Remove deprecated ``ec2_instance_facts`` alias.  Please
+        use ``ec2_instance_info`` instead.
+      - ec2_snapshot_facts - Remove deprecated ``ec2_snapshot_facts`` alias.  Please
+        use ``ec2_snapshot_info`` instead.
+      - ec2_vol_facts - Remove deprecated ``ec2_vol_facts`` alias.  Please use ``ec2_vol_info``
+        instead.
+      - ec2_vpc_dhcp_option_facts - Remove deprecated ``ec2_vpc_dhcp_option_facts``
+        alias.  Please use ``ec2_vpc_dhcp_option_info`` instead.
+      - ec2_vpc_endpoint_facts - Remove deprecated ``ec2_vpc_endpoint_facts`` alias.  Please
+        use ``ec2_vpc_endpoint_info`` instead.
+      - ec2_vpc_igw_facts - Remove deprecated ``ec2_vpc_igw_facts`` alias.  Please
+        use ``ec2_vpc_igw_info`` instead.
+      - ec2_vpc_nat_gateway_facts - Remove deprecated ``ec2_vpc_nat_gateway_facts``
+        alias.  Please use ``ec2_vpc_nat_gateway_info`` instead.
+      - ec2_vpc_net_facts - Remove deprecated ``ec2_vpc_net_facts`` alias.  Please
+        use ``ec2_vpc_net_info`` instead.
+      - ec2_vpc_route_table_facts - Remove deprecated ``ec2_vpc_route_table_facts``
+        alias.  Please use ``ec2_vpc_route_table_info`` instead.
+      - ec2_vpc_subnet_facts - Remove deprecated ``ec2_vpc_subnet_facts`` alias.  Please
+        use ``ec2_vpc_subnet_info`` instead.
+      deprecated_features:
+      - module_utils - support for the original AWS SDK `boto` has been deprecated
+        in favour of the `boto3`/`botocore` SDK. All `boto` based modules have either
+        been deprecated or migrated to `botocore`, and the remaining support code
+        in module_utils will be removed in release 4.0.0 of the amazon.aws collection.
+        Any modules outside of the amazon.aws and community.aws collections based
+        on the `boto` library will need to be migrated to the `boto3`/`botocore` libraries
+        (https://github.com/ansible-collections/amazon.aws/pull/575).
+      major_changes:
+      - amazon.aws collection - The amazon.aws collection has dropped support for
+        ``botocore<1.19.0`` and ``boto3<1.16.0``. Most modules will continue to work
+        with older versions of the AWS SDK, however compatability with older versions
+        of the SDK is not guaranteed and will not be tested. When using older versions
+        of the SDK a warning will be emitted by Ansible (https://github.com/ansible-collections/amazon.aws/pull/574).
+      minor_changes:
+      - ec2_instance - add count parameter support (https://github.com/ansible-collections/amazon.aws/pull/539).
+    fragments:
+    - 539-ec2_instance_add_count_param.yml
+    - 574-botocore-1-19-0.yml
+    - 575-deprecate-boto.yml
+    - remove_deprecated_facts.yml
+    release_date: '2021-12-06'

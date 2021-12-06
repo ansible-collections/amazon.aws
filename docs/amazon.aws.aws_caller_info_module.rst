@@ -19,7 +19,6 @@ Synopsis
 --------
 - This module returns information about the account and user / role from which the AWS access tokens originate.
 - The primary use of this is to get the account id for templating into ARNs or similar to avoid needing to specify this information in inventory.
-- This module was called :ref:`amazon.aws.aws_caller_facts <amazon.aws.aws_caller_facts_module>` before Ansible 2.9. The usage did not change.
 
 
 

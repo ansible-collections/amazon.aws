@@ -18,7 +18,6 @@ Version added: 1.0.0
 Synopsis
 --------
 - Gather information about ec2 instances in AWS
-- This module was called ``ec2_instance_facts`` before Ansible 2.9. The usage did not change.
 
 
 

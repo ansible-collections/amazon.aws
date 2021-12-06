@@ -18,7 +18,6 @@ Version added: 1.0.0
 Synopsis
 --------
 - Gather information about internet gateways in AWS.
-- This module was called ``ec2_vpc_igw_facts`` before Ansible 2.9. The usage did not change.
 
 
 
