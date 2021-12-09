@@ -54,7 +54,7 @@ options:
     description:
       - Instance type to use for the instance, see U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html)
         Only required when instance is not already present.
-    default: t2.micro
+      - If not specified, t2.micro will be used.
     type: str
   count:
     description:
@@ -1232,7 +1232,7 @@ def build_top_level_options(params):
 
     if params.get('launch_template') is not None:
         spec['LaunchTemplate'] = {}
-        if not params.get('launch_template').get('id') or params.get('launch_template').get('name'):
+        if not params.get('launch_template').get('id') and not params.get('launch_template').get('name'):
             module.fail_json(msg="Could not create instance with launch template. Either launch_template.name or launch_template.id parameters are required")
 
         if params.get('launch_template').get('id') is not None:
@@ -1305,7 +1305,12 @@ def build_run_instance_spec(params):
         spec['MaxCount'] = module.params.get('count')
         spec['MinCount'] = module.params.get('count')
 
-    spec['InstanceType'] = params['instance_type']
+    if not module.params.get('launch_template'):
+        spec['InstanceType'] = params['instance_type'] if module.params.get('instance_type') else 't2.micro'
+
+    if module.params.get('launch_template') and module.params.get('instance_type'):
+        spec['InstanceType'] = params['instance_type']
+
     return spec
 
 
@@ -1921,7 +1926,7 @@ def main():
         exact_count=dict(type='int'),
         image=dict(type='dict'),
         image_id=dict(type='str'),
-        instance_type=dict(default='t2.micro', type='str'),
+        instance_type=dict(type='str'),
         user_data=dict(type='str'),
         tower_callback=dict(type='dict'),
         ebs_optimized=dict(type='bool'),
