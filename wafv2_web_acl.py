@@ -63,6 +63,7 @@ options:
     rules:
       description:
         - The Rule statements used to identify the web requests that you want to allow, block, or count.
+        - For a list of managed rules see U(https://docs.aws.amazon.com/waf/latest/developerguide/aws-managed-rule-groups-list.html).
       type: list
       elements: dict
       suboptions:
@@ -111,7 +112,7 @@ EXAMPLES = '''
     metric_name: blub
     rules:
       - name: zwei
-        priority: 2
+        priority: 0
         action:
           block: {}
         visibility_config:
@@ -137,6 +138,59 @@ EXAMPLES = '''
           managed_rule_group_statement:
             vendor_name: AWS
             name: AWSManagedRulesAdminProtectionRuleSet
+
+      # AWS Managed Bad Input Rule Set
+      # but allow PROPFIND_METHOD used e.g. by webdav
+      - name: bad_input_protect_whitelist_webdav
+        priority: 2
+        override_action:
+          none: {}
+        visibility_config:
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: bad_input_protect
+        statement:
+          managed_rule_group_statement:
+            vendor_name: AWS
+            name: AWSManagedRulesKnownBadInputsRuleSet
+            excluded_rules:
+              - name: PROPFIND_METHOD
+
+      # Rate Limit example. 1500 req/5min
+      # counted for two domains via or_statement. login.mydomain.tld and api.mydomain.tld
+      - name: rate_limit_example
+        priority: 3
+        action:
+          block: {}
+        visibility_config:
+          sampled_requests_enabled: yes
+          cloud_watch_metrics_enabled: yes
+          metric_name: mydomain-ratelimit
+        statement:
+          rate_based_statement:
+            limit: 1500
+            aggregate_key_type: IP
+            scope_down_statement:
+              or_statement:
+                statements:
+                  - byte_match_statement:
+                      search_string: login.mydomain.tld
+                      positional_constraint: CONTAINS
+                      field_to_match:
+                        single_header:
+                          name: host
+                      text_transformations:
+                        - type: LOWERCASE
+                          priority: 0
+                  - byte_match_dtatement:
+                      search_string: api.mydomain.tld
+                      positional_constraint: CONTAINS
+                      field_to_match:
+                        single_header:
+                          name: host
+                      text_transformations:
+                        - type: LOWERCASE
+                          priority: 0
     tags:
       A: B
       C: D
