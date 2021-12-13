@@ -11,10 +11,11 @@
   block:
   - name: ensure improper usage of parameters fails gracefully
     iam_user_info:
-      path: '{{ test_path }}'
-      group: '{{ test_group }}'
+      path: "{{ test_path }}"
+      group: "{{ test_group }}"
     ignore_errors: yes
     register: iam_user_info_path_group
+
   - assert:
       that:
         - iam_user_info_path_group is failed
@@ -22,7 +23,7 @@
 
   - name: create test user (check mode)
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
     check_mode: yes
     register: iam_user
@@ -34,7 +35,7 @@
 
   - name: create test user
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
     register: iam_user
 
@@ -45,7 +46,7 @@
 
   - name: ensure test user exists (no change)
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
     register: iam_user
 
@@ -56,7 +57,8 @@
 
   - name: ensure the info used to validate other tests is valid
     set_fact:
-        test_iam_user: '{{ iam_user.iam_user.user }}'
+      test_iam_user: "{{ iam_user.iam_user.user }}"
+
   - assert:
       that:
         - 'test_iam_user.arn.startswith("arn:aws:iam")'
@@ -70,15 +72,18 @@
   - name: get info on IAM user(s)
     iam_user_info:
     register: iam_user_info
+
   - assert:
       that:
         - iam_user_info.iam_users | length != 0
 
   - name: get info on IAM user(s) with name
     iam_user_info:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
     register: iam_user_info
+
   - debug: var=iam_user_info
+
   - assert:
       that:
         - iam_user_info.iam_users | length == 1
@@ -88,12 +93,38 @@
         - iam_user_info.iam_users[0].user_id == test_iam_user.user_id
         - iam_user_info.iam_users[0].user_name == test_iam_user.user_name
         - iam_user_info.iam_users[0].tags | length == 0
+
+  - name: create test user with password (check mode)
+    iam_user:
+      name: "{{ test_user3 }}"
+      password: "{{ test_password }}"
+      state: present
+    check_mode: yes
+    register: iam_user
+
+  - name: assert that the second user would be created
+    assert:
+      that:
+        - iam_user is changed
+
+  - name: create second test user with password
+    iam_user:
+      name: "{{ test_user3 }}"
+      password: "{{ test_password }}"
+      state: present
+    register: iam_user
+
+  - name: assert that the second user is created
+    assert:
+      that:
+        - iam_user is changed
 
   - name: get info on IAM user(s) on path
     iam_user_info:
-      path: '{{ test_path }}'
-      name: '{{ test_user }}'
+      path: "{{ test_path }}"
+      name: "{{ test_user }}"
     register: iam_user_info
+
   - assert:
       that:
         - iam_user_info.iam_users | length == 1
@@ -104,39 +135,42 @@
         - iam_user_info.iam_users[0].user_name == test_iam_user.user_name
         - iam_user_info.iam_users[0].tags | length == 0
 
-  - name: 'Add Tag'
+  ## Test tags creation / updates
+  - name: "Add Tag"
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
       tags:
         TagA: ValueA
     register: iam_user
+
   - assert:
       that:
-          - iam_user is changed
-          - iam_user.iam_user.user.user_name == test_user
-          - iam_user.iam_user.user.tags | length == 1
-          - '"TagA" in iam_user.iam_user.user.tags'
-          - iam_user.iam_user.user.tags.TagA == "ValueA"
+        - iam_user is changed
+        - iam_user.iam_user.user.user_name == test_user
+        - iam_user.iam_user.user.tags | length == 1
+        - '"TagA" in iam_user.iam_user.user.tags'
+        - iam_user.iam_user.user.tags.TagA == "ValueA"
 
-  - name: 'Add Tag (no change)'
+  - name: "Add Tag (no change)"
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
       tags:
         TagA: ValueA
     register: iam_user
+
   - assert:
       that:
-          - iam_user is not changed
-          - iam_user.iam_user.user.user_name == test_user
-          - iam_user.iam_user.user.tags | length == 1
-          - '"TagA" in iam_user.iam_user.user.tags'
-          - iam_user.iam_user.user.tags.TagA == "ValueA"
+        - iam_user is not changed
+        - iam_user.iam_user.user.user_name == test_user
+        - iam_user.iam_user.user.tags | length == 1
+        - '"TagA" in iam_user.iam_user.user.tags'
+        - iam_user.iam_user.user.tags.TagA == "ValueA"
 
-  - name: 'Extend Tags'
+  - name: "Extend Tags"
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
       purge_tags: no
       tags:
@@ -144,83 +178,114 @@
         "Tag C": "Value C"
         "tag d": "value d"
     register: iam_user
+
   - assert:
       that:
-          - iam_user is changed
-          - iam_user.iam_user.user.user_name == test_user
-          - iam_user.iam_user.user.tags | length == 4
-          - '"TagA" in iam_user.iam_user.user.tags'
-          - '"tag_b" in iam_user.iam_user.user.tags'
-          - '"Tag C" in iam_user.iam_user.user.tags'
-          - '"tag d" in iam_user.iam_user.user.tags'
-          - iam_user.iam_user.user.tags.TagA == "ValueA"
-          - iam_user.iam_user.user.tags.tag_b == "value_b"
-          - iam_user.iam_user.user.tags["Tag C"] == "Value C"
-          - iam_user.iam_user.user.tags["tag d"] == "value d"
+        - iam_user is changed
+        - iam_user.iam_user.user.user_name == test_user
+        - iam_user.iam_user.user.tags | length == 4
+        - '"TagA" in iam_user.iam_user.user.tags'
+        - '"tag_b" in iam_user.iam_user.user.tags'
+        - '"Tag C" in iam_user.iam_user.user.tags'
+        - '"tag d" in iam_user.iam_user.user.tags'
+        - iam_user.iam_user.user.tags.TagA == "ValueA"
+        - iam_user.iam_user.user.tags.tag_b == "value_b"
+        - iam_user.iam_user.user.tags["Tag C"] == "Value C"
+        - iam_user.iam_user.user.tags["tag d"] == "value d"
 
-  - name: 'Create user without Tag (no change)'
+  - name: "Create user without Tag (no change)"
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
     register: iam_user
+
   - assert:
       that:
-          - iam_user is not changed
-          - iam_user.iam_user.user.user_name == test_user
-          - iam_user.iam_user.user.tags | length == 4
+        - iam_user is not changed
+        - iam_user.iam_user.user.user_name == test_user
+        - iam_user.iam_user.user.tags | length == 4
 
-  - name: 'Remove all Tags (check mode)'
+  - name: "Remove all Tags (check mode)"
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
       tags: {}
     check_mode: yes
     register: iam_user
+
   - assert:
       that:
-          - iam_user is changed
+        - iam_user is changed
 
-  - name: 'Remove 3 Tags'
+  - name: "Remove 3 Tags"
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
       tags:
         TagA: ValueA
     register: iam_user
+
   - assert:
       that:
-          - iam_user is changed
-          - iam_user.iam_user.user.user_name == test_user
-          - iam_user.iam_user.user.tags | length == 1
-          - '"TagA" in iam_user.iam_user.user.tags'
-          - iam_user.iam_user.user.tags.TagA == "ValueA"
+        - iam_user is changed
+        - iam_user.iam_user.user.user_name == test_user
+        - iam_user.iam_user.user.tags | length == 1
+        - '"TagA" in iam_user.iam_user.user.tags'
+        - iam_user.iam_user.user.tags.TagA == "ValueA"
 
-  - name: 'Change Tag'
+  - name: "Change Tag"
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
       tags:
         TagA: AnotherValueA
     register: iam_user
+
   - assert:
       that:
-          - iam_user is changed
-          - iam_user.iam_user.user.user_name == test_user
-          - iam_user.iam_user.user.tags | length == 1
-          - '"TagA" in iam_user.iam_user.user.tags'
-          - iam_user.iam_user.user.tags.TagA == "AnotherValueA"
-  
-  - name: 'Remove All Tags'
+        - iam_user is changed
+        - iam_user.iam_user.user.user_name == test_user
+        - iam_user.iam_user.user.tags | length == 1
+        - '"TagA" in iam_user.iam_user.user.tags'
+        - iam_user.iam_user.user.tags.TagA == "AnotherValueA"
+
+  - name: "Remove All Tags"
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
       tags: {}
     register: iam_user
+
   - assert:
       that:
-          - iam_user is changed
-          - iam_user.iam_user.user.user_name == test_user
-          - iam_user.iam_user.user.tags | length == 0
+        - iam_user is changed
+        - iam_user.iam_user.user.user_name == test_user
+        - iam_user.iam_user.user.tags | length == 0
+
+  ## Test user password update
+  - name: test update IAM password with on_create only
+    iam_user:
+      name: "{{ test_user3 }}"
+      password: "{{ test_new_password }}"
+      update_password: "on_create"
+      state: present
+    register: iam_user_update
+
+  - assert:
+      that:
+        - iam_user_update is not changed
+
+  - name: update IAM password
+    iam_user:
+      name: "{{ test_user3 }}"
+      password: "{{ test_new_password }}"
+      state: present
+    register: iam_user_update
+
+  - assert:
+      that:
+        - iam_user_update is changed
+        - iam_user_update.iam_user.user.user_name == test_user3
 
   # ===========================================
   # Test Managed Policy management
@@ -232,7 +297,7 @@
   - name: attach managed policy to user (check mode)
     check_mode: yes
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
       managed_policy:
         - arn:aws:iam::aws:policy/AWSDenyAll
@@ -245,7 +310,7 @@
 
   - name: attach managed policy to user
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
       managed_policy:
         - arn:aws:iam::aws:policy/AWSDenyAll
@@ -258,7 +323,7 @@
 
   - name: ensure managed policy is attached to user (no change)
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
       managed_policy:
         - arn:aws:iam::aws:policy/AWSDenyAll
@@ -272,7 +337,7 @@
   - name: attach different managed policy to user (check mode)
     check_mode: yes
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
       managed_policy:
         - arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess
@@ -286,7 +351,7 @@
 
   - name: attach different managed policy to user
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
       managed_policy:
         - arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess
@@ -300,7 +365,7 @@
 
   - name: Check first policy wasn't purged
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
       managed_policy:
         - arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess
@@ -315,7 +380,7 @@
 
   - name: Check that managed policy order doesn't matter
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
       managed_policy:
         - arn:aws:iam::aws:policy/AWSDenyAll
@@ -330,7 +395,7 @@
 
   - name: Check that policy doesn't require full ARN path
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
       managed_policy:
         - AWSDenyAll
@@ -346,7 +411,7 @@
   - name: Remove one of the managed policies - with purge (check mode)
     check_mode: yes
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
       managed_policy:
         - arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess
@@ -360,7 +425,7 @@
 
   - name: Remove one of the managed policies - with purge
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
       managed_policy:
         - arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess
@@ -374,7 +439,7 @@
 
   - name: Check we only have the one policy attached
     iam_user:
-      name: '{{ test_user }}'
+      name: "{{ test_user }}"
       state: present
       managed_policy:
         - arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess
@@ -388,9 +453,9 @@
 
   - name: ensure group exists
     iam_group:
-      name: '{{ test_group }}'
+      name: "{{ test_group }}"
       users:
-        - '{{ test_user }}'
+        - "{{ test_user }}"
       state: present
     register: iam_group
 
@@ -401,8 +466,8 @@
 
   - name: get info on IAM user(s) in group
     iam_user_info:
-      group: '{{ test_group }}'
-      name: '{{ test_user }}'
+      group: "{{ test_group }}"
+      name: "{{ test_user }}"
     register: iam_user_info
 
   - assert:
@@ -417,7 +482,7 @@
 
   - name: remove user from group
     iam_group:
-      name: '{{ test_group }}'
+      name: "{{ test_group }}"
       purge_users: True
       users: []
       state: present
@@ -425,8 +490,8 @@
 
   - name: get info on IAM user(s) after removing from group
     iam_user_info:
-      group: '{{ test_group }}'
-      name: '{{ test_user }}'
+      group: "{{ test_group }}"
+      name: "{{ test_user }}"
     register: iam_user_info
 
   - name: assert empty list of users for group are returned
@@ -436,9 +501,9 @@
 
   - name: ensure ansible users exist
     iam_user:
-      name: '{{ item }}'
+      name: "{{ item }}"
       state: present
-    with_items: '{{ test_users }}'
+    with_items: "{{ test_users }}"
 
   - name: get info on multiple IAM user(s)
     iam_user_info:
@@ -449,15 +514,15 @@
 
   - name: ensure multiple user group exists with single user
     iam_group:
-      name: '{{ test_group }}'
+      name: "{{ test_group }}"
       users:
-        - '{{ test_user }}'
+        - "{{ test_user }}"
       state: present
     register: iam_group
 
   - name: get info on IAM user(s) in group
     iam_user_info:
-      group: '{{ test_group }}'
+      group: "{{ test_group }}"
     register: iam_user_info
   - assert:
       that:
@@ -465,14 +530,14 @@
 
   - name: add all users to group
     iam_group:
-      name: '{{ test_group }}'
-      users: '{{ test_users }}'
+      name: "{{ test_group }}"
+      users: "{{ test_users }}"
       state: present
     register: iam_group
 
   - name: get info on multiple IAM user(s) in group
     iam_user_info:
-      group: '{{ test_group }}'
+      group: "{{ test_group }}"
     register: iam_user_info
   - assert:
       that:
@@ -480,7 +545,7 @@
 
   - name: purge users from group
     iam_group:
-      name: '{{ test_group }}'
+      name: "{{ test_group }}"
       purge_users: True
       users: []
       state: present
@@ -488,7 +553,7 @@
 
   - name: ensure info is empty for empty group
     iam_user_info:
-      group: '{{ test_group }}'
+      group: "{{ test_group }}"
     register: iam_user_info
   - assert:
       that:
@@ -496,7 +561,7 @@
 
   - name: get info on IAM user(s) after removing from group
     iam_user_info:
-      group: '{{ test_group }}'
+      group: "{{ test_group }}"
     register: iam_user_info
 
   - name: assert empty list of users for group are returned
@@ -506,7 +571,7 @@
 
   - name: remove group
     iam_group:
-      name: '{{ test_group }}'
+      name: "{{ test_group }}"
       state: absent
     register: iam_group
 
@@ -535,7 +600,7 @@
 
   - name: get info on IAM user(s) after deleting
     iam_user_info:
-      group: '{{ test_user }}'
+      group: "{{ test_user }}"
     ignore_errors: yes
     register: iam_user_info
 
@@ -557,16 +622,28 @@
       that:
         - not iam_user.changed
 
-  always:
-  - name: remove group
-    iam_group:
-      name: '{{ test_group }}'
-      state: absent
-    ignore_errors: yes
-
-  - name: remove ansible users
+  ## Test user password removal
+  - name: Delete IAM password
     iam_user:
-      name: '{{ item }}'
-      state: absent
-    with_items: '{{ test_users }}'
-    ignore_errors: yes
+      name: "{{ test_user3 }}"
+      remove_password: yes
+      state: present
+    register: iam_user_password_removal
+
+  - assert:
+      that:
+        - iam_user_password_removal is changed
+
+  always:
+    - name: remove group
+      iam_group:
+        name: "{{ test_group }}"
+        state: absent
+      ignore_errors: yes
+
+    - name: remove ansible users
+      iam_user:
+        name: "{{ item }}"
+        state: absent
+      with_items: "{{ test_users }}"
+      ignore_errors: yes
