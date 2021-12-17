@@ -102,12 +102,13 @@ options:
   overwrite:
     description:
       - Force overwrite either locally on the filesystem or remotely with the object/key. Used with C(PUT) and C(GET) operations.
-      - Must be a Boolean, C(always), C(never) or C(different).
+      - Must be a Boolean, C(always), C(never), C(different) or C(latest).
       - C(true) is the same as C(always).
       - C(false) is equal to C(never).
       - When this is set to C(different) the MD5 sum of the local file is compared with the 'ETag' of the object/key in S3.
         The ETag may or may not be an MD5 digest of the object data. See the ETag response header here
         U(https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html).
+      - (C(GET) mode only): When this is set to C(latest) the last modified timestamp of local file is compared with the 'LastModified' of the object/key in S3.
     default: 'always'
     aliases: ['force']
     type: str
@@ -419,6 +420,21 @@ def get_etag(s3, bucket, obj, version=None):
     if not key_check:
         return None
     return key_check['ETag']
+
+
+def get_s3_last_modified_timestamp(s3, bucket, obj, version=version):
+    s3_head_object = s3.head_object(Bucket=bucket, Key=obj, VersionId=version)
+    return s3_head_object['LastModified'].timestamp()
+
+
+def is_local_object_latest(module, s3, bucket, obj, version=None, local_file=None, content=None):
+    s3_last_modified = get_s3_last_modified_timestamp(s3, bucket, obj, version=version)
+    if os.path.exists(local_file) is False:
+        return False
+    else:
+        local_last_modified = os.path.getmtime(local_file)
+
+    return s3_last_modified <= local_last_modified
 
 
 def bucket_check(module, s3, bucket, validate=True):
@@ -940,7 +956,7 @@ def main():
 
     validate_bucket_name(module, bucket)
 
-    if overwrite not in ['always', 'never', 'different']:
+    if overwrite not in ['always', 'never', 'different', 'latest']:
         if module.boolean(overwrite):
             overwrite = 'always'
         else:
@@ -1014,8 +1030,10 @@ def main():
         if dest and path_check(dest) and overwrite != 'always':
             if overwrite == 'never':
                 module.exit_json(msg="Local object already exists and overwrite is disabled.", changed=False)
-            if etag_compare(module, s3, bucket, obj, version=version, local_file=dest):
+            if overwrite == 'different' and etag_compare(module, s3, bucket, obj, version=version, local_file=dest):
                 module.exit_json(msg="Local and remote object are identical, ignoring. Use overwrite=always parameter to force.", changed=False)
+            if overwrite == 'latest' and is_local_object_latest(module, s3, bucket, obj, version=version, lodal_file=dest):
+                module.exit_json(msg="Local object is latest, ignoreing. Use overwrite=always parameter to force.", changed=False)
 
         try:
             download_s3file(module, s3, bucket, obj, dest, retries, version=version)
