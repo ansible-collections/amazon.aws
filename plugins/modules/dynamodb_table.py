@@ -678,12 +678,9 @@ def _generate_index(index, include_throughput=True):
         projection['NonKeyAttributes'] = non_key_attributes
     else:
         if non_key_attributes:
-            module.deprecate(
+            module.fail_json(
                 "DynamoDB does not support specifying non-key-attributes ('includes') for "
-                "indexes of type 'all'.  Attempts to set this attributes are currently "
-                "ignored, but in future will result in a failure.  "
-                "Index name: {0}".format(index['name']),
-                version='3.0.0', collection_name='community.aws')
+                "indexes of type 'all'. Index name: {0}".format(index['name']))
 
     idx = dict(
         IndexName=index['name'],
@@ -857,11 +854,7 @@ def _update_tags(current_table):
 def update_table(current_table):
     primary_index_changes = _primary_index_changes(current_table)
     if primary_index_changes:
-        module.deprecate("DynamoDB does not support updating the Primary keys on a table.  "
-                         "Attempts to change the keys are currently ignored, but in future will "
-                         "result in a failure.  "
-                         "Changed paramters are {0}".format(primary_index_changes),
-                         version='3.0.0', collection_name='community.aws')
+        module.fail_json("DynamoDB does not support updating the Primary keys on a table. Changed paramters are: {0}".format(primary_index_changes))
 
     changed = False
     changed |= _update_table(current_table)

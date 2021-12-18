@@ -1,0 +1,3 @@
+breaking_changes:
+- dynamodb_table - deprecated updates currently ignored for primary keys and global_all indexes will now result in a failure.
+  (https://github.com/ansible-collections/community.aws/pull/837).

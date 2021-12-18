@@ -1,6 +1,7 @@
 ---
 table_name: "{{ resource_prefix }}"
 table_name_on_demand: "{{ resource_prefix }}-pay-per-request"
+table_name_on_demand_complex: "{{ resource_prefix }}-pay-per-request-complex"
 
 table_index: "id"
 table_index_type: "NUMBER"
@@ -22,13 +23,23 @@ indexes:
     type: global_all
     hash_key_name: foo
     range_key_name: bar
-    includes:
-      - another_field
-      - another_field2
     read_capacity: 5
     write_capacity: 5
 
 indexes_pay_per_request:
+  - name: NamedIndex
+    type: global_include
+    hash_key_name: idx
+    range_key_name: create_time
+    includes:
+      - other_field
+      - other_field2
+  - name: AnotherIndex
+    type: global_all
+    hash_key_name: foo
+    range_key_name: bar
+
+indexes_pay_per_request_bad:
   - name: NamedIndex
     type: global_include
     hash_key_name: idx

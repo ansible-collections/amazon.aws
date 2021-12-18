@@ -31,12 +31,29 @@
       - create_table is changed
       - create_table.billing_mode == "PAY_PER_REQUEST"
 
+- name: Create table - pay-per-request - check failure
+  dynamodb_table:
+    state: present
+    name: "{{ table_name_on_demand }}"
+    hash_key_name: "{{ table_index }}"
+    hash_key_type: "{{ table_index_type }}"
+    range_key_name: "{{ range_index }}"
+    range_key_type: "{{ range_index_type }}"
+    billing_mode: PAY_PER_REQUEST
+  ignore_errors: yes
+  register: create_table_bad
+
+- name: Check results - Create table
+  assert:
+    that:
+      - create_table_bad is failed
+
 # ==============================================
 
 - name: Create complex table - check_mode
   dynamodb_table:
     state: present
-    name: "{{ table_name_on_demand }}"
+    name: "{{ table_name_on_demand_complex }}"
     hash_key_name: "{{ table_index }}"
     hash_key_type: "{{ table_index_type }}"
     range_key_name: "{{ range_index }}"
@@ -53,10 +70,27 @@
       - create_complex_table is successful
       - create_complex_table is changed
 
+- name: Create complex table - check failure on index
+  dynamodb_table:
+    state: present
+    name: "{{ table_name_on_demand_complex }}"
+    hash_key_name: "{{ table_index }}"
+    hash_key_type: "{{ table_index_type }}"
+    billing_mode: PAY_PER_REQUEST
+    tags: "{{ tags_default }}"
+    indexes: "{{ indexes_pay_per_request_bad }}"
+  ignore_errors: yes
+  register: create_complex_table_bad
+
+- name: Check results - Create complex table
+  assert:
+    that:
+      - create_complex_table_bad is failure
+
 - name: Create complex table
   dynamodb_table:
     state: present
-    name: "{{ table_name_on_demand }}"
+    name: "{{ table_name_on_demand_complex }}"
     hash_key_name: "{{ table_index }}"
     hash_key_type: "{{ table_index_type }}"
     billing_mode: PAY_PER_REQUEST
@@ -82,13 +116,13 @@
       - create_complex_table.hash_key_name == table_index
       - create_complex_table.hash_key_type == table_index_type
       - create_complex_table.indexes | length == 2
-      - create_complex_table.table_name == table_name_on_demand
+      - create_complex_table.table_name == table_name_on_demand_complex
       - create_complex_table.tags == tags_default
 
 - name: Update complex table billing_mode
   dynamodb_table:
     state: present
-    name: "{{ table_name_on_demand }}"
+    name: "{{ table_name_on_demand_complex }}"
     hash_key_name: "{{ table_index }}"
     hash_key_type: "{{ table_index_type }}"
     billing_mode: PROVISIONED
@@ -105,10 +139,3 @@
       - convert_complex_table is changed
       - '"billing_mode" in convert_complex_table'
       - convert_complex_table.billing_mode == "PROVISIONED"
-
-- name: Delete table
-  dynamodb_table:
-    state: absent
-    name: "{{ table_name_on_demand }}"
-    wait: false
-  register: delete_table
