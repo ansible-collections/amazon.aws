@@ -225,9 +225,19 @@ class LookupModule(LookupBase):
                             secrets.update({secret['Name']: self.get_secret_value(secret['Name'], client,
                                                                                   on_missing=missing,
                                                                                   on_denied=denied)})
+
+                    # Manual pagination
+                    while 'NextToken' in response:
+                        response = client.list_secrets(Filters=[{'Key': 'name', 'Values': [term]}], NextToken=response['NextToken'])
+
+                        if 'SecretList' in response:
+                            for secret in response['SecretList']:
+                                secrets.update({secret['Name']: self.get_secret_value(secret['Name'], client,
+                                                                                    on_missing=missing,
+                                                                                    on_denied=denied)})
+                    secrets = [secrets]
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                    raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
-            secrets = [secrets]
+                        raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
         else:
             secrets = []
             for term in terms:
