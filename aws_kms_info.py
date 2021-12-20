@@ -470,10 +470,9 @@ def main():
     # We originally returned "keys"
     if module.params['keys_attr']:
         module.deprecate("Returning results in the 'keys' attribute conflicts with the builtin keys() method on "
-                         "dicts and as such is deprecated.  Please use the kms_keys attribute.  This warning can be "
+                         "dicts and as such is deprecated and is now ignored. Please use the kms_keys attribute. This warning can be "
                          "silenced by setting keys_attr to False.",
                          version='3.0.0', collection_name='community.aws')
-        ret_params.update(dict(keys=filtered_keys))
     module.exit_json(**ret_params)
 
 
