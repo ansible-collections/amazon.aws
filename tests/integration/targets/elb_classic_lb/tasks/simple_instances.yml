@@ -18,7 +18,8 @@
 - name: Wait for instance a
   ec2_instance:
     name: "ansible-test-{{ tiny_prefix }}-elb-a"
-    instance_id: "{{ instance_a }}"
+    instance_ids:
+      - "{{ instance_a }}"
     vpc_subnet_id: "{{ subnet_a }}"
     instance_type: t2.micro
     wait: true
@@ -28,7 +29,8 @@
 - name: Wait for instance b
   ec2_instance:
     name: "ansible-test-{{ tiny_prefix }}-elb-b"
-    instance_id: "{{ instance_b }}"
+    instance_ids:
+      - "{{ instance_b }}"
     vpc_subnet_id: "{{ subnet_b }}"
     instance_type: t2.micro
     wait: true
