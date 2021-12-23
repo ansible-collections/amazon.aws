@@ -108,7 +108,7 @@ options:
       - When this is set to C(different) the MD5 sum of the local file is compared with the 'ETag' of the object/key in S3.
         The ETag may or may not be an MD5 digest of the object data. See the ETag response header here
         U(https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html).
-      - (C(GET) mode only): When this is set to C(latest) the last modified timestamp of local file is compared with the 'LastModified' of the object/key in S3.
+      - (C(GET) mode only) When this is set to C(latest) the last modified timestamp of local file is compared with the 'LastModified' of the object/key in S3.
     default: 'always'
     aliases: ['force']
     type: str
