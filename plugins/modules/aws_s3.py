@@ -428,7 +428,7 @@ def get_s3_last_modified_timestamp(s3, bucket, obj, version=version):
 
 
 def is_local_object_latest(module, s3, bucket, obj, version=None, local_file=None, content=None):
-    s3_last_modified = get_s3_last_modified_timestamp(s3, bucket, obj, version=version)
+    s3_last_modified = get_s3_last_modified_timestamp(s3, bucket, obj, version)
     if os.path.exists(local_file) is False:
         return False
     else:
