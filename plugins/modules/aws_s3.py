@@ -422,7 +422,7 @@ def get_etag(s3, bucket, obj, version=None):
     return key_check['ETag']
 
 
-def get_s3_last_modified_timestamp(s3, bucket, obj, version=version):
+def get_s3_last_modified_timestamp(s3, bucket, obj, version=None):
     s3_head_object = s3.head_object(Bucket=bucket, Key=obj, VersionId=version)
     return s3_head_object['LastModified'].timestamp()
 
