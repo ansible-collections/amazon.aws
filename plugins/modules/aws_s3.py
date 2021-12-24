@@ -1032,7 +1032,7 @@ def main():
                 module.exit_json(msg="Local object already exists and overwrite is disabled.", changed=False)
             if overwrite == 'different' and etag_compare(module, s3, bucket, obj, version=version, local_file=dest):
                 module.exit_json(msg="Local and remote object are identical, ignoring. Use overwrite=always parameter to force.", changed=False)
-            if overwrite == 'latest' and is_local_object_latest(module, s3, bucket, obj, version=version, lodal_file=dest):
+            if overwrite == 'latest' and is_local_object_latest(module, s3, bucket, obj, version=version, local_file=dest):
                 module.exit_json(msg="Local object is latest, ignoreing. Use overwrite=always parameter to force.", changed=False)
 
         try:
