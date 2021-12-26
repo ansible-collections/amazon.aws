@@ -455,6 +455,7 @@ def create_volume(module, ec2_conn, zone):
     snapshot = module.params.get('snapshot')
     throughput = module.params.get('throughput')
     multi_attach = module.params.get('multi_attach')
+    outpost_arn = module.params.get('outpost_arn')
 
     volume = get_volume(module, ec2_conn)
 
@@ -487,6 +488,9 @@ def create_volume(module, ec2_conn, zone):
                 additional_params['Throughput'] = int(throughput)
             if multi_attach:
                 additional_params['MultiAttachEnabled'] = True
+
+            if outpost_arn:
+                additional_params['OutpostArn'] = outpost_arn
 
             create_vol_response = ec2_conn.create_volume(
                 aws_retry=True,
@@ -700,6 +704,7 @@ def main():
         tags=dict(default={}, type='dict'),
         modify_volume=dict(default=False, type='bool'),
         throughput=dict(type='int'),
+        outpost_arn=dict(type='str'),
         purge_tags=dict(type='bool', default=False),
         multi_attach=dict(type='bool'),
     )
