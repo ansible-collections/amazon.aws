@@ -111,6 +111,11 @@ options:
       - This parameter is supported with io1 and io2 volumes only.
     type: bool
     version_added: 2.0.0
+  outpost_arn:
+    description:
+      - The Amazon Resource Name (ARN) of the Outpost.
+      - If set to C(yes), allows to create volume in an Outpost.
+    type: str
 author: "Lester Wade (@lwade)"
 extends_documentation_fragment:
 - amazon.aws.aws
