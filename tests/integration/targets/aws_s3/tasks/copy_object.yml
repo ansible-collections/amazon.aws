@@ -112,6 +112,22 @@
       that:
         - copy_result is not changed
 
+  - name: Copy from unexisting key should not succeed
+    aws_s3:
+      bucket: "{{ copy_bucket.dst }}"
+      mode: copy
+      object: missing_key.txt
+      copy_src:
+        bucket: "{{ copy_bucket.src }}"
+        object: this_key_does_not_exist.txt
+    register: result
+
+  - name: Validate result when copying missing key
+    assert:
+      that:
+        - result is not changed
+        - 'result.msg == "Key this_key_does_not_exist.txt does not exist in bucket {{ copy_bucket.src }}."'
+
   always:
     - include_tasks: delete_bucket.yml
       with_items:
