@@ -130,7 +130,7 @@ def handle_errors(module, exception, method_name, parameters):
             changed = False
         else:
             module.fail_json_aws(exception, msg='Unable to {0}'.format(get_rds_method_attribute(method_name, module).operation_description))
-    elif method_name == 'create_db_instance' and exception.response['Error']['Code'] == 'InvalidParameterValue':
+    elif method_name == 'create_db_instance' and error_code == 'InvalidParameterValue':
         accepted_engines = [
             'aurora', 'aurora-mysql', 'aurora-postgresql', 'mariadb', 'mysql', 'oracle-ee', 'oracle-se',
             'oracle-se1', 'oracle-se2', 'postgres', 'sqlserver-ee', 'sqlserver-ex', 'sqlserver-se', 'sqlserver-web'
@@ -139,7 +139,7 @@ def handle_errors(module, exception, method_name, parameters):
             module.fail_json_aws(exception, msg='DB engine {0} should be one of {1}'.format(parameters.get('Engine'), accepted_engines))
         else:
             module.fail_json_aws(exception, msg='Unable to {0}'.format(get_rds_method_attribute(method_name, module).operation_description))
-    elif method_name == 'create_db_cluster' and exception.response['Error']['Code'] == 'InvalidParameterValue':
+    elif method_name == 'create_db_cluster' and error_code == 'InvalidParameterValue':
         accepted_engines = [
             'aurora', 'aurora-mysql', 'aurora-postgresql'
         ]
@@ -157,7 +157,7 @@ def call_method(client, module, method_name, parameters):
     result = {}
     changed = True
     if not module.check_mode:
-        wait = module.params['wait']
+        wait = module.params.get('wait')
         # TODO: stabilize by adding get_rds_method_attribute(method_name).extra_retry_codes
         method = getattr(client, method_name)
         try:

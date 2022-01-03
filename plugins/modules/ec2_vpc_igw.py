@@ -227,8 +227,6 @@ class AnsibleEc2Igw():
             resource_type='internet-gateway', tags=tags, purge_tags=purge_tags,
             retry_codes='InvalidInternetGatewayID.NotFound'
         )
-
-        # Update igw
         igw = self.get_matching_igw(vpc_id)
         igw_info = self.get_igw_info(igw, vpc_id)
         self._results.update(igw_info)
