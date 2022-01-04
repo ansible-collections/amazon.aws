@@ -1,3 +1,6 @@
 bugfixes:
   - ec2_instance - Add a condition to handle default ```instance_type``` value
     for fix breaking on instance creation with launch template (https://github.com/ansible-collections/amazon.aws/pull/587).
+deprecated_features:
+  - ec2_instance - The default value for ```instance_type``` has been deprecated,
+    in the future release you must set an instance_type or a launch_template".
