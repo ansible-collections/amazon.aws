@@ -492,7 +492,7 @@ def create_volume(module, ec2_conn, zone):
 
             if multi_attach:
                 additional_params['MultiAttachEnabled'] = True
-            
+
             if name:
                 tags['Name'] = name
 
