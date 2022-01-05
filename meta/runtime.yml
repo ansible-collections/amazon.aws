@@ -124,7 +124,6 @@ action_groups:
   - elb_target_group_info
   - elb_target_info
   - execute_lambda
-  - iam
   - iam_access_key
   - iam_access_key_info
   - iam_cert
@@ -148,7 +147,6 @@ action_groups:
   - lambda_info
   - lambda_policy
   - lightsail
-  - rds
   - rds_instance
   - rds_instance_info
   - rds_instance_snapshot
