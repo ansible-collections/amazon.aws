@@ -77,8 +77,8 @@
     - name: create EKS cluster
       aws_eks_cluster:
         name: "{{ eks_cluster_name }}"
-        security_groups: "{{ eks_security_groups | community.general.json_query('[].name') }}"
-        subnets: "{{ setup_subnets.results | community.general.json_query('[].subnet.id') }}"
+        security_groups: "{{ eks_security_groups | map(attribute='name') }}"
+        subnets: "{{ setup_subnets.results | map(attribute='subnet.id') }}"
         role_arn: "{{ iam_role.arn }}"
       register: eks_create
 
@@ -91,8 +91,8 @@
     - name: create EKS cluster with same details but wait for it to become active
       aws_eks_cluster:
         name: "{{ eks_cluster_name }}"
-        security_groups: "{{ eks_security_groups | community.general.json_query('[].name') }}"
-        subnets: "{{ setup_subnets.results | community.general.json_query('[].subnet.id') }}"
+        security_groups: "{{ eks_security_groups | map(attribute='name') }}"
+        subnets: "{{ setup_subnets.results | map(attribute='subnet.id') }}"
         role_arn: "{{ iam_role.arn }}"
         wait: yes
       register: eks_create
@@ -111,8 +111,8 @@
     - name: create EKS cluster with same details but using SG ids
       aws_eks_cluster:
         name: "{{ eks_cluster_name }}"
-        security_groups: "{{ setup_security_groups.results | community.general.json_query('[].group_id') }}"
-        subnets: "{{ setup_subnets.results | community.general.json_query('[].subnet.id') }}"
+        security_groups: "{{ setup_security_groups.results | map(attribute='group_id') }}"
+        subnets: "{{ setup_subnets.results | map(attribute='subnet.id') }}"
         role_arn: "{{ iam_role.arn }}"
       register: eks_create
 
@@ -137,8 +137,8 @@
     - name: create EKS cluster with same details but wait for it to become active
       aws_eks_cluster:
         name: "{{ eks_cluster_name }}"
-        security_groups: "{{ eks_security_groups | community.general.json_query('[].name') }}"
-        subnets: "{{ setup_subnets.results | community.general.json_query('[].subnet.id') }}"
+        security_groups: "{{ eks_security_groups | map(attribute='name') }}"
+        subnets: "{{ setup_subnets.results | map(attribute='subnet.id') }}"
         role_arn: "{{ iam_role.arn }}"
         wait: yes
       register: eks_create
@@ -160,6 +160,28 @@
         that:
           - eks_delete is changed
 
+    - name: create EKS cluster with short name
+      aws_eks_cluster:
+        name: "{{ eks_cluster_short_name }}"
+        security_groups: "{{ eks_security_groups | map(attribute='name') }}"
+        subnets: "{{ setup_subnets.results | map(attribute='subnet.id') }}"
+        role_arn: "{{ iam_role.arn }}"
+      register: eks_create
+
+    - name: check that EKS cluster was created with short name
+      assert:
+        that:
+          - eks_create is changed
+          - eks_create.name == eks_cluster_short_name
+          - eks_create is not failed
+
+    - name: remove EKS cluster with short name
+      aws_eks_cluster:
+        name: "{{ eks_cluster_short_name }}"
+        state: absent
+        wait: yes
+      register: eks_delete
+
   always:
     - name: Announce teardown start
       debug:
@@ -168,6 +190,14 @@
     - name: remove EKS cluster
       aws_eks_cluster:
         name: "{{ eks_cluster_name }}"
+        state: absent
+        wait: yes
+      register: eks_delete
+      ignore_errors: yes
+
+    - name: remove EKS cluster
+      aws_eks_cluster:
+        name: "{{ eks_cluster_short_name }}"
         state: absent
         wait: yes
       register: eks_delete

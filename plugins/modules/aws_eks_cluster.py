@@ -204,7 +204,7 @@ def ensure_present(client, module):
                       resourcesVpcConfig=dict(
                           subnetIds=subnets,
                           securityGroupIds=groups),
-                      clientRequestToken='ansible-create-%s' % name)
+                      )
         if module.params['version']:
             params['version'] = module.params['version']
         cluster = client.create_cluster(**params)['cluster']

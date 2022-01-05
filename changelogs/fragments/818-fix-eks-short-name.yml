@@ -1,0 +1,2 @@
+bugfixes:
+- aws_eks - Fix EKS cluster creation with short names (https://github.com/ansible-collections/community.aws/pull/818).
