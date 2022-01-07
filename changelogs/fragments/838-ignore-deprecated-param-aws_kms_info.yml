@@ -1,2 +1,2 @@
-breaking_changes:
-  - aws_kms_info - Deprecated ``keys_attr`` field is now ignored (https://github.com/ansible-collections/community.aws/pull/838).
+deprecated_features:
+  - aws_kms_info - Deprecated ``keys_attr`` field is now ignored and will be removed in version 4.0.0 (https://github.com/ansible-collections/community.aws/pull/838).
