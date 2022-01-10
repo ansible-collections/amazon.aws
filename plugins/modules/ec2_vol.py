@@ -114,8 +114,9 @@ options:
   outpost_arn:
     description:
       - The Amazon Resource Name (ARN) of the Outpost.
-      - If set to C(yes), allows to create volume in an Outpost.
+      - If set, allows to create volume in an Outpost.
     type: str
+    version_added: 3.1.0
 author: "Lester Wade (@lwade)"
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -267,6 +268,7 @@ from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.ec2 import describe_ec2_tags
 from ..module_utils.ec2 import ensure_ec2_tags
+from ..module_utils.ec2 import is_outposts_arn
 from ..module_utils.ec2 import AWSRetry
 from ..module_utils.core import is_boto3_error_code
 
@@ -495,7 +497,10 @@ def create_volume(module, ec2_conn, zone):
                 additional_params['MultiAttachEnabled'] = True
 
             if outpost_arn:
-                additional_params['OutpostArn'] = outpost_arn
+                if is_outposts_arn(outpost_arn):
+                    additional_params['OutpostArn'] = outpost_arn
+                else:
+                    module.fail_json('OutpostArn does not match the pattern specified in API specifications.')
 
             create_vol_response = ec2_conn.create_volume(
                 aws_retry=True,
