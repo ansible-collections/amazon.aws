@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ec2_vpc_igw
 version_added: 1.0.0
@@ -43,7 +43,7 @@ extends_documentation_fragment:
 - amazon.aws.ec2
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Ensure that the VPC has an Internet Gateway.
@@ -70,7 +70,7 @@ EXAMPLES = '''
   register: vpc_igw_delete
 '''
 
-RETURN = '''
+RETURN = r'''
 changed:
   description: If any changes have been made to the Internet Gateway.
   type: bool
