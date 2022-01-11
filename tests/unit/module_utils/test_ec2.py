@@ -14,6 +14,7 @@ from parametrize import parametrize
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import map_complex_type
 
+
 class Ec2Utils(unittest.TestCase):
 
     # ========================================================
@@ -79,10 +80,10 @@ class Ec2Utils(unittest.TestCase):
         converted_filters_int = ansible_dict_to_boto3_filter_list(filters)
         self.assertEqual(converted_filters_int, filter_list_integer)
 
-
     # ========================================================
     #   ec2.is_outposts_arn
     # ========================================================
+
     @parametrize(
         "outpost_arn, result",
         [
