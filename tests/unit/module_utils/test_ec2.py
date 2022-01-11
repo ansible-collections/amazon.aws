@@ -4,13 +4,15 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import (absolute_import, division, print_function)
+
+from plugins.module_utils.ec2 import is_outposts_arn
 __metaclass__ = type
 
 import unittest
+import pytest
 
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import map_complex_type
-
 
 class Ec2Utils(unittest.TestCase):
 
@@ -76,3 +78,19 @@ class Ec2Utils(unittest.TestCase):
 
         converted_filters_int = ansible_dict_to_boto3_filter_list(filters)
         self.assertEqual(converted_filters_int, filter_list_integer)
+
+
+# ========================================================
+#   ec2.is_outposts_arn
+# ========================================================
+@pytest.mark.parametrize(
+    'outpost_arn, result',
+    [
+        ("arn:aws:outposts:us-east-1:123456789012:outpost/op-1234567890abcdef0", True),
+        ("arn:aws:outposts:us-east-1:123456789012:outpost/op-1234567890abcdef0123", False),
+        ("arn:aws:outposts:us-east-1: 123456789012:outpost/ op-1234567890abcdef0", False)
+    ]
+)
+def test_is_outposts_arn(outpost_arn, result):
+    assert is_outposts_arn(outpost_arn) == result
+
