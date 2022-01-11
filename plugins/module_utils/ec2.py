@@ -743,6 +743,7 @@ def normalize_ec2_vpc_dhcp_config(option_config):
 
     return config_data
 
+
 def is_outposts_arn(input_regex):
     """
     Validates the provided regex pattern of outpost arn as per API specification document.
