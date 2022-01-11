@@ -742,3 +742,14 @@ def normalize_ec2_vpc_dhcp_config(option_config):
                 config_data[option] = [val['Value'] for val in config_item['Values']]
 
     return config_data
+
+def is_outposts_arn(input_regex):
+    """
+    Validates the provided regex pattern of outpost arn as per API specification document.
+    API Specification Document:
+    https://docs.aws.amazon.com/outposts/latest/APIReference/API_Outpost.html
+    """
+    regex_pattern = r'^arn:aws([a-z-]+)?:outposts:[a-z\d-]+:\d{12}:outpost/op-[a-f0-9]{17}$'
+    if not re.match(regex_pattern, input_regex):
+        return False
+    return True
