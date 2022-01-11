@@ -9,7 +9,7 @@ from plugins.module_utils.ec2 import is_outposts_arn
 __metaclass__ = type
 
 import unittest
-import pytest
+from parametrize import parametrize
 
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import map_complex_type
@@ -80,17 +80,18 @@ class Ec2Utils(unittest.TestCase):
         self.assertEqual(converted_filters_int, filter_list_integer)
 
 
-# ========================================================
-#   ec2.is_outposts_arn
-# ========================================================
-@pytest.mark.parametrize(
-    'outpost_arn, result',
-    [
-        ("arn:aws:outposts:us-east-1:123456789012:outpost/op-1234567890abcdef0", True),
-        ("arn:aws:outposts:us-east-1:123456789012:outpost/op-1234567890abcdef0123", False),
-        ("arn:aws:outposts:us-east-1: 123456789012:outpost/ op-1234567890abcdef0", False)
-    ]
-)
-def test_is_outposts_arn(outpost_arn, result):
-    assert is_outposts_arn(outpost_arn) == result
-
+    # ========================================================
+    #   ec2.is_outposts_arn
+    # ========================================================
+    @parametrize(
+        "outpost_arn, result",
+        [
+            ("arn:aws:outposts:us-east-1:123456789012:outpost/op-1234567890abcdef0", True),
+            ("arn:aws:outposts:us-east-1:123456789012:outpost/op-1234567890abcdef0123", False),
+            ("arn:aws:outpost:us-east-1: 123456789012:outpost/ op-1234567890abcdef0", False),
+            ("ars:aws:outposts:us-east-1: 123456789012:outpost/ op-1234567890abcdef0", False),
+            ("arn:was:outposts:us-east-1: 123456789012:outpost/ op-1234567890abcdef0", False),
+        ]
+    )
+    def test_is_outposts_arn(self, outpost_arn, result):
+        self.assertEqual(is_outposts_arn(outpost_arn), result)
