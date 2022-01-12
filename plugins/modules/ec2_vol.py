@@ -264,6 +264,8 @@ from ..module_utils.ec2 import describe_ec2_tags
 from ..module_utils.ec2 import ensure_ec2_tags
 from ..module_utils.ec2 import AWSRetry
 from ..module_utils.core import is_boto3_error_code
+from ..module_utils.tagging import boto3_tag_specifications
+
 
 try:
     import botocore
@@ -455,6 +457,8 @@ def create_volume(module, ec2_conn, zone):
     snapshot = module.params.get('snapshot')
     throughput = module.params.get('throughput')
     multi_attach = module.params.get('multi_attach')
+    tags = module.params.get('tags')
+    name = module.params.get('name')
 
     volume = get_volume(module, ec2_conn)
 
@@ -485,8 +489,15 @@ def create_volume(module, ec2_conn, zone):
 
             if throughput:
                 additional_params['Throughput'] = int(throughput)
+
             if multi_attach:
                 additional_params['MultiAttachEnabled'] = True
+
+            if name:
+                tags['Name'] = name
+
+            if tags:
+                additional_params['TagSpecifications'] = boto3_tag_specifications(tags, types=['volume'])
 
             create_vol_response = ec2_conn.create_volume(
                 aws_retry=True,
@@ -824,14 +835,16 @@ def main():
                         changed=False
                     )
 
+        final_tags = None
+        tags_changed = False
+
         if volume:
             volume, changed = update_volume(module, ec2_conn, volume)
+            if name:
+                tags['Name'] = name
+            final_tags, tags_changed = ensure_tags(module, ec2_conn, volume['volume_id'], 'volume', tags, module.params.get('purge_tags'))
         else:
             volume, changed = create_volume(module, ec2_conn, zone=zone)
-
-        if name:
-            tags['Name'] = name
-        final_tags, tags_changed = ensure_tags(module, ec2_conn, volume['volume_id'], 'volume', tags, module.params.get('purge_tags'))
 
         if detach_vol_flag:
             volume, attach_changed = detach_volume(module, ec2_conn, volume_dict=volume)
