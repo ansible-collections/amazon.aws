@@ -386,6 +386,8 @@ def update_volume(module, ec2_conn, volume):
             if target_iops != original_iops:
                 iops_changed = True
                 req_obj['Iops'] = target_iops
+            else:
+                req_obj['Iops'] = original_iops
         else:
             # If no IOPS value is specified and there was a volume_type update to gp3,
             # the existing value is retained, unless a volume type is modified that supports different values,
