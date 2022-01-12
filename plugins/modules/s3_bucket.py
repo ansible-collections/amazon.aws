@@ -139,6 +139,14 @@ options:
     default: false
     type: bool
     version_added: 2.0.0
+  acl:
+    description:
+      - The canned ACL to apply to the bucket.
+      - If your bucket uses the bucket owner enforced setting for S3 Object Ownership,
+        ACLs are disabled and no longer affect permissions.
+    choices: [ 'private', 'public-read', 'public-read-write', 'authenticated-read' ]
+    type: str
+    version_added: 3.1.0
 
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -239,6 +247,12 @@ EXAMPLES = r'''
     name: mys3bucket
     state: present
     policy: "null"
+
+# This example grants public-read to everyone on bucket using ACL
+- amazon.aws.s3_bucket:
+    name: mys3bucket
+    state: present
+    acl: public-read
 '''
 
 RETURN = r'''
@@ -337,6 +351,7 @@ def create_or_update_bucket(s3_client, module, location):
     delete_public_access = module.params.get("delete_public_access")
     delete_object_ownership = module.params.get("delete_object_ownership")
     object_ownership = module.params.get("object_ownership")
+    acl = module.params.get("acl")
     changed = False
     result = {}
 
@@ -543,7 +558,7 @@ def create_or_update_bucket(s3_client, module, location):
 
     # -- Bucket ownership
     try:
-        bucket_ownership = get_bucket_ownership_cntrl(s3_client, module, name)
+        bucket_ownership = get_bucket_ownership_cntrl(s3_client, name)
         result['object_ownership'] = bucket_ownership
     except KeyError as e:
         # Some non-AWS providers appear to return policy documents that aren't
@@ -569,6 +584,23 @@ def create_or_update_bucket(s3_client, module, location):
                 put_bucket_ownership(s3_client, name, object_ownership)
                 changed = True
                 result['object_ownership'] = object_ownership
+
+    # -- Bucket ACL
+    if acl:
+        try:
+            s3_client.put_bucket_acl(Bucket=name, ACL=acl)
+            changed = True
+        except KeyError as e:
+            # Some non-AWS providers appear to return policy documents that aren't
+            # compatible with AWS, cleanly catch KeyError so users can continue to use
+            # other features.
+            module.fail_json_aws(e, msg="Failed to get bucket acl block")
+        except is_boto3_error_code(['NotImplemented', 'XNotImplemented']) as e:
+            module.fail_json_aws(e, msg="Failed to update bucket ACL")
+        except is_boto3_error_code('AccessDenied') as e:  # pylint: disable=duplicate-except
+            module.fail_json_aws(e, msg="Access denied trying to update bucket ACL")
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+            module.fail_json_aws(e, msg="Failed to get bucket bucket object ownership settings")
 
     # Module exit
     module.exit_json(changed=changed, name=name, **result)
@@ -841,7 +873,7 @@ def get_bucket_public_access(s3_client, bucket_name):
         return {}
 
 
-def get_bucket_ownership_cntrl(s3_client, module, bucket_name):
+def get_bucket_ownership_cntrl(s3_client, bucket_name):
     '''
     Get current bucket public access block
     '''
@@ -972,6 +1004,7 @@ def main():
         delete_public_access=dict(type='bool', default=False),
         object_ownership=dict(type='str', choices=['BucketOwnerPreferred', 'ObjectWriter']),
         delete_object_ownership=dict(type='bool', default=False),
+        acl=dict(type='str', choices=['private', 'public-read', 'public-read-write', 'authenticated-read']),
     )
 
     required_by = dict(

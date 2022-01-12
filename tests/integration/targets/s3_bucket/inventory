@@ -8,6 +8,7 @@ tags
 encryption_kms
 encryption_sse
 public_access
+acl
 
 [all:vars]
 ansible_connection=local
