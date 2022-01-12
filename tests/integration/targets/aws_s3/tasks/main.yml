@@ -274,6 +274,39 @@
         that:
           - result is changed
 
+    - name: test get with overwrite=latest and identical files
+      aws_s3:
+        bucket: "{{ bucket_name }}"
+        mode: get
+        dest: "{{ tmpdir.path }}/download.txt"
+        object: delete.txt
+        overwrite: latest
+      retries: 3
+      delay: 3
+      register: result
+
+    - assert:
+        that:
+          - result is not changed
+
+    - name: modify mtime for local file to past
+      shell: touch -mt 197001010900.00 "{{ tmpdir.path }}/download.txt"
+
+    - name: test get with overwrite=latest and files that mtimes are different
+      aws_s3:
+        bucket: "{{ bucket_name }}"
+        mode: get
+        dest: "{{ tmpdir.path }}/download.txt"
+        object: delete.txt
+        overwrite: latest
+      retries: 3
+      delay: 3
+      register: result
+
+    - assert:
+        that:
+          - result is changed
+
     - name: test geturl of the object
       aws_s3:
         bucket: "{{ bucket_name }}"
