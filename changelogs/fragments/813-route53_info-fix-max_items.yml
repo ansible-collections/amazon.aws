@@ -1,2 +1,0 @@
-minor_changes:
-  - route53_info - `max_items` and `type` are no longer ignored fixing a regression (https://github.com/ansible-collections/community.aws/pull/813).

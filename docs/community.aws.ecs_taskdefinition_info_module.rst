@@ -26,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.15.0
-- botocore >= 1.18.0
+- boto3 >= 1.16.0
+- botocore >= 1.19.0
 
 
 Parameters
@@ -241,7 +241,6 @@ Notes
 
 .. note::
    - For details of the parameters and returns see http://boto3.readthedocs.io/en/latest/reference/services/ecs.html#ECS.Client.describe_task_definition
-   - This module was called ``ecs_taskdefinition_facts`` before Ansible 2.9. The usage did not change.
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
    - When no credentials are explicitly provided the AWS SDK (boto3) that Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``). See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html for more information.
    - Modules based on the original AWS SDK (boto) may read their default configuration from different files. See https://boto.readthedocs.io/en/latest/boto_config_tut.html for more information.

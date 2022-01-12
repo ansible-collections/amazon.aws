@@ -17,8 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- This module can be used to search Amazon EFS file systems.
-- This module was called ``efs_facts`` before Ansible 2.9, returning ``ansible_facts``. Note that the :ref:`community.aws.efs_info <community.aws.efs_info_module>` module no longer returns ``ansible_facts``!
+- This module can be used to search Amazon EFS file systems. Note that the :ref:`community.aws.efs_info <community.aws.efs_info_module>` module no longer returns ``ansible_facts``!
 
 
 
@@ -27,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.15.0
-- botocore >= 1.18.0
+- boto3 >= 1.16.0
+- botocore >= 1.19.0
 
 
 Parameters

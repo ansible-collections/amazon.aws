@@ -18,7 +18,6 @@ Version added: 1.0.0
 Synopsis
 --------
 - Gets information about an AWS CloudFront distribution.
-- This module was called ``cloudfront_facts`` before Ansible 2.9, returning ``ansible_facts``. Note that the :ref:`community.aws.cloudfront_info <community.aws.cloudfront_info_module>` module no longer returns ``ansible_facts``!
 
 
 
@@ -27,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.15.0
-- botocore >= 1.18.0
+- boto3 >= 1.16.0
+- botocore >= 1.19.0
 
 
 Parameters
@@ -597,22 +596,6 @@ Examples
       register: result_website
     - ansible.builtin.debug:
         msg: "{{ result_website['cloudfront']['www.my-website.com'] }}"
-
-    # When the module is called as cloudfront_facts, return values are published
-    # in ansible_facts['cloudfront'][<id>] and can be used as follows.
-    # Note that this is deprecated and will stop working in a release after 2021-12-01.
-    - name: Gather facts
-      community.aws.cloudfront_facts:
-        distribution: true
-        distribution_id: my-cloudfront-distribution-id
-    - ansible.builtin.debug:
-        msg: "{{ ansible_facts['cloudfront']['my-cloudfront-distribution-id'] }}"
-
-    - community.aws.cloudfront_facts:
-        distribution: true
-        domain_name_alias: www.my-website.com
-    - ansible.builtin.debug:
-        msg: "{{ ansible_facts['cloudfront']['www.my-website.com'] }}"
 
     - name: Get all information about an invalidation for a distribution.
       community.aws.cloudfront_info:

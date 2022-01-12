@@ -18,7 +18,6 @@ Version added: 1.0.0
 Synopsis
 --------
 - Gets various details related to Route53 zone, record set or health check details.
-- This module was called ``route53_facts`` before Ansible 2.9. The usage did not change.
 
 
 
@@ -27,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.15.0
-- botocore >= 1.18.0
+- boto3 >= 1.16.0
+- botocore >= 1.19.0
 
 
 Parameters
@@ -278,7 +277,7 @@ Parameters
                     <b>max_items</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">string</span>
+                        <span style="color: purple">integer</span>
                     </div>
                 </td>
                 <td>
@@ -432,6 +431,9 @@ Parameters
                                     <li>SPF</li>
                                     <li>CAA</li>
                                     <li>NS</li>
+                                    <li>NAPTR</li>
+                                    <li>SOA</li>
+                                    <li>DS</li>
                         </ul>
                 </td>
                 <td>

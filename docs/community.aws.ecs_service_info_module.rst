@@ -18,7 +18,6 @@ Version added: 1.0.0
 Synopsis
 --------
 - Lists or describes services in ECS.
-- This module was called ``ecs_service_facts`` before Ansible 2.9, returning ``ansible_facts``. Note that the :ref:`community.aws.ecs_service_info <community.aws.ecs_service_info_module>` module no longer returns ``ansible_facts``!
 
 
 
@@ -27,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.15.0
-- botocore >= 1.18.0
+- boto3 >= 1.16.0
+- botocore >= 1.19.0
 
 
 Parameters

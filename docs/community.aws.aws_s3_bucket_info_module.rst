@@ -18,7 +18,6 @@ Version added: 1.0.0
 Synopsis
 --------
 - Lists S3 buckets and details about those buckets.
-- This module was called ``aws_s3_bucket_facts`` before Ansible 2.9, returning ``ansible_facts``. Note that the :ref:`community.aws.aws_s3_bucket_info <community.aws.aws_s3_bucket_info_module>` module no longer returns ``ansible_facts``!
 
 
 
@@ -27,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.15.0
-- botocore >= 1.18.0
+- boto3 >= 1.16.0
+- botocore >= 1.19.0
 
 
 Parameters
@@ -308,7 +307,6 @@ Parameters
                 </td>
                 <td>
                         <div>Retrive S3 ownership controls.</div>
-                        <div>Access to bucket ownership controls requires botocore&gt;=1.18.11.</div>
                 </td>
             </tr>
             <tr>

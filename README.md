@@ -96,11 +96,11 @@ Name | Description
 [community.aws.ec2_asg](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_asg_module.rst)|Create or delete AWS AutoScaling Groups (ASGs)
 [community.aws.ec2_asg_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_asg_info_module.rst)|Gather information about ec2 Auto Scaling Groups (ASGs) in AWS
 [community.aws.ec2_asg_lifecycle_hook](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_asg_lifecycle_hook_module.rst)|Create, delete or update AWS ASG Lifecycle Hooks.
+[community.aws.ec2_asg_scheduled_action](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_asg_scheduled_action_module.rst)|Create, modify and delete ASG scheduled scaling actions.
 [community.aws.ec2_customer_gateway](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_customer_gateway_module.rst)|Manage an AWS customer gateway
 [community.aws.ec2_customer_gateway_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_customer_gateway_info_module.rst)|Gather information about customer gateways in AWS
 [community.aws.ec2_eip](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_eip_module.rst)|manages EC2 elastic IP (EIP) addresses.
 [community.aws.ec2_eip_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_eip_info_module.rst)|List EC2 EIP details
-[community.aws.ec2_elb_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_elb_info_module.rst)|Gather information about EC2 Elastic Load Balancers in AWS
 [community.aws.ec2_launch_template](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_launch_template_module.rst)|Manage EC2 launch templates
 [community.aws.ec2_lc](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_lc_module.rst)|Create or delete AWS Autoscaling Launch Configurations
 [community.aws.ec2_lc_find](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.ec2_lc_find_module.rst)|Find AWS Autoscaling Launch Configurations
@@ -151,7 +151,6 @@ Name | Description
 [community.aws.elb_target_group_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elb_target_group_info_module.rst)|Gather information about ELB target groups in AWS
 [community.aws.elb_target_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.elb_target_info_module.rst)|Gathers which target groups a target is associated with.
 [community.aws.execute_lambda](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.execute_lambda_module.rst)|Execute an AWS Lambda function
-[community.aws.iam](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.iam_module.rst)|Manage IAM users, groups, roles and keys
 [community.aws.iam_access_key](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.iam_access_key_module.rst)|Manage AWS IAM User access keys
 [community.aws.iam_access_key_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.iam_access_key_info_module.rst)|fetch information about AWS IAM User access keys
 [community.aws.iam_group](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.iam_group_module.rst)|Manage AWS IAM groups
@@ -171,11 +170,9 @@ Name | Description
 [community.aws.lambda](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.lambda_module.rst)|Manage AWS Lambda functions
 [community.aws.lambda_alias](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.lambda_alias_module.rst)|Creates, updates or deletes AWS Lambda function aliases
 [community.aws.lambda_event](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.lambda_event_module.rst)|Creates, updates or deletes AWS Lambda function event mappings
-[community.aws.lambda_facts](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.lambda_facts_module.rst)|Gathers AWS Lambda function details as Ansible facts
 [community.aws.lambda_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.lambda_info_module.rst)|Gathers AWS Lambda function details
 [community.aws.lambda_policy](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.lambda_policy_module.rst)|Creates, updates or deletes AWS Lambda policy statements.
 [community.aws.lightsail](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.lightsail_module.rst)|Manage instances in AWS Lightsail
-[community.aws.rds](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.rds_module.rst)|create, delete, or modify Amazon rds instances, rds snapshots, and related facts
 [community.aws.rds_instance](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.rds_instance_module.rst)|Manage RDS instances
 [community.aws.rds_instance_info](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.rds_instance_info_module.rst)|obtain information about one or more RDS instances
 [community.aws.rds_instance_snapshot](https://github.com/ansible-collections/community.aws/blob/main/docs/community.aws.rds_instance_snapshot_module.rst)|manage Amazon RDS snapshots.

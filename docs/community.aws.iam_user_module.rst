@@ -17,7 +17,8 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Manage AWS IAM users.
+- A module to manage AWS IAM users.
+- The module does not manage groups that users belong to, groups memberships can be managed using `iam_group`.
 
 
 
@@ -26,8 +27,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.15.0
-- botocore >= 1.18.0
+- boto3 >= 1.16.0
+- botocore >= 1.19.0
 
 
 Parameters
@@ -183,6 +184,22 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>password</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.2.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The password to apply to the user.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>profile</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -213,7 +230,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>When <em>purge_policies=true</em> any managed policies not listed in <em>managed_policies</em> will be detatched.</div>
+                        <div>When <em>purge_policies=true</em> any managed policies not listed in <em>managed_policies</em> will be detached.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: purge_policy, purge_managed_policies</div>
                 </td>
             </tr>
@@ -251,6 +268,27 @@ Parameters
                 <td>
                         <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>remove_password</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.2.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Option to delete user login passwords.</div>
+                        <div>This field is mutually exclusive to <em>password</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -310,6 +348,28 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>update_password</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.2.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>always</b>&nbsp;&larr;</div></li>
+                                    <li>on_create</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>When to update user passwords.</div>
+                        <div><em>update_password=always</em> will ensure the password is set to <em>password</em>.</div>
+                        <div><em>update_password=on_create</em> will only set the password for newly created users.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>validate_certs</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -324,6 +384,43 @@ Parameters
                 </td>
                 <td>
                         <div>When set to &quot;no&quot;, SSL certificates will not be validated for communication with the AWS APIs.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>wait</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.2.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
+                        </ul>
+                </td>
+                <td>
+                        <div>When <em>wait=True</em> the module will wait for up to <em>wait_timeout</em> seconds for IAM user creation before returning.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>wait_timeout</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.2.0</div>
+                </td>
+                <td>
+                        <b>Default:</b><br/><div style="color: blue">120</div>
+                </td>
+                <td>
+                        <div>How long (in seconds) to wait for creation / updates to complete.</div>
                 </td>
             </tr>
     </table>
@@ -354,6 +451,12 @@ Examples
     - name: Create a user
       community.aws.iam_user:
         name: testuser1
+        state: present
+
+    - name: Create a user with a password
+      community.aws.iam_user:
+        name: testuser1
+        password: SomeSecurePassword
         state: present
 
     - name: Create a user and attach a managed policy using its ARN

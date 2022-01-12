@@ -1,3 +1,0 @@
-breaking_changes:
-- iam - Removed deprecated ``community.aws.iam`` module. Please use ``community.aws.iam_user``, ``community.aws.iam_access_key`` or ``community.aws.iam_group`` (https://github.com/ansible-collections/community.aws/pull/839).
-- rds - Removed deprecated ``community.aws.rds`` module. Please use ``community.aws.rds_instance`` (https://github.com/ansible-collections/community.aws/pull/839).

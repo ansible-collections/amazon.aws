@@ -1500,3 +1500,122 @@ releases:
       name: rds_option_group_info
       namespace: ''
     release_date: '2021-11-12'
+  3.0.0:
+    changes:
+      breaking_changes:
+      - aws_acm_facts -  Remove deprecated alias ``aws_acm_facts``.  Please use ``aws_acm_info``
+        instead.
+      - aws_kms_facts -  Remove deprecated alias ``aws_kms_facts``.  Please use ``aws_kms_info``
+        instead.
+      - aws_kms_info - Deprecated ``keys_attr`` field is now ignored (https://github.com/ansible-collections/community.aws/pull/838).
+      - aws_region_facts -  Remove deprecated alias ``aws_region_facts``.  Please
+        use ``aws_region_info`` instead.
+      - aws_s3_bucket_facts -  Remove deprecated alias ``aws_s3_bucket_facts``.  Please
+        use ``aws_s3_bucket_info`` instead.
+      - aws_sgw_facts -  Remove deprecated alias ``aws_sgw_facts``.  Please use ``aws_sgw_info``
+        instead.
+      - aws_waf_facts -  Remove deprecated alias ``aws_waf_facts``.  Please use ``aws_waf_info``
+        instead.
+      - cloudfront_facts -  Remove deprecated alias ``cloudfront_facts``.  Please
+        use ``cloudfront_info`` instead.
+      - cloudwatchlogs_log_group_facts -  Remove deprecated alias ``cloudwatchlogs_log_group_facts``.  Please
+        use ``cloudwatchlogs_log_group_info`` instead.
+      - dynamodb_table - deprecated updates currently ignored for primary keys and
+        global_all indexes will now result in a failure. (https://github.com/ansible-collections/community.aws/pull/837).
+      - ec2_asg_facts -  Remove deprecated alias ``ec2_asg_facts``.  Please use ``ec2_asg_info``
+        instead.
+      - ec2_customer_gateway_facts -  Remove deprecated alias ``ec2_customer_gateway_facts``.  Please
+        use ``ec2_customer_gateway_info`` instead.
+      - ec2_eip_facts -  Remove deprecated alias ``ec2_eip_facts``.  Please use ``ec2_eip_info``
+        instead.
+      - ec2_elb_facts -  Remove deprecated alias ``ec2_elb_facts``.  Please use ``ec2_elb_info``
+        instead.
+      - ec2_elb_info -  The ``ec2_elb_info`` module has been removed.  Please use
+        ``the ``elb_classic_lb_info`` module.
+      - ec2_lc_facts -  Remove deprecated alias ``ec2_lc_facts``.  Please use ``ec2_lc_info``
+        instead.
+      - ec2_placement_group_facts -  Remove deprecated alias ``ec2_placement_group_facts``.  Please
+        use ``ec2_placement_group_info`` instead.
+      - ec2_vpc_nacl_facts -  Remove deprecated alias ``ec2_vpc_nacl_facts``.  Please
+        use ``ec2_vpc_nacl_info`` instead.
+      - ec2_vpc_peering_facts -  Remove deprecated alias ``ec2_vpc_peering_facts``.  Please
+        use ``ec2_vpc_peering_info`` instead.
+      - ec2_vpc_route_table_facts -  Remove deprecated alias ``ec2_vpc_route_table_facts``.  Please
+        use ``ec2_vpc_route_table_info`` instead.
+      - ec2_vpc_vgw_facts -  Remove deprecated alias ``ec2_vpc_vgw_facts``.  Please
+        use ``ec2_vpc_vgw_info`` instead.
+      - ec2_vpc_vpn_facts -  Remove deprecated alias ``ec2_vpc_vpn_facts``.  Please
+        use ``ec2_vpc_vpn_info`` instead.
+      - ecs_service_facts -  Remove deprecated alias ``ecs_service_facts``.  Please
+        use ``ecs_service_info`` instead.
+      - ecs_taskdefinition_facts -  Remove deprecated alias ``ecs_taskdefinition_facts``.  Please
+        use ``ecs_taskdefinition_info`` instead.
+      - efs_facts -  Remove deprecated alias ``efs_facts``.  Please use ``efs_info``
+        instead.
+      - elasticache_facts -  Remove deprecated alias ``elasticache_facts``.  Please
+        use ``elasticache_info`` instead.
+      - elb_application_lb_facts -  Remove deprecated alias ``elb_application_lb_facts``.  Please
+        use ``elb_application_lb_info`` instead.
+      - elb_classic_lb_facts -  Remove deprecated alias ``elb_classic_lb_facts``.  Please
+        use ``elb_classic_lb_info`` instead.
+      - elb_target_facts -  Remove deprecated alias ``elb_target_facts``.  Please
+        use ``elb_target_info`` instead.
+      - elb_target_group_facts -  Remove deprecated alias ``elb_target_group_facts``.  Please
+        use ``elb_target_group_info`` instead.
+      - iam - Removed deprecated ``community.aws.iam`` module. Please use ``community.aws.iam_user``,
+        ``community.aws.iam_access_key`` or ``community.aws.iam_group`` (https://github.com/ansible-collections/community.aws/pull/839).
+      - iam_cert_facts -  Remove deprecated alias ``iam_cert_facts``.  Please use
+        ``iam_cert_info`` instead.
+      - iam_mfa_device_facts -  Remove deprecated alias ``iam_mfa_device_facts``.  Please
+        use ``iam_mfa_device_info`` instead.
+      - iam_role_facts -  Remove deprecated alias ``iam_role_facts``.  Please use
+        ``iam_role_info`` instead.
+      - iam_server_certificate_facts -  Remove deprecated alias ``iam_server_certificate_facts``.  Please
+        use ``iam_server_certificate_info`` instead.
+      - lambda_facts -  Remove deprecated module lambda_facts``.  Please use ``lambda_info``
+        instead.
+      - rds - Removed deprecated ``community.aws.rds`` module. Please use ``community.aws.rds_instance``
+        (https://github.com/ansible-collections/community.aws/pull/839).
+      - rds_instance_facts -  Remove deprecated alias ``rds_instance_facts``.  Please
+        use ``rds_instance_info`` instead.
+      - rds_snapshot_facts -  Remove deprecated alias ``rds_snapshot_facts``.  Please
+        use ``rds_snapshot_info`` instead.
+      - redshift_facts -  Remove deprecated alias ``redshift_facts``.  Please use
+        ``redshift_info`` instead.
+      - route53_facts -  Remove deprecated alias ``route53_facts``.  Please use ``route53_info``
+        instead.
+      bugfixes:
+      - aws_eks - Fix EKS cluster creation with short names (https://github.com/ansible-collections/community.aws/pull/818).
+      major_changes:
+      - community.aws collection - The community.aws collection has dropped support
+        for ``botocore<1.19.0`` and ``boto3<1.16.0``. Most modules will continue to
+        work with older versions of the AWS SDK, however compatability with older
+        versions of the SDK is not guaranteed and will not be tested. When using older
+        versions of the SDK a warning will be emitted by Ansible (https://github.com/ansible-collections/community.aws/pull/809).
+      minor_changes:
+      - aws_glue_job - Added ``command_python_version`` parameter (https://github.com/ansible-collections/community.aws/pull/480).
+      - aws_glue_job - Added ``glue_version`` parameter (https://github.com/ansible-collections/community.aws/pull/480).
+      - aws_glue_job - Added support for check mode (https://github.com/ansible-collections/community.aws/pull/480).
+      - aws_glue_job - Added support for tags (https://github.com/ansible-collections/community.aws/pull/480).
+      - aws_ssm connection plugin - add parameters to explicitly specify SSE mode
+        and KMS key id for uploads on the file transfer bucket. (https://github.com/ansible-collections/community.aws/pull/763)
+      - iam_user - add boto3 waiter for iam user creation (https://github.com/ansible-collections/community.aws/pull/822).
+      - iam_user - add password management support bringing parity with `iam` module
+        (https://github.com/ansible-collections/community.aws/pull/822).
+      - route53 - ``ttl``  and ``value`` are not required for deleting records (https://github.com/ansible-collections/community.aws/pull/801).
+      - route53_info - `max_items` and `type` are no longer ignored fixing a regression
+        (https://github.com/ansible-collections/community.aws/pull/813).
+    fragments:
+    - 14532-remove-deprecations.yml
+    - 3.0.0.yml
+    - 480-aws_glue_job-python-glue-version.yml
+    - 763-aws_ssm_connection-add-sse-parameters.yml
+    - 801-fix-delete-without-ttl.yml
+    - 809-botocore-1-19-0.yml
+    - 813-route53_info-fix-max_items.yml
+    - 818-fix-eks-short-name.yml
+    - 822-add-password-support-iam_user.yml
+    - 837-make-deprecated-dynamodb_table-updates-fail.yml.yml
+    - 838-ignore-deprecated-param-aws_kms_info.yml
+    - remove_deprecated_facts.yml
+    release_date: '2022-01-06'

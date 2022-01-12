@@ -81,6 +81,48 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>bucket_sse_kms_key_id</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">-</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.2.0</div>
+                </td>
+                <td>
+                </td>
+                    <td>
+                                <div>var: ansible_aws_ssm_bucket_sse_kms_key_id</div>
+                    </td>
+                <td>
+                        <div>KMS key id to use when encrypting objects using <code>bucket_sse_mode=aws:kms</code>. Ignored otherwise.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>bucket_sse_mode</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">-</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.2.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>AES256</li>
+                                    <li>aws:kms</li>
+                        </ul>
+                </td>
+                    <td>
+                                <div>var: ansible_aws_ssm_bucket_sse_mode</div>
+                    </td>
+                <td>
+                        <div>Server-side encryption mode to use for uploads on the S3 bucket used for file transfer.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>instance_id</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -328,6 +370,20 @@ Examples
             state: directory
     # Execution:  ansible-playbook win_file.yaml -i aws_ec2.yml
     # The playbook tasks will get executed on the instance ids returned from the dynamic inventory plugin using ssm connection.
+
+    # Install a Nginx Package on Linux Instance; with specific SSE for file transfer
+    - name: Install a Nginx Package
+      vars:
+        ansible_connection: aws_ssm
+        ansible_aws_ssm_bucket_name: nameofthebucket
+        ansible_aws_ssm_region: us-west-2
+        ansible_aws_ssm_bucket_sse_mode: 'aws:kms'
+        ansible_aws_ssm_bucket_sse_kms_key_id: alias/kms-key-alias
+      tasks:
+        - name: Install a Nginx Package
+          yum:
+            name: nginx
+            state: present
 
 
 

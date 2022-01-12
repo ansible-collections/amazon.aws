@@ -26,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.15.0
-- botocore >= 1.18.0
+- boto3 >= 1.16.0
+- botocore >= 1.19.0
 
 
 Parameters
@@ -140,6 +140,23 @@ Parameters
                 </td>
                 <td>
                         <div>The name of the job command. This must be &#x27;glueetl&#x27;.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>command_python_version</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.2.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Python version being used to execute a Python shell job.</div>
+                        <div>AWS currently supports <code>&#x27;2&#x27;</code> or <code>&#x27;3&#x27;</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -337,6 +354,27 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>purge_tags</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.2.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
+                        </ul>
+                </td>
+                <td>
+                        <div>If <code>true</code>, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter.</div>
+                        <div>If the <em>tags</em> parameter is not set then tags will not be modified.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>region</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -402,6 +440,23 @@ Parameters
                 </td>
                 <td>
                         <div>Create or delete the AWS Glue job.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>tags</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.2.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>A hash/dictionary of tags to be applied to the job.</div>
+                        <div>Remove completely or specify an empty dictionary to remove all tags.</div>
                 </td>
             </tr>
             <tr>
@@ -483,7 +538,10 @@ Examples
 
     # Create an AWS Glue job
     - community.aws.aws_glue_job:
-        command_script_location: s3bucket/script.py
+        command_script_location: "s3://s3bucket/script.py"
+        default_arguments:
+          "--extra-py-files": s3://s3bucket/script-package.zip
+          "--TempDir": "s3://s3bucket/temp/"
         name: my-glue-job
         role: my-iam-role
         state: present
@@ -555,6 +613,24 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">glueetl</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>python_version</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>when state is present</td>
+                <td>
+                            <div>Specifies the Python version.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">3</div>
                 </td>
             </tr>
             <tr>
@@ -678,6 +754,23 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
             </tr>
 
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>glue_version</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>when state is present</td>
+                <td>
+                            <div>Glue version.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">2.0</div>
+                </td>
+            </tr>
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>

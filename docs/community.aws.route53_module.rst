@@ -26,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.15.0
-- botocore >= 1.18.0
+- boto3 >= 1.16.0
+- botocore >= 1.19.0
 
 
 Parameters
@@ -492,7 +492,6 @@ Parameters
                 </td>
                 <td>
                         <div>The new value when creating a DNS record.  YAML lists or multiple comma-spaced values are allowed for non-alias records.</div>
-                        <div>When deleting a record all values for the record must be specified or Route 53 will not delete it.</div>
                 </td>
             </tr>
             <tr>

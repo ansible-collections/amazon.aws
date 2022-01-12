@@ -187,23 +187,10 @@ plugin_routing:
   modules:
     ec2_elb:
       redirect: community.aws.elb_instance
-      deprecation:
-        removal_version: 3.0.0
-        warning_text: >-
-          ec2_elb was renamed in community.aws 2.0.0 to
-          elb_instance.
-          Please update your tasks.
     ec2_instance:
       redirect: amazon.aws.ec2_instance
     ec2_instance_info:
       redirect: amazon.aws.ec2_instance_info
-    ec2_elb_info:
-      deprecation:
-        removal_version: 3.0.0
-        warning_text: >-
-          The ec2_elb_info module has been deprecated and replaced by
-          the elb_classic_lb_info module.
-          Please update your tasks.
     ec2_vpc_endpoint:
       redirect: amazon.aws.ec2_vpc_endpoint
     ec2_vpc_endpoint_info:
@@ -220,26 +207,12 @@ plugin_routing:
       redirect: amazon.aws.ec2_vpc_nat_gateway_info
     elb_classic_lb:
       redirect: amazon.aws.ec2_elb_lb
-    iam:
-      deprecation:
-        removal_version: 3.0.0
-        warning_text: >-
-          The iam module is based upon a deprecated version of the AWS SDKs
-          and is deprecated in favor of the iam_user, iam_group and iam_role modules.
-          Please update your tasks.
     iam_cert:
       redirect: community.aws.iam_server_certificate
       deprecation:
         removal_version: 4.0.0
         warning_text: >-
           iam_cert has been renamed to iam_server_certificate for consistency.
-          Please update your tasks.
-    rds:
-      deprecation:
-        removal_version: 3.0.0
-        warning_text: >-
-          The rds module is based upon a deprecated version of the AWS SDKs
-          and is deprecated in favor of the rds_instance and rds_snapshot modules.
           Please update your tasks.
     rds_snapshot:
        redirect: community.aws.rds_instance_snapshot

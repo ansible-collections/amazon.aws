@@ -19,7 +19,6 @@ Synopsis
 --------
 - Obtain information about one or more RDS snapshots. These can be for unclustered snapshots or snapshots of clustered DBs (Aurora).
 - Aurora snapshot information may be obtained if no identifier parameters are passed or if one of the cluster parameters are passed.
-- This module was called ``rds_snapshot_facts`` before Ansible 2.9. The usage did not change.
 
 
 
@@ -28,8 +27,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.15.0
-- botocore >= 1.18.0
+- boto3 >= 1.16.0
+- botocore >= 1.19.0
 
 
 Parameters

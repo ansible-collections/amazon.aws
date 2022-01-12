@@ -18,7 +18,6 @@ Version added: 1.0.0
 Synopsis
 --------
 - Retrieve information for WAF ACLs, Rule , Conditions and Filters.
-- This module was called ``aws_waf_facts`` before Ansible 2.9. The usage did not change.
 
 
 
@@ -27,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.15.0
-- botocore >= 1.18.0
+- boto3 >= 1.16.0
+- botocore >= 1.19.0
 
 
 Parameters

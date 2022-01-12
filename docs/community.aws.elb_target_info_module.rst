@@ -18,7 +18,6 @@ Version added: 1.0.0
 Synopsis
 --------
 - This module will search through every target group in a region to find which ones have registered a given instance ID or IP.
-- This module was called ``elb_target_facts`` before Ansible 2.9. The usage did not change.
 
 
 
@@ -27,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.15.0
-- botocore >= 1.18.0
+- boto3 >= 1.16.0
+- botocore >= 1.19.0
 
 
 Parameters

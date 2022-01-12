@@ -1,30 +1,25 @@
-.. _community.aws.iam_module:
+.. _community.aws.ec2_asg_scheduled_action_module:
 
 
-*****************
-community.aws.iam
-*****************
+**************************************
+community.aws.ec2_asg_scheduled_action
+**************************************
 
-**Manage IAM users, groups, roles and keys**
+**Create, modify and delete ASG scheduled scaling actions.**
 
 
-Version added: 1.0.0
+Version added: 2.2.0
 
 .. contents::
    :local:
    :depth: 1
 
-DEPRECATED
-----------
-:Removed in collection release after 
-:Why: The iam module is based upon a deprecated version of the AWS SDK.
-:Alternative: Use :ref:`community.aws.iam_user <community.aws.iam_user_module>`, :ref:`community.aws.iam_group <community.aws.iam_group_module>`, :ref:`community.aws.iam_role <community.aws.iam_role_module>`, :ref:`community.aws.iam_policy <community.aws.iam_policy_module>` and :ref:`community.aws.iam_managed_policy <community.aws.iam_managed_policy_module>` modules.
-
-
 
 Synopsis
 --------
-- Allows for the management of IAM users, user API keys, groups, roles.
+- The module will create a new scheduled action when *state=present* and no given action is found.
+- The module will update a new scheduled action when *state=present* and the given action is found.
+- The module will delete a new scheduled action when *state=absent* and the given action is found.
 
 
 
@@ -32,10 +27,9 @@ Requirements
 ------------
 The below requirements are needed on the host that executes this module.
 
-- boto >= 2.49.0
-- boto3 >= 1.15.0
-- botocore >= 1.18.0
 - python >= 3.6
+- boto3 >= 1.16.0
+- botocore >= 1.19.0
 
 
 Parameters
@@ -52,42 +46,17 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>access_key_ids</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>A list of the keys that you want affected by the <em>access_key_state</em> parameter.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>access_key_state</b>
+                    <b>autoscaling_group_name</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>create</li>
-                                    <li>remove</li>
-                                    <li>active</li>
-                                    <li>inactive</li>
-                                    <li>Create</li>
-                                    <li>Remove</li>
-                                    <li>Active</li>
-                                    <li>Inactive</li>
-                        </ul>
                 </td>
                 <td>
-                        <div>When type is user, it creates, removes, deactivates or activates a user&#x27;s access key(s). Note that actions apply only to keys specified.</div>
+                        <div>The name of the autoscaling group to add a scheduled action to.</div>
                 </td>
             </tr>
             <tr>
@@ -182,6 +151,21 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>desired_capacity</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>ASG desired capacity.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>ec2_url</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -198,133 +182,46 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>groups</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>A list of groups the user should belong to. When <em>state=update</em>, will gracefully remove groups not listed.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>iam_type</b>
+                    <b>end_time</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>user</li>
-                                    <li>group</li>
-                                    <li>role</li>
-                        </ul>
                 </td>
                 <td>
-                        <div>Type of IAM resource.</div>
+                        <div>End time for the action.</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>key_count</b>
+                    <b>max_size</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">integer</span>
                     </div>
                 </td>
                 <td>
-                        <b>Default:</b><br/><div style="color: blue">1</div>
                 </td>
                 <td>
-                        <div>When <em>access_key_state=create</em> it will ensure this quantity of keys are present.</div>
+                        <div>ASG max capacity.</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>name</b>
+                    <b>min_size</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
+                        <span style="color: purple">integer</span>
                     </div>
                 </td>
                 <td>
                 </td>
                 <td>
-                        <div>Name of IAM resource to create or identify.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>new_name</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>When <em>state=update</em>, will replace <em>name</em> with <em>new_name</em> on IAM resource.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>new_path</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>When <em>state=update</em>, will replace the path with new_path on the IAM resource.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>password</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>When <em>type=user</em> and either <em>state=present</em> or <em>state=update</em>, define the users login password.</div>
-                        <div>Note that this will always return &#x27;changed&#x27;.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>path</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                        <b>Default:</b><br/><div style="color: blue">"/"</div>
-                </td>
-                <td>
-                        <div>When creating or updating, specify the desired path of the resource.</div>
-                        <div>If <em>state=present</em>, it will replace the current path to match what is passed in when they do not match.</div>
+                        <div>ASG min capacity.</div>
                 </td>
             </tr>
             <tr>
@@ -347,6 +244,22 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>recurrence</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Cron style schedule to repeat the action on.</div>
+                        <div>Required when <em>state=present</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>region</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -358,6 +271,22 @@ Parameters
                 <td>
                         <div>The AWS region to use. If not specified then the value of the AWS_REGION or EC2_REGION environment variable, if any, is used. See <a href='http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region'>http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region</a></div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_region, ec2_region</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>scheduled_action_name</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The name of the scheduled action.</div>
                 </td>
             </tr>
             <tr>
@@ -381,44 +310,41 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>start_time</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Start time for the action.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>state</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
-                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>present</li>
+                                    <li><div style="color: blue"><b>present</b>&nbsp;&larr;</div></li>
                                     <li>absent</li>
-                                    <li>update</li>
                         </ul>
                 </td>
                 <td>
-                        <div>Whether to create, delete or update the IAM resource. Note, roles cannot be updated.</div>
+                        <div>Create / update or delete scheduled action.</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>trust_policy</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The inline (JSON or YAML) trust policy document that grants an entity permission to assume the role.</div>
-                        <div>Mutually exclusive with <em>trust_policy_filepath</em>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>trust_policy_filepath</b>
+                    <b>time_zone</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
@@ -427,29 +353,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The path to the trust policy document that grants an entity permission to assume the role.</div>
-                        <div>Mutually exclusive with <em>trust_policy</em>.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>update_password</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>always</b>&nbsp;&larr;</div></li>
-                                    <li>on_create</li>
-                        </ul>
-                </td>
-                <td>
-                        <div>When to update user passwords.</div>
-                        <div><em>update_password=always</em> will ensure the password is set to <em>password</em>.</div>
-                        <div><em>update_password=on_create</em> will only set the password for newly created users.</div>
+                        <div>Time zone to run against.</div>
                 </td>
             </tr>
             <tr>
@@ -479,7 +383,6 @@ Notes
 -----
 
 .. note::
-   - Currently boto does not support the removal of Managed Policies, the module will error out if your user/group/role has managed policies when you try to do state=absent. They will need to be removed manually.
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
    - When no credentials are explicitly provided the AWS SDK (boto3) that Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``). See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html for more information.
    - Modules based on the original AWS SDK (boto) may read their default configuration from different files. See https://boto.readthedocs.io/en/latest/boto_config_tut.html for more information.
@@ -492,51 +395,39 @@ Examples
 
 .. code-block:: yaml
 
-    # Basic user creation example
-    - name: Create two new IAM users with API keys
-      community.aws.iam:
-        iam_type: user
-        name: "{{ item }}"
+    # Create a scheduled action for a autoscaling group.
+    - name: Create a minimal scheduled action for autoscaling group
+      community.aws.ec2_asg_scheduled_action:
+        region: eu-west-1
+        autoscaling_group_name: test_asg
+        scheduled_action_name: test_scheduled_action
+        start_time: 2021 October 25 08:00 UTC
+        recurrence: 40 22 * * 1-5
+        desired_capacity: 10
         state: present
-        password: "{{ temp_pass }}"
-        access_key_state: create
-      loop:
-        - jcleese
-        - mpython
+      register: scheduled_action
 
-    # Advanced example, create two new groups and add the pre-existing user
-    # jdavila to both groups.
-    - name: Create Two Groups, Mario and Luigi
-      community.aws.iam:
-        iam_type: group
-        name: "{{ item }}"
+    - name: Create a scheduled action for autoscaling group
+      community.aws.ec2_asg_scheduled_action:
+        region: eu-west-1
+        autoscaling_group_name: test_asg
+        scheduled_action_name: test_scheduled_action
+        start_time: 2021 October 25 08:00 UTC
+        end_time: 2021 October 25 08:00 UTC
+        time_zone: Europe/London
+        recurrence: 40 22 * * 1-5
+        min_size: 10
+        max_size: 15
+        desired_capacity: 10
         state: present
-      loop:
-         - Mario
-         - Luigi
-      register: new_groups
+      register: scheduled_action
 
-    - name: Update user
-      community.aws.iam:
-        iam_type: user
-        name: jdavila
-        state: update
-        groups: "{{ item.created_group.group_name }}"
-      loop: "{{ new_groups.results }}"
-
-    # Example of role with custom trust policy for Lambda service
-    - name: Create IAM role with custom trust relationship
-      community.aws.iam:
-        iam_type: role
-        name: AAALambdaTestRole
-        state: present
-        trust_policy:
-          Version: '2012-10-17'
-          Statement:
-          - Action: sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
+    - name: Delete scheduled action
+      community.aws.ec2_asg_scheduled_action:
+        region: eu-west-1
+        autoscaling_group_name: test_asg
+        scheduled_action_name: test_scheduled_action
+        state: absent
 
 
 
@@ -555,35 +446,137 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>role_result</b>
+                    <b>desired_capacity</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">string</span>
+                      <span style="color: purple">integer</span>
                     </div>
                 </td>
-                <td>if iam_type=role and state=present</td>
+                <td>when <em>state=present</em></td>
                 <td>
-                            <div>the IAM.role dict returned by Boto</div>
+                            <div>ASG desired capacity.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;arn&#x27;: &#x27;arn:aws:iam::A1B2C3D4E5F6:role/my-new-role&#x27;, &#x27;assume_role_policy_document&#x27;: &#x27;...truncated...&#x27;, &#x27;create_date&#x27;: &#x27;2017-09-02T14:32:23Z&#x27;, &#x27;path&#x27;: &#x27;/&#x27;, &#x27;role_id&#x27;: &#x27;AROAA1B2C3D4E5F6G7H8I&#x27;, &#x27;role_name&#x27;: &#x27;my-new-role&#x27;}</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">1</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>roles</b>
+                    <b>end_time</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">list</span>
+                      <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td>if iam_type=role and state=present</td>
+                <td>when <em>state=present</em></td>
                 <td>
-                            <div>a list containing the name of the currently defined roles</div>
+                            <div>End time for the action.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[&#x27;my-new-role&#x27;, &#x27;my-existing-role-1&#x27;, &#x27;my-existing-role-2&#x27;, &#x27;my-existing-role-3&#x27;, &#x27;my-existing-role-...&#x27;]</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">2021 October 25 08:00 UTC</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>max_size</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td>when <em>state=present</em></td>
+                <td>
+                            <div>ASG max capacity.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">2</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>min_size</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td>when <em>state=present</em></td>
+                <td>
+                            <div>ASG min capacity.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">1</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>recurrence</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>when <em>state=present</em></td>
+                <td>
+                            <div>Cron style schedule to repeat the action on.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">40 22 * * 1-5</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>scheduled_action_name</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>when <em>state=present</em></td>
+                <td>
+                            <div>The name of the scheduled action.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">test_scheduled_action</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>start_time</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>when <em>state=present</em></td>
+                <td>
+                            <div>Start time for the action.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">2021 October 25 08:00 UTC</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>time_zone</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>when <em>state=present</em></td>
+                <td>
+                            <div>The ID of the Amazon Machine Image used by the launch configuration.</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">Europe/London</div>
                 </td>
             </tr>
     </table>
@@ -594,12 +587,7 @@ Status
 ------
 
 
-- This module will be removed in version 3.0.0. *[deprecated]*
-- For more information see `DEPRECATED`_.
-
-
 Authors
 ~~~~~~~
 
-- Jonathan I. Davila (@defionscode)
-- Paul Seiffert (@seiffert)
+- Mark Woolley(@marknet15)
