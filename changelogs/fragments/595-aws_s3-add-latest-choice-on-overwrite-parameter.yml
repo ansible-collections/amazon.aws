@@ -1,2 +1,2 @@
 minor_changes:
-- aws_s3 - add latest choice on overwrite parameter to get latest object on S3
+- aws_s3 - add latest choice on ``overwrite`` parameter to get latest object on S3 (https://github.com/ansible-collections/amazon.aws/pull/595).
