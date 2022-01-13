@@ -310,6 +310,11 @@ versioning:
         "MfaDelete": "Disabled",
         "Versioning": "Enabled"
     }
+acl:
+    description: S3 bucket's canned ACL.
+    type: dict
+    returned: I(state=present)
+    sample: 'public-read'
 '''
 
 import json
@@ -570,7 +575,7 @@ def create_or_update_bucket(s3_client, module, location):
         if delete_object_ownership or object_ownership is not None:
             module.fail_json_aws(e, msg="Failed to get bucket object ownership settings")
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Failed to get bucket bucket object ownership settings")
+        module.fail_json_aws(e, msg="Failed to get bucket object ownership settings")
     else:
         if delete_object_ownership:
             # delete S3 buckect ownership
@@ -589,6 +594,7 @@ def create_or_update_bucket(s3_client, module, location):
     if acl:
         try:
             s3_client.put_bucket_acl(Bucket=name, ACL=acl)
+            result['acl'] = acl
             changed = True
         except KeyError as e:
             # Some non-AWS providers appear to return policy documents that aren't
@@ -600,7 +606,7 @@ def create_or_update_bucket(s3_client, module, location):
         except is_boto3_error_code('AccessDenied') as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Access denied trying to update bucket ACL")
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
-            module.fail_json_aws(e, msg="Failed to get bucket bucket object ownership settings")
+            module.fail_json_aws(e, msg="Failed to update bucket ACL")
 
     # Module exit
     module.exit_json(changed=changed, name=name, **result)
