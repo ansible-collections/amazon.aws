@@ -226,6 +226,7 @@ route_table:
 
 import re
 from time import sleep
+from ipaddress import ip_network
 
 try:
     import botocore
@@ -408,7 +409,7 @@ def ensure_routes(connection=None, module=None, route_table=None, route_specs=No
     for route_spec in route_specs:
         match = index_of_matching_route(route_spec, routes_to_match)
         if match is None:
-            if route_spec.get('DestinationCidrBlock'):
+            if route_spec.get('DestinationCidrBlock') or route_spec.get('DestinationIpv6CidrBlock'):
                 route_specs_to_create.append(route_spec)
             else:
                 module.warn("Skipping creating {0} because it has no destination cidr block. "
@@ -588,9 +589,13 @@ def get_route_table_info(connection, module, route_table):
 
 def create_route_spec(connection, module, vpc_id):
     routes = module.params.get('routes')
-
     for route_spec in routes:
-        rename_key(route_spec, 'dest', 'destination_cidr_block')
+
+        cidr_block_type = str(type(ip_network(route_spec['dest'])))
+        if "IPv4" in cidr_block_type:
+            rename_key(route_spec, 'dest', 'destination_cidr_block')
+        if "IPv6" in cidr_block_type:
+            rename_key(route_spec, 'dest', 'destination_ipv6_cidr_block')
 
         if route_spec.get('gateway_id') and route_spec['gateway_id'].lower() == 'igw':
             igw = find_igw(connection, module, vpc_id)
