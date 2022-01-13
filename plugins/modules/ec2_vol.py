@@ -515,7 +515,6 @@ def create_volume(module, ec2_conn, zone):
             if tags:
                 additional_params['TagSpecifications'] = boto3_tag_specifications(tags, types=['volume'])
 
-
             create_vol_response = ec2_conn.create_volume(
                 aws_retry=True,
                 AvailabilityZone=zone,
