@@ -14,5 +14,3 @@ netaddr
 awscli
 # Used for comparing SSH Public keys to the Amazon fingerprints
 pycrypto
-# Used for unit testing using parametrize
-parametrize

@@ -4,6 +4,3 @@ boto3
 boto
 
 placebo
-
-# Used for unit testing using parametrize
-parametrize
