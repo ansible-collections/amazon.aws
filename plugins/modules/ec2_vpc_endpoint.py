@@ -115,6 +115,7 @@ options:
       - List of one or more route table ids to attach to the endpoint. A route
         is added to the route table with the destination of the endpoint if
         provided.
+      - Route table ids are only valid for gateway type endpoints.
     required: false
     type: list
     elements: str
