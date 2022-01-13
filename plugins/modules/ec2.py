@@ -878,7 +878,6 @@ instances:
 import time
 import datetime
 from ast import literal_eval
-from distutils.version import LooseVersion
 
 try:
     import boto.ec2
@@ -899,6 +898,7 @@ from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.ec2 import HAS_BOTO
 from ..module_utils.ec2 import ec2_connect
 from ..module_utils.ec2 import get_aws_connection_info
+from ..module_utils.version import LooseVersion
 
 
 def find_running_instances_by_count_tag(module, ec2, vpc, count_tag, zone=None):

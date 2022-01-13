@@ -58,7 +58,7 @@ import re
 import logging
 import traceback
 from functools import wraps
-from distutils.version import LooseVersion
+
 
 try:
     from cStringIO import StringIO
@@ -76,6 +76,8 @@ from .ec2 import boto3_conn
 from .ec2 import ec2_argument_spec
 from .ec2 import get_aws_connection_info
 from .ec2 import get_aws_region
+
+from .version import LooseVersion
 
 # We will also export HAS_BOTO3 so end user modules can use it.
 __all__ = ('AnsibleAWSModule', 'HAS_BOTO3', 'is_boto3_error_code', 'is_boto3_error_message')

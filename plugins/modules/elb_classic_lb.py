@@ -744,7 +744,7 @@ class ElbManager(object):
         if security_group_names:
             # Use the subnets attached to the VPC to find which VPC we're in and
             # limit the search
-            if self.elb.get('Subnets'):
+            if self.elb.get('Subnets', None):
                 subnets = set(self.elb.get('Subnets') + list(self.subnets or []))
             else:
                 subnets = set(self.subnets)
@@ -2042,7 +2042,7 @@ class ElbManager(object):
         if len(vpc_ids) > 1:
             self.module.fail_json("Subnets for an ELB may not span multiple VPCs",
                                   subnets=subnet_details, vpc_ids=vpc_ids)
-        vpc_id = vpc_ids.pop()
+        return vpc_ids.pop()
 
     @AWSRetry.jittered_backoff()
     def _describe_subnets(self, subnet_ids):
