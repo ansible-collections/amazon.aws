@@ -1,0 +1,67 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - set_fact:
+        local_bucket_name: "{{ bucket_name | hash('md5')}}acl"
+
+    - name: 'Create a simple bucket'
+      s3_bucket:
+        name: '{{ local_bucket_name }}'
+        public_access:
+          block_public_acls: true
+          block_public_policy: true
+          ignore_public_acls: true
+          restrict_public_buckets: true
+
+    - name: 'Update bucket ACL, new value = private'
+      s3_bucket:
+        name: '{{ local_bucket_name }}'
+        acl: private
+        state: present
+      register: private_acl
+
+    - assert:
+        that:
+          - private_acl.changed
+
+    - name: 'Update bucket ACL, new value = public-read'
+      s3_bucket:
+        name: '{{ local_bucket_name }}'
+        acl: public-read
+        state: present
+      ignore_errors: true
+      register: public_read_acl
+
+    - assert:
+        that:
+          - public_read_acl is failed
+
+    - name: 'Update bucket ACL, new value = public-read'
+      s3_bucket:
+        name: '{{ local_bucket_name }}'
+        acl: public-read
+        state: present
+        public_access:
+          block_public_acls: false
+          block_public_policy: true
+          ignore_public_acls: true
+          restrict_public_buckets: true
+      ignore_errors: true
+      register: public_read_acl
+
+    - assert:
+        that:
+          - public_read_acl.changed
+
+  # ============================================================
+  always:
+    - name: Ensure all buckets are deleted
+      s3_bucket:
+        name: '{{ local_bucket_name }}'
+        state: absent
+      ignore_errors: yes
