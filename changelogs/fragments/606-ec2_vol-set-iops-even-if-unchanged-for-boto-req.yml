@@ -1,0 +1,5 @@
+bugfixes:
+- >-
+  ec2_vol - Sets the Iops value in req_obj even if the iops value
+  has not changed, to allow modifying volume types that require
+  passing an iops value to boto. (https://github.com/ansible-collections/amazon.aws/pull/606)
