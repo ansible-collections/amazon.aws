@@ -58,6 +58,19 @@ options:
     default: false
     type: bool
     version_added: 2.1.0
+  key_type:
+    description:
+      - The type of key pair to create.
+      - Note that ED25519 keys are not supported for Windows instances,
+        EC2 Instance Connect, and EC2 Serial Console.
+      - By default Amazon will create an RSA key.
+      - Mutually exclusive with parameter I(key_material).
+      - Requires at least botocore version 1.21.23.
+    type: str
+    choices:
+      - rsa
+      - ed25519
+    version_added: 3.1.0
 
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -84,6 +97,11 @@ EXAMPLES = '''
   amazon.aws.ec2_key:
     name: my_keypair
     key_material: "{{ lookup('file', '/path/to/public_key/id_rsa.pub') }}"
+
+- name: Create ED25519 key pair
+  amazon.aws.ec2_key:
+    name: my_keypair
+    key_type: ed25519
 
 # try creating a key pair with the name of an already existing keypair
 # but don't overwrite it even if the key is different (force=false)
@@ -142,6 +160,11 @@ key:
       sample: '-----BEGIN RSA PRIVATE KEY-----
         MIIEowIBAAKC...
         -----END RSA PRIVATE KEY-----'
+    type:
+      description: type of a newly created keypair
+      returned: when a new keypair is created by AWS
+      type: str
+      sample: rsa
 '''
 
 import uuid
@@ -161,7 +184,7 @@ from ..module_utils.tagging import boto3_tag_specifications
 from ..module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
-def extract_key_data(key):
+def extract_key_data(key, key_type=None):
 
     data = {
         'name': key['KeyName'],
@@ -173,6 +196,10 @@ def extract_key_data(key):
         data['tags'] = boto3_tag_list_to_ansible_dict(key['Tags'])
     if 'KeyMaterial' in key:
         data['private_key'] = key['KeyMaterial']
+    if 'KeyType' in key:
+        data['type'] = key['KeyType']
+    elif key_type:
+        data['type'] = key_type
     return data
 
 
@@ -208,7 +235,7 @@ def find_key_pair(module, ec2_client, name):
     return key
 
 
-def create_key_pair(module, ec2_client, name, key_material, force):
+def create_key_pair(module, ec2_client, name, key_material, force, key_type):
 
     tags = module.params.get('tags')
     purge_tags = module.params.get('purge_tags')
@@ -225,6 +252,13 @@ def create_key_pair(module, ec2_client, name, key_material, force):
                     key = _import_key_pair(module, ec2_client, name, key_material, tag_spec)
                 key_data = extract_key_data(key)
                 module.exit_json(changed=True, key=key_data, msg="key pair updated")
+        if key_type and key_type != key['KeyType']:
+            changed = True
+            if not module.check_mode:
+                delete_key_pair(module, ec2_client, name, finish_task=False)
+                key = _create_key_pair(module, ec2_client, name, tag_spec, key_type)
+            key_data = extract_key_data(key, key_type)
+            module.exit_json(changed=True, key=key_data, msg="key pair updated")
         changed |= ensure_ec2_tags(ec2_client, module, key['KeyPairId'], tags=tags, purge_tags=purge_tags)
         key = find_key_pair(module, ec2_client, name)
         key_data = extract_key_data(key)
@@ -236,15 +270,17 @@ def create_key_pair(module, ec2_client, name, key_material, force):
             if key_material:
                 key = _import_key_pair(module, ec2_client, name, key_material, tag_spec)
             else:
-                key = _create_key_pair(module, ec2_client, name, tag_spec)
-            key_data = extract_key_data(key)
+                key = _create_key_pair(module, ec2_client, name, tag_spec, key_type)
+            key_data = extract_key_data(key, key_type)
         module.exit_json(changed=True, key=key_data, msg="key pair created")
 
 
-def _create_key_pair(module, ec2_client, name, tag_spec):
+def _create_key_pair(module, ec2_client, name, tag_spec, key_type):
     params = dict(KeyName=name)
     if tag_spec:
         params['TagSpecifications'] = tag_spec
+    if key_type:
+        params['KeyType'] = key_type
     try:
         key = ec2_client.create_key_pair(aws_retry=True, **params)
     except botocore.exceptions.ClientError as err:
@@ -287,11 +323,18 @@ def main():
         state=dict(default='present', choices=['present', 'absent']),
         tags=dict(type='dict'),
         purge_tags=dict(type='bool', default=False),
+        key_type=dict(type='str', choices=['rsa', 'ed25519']),
         wait=dict(type='bool', removed_at_date='2022-06-01', removed_from_collection='amazon.aws'),
         wait_timeout=dict(type='int', removed_at_date='2022-06-01', removed_from_collection='amazon.aws')
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        mutually_exclusive=[
+            ['key_material', 'key_type']
+        ],
+        supports_check_mode=True
+    )
 
     ec2_client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
@@ -299,11 +342,15 @@ def main():
     state = module.params.get('state')
     key_material = module.params.get('key_material')
     force = module.params.get('force')
+    key_type = module.params.get('key_type')
+
+    if key_type:
+        module.require_botocore_at_least('1.21.23', reason='to set the key_type for a keypair')
 
     if state == 'absent':
         delete_key_pair(module, ec2_client, name)
     elif state == 'present':
-        create_key_pair(module, ec2_client, name, key_material, force)
+        create_key_pair(module, ec2_client, name, key_material, force, key_type)
 
 
 if __name__ == '__main__':
