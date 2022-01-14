@@ -23,18 +23,15 @@ description:
     The first argument you pass the lookup can either be a parameter name or a hierarchy of
     parameters. Hierarchies start with a forward slash and end with the parameter name. Up to
     5 layers may be specified.
-  - If looking up an explicitly listed parameter by name which does not exist then the lookup will
-    return a None value which will be interpreted by Jinja2 as an empty string.  You can use the
-    ```default``` filter to give a default value in this case but must set the second parameter to
-    true (see examples below)
+  - If looking up an explicitly listed parameter by name which does not exist then the lookup
+    will generate an error.  You can use the ```default``` filter to give a default value in
+    this case but must set the ```on_missing``` parameter to ```skip``` or ```warn```.  You must
+    also set the second parameter of the ```default``` filter to ```true``` (see examples below).
   - When looking up a path for parameters under it a dictionary will be returned for each path.
-    If there is no parameter under that path then the return will be successful but the
-    dictionary will be empty.
+    If there is no parameter under that path then the lookup will generate an error.
   - If the lookup fails due to lack of permissions or due to an AWS client error then the aws_ssm
-    will generate an error, normally crashing the current ansible task.  This is normally the right
-    thing since ignoring a value that IAM isn't giving access to could cause bigger problems and
-    wrong behaviour or loss of data.  If you want to continue in this case then you will have to set
-    up two ansible tasks, one which sets a variable and ignores failures one which uses the value
+    will generate an error.  If you want to continue in this case then you will have to set up
+    two ansible tasks, one which sets a variable and ignores failures and one which uses the value
     of that variable with a default.  See the examples below.
 
 options:
@@ -81,26 +78,26 @@ EXAMPLES = '''
 - name: lookup ssm parameter store in the current region
   debug: msg="{{ lookup('aws_ssm', 'Hello' ) }}"
 
-- name: lookup ssm parameter store in nominated region
+- name: lookup ssm parameter store in specified region
   debug: msg="{{ lookup('aws_ssm', 'Hello', region='us-east-2' ) }}"
 
-- name: lookup ssm parameter store without decrypted
+- name: lookup ssm parameter store without decryption
   debug: msg="{{ lookup('aws_ssm', 'Hello', decrypt=False ) }}"
 
-- name: lookup ssm parameter store in nominated aws profile
+- name: lookup ssm parameter store using a specified aws profile
   debug: msg="{{ lookup('aws_ssm', 'Hello', aws_profile='myprofile' ) }}"
 
 - name: lookup ssm parameter store using explicit aws credentials
   debug: msg="{{ lookup('aws_ssm', 'Hello', aws_access_key=my_aws_access_key, aws_secret_key=my_aws_secret_key, aws_security_token=my_security_token ) }}"
 
-- name: lookup ssm parameter store with all options.
+- name: lookup ssm parameter store with all options
   debug: msg="{{ lookup('aws_ssm', 'Hello', decrypt=false, region='us-east-2', aws_profile='myprofile') }}"
 
-- name: lookup a key which doesn't exist, returns ""
-  debug: msg="{{ lookup('aws_ssm', 'NoKey') }}"
+- name: lookup ssm parameter and fail if missing
+  debug: msg="{{ lookup('aws_ssm', 'missing-parameter') }}"
 
 - name: lookup a key which doesn't exist, returning a default ('root')
-  debug: msg="{{ lookup('aws_ssm', 'AdminID') | default('root', true) }}"
+  debug: msg="{{ lookup('aws_ssm', 'AdminID', on_missing="skip") | default('root', true) }}"
 
 - name: lookup a key which doesn't exist failing to store it in a fact
   set_fact:
@@ -123,9 +120,6 @@ EXAMPLES = '''
 - name: Iterate over multiple paths as dictionaries (one iteration per path)
   debug: msg='Path contains {{ item }}'
   loop: '{{ lookup("aws_ssm", "/demo/", "/demo1/", bypath=True)}}'
-
-- name: lookup ssm parameter and fail if missing
-  debug: msg="{{ lookup('aws_ssm', 'missing-parameter', on_missing="error" ) }}"
 
 - name: lookup ssm parameter warn if access is denied
   debug: msg="{{ lookup('aws_ssm', 'missing-parameter', on_denied="warn" ) }}"
@@ -173,8 +167,8 @@ def _boto3_conn(region, credentials):
 class LookupModule(LookupBase):
     def run(self, terms, variables=None, boto_profile=None, aws_profile=None,
             aws_secret_key=None, aws_access_key=None, aws_security_token=None, region=None,
-            bypath=False, shortnames=False, recursive=False, decrypt=True, on_missing="skip",
-            on_denied="skip"):
+            bypath=False, shortnames=False, recursive=False, decrypt=True, on_missing="error",
+            on_denied="error"):
         '''
             :arg terms: a list of lookups to run.
                 e.g. ['parameter_name', 'parameter_name_too' ]
@@ -220,39 +214,60 @@ class LookupModule(LookupBase):
         if bypath:
             ssm_dict['Recursive'] = recursive
             for term in terms:
-                ssm_dict["Path"] = term
                 display.vvv("AWS_ssm path lookup term: %s in region: %s" % (term, region))
-                try:
-                    response = client.get_parameters_by_path(**ssm_dict)
-                except botocore.exceptions.ClientError as e:
-                    raise AnsibleError("SSM lookup exception: {0}".format(to_native(e)))
-                paramlist = list()
-                paramlist.extend(response['Parameters'])
 
-                # Manual pagination, since boto doesn't support it yet for get_parameters_by_path
-                while 'NextToken' in response:
-                    response = client.get_parameters_by_path(NextToken=response['NextToken'], **ssm_dict)
-                    paramlist.extend(response['Parameters'])
-
-                # shorten parameter names. yes, this will return duplicate names with different values.
+                paramlist = self.get_path_parameters(client, ssm_dict, term, on_missing.lower(), on_denied.lower())
+                # Shorten parameter names. Yes, this will return
+                # duplicate names with different values.
                 if shortnames:
                     for x in paramlist:
                         x['Name'] = x['Name'][x['Name'].rfind('/') + 1:]
 
                 display.vvvv("AWS_ssm path lookup returned: %s" % str(paramlist))
-                if len(paramlist):
-                    ret.append(boto3_tag_list_to_ansible_dict(paramlist,
-                                                              tag_name_key_name="Name",
-                                                              tag_value_key_name="Value"))
-                else:
-                    ret.append({})
-            # Lookup by parameter name - always returns a list with one or no entry.
+
+                ret.append(boto3_tag_list_to_ansible_dict(paramlist,
+                                                          tag_name_key_name="Name",
+                                                          tag_value_key_name="Value"))
+        # Lookup by parameter name - always returns a list with one or
+        # no entry.
         else:
             display.vvv("AWS_ssm name lookup term: %s" % terms)
             for term in terms:
                 ret.append(self.get_parameter_value(client, ssm_dict, term, on_missing.lower(), on_denied.lower()))
         display.vvvv("AWS_ssm path lookup returning: %s " % str(ret))
         return ret
+
+    def get_path_parameters(self, client, ssm_dict, term, on_missing, on_denied):
+        ssm_dict["Path"] = term
+        paramlist = list()
+        try:
+            response = client.get_parameters_by_path(**ssm_dict)
+        except is_boto3_error_code('AccessDeniedException'):
+            if on_denied == 'error':
+                raise AnsibleError("Failed to access SSM parameter path %s (AccessDenied)" % term)
+            elif on_denied == 'warn':
+                self._display.warning('Skipping, access denied for SSM parameter path %s' % term)
+                paramlist = [{}]
+            elif on_denied == 'skip':
+                paramlist = [{}]
+        except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
+            raise AnsibleError("SSM lookup exception: {0}".format(to_native(e)))
+        else:
+            paramlist.extend(response['Parameters'])
+
+            # Manual pagination, since boto doesn't support it yet for
+            # get_parameters_by_path
+            while 'NextToken' in response:
+                response = client.get_parameters_by_path(NextToken=response['NextToken'], **ssm_dict)
+                paramlist.extend(response['Parameters'])
+
+        if not len(paramlist):
+            if on_missing == "error":
+                raise AnsibleError("Failed to find SSM parameter path %s (ResourceNotFound)" % term)
+            elif on_missing == "warn":
+                self._display.warning('Skipping, did not find SSM parameter path %s' % term)
+
+        return paramlist
 
     def get_parameter_value(self, client, ssm_dict, term, on_missing, on_denied):
         ssm_dict["Name"] = term
