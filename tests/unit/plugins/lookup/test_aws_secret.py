@@ -163,7 +163,7 @@ def test_nested_lookup_variable(mocker, dummy_credentials):
                                            aws_secret_access_key="notasecret", aws_session_token=None)
 
 
-def test_path_lookup_variable(mocker, dummy_credentials):
+def test_path_lookup_variable(mocker, dummy_credentials, record_property):
     lookup = aws_secret.LookupModule()
     lookup._load_name = "aws_secret"
 
@@ -205,14 +205,22 @@ def test_path_lookup_variable(mocker, dummy_credentials):
     ]
 
     boto3_client_double = boto3_double.Session.return_value.client
+    boto3_client_get_paginator_double = boto3_double.Session.return_value.client.return_value.get_paginator
+    boto3_paginate_double = boto3_client_get_paginator_double.return_value.paginate
+    boto3_paginate_double.return_value = [path_list_secrets_success_response]
 
     mocker.patch.object(boto3, 'session', boto3_double)
     dummy_credentials["bypath"] = 'true'
     dummy_credentials["boto_profile"] = 'test'
     dummy_credentials["aws_profile"] = 'test'
     retval = lookup.run(["/testpath"], {}, **dummy_credentials)
+    boto3_paginate_double.assert_called_once()
+    boto3_client_get_paginator_double.assert_called_once()
+    boto3_client_get_paginator_double.assert_called_once_with('list_secrets')
+
+    record_property('KEY', retval)
     assert (retval[0]["/testpath/won"] == "simple_value_won")
     assert (retval[0]["/testpath/too"] == "simple_value_too")
     boto3_client_double.assert_called_with('secretsmanager', 'eu-west-1', aws_access_key_id='notakey',
                                            aws_secret_access_key="notasecret", aws_session_token=None)
-    list_secrets_fn.assert_called_with(Filters=[{'Key': 'name', 'Values': ['/testpath']}])
+    boto3_paginate_double.assert_called_with(Filters=[{'Key': 'name', 'Values': ['/testpath']}])
