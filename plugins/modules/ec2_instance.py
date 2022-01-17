@@ -904,6 +904,7 @@ from ansible.module_utils.six.moves.urllib import parse as urlparse
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
+from ansible_collections.amazon.aws.plugins.module_utils.core import parse_aws_arn
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
@@ -1703,7 +1704,8 @@ def pretty_instance(i):
 
 
 def determine_iam_role(name_or_arn):
-    if re.match(r'^arn:aws:iam::\d+:instance-profile/[\w+=/,.@-]+$', name_or_arn):
+    result = parse_aws_arn(name_or_arn)
+    if result and result['service'] == 'iam' and re.match(r"instance-profile/[\w+=/,.@-]+$", result['resource']):
         return name_or_arn
     iam = module.client('iam', retry_decorator=AWSRetry.jittered_backoff())
     try:

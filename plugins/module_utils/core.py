@@ -440,6 +440,28 @@ def _boto3_handler(obj):
         return obj
 
 
+def parse_aws_arn(arn):
+    """
+    The following are the general formats for ARNs.
+        arn:partition:service:region:account-id:resource-id
+        arn:partition:service:region:account-id:resource-type/resource-id
+        arn:partition:service:region:account-id:resource-type:resource-id
+    The specific formats depend on the resource.
+    The ARNs for some resources omit the Region, the account ID, or both the Region and the account ID.
+    """
+    m = re.search(r"arn:(aws(-([a-z\-]+))?):(\w+):([a-z0-9\-]*):(\d*):(.*)", arn)
+    if m is None:
+        return None
+    result = dict()
+    result.update(dict(partition=m.group(1)))
+    result.update(dict(service=m.group(4)))
+    result.update(dict(region=m.group(5)))
+    result.update(dict(account_id=m.group(6)))
+    result.update(dict(resource=m.group(7)))
+
+    return result
+
+
 def normalize_boto3_result(result):
     """
     Because Boto3 returns datetime objects where it knows things are supposed to
