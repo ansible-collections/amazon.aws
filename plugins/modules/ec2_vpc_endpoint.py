@@ -310,6 +310,9 @@ def create_vpc_endpoint(client, module):
     params['VpcEndpointType'] = module.params.get('vpc_endpoint_type')
     params['ServiceName'] = module.params.get('service')
 
+    if module.params.get('vpc_endpoint_type') != 'Gateway' and module.params.get('route_table_ids'):
+        module.fail_json(msg="Route table IDs are only supported for Gateway type VPC Endpoint.")
+
     if module.check_mode:
         changed = True
         result = 'Would have created VPC Endpoint if not in check mode'
