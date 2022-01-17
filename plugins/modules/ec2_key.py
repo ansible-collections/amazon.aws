@@ -165,6 +165,7 @@ key:
       returned: when a new keypair is created by AWS
       type: str
       sample: rsa
+      version_added: 3.1.0
 '''
 
 import uuid
