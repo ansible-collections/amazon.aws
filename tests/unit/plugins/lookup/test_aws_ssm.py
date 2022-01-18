@@ -18,6 +18,7 @@
 
 # Make coding more python3-ish
 from __future__ import (absolute_import, division, print_function)
+from unittest.mock import ANY
 __metaclass__ = type
 
 import pytest
@@ -119,8 +120,16 @@ def test_lookup_variable(mocker):
     assert(isinstance(retval, list))
     assert(len(retval) == 1)
     assert(retval[0] == "simplevalue")
-    boto3_client_double.assert_called_with('ssm', 'eu-west-1', aws_access_key_id='notakey',
-                                           aws_secret_access_key="notasecret", aws_session_token=None)
+    boto3_client_double.assert_called_with(
+        'ssm', 
+        region_name='eu-west-1', 
+        aws_access_key_id='notakey',
+        aws_secret_access_key="notasecret", 
+        aws_session_token=None,
+        endpoint_url=None,
+        config=ANY,
+        verify=None,
+        )
 
 
 def test_path_lookup_variable(mocker):
@@ -140,8 +149,16 @@ def test_path_lookup_variable(mocker):
     retval = lookup.run(["/testpath"], {}, **args)
     assert(retval[0]["/testpath/won"] == "simple_value_won")
     assert(retval[0]["/testpath/too"] == "simple_value_too")
-    boto3_client_double.assert_called_with('ssm', 'eu-west-1', aws_access_key_id='notakey',
-                                           aws_secret_access_key="notasecret", aws_session_token=None)
+    boto3_client_double.assert_called_with(
+        'ssm', 
+        region_name='eu-west-1', 
+        aws_access_key_id='notakey',
+        aws_secret_access_key="notasecret", 
+        aws_session_token=None, 
+        endpoint_url=None,
+        config=ANY, 
+        verify=None,
+        )
     get_paginator_fn.assert_called_with('get_parameters_by_path')
     paginator.paginate.assert_called_with(Path="/testpath", Recursive=True, WithDecryption=True)
     paginator.paginate.return_value.build_full_result.assert_called_with()
