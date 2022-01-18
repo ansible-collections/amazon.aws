@@ -204,7 +204,7 @@ class LookupModule(LookupBase):
         cli_boto_params.update(dict(
           conn_type='client', resource='ssm', region=cli_region, endpoint=cli_endpoint
         ))
-        
+
         try:
           client = boto3_conn(module=self,**cli_boto_params )
         except (
