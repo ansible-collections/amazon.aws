@@ -99,6 +99,16 @@ DOCUMENTATION = '''
             - The use of this feature is discouraged and we advise to migrate to the new ``tags`` structure.
           type: bool
           default: False
+        hostvars_prefix:
+          description:
+            - The prefix for host variables names coming from AWS.
+          type: str
+          version_added: 3.1.0
+        hostvars_suffix:
+          description:
+            - The suffix for host variables names coming from AWS.
+          type: str
+          version_added: 3.1.0
 '''
 
 EXAMPLES = '''
@@ -205,6 +215,12 @@ compose:
   ansible_host: public_dns_name
 groups:
   libvpc: vpc_id == 'vpc-####'
+# Define prefix and suffix for host variables coming from AWS.
+plugin: aws_ec2
+regions:
+  - us-east-1
+hostvars_prefix: 'aws_'
+hostvars_suffix: '-ec2'
 '''
 
 import re
@@ -647,8 +663,17 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             if not hostname:
                 continue
             self.inventory.add_host(hostname, group=group)
+            hostvars_prefix = self.get_option("hostvars_prefix")
+            hostvars_suffix = self.get_option("hostvars_suffix")
+            new_vars = dict()
             for hostvar, hostval in host.items():
+                if hostvars_prefix:
+                    hostvar = hostvars_prefix + hostvar
+                if hostvars_suffix:
+                    hostvar = hostvar + hostvars_suffix
+                new_vars[hostvar] = hostval
                 self.inventory.set_variable(hostname, hostvar, hostval)
+            host.update(new_vars)
 
             # Use constructed if applicable
 
