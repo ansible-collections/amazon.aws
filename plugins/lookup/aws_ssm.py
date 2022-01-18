@@ -67,6 +67,9 @@ options:
     type: string
     choices: ['error', 'skip', 'warn']
     version_added: 2.0.0
+  endpoint:
+    description: Use a custom endpoint when connecting to SSM service
+    type: string
 extends_documentation_fragment:
 - amazon.aws.aws_boto3
 '''
@@ -135,38 +138,19 @@ from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
 from ansible.module_utils.six import string_types
 
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 display = Display()
 
-
-def _boto3_conn(region, credentials):
-    if 'boto_profile' in credentials:
-        boto_profile = credentials.pop('boto_profile')
-    else:
-        boto_profile = None
-
-    try:
-        connection = boto3.session.Session(profile_name=boto_profile).client('ssm', region, **credentials)
-    except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError):
-        if boto_profile:
-            try:
-                connection = boto3.session.Session(profile_name=boto_profile).client('ssm', region)
-            # FIXME: we should probably do better passing on of the error information
-            except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError):
-                raise AnsibleError("Insufficient credentials found.")
-        else:
-            raise AnsibleError("Insufficient credentials found.")
-    return connection
-
-
 class LookupModule(LookupBase):
     def run(self, terms, variables=None, boto_profile=None, aws_profile=None,
             aws_secret_key=None, aws_access_key=None, aws_security_token=None, region=None,
             bypath=False, shortnames=False, recursive=False, decrypt=True, on_missing="error",
-            on_denied="error"):
+            on_denied="error", endpoint=None):
         '''
             :arg terms: a list of lookups to run.
                 e.g. ['parameter_name', 'parameter_name_too' ]
@@ -180,6 +164,7 @@ class LookupModule(LookupBase):
             :kwarg recursive: Set to True to recurse below the path (requires bypath=True)
             :kwarg on_missing: Action to take if the SSM parameter is missing
             :kwarg on_denied: Action to take if access to the SSM parameter is denied
+            :kwarg endpoint: Endpoint for SSM client
             :returns: A list of parameter values or a list of dictionaries if bypath=True.
         '''
 
@@ -195,16 +180,41 @@ class LookupModule(LookupBase):
         ret = []
         ssm_dict = {}
 
-        credentials = {}
-        if aws_profile:
-            credentials['boto_profile'] = aws_profile
-        else:
-            credentials['boto_profile'] = boto_profile
-        credentials['aws_secret_access_key'] = aws_secret_key
-        credentials['aws_access_key_id'] = aws_access_key
-        credentials['aws_session_token'] = aws_security_token
+        self.params = variables
+        cli_region, cli_endpoint, cli_boto_params = get_aws_connection_info(self,boto3=True)
+        
+        if region:
+          cli_region = region
+        
+        if endpoint:
+          cli_endpoint = endpoint
 
-        client = _boto3_conn(region, credentials)
+        # For backward  compatibility
+        if aws_access_key:
+          cli_boto_params.update({'aws_access_key_id': aws_access_key})
+        if aws_secret_key:
+          cli_boto_params.update({'aws_secret_access_key': aws_secret_key})
+        if aws_security_token:
+          cli_boto_params.update({'aws_session_token': aws_security_token})
+        if boto_profile:
+          cli_boto_params.update({'profile_name': boto_profile})
+        if aws_profile:
+          cli_boto_params.update({'profile_name': aws_profile})
+        
+        cli_boto_params.update(dict(
+          conn_type='client', resource='ssm', region=cli_region, endpoint=cli_endpoint
+        ))
+        
+        try:
+          client = boto3_conn(module=self,**cli_boto_params )
+        except (
+          botocore.exceptions.ProfileNotFound, 
+          botocore.exceptions.PartialCredentialsError,
+          botocore.exceptions.ClientError,
+          botocore.exceptions.ParamValidationError,
+          ):
+          display.vv("WWWWW")
+          raise AnsibleError("Insufficient credentials found.")
 
         ssm_dict['WithDecryption'] = decrypt
 
@@ -258,6 +268,9 @@ class LookupModule(LookupBase):
                 self._display.warning('Skipping, did not find SSM parameter path %s' % term)
 
         return paramlist
+    
+    def fail_json(self, msg, **kwargs):
+        raise AnsibleError(msg)
 
     def get_parameter_value(self, client, ssm_dict, term, on_missing, on_denied):
         ssm_dict["Name"] = term
