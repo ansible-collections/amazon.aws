@@ -15,21 +15,21 @@ short_description: wafv2_web_acl
 description:
   - Info about web acl
 options:
-    name:
-      description:
-        - The name of the web acl.
-      required: true
-      type: str
-    scope:
-      description:
-        - Scope of wafv2 web acl.
-      required: true
-      choices: ["CLOUDFRONT","REGIONAL"]
-      type: str
+  name:
+    description:
+      - The name of the web acl.
+    required: true
+    type: str
+  scope:
+    description:
+      - Scope of wafv2 web acl.
+    required: true
+    choices: ["CLOUDFRONT", "REGIONAL"]
+    type: str
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 
 '''
 
