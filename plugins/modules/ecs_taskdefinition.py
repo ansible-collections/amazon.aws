@@ -16,7 +16,6 @@ description:
 author:
     - Mark Chance (@Java1Guy)
     - Alina Buzachis (@alinabuzachis)
-requirements: [ json, botocore, boto3 ]
 options:
     state:
         description:
