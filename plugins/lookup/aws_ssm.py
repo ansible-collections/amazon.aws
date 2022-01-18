@@ -146,6 +146,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_er
 
 display = Display()
 
+
 class LookupModule(LookupBase):
     def run(self, terms, variables=None, boto_profile=None, aws_profile=None,
             aws_secret_key=None, aws_access_key=None, aws_security_token=None, region=None,
@@ -181,40 +182,43 @@ class LookupModule(LookupBase):
         ssm_dict = {}
 
         self.params = variables
-        cli_region, cli_endpoint, cli_boto_params = get_aws_connection_info(self,boto3=True)
-        
+
+        cli_region, cli_endpoint, cli_boto_params = get_aws_connection_info(self, boto3=True)
+
         if region:
-          cli_region = region
-        
+            cli_region = region
+
         if endpoint:
-          cli_endpoint = endpoint
+            cli_endpoint = endpoint
 
         # For backward  compatibility
         if aws_access_key:
-          cli_boto_params.update({'aws_access_key_id': aws_access_key})
+            cli_boto_params.update({'aws_access_key_id': aws_access_key})
         if aws_secret_key:
-          cli_boto_params.update({'aws_secret_access_key': aws_secret_key})
+            cli_boto_params.update({'aws_secret_access_key': aws_secret_key})
         if aws_security_token:
-          cli_boto_params.update({'aws_session_token': aws_security_token})
+            cli_boto_params.update({'aws_session_token': aws_security_token})
         if boto_profile:
-          cli_boto_params.update({'profile_name': boto_profile})
+            cli_boto_params.update({'profile_name': boto_profile})
         if aws_profile:
-          cli_boto_params.update({'profile_name': aws_profile})
-        
+            cli_boto_params.update({'profile_name': aws_profile})
+
         cli_boto_params.update(dict(
-          conn_type='client', resource='ssm', region=cli_region, endpoint=cli_endpoint
+            conn_type='client',
+            resource='ssm',
+            region=cli_region,
+            endpoint=cli_endpoint,
         ))
 
         try:
-          client = boto3_conn(module=self,**cli_boto_params )
+            client = boto3_conn(module=self, **cli_boto_params)
         except (
-          botocore.exceptions.ProfileNotFound, 
-          botocore.exceptions.PartialCredentialsError,
-          botocore.exceptions.ClientError,
-          botocore.exceptions.ParamValidationError,
-          ):
-          display.vv("WWWWW")
-          raise AnsibleError("Insufficient credentials found.")
+            botocore.exceptions.ProfileNotFound,
+            botocore.exceptions.PartialCredentialsError,
+            botocore.exceptions.ClientError,
+            botocore.exceptions.ParamValidationError,
+        ):
+            raise AnsibleError("Insufficient credentials found.")
 
         ssm_dict['WithDecryption'] = decrypt
 

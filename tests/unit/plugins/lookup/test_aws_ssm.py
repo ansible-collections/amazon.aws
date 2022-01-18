@@ -121,15 +121,15 @@ def test_lookup_variable(mocker):
     assert(len(retval) == 1)
     assert(retval[0] == "simplevalue")
     boto3_client_double.assert_called_with(
-        'ssm', 
-        region_name='eu-west-1', 
+        'ssm',
+        region_name='eu-west-1',
         aws_access_key_id='notakey',
-        aws_secret_access_key="notasecret", 
+        aws_secret_access_key="notasecret",
         aws_session_token=None,
         endpoint_url=None,
         config=ANY,
         verify=None,
-        )
+    )
 
 
 def test_path_lookup_variable(mocker):
@@ -150,13 +150,13 @@ def test_path_lookup_variable(mocker):
     assert(retval[0]["/testpath/won"] == "simple_value_won")
     assert(retval[0]["/testpath/too"] == "simple_value_too")
     boto3_client_double.assert_called_with(
-        'ssm', 
-        region_name='eu-west-1', 
+        'ssm',
+        region_name='eu-west-1',
         aws_access_key_id='notakey',
-        aws_secret_access_key="notasecret", 
-        aws_session_token=None, 
+        aws_secret_access_key="notasecret",
+        aws_session_token=None,
         endpoint_url=None,
-        config=ANY, 
+        config=ANY,
         verify=None,
         )
     get_paginator_fn.assert_called_with('get_parameters_by_path')
