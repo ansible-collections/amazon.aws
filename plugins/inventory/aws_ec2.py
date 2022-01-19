@@ -220,7 +220,7 @@ plugin: aws_ec2
 regions:
   - us-east-1
 hostvars_prefix: 'aws_'
-hostvars_suffix: '-ec2'
+hostvars_suffix: '_ec2'
 '''
 
 import re
