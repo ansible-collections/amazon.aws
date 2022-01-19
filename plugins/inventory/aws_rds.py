@@ -39,6 +39,16 @@ DOCUMENTATION = '''
         iam_role_arn:
           description: The ARN of the IAM role to assume to perform the inventory lookup. You should still provide
               AWS credentials with enough privilege to perform the AssumeRole action.
+        hostvars_prefix:
+          description:
+            - The prefix for host variables names coming from AWS.
+          type: str
+          version_added: 3.1.0
+        hostvars_suffix:
+          description:
+            - The suffix for host variables names coming from AWS.
+          type: str
+          version_added: 3.1.0
     note:
         Ansible versions prior to 2.10 should use the fully qualified plugin name 'amazon.aws.aws_rds'.
     extends_documentation_fragment:
@@ -64,6 +74,8 @@ keyed_groups:
     prefix: rds
   - key: tags
   - key: region
+hostvars_prefix: aws_
+hostvars_suffix: _rds
 '''
 
 try:
@@ -280,8 +292,17 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 host['region'] = host['availability_zones'][0][:-1]
 
             self.inventory.add_host(hostname, group=group)
+            hostvars_prefix = self.get_option("hostvars_prefix")
+            hostvars_suffix = self.get_option("hostvars_suffix")
+            new_vars = dict()
             for hostvar, hostval in host.items():
+                if hostvars_prefix:
+                    hostvar = hostvars_prefix + hostvar
+                if hostvars_suffix:
+                    hostvar = hostvar + hostvars_suffix
+                new_vars[hostvar] = hostval
                 self.inventory.set_variable(hostname, hostvar, hostval)
+            host.update(new_vars)
 
             # Use constructed if applicable
             strict = self.get_option('strict')

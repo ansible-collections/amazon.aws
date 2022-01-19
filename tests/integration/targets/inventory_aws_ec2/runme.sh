@@ -42,6 +42,16 @@ ansible-playbook playbooks/test_populating_inventory_with_concatenation.yml "$@"
 ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_include_or_exclude_filters.yml.j2'" "$@"
 ansible-playbook playbooks/test_populating_inventory_with_include_or_exclude_filters.yml "$@"
 
+# generate inventory config with hostvars_prefix
+ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_hostvars_prefix_suffix.yml.j2'" -e "hostvars_prefix='aws_ec2_'" "$@"
+ansible-playbook playbooks/test_populating_inventory_with_hostvars_prefix_suffix.yml -e "hostvars_prefix='aws_ec2_'" "$@"
+# generate inventory config with hostvars_suffix
+ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_hostvars_prefix_suffix.yml.j2'" -e "hostvars_suffix='_aws_ec2'" "$@"
+ansible-playbook playbooks/test_populating_inventory_with_hostvars_prefix_suffix.yml -e "hostvars_suffix='_aws_ec2'" "$@"
+# generate inventory config with hostvars_prefix and hostvars_suffix
+ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_hostvars_prefix_suffix.yml.j2'" -e "hostvars_prefix='aws_'" -e "hostvars_suffix='_ec2'" "$@"
+ansible-playbook playbooks/test_populating_inventory_with_hostvars_prefix_suffix.yml -e "hostvars_prefix='aws_'" -e "hostvars_suffix='_ec2'" "$@"
+
 # generate inventory config with caching and test using it
 ansible-playbook playbooks/create_inventory_config.yml -e "template='inventory_with_use_contrib_script_keys.yml.j2'" "$@"
 ANSIBLE_TRANSFORM_INVALID_GROUP_CHARS=never ansible-playbook playbooks/test_populating_inventory_with_use_contrib_script_keys.yml "$@"
