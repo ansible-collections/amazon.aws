@@ -115,6 +115,7 @@ options:
       - List of one or more route table ids to attach to the endpoint. A route
         is added to the route table with the destination of the endpoint if
         provided.
+      - Route table ids are only valid for gateway type endpoints.
     required: false
     type: list
     elements: str
@@ -308,6 +309,9 @@ def create_vpc_endpoint(client, module):
     params['VpcId'] = module.params.get('vpc_id')
     params['VpcEndpointType'] = module.params.get('vpc_endpoint_type')
     params['ServiceName'] = module.params.get('service')
+
+    if module.params.get('vpc_endpoint_type') != 'Gateway' and module.params.get('route_table_ids'):
+        module.fail_json(msg="Route table IDs are only supported for Gateway type VPC Endpoint.")
 
     if module.check_mode:
         changed = True
