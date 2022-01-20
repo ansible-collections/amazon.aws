@@ -1,0 +1,2 @@
+breaking_changes:
+- ec2 - The ``ec2`` module has been removed in release 4.0.0 and replaced by the ``ec2_instance`` module.
