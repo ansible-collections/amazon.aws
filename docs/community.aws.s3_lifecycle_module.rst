@@ -44,6 +44,22 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>abort_incomplete_multipart_upload_days</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.2.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Specifies the days since the initiation of an incomplete multipart upload that Amazon S3 will wait before permanently removing all parts of the upload.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>aws_access_key</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -160,6 +176,7 @@ Parameters
                 <td>
                         <div>Indicates the lifetime of the objects that are subject to the rule by the date they will expire.</div>
                         <div>The value must be ISO-8601 format, the time must be midnight and a GMT timezone must be specified.</div>
+                        <div>This cannot be specified with <em>expire_object_delete_marker</em></div>
                 </td>
             </tr>
             <tr>
@@ -176,6 +193,29 @@ Parameters
                 <td>
                         <div>Indicates the lifetime, in days, of the objects that are subject to the rule.</div>
                         <div>The value must be a non-zero positive integer.</div>
+                        <div>This cannot be specified with <em>expire_object_delete_marker</em></div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>expire_object_delete_marker</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.2.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Indicates whether Amazon S3 will remove a delete marker with no noncurrent versions.</div>
+                        <div>If set to <code>true</code>, the delete marker will be expired; if set to <code>false</code> the policy takes no action.</div>
+                        <div>This cannot be specified with <em>expiration_days</em> or <em>expiration_date</em>.</div>
                 </td>
             </tr>
             <tr>

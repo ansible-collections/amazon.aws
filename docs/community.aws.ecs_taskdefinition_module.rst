@@ -25,12 +25,9 @@ Requirements
 ------------
 The below requirements are needed on the host that executes this module.
 
-- boto3
-- boto3 >= 1.16.0
-- botocore
-- botocore >= 1.19.0
-- json
 - python >= 3.6
+- boto3 >= 1.16.0
+- botocore >= 1.19.0
 
 
 Parameters

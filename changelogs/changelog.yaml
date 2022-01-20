@@ -1619,3 +1619,16 @@ releases:
     - 838-ignore-deprecated-param-aws_kms_info.yml
     - remove_deprecated_facts.yml
     release_date: '2022-01-06'
+  3.0.1:
+    changes:
+      minor_changes:
+      - aws_msk_config - remove duplicated and unspecific requirements (https://github.com/ansible-collections/community.aws/pull/863).
+      - ecs_taskdefinition - remove duplicated and unspecific requirements (https://github.com/ansible-collections/community.aws/pull/863).
+      - s3_lifecycle - Add ``abort_incomplete_multipart_upload_days`` and ``expire_object_delete_marker``
+        parameters (https://github.com/ansible-collections/community.aws/pull/794).
+      release_summary: This is a path release of the ``community.aws`` collection.
+    fragments:
+    - 3.0.1.yml
+    - 794-s3_lifecycle_abort_expire.yml
+    - 863-requirements-doc-fix.yml
+    release_date: '2022-01-18'
