@@ -27,6 +27,13 @@ options:
     required: false
     type: str
     version_added: 2.2.0
+  password_reset_required:
+    description:
+      - Defines if the user is required to set a new password after login.
+    required: false
+    type: bool
+    default: false
+    version_added: 3.1.0
   update_password:
     default: always
     choices: ['always', 'on_create']
@@ -250,18 +257,20 @@ def create_or_update_login_profile(connection, module):
     user_params = dict()
     user_params['UserName'] = module.params.get('name')
     user_params['Password'] = module.params.get('password')
+    user_params['PasswordResetRequired'] = module.params.get('password_reset_required')
+    retval = {}
 
     try:
-        connection.update_login_profile(**user_params)
+        retval = connection.update_login_profile(**user_params)
     except is_boto3_error_code('NoSuchEntity'):
         try:
-            connection.create_login_profile(**user_params)
+            retval = connection.create_login_profile(**user_params)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Unable to create user login profile")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to update user login profile")
 
-    return True
+    return True, retval
 
 
 def delete_login_profile(connection, module):
@@ -296,6 +305,7 @@ def create_or_update_user(connection, module):
     user = get_user(connection, module, params['UserName'])
 
     # If user is None, create it
+    new_login_profile = False
     if user is None:
         # Check mode means we would create the user
         if module.check_mode:
@@ -312,13 +322,20 @@ def create_or_update_user(connection, module):
             wait_iam_exists(connection, module)
 
         if module.params.get('password') is not None:
-            create_or_update_login_profile(connection, module)
+            login_profile_result, login_profile_data = create_or_update_login_profile(connection, module)
+
+            if login_profile_data.get('LoginProfile', {}).get('PasswordResetRequired', False):
+                new_login_profile = True
     else:
         login_profile_result = None
         update_result = update_user_tags(connection, module, params, user)
 
         if module.params['update_password'] == "always" and module.params.get('password') is not None:
-            login_profile_result = create_or_update_login_profile(connection, module)
+            login_profile_result, login_profile_data = create_or_update_login_profile(connection, module)
+
+            if login_profile_data.get('LoginProfile', {}).get('PasswordResetRequired', False):
+                new_login_profile = True
+
         elif module.params.get('remove_password'):
             login_profile_result = delete_login_profile(connection, module)
 
@@ -361,6 +378,9 @@ def create_or_update_user(connection, module):
 
     # Get the user again
     user = get_user(connection, module, params['UserName'])
+    if changed and new_login_profile:
+        # `LoginProfile` is only returned on `create_login_profile` method
+        user['user']['password_reset_required'] = login_profile_data.get('LoginProfile', {}).get('PasswordResetRequired', False)
 
     module.exit_json(changed=changed, iam_user=user)
 
@@ -505,8 +525,9 @@ def main():
     argument_spec = dict(
         name=dict(required=True, type='str'),
         password=dict(type='str', no_log=True),
+        password_reset_required=dict(type='bool', default=False, no_log=False),
         update_password=dict(default='always', choices=['always', 'on_create'], no_log=False),
-        remove_password=dict(type='bool'),
+        remove_password=dict(type='bool', no_log=False),
         managed_policies=dict(default=[], type='list', aliases=['managed_policy'], elements='str'),
         state=dict(choices=['present', 'absent'], required=True),
         purge_policies=dict(default=False, type='bool', aliases=['purge_policy', 'purge_managed_policies']),
@@ -519,7 +540,7 @@ def main():
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        mutually_exclusive=[['password', 'remove_password']]
+        mutually_exclusive=[['password', 'remove_password']],
     )
 
     connection = module.client('iam')

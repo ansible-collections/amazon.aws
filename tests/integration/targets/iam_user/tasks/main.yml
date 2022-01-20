@@ -111,6 +111,7 @@
     iam_user:
       name: "{{ test_user3 }}"
       password: "{{ test_password }}"
+      password_reset_required: yes
       state: present
     register: iam_user
 
@@ -118,6 +119,7 @@
     assert:
       that:
         - iam_user is changed
+        - iam_user.iam_user.user.password_reset_required
 
   - name: get info on IAM user(s) on path
     iam_user_info:
@@ -275,12 +277,17 @@
       that:
         - iam_user_update is not changed
 
+  # flakey, there is no waiter for login profiles
+  # Login Profile for User ansible-user-c cannot be modified while login profile is being created.
   - name: update IAM password
     iam_user:
       name: "{{ test_user3 }}"
       password: "{{ test_new_password }}"
       state: present
     register: iam_user_update
+    until: iam_user_update.failed == false
+    delay: 3
+    retries: 5
 
   - assert:
       that:
