@@ -1,0 +1,2 @@
+bugfixes:
+  - module_utils/waiters Add db_instance_available RDS waiter config (https://github.com/ansible-collections/amazon.aws/pull/625).
