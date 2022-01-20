@@ -581,6 +581,24 @@ elb_data = {
 rds_data = {
     "version": 2,
     "waiters": {
+        "DBInstanceAvailable": {
+            "delay": 20,
+            "maxAttempts": 60,
+            "operation": "DescribeDBInstances",
+            "acceptors": [
+                {
+                    "state": "success",
+                    "matcher": "pathAll",
+                    "argument": "DBInstances[].DBInstanceStatus",
+                    "expected": "available"
+                },
+                {
+                    "state": "retry",
+                    "matcher": "error",
+                    "expected": "DBInstanceNotFoundFault"
+                }
+            ]
+        },
         "DBInstanceStopped": {
             "delay": 20,
             "maxAttempts": 60,
@@ -901,6 +919,12 @@ waiters_by_name = {
         elb_model('LoadBalancerDeleted'),
         core_waiter.NormalizedOperationMethod(
             elb.describe_load_balancers
+        )),
+    ('RDS', 'db_instance_available'): lambda rds: core_waiter.Waiter(
+        'db_instance_available',
+        rds_model('DBInstanceAvailable'),
+        core_waiter.NormalizedOperationMethod(
+            rds.describe_db_instances
         )),
     ('RDS', 'db_instance_stopped'): lambda rds: core_waiter.Waiter(
         'db_instance_stopped',
