@@ -582,8 +582,8 @@ rds_data = {
     "version": 2,
     "waiters": {
         "DBInstanceAvailable": {
-            "delay": 20,
-            "maxAttempts": 60,
+            "delay": 60,
+            "maxAttempts": 120,
             "operation": "DescribeDBInstances",
             "acceptors": [
                 {
