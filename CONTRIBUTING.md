@@ -6,7 +6,7 @@ General information about setting up your Python environment, testing modules,
 Ansible coding styles, and more can be found in the [Ansible Community Guide](
 https://docs.ansible.com/ansible/latest/community/index.html).
 
-Information about boto library usage, module utils, testing, and more can be
+Information about AWS SDK library usage, module utils, testing, and more can be
 found in the [AWS Guidelines](https://docs.ansible.com/ansible/devel/dev_guide/platforms/aws_guidelines.html)
 documentation.
 
@@ -41,7 +41,7 @@ issue, or by reporting any additional information
 
 ## Pull Requests
 
-All modules MUST have integration tests for new features. Upgrading to boto3 shall be considered a feature request.  
+All modules MUST have integration tests for new features.
 Bug fixes for modules that currently have integration tests SHOULD have tests added.  
 New modules should be submitted to the [community.aws](https://github.com/ansible-collections/community.aws) collection
 and MUST have integration tests.

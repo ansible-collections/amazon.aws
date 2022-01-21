@@ -53,7 +53,6 @@ options:
   aws_ca_bundle:
     description:
       - "The location of a CA Bundle to use when validating SSL certificates."
-      - "Not used by boto 2 based modules."
       - "Note: The CA Bundle is read 'module' side and may need to be explicitly copied from the controller if not run locally."
     type: path
   validate_certs:
@@ -73,7 +72,6 @@ options:
     description:
       - A dictionary to modify the botocore configuration.
       - Parameters can be found at U(https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config).
-      - Only the 'user_agent' key is used for boto modules. See U(http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto) for more boto configuration.
     type: dict
 requirements:
   - python >= 3.6
@@ -94,10 +92,6 @@ notes:
     C(~/.aws/credentials)).
     See U(https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html)
     for more information.
-  - Modules based on the original AWS SDK (boto) may read their default
-    configuration from different files.
-    See U(https://boto.readthedocs.io/en/latest/boto_config_tut.html) for more
-    information.
   - C(AWS_REGION) or C(EC2_REGION) can be typically be used to specify the
     AWS region, when required, but this can also be defined in the
     configuration files.

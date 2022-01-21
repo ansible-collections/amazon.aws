@@ -23,7 +23,7 @@ Starting with the 2.0.0 releases of amazon.aws and community.aws, it is generall
 
 Version 3.0.0 of this collection supports `boto3 >= 1.16.0` and `botocore >= 1.19.0`
 
-Support for the original AWS SDK `boto` has been deprecated and the module_utils library code to support it will be removed in release 4.0.0.
+All support for the original AWS SDK `boto` was removed in release 4.0.0.
 
 ## Included content
 
@@ -110,7 +110,7 @@ be manually installed using pip:
 
 or:
 
-    pip install boto boto3 botocore
+    pip install boto3 botocore
 
 ## Using this collection
 
