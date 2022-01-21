@@ -155,8 +155,6 @@ def wait_for_instance_status(client, module, db_instance_id, waiter_name):
         extra_retry_codes = []
     for attempt_to_wait in range(0, 10):
         try:
-            # This seems to help limit failures from the waiter itself
-            sleep(10)
             wait(client, db_instance_id, waiter_name, extra_retry_codes)
             break
         except WaiterError as e:
