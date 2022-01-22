@@ -146,6 +146,31 @@
 
     # ============================================================
 
+    - name: Modify a VPC in check mode
+      ec2_vpc_net:
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ resource_prefix }}"
+        ipv6_cidr: False
+      check_mode: true
+      register: result_check
+    - name: assert configuration would change
+      assert:
+        that:
+          - result is successful
+          - result is changed
+
+    - name: Modify a VPC in check mode, no change expected
+      ec2_vpc_net:
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ resource_prefix }}"
+        ipv6_cidr: True
+      register: result_check
+    - name: assert configuration did not change
+      assert:
+        that:
+          - result is successful
+          - result is changed
+
     - name: VPC info (no filters)
       ec2_vpc_net_info:
       register: vpc_info
