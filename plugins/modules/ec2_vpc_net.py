@@ -301,6 +301,8 @@ def update_vpc_tags(connection, module, vpc_id, tags, name):
                 expected_tags = boto3_tag_list_to_ansible_dict(tags)
                 filters = [{'Name': 'tag:{0}'.format(key), 'Values': [value]} for key, value in expected_tags.items()]
                 wait_for_vpc(module, connection, VpcIds=[vpc_id], Filters=filters)
+            else:
+                module.exit_json(changed=True, msg="VPC tags would be configured if not in check mode")
 
             return True
         else:
@@ -320,6 +322,8 @@ def update_dhcp_opts(connection, module, vpc_obj, dhcp_id):
             # Wait for DhcpOptionsId to be updated
             filters = [{'Name': 'dhcp-options-id', 'Values': [dhcp_id]}]
             wait_for_vpc(module, connection, VpcIds=[vpc_obj['VpcId']], Filters=filters)
+        else:
+            module.exit_json(changed=True, msg="DHCP options would be configured if not in check mode")
 
         return True
     else:
@@ -331,7 +335,7 @@ def create_vpc(connection, module, cidr_block, tenancy):
         if not module.check_mode:
             vpc_obj = connection.create_vpc(CidrBlock=cidr_block, InstanceTenancy=tenancy, aws_retry=True)
         else:
-            module.exit_json(changed=True)
+            module.exit_json(changed=True, msg="VPC would be created if not in check mode")
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, "Failed to create the VPC")
 
@@ -451,21 +455,27 @@ def main():
         if len(cidr_block) > 1:
             for cidr in to_add:
                 changed = True
+                if module.check_mode:
+                    module.exit_json(changed=changed, msg="CIDR block would be associated with VPC if not in check mode")
                 try:
                     connection.associate_vpc_cidr_block(CidrBlock=cidr, VpcId=vpc_id, aws_retry=True)
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     module.fail_json_aws(e, "Unable to associate CIDR {0}.".format(ipv6_cidr))
         if ipv6_cidr:
             if 'Ipv6CidrBlockAssociationSet' not in vpc_obj.keys():
+                changed = True
+                if module.check_mode:
+                    module.exit_json(changed=changed, msg="IPv6 CIDR block would be associated with VPC if not in check mode")
                 try:
                     connection.associate_vpc_cidr_block(AmazonProvidedIpv6CidrBlock=ipv6_cidr, VpcId=vpc_id, aws_retry=True)
-                    changed = True
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     module.fail_json_aws(e, "Unable to associate CIDR {0}.".format(ipv6_cidr))
 
         if purge_cidrs:
             for association_id in to_remove:
                 changed = True
+                if module.check_mode:
+                    module.exit_json(changed=changed, msg="CIDR block would be disassociated from VPC if not in check mode")
                 try:
                     connection.disassociate_vpc_cidr_block(AssociationId=association_id, aws_retry=True)
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -495,6 +505,9 @@ def main():
                     connection.modify_vpc_attribute(VpcId=vpc_id, EnableDnsSupport={'Value': dns_support}, aws_retry=True)
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     module.fail_json_aws(e, "Failed to update enabled dns support attribute")
+            else:
+                module.exit_json(changed=changed, msg="DNS configuration would be changed if not in check mode")
+
         if current_dns_hostnames != dns_hostnames:
             changed = True
             if not module.check_mode:
@@ -502,6 +515,8 @@ def main():
                     connection.modify_vpc_attribute(VpcId=vpc_id, EnableDnsHostnames={'Value': dns_hostnames}, aws_retry=True)
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     module.fail_json_aws(e, "Failed to update enabled dns hostnames attribute")
+            else:
+                module.exit_json(changed=changed, msg="DNS hostname configuration would be changed if not in check mode")
 
         # wait for associated cidrs to match
         if to_add or to_remove:
@@ -529,9 +544,12 @@ def main():
 
         if vpc_id is not None:
             try:
+                changed = True
                 if not module.check_mode:
                     connection.delete_vpc(VpcId=vpc_id, aws_retry=True)
-                changed = True
+                else:
+                    module.exit_json(changed=changed, msg="VPC would be deleted if not in check mode")
+
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Failed to delete VPC {0} You may want to use the ec2_vpc_subnet, ec2_vpc_igw, "
                                      "and/or ec2_vpc_route_table modules to ensure the other components are absent.".format(vpc_id))
