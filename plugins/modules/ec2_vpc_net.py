@@ -31,9 +31,9 @@ options:
     elements: str
   ipv6_cidr:
     description:
-      - Request an Amazon-provided IPv6 CIDR block with /56 prefix length.  You cannot specify the range of IPv6 addresses,
+      - Request an Amazon-provided IPv6 CIDR block with /56 prefix length. You cannot specify the range of IPv6 addresses,
         or the size of the CIDR block.
-    default: False
+      - Default value is C(false) when creating a new VPC.
     type: bool
   purge_cidrs:
     description:
@@ -422,7 +422,7 @@ def main():
     argument_spec = dict(
         name=dict(required=True),
         cidr_block=dict(type='list', required=True, elements='str'),
-        ipv6_cidr=dict(type='bool', default=False),
+        ipv6_cidr=dict(type='bool', default=None),
         tenancy=dict(choices=['default', 'dedicated'], default='default'),
         dns_support=dict(type='bool', default=True),
         dns_hostnames=dict(type='bool', default=True),
@@ -466,12 +466,24 @@ def main():
 
         # Check if VPC exists
         vpc_id = vpc_exists(module, connection, name, cidr_block, multi)
-
+        is_new_vpc = False
         if vpc_id is None:
+            is_new_vpc = True
             vpc_id = create_vpc(connection, module, cidr_block[0], tenancy)
             changed = True
+            if ipv6_cidr is None:
+                ipv6_cidr = False # default value when creating new VPC.
 
         vpc_obj = get_vpc(module, connection, vpc_id)
+        if not is_new_vpc and ipv6_cidr is None:
+            # 'ipv6_cidr' wasn't specified in the task.
+            # Retain the value from the existing VPC.
+            ipv6_cidr = False
+            if 'Ipv6CidrBlockAssociationSet' in vpc_obj.keys():
+                for ipv6_assoc in vpc_obj['Ipv6CidrBlockAssociationSet']:
+                    if ipv6_assoc['Ipv6Pool'] == 'Amazon' and ipv6_assoc['Ipv6CidrBlockState']['State'] in ['associated', 'associating']:
+                        ipv6_cidr = True
+                        break
 
         associated_cidrs = dict((cidr['CidrBlock'], cidr['AssociationId']) for cidr in vpc_obj.get('CidrBlockAssociationSet', [])
                                 if cidr['CidrBlockState']['State'] != 'disassociated')
