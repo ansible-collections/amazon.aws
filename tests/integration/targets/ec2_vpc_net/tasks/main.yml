@@ -146,31 +146,6 @@
 
     # ============================================================
 
-    - name: Modify a VPC in check mode
-      ec2_vpc_net:
-        cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
-        ipv6_cidr: False
-      check_mode: true
-      register: result_check
-    - name: assert configuration would change
-      assert:
-        that:
-          - result is successful
-          - result is changed
-
-    - name: Modify a VPC in check mode, no change expected
-      ec2_vpc_net:
-        cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
-        ipv6_cidr: True
-      register: result_check
-    - name: assert configuration did not change
-      assert:
-        that:
-          - result is successful
-          - result is changed
-
     - name: VPC info (no filters)
       ec2_vpc_net_info:
       register: vpc_info
@@ -417,6 +392,7 @@
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ resource_prefix }}"
+        ipv6_cidr: True
         dhcp_opts_id: "{{ new_dhcp.dhcp_options_id }}"
       register: result
       check_mode: True
@@ -438,6 +414,7 @@
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ resource_prefix }}"
+        ipv6_cidr: True
         dhcp_opts_id: "{{ new_dhcp.dhcp_options_id }}"
       register: result
     - ec2_vpc_net_info:
@@ -460,6 +437,7 @@
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ resource_prefix }}"
+        ipv6_cidr: True
         dhcp_opts_id: "{{ new_dhcp.dhcp_options_id }}"
       register: result
     - ec2_vpc_net_info:
@@ -506,6 +484,7 @@
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ resource_prefix }}"
+        ipv6_cidr: True
         dns_hostnames: False
       register: result
     - ec2_vpc_net_info:
@@ -528,6 +507,7 @@
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ resource_prefix }}"
+        ipv6_cidr: True
         dns_hostnames: False
       register: result
     - ec2_vpc_net_info:
@@ -575,6 +555,7 @@
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ resource_prefix }}"
+        ipv6_cidr: True
         dns_hostnames: False
         dns_support: False
       register: result
@@ -598,6 +579,7 @@
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ resource_prefix }}"
+        ipv6_cidr: True
         dns_hostnames: False
         dns_support: False
       register: result
@@ -643,6 +625,7 @@
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
+        ipv6_cidr: True
         name: "{{ resource_prefix }}"
       register: result
     - ec2_vpc_net_info:
@@ -664,6 +647,7 @@
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
+        ipv6_cidr: True
         name: "{{ resource_prefix }}"
       register: result
     - ec2_vpc_net_info:
@@ -688,6 +672,7 @@
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ resource_prefix }}"
+        ipv6_cidr: True
         tags:
           Ansible: Test
       check_mode: true
@@ -714,6 +699,7 @@
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ resource_prefix }}"
+        ipv6_cidr: True
         tags:
           Ansible: Test
       register: result
@@ -746,6 +732,7 @@
         state: present
         cidr_block: "{{ vpc_cidr }}"
         name: "{{ resource_prefix }}"
+        ipv6_cidr: True
         dns_support: True
         dns_hostnames: True
         tags:
@@ -814,6 +801,7 @@
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_a }}"
         name: "{{ resource_prefix }}"
+        ipv6_cidr: True
       register: result
     - ec2_vpc_net_info:
         filters:
@@ -853,6 +841,7 @@
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_a }}"
         name: "{{ resource_prefix }}"
+        ipv6_cidr: True
       register: result
     - ec2_vpc_net_info:
         filters:
@@ -926,6 +915,7 @@
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_b }}"
         name: "{{ resource_prefix }}"
+        ipv6_cidr: True
       register: result
     - ec2_vpc_net_info:
         filters:
@@ -968,6 +958,7 @@
         cidr_block:
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_b }}"
+        ipv6_cidr: True
         name: "{{ resource_prefix }}"
       register: result
     - ec2_vpc_net_info:
@@ -1011,6 +1002,7 @@
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_a }}"
         - "{{ vpc_cidr_b }}"
+        ipv6_cidr: True
         name: "{{ resource_prefix }}"
       register: result
     - ec2_vpc_net_info:
@@ -1054,6 +1046,7 @@
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_a }}"
         - "{{ vpc_cidr_b }}"
+        ipv6_cidr: True
         name: "{{ resource_prefix }}"
       register: result
     - ec2_vpc_net_info:
@@ -1097,6 +1090,7 @@
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_b }}"
         - "{{ vpc_cidr_a }}"
+        ipv6_cidr: True
         name: "{{ resource_prefix }}"
       register: result
     - ec2_vpc_net_info:
@@ -1140,6 +1134,7 @@
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_b }}"
         - "{{ vpc_cidr_a }}"
+        ipv6_cidr: True
         name: "{{ resource_prefix }}"
       register: result
     - ec2_vpc_net_info:
@@ -1217,6 +1212,7 @@
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_b }}"
         name: "{{ resource_prefix }}"
+        ipv6_cidr: True
         purge_cidrs: yes
       register: result
     - ec2_vpc_net_info:
@@ -1249,6 +1245,7 @@
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_b }}"
         name: "{{ resource_prefix }}"
+        ipv6_cidr: True
         purge_cidrs: yes
       register: result
     - ec2_vpc_net_info:
@@ -1273,6 +1270,76 @@
           - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
           - vpc_cidr_a not in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
           - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
+
+    # ============================================================
+
+    - name: Remove IPv6 CIDR association from VPC in check mode
+      ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ resource_prefix }}"
+        ipv6_cidr: False
+      check_mode: true
+      register: result
+    - name: assert configuration would change
+      assert:
+        that:
+          - result is successful
+          - result is changed
+
+    - name: Set IPv6 CIDR association to VPC, no change expected
+      # I.e. assert the previous ec2_vpc_net task in check_mode did not
+      # mistakenly modify the VPC configuration.
+      ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ resource_prefix }}"
+        ipv6_cidr: True
+      register: result
+    - name: assert configuration did not change
+      assert:
+        that:
+          - result is successful
+          - result is not changed
+
+    - name: Remove IPv6 CIDR association from VPC
+      ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ resource_prefix }}"
+        ipv6_cidr: False
+      register: result
+    - name: assert IPv6 CIDR association removed from VPC
+      assert:
+        that:
+          - result is successful
+          - result is changed
+          - result.vpc.ipv6_cidr_block_association_set | length == 1
+          - result.vpc.ipv6_cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
+          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.netcommon.ipv6
+          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block_state.state in ["disassociated"]
+
+    - name: Add IPv6 CIDR association to VPC again
+      ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ resource_prefix }}"
+        ipv6_cidr: True
+      register: result
+    - name: assert configuration change
+      assert:
+        that:
+          - result is successful
+          - result is changed
+          # Because the IPv6 CIDR was associated, then disassociated, then reassociated,
+          # now there should be one disassociated block and one associated block.
+          - result.vpc.ipv6_cidr_block_association_set | length == 2
+          - result.vpc.ipv6_cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
+          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.netcommon.ipv6
+          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block_state.state in ["disassociated", "disassociating"]
+          - result.vpc.ipv6_cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
+          - result.vpc.ipv6_cidr_block_association_set[1].ipv6_cidr_block | ansible.netcommon.ipv6
+          - result.vpc.ipv6_cidr_block_association_set[1].ipv6_cidr_block_state.state in ["associated", "associating"]
 
     # ============================================================
 
