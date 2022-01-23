@@ -594,11 +594,9 @@ def main():
 
         if vpc_id is not None:
             try:
-                changed = True
                 if not module.check_mode:
                     connection.delete_vpc(VpcId=vpc_id, aws_retry=True)
-                else:
-                    module.exit_json(changed=changed, msg="VPC would be deleted if not in check mode")
+                changed = True
 
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Failed to delete VPC {0} You may want to use the ec2_vpc_subnet, ec2_vpc_igw, "
