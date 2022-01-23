@@ -391,8 +391,11 @@ def wait_for_vpc_ipv6_state(module, connection, vpc_id, ipv6_assoc_state):
                         break
                 else:
                     # All 'Amazon' IPv6 CIDR blocks must be disassociated.
-                    expected_count = sum([(val.get("Ipv6Pool") == "Amazon") for val in ipv6_set])
-                    if sum([(val.get('Ipv6Pool') == 'Amazon' and val.get("Ipv6CidrBlockState").get("State") == "disassociated") for val in ipv6_set]) == expected_count:
+                    expected_count = sum(
+                        [(val.get("Ipv6Pool") == "Amazon") for val in ipv6_set])
+                    actual_count = sum([(val.get('Ipv6Pool') == 'Amazon' and
+                                         val.get("Ipv6CidrBlockState").get("State") == "disassociated") for val in ipv6_set])
+                    if actual_count == expected_count:
                         criteria_match = True
                         break
         sleep(3)
@@ -472,7 +475,8 @@ def main():
             vpc_id = create_vpc(connection, module, cidr_block[0], tenancy)
             changed = True
             if ipv6_cidr is None:
-                ipv6_cidr = False # default value when creating new VPC.
+                # default value when creating new VPC.
+                ipv6_cidr = False
 
         vpc_obj = get_vpc(module, connection, vpc_id)
         if not is_new_vpc and ipv6_cidr is None:
@@ -546,7 +550,7 @@ def main():
                         connection.disassociate_vpc_cidr_block(AssociationId=association_id, aws_retry=True)
                     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                         module.fail_json_aws(e, "Unable to disassociate {0}. You must detach or delete all gateways and resources that "
-                                            "are associated with the CIDR block before you can disassociate it.".format(association_id))
+                                             "are associated with the CIDR block before you can disassociate it.".format(association_id))
 
         if dhcp_id is not None:
             try:
