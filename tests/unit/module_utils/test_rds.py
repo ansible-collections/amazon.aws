@@ -59,9 +59,7 @@ def test__wait_for_snapshot_status(waiter_name):
             "db_cluster_snapshot_available",
             "Failed to wait for DB snapshot test to be available",
         ),
-        (
-            "db_snapshot_deleted", 
-            "Failed to wait for DB snapshot test to be deleted"),
+        ("db_snapshot_deleted", "Failed to wait for DB snapshot test to be deleted"),
         (
             "db_cluster_snapshot_deleted",
             "Failed to wait for DB snapshot test to be deleted",
@@ -150,18 +148,10 @@ def test__get_rds_method_attribute(input, expected, error):
 @pytest.mark.parametrize(
     "method_name, params, expected",
     [
+        ("create_db_snapshot", {"db_snapshot_identifier": "test"}, "test"),
         (
             "create_db_snapshot",
-            {
-                "db_snapshot_identifier": "test"
-            },
-            "test"
-        ),
-        (
-            "create_db_snapshot",
-            {
-                "db_snapshot_identifier": "test",
-                "apply_immediately": True},
+            {"db_snapshot_identifier": "test", "apply_immediately": True},
             "test",
         ),
         (
@@ -174,10 +164,7 @@ def test__get_rds_method_attribute(input, expected, error):
         ),
         (
             "create_db_snapshot",
-            {
-                "db_snapshot_identifier": "test",
-                "apply_immediately": True
-            },
+            {"db_snapshot_identifier": "test", "apply_immediately": True},
             "test",
         ),
         (
@@ -199,10 +186,7 @@ def test__get_rds_method_attribute(input, expected, error):
         ),
         (
             "create_db_snapshot",
-            {
-                "db_snapshot_identifier": "test",
-                "apply_immediately": True
-            },
+            {"db_snapshot_identifier": "test", "apply_immediately": True},
             "test",
         ),
         (
@@ -304,8 +288,8 @@ def test__handle_errors(method_name, exception, expected):
             "create_db_instance",
             build_exception("create_db_instance", code="InvalidParameterValue"),
             *expected(
-                "DB engine fake_engine should be one of aurora, aurora-mysql, aurora-postgresql, mariadb, mysql, oracle-ee, oracle-se, oracle-se1, " +
-                "oracle-se2, postgres, sqlserver-ee, sqlserver-ex, sqlserver-se, sqlserver-web"
+                "DB engine fake_engine should be one of aurora, aurora-mysql, aurora-postgresql, mariadb, mysql, oracle-ee, oracle-se, oracle-se1, "
+                + "oracle-se2, postgres, sqlserver-ee, sqlserver-ex, sqlserver-se, sqlserver-web"
             ),
         ),
         (
