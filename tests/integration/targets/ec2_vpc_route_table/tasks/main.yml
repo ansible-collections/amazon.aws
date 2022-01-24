@@ -9,32 +9,102 @@
 
   - name: create VPC
     ec2_vpc_net:
-      cidr_block: 10.228.228.0/22
+      cidr_block: 10.228.224.0/21
       name: '{{ resource_prefix }}_vpc'
       state: present
     register: vpc
+  - name: assert that VPC has an id
+    assert:
+      that:
+      - vpc.vpc.id is defined
+      - vpc.changed
+  - name: Assign IPv6 CIDR block to existing VPC, check mode
+    ec2_vpc_net:
+      cidr_block: 10.228.224.0/21
+      name: '{{ resource_prefix }}_vpc'
+      ipv6_cidr: true
+    check_mode: true
+    register: vpc_update
+  - name: assert that VPC would changed
+    assert:
+      that:
+      - vpc_update.changed
+  - name: Assign Amazon-provided IPv6 CIDR block to existing VPC
+    ec2_vpc_net:
+      cidr_block: 10.228.224.0/21
+      name: '{{ resource_prefix }}_vpc'
+      ipv6_cidr: true
+    register: vpc_update
+  - name: assert that VPC was changed, IPv6 CIDR is configured
+    assert:
+      that:
+      - vpc_update.vpc.id == vpc.vpc.id
+      - vpc_update.changed
+      - vpc_update.vpc.ipv6_cidr_block_association_set | length == 1
+  - name: Fetch existing VPC info
+    ec2_vpc_net_info:
+      filters:
+        "tag:Name": "{{ resource_prefix }}_vpc"
+    register: vpc_info
+  - name: assert vpc net info after configuring IPv6 CIDR
+    assert:
+      that:
+        - vpc_info.vpcs | length == 1
+        - vpc_info.vpcs[0].id == vpc.vpc.id
+        - vpc_info.vpcs[0].ipv6_cidr_block_association_set | length == 1
+        - vpc_info.vpcs[0].ipv6_cidr_block_association_set[0].ipv6_cidr_block_state.state == "associated"
+  - name: get Amazon-provided IPv6 CIDR associated with the VPC
+    set_fact:
+      # Example value: 2600:1f1c:1b3:8f00::/56
+      vpc_ipv6_cidr_block: '{{ vpc_info.vpcs[0].ipv6_cidr_block_association_set[0].ipv6_cidr_block }}'
   - name: create subnets
     ec2_vpc_subnet:
       cidr: '{{ item.cidr }}'
       az: '{{ item.zone }}'
+      assign_instances_ipv6: '{{ item.assign_instances_ipv6 }}'
+      ipv6_cidr: '{{ item.ipv6_cidr  }}'
       vpc_id: '{{ vpc.vpc.id }}'
       state: present
       tags:
         Public: '{{ item.public|string }}'
         Name: "{{ (item.public|bool)|ternary('public', 'private') }}-{{ item.zone }}"
     with_items:
+    - cidr: 10.228.224.0/24
+      zone: '{{ availability_zone_a }}'
+      public: 'True'
+      assign_instances_ipv6: false
+      ipv6_cidr: null
+    - cidr: 10.228.225.0/24
+      zone: '{{ availability_zone_b }}'
+      public: 'True'
+      assign_instances_ipv6: false
+      ipv6_cidr: null
+    - cidr: 10.228.226.0/24
+      zone: '{{ availability_zone_a }}'
+      public: 'False'
+      assign_instances_ipv6: false
+      ipv6_cidr: null
+    - cidr: 10.228.227.0/24
+      zone: '{{ availability_zone_b }}'
+      public: 'False'
+      assign_instances_ipv6: false
+      ipv6_cidr: null
     - cidr: 10.228.228.0/24
       zone: '{{ availability_zone_a }}'
-      public: 'True'
+      public: 'False'
+      assign_instances_ipv6: true
+      # Carve first /64 subnet of the Amazon-provided CIDR for the VPC.
+      ipv6_cidr: "{{ vpc_ipv6_cidr_block | ansible.netcommon.ipsubnet(64, 1) }}"
     - cidr: 10.228.229.0/24
-      zone: '{{ availability_zone_b }}'
-      public: 'True'
-    - cidr: 10.228.230.0/24
       zone: '{{ availability_zone_a }}'
-      public: 'False'
-    - cidr: 10.228.231.0/24
+      public: 'True'
+      assign_instances_ipv6: true
+      ipv6_cidr: "{{ vpc_ipv6_cidr_block | ansible.netcommon.ipsubnet(64, 2) }}"
+    - cidr: 10.228.230.0/24
       zone: '{{ availability_zone_b }}'
       public: 'False'
+      assign_instances_ipv6: true
+      ipv6_cidr: "{{ vpc_ipv6_cidr_block | ansible.netcommon.ipsubnet(64, 3) }}"
     register: subnets
   - ec2_vpc_subnet_info:
       filters:
@@ -83,11 +153,11 @@
       - create_public_table.route_table.id.startswith('rtb-')
       - "'Public' in create_public_table.route_table.tags and create_public_table.route_table.tags['Public']\
         \ == 'true'"
-      - create_public_table.route_table.routes|length == 1
+      # One route for IPv4, one route for IPv6
+      - create_public_table.route_table.routes|length == 2
       - create_public_table.route_table.associations|length == 0
       - create_public_table.route_table.vpc_id == "{{ vpc.vpc.id }}"
       - create_public_table.route_table.propagating_vgws|length == 0
-      - create_public_table.route_table.routes|length == 1
 
   - name: CHECK MODE - route table should already exist
     ec2_vpc_route_table:
@@ -116,11 +186,10 @@
       - create_public_table.route_table.id.startswith('rtb-')
       - "'Public' in create_public_table.route_table.tags and create_public_table.route_table.tags['Public']\
         \ == 'true'"
-      - create_public_table.route_table.routes|length == 1
+      - create_public_table.route_table.routes|length == 2
       - create_public_table.route_table.associations|length == 0
       - create_public_table.route_table.vpc_id == "{{ vpc.vpc.id }}"
       - create_public_table.route_table.propagating_vgws|length == 0
-      - create_public_table.route_table.routes|length == 1
 
   - name: CHECK MODE - add route to public route table
     ec2_vpc_route_table:
@@ -156,11 +225,14 @@
     assert:
       that:
       - add_routes.changed
-      - add_routes.route_table.routes|length == 3
+      # 10.228.224.0/21
+      # 0.0.0.0/0
+      # ::/0
+      # Amazon-provide IPv6 block
+      - add_routes.route_table.routes|length == 4
       - add_routes.route_table.id.startswith('rtb-')
       - "'Public' in add_routes.route_table.tags and add_routes.route_table.tags['Public']\
         \ == 'true'"
-      - add_routes.route_table.routes|length == 3
       - add_routes.route_table.associations|length == 0
       - add_routes.route_table.vpc_id == "{{ vpc.vpc.id }}"
       - add_routes.route_table.propagating_vgws|length == 0
@@ -195,7 +267,7 @@
     assert:
       that:
       - add_routes is not changed
-      - add_routes.route_table.routes|length == 3
+      - add_routes.route_table.routes|length == 4
 
   - name: CHECK MODE - add subnets to public route table
     ec2_vpc_route_table:
@@ -229,7 +301,7 @@
     assert:
       that:
       - add_subnets.changed
-      - add_subnets.route_table.associations|length == 2
+      - add_subnets.route_table.associations|length == 3
 
   - name: add a route to public route table
     ec2_vpc_route_table:
@@ -269,8 +341,8 @@
     assert:
       that:
       - not no_purge_routes.changed
-      - no_purge_routes.route_table.routes|length == 3
-      - no_purge_routes.route_table.associations|length == 2
+      - no_purge_routes.route_table.routes|length == 4
+      - no_purge_routes.route_table.associations|length == 3
 
   - name: rerun with purge_subnets set to false
     ec2_vpc_route_table:
@@ -287,8 +359,8 @@
     assert:
       that:
       - not no_purge_subnets.changed
-      - no_purge_subnets.route_table.routes|length == 3
-      - no_purge_subnets.route_table.associations|length == 2
+      - no_purge_subnets.route_table.routes|length == 4
+      - no_purge_subnets.route_table.associations|length == 3
 
   - name: rerun with purge_tags not set (implicitly false)
     ec2_vpc_route_table:
@@ -370,7 +442,7 @@
     assert:
       that:
       - add_subnets_cidr.changed
-      - add_subnets_cidr.route_table.associations|length == 2
+      - add_subnets_cidr.route_table.associations|length == 3
 
   - name: purge subnets added by cidr
     ec2_vpc_route_table:
@@ -402,7 +474,7 @@
     assert:
       that:
       - add_subnets_name.changed
-      - add_subnets_name.route_table.associations|length == 2
+      - add_subnets_name.route_table.associations|length == 3
 
   - name: purge subnets added by name
     ec2_vpc_route_table:
@@ -432,7 +504,7 @@
     assert:
       that:
       - purge_routes.changed
-      - purge_routes.route_table.routes|length == 2
+      - purge_routes.route_table.routes|length == 3
       - purge_routes.route_table.id == create_public_table.route_table.id
 
   - name: CHECK MODE - update tags
@@ -442,7 +514,7 @@
       lookup: id
       purge_tags: yes
       tags:
-        Name: Public route table
+        Name: Public routeroute_spec table
         Updated: new_tag
     check_mode: true
     register: check_mode_results
@@ -698,14 +770,17 @@
       vpc_id: '{{ vpc.vpc.id }}'
       state: absent
     with_items:
+    - cidr: 10.228.224.0/24
+    - cidr: 10.228.225.0/24
+    - cidr: 10.228.226.0/24
+    - cidr: 10.228.227.0/24
     - cidr: 10.228.228.0/24
     - cidr: 10.228.229.0/24
     - cidr: 10.228.230.0/24
-    - cidr: 10.228.231.0/24
     ignore_errors: yes
   - name: destroy VPC
     ec2_vpc_net:
-      cidr_block: 10.228.228.0/22
+      cidr_block: 10.228.224.0/21
       name: '{{ resource_prefix }}_vpc'
       state: absent
     ignore_errors: yes

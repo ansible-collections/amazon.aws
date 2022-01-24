@@ -47,11 +47,19 @@ options:
     - Required when I(lookup=id).
     type: str
   routes:
-    description: List of routes in the route table.
-        Routes are specified as dicts containing the keys 'dest' and one of 'gateway_id',
-        'instance_id', 'network_interface_id', or 'vpc_peering_connection_id'.
-        If 'gateway_id' is specified, you can refer to the VPC's IGW by using the value 'igw'.
-        Routes are required for present states.
+    description:
+        - >
+          List of routes in the route table.
+        - >
+          Routes are specified as dicts containing the keys 'dest' and one of 'gateway_id',
+          'instance_id', 'network_interface_id', or 'vpc_peering_connection_id'.
+        - >
+          The value of 'dest' is used for the destination match. It may be a IPv4 CIDR block
+          or a IPv6 CIDR block.
+        - >
+          If 'gateway_id' is specified, you can refer to the VPC's IGW by using the value 'igw'.
+        - >
+          Routes are required for present states.
     type: list
     elements: dict
   state:
@@ -66,7 +74,7 @@ options:
     elements: str
   tags:
     description: >
-      A dictionary of resource tags of the form: C({ tag1: value1, tag2: value2 }). Tags are
+      A dictionary of resource tags of the form: blockC({ tag1: value1, tag2: value2 }). Tags are
       used to uniquely identify route tables within a VPC when the route_table_id is not supplied.
     aliases: [ "resource_tags" ]
     type: dict
@@ -178,8 +186,13 @@ route_table:
       type: complex
       contains:
         destination_cidr_block:
-          description: CIDR block of destination
+          description: IPv4 CIDR block of destination
           returned: always
+          type: str
+          sample: 10.228.228.0/22
+        destination_ipv6_cidr_block:
+          description: IPv6 CIDR block of destination
+          returned: when the route includes an IPv6 destination
           type: str
           sample: 10.228.228.0/22
         gateway_id:
