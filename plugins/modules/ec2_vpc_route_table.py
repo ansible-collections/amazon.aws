@@ -74,7 +74,7 @@ options:
     elements: str
   tags:
     description: >
-      A dictionary of resource tags of the form: C({ tag1: value1, tag2: value2 }). Tags are
+      A dictionary of resource tags of the form: blockC({ tag1: value1, tag2: value2 }). Tags are
       used to uniquely identify route tables within a VPC when the route_table_id is not supplied.
     aliases: [ "resource_tags" ]
     type: dict
