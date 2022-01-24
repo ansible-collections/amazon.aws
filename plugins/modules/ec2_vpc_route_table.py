@@ -61,7 +61,7 @@ options:
     type: str
   subnets:
     description: An array of subnets to add to this route table. Subnets may be specified
-      by either subnet ID, Name tag, or by a CIDR such as '10.0.0.0/24'.
+      by either subnet ID, Name tag, or by a CIDR such as '10.0.0.0/24' or 'fd00::/8'.
     type: list
     elements: str
   tags:
@@ -97,6 +97,8 @@ EXAMPLES = r'''
       - "{{ vpn_subnet.subnet_id }}"
     routes:
       - dest: 0.0.0.0/0
+        gateway_id: "{{ igw.gateway_id }}"
+      - dest: ::/0
         gateway_id: "{{ igw.gateway_id }}"
   register: public_route_table
 
