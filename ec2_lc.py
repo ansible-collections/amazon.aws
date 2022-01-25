@@ -107,6 +107,12 @@ options:
         description:
           - The number of IOPS per second to provision for the volume.
           - Required when I(volume_type=io1).
+      throughput:
+        type: int
+        description:
+          - The throughput to provision for a gp3 volume.
+          - Valid Range is a minimum value of 125 and a maximum value of 1000.
+        version_added: 3.1.0
       encrypted:
         type: bool
         default: false
@@ -478,7 +484,7 @@ def create_block_device_meta(module, volume):
     if 'no_device' in volume:
         return_object['NoDevice'] = volume.get('no_device')
 
-    if any(key in volume for key in ['snapshot', 'volume_size', 'volume_type', 'delete_on_termination', 'iops', 'encrypted']):
+    if any(key in volume for key in ['snapshot', 'volume_size', 'volume_type', 'delete_on_termination', 'iops', 'throughput', 'encrypted']):
         return_object['Ebs'] = {}
 
     if 'snapshot' in volume:
@@ -495,6 +501,11 @@ def create_block_device_meta(module, volume):
 
     if 'iops' in volume:
         return_object['Ebs']['Iops'] = volume.get('iops')
+
+    if 'throughput' in volume:
+        if volume.get('volume_type') != 'gp3':
+            module.fail_json(msg='The throughput parameter is supported only for GP3 volumes.')
+        return_object['Ebs']['Throughput'] = volume.get('throughput')
 
     if 'encrypted' in volume:
         return_object['Ebs']['Encrypted'] = volume.get('encrypted')
