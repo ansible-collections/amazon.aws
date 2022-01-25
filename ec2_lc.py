@@ -478,7 +478,7 @@ def create_block_device_meta(module, volume):
     if 'no_device' in volume:
         return_object['NoDevice'] = volume.get('no_device')
 
-    if any(key in volume for key in ['snapshot', 'volume_size', 'volume_type', 'delete_on_termination', 'ips', 'encrypted']):
+    if any(key in volume for key in ['snapshot', 'volume_size', 'volume_type', 'delete_on_termination', 'iops', 'encrypted']):
         return_object['Ebs'] = {}
 
     if 'snapshot' in volume:
