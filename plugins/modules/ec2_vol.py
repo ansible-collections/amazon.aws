@@ -111,6 +111,12 @@ options:
       - This parameter is supported with io1 and io2 volumes only.
     type: bool
     version_added: 2.0.0
+  outpost_arn:
+    description:
+      - The Amazon Resource Name (ARN) of the Outpost.
+      - If set, allows to create volume in an Outpost.
+    type: str
+    version_added: 3.1.0
 author: "Lester Wade (@lwade)"
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -262,6 +268,7 @@ from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.ec2 import describe_ec2_tags
 from ..module_utils.ec2 import ensure_ec2_tags
+from ..module_utils.ec2 import is_outposts_arn
 from ..module_utils.ec2 import AWSRetry
 from ..module_utils.core import is_boto3_error_code
 from ..module_utils.tagging import boto3_tag_specifications
@@ -459,6 +466,7 @@ def create_volume(module, ec2_conn, zone):
     snapshot = module.params.get('snapshot')
     throughput = module.params.get('throughput')
     multi_attach = module.params.get('multi_attach')
+    outpost_arn = module.params.get('outpost_arn')
     tags = module.params.get('tags')
     name = module.params.get('name')
 
@@ -494,6 +502,12 @@ def create_volume(module, ec2_conn, zone):
 
             if multi_attach:
                 additional_params['MultiAttachEnabled'] = True
+
+            if outpost_arn:
+                if is_outposts_arn(outpost_arn):
+                    additional_params['OutpostArn'] = outpost_arn
+                else:
+                    module.fail_json('OutpostArn does not match the pattern specified in API specifications.')
 
             if name:
                 tags['Name'] = name
@@ -713,6 +727,7 @@ def main():
         tags=dict(default={}, type='dict'),
         modify_volume=dict(default=False, type='bool'),
         throughput=dict(type='int'),
+        outpost_arn=dict(type='str'),
         purge_tags=dict(type='bool', default=False),
         multi_attach=dict(type='bool'),
     )
