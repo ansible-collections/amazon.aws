@@ -144,8 +144,9 @@ class ElbManager:
             # already OutOfService is being deregistered.
             self.changed = True
 
-        for lb in self.lbs:
-            self._await_elb_instance_state(lb, 'Deregistered', timeout)
+        if wait:
+            for lb in self.lbs:
+                self._await_elb_instance_state(lb, 'Deregistered', timeout)
 
     def register(self, wait, enable_availability_zone, timeout):
         """Register the instance for all ELBs and wait for the ELB
@@ -176,8 +177,9 @@ class ElbManager:
 
             self.changed = True
 
-        for lb in self.lbs:
-            self._await_elb_instance_state(lb, 'InService', timeout)
+        if wait:
+            for lb in self.lbs:
+                self._await_elb_instance_state(lb, 'InService', timeout)
 
     @AWSRetry.jittered_backoff()
     def _describe_elbs(self, **params):
