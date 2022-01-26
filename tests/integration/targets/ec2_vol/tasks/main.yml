@@ -286,7 +286,7 @@
         instance: "{{ test_instance.instance_ids[0] }}"
         device_name: /dev/sdh
         volume_size: 1
-        volume_type: gp2
+        volume_type: standard
         name: '{{ resource_prefix }} - sdh'
         tags:
           "lowercase spaced": 'hello cruel world'
@@ -316,7 +316,7 @@
         instance: "{{ test_instance.instance_ids[0] }}"
         device_name: /dev/sdh
         volume_size: 1
-        volume_type: gp2
+        volume_type: standard
         tags:
           ResourcePrefix: "{{ resource_prefix }}"
       check_mode: true
@@ -332,7 +332,7 @@
         instance: "{{ test_instance.instance_ids[0] }}"
         device_name: /dev/sdh
         volume_size: 1
-        volume_type: gp2
+        volume_type: standard
         tags:
           ResourcePrefix: "{{ resource_prefix }}"
       register: new_vol_attach_result_idem
@@ -350,7 +350,7 @@
         id: "{{ new_vol_attach_result.volume.id }}"
         device_name: /dev/sdh
         volume_size: 1
-        volume_type: gp2
+        volume_type: standard
         tags:
           "lowercase spaced": 'hello cruel world ❤️'
           "Title Case": 'Hello Cruel World ❤️'
@@ -370,7 +370,7 @@
           - "'size' in new_vol_attach_result.volume"
           - new_vol_attach_result.volume.size == 1
           - "'volume_type' in new_vol_attach_result"
-          - new_vol_attach_result.volume_type == 'gp2'
+          - new_vol_attach_result.volume_type == 'standard'
           - "'tags' in new_vol_attach_result.volume"
           - (new_vol_attach_result.volume.tags | length) == 6
           - new_vol_attach_result.volume.tags["lowercase spaced"] == 'hello cruel world ❤️'

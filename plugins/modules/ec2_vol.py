@@ -379,8 +379,8 @@ def update_volume(module, ec2_conn, volume):
 
         iops_changed = False
         target_iops = module.params.get('iops')
+        original_iops = volume.get('iops')
         if target_iops:
-            original_iops = volume['iops']
             if target_iops != original_iops:
                 iops_changed = True
                 req_obj['Iops'] = target_iops
@@ -392,7 +392,7 @@ def update_volume(module, ec2_conn, volume):
             # otherwise, the default iops value is applied.
             if type_changed and target_type == 'gp3':
                 if (
-                    (volume['iops'] and (int(volume['iops']) < 3000 or int(volume['iops']) > 16000)) or not volume['iops']
+                    (original_iops and (int(original_iops) < 3000 or int(original_iops) > 16000)) or not original_iops
                 ):
                     req_obj['Iops'] = 3000
                     iops_changed = True
