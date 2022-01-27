@@ -4,8 +4,6 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import re
-
 try:
     import botocore
 except ImportError:
@@ -15,6 +13,7 @@ from ansible.module_utils._text import to_native
 
 from .ec2 import AWSRetry
 from .core import is_boto3_error_code
+from .core import parse_aws_arn
 
 
 def get_aws_account_id(module):
@@ -54,14 +53,14 @@ def get_aws_account_info(module):
                 except_msg = to_native(e.message)
             except AttributeError:
                 except_msg = to_native(e)
-            m = re.search(r"arn:(aws(-([a-z\-]+))?):iam::([0-9]{12,32}):\w+/", except_msg)
-            if m is None:
+            result = parse_aws_arn(except_msg)
+            if result is None or result['service'] != 'iam':
                 module.fail_json_aws(
                     e,
                     msg="Failed to get AWS account information, Try allowing sts:GetCallerIdentity or iam:GetUser permissions."
                 )
-            account_id = m.group(4)
-            partition = m.group(1)
+            account_id = result.get('account_id')
+            partition = result.get('partition')
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(
                 e,
