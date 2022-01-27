@@ -31,6 +31,12 @@ options:
       - "The IPv6 CIDR block for the subnet. The VPC must have a /56 block assigned and this value must be a valid IPv6 /64 that falls in the VPC range."
       - "Required if I(assign_instances_ipv6=true)"
     type: str
+  outpost_arn:
+    description:
+      - The Amazon Resource Name (ARN) of the Outpost.
+      - If set, allows to create subnet in an Outpost.
+      - To specify outpost_arn, availability zone of Outpost subnet must be specified.
+    type: str
   tags:
     description:
       - "A dict of tags to apply to the subnet. Any tags currently applied to the subnet and not present here will be removed."
@@ -217,6 +223,7 @@ from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import ensure_ec2_tags
+from ..module_utils.ec2 import is_outposts_arn
 from ..module_utils.waiters import get_waiter
 
 
@@ -266,7 +273,7 @@ def handle_waiter(conn, module, waiter_name, params, start_time):
         module.fail_json_aws(e, "An exception happened while trying to wait for updates")
 
 
-def create_subnet(conn, module, vpc_id, cidr, ipv6_cidr=None, az=None, start_time=None):
+def create_subnet(conn, module, vpc_id, cidr, ipv6_cidr=None, outpost_arn=None, az=None, start_time=None):
     wait = module.params['wait']
     wait_timeout = module.params['wait_timeout']
 
@@ -278,6 +285,12 @@ def create_subnet(conn, module, vpc_id, cidr, ipv6_cidr=None, az=None, start_tim
 
     if az:
         params['AvailabilityZone'] = az
+
+    if outpost_arn:
+        if is_outposts_arn(outpost_arn):
+            params['OutpostArn'] = outpost_arn
+        else:
+            module.fail_json('OutpostArn does not match the pattern specified in API specifications.')
 
     try:
         subnet = get_subnet_info(conn.create_subnet(aws_retry=True, **params))
@@ -431,7 +444,8 @@ def ensure_subnet_present(conn, module):
     if subnet is None:
         if not module.check_mode:
             subnet = create_subnet(conn, module, module.params['vpc_id'], module.params['cidr'],
-                                   ipv6_cidr=module.params['ipv6_cidr'], az=module.params['az'], start_time=start_time)
+                                   ipv6_cidr=module.params['ipv6_cidr'], outpost_arn=module.params['outpost_arn'],
+                                   az=module.params['az'], start_time=start_time)
         changed = True
         # Subnet will be None when check_mode is true
         if subnet is None:
@@ -521,6 +535,7 @@ def main():
         az=dict(default=None, required=False),
         cidr=dict(required=True),
         ipv6_cidr=dict(default='', required=False),
+        outpost_arn=dict(default='', type='str', required=False),
         state=dict(default='present', choices=['present', 'absent']),
         tags=dict(default={}, required=False, type='dict', aliases=['resource_tags']),
         vpc_id=dict(required=True),
@@ -534,6 +549,9 @@ def main():
     required_if = [('assign_instances_ipv6', True, ['ipv6_cidr'])]
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True, required_if=required_if)
+
+    if module.params.get('outpost_arn') and not module.params.get('az'):
+        module.fail_json(msg="To specify OutpostArn, you must specify the Availability Zone of the Outpost subnet.")
 
     if module.params.get('assign_instances_ipv6') and not module.params.get('ipv6_cidr'):
         module.fail_json(msg="assign_instances_ipv6 is True but ipv6_cidr is None or an empty string")
