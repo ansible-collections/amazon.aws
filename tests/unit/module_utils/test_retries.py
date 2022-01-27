@@ -19,7 +19,7 @@ except Exception:
 import pytest
 
 from ansible_collections.amazon.aws.tests.unit.compat import unittest
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.retries import AWSRetry
 
 if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_aws.py requires the python modules 'boto3' and 'botocore'")
