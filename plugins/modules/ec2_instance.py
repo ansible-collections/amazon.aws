@@ -1705,7 +1705,7 @@ def pretty_instance(i):
 
 def determine_iam_role(name_or_arn):
     result = parse_aws_arn(name_or_arn)
-    if result and result['service'] == 'iam' and re.match(r"instance-profile/[\w+=/,.@-]+$", result['resource']):
+    if result and result['service'] == 'iam' and result['resource'].startswith('instance-profile/'):
         return name_or_arn
     iam = module.client('iam', retry_decorator=AWSRetry.jittered_backoff())
     try:
