@@ -38,6 +38,7 @@ except ImportError:
 from ansible.module_utils._text import to_bytes
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
+from .core import is_boto3_error_code
 from .ec2 import AWSRetry
 from .ec2 import ansible_dict_to_boto3_tag_list
 from .ec2 import boto3_tag_list_to_ansible_dict
@@ -109,19 +110,28 @@ class ACMServiceManager(object):
         for certificate in certificates:
             try:
                 cert_data = self.describe_certificate_with_backoff(client, certificate['CertificateArn'])
-            except (BotoCoreError, ClientError) as e:
+            except is_boto3_error_code('ResourceNotFoundException'):
+                # The certificate was deleted after the call to list_certificates_with_backoff.
+                continue
+            except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
                 module.fail_json_aws(e, msg="Couldn't obtain certificate metadata for domain %s" % certificate['DomainName'])
 
             # in some states, ACM resources do not have a corresponding cert
             if cert_data['Status'] not in ['PENDING_VALIDATION', 'VALIDATION_TIMED_OUT', 'FAILED']:
                 try:
                     cert_data.update(self.get_certificate_with_backoff(client, certificate['CertificateArn']))
-                except (BotoCoreError, ClientError, KeyError) as e:
+                except is_boto3_error_code('ResourceNotFoundException'):
+                    # The certificate was deleted after the call to list_certificates_with_backoff.
+                    continue
+                except (BotoCoreError, ClientError, KeyError) as e:  # pylint: disable=duplicate-except
                     module.fail_json_aws(e, msg="Couldn't obtain certificate data for domain %s" % certificate['DomainName'])
             cert_data = camel_dict_to_snake_dict(cert_data)
             try:
                 tags = self.list_certificate_tags_with_backoff(client, certificate['CertificateArn'])
-            except (BotoCoreError, ClientError) as e:
+            except is_boto3_error_code('ResourceNotFoundException'):
+                # The certificate was deleted after the call to list_certificates_with_backoff.
+                continue
+            except (BotoCoreError, ClientError) as e:  # pylint: disable=duplicate-except
                 module.fail_json_aws(e, msg="Couldn't obtain tags for domain %s" % certificate['DomainName'])
 
             cert_data['tags'] = boto3_tag_list_to_ansible_dict(tags)
