@@ -1,5 +1,4 @@
 # Our code is based on the AWS SDKs
-boto
 boto3
 botocore
 

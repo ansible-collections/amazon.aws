@@ -1,5 +1,0 @@
----
-availability_zone: '{{ ec2_availability_zone_names[0] }}'
-
-vpc_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/16'
-subnet_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.1.0/24'

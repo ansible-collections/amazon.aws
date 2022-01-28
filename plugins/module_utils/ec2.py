@@ -31,7 +31,6 @@ __metaclass__ = type
 
 import os
 import re
-import sys
 import traceback
 
 from ansible.module_utils._text import to_native
@@ -60,15 +59,6 @@ from .policy import sort_json_policy_dict  # pylint: disable=unused-import
 
 # Used to live here, moved into # ansible_collections.amazon.aws.plugins.module_utils.retries
 from .retries import AWSRetry  # pylint: disable=unused-import
-
-BOTO_IMP_ERR = None
-try:
-    import boto
-    import boto.ec2  # boto does weird import stuff
-    HAS_BOTO = True
-except ImportError:
-    BOTO_IMP_ERR = traceback.format_exc()
-    HAS_BOTO = False
 
 BOTO3_IMP_ERR = None
 try:
@@ -173,11 +163,14 @@ def ec2_argument_spec():
     return spec
 
 
-def get_aws_region(module, boto3=False):
+def get_aws_region(module, boto3=None):
     region = module.params.get('region')
 
     if region:
         return region
+
+    if not HAS_BOTO3:
+        module.fail_json(msg=missing_required_lib('boto3'), exception=BOTO3_IMP_ERR)
 
     if 'AWS_REGION' in os.environ:
         return os.environ['AWS_REGION']
@@ -185,18 +178,6 @@ def get_aws_region(module, boto3=False):
         return os.environ['AWS_DEFAULT_REGION']
     if 'EC2_REGION' in os.environ:
         return os.environ['EC2_REGION']
-
-    if not boto3:
-        if not HAS_BOTO:
-            module.fail_json(msg=missing_required_lib('boto'), exception=BOTO_IMP_ERR)
-        # boto.config.get returns None if config not found
-        region = boto.config.get('Boto', 'aws_region')
-        if region:
-            return region
-        return boto.config.get('Boto', 'ec2_region')
-
-    if not HAS_BOTO3:
-        module.fail_json(msg=missing_required_lib('boto3'), exception=BOTO3_IMP_ERR)
 
     # here we don't need to make an additional call, will default to 'us-east-1' if the below evaluates to None.
     try:
@@ -206,7 +187,7 @@ def get_aws_region(module, boto3=False):
         return None
 
 
-def get_aws_connection_info(module, boto3=False):
+def get_aws_connection_info(module, boto3=None):
 
     # Check module args for credentials, then check environment vars
     # access_key
@@ -248,10 +229,6 @@ def get_aws_connection_info(module, boto3=False):
             access_key = os.environ['AWS_ACCESS_KEY']
         elif os.environ.get('EC2_ACCESS_KEY'):
             access_key = os.environ['EC2_ACCESS_KEY']
-        elif HAS_BOTO and boto.config.get('Credentials', 'aws_access_key_id'):
-            access_key = boto.config.get('Credentials', 'aws_access_key_id')
-        elif HAS_BOTO and boto.config.get('default', 'aws_access_key_id'):
-            access_key = boto.config.get('default', 'aws_access_key_id')
         else:
             # in case access_key came in as empty string
             access_key = None
@@ -263,10 +240,6 @@ def get_aws_connection_info(module, boto3=False):
             secret_key = os.environ['AWS_SECRET_KEY']
         elif os.environ.get('EC2_SECRET_KEY'):
             secret_key = os.environ['EC2_SECRET_KEY']
-        elif HAS_BOTO and boto.config.get('Credentials', 'aws_secret_access_key'):
-            secret_key = boto.config.get('Credentials', 'aws_secret_access_key')
-        elif HAS_BOTO and boto.config.get('default', 'aws_secret_access_key'):
-            secret_key = boto.config.get('default', 'aws_secret_access_key')
         else:
             # in case secret_key came in as empty string
             secret_key = None
@@ -278,10 +251,6 @@ def get_aws_connection_info(module, boto3=False):
             security_token = os.environ['AWS_SESSION_TOKEN']
         elif os.environ.get('EC2_SECURITY_TOKEN'):
             security_token = os.environ['EC2_SECURITY_TOKEN']
-        elif HAS_BOTO and boto.config.get('Credentials', 'aws_security_token'):
-            security_token = boto.config.get('Credentials', 'aws_security_token')
-        elif HAS_BOTO and boto.config.get('default', 'aws_security_token'):
-            security_token = boto.config.get('default', 'aws_security_token')
         else:
             # in case secret_token came in as empty string
             security_token = None
@@ -290,98 +259,27 @@ def get_aws_connection_info(module, boto3=False):
         if os.environ.get('AWS_CA_BUNDLE'):
             ca_bundle = os.environ.get('AWS_CA_BUNDLE')
 
-    if HAS_BOTO3 and boto3:
-        boto_params = dict(aws_access_key_id=access_key,
-                           aws_secret_access_key=secret_key,
-                           aws_session_token=security_token)
+    boto_params = dict(aws_access_key_id=access_key,
+                       aws_secret_access_key=secret_key,
+                       aws_session_token=security_token)
 
-        if profile_name:
-            boto_params = dict(aws_access_key_id=None, aws_secret_access_key=None, aws_session_token=None)
-            boto_params['profile_name'] = profile_name
+    if profile_name:
+        boto_params = dict(aws_access_key_id=None, aws_secret_access_key=None, aws_session_token=None)
+        boto_params['profile_name'] = profile_name
 
-        if validate_certs and ca_bundle:
-            boto_params['verify'] = ca_bundle
-        else:
-            boto_params['verify'] = validate_certs
-
+    if validate_certs and ca_bundle:
+        boto_params['verify'] = ca_bundle
     else:
-        boto_params = dict(aws_access_key_id=access_key,
-                           aws_secret_access_key=secret_key,
-                           security_token=security_token)
-
-        # only set profile_name if passed as an argument
-        if profile_name:
-            boto_params['profile_name'] = profile_name
-
-        boto_params['validate_certs'] = validate_certs
+        boto_params['verify'] = validate_certs
 
     if config is not None:
-        if HAS_BOTO3 and boto3:
-            boto_params['aws_config'] = botocore.config.Config(**config)
-        elif HAS_BOTO and not boto3:
-            if 'user_agent' in config:
-                sys.modules["boto.connection"].UserAgent = config['user_agent']
+        boto_params['aws_config'] = botocore.config.Config(**config)
 
     for param, value in boto_params.items():
         if isinstance(value, binary_type):
             boto_params[param] = text_type(value, 'utf-8', 'strict')
 
     return region, ec2_url, boto_params
-
-
-def get_ec2_creds(module):
-    ''' for compatibility mode with old modules that don't/can't yet
-        use ec2_connect method '''
-    region, ec2_url, boto_params = get_aws_connection_info(module)
-    return ec2_url, boto_params['aws_access_key_id'], boto_params['aws_secret_access_key'], region
-
-
-def boto_fix_security_token_in_profile(conn, profile_name):
-    ''' monkey patch for boto issue boto/boto#2100 '''
-    profile = 'profile ' + profile_name
-    if boto.config.has_option(profile, 'aws_security_token'):
-        conn.provider.set_security_token(boto.config.get(profile, 'aws_security_token'))
-    return conn
-
-
-def connect_to_aws(aws_module, region, **params):
-    try:
-        conn = aws_module.connect_to_region(region, **params)
-    except(boto.provider.ProfileNotFoundError):
-        raise AnsibleAWSError("Profile given for AWS was not found.  Please fix and retry.")
-    if not conn:
-        if region not in [aws_module_region.name for aws_module_region in aws_module.regions()]:
-            raise AnsibleAWSError("Region %s does not seem to be available for aws module %s. If the region definitely exists, you may need to upgrade "
-                                  "boto or extend with endpoints_path" % (region, aws_module.__name__))
-        else:
-            raise AnsibleAWSError("Unknown problem connecting to region %s for aws module %s." % (region, aws_module.__name__))
-    if params.get('profile_name'):
-        conn = boto_fix_security_token_in_profile(conn, params['profile_name'])
-    return conn
-
-
-def ec2_connect(module):
-
-    """ Return an ec2 connection"""
-
-    region, ec2_url, boto_params = get_aws_connection_info(module)
-
-    # If ec2_url is present use it
-    if ec2_url:
-        try:
-            ec2 = boto.connect_ec2_endpoint(ec2_url, **boto_params)
-        except (boto.exception.NoAuthHandlerFound, AnsibleAWSError, boto.provider.ProfileNotFoundError) as e:
-            module.fail_json(msg=str(e))
-    # Otherwise, if we have a region specified, connect to its endpoint.
-    elif region:
-        try:
-            ec2 = connect_to_aws(boto.ec2, region, **boto_params)
-        except (boto.exception.NoAuthHandlerFound, AnsibleAWSError, boto.provider.ProfileNotFoundError) as e:
-            module.fail_json(msg=str(e))
-    else:
-        module.fail_json(msg="Either region or ec2_url must be specified")
-
-    return ec2
 
 
 def ansible_dict_to_boto3_filter_list(filters_dict):
@@ -424,7 +322,7 @@ def ansible_dict_to_boto3_filter_list(filters_dict):
     return filters_list
 
 
-def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id=None, boto3=True):
+def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id=None, boto3=None):
 
     """ Return list of security group IDs from security group names. Note that security group names are not unique
      across VPCs.  If a name exists across multiple VPCs and no VPC ID is supplied, all matching IDs will be returned. This
@@ -432,19 +330,11 @@ def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id
      a try block
      """
 
-    def get_sg_name(sg, boto3):
+    def get_sg_name(sg, boto3=None):
+        return str(sg['GroupName'])
 
-        if boto3:
-            return sg['GroupName']
-        else:
-            return sg.name
-
-    def get_sg_id(sg, boto3):
-
-        if boto3:
-            return sg['GroupId']
-        else:
-            return sg.id
+    def get_sg_id(sg, boto3=None):
+        return str(sg['GroupId'])
 
     sec_group_id_list = []
 
@@ -452,25 +342,18 @@ def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id
         sec_group_list = [sec_group_list]
 
     # Get all security groups
-    if boto3:
-        if vpc_id:
-            filters = [
-                {
-                    'Name': 'vpc-id',
-                    'Values': [
-                        vpc_id,
-                    ]
-                }
-            ]
-            all_sec_groups = ec2_connection.describe_security_groups(Filters=filters)['SecurityGroups']
-        else:
-            all_sec_groups = ec2_connection.describe_security_groups()['SecurityGroups']
+    if vpc_id:
+        filters = [
+            {
+                'Name': 'vpc-id',
+                'Values': [
+                    vpc_id,
+                ]
+            }
+        ]
+        all_sec_groups = ec2_connection.describe_security_groups(Filters=filters)['SecurityGroups']
     else:
-        if vpc_id:
-            filters = {'vpc-id': vpc_id}
-            all_sec_groups = ec2_connection.get_all_security_groups(filters=filters)
-        else:
-            all_sec_groups = ec2_connection.get_all_security_groups()
+        all_sec_groups = ec2_connection.describe_security_groups()['SecurityGroups']
 
     unmatched = set(sec_group_list).difference(str(get_sg_name(all_sg, boto3)) for all_sg in all_sec_groups)
     sec_group_name_list = list(set(sec_group_list) - set(unmatched))
@@ -482,7 +365,7 @@ def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id
         if len(still_unmatched) > 0:
             raise ValueError("The following group names are not valid: %s" % ', '.join(still_unmatched))
 
-    sec_group_id_list += [str(get_sg_id(all_sg, boto3)) for all_sg in all_sec_groups if str(get_sg_name(all_sg, boto3)) in sec_group_name_list]
+    sec_group_id_list += [get_sg_id(all_sg) for all_sg in all_sec_groups if get_sg_name(all_sg) in sec_group_name_list]
 
     return sec_group_id_list
 
