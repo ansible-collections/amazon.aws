@@ -48,7 +48,6 @@ from ansible.module_utils.common.dict_transformations import _snake_to_camel  # 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict  # pylint: disable=unused-import
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict  # pylint: disable=unused-import
 
-from .cloud import CloudRetry
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.tagging
 from .tagging import ansible_dict_to_boto3_tag_list
 from .tagging import boto3_tag_list_to_ansible_dict
@@ -58,6 +57,9 @@ from .tagging import compare_aws_tags
 from .policy import _py3cmp as py3cmp  # pylint: disable=unused-import
 from .policy import compare_policies  # pylint: disable=unused-import
 from .policy import sort_json_policy_dict  # pylint: disable=unused-import
+
+# Used to live here, moved into # ansible_collections.amazon.aws.plugins.module_utils.retries
+from .retries import AWSRetry  # pylint: disable=unused-import
 
 BOTO_IMP_ERR = None
 try:
@@ -80,46 +82,6 @@ except ImportError:
 
 class AnsibleAWSError(Exception):
     pass
-
-
-def _botocore_exception_maybe():
-    """
-    Allow for boto3 not being installed when using these utils by wrapping
-    botocore.exceptions instead of assigning from it directly.
-    """
-    if HAS_BOTO3:
-        return botocore.exceptions.ClientError
-    return type(None)
-
-
-class AWSRetry(CloudRetry):
-    base_class = _botocore_exception_maybe()
-
-    @staticmethod
-    def status_code_from_exception(error):
-        return error.response['Error']['Code']
-
-    @staticmethod
-    def found(response_code, catch_extra_error_codes=None):
-        # This list of failures is based on this API Reference
-        # http://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html
-        #
-        # TooManyRequestsException comes from inside botocore when it
-        # does retrys, unfortunately however it does not try long
-        # enough to allow some services such as API Gateway to
-        # complete configuration.  At the moment of writing there is a
-        # botocore/boto3 bug open to fix this.
-        #
-        # https://github.com/boto/boto3/issues/876 (and linked PRs etc)
-        retry_on = [
-            'RequestLimitExceeded', 'Unavailable', 'ServiceUnavailable',
-            'InternalFailure', 'InternalError', 'TooManyRequestsException',
-            'Throttling'
-        ]
-        if catch_extra_error_codes:
-            retry_on.extend(catch_extra_error_codes)
-
-        return response_code in retry_on
 
 
 def boto3_conn(module, conn_type=None, resource=None, region=None, endpoint=None, **params):
