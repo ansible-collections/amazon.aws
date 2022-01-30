@@ -26,6 +26,15 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+
+"""
+This module adds helper functions for various EC2 specific services.
+
+It also includes a large number of imports for functions which historically
+lived here.  Most of these functions were not specific to EC2, they ended
+up in this module because "that's where the AWS code was" (originally).
+"""
+
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
@@ -39,6 +48,9 @@ from ansible.module_utils.common.dict_transformations import _camel_to_snake  # 
 from ansible.module_utils.common.dict_transformations import _snake_to_camel  # pylint: disable=unused-import
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict  # pylint: disable=unused-import
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict  # pylint: disable=unused-import
+
+# Used to live here, moved into # ansible_collections.amazon.aws.plugins.module_utils.arn
+from .arn import is_outpost_arn as is_outposts_arn  # pylint: disable=unused-import
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.botocore
 from .botocore import HAS_BOTO3  # pylint: disable=unused-import
@@ -374,16 +386,3 @@ def normalize_ec2_vpc_dhcp_config(option_config):
                 config_data[option] = [val['Value'] for val in config_item['Values']]
 
     return config_data
-
-
-def is_outposts_arn(input_regex):
-    """
-    Validates the provided regex pattern of outpost arn as per API specification document.
-
-    API Specification Document:
-    https://docs.aws.amazon.com/outposts/latest/APIReference/API_Outpost.html
-    """
-    regex_pattern = r'^arn:aws([a-z-]+)?:outposts:[a-z\d-]+:\d{12}:outpost/op-[a-f0-9]{17}$'
-    if not re.match(regex_pattern, input_regex):
-        return False
-    return True
