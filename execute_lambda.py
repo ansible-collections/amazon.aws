@@ -202,6 +202,9 @@ def main():
     elif name:
         invoke_params['FunctionName'] = name
 
+    if not module.check_mode:
+        wait_for_lambda(client, module, name)
+
     try:
         response = client.invoke(**invoke_params)
     except is_boto3_error_code('ResourceNotFoundException') as nfe:
@@ -253,6 +256,16 @@ def main():
             module.fail_json(msg=template.format(**error_data), result=results)
 
     module.exit_json(changed=True, result=results)
+
+
+def wait_for_lambda(client, module, name):
+    try:
+        waiter = client.get_waiter('function_active')
+        waiter.wait(FunctionName=name)
+    except botocore.exceptions.WaiterError as e:
+        module.fail_json_aws(e, msg='Timeout while waiting on lambda to be Active')
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed while waiting on lambda to be Active')
 
 
 if __name__ == '__main__':
