@@ -12,6 +12,7 @@ except ImportError:
     pass  # caught by HAS_BOTO3
 
 import ansible_collections.amazon.aws.plugins.module_utils.core as aws_core
+from ansible_collections.amazon.aws.plugins.module_utils.modules import _RetryingBotoClientWrapper
 
 
 ec2_data = {
@@ -930,7 +931,7 @@ waiters_by_name = {
 
 
 def get_waiter(client, waiter_name):
-    if isinstance(client, aws_core._RetryingBotoClientWrapper):
+    if isinstance(client, _RetryingBotoClientWrapper):
         return get_waiter(client.client, waiter_name)
     try:
         return waiters_by_name[(client.__class__.__name__, waiter_name)](client)

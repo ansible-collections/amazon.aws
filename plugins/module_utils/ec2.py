@@ -32,7 +32,6 @@ __metaclass__ = type
 import re
 
 from ansible.module_utils.ansible_release import __version__
-from ansible.module_utils.basic import env_fallback
 from ansible.module_utils.six import string_types
 from ansible.module_utils.six import integer_types
 # Used to live here, moved into ansible.module_utils.common.dict_transformations
@@ -51,6 +50,14 @@ from .botocore import get_aws_connection_info  # pylint: disable=unused-import
 
 from .botocore import paginated_query_with_retries
 
+# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.botocore
+from .core import AnsibleAWSError  # pylint: disable=unused-import
+
+# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.modules
+# The names have been changed in .modules to better reflect their applicability.
+from .modules import _aws_common_argument_spec as aws_common_argument_spec  # pylint: disable=unused-import
+from .modules import aws_argument_spec as ec2_argument_spec  # pylint: disable=unused-import
+
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.tagging
 from .tagging import ansible_dict_to_boto3_tag_list
 from .tagging import boto3_tag_list_to_ansible_dict
@@ -68,34 +75,6 @@ try:
     import botocore
 except ImportError:
     pass  # Handled by HAS_BOTO3
-
-
-class AnsibleAWSError(Exception):
-    pass
-
-
-def aws_common_argument_spec():
-    return dict(
-        debug_botocore_endpoint_logs=dict(fallback=(env_fallback, ['ANSIBLE_DEBUG_BOTOCORE_LOGS']), default=False, type='bool'),
-        ec2_url=dict(aliases=['aws_endpoint_url', 'endpoint_url']),
-        aws_access_key=dict(aliases=['ec2_access_key', 'access_key'], no_log=False),
-        aws_secret_key=dict(aliases=['ec2_secret_key', 'secret_key'], no_log=True),
-        security_token=dict(aliases=['access_token', 'aws_security_token'], no_log=True),
-        validate_certs=dict(default=True, type='bool'),
-        aws_ca_bundle=dict(type='path'),
-        profile=dict(aliases=['aws_profile']),
-        aws_config=dict(type='dict'),
-    )
-
-
-def ec2_argument_spec():
-    spec = aws_common_argument_spec()
-    spec.update(
-        dict(
-            region=dict(aliases=['aws_region', 'ec2_region']),
-        )
-    )
-    return spec
 
 
 def ansible_dict_to_boto3_filter_list(filters_dict):
