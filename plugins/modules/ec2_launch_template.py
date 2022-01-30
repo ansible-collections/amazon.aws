@@ -31,6 +31,11 @@ options:
   template_name:
     description:
     - The template name. This must be unique in the region-account combination you are using.
+    - If no launch template exists with the specified name, a new launch template is created.
+    - If a launch template with the specified name already exists and the configuration has not changed,
+      nothing happens.
+    - If a launch template with the specified name already exists and the configuration has changed,
+      a new version of the launch template is created.
     aliases: [name]
     type: str
   default_version:
