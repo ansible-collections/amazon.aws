@@ -25,18 +25,22 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
+---
 module: aws_acm
-short_description: Upload and delete certificates in the AWS Certificate Manager service
+short_description: >
+  Upload and delete certificates in the AWS Certificate Manager service
 version_added: 1.0.0
 description:
-  - Import and delete certificates in Amazon Web Service's Certificate Manager (AWS ACM).
+  - >
+    Import and delete certificates in Amazon Web Service's Certificate
+    Manager (AWS ACM).
   - >
     This module does not currently interact with AWS-provided certificates.
     It currently only manages certificates provided to AWS by the user.
-  - The ACM API allows users to upload multiple certificates for the same domain name,
-    and even multiple identical certificates.
-    This module attempts to restrict such freedoms, to be idempotent, as per the Ansible philosophy.
+  - The ACM API allows users to upload multiple certificates for the same domain
+    name, and even multiple identical certificates. This module attempts to
+    restrict such freedoms, to be idempotent, as per the Ansible philosophy.
     It does this through applying AWS resource "Name" tags to ACM certificates.
   - >
     When I(state=present),
@@ -57,63 +61,71 @@ description:
     this task will fail.
   - >
     When I(state=absent) and I(certificate_arn) is defined,
-    this module will delete the ACM resource with that ARN if it exists in this region,
-    and succeed without effect if it doesn't exist.
+    this module will delete the ACM resource with that ARN if it exists in this
+    region, and succeed without effect if it doesn't exist.
   - >
-    When I(state=absent) and I(domain_name) is defined,
-    this module will delete all ACM resources in this AWS region with a corresponding domain name.
+    When I(state=absent) and I(domain_name) is defined, this module will delete
+    all ACM resources in this AWS region with a corresponding domain name.
     If there are none, it will succeed without effect.
   - >
     When I(state=absent) and I(certificate_arn) is not defined,
-    and I(domain_name) is not defined,
-    this module will delete all ACM resources in this AWS region with a corresponding I(Name) tag.
+    and I(domain_name) is not defined, this module will delete all ACM resources
+    in this AWS region with a corresponding I(Name) tag.
     If there are none, it will succeed without effect.
-  - Note that this may not work properly with keys of size 4096 bits, due to a limitation of the ACM API.
+  - >
+    Note that this may not work properly with keys of size 4096 bits, due to a
+    limitation of the ACM API.
 options:
   certificate:
     description:
       - The body of the PEM encoded public certificate.
       - Required when I(state) is not C(absent).
-      - If your certificate is in a file, use C(lookup('file', 'path/to/cert.pem')).
+      - >
+        If your certificate is in a file,
+        use C(lookup('file', 'path/to/cert.pem')).
     type: str
-
   certificate_arn:
     description:
       - The ARN of a certificate in ACM to delete
       - Ignored when I(state=present).
-      - If I(state=absent), you must provide one of I(certificate_arn), I(domain_name) or I(name_tag).
+      - >
+        If I(state=absent), you must provide one of
+        I(certificate_arn), I(domain_name) or I(name_tag).
       - >
         If I(state=absent) and no resource exists with this ARN in this region,
         the task will succeed with no effect.
       - >
-        If I(state=absent) and the corresponding resource exists in a different region,
-        this task may report success without deleting that resource.
+        If I(state=absent) and the corresponding resource exists in a different
+        region, this task may report success without deleting that resource.
     type: str
     aliases: [arn]
-
   certificate_chain:
     description:
       - The body of the PEM encoded chain for your certificate.
-      - If your certificate chain is in a file, use C(lookup('file', 'path/to/chain.pem')).
+      - >
+        If your certificate chain is in a file,
+        use C(lookup('file', 'path/to/chain.pem')).
       - Ignored when I(state=absent)
     type: str
-
   domain_name:
     description:
       - The domain name of the certificate.
       - >
         If I(state=absent) and I(domain_name) is specified,
         this task will delete all ACM certificates with this domain.
-      - Exactly one of I(domain_name), I(name_tag)  and I(certificate_arn) must be provided.
+      - >
+        Exactly one of I(domain_name), I(name_tag) and I(certificate_arn)
+        must be provided.
       - >
         If I(state=present) this must not be specified.
         (Since the domain name is encoded within the public certificate's body.)
     type: str
     aliases: [domain]
-
   name_tag:
     description:
-      - The unique identifier for tagging resources using AWS tags, with key I(Name).
+      - >
+        The unique identifier for tagging resources using AWS tags,
+        with key I(Name).
       - This can be any set of characters accepted by AWS for tag values.
       - >
         This is to ensure Ansible can treat certificates idempotently,
@@ -124,15 +136,15 @@ options:
         I(certificate_arn), I(domain_name) or I(name_tag).
     type: str
     aliases: [name]
-
   private_key:
     description:
       - The body of the PEM encoded private key.
       - Required when I(state=present).
       - Ignored when I(state=absent).
-      - If your private key is in a file, use C(lookup('file', 'path/to/key.pem')).
+      - >
+        If your private key is in a file,
+        use C(lookup('file', 'path/to/key.pem')).
     type: str
-
   state:
     description:
       - >
@@ -148,8 +160,9 @@ options:
 author:
   - Matthew Davis (@matt-telstra) on behalf of Telstra Corporation Limited
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
+
 '''
 
 EXAMPLES = '''
