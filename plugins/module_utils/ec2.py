@@ -75,6 +75,10 @@ from .tagging import ansible_dict_to_boto3_tag_list
 from .tagging import boto3_tag_list_to_ansible_dict
 from .tagging import compare_aws_tags
 
+# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.transformation
+from .transformation import ansible_dict_to_boto3_filter_list  # pylint: disable=unused-import
+from .transformation import map_complex_type  # pylint: disable=unused-import
+
 # Used to live here, moved into # ansible_collections.amazon.aws.plugins.module_utils.policy
 from .policy import _py3cmp as py3cmp  # pylint: disable=unused-import
 from .policy import compare_policies  # pylint: disable=unused-import
@@ -87,46 +91,6 @@ try:
     import botocore
 except ImportError:
     pass  # Handled by HAS_BOTO3
-
-
-def ansible_dict_to_boto3_filter_list(filters_dict):
-
-    """ Convert an Ansible dict of filters to list of dicts that boto3 can use
-    Args:
-        filters_dict (dict): Dict of AWS filters.
-    Basic Usage:
-        >>> filters = {'some-aws-id': 'i-01234567'}
-        >>> ansible_dict_to_boto3_filter_list(filters)
-        {
-            'some-aws-id': 'i-01234567'
-        }
-    Returns:
-        List: List of AWS filters and their values
-        [
-            {
-                'Name': 'some-aws-id',
-                'Values': [
-                    'i-01234567',
-                ]
-            }
-        ]
-    """
-
-    filters_list = []
-    for k, v in filters_dict.items():
-        filter_dict = {'Name': k}
-        if isinstance(v, bool):
-            filter_dict['Values'] = [str(v).lower()]
-        elif isinstance(v, integer_types):
-            filter_dict['Values'] = [str(v)]
-        elif isinstance(v, string_types):
-            filter_dict['Values'] = [v]
-        else:
-            filter_dict['Values'] = v
-
-        filters_list.append(filter_dict)
-
-    return filters_list
 
 
 def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id=None, boto3=None):
@@ -175,48 +139,6 @@ def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id
     sec_group_id_list += [get_sg_id(all_sg) for all_sg in all_sec_groups if get_sg_name(all_sg) in sec_group_name_list]
 
     return sec_group_id_list
-
-
-def map_complex_type(complex_type, type_map):
-    """
-        Allows to cast elements within a dictionary to a specific type
-        Example of usage:
-
-        DEPLOYMENT_CONFIGURATION_TYPE_MAP = {
-            'maximum_percent': 'int',
-            'minimum_healthy_percent': 'int'
-        }
-
-        deployment_configuration = map_complex_type(module.params['deployment_configuration'],
-                                                    DEPLOYMENT_CONFIGURATION_TYPE_MAP)
-
-        This ensures all keys within the root element are casted and valid integers
-    """
-
-    if complex_type is None:
-        return
-    new_type = type(complex_type)()
-    if isinstance(complex_type, dict):
-        for key in complex_type:
-            if key in type_map:
-                if isinstance(type_map[key], list):
-                    new_type[key] = map_complex_type(
-                        complex_type[key],
-                        type_map[key][0])
-                else:
-                    new_type[key] = map_complex_type(
-                        complex_type[key],
-                        type_map[key])
-            else:
-                return complex_type
-    elif isinstance(complex_type, list):
-        for i in range(len(complex_type)):
-            new_type.append(map_complex_type(
-                complex_type[i],
-                type_map))
-    elif type_map:
-        return globals()['__builtins__'][type_map](complex_type)
-    return new_type
 
 
 def add_ec2_tags(client, module, resource_id, tags_to_set, retry_codes=None):
