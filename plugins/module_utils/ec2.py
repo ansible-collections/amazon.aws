@@ -71,9 +71,9 @@ from .modules import _aws_common_argument_spec as aws_common_argument_spec  # py
 from .modules import aws_argument_spec as ec2_argument_spec  # pylint: disable=unused-import
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.tagging
-from .tagging import ansible_dict_to_boto3_tag_list
-from .tagging import boto3_tag_list_to_ansible_dict
-from .tagging import compare_aws_tags
+from .tagging import ansible_dict_to_boto3_tag_list  # pylint: disable=unused-import
+from .tagging import boto3_tag_list_to_ansible_dict  # pylint: disable=unused-import
+from .tagging import compare_aws_tags  # pylint: disable=unused-import
 
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.transformation
 from .transformation import ansible_dict_to_boto3_filter_list  # pylint: disable=unused-import
