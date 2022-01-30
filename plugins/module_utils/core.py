@@ -53,7 +53,6 @@ don't need to be wrapped in the backoff decorator.
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import json
 import re
 import logging
 import traceback
@@ -71,11 +70,18 @@ from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils._text import to_native
 
-from .ec2 import HAS_BOTO3
-from .ec2 import boto3_conn
+from .botocore import HAS_BOTO3
+from .botocore import boto3_conn
+from .botocore import get_aws_connection_info
+from .botocore import get_aws_region
+from .botocore import gather_sdk_versions
+# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.botocore
+from .botocore import is_boto3_error_code  # pylint: disable=unused-import
+from .botocore import is_boto3_error_message  # pylint: disable=unused-import
+from .botocore import get_boto3_client_method_parameters  # pylint: disable=unused-import
+from .botocore import normalize_boto3_result  # pylint: disable=unused-import
+
 from .ec2 import ec2_argument_spec
-from .ec2 import get_aws_connection_info
-from .ec2 import get_aws_region
 
 from .version import LooseVersion
 
@@ -245,14 +251,9 @@ class AnsibleAWSModule(object):
         """Gather AWS SDK (boto3 and botocore) dependency versions
 
         Returns {'boto3_version': str, 'botocore_version': str}
-        Returns {} if neither are installed
+        Returns {} if either is not installed
         """
-        if not HAS_BOTO3:
-            return {}
-        import boto3
-        import botocore
-        return dict(boto3_version=boto3.__version__,
-                    botocore_version=botocore.__version__)
+        return gather_sdk_versions()
 
     def require_boto3_at_least(self, desired, **kwargs):
         """Check if the available boto3 version is greater than or equal to a desired version.
@@ -350,64 +351,6 @@ class _RetryingBotoClientWrapper(object):
             return unwrapped
 
 
-def is_boto3_error_code(code, e=None):
-    """Check if the botocore exception is raised by a specific error code.
-
-    Returns ClientError if the error code matches, a dummy exception if it does not have an error code or does not match
-
-    Example:
-    try:
-        ec2.describe_instances(InstanceIds=['potato'])
-    except is_boto3_error_code('InvalidInstanceID.Malformed'):
-        # handle the error for that code case
-    except botocore.exceptions.ClientError as e:
-        # handle the generic error case for all other codes
-    """
-    from botocore.exceptions import ClientError
-    if e is None:
-        import sys
-        dummy, e, dummy = sys.exc_info()
-    if not isinstance(code, list):
-        code = [code]
-    if isinstance(e, ClientError) and e.response['Error']['Code'] in code:
-        return ClientError
-    return type('NeverEverRaisedException', (Exception,), {})
-
-
-def is_boto3_error_message(msg, e=None):
-    """Check if the botocore exception contains a specific error message.
-
-    Returns ClientError if the error code matches, a dummy exception if it does not have an error code or does not match
-
-    Example:
-    try:
-        ec2.describe_vpc_classic_link(VpcIds=[vpc_id])
-    except is_boto3_error_message('The functionality you requested is not available in this region.'):
-        # handle the error for that error message
-    except botocore.exceptions.ClientError as e:
-        # handle the generic error case for all other codes
-    """
-    from botocore.exceptions import ClientError
-    if e is None:
-        import sys
-        dummy, e, dummy = sys.exc_info()
-    if isinstance(e, ClientError) and msg in e.response['Error']['Message']:
-        return ClientError
-    return type('NeverEverRaisedException', (Exception,), {})
-
-
-def get_boto3_client_method_parameters(client, method_name, required=False):
-    op = client.meta.method_to_api_mapping.get(method_name)
-    input_shape = client._service_model.operation_model(op).input_shape
-    if not input_shape:
-        parameters = []
-    elif required:
-        parameters = list(input_shape.required_members)
-    else:
-        parameters = list(input_shape.members.keys())
-    return parameters
-
-
 def scrub_none_parameters(parameters, descend_into_lists=True):
     """
     Iterate over a dictionary removing any keys that have a None value
@@ -433,13 +376,6 @@ def scrub_none_parameters(parameters, descend_into_lists=True):
     return clean_parameters
 
 
-def _boto3_handler(obj):
-    if hasattr(obj, 'isoformat'):
-        return obj.isoformat()
-    else:
-        return obj
-
-
 def parse_aws_arn(arn):
     """
     The following are the general formats for ARNs.
@@ -460,14 +396,3 @@ def parse_aws_arn(arn):
     result.update(dict(resource=m.group(7)))
 
     return result
-
-
-def normalize_boto3_result(result):
-    """
-    Because Boto3 returns datetime objects where it knows things are supposed to
-    be dates we need to mass-convert them over to strings which Ansible/Jinja
-    handle better.  This also makes it easier to compare complex objects which
-    include a mix of dates in string format (from parameters) and dates as
-    datetime objects.  Boto3 is happy to be passed ISO8601 format strings.
-    """
-    return json.loads(json.dumps(result, default=_boto3_handler))
