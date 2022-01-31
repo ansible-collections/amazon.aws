@@ -494,7 +494,7 @@ def ensure_absent(ec2, module, address, device_id, check_mode, is_instance=True)
 
 def allocate_address_from_pool(ec2, module, domain, check_mode, public_ipv4_pool):
     # type: (EC2Connection, str, bool, str) -> Address
-    """ Overrides boto's allocate_address function to support BYOIP """
+    """ Overrides botocore's allocate_address function to support BYOIP """
     params = {}
 
     if domain is not None:
