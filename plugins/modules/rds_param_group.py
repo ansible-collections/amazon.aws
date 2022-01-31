@@ -159,7 +159,7 @@ def convert_parameter(param, value):
                         converted_value = int(value[:-1]) * INT_MODIFIERS[modifier]
             except ValueError:
                 # may be based on a variable (ie. {foo*3/4}) so
-                # just pass it on through to boto
+                # just pass it on through to the AWS SDK
                 pass
         elif isinstance(value, bool):
             converted_value = 1 if value else 0
