@@ -120,7 +120,7 @@ class SAMLProviderManager:
         try:
             self.conn = module.client('iam')
         except botocore.exceptions.ClientError as e:
-            self.module.fail_json_aws(e, msg="Unknown boto error")
+            self.module.fail_json_aws(e, msg="Unknown AWS SDK error")
 
     # use retry decorator for boto3 calls
     @AWSRetry.jittered_backoff(retries=3, delay=5)

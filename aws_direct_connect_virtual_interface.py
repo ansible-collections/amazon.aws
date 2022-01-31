@@ -404,7 +404,7 @@ def create_vi(client, public, associated_id, creation_params):
         :param public: a boolean
         :param associated_id: a link aggregation group ID or connection ID to associate
                               with the virtual interface.
-        :param creation_params: a dict of parameters to use in the boto call
+        :param creation_params: a dict of parameters to use in the AWS SDK call
         :return The ID of the created virtual interface
     '''
     err_msg = "Failed to create virtual interface"

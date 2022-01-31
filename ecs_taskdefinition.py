@@ -685,7 +685,7 @@ class EcsTaskManager:
                       volumes, launch_type, cpu, memory, placement_constraints):
         validated_containers = []
 
-        # Ensures the number parameters are int as required by boto
+        # Ensures the number parameters are int as required by the AWS SDK
         for container in container_definitions:
             for param in ('memory', 'cpu', 'memoryReservation', 'startTimeout', 'stopTimeout'):
                 if param in container:

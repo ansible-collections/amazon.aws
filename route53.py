@@ -413,7 +413,7 @@ def get_zone_id_by_name(route53, module, zone_name, want_private, want_vpc_id):
 
         if private_zone == want_private and zone['Name'] == zone_name:
             if want_vpc_id:
-                # NOTE: These details aren't available in other boto methods, hence the necessary
+                # NOTE: These details aren't available in other boto3 methods, hence the necessary
                 # extra API call
                 hosted_zone = route53.get_hosted_zone(aws_retry=True, Id=zone_id)
                 if want_vpc_id in [v['VPCId'] for v in hosted_zone['VPCs']]:

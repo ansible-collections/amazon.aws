@@ -752,7 +752,7 @@ def main():
                         loadBalancer['containerPort'] = int(loadBalancer['containerPort'])
 
                 if update:
-                    # check various parameters and boto versions and give a helpful error in boto is not new enough for feature
+                    # check various parameters and AWS SDK versions and give a helpful error if the SDK is not new enough for feature
 
                     if module.params['scheduling_strategy']:
                         if (existing['schedulingStrategy']) != module.params['scheduling_strategy']:
