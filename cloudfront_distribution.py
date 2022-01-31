@@ -1686,9 +1686,6 @@ class CloudFrontValidationManager(object):
             self.module.fail_json_aws(e, msg="Error validating distribution origins")
 
     def validate_s3_origin_configuration(self, client, existing_config, origin):
-        if not origin['s3_origin_access_identity_enabled']:
-            return None
-
         if origin.get('s3_origin_config', {}).get('origin_access_identity'):
             return origin['s3_origin_config']['origin_access_identity']
 
@@ -1719,13 +1716,20 @@ class CloudFrontValidationManager(object):
                 origin['custom_headers'] = ansible_list_to_cloudfront_list()
             if self.__s3_bucket_domain_identifier in origin.get('domain_name').lower():
                 if origin.get("s3_origin_access_identity_enabled") is not None:
-                    s3_origin_config = self.validate_s3_origin_configuration(client, existing_config, origin)
+                    if origin['s3_origin_access_identity_enabled']:
+                        s3_origin_config = self.validate_s3_origin_configuration(client, existing_config, origin)
+                    else:
+                        s3_origin_config = None
+
+                    del(origin["s3_origin_access_identity_enabled"])
+
                     if s3_origin_config:
                         oai = s3_origin_config
                     else:
                         oai = ""
+
                     origin["s3_origin_config"] = dict(origin_access_identity=oai)
-                    del(origin["s3_origin_access_identity_enabled"])
+
                     if 'custom_origin_config' in origin:
                         self.module.fail_json(msg="s3_origin_access_identity_enabled and custom_origin_config are mutually exclusive")
             else:
