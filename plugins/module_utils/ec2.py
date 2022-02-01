@@ -26,20 +26,22 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+
+"""
+This module adds helper functions for various EC2 specific services.
+
+It also includes a large number of imports for functions which historically
+lived here.  Most of these functions were not specific to EC2, they ended
+up in this module because "that's where the AWS code was" (originally).
+"""
+
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import os
 import re
-import traceback
 
-from ansible.module_utils._text import to_native
 from ansible.module_utils.ansible_release import __version__
-from ansible.module_utils.basic import env_fallback
-from ansible.module_utils.basic import missing_required_lib
-from ansible.module_utils.six import binary_type
 from ansible.module_utils.six import string_types
-from ansible.module_utils.six import text_type
 from ansible.module_utils.six import integer_types
 # Used to live here, moved into ansible.module_utils.common.dict_transformations
 from ansible.module_utils.common.dict_transformations import _camel_to_snake  # pylint: disable=unused-import
@@ -47,10 +49,35 @@ from ansible.module_utils.common.dict_transformations import _snake_to_camel  # 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict  # pylint: disable=unused-import
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict  # pylint: disable=unused-import
 
+# Used to live here, moved into # ansible_collections.amazon.aws.plugins.module_utils.arn
+from .arn import is_outpost_arn as is_outposts_arn  # pylint: disable=unused-import
+
+# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.botocore
+from .botocore import HAS_BOTO3  # pylint: disable=unused-import
+from .botocore import boto3_conn  # pylint: disable=unused-import
+from .botocore import boto3_inventory_conn  # pylint: disable=unused-import
+from .botocore import boto_exception  # pylint: disable=unused-import
+from .botocore import get_aws_region  # pylint: disable=unused-import
+from .botocore import get_aws_connection_info  # pylint: disable=unused-import
+
+from .botocore import paginated_query_with_retries
+
+# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.botocore
+from .core import AnsibleAWSError  # pylint: disable=unused-import
+
+# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.modules
+# The names have been changed in .modules to better reflect their applicability.
+from .modules import _aws_common_argument_spec as aws_common_argument_spec  # pylint: disable=unused-import
+from .modules import aws_argument_spec as ec2_argument_spec  # pylint: disable=unused-import
+
 # Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.tagging
-from .tagging import ansible_dict_to_boto3_tag_list
-from .tagging import boto3_tag_list_to_ansible_dict
-from .tagging import compare_aws_tags
+from .tagging import ansible_dict_to_boto3_tag_list  # pylint: disable=unused-import
+from .tagging import boto3_tag_list_to_ansible_dict  # pylint: disable=unused-import
+from .tagging import compare_aws_tags  # pylint: disable=unused-import
+
+# Used to live here, moved into ansible_collections.amazon.aws.plugins.module_utils.transformation
+from .transformation import ansible_dict_to_boto3_filter_list  # pylint: disable=unused-import
+from .transformation import map_complex_type  # pylint: disable=unused-import
 
 # Used to live here, moved into # ansible_collections.amazon.aws.plugins.module_utils.policy
 from .policy import _py3cmp as py3cmp  # pylint: disable=unused-import
@@ -60,266 +87,10 @@ from .policy import sort_json_policy_dict  # pylint: disable=unused-import
 # Used to live here, moved into # ansible_collections.amazon.aws.plugins.module_utils.retries
 from .retries import AWSRetry  # pylint: disable=unused-import
 
-BOTO3_IMP_ERR = None
 try:
-    import boto3
     import botocore
-    HAS_BOTO3 = True
 except ImportError:
-    BOTO3_IMP_ERR = traceback.format_exc()
-    HAS_BOTO3 = False
-
-
-class AnsibleAWSError(Exception):
-    pass
-
-
-def boto3_conn(module, conn_type=None, resource=None, region=None, endpoint=None, **params):
-    try:
-        return _boto3_conn(conn_type=conn_type, resource=resource, region=region, endpoint=endpoint, **params)
-    except ValueError as e:
-        module.fail_json(msg="Couldn't connect to AWS: %s" % to_native(e))
-    except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError,
-            botocore.exceptions.NoCredentialsError, botocore.exceptions.ConfigParseError) as e:
-        module.fail_json(msg=to_native(e))
-    except botocore.exceptions.NoRegionError as e:
-        module.fail_json(msg="The %s module requires a region and none was found in configuration, "
-                         "environment variables or module parameters" % module._name)
-
-
-def _boto3_conn(conn_type=None, resource=None, region=None, endpoint=None, **params):
-    profile = params.pop('profile_name', None)
-
-    if conn_type not in ['both', 'resource', 'client']:
-        raise ValueError('There is an issue in the calling code. You '
-                         'must specify either both, resource, or client to '
-                         'the conn_type parameter in the boto3_conn function '
-                         'call')
-
-    config = botocore.config.Config(
-        user_agent_extra='Ansible/{0}'.format(__version__),
-    )
-
-    if params.get('config') is not None:
-        config = config.merge(params.pop('config'))
-    if params.get('aws_config') is not None:
-        config = config.merge(params.pop('aws_config'))
-
-    session = boto3.session.Session(
-        profile_name=profile,
-    )
-
-    if conn_type == 'resource':
-        return session.resource(resource, config=config, region_name=region, endpoint_url=endpoint, **params)
-    elif conn_type == 'client':
-        return session.client(resource, config=config, region_name=region, endpoint_url=endpoint, **params)
-    else:
-        client = session.client(resource, region_name=region, endpoint_url=endpoint, **params)
-        resource = session.resource(resource, region_name=region, endpoint_url=endpoint, **params)
-        return client, resource
-
-
-boto3_inventory_conn = _boto3_conn
-
-
-def boto_exception(err):
-    """
-    Extracts the error message from a boto exception.
-
-    :param err: Exception from boto
-    :return: Error message
-    """
-    if hasattr(err, 'error_message'):
-        error = err.error_message
-    elif hasattr(err, 'message'):
-        error = str(err.message) + ' ' + str(err) + ' - ' + str(type(err))
-    else:
-        error = '%s: %s' % (Exception, err)
-
-    return error
-
-
-def aws_common_argument_spec():
-    return dict(
-        debug_botocore_endpoint_logs=dict(fallback=(env_fallback, ['ANSIBLE_DEBUG_BOTOCORE_LOGS']), default=False, type='bool'),
-        ec2_url=dict(aliases=['aws_endpoint_url', 'endpoint_url']),
-        aws_access_key=dict(aliases=['ec2_access_key', 'access_key'], no_log=False),
-        aws_secret_key=dict(aliases=['ec2_secret_key', 'secret_key'], no_log=True),
-        security_token=dict(aliases=['access_token', 'aws_security_token'], no_log=True),
-        validate_certs=dict(default=True, type='bool'),
-        aws_ca_bundle=dict(type='path'),
-        profile=dict(aliases=['aws_profile']),
-        aws_config=dict(type='dict'),
-    )
-
-
-def ec2_argument_spec():
-    spec = aws_common_argument_spec()
-    spec.update(
-        dict(
-            region=dict(aliases=['aws_region', 'ec2_region']),
-        )
-    )
-    return spec
-
-
-def get_aws_region(module, boto3=None):
-    region = module.params.get('region')
-
-    if region:
-        return region
-
-    if not HAS_BOTO3:
-        module.fail_json(msg=missing_required_lib('boto3'), exception=BOTO3_IMP_ERR)
-
-    if 'AWS_REGION' in os.environ:
-        return os.environ['AWS_REGION']
-    if 'AWS_DEFAULT_REGION' in os.environ:
-        return os.environ['AWS_DEFAULT_REGION']
-    if 'EC2_REGION' in os.environ:
-        return os.environ['EC2_REGION']
-
-    # here we don't need to make an additional call, will default to 'us-east-1' if the below evaluates to None.
-    try:
-        profile_name = module.params.get('profile')
-        return botocore.session.Session(profile=profile_name).get_config_variable('region')
-    except botocore.exceptions.ProfileNotFound as e:
-        return None
-
-
-def get_aws_connection_info(module, boto3=None):
-
-    # Check module args for credentials, then check environment vars
-    # access_key
-
-    ec2_url = module.params.get('ec2_url')
-    access_key = module.params.get('aws_access_key')
-    secret_key = module.params.get('aws_secret_key')
-    security_token = module.params.get('security_token')
-    region = get_aws_region(module, boto3)
-    profile_name = module.params.get('profile')
-    validate_certs = module.params.get('validate_certs')
-    ca_bundle = module.params.get('aws_ca_bundle')
-    config = module.params.get('aws_config')
-
-    # Only read the profile environment variables if we've *not* been passed
-    # any credentials as parameters.
-    if not profile_name and not access_key and not secret_key:
-        if os.environ.get('AWS_PROFILE'):
-            profile_name = os.environ.get('AWS_PROFILE')
-        if os.environ.get('AWS_DEFAULT_PROFILE'):
-            profile_name = os.environ.get('AWS_DEFAULT_PROFILE')
-
-    if profile_name and (access_key or secret_key or security_token):
-        module.deprecate("Passing both a profile and access tokens has been deprecated."
-                         "  Only the profile will be used."
-                         "  In later versions of Ansible the options will be mutually exclusive",
-                         date='2022-06-01', collection_name='amazon.aws')
-
-    if not ec2_url:
-        if 'AWS_URL' in os.environ:
-            ec2_url = os.environ['AWS_URL']
-        elif 'EC2_URL' in os.environ:
-            ec2_url = os.environ['EC2_URL']
-
-    if not access_key:
-        if os.environ.get('AWS_ACCESS_KEY_ID'):
-            access_key = os.environ['AWS_ACCESS_KEY_ID']
-        elif os.environ.get('AWS_ACCESS_KEY'):
-            access_key = os.environ['AWS_ACCESS_KEY']
-        elif os.environ.get('EC2_ACCESS_KEY'):
-            access_key = os.environ['EC2_ACCESS_KEY']
-        else:
-            # in case access_key came in as empty string
-            access_key = None
-
-    if not secret_key:
-        if os.environ.get('AWS_SECRET_ACCESS_KEY'):
-            secret_key = os.environ['AWS_SECRET_ACCESS_KEY']
-        elif os.environ.get('AWS_SECRET_KEY'):
-            secret_key = os.environ['AWS_SECRET_KEY']
-        elif os.environ.get('EC2_SECRET_KEY'):
-            secret_key = os.environ['EC2_SECRET_KEY']
-        else:
-            # in case secret_key came in as empty string
-            secret_key = None
-
-    if not security_token:
-        if os.environ.get('AWS_SECURITY_TOKEN'):
-            security_token = os.environ['AWS_SECURITY_TOKEN']
-        elif os.environ.get('AWS_SESSION_TOKEN'):
-            security_token = os.environ['AWS_SESSION_TOKEN']
-        elif os.environ.get('EC2_SECURITY_TOKEN'):
-            security_token = os.environ['EC2_SECURITY_TOKEN']
-        else:
-            # in case secret_token came in as empty string
-            security_token = None
-
-    if not ca_bundle:
-        if os.environ.get('AWS_CA_BUNDLE'):
-            ca_bundle = os.environ.get('AWS_CA_BUNDLE')
-
-    boto_params = dict(aws_access_key_id=access_key,
-                       aws_secret_access_key=secret_key,
-                       aws_session_token=security_token)
-
-    if profile_name:
-        boto_params = dict(aws_access_key_id=None, aws_secret_access_key=None, aws_session_token=None)
-        boto_params['profile_name'] = profile_name
-
-    if validate_certs and ca_bundle:
-        boto_params['verify'] = ca_bundle
-    else:
-        boto_params['verify'] = validate_certs
-
-    if config is not None:
-        boto_params['aws_config'] = botocore.config.Config(**config)
-
-    for param, value in boto_params.items():
-        if isinstance(value, binary_type):
-            boto_params[param] = text_type(value, 'utf-8', 'strict')
-
-    return region, ec2_url, boto_params
-
-
-def ansible_dict_to_boto3_filter_list(filters_dict):
-
-    """ Convert an Ansible dict of filters to list of dicts that boto3 can use
-    Args:
-        filters_dict (dict): Dict of AWS filters.
-    Basic Usage:
-        >>> filters = {'some-aws-id': 'i-01234567'}
-        >>> ansible_dict_to_boto3_filter_list(filters)
-        {
-            'some-aws-id': 'i-01234567'
-        }
-    Returns:
-        List: List of AWS filters and their values
-        [
-            {
-                'Name': 'some-aws-id',
-                'Values': [
-                    'i-01234567',
-                ]
-            }
-        ]
-    """
-
-    filters_list = []
-    for k, v in filters_dict.items():
-        filter_dict = {'Name': k}
-        if isinstance(v, bool):
-            filter_dict['Values'] = [str(v).lower()]
-        elif isinstance(v, integer_types):
-            filter_dict['Values'] = [str(v)]
-        elif isinstance(v, string_types):
-            filter_dict['Values'] = [v]
-        else:
-            filter_dict['Values'] = v
-
-        filters_list.append(filter_dict)
-
-    return filters_list
+    pass  # Handled by HAS_BOTO3
 
 
 def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id=None, boto3=None):
@@ -368,54 +139,6 @@ def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id
     sec_group_id_list += [get_sg_id(all_sg) for all_sg in all_sec_groups if get_sg_name(all_sg) in sec_group_name_list]
 
     return sec_group_id_list
-
-
-def map_complex_type(complex_type, type_map):
-    """
-        Allows to cast elements within a dictionary to a specific type
-        Example of usage:
-
-        DEPLOYMENT_CONFIGURATION_TYPE_MAP = {
-            'maximum_percent': 'int',
-            'minimum_healthy_percent': 'int'
-        }
-
-        deployment_configuration = map_complex_type(module.params['deployment_configuration'],
-                                                    DEPLOYMENT_CONFIGURATION_TYPE_MAP)
-
-        This ensures all keys within the root element are casted and valid integers
-    """
-
-    if complex_type is None:
-        return
-    new_type = type(complex_type)()
-    if isinstance(complex_type, dict):
-        for key in complex_type:
-            if key in type_map:
-                if isinstance(type_map[key], list):
-                    new_type[key] = map_complex_type(
-                        complex_type[key],
-                        type_map[key][0])
-                else:
-                    new_type[key] = map_complex_type(
-                        complex_type[key],
-                        type_map[key])
-            else:
-                return complex_type
-    elif isinstance(complex_type, list):
-        for i in range(len(complex_type)):
-            new_type.append(map_complex_type(
-                complex_type[i],
-                type_map))
-    elif type_map:
-        return globals()['__builtins__'][type_map](complex_type)
-    return new_type
-
-
-@AWSRetry.jittered_backoff()
-def _describe_ec2_tags(client, **params):
-    paginator = client.get_paginator('describe_tags')
-    return paginator.paginate(**params).build_full_result()
 
 
 def add_ec2_tags(client, module, resource_id, tags_to_set, retry_codes=None):
@@ -500,11 +223,9 @@ def describe_ec2_tags(client, module, resource_id, resource_type=None, retry_cod
         retry_codes = []
 
     try:
-        results = AWSRetry.jittered_backoff(retries=10, catch_extra_error_codes=retry_codes)(
-            _describe_ec2_tags
-        )(
-            client, Filters=filters
-        )
+        retry_decorator = AWSRetry.jittered_backoff(retries=10, catch_extra_error_codes=retry_codes)
+        results = paginated_query_with_retries(client, 'describe_tags', retry_decorator=retry_decorator,
+                                               Filters=filters)
         return boto3_tag_list_to_ansible_dict(results.get('Tags', None))
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Failed to describe tags for EC2 Resource: {0}".format(resource_id))
@@ -587,16 +308,3 @@ def normalize_ec2_vpc_dhcp_config(option_config):
                 config_data[option] = [val['Value'] for val in config_item['Values']]
 
     return config_data
-
-
-def is_outposts_arn(input_regex):
-    """
-    Validates the provided regex pattern of outpost arn as per API specification document.
-
-    API Specification Document:
-    https://docs.aws.amazon.com/outposts/latest/APIReference/API_Outpost.html
-    """
-    regex_pattern = r'^arn:aws([a-z-]+)?:outposts:[a-z\d-]+:\d{12}:outpost/op-[a-f0-9]{17}$'
-    if not re.match(regex_pattern, input_regex):
-        return False
-    return True

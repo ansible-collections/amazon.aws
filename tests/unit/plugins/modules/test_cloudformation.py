@@ -12,6 +12,7 @@ import pytest
 # Magic...
 from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import maybe_sleep, placeboify  # pylint: disable=unused-import
 
+from ansible_collections.amazon.aws.plugins.module_utils.modules import _RetryingBotoClientWrapper
 import ansible_collections.amazon.aws.plugins.module_utils.core as aws_core
 import ansible_collections.amazon.aws.plugins.module_utils.ec2 as aws_ec2
 
@@ -84,7 +85,7 @@ class FakeModule(object):
 def _create_wrapped_client(placeboify):
     connection = placeboify.client('cloudformation')
     retry_decorator = aws_ec2.AWSRetry.jittered_backoff()
-    wrapped_conn = aws_core._RetryingBotoClientWrapper(connection, retry_decorator)
+    wrapped_conn = _RetryingBotoClientWrapper(connection, retry_decorator)
     return wrapped_conn
 
 
