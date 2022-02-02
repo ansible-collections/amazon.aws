@@ -65,14 +65,14 @@ EXAMPLES = '''
     state: present
 
 # Update a policy with a new default version
-- name: Create IAM Managed Policy
+- name: Update an IAM Managed Policy with new default version
   community.aws.iam_managed_policy:
     policy_name: "ManagedPolicy"
     policy: "{{ lookup('file', 'managed_policy_update.json') }}"
     state: present
 
 # Update a policy with a new non default version
-- name: Create IAM Managed Policy
+- name: Update an IAM Managed Policy with a non default version
   community.aws.iam_managed_policy:
     policy_name: "ManagedPolicy"
     policy:
@@ -85,7 +85,7 @@ EXAMPLES = '''
     state: present
 
 # Update a policy and make it the only version and the default version
-- name: Create IAM Managed Policy
+- name: Update an IAM Managed Policy with default version as the only version
   community.aws.iam_managed_policy:
     policy_name: "ManagedPolicy"
     policy: |
@@ -101,7 +101,7 @@ EXAMPLES = '''
     state: present
 
 # Remove a policy
-- name: Create IAM Managed Policy
+- name: Remove an existing IAM Managed Policy
   community.aws.iam_managed_policy:
     policy_name: "ManagedPolicy"
     state: absent
