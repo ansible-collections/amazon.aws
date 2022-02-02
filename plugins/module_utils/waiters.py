@@ -497,7 +497,7 @@ eks_data = {
                 {
                     "state": "retry",
                     "matcher": "error",
-                    "expected" : "ResourceNotFoundException"
+                    "expected": "ResourceNotFoundException"
                 }
             ]
         },
@@ -515,7 +515,7 @@ eks_data = {
                 {
                     "state": "success",
                     "matcher": "error",
-                    "expected" : "ResourceNotFoundException"
+                    "expected": "ResourceNotFoundException"
                 }
             ]
         }
@@ -910,16 +910,16 @@ waiters_by_name = {
             eks.describe_cluster
         )),
     ('EKS', 'fargate_profile_active'): lambda eks: core_waiter.Waiter(
-            'fargate_profile_active',
-            eks_model('FargateProfileActive'),
-            core_waiter.NormalizedOperationMethod(
-                eks.describe_fargate_profile
+        'fargate_profile_active',
+        eks_model('FargateProfileActive'),
+        core_waiter.NormalizedOperationMethod(
+            eks.describe_fargate_profile
         )),
     ('EKS', 'fargate_profile_deleted'): lambda eks: core_waiter.Waiter(
-            'fargate_profile_deleted',
-            eks_model('FargateProfileDeleted'),
-            core_waiter.NormalizedOperationMethod(
-                eks.describe_fargate_profile
+        'fargate_profile_deleted',
+        eks_model('FargateProfileDeleted'),
+        core_waiter.NormalizedOperationMethod(
+            eks.describe_fargate_profile
         )),
     ('ElasticLoadBalancing', 'any_instance_in_service'): lambda elb: core_waiter.Waiter(
         'any_instance_in_service',
