@@ -353,6 +353,22 @@ options:
           The state of token usage for your instance metadata requests.
         choices: [optional, required]
         default: 'optional'
+      http_protocol_ipv6:
+        version_added: 3.1.0
+        type: str
+        description: >
+          - Wether the instance metadata endpoint is available via IPv6 (C(enabled)) or not (C(disabled)).
+          - Requires boto3 >= 1.18.29
+        choices: [enabled, disabled]
+        default: 'disabled'
+      instance_metadata_tags:
+        version_added: 3.1.0
+        type: str
+        description:
+          - Wether the instance tags are availble (C(enabled)) via metadata endpoint or not (C(disabled)).
+          - Requires boto3 >= 1.20.30
+        choices: [enabled, disabled]
+        default: 'disabled'
 '''
 
 EXAMPLES = '''
@@ -516,6 +532,24 @@ def create_or_update(module, template_options):
     out = {}
     lt_data = params_to_launch_data(module, dict((k, v) for k, v in module.params.items() if k in template_options))
     lt_data = scrub_none_parameters(lt_data, descend_into_lists=True)
+
+    if lt_data.get('MetadataOptions'):
+        if not module.boto3_at_least('1.20.30'):
+            # fail only if enabled is requested
+            if lt_data['MetadataOptions'].get('InstanceMetadataTags') == 'enabled':
+                module.require_boto3_at_least('1.20.30', reason='to set instance_metadata_tags')
+            # pop if it's not requested to keep backwards compatibility.
+            # otherwise the modules failes because parameters are set due default values
+            lt_data['MetadataOptions'].pop('InstanceMetadataTags')
+
+        if not module.boto3_at_least('1.18.29'):
+            # fail only if enabled is requested
+            if lt_data['MetadataOptions'].get('HttpProtocolIpv6') == 'enabled':
+                module.require_boto3_at_least('1.18.29', reason='to set http_protocol_ipv6')
+            # pop if it's not requested to keep backwards compatibility.
+            # otherwise the modules failes because parameters are set due default values
+            lt_data['MetadataOptions'].pop('HttpProtocolIpv6')
+
     if not (template or template_versions):
         # create a full new one
         try:
@@ -671,7 +705,9 @@ def main():
             options=dict(
                 http_endpoint=dict(choices=['enabled', 'disabled'], default='enabled'),
                 http_put_response_hop_limit=dict(type='int', default=1),
-                http_tokens=dict(choices=['optional', 'required'], default='optional')
+                http_tokens=dict(choices=['optional', 'required'], default='optional'),
+                http_protocol_ipv6=dict(choices=['disabled', 'enabled'], default='disabled'),
+                instance_metadata_tags=dict(choices=['disabled', 'enabled'], default='disabled'),
             )
         ),
         network_interfaces=dict(
