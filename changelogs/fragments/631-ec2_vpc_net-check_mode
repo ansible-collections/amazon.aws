@@ -1,0 +1,6 @@
+bugfixes:
+- >-
+  ec2_vpc_net - In check mode, ensure the module does not change the configuration.
+  Handle case when Amazon-provided ipv6 block is enabled, then disabled, then enabled again.
+  Do not disable IPv6 CIDR association (using Amazon pool) if ipv6_cidr property is not present in the task.
+  If the VPC already exists and ipv6_cidr property, retain the current config.
