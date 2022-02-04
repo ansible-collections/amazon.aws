@@ -451,10 +451,10 @@ EXAMPLES = '''
     image_id: ami-123456
     exact_count: 5
     region: us-east-2
+    vpc_subnet_id: subnet-0123456
     network:
       assign_public_ip: yes
       security_group: default
-      vpc_subnet_id: subnet-0123456
     tags:
       foo: bar
 
