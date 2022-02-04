@@ -1,5 +1,5 @@
 ---
-instance_id: "ansible-test-{{ tiny_prefix }}"
+instance_id: "ansible-test-{{ inventory_hostname | replace('_','-') }}{{ tiny_prefix }}"
 modified_instance_id: "{{ instance_id }}-updated"
 username: test
 password: test12345678
@@ -8,8 +8,12 @@ storage_encrypted_db_instance_class: db.t3.small
 modified_db_instance_class: db.t3.medium
 allocated_storage: 20
 modified_allocated_storage: 30
+io1_allocated_storage: 100
+io1_modified_allocated_storage: 110
 monitoring_interval: 60
 preferred_maintenance_window: "mon:06:20-mon:06:50"
+storage_type: io1
+iops: 1000
 
 # For aurora tests
 cluster_id: "{{ instance_id }}-cluster"
