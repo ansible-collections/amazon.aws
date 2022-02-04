@@ -31,7 +31,9 @@
         username: "{{ username }}"
         password: "{{ password }}"
         db_instance_class: "{{ db_instance_class }}"
-        allocated_storage: "{{ allocated_storage }}"
+        allocated_storage: "{{ io1_allocated_storage }}"
+        storage_type: "{{ storage_type }}"
+        iops: "{{ iops }}"
       register: result
 
     - assert:
@@ -48,47 +50,46 @@
       rds_instance:
         id: "{{ instance_id }}"
         state: present
-        allocated_storage: 30
+        allocated_storage: "{{ io1_modified_allocated_storage }}"
+        storage_type: "{{ storage_type }}"
         db_instance_class: "{{ modified_db_instance_class }}"
         backup_retention_period: 2
         preferred_backup_window: "05:00-06:00"
         preferred_maintenance_window: "{{ preferred_maintenance_window }}"
-        engine_version: "{{ mariadb_engine_version_2 }}"
-        allow_major_version_upgrade: true
         auto_minor_version_upgrade: false
         monitoring_interval: "{{ monitoring_interval }}"
         monitoring_role_arn: "{{ enhanced_monitoring_role.arn }}"
+        iops: "{{ iops }}"
         port: 1150
-        max_allocated_storage: 100
+        max_allocated_storage: 150
         apply_immediately: True
       register: result
 
     - assert:
         that:
           - result.changed
-          - '"allocated_storage" in result.pending_modified_values or result.allocated_storage == 30'
-          - '"max_allocated_storage" in result.pending_modified_values or result.max_allocated_storage == 100'
+          - '"allocated_storage" in result.pending_modified_values or result.allocated_storage == io1_modified_allocated_storage'
+          - '"max_allocated_storage" in result.pending_modified_values or result.max_allocated_storage == 150'
           - '"port" in result.pending_modified_values or result.endpoint.port == 1150'
           - '"db_instance_class" in result.pending_modified_values or result.db_instance_class == modified_db_instance_class'
-          - '"engine_version" in result.pending_modified_values or result.engine_version == mariadb_engine_version_2'
           - '"monitoring_interval" in result.pending_modified_values or result.monitoring_interval == monitoring_interval'
 
     - name: Idempotence modifying several pending attributes
       rds_instance:
         id: "{{ instance_id }}"
         state: present
-        allocated_storage: 30
+        allocated_storage: "{{ io1_modified_allocated_storage }}"
+        storage_type: "{{ storage_type }}"
         db_instance_class: "{{ modified_db_instance_class }}"
         backup_retention_period: 2
         preferred_backup_window: "05:00-06:00"
         preferred_maintenance_window: "{{ preferred_maintenance_window }}"
-        engine_version: "{{ mariadb_engine_version_2 }}"
-        allow_major_version_upgrade: true
         auto_minor_version_upgrade: false
         monitoring_interval: "{{ monitoring_interval }}"
         monitoring_role_arn: "{{ enhanced_monitoring_role.arn }}"
+        iops: "{{ iops }}"
         port: 1150
-        max_allocated_storage: 100
+        max_allocated_storage: 150
       register: result
       retries: 30
       delay: 10
@@ -97,11 +98,10 @@
     - assert:
         that:
           - not result.changed
-          - '"allocated_storage" in result.pending_modified_values or result.allocated_storage == 30'
-          - '"max_allocated_storage" in result.pending_modified_values or result.max_allocated_storage == 100'
+          - '"allocated_storage" in result.pending_modified_values or result.allocated_storage == io1_modified_allocated_storage'
+          - '"max_allocated_storage" in result.pending_modified_values or result.max_allocated_storage == 150'
           - '"port" in result.pending_modified_values or result.endpoint.port == 1150'
           - '"db_instance_class" in result.pending_modified_values or result.db_instance_class == modified_db_instance_class'
-          - '"engine_version" in result.pending_modified_values or result.engine_version == mariadb_engine_version_2'
 
   always:
     - name: Delete the instance

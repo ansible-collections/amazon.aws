@@ -1,12 +1,19 @@
+# inventory names shortened down to fit resource name length limits
 [tests]
+# processor feature tests
+processor
+# restore instance tests
+restore
+# security groups db tests
+sgroups
+# modify complex tests
+complex
+# other tests
 states
 modify
-modify_complex
-processor_features
-read_replica
-vpc_security_groups
-restore_instance
 tagging
+replica
+upgrade
 
 # TODO: uncomment after adding rds_cluster module
 # aurora
