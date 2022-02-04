@@ -22,6 +22,13 @@ options:
       - The amount time for Elastic Load Balancing to wait before changing the state of a deregistering target from draining to unused.
         The range is 0-3600 seconds.
     type: int
+  deregistration_connection_termination:
+    description:
+      - Indicates whether the load balancer terminates connections at the end of the deregistration timeout.
+    type: bool
+    default: false
+    required: false
+    version_added: 3.1.0
   health_check_protocol:
     description:
       - The protocol the load balancer uses when performing health checks on targets.
@@ -305,6 +312,11 @@ deregistration_delay_timeout_seconds:
     returned: when state present
     type: int
     sample: 300
+deregistration_connection_termination:
+    description: Indicates whether the load balancer terminates connections at the end of the deregistration timeout.
+    returned: when state present
+    type: bool
+    sample: True
 health_check_interval_seconds:
     description: The approximate amount of time, in seconds, between health checks of an individual target.
     returned: when state present
@@ -425,7 +437,7 @@ def get_tg_attributes(connection, module, tg_arn):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't get target group attributes")
 
-    # Replace '.' with '_' in attribute key names to make it more Ansibley
+    # Replace '.' with '_' in attribute key names to make it more Ansible friendly
     return dict((k.replace('.', '_'), v) for k, v in tg_attributes.items())
 
 
@@ -486,6 +498,7 @@ def create_or_update_target_group(connection, module):
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
     deregistration_delay_timeout = module.params.get("deregistration_delay_timeout")
+    deregistration_connection_termination = module.params.get("deregistration_connection_termination")
     stickiness_enabled = module.params.get("stickiness_enabled")
     stickiness_lb_cookie_duration = module.params.get("stickiness_lb_cookie_duration")
     stickiness_type = module.params.get("stickiness_type")
@@ -767,6 +780,9 @@ def create_or_update_target_group(connection, module):
     if deregistration_delay_timeout is not None:
         if str(deregistration_delay_timeout) != current_tg_attributes['deregistration_delay_timeout_seconds']:
             update_attributes.append({'Key': 'deregistration_delay.timeout_seconds', 'Value': str(deregistration_delay_timeout)})
+    if deregistration_connection_termination is not None:
+        if deregistration_connection_termination and current_tg_attributes.get('deregistration_delay_connection_termination_enabled') != "true":
+            update_attributes.append({'Key': 'deregistration_delay.connection_termination.enabled', 'Value': 'true'})
     if stickiness_enabled is not None:
         if stickiness_enabled and current_tg_attributes['stickiness_enabled'] != "true":
             update_attributes.append({'Key': 'stickiness.enabled', 'Value': 'true'})
@@ -855,6 +871,7 @@ def main():
                       'HTTPS', 'TCP', 'TLS', 'UDP', 'TCP_UDP']
     argument_spec = dict(
         deregistration_delay_timeout=dict(type='int'),
+        deregistration_connection_termination=dict(type='bool', default=False),
         health_check_protocol=dict(choices=protocols_list),
         health_check_port=dict(),
         health_check_path=dict(),
@@ -897,6 +914,9 @@ def main():
     connection = module.client('elbv2', retry_decorator=AWSRetry.jittered_backoff(retries=10))
 
     if module.params.get('state') == 'present':
+        if module.params.get('protocol') in ['http', 'https', 'HTTP', 'HTTPS'] and module.params.get('deregistration_connection_termination', None):
+            module.fail_json(msg="A target group with HTTP/S protocol does not support setting deregistration_connection_termination")
+
         create_or_update_target_group(connection, module)
     else:
         delete_target_group(connection, module)
