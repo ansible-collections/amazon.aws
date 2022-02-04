@@ -467,10 +467,15 @@ EXAMPLES = r'''
 
 RETURN = r'''
 allocated_storage:
-  description: The allocated storage size in gibibytes. This is always 1 for aurora database engines.
+  description: The allocated storage size in gigabytes. This is always 1 for aurora database engines.
   returned: always
   type: int
   sample: 20
+associated_roles:
+  description: The list of currently associated roles.
+  returned: always
+  type: list
+  sample: []
 auto_minor_version_upgrade:
   description: Whether minor engine upgrades are applied automatically to the DB instance during the maintenance window.
   returned: always
@@ -890,6 +895,17 @@ def get_options_with_changing_values(client, module, parameters):
     updated_parameters.update(get_changing_options_with_consistent_keys(parameters, instance))
     parameters = updated_parameters
 
+    if instance.get('StorageType') == 'io1':
+        # Bundle Iops and AllocatedStorage while updating io1 RDS Instance
+        current_iops = instance.get('PendingModifiedValues', {}).get('Iops', instance['Iops'])
+        current_allocated_storage = instance.get('PendingModifiedValues', {}).get('AllocatedStorage', instance['AllocatedStorage'])
+        new_iops = module.params.get('iops')
+        new_allocated_storage = module.params.get('allocated_storage')
+
+        if current_iops != new_iops or current_allocated_storage != new_allocated_storage:
+            parameters['AllocatedStorage'] = new_allocated_storage
+            parameters['Iops'] = new_iops
+
     if parameters.get('NewDBInstanceIdentifier') and instance.get('PendingModifiedValues', {}).get('DBInstanceIdentifier'):
         if parameters['NewDBInstanceIdentifier'] == instance['PendingModifiedValues']['DBInstanceIdentifier'] and not apply_immediately:
             parameters.pop('NewDBInstanceIdentifier')
@@ -1179,6 +1195,7 @@ def main():
         ('engine', 'aurora', ('db_cluster_identifier',)),
         ('engine', 'aurora-mysql', ('db_cluster_identifier',)),
         ('engine', 'aurora-postresql', ('db_cluster_identifier',)),
+        ('storage_type', 'io1', ('iops', 'allocated_storage')),
         ('creation_source', 'snapshot', ('snapshot_identifier', 'engine')),
         ('creation_source', 's3', (
             's3_bucket_name', 'engine', 'master_username', 'master_user_password',
