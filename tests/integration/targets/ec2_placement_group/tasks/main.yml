@@ -1,0 +1,408 @@
+- name: run ec2_placement_group tests
+  module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  collections:
+    - amazon.aws
+  vars:
+    placement_group_names: []
+
+  block:
+
+    - name: set up environment for testing.
+      include_tasks: env_setup.yml
+
+    - name: Create a placement group 1 - check_mode
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg1'
+        state: present
+      check_mode: true
+      register: pg_1_create_check_mode
+
+    - assert:
+        that:
+          - pg_1_create_check_mode is changed
+          - pg_1_create_check_mode.placement_group.name == '{{ resource_prefix }}-pg1'
+          - pg_1_create_check_mode.placement_group.state == "DryRun"
+          - '"ec2:CreatePlacementGroup" in pg_1_create_check_mode.resource_actions'
+
+    - name: Create a placement group 1
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg1'
+        state: present
+      register: pg_1_create
+
+    - set_fact:
+        placement_group_names: "{{ placement_group_names + [pg_1_create.placement_group.name] }}"
+
+    - assert:
+        that:
+          - pg_1_create is changed
+          - pg_1_create.placement_group.name == '{{ resource_prefix }}-pg1'
+          - pg_1_create.placement_group.state == "available"
+          - '"ec2:CreatePlacementGroup" in pg_1_create.resource_actions'
+
+    - name: Gather information about placement group 1
+      community.aws.ec2_placement_group_info:
+        names:
+          - '{{ resource_prefix }}-pg1'
+      register: pg_1_info_result
+
+    - assert:
+        that:
+          - pg_1_info_result is not changed
+          - pg_1_info_result.placement_groups[0].name == '{{ resource_prefix }}-pg1'
+          - pg_1_info_result.placement_groups[0].state == "available"
+          - pg_1_info_result.placement_groups[0].strategy == "cluster"
+          - '"ec2:DescribePlacementGroups" in pg_1_info_result.resource_actions'
+
+    - name: Create a placement group 1 - Idempotency
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg1'
+        state: present
+      register: pg_1_create
+
+    - assert:
+        that:
+          - pg_1_create is not changed
+          - pg_1_create.placement_group.name == '{{ resource_prefix }}-pg1'
+          - pg_1_create.placement_group.state == "available"
+          - '"ec2:CreatePlacementGroup" not in pg_1_create.resource_actions'
+
+    - name: Create a placement group 1 - check_mode Idempotency
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg1'
+        state: present
+      check_mode: true
+      register: pg_1_create_check_mode_idem
+
+    - assert:
+        that:
+          - pg_1_create_check_mode_idem is not changed
+          - pg_1_create_check_mode_idem.placement_group.name == '{{ resource_prefix }}-pg1'
+          - pg_1_create_check_mode_idem.placement_group.state == "available"
+          - '"ec2:CreatePlacementGroup" not in pg_1_create_check_mode_idem.resource_actions'
+
+    - name: Create a placement group 2 - check_mode
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg2'
+        state: present
+        strategy: spread
+      check_mode: true
+      register: pg_2_create_check_mode
+
+    - assert:
+        that:
+          - pg_2_create_check_mode is changed
+          - pg_2_create_check_mode.placement_group.name == '{{ resource_prefix }}-pg2'
+          - pg_2_create_check_mode.placement_group.state == "DryRun"
+          - '"ec2:CreatePlacementGroup" in pg_2_create_check_mode.resource_actions'
+
+    - name: Create a placement group 2 with spread strategy
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg2'
+        state: present
+        strategy: spread
+      register: pg_2_create
+
+    - assert:
+        that:
+          - pg_2_create is changed
+          - pg_2_create.placement_group.name == '{{ resource_prefix }}-pg2'
+          - pg_2_create.placement_group.state == "available"
+          - '"ec2:CreatePlacementGroup" in pg_2_create.resource_actions'
+
+    - set_fact:
+        placement_group_names: "{{ placement_group_names + [pg_2_create.placement_group.name] }}"
+
+    - name: Gather information about placement group 2
+      community.aws.ec2_placement_group_info:
+        names:
+          - '{{ resource_prefix }}-pg2'
+      register: pg_2_info_result
+
+    - assert:
+        that:
+          - pg_2_info_result is not changed
+          - pg_2_info_result.placement_groups[0].name == '{{ resource_prefix }}-pg2'
+          - pg_2_info_result.placement_groups[0].state == "available"
+          - pg_2_info_result.placement_groups[0].strategy == "spread"
+          - '"ec2:DescribePlacementGroups" in pg_2_info_result.resource_actions'
+
+    - name: Create a placement group 2 with spread strategy - Idempotency
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg2'
+        state: present
+        strategy: spread
+      register: pg_2_create
+
+    - assert:
+        that:
+          - pg_2_create is not changed
+          - pg_2_create.placement_group.name == '{{ resource_prefix }}-pg2'
+          - pg_2_create.placement_group.state == "available"
+          - '"ec2:CreatePlacementGroup" not in pg_2_create.resource_actions'
+
+    - name: Create a placement group 2 - check_mode Idempotency
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg2'
+        state: present
+        strategy: spread
+      check_mode: true
+      register: pg_2_create_check_mode_idem
+
+    - assert:
+        that:
+          - pg_2_create_check_mode_idem is not changed
+          - pg_2_create_check_mode_idem.placement_group.name == '{{ resource_prefix }}-pg2'
+          - pg_2_create_check_mode_idem.placement_group.state == "available"
+          - '"ec2:CreatePlacementGroup" not in pg_2_create_check_mode_idem.resource_actions'
+
+    - name: Create a placement group 3 - check_mode
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg3'
+        state: present
+        strategy: partition
+        partition_count: 4
+      check_mode: true
+      register: pg_3_create_check_mode
+
+    - assert:
+        that:
+          - pg_3_create_check_mode is changed
+          - pg_3_create_check_mode.placement_group.name == '{{ resource_prefix }}-pg3'
+          - pg_3_create_check_mode.placement_group.state == "DryRun"
+          - '"ec2:CreatePlacementGroup" in pg_3_create_check_mode.resource_actions'
+
+    - name: Create a placement group 3 with Partition strategy
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg3'
+        state: present
+        strategy: partition
+        partition_count: 4
+      register: pg_3_create
+
+    - assert:
+        that:
+          - pg_3_create is changed
+          - pg_3_create.placement_group.name == '{{ resource_prefix }}-pg3'
+          - pg_3_create.placement_group.state == "available"
+          - '"ec2:CreatePlacementGroup" in pg_3_create.resource_actions'
+
+    - set_fact:
+        placement_group_names: "{{ placement_group_names + [pg_3_create.placement_group.name] }}"
+
+
+    - name: Gather information about placement group 3
+      community.aws.ec2_placement_group_info:
+        names:
+          - '{{ resource_prefix }}-pg3'
+      register: pg_3_info_result
+
+    - assert:
+        that:
+          - pg_3_info_result is not changed
+          - pg_3_info_result.placement_groups[0].name == '{{ resource_prefix }}-pg3'
+          - pg_3_info_result.placement_groups[0].state == "available"
+          - pg_3_info_result.placement_groups[0].strategy == "partition"
+          - '"ec2:DescribePlacementGroups" in pg_3_info_result.resource_actions'
+
+    - name: Create a placement group 3 with Partition strategy - Idempotency
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg3'
+        state: present
+        strategy: partition
+        partition_count: 4
+      register: pg_3_create
+
+    - assert:
+        that:
+          - pg_3_create is not changed
+          - pg_3_create.placement_group.name == '{{ resource_prefix }}-pg3'
+          - pg_3_create.placement_group.state == "available"
+          - '"ec2:CreatePlacementGroup" not in pg_3_create.resource_actions'
+
+    - name: Create a placement group 3 - check_mode Idempotency
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg3'
+        state: present
+        strategy: partition
+        partition_count: 4
+      check_mode: true
+      register: pg_3_create_check_mode_idem
+
+    - assert:
+        that:
+          - pg_3_create_check_mode_idem is not changed
+          - pg_3_create_check_mode_idem.placement_group.name == '{{ resource_prefix }}-pg3'
+          - pg_3_create_check_mode_idem.placement_group.state == "available"
+          - '"ec2:CreatePlacementGroup" not in pg_3_create_check_mode_idem.resource_actions'
+
+    - name: List all placement groups.
+      community.aws.ec2_placement_group_info:
+      register: all_ec2_placement_groups
+
+# Delete Placement Group ==========================================
+
+    # On using check_mode for delete placement group operation
+    # If operation would have succeeded, the error response is DryRunOperation.
+    # Otherwise, it is UnauthorizedOperation .
+    - name: Delete a placement group 1 - check_mode
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg1'
+        state: absent
+      check_mode: true
+      register: pg_1_delete_check_mode
+      ignore_errors: true
+
+    - assert:
+        that:
+          - pg_1_delete_check_mode is not changed
+          - pg_1_delete_check_mode.error.code == 'DryRunOperation'
+          - '"ec2:DeletePlacementGroup" in pg_1_delete_check_mode.resource_actions'
+
+    - name: Delete a placement group 1
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg1'
+        state: absent
+      register: pg_1_delete
+
+    - assert:
+        that:
+          - pg_1_delete is changed
+          - '"ec2:DeletePlacementGroup" in pg_1_delete.resource_actions'
+
+    - name: Delete a placement group 1 - Idempotency
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg1'
+        state: absent
+      register: pg_1_delete
+
+    - assert:
+        that:
+          - pg_1_delete is not changed
+          - '"ec2:DeletePlacementGroup" not in pg_1_delete.resource_actions'
+
+    - name: Delete a placement group 1 - check_mode Idempotency
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg1'
+        state: absent
+      check_mode: true
+      register: pg_1_delete_check_mode_idem
+      ignore_errors: true
+
+    - assert:
+        that:
+          - pg_1_delete_check_mode_idem is not changed
+          - '"ec2:DeletePlacementGroup" not in pg_1_delete_check_mode_idem.resource_actions'
+
+    - name: Delete a placement group 2 - check_mode
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg2'
+        state: absent
+      check_mode: true
+      register: pg_2_delete_check_mode
+      ignore_errors: true
+
+    - assert:
+        that:
+          - pg_2_delete_check_mode is not changed
+          - pg_2_delete_check_mode.error.code == 'DryRunOperation'
+          - '"ec2:DeletePlacementGroup" in pg_2_delete_check_mode.resource_actions'
+
+    - name: Delete a placement group 2
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg2'
+        state: absent
+      register: pg_2_delete
+
+    - assert:
+        that:
+          - pg_2_delete is changed
+          - '"ec2:DeletePlacementGroup" in pg_2_delete.resource_actions'
+
+    - name: Delete a placement group 2 - Idempotency
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg2'
+        state: absent
+      register: pg_2_delete
+
+    - assert:
+        that:
+          - pg_2_delete is not changed
+          - '"ec2:DeletePlacementGroup" not in pg_2_delete.resource_actions'
+
+    - name: Delete a placement group 2 - check_mode Idempotency
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg2'
+        state: absent
+      check_mode: true
+      register: pg_2_delete_check_mode_idem
+      ignore_errors: true
+
+    - assert:
+        that:
+          - pg_2_delete_check_mode_idem is not changed
+          - '"ec2:DeletePlacementGroup" not in pg_2_delete_check_mode_idem.resource_actions'
+
+    - name: Delete a placement group 3 - check_mode
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg3'
+        state: absent
+      check_mode: true
+      register: pg_3_delete_check_mode
+      ignore_errors: true
+
+    - assert:
+        that:
+          - pg_3_delete_check_mode is not changed
+          - pg_3_delete_check_mode.error.code == 'DryRunOperation'
+          - '"ec2:DeletePlacementGroup" in pg_3_delete_check_mode.resource_actions'
+
+    - name: Delete a placement group 3
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg3'
+        state: absent
+      register: pg_3_delete
+
+    - assert:
+        that:
+          - pg_3_delete is changed
+          - '"ec2:DeletePlacementGroup" in pg_3_delete.resource_actions'
+
+    - name: Delete a placement group 3 - Idempotency
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg3'
+        state: absent
+      register: pg_3_delete
+
+    - assert:
+        that:
+          - pg_3_delete is not changed
+          - '"ec2:DeletePlacementGroup" not in pg_3_delete.resource_actions'
+
+    - name: Delete a placement group 3 - check_mode Idempotency
+      community.aws.ec2_placement_group:
+        name: '{{ resource_prefix }}-pg3'
+        state: absent
+      check_mode: true
+      register: pg_3_delete_check_mode_idem
+      ignore_errors: true
+
+    - assert:
+        that:
+          - pg_3_delete_check_mode_idem is not changed
+          - '"ec2:DeletePlacementGroup" not in pg_3_delete_check_mode_idem.resource_actions'
+
+  always:
+
+    - name: Make sure placement groups created during test are deleted
+      community.aws.ec2_placement_group:
+        name: '{{ item }}'
+        state: absent
+      with_items: '{{ placement_group_names }}'
+
+    - include_tasks: env_cleanup.yml
