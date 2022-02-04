@@ -28,7 +28,6 @@
           - {"cidr": "10.122.122.128/28", "zone": "{{ aws_region }}a"}
           - {"cidr": "10.122.122.144/28", "zone": "{{ aws_region }}b"}
           - {"cidr": "10.122.122.160/28", "zone": "{{ aws_region }}c"}
-          - {"cidr": "10.122.122.176/28", "zone": "{{ aws_region }}d"}
 
       - name: Create security groups
         ec2_group:
