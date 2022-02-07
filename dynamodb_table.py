@@ -121,6 +121,13 @@ options:
     default: []
     type: list
     elements: dict
+  table_class:
+    description:
+      - The class of the table.
+      - Requires at least botocore version 1.23.18.
+    choices: ['STANDARD', 'STANDARD_INFREQUENT_ACCESS']
+    type: str
+    version_added: 3.1.0
   tags:
     description:
       - A hash/dictionary of tags to add to the new instance or for starting/stopping instance by tag.
@@ -201,11 +208,49 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
+table:
+  description: The returned table params from the describe API call.
+  returned: success
+  type: complex
+  contains: {}
+  sample: {
+    "arn": "arn:aws:dynamodb:us-east-1:721066863947:table/ansible-test-table",
+    "attribute_definitions": [
+        {
+            "attribute_name": "id",
+            "attribute_type": "N"
+        }
+    ],
+    "billing_mode": "PROVISIONED",
+    "creation_date_time": "2022-02-04T13:36:01.578000+00:00",
+    "id": "533b45fe-0870-4b66-9b00-d2afcfe96f19",
+    "item_count": 0,
+    "key_schema": [
+        {
+            "attribute_name": "id",
+            "key_type": "HASH"
+        }
+    ],
+    "name": "ansible-test-14482047-alinas-mbp",
+    "provisioned_throughput": {
+        "number_of_decreases_today": 0,
+        "read_capacity_units": 1,
+        "write_capacity_units": 1
+    },
+    "size": 0,
+    "status": "ACTIVE",
+    "table_arn": "arn:aws:dynamodb:us-east-1:721066863947:table/ansible-test-table",
+    "table_id": "533b45fe-0870-4b66-9b00-d2afcfe96f19",
+    "table_name": "ansible-test-table",
+    "table_size_bytes": 0,
+    "table_status": "ACTIVE",
+    "tags": {}
+  }
 table_status:
-    description: The current status of the table.
-    returned: success
-    type: str
-    sample: ACTIVE
+  description: The current status of the table.
+  returned: success
+  type: str
+  sample: ACTIVE
 '''
 
 try:
@@ -410,6 +455,7 @@ def compatability_results(current_table):
         billing_mode=billing_mode,
         region=module.region,
         table_name=current_table.get('table_name', None),
+        table_class=current_table.get('table_class_summary', {}).get('table_class', None),
         table_status=current_table.get('table_status', None),
         tags=current_table.get('tags', {}),
     )
@@ -451,6 +497,9 @@ def get_dynamodb_table():
     table['id'] = table['table_id']
     table['size'] = table['table_size_bytes']
     table['tags'] = tags
+
+    if 'table_class_summary' in table:
+        table['table_class'] = table['table_class_summary']['table_class']
 
     # billing_mode_summary doesn't always seem to be set but is always set for PAY_PER_REQUEST
     # and when updating the billing_mode
@@ -753,6 +802,7 @@ def _update_table(current_table):
     changes = dict()
     additional_global_index_changes = list()
 
+    # Get throughput / billing_mode changes
     throughput_changes = _throughput_changes(current_table)
     if throughput_changes:
         changes['ProvisionedThroughput'] = throughput_changes
@@ -765,6 +815,11 @@ def _update_table(current_table):
 
     if current_billing_mode != new_billing_mode:
         changes['BillingMode'] = new_billing_mode
+
+    # Update table_class use exisiting if none is defined
+    if module.params.get('table_class'):
+        if module.params.get('table_class') != current_table.get('table_class'):
+            changes['TableClass'] = module.params.get('table_class')
 
     global_index_changes = _global_index_changes(current_table)
     if global_index_changes:
@@ -868,6 +923,7 @@ def update_table(current_table):
 
 def create_table():
     table_name = module.params.get('name')
+    table_class = module.params.get('table_class')
     hash_key_name = module.params.get('hash_key_name')
     billing_mode = module.params.get('billing_mode')
 
@@ -901,6 +957,8 @@ def create_table():
         # SSESpecification,
     )
 
+    if table_class:
+        params['TableClass'] = table_class
     if billing_mode == "PROVISIONED":
         params['ProvisionedThroughput'] = throughput
     if local_indexes:
@@ -982,6 +1040,7 @@ def main():
         read_capacity=dict(type='int'),
         write_capacity=dict(type='int'),
         indexes=dict(default=[], type='list', elements='dict', options=index_options),
+        table_class=dict(type='str', choices=['STANDARD', 'STANDARD_INFREQUENT_ACCESS']),
         tags=dict(type='dict'),
         purge_tags=dict(type='bool', default=True),
         wait=dict(type='bool', default=True),
@@ -998,6 +1057,9 @@ def main():
         catch_extra_error_codes=['LimitExceededException', 'ResourceInUseException', 'ResourceNotFoundException'],
     )
     client = module.client('dynamodb', retry_decorator=retry_decorator)
+
+    if module.params.get('table_class'):
+        module.require_botocore_at_least('1.23.18', reason='to set table_class')
 
     current_table = get_dynamodb_table()
     changed = False
