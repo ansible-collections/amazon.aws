@@ -14,6 +14,7 @@ action_groups:
   - ec2
   - ec2_ami
   - ec2_ami_info
+  - ec2_asg_info
   - ec2_elb_lb
   - ec2_eni
   - ec2_eni_info
