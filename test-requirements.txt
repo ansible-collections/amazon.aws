@@ -7,7 +7,7 @@ mock
 pytest-xdist
 # We should avoid these two modules with py3
 pytest-mock
-# Needed for ansible.netcommon.ipaddr in tests
+# Needed for ansible.utils.ipaddr in tests
 netaddr
 # Sometimes needed where we don't have features we need in modules
 awscli

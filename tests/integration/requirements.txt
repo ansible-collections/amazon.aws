@@ -2,7 +2,7 @@
 boto3
 botocore
 
-# netaddr is needed for ansible.netcommon.ipv6
+# netaddr is needed for ansible.utils.ipv6
 netaddr
 virtualenv
 # Sometimes needed where we don't have features we need in modules
