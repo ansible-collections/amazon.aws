@@ -92,7 +92,7 @@
           - '"instance_tenancy" in result.vpc'
           - result.vpc.ipv6_cidr_block_association_set | length == 1
           - result.vpc.ipv6_cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
-          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.netcommon.ipv6
+          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.utils.ipv6
           - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block_state.state in ["associated", "associating"]
           - '"is_default" in result.vpc'
           - '"state" in result.vpc'
@@ -136,7 +136,7 @@
           - '"instance_tenancy" in result.vpc'
           - result.vpc.ipv6_cidr_block_association_set | length == 1
           - result.vpc.ipv6_cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
-          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.netcommon.ipv6
+          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.utils.ipv6
           - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block_state.state in ["associated", "associating"]
           - '"is_default" in result.vpc'
           - '"state" in result.vpc'
