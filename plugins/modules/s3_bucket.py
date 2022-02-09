@@ -147,6 +147,14 @@ options:
     choices: [ 'private', 'public-read', 'public-read-write', 'authenticated-read' ]
     type: str
     version_added: 3.1.0
+  validate_bucket_name:
+    description:
+      - Whether the bucket name should be validated to conform to AWS S3 naming rules.
+      - On by default, this may be disabled for S3 backends that do not enforce these rules.
+      - See https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
+    type: bool
+    version_added: 3.1.0
+    default: True
 
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -1011,6 +1019,7 @@ def main():
         object_ownership=dict(type='str', choices=['BucketOwnerPreferred', 'ObjectWriter']),
         delete_object_ownership=dict(type='bool', default=False),
         acl=dict(type='str', choices=['private', 'public-read', 'public-read-write', 'authenticated-read']),
+        validate_bucket_name=dict(type='bool', default=True),
     )
 
     required_by = dict(
@@ -1027,7 +1036,9 @@ def main():
     )
 
     region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
-    validate_bucket_name(module, module.params["name"])
+
+    if module.params.get('validate_bucket_name'):
+        validate_bucket_name(module, module.params["name"])
 
     if region in ('us-east-1', '', None):
         # default to US Standard region
