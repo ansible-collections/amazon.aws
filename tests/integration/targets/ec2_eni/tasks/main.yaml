@@ -7,7 +7,7 @@
       region: "{{ aws_region }}"
 
   collections:
-  - ansible.netcommon
+  - ansible.utils
   - community.aws
 
   block:
