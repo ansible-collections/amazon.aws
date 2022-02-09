@@ -10,9 +10,9 @@ DOCUMENTATION = r'''
 ---
 module: elb_application_lb_info
 version_added: 1.0.0
-short_description: Gather information about application ELBs in AWS
+short_description: Gather information about Application Load Balancers in AWS
 description:
-    - Gather information about application ELBs in AWS
+    - Gather information about Application Load Balancers in AWS
 author: Rob White (@wimnat)
 options:
   load_balancer_arns:
@@ -37,19 +37,19 @@ extends_documentation_fragment:
 EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-- name: Gather information about all target groups
+- name: Gather information about all ALBs
   community.aws.elb_application_lb_info:
 
-- name: Gather information about the target group attached to a particular ELB
+- name: Gather information about a particular ALB given its ARN
   community.aws.elb_application_lb_info:
     load_balancer_arns:
-      - "arn:aws:elasticloadbalancing:ap-southeast-2:001122334455:loadbalancer/app/my-elb/aabbccddeeff"
+      - "arn:aws:elasticloadbalancing:ap-southeast-2:001122334455:loadbalancer/app/my-alb/aabbccddeeff"
 
-- name: Gather information about a target groups named 'tg1' and 'tg2'
+- name: Gather information about ALBs named 'alb1' and 'alb2'
   community.aws.elb_application_lb_info:
     names:
-      - elb1
-      - elb2
+      - alb1
+      - alb2
 
 - name: Gather information about specific ALB
   community.aws.elb_application_lb_info:
@@ -69,55 +69,119 @@ load_balancers:
         access_logs_s3_bucket:
             description: The name of the S3 bucket for the access logs.
             type: str
-            sample: mys3bucket
+            sample: "mys3bucket"
         access_logs_s3_enabled:
             description: Indicates whether access logs stored in Amazon S3 are enabled.
-            type: str
+            type: bool
             sample: true
         access_logs_s3_prefix:
             description: The prefix for the location in the S3 bucket.
             type: str
-            sample: /my/logs
+            sample: "my/logs"
         availability_zones:
             description: The Availability Zones for the load balancer.
             type: list
-            sample: "[{'subnet_id': 'subnet-aabbccddff', 'zone_name': 'ap-southeast-2a'}]"
+            sample: [{ "load_balancer_addresses": [], "subnet_id": "subnet-aabbccddff", "zone_name": "ap-southeast-2a" }]
         canonical_hosted_zone_id:
             description: The ID of the Amazon Route 53 hosted zone associated with the load balancer.
             type: str
-            sample: ABCDEF12345678
+            sample: "ABCDEF12345678"
         created_time:
             description: The date and time the load balancer was created.
             type: str
             sample: "2015-02-12T02:14:02+00:00"
         deletion_protection_enabled:
             description: Indicates whether deletion protection is enabled.
-            type: str
+            type: bool
             sample: true
         dns_name:
             description: The public DNS name of the load balancer.
             type: str
-            sample: internal-my-elb-123456789.ap-southeast-2.elb.amazonaws.com
+            sample: "internal-my-alb-123456789.ap-southeast-2.elb.amazonaws.com"
         idle_timeout_timeout_seconds:
             description: The idle timeout value, in seconds.
-            type: str
+            type: int
             sample: 60
         ip_address_type:
-            description:  The type of IP addresses used by the subnets for the load balancer.
+            description: The type of IP addresses used by the subnets for the load balancer.
             type: str
-            sample: ipv4
+            sample: "ipv4"
+        listeners:
+            description: Information about the listeners.
+            type: complex
+            contains:
+                listener_arn:
+                    description: The Amazon Resource Name (ARN) of the listener.
+                    type: str
+                    sample: ""
+                load_balancer_arn:
+                    description: The Amazon Resource Name (ARN) of the load balancer.
+                    type: str
+                    sample: ""
+                port:
+                    description: The port on which the load balancer is listening.
+                    type: int
+                    sample: 80
+                protocol:
+                    description: The protocol for connections from clients to the load balancer.
+                    type: str
+                    sample: "HTTPS"
+                certificates:
+                    description: The SSL server certificate.
+                    type: complex
+                    contains:
+                        certificate_arn:
+                            description: The Amazon Resource Name (ARN) of the certificate.
+                            type: str
+                            sample: ""
+                ssl_policy:
+                    description: The security policy that defines which ciphers and protocols are supported.
+                    type: str
+                    sample: ""
+                default_actions:
+                    description: The default actions for the listener.
+                    type: str
+                    contains:
+                        type:
+                            description: The type of action.
+                            type: str
+                            sample: ""
+                        target_group_arn:
+                            description: The Amazon Resource Name (ARN) of the target group.
+                            type: str
+                            sample: ""
         load_balancer_arn:
             description: The Amazon Resource Name (ARN) of the load balancer.
             type: str
-            sample: arn:aws:elasticloadbalancing:ap-southeast-2:0123456789:loadbalancer/app/my-elb/001122334455
+            sample: "arn:aws:elasticloadbalancing:ap-southeast-2:0123456789:loadbalancer/app/my-alb/001122334455"
         load_balancer_name:
             description: The name of the load balancer.
             type: str
-            sample: my-elb
+            sample: "my-alb"
+        routing_http2_enabled:
+            description: Indicates whether HTTP/2 is enabled.
+            type: bool
+            sample: true
+        routing_http_desync_mitigation_mode:
+            description: Determines how the load balancer handles requests that might pose a security risk to an application.
+            type: str
+            sample: "defensive"
+        routing_http_drop_invalid_header_fields_enabled:
+            description: Indicates whether HTTP headers with invalid header fields are removed by the load balancer (true) or routed to targets (false).
+            type: bool
+            sample: false
+        routing_http_x_amzn_tls_version_and_cipher_suite_enabled:
+            description: Indicates whether the two headers are added to the client request before sending it to the target.
+            type: bool
+            sample: false
+        routing_http_xff_client_port_enabled:
+            description: Indicates whether the X-Forwarded-For header should preserve the source port that the client used to connect to the load balancer.
+            type: bool
+            sample: false
         scheme:
             description: Internet-facing or internal load balancer.
             type: str
-            sample: internal
+            sample: "internal"
         security_groups:
             description: The IDs of the security groups for the load balancer.
             type: list
@@ -125,21 +189,26 @@ load_balancers:
         state:
             description: The state of the load balancer.
             type: dict
-            sample: "{'code': 'active'}"
+            sample: {'code': 'active'}
         tags:
             description: The tags attached to the load balancer.
             type: dict
-            sample: "{
+            sample: {
                 'Tag': 'Example'
-            }"
+            }
         type:
             description: The type of load balancer.
             type: str
-            sample: application
+            sample: "application"
         vpc_id:
             description: The ID of the VPC for the load balancer.
             type: str
-            sample: vpc-0011223344
+            sample: "vpc-0011223344"
+        waf_fail_open_enabled:
+            description: Indicates whether to allow a AWS WAF-enabled load balancer to route requests to targets
+                if it is unable to forward the request to AWS WAF.
+            type: bool
+            sample: false
 '''
 
 try:
@@ -154,12 +223,12 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_er
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
-def get_elb_listeners(connection, module, elb_arn):
+def get_alb_listeners(connection, module, alb_arn):
 
     try:
-        return connection.describe_listeners(LoadBalancerArn=elb_arn)['Listeners']
+        return connection.describe_listeners(LoadBalancerArn=alb_arn)['Listeners']
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to describe elb listeners")
+        module.fail_json_aws(e, msg="Failed to describe alb listeners")
 
 
 def get_listener_rules(connection, module, listener_arn):
@@ -218,17 +287,17 @@ def list_load_balancers(connection, module):
         module.fail_json_aws(e, msg="Failed to list load balancers")
 
     for load_balancer in load_balancers['LoadBalancers']:
-        # Get the attributes for each elb
+        # Get the attributes for each alb
         load_balancer.update(get_load_balancer_attributes(connection, module, load_balancer['LoadBalancerArn']))
 
-        # Get the listeners for each elb
-        load_balancer['listeners'] = get_elb_listeners(connection, module, load_balancer['LoadBalancerArn'])
+        # Get the listeners for each alb
+        load_balancer['listeners'] = get_alb_listeners(connection, module, load_balancer['LoadBalancerArn'])
 
         # For each listener, get listener rules
         for listener in load_balancer['listeners']:
             listener['rules'] = get_listener_rules(connection, module, listener['ListenerArn'])
 
-        # Get ELB ip address type
+        # Get ALB ip address type
         load_balancer['IpAddressType'] = get_load_balancer_ipaddresstype(connection, module, load_balancer['LoadBalancerArn'])
 
     # Turn the boto3 result in to ansible_friendly_snaked_names

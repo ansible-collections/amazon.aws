@@ -1,4 +1,0 @@
----
-resource_short: "{{ '%0.8x'%((16**8) | random(seed=resource_prefix)) }}"
-alb_name: "alb-test-{{ resource_short }}"
-tg_name: "alb-test-{{ resource_short }}"
