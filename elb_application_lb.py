@@ -48,7 +48,7 @@ options:
     type: str
   deletion_protection:
     description:
-      - Indicates whether deletion protection for the ELB is enabled.
+      - Indicates whether deletion protection for the ALB is enabled.
       - Defaults to C(false).
     type: bool
   http2:
@@ -62,7 +62,7 @@ options:
     type: int
   listeners:
     description:
-      - A list of dicts containing listeners to attach to the ELB. See examples for detail of the dict required. Note that listener keys
+      - A list of dicts containing listeners to attach to the ALB. See examples for detail of the dict required. Note that listener keys
         are CamelCased.
     type: list
     elements: dict
@@ -123,7 +123,7 @@ options:
     type: str
   purge_listeners:
     description:
-      - If C(yes), existing listeners will be purged from the ELB to match exactly what is defined by I(listeners) parameter.
+      - If C(yes), existing listeners will be purged from the ALB to match exactly what is defined by I(listeners) parameter.
       - If the I(listeners) parameter is not set then listeners will not be modified.
     default: yes
     type: bool
@@ -149,7 +149,7 @@ options:
     elements: str
   scheme:
     description:
-      - Internet-facing or internal load balancer. An ELB scheme can not be modified after creation.
+      - Internet-facing or internal load balancer. An ALB scheme can not be modified after creation.
     default: internet-facing
     choices: [ 'internet-facing', 'internal' ]
     type: str
@@ -195,9 +195,9 @@ notes:
 EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-# Create an ELB and attach a listener
+# Create an ALB and attach a listener
 - community.aws.elb_application_lb:
-    name: myelb
+    name: myalb
     security_groups:
       - sg-12345678
       - my-sec-group
@@ -216,12 +216,12 @@ EXAMPLES = r'''
             TargetGroupName: # Required. The name of the target group
     state: present
 
-# Create an ELB and attach a listener with logging enabled
+# Create an ALB and attach a listener with logging enabled
 - community.aws.elb_application_lb:
     access_logs_enabled: yes
     access_logs_s3_bucket: mybucket
     access_logs_s3_prefix: "logs"
-    name: myelb
+    name: myalb
     security_groups:
       - sg-12345678
       - my-sec-group
@@ -303,9 +303,9 @@ EXAMPLES = r'''
                 Type: forward
     state: present
 
-# Remove an ELB
+# Remove an ALB
 - community.aws.elb_application_lb:
-    name: myelb
+    name: myalb
     state: absent
 
 '''
@@ -315,27 +315,32 @@ access_logs_s3_bucket:
     description: The name of the S3 bucket for the access logs.
     returned: when state is present
     type: str
-    sample: mys3bucket
+    sample: "mys3bucket"
 access_logs_s3_enabled:
     description: Indicates whether access logs stored in Amazon S3 are enabled.
     returned: when state is present
-    type: str
+    type: bool
     sample: true
 access_logs_s3_prefix:
     description: The prefix for the location in the S3 bucket.
     returned: when state is present
     type: str
-    sample: my/logs
+    sample: "my/logs"
 availability_zones:
     description: The Availability Zones for the load balancer.
     returned: when state is present
     type: list
-    sample: "[{'subnet_id': 'subnet-aabbccddff', 'zone_name': 'ap-southeast-2a'}]"
+    sample: [{ "load_balancer_addresses": [], "subnet_id": "subnet-aabbccddff", "zone_name": "ap-southeast-2a" }]
 canonical_hosted_zone_id:
     description: The ID of the Amazon Route 53 hosted zone associated with the load balancer.
     returned: when state is present
     type: str
-    sample: ABCDEF12345678
+    sample: "ABCDEF12345678"
+changed:
+    description: Whether an ALB was created/updated/deleted
+    returned: always
+    type: bool
+    sample: true
 created_time:
     description: The date and time the load balancer was created.
     returned: when state is present
@@ -344,23 +349,23 @@ created_time:
 deletion_protection_enabled:
     description: Indicates whether deletion protection is enabled.
     returned: when state is present
-    type: str
+    type: bool
     sample: true
 dns_name:
     description: The public DNS name of the load balancer.
     returned: when state is present
     type: str
-    sample: internal-my-elb-123456789.ap-southeast-2.elb.amazonaws.com
+    sample: "internal-my-elb-123456789.ap-southeast-2.elb.amazonaws.com"
 idle_timeout_timeout_seconds:
     description: The idle timeout value, in seconds.
     returned: when state is present
     type: int
     sample: 60
 ip_address_type:
-    description:  The type of IP addresses used by the subnets for the load balancer.
+    description: The type of IP addresses used by the subnets for the load balancer.
     returned: when state is present
     type: str
-    sample: ipv4
+    sample: "ipv4"
 listeners:
     description: Information about the listeners.
     returned: when state is present
@@ -385,7 +390,7 @@ listeners:
             description: The protocol for connections from clients to the load balancer.
             returned: when state is present
             type: str
-            sample: HTTPS
+            sample: "HTTPS"
         certificates:
             description: The SSL server certificate.
             returned: when state is present
@@ -420,22 +425,42 @@ load_balancer_arn:
     description: The Amazon Resource Name (ARN) of the load balancer.
     returned: when state is present
     type: str
-    sample: arn:aws:elasticloadbalancing:ap-southeast-2:0123456789:loadbalancer/app/my-elb/001122334455
+    sample: "arn:aws:elasticloadbalancing:ap-southeast-2:0123456789:loadbalancer/app/my-alb/001122334455"
 load_balancer_name:
     description: The name of the load balancer.
     returned: when state is present
     type: str
-    sample: my-elb
+    sample: "my-alb"
 routing_http2_enabled:
     description: Indicates whether HTTP/2 is enabled.
     returned: when state is present
-    type: str
+    type: bool
     sample: true
+routing_http_desync_mitigation_mode:
+    description: Determines how the load balancer handles requests that might pose a security risk to an application.
+    returned: when state is present
+    type: str
+    sample: "defensive"
+routing_http_drop_invalid_header_fields_enabled:
+    description: Indicates whether HTTP headers with invalid header fields are removed by the load balancer (true) or routed to targets (false).
+    returned: when state is present
+    type: bool
+    sample: false
+routing_http_x_amzn_tls_version_and_cipher_suite_enabled:
+    description: Indicates whether the two headers are added to the client request before sending it to the target.
+    returned: when state is present
+    type: bool
+    sample: false
+routing_http_xff_client_port_enabled:
+    description: Indicates whether the X-Forwarded-For header should preserve the source port that the client used to connect to the load balancer.
+    returned: when state is present
+    type: bool
+    sample: false
 scheme:
     description: Internet-facing or internal load balancer.
     returned: when state is present
     type: str
-    sample: internal
+    sample: "internal"
 security_groups:
     description: The IDs of the security groups for the load balancer.
     returned: when state is present
@@ -445,29 +470,35 @@ state:
     description: The state of the load balancer.
     returned: when state is present
     type: dict
-    sample: "{'code': 'active'}"
+    sample: {'code': 'active'}
 tags:
     description: The tags attached to the load balancer.
     returned: when state is present
     type: dict
-    sample: "{
+    sample: {
         'Tag': 'Example'
-    }"
+    }
 type:
     description: The type of load balancer.
     returned: when state is present
     type: str
-    sample: application
+    sample: "application"
 vpc_id:
     description: The ID of the VPC for the load balancer.
     returned: when state is present
     type: str
-    sample: vpc-0011223344
+    sample: "vpc-0011223344"
+waf_fail_open_enabled:
+    description: Indicates whether to allow a AWS WAF-enabled load balancer to route requests to targets if it is unable to forward the request to AWS WAF.
+    returned: when state is present
+    type: bool
+    sample: false
 '''
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, boto3_tag_list_to_ansible_dict, compare_aws_tags
-
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import (
     ApplicationLoadBalancer,
     ELBListener,
@@ -478,134 +509,170 @@ from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import (
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import get_elb_listener_rules
 
 
-def create_or_update_elb(elb_obj):
-    """Create ELB or modify main attributes. json_exit here"""
-    if elb_obj.elb:
-        # ELB exists so check subnets, security groups and tags match what has been passed
-
+def create_or_update_alb(alb_obj):
+    """Create ALB or modify main attributes. json_exit here"""
+    if alb_obj.elb:
+        # ALB exists so check subnets, security groups and tags match what has been passed
         # Subnets
-        if not elb_obj.compare_subnets():
-            elb_obj.modify_subnets()
+        if not alb_obj.compare_subnets():
+            if alb_obj.module.check_mode:
+                alb_obj.module.exit_json(changed=True, msg='Would have updated ALB if not in check mode.')
+            alb_obj.modify_subnets()
 
         # Security Groups
-        if not elb_obj.compare_security_groups():
-            elb_obj.modify_security_groups()
+        if not alb_obj.compare_security_groups():
+            if alb_obj.module.check_mode:
+                alb_obj.module.exit_json(changed=True, msg='Would have updated ALB if not in check mode.')
+            alb_obj.modify_security_groups()
 
         # Tags - only need to play with tags if tags parameter has been set to something
-        if elb_obj.tags is not None:
+        if alb_obj.tags is not None:
+
+            tags_need_modify, tags_to_delete = compare_aws_tags(boto3_tag_list_to_ansible_dict(alb_obj.elb['tags']),
+                                                                boto3_tag_list_to_ansible_dict(alb_obj.tags), alb_obj.purge_tags)
+
+            # Exit on check_mode
+            if alb_obj.module.check_mode and (tags_need_modify or tags_to_delete):
+                alb_obj.module.exit_json(changed=True, msg='Would have updated ALB if not in check mode.')
 
             # Delete necessary tags
-            tags_need_modify, tags_to_delete = compare_aws_tags(boto3_tag_list_to_ansible_dict(elb_obj.elb['tags']),
-                                                                boto3_tag_list_to_ansible_dict(elb_obj.tags), elb_obj.purge_tags)
             if tags_to_delete:
-                elb_obj.delete_tags(tags_to_delete)
+                alb_obj.delete_tags(tags_to_delete)
 
             # Add/update tags
             if tags_need_modify:
-                elb_obj.modify_tags()
+                alb_obj.modify_tags()
 
     else:
         # Create load balancer
-        elb_obj.create_elb()
+        if alb_obj.module.check_mode:
+            alb_obj.module.exit_json(changed=True, msg='Would have created ALB if not in check mode.')
+        alb_obj.create_elb()
 
-    # ELB attributes
-    elb_obj.update_elb_attributes()
-    elb_obj.modify_elb_attributes()
+    # ALB attributes
+    alb_obj.update_elb_attributes()
+    alb_obj.modify_elb_attributes()
 
     # Listeners
-    listeners_obj = ELBListeners(elb_obj.connection, elb_obj.module, elb_obj.elb['LoadBalancerArn'])
-
+    listeners_obj = ELBListeners(alb_obj.connection, alb_obj.module, alb_obj.elb['LoadBalancerArn'])
     listeners_to_add, listeners_to_modify, listeners_to_delete = listeners_obj.compare_listeners()
+
+    # Exit on check_mode
+    if alb_obj.module.check_mode and (listeners_to_add or listeners_to_modify or listeners_to_delete):
+        alb_obj.module.exit_json(changed=True, msg='Would have updated ALB if not in check mode.')
 
     # Delete listeners
     for listener_to_delete in listeners_to_delete:
-        listener_obj = ELBListener(elb_obj.connection, elb_obj.module, listener_to_delete, elb_obj.elb['LoadBalancerArn'])
+        listener_obj = ELBListener(alb_obj.connection, alb_obj.module, listener_to_delete, alb_obj.elb['LoadBalancerArn'])
         listener_obj.delete()
         listeners_obj.changed = True
 
     # Add listeners
     for listener_to_add in listeners_to_add:
-        listener_obj = ELBListener(elb_obj.connection, elb_obj.module, listener_to_add, elb_obj.elb['LoadBalancerArn'])
+        listener_obj = ELBListener(alb_obj.connection, alb_obj.module, listener_to_add, alb_obj.elb['LoadBalancerArn'])
         listener_obj.add()
         listeners_obj.changed = True
 
     # Modify listeners
     for listener_to_modify in listeners_to_modify:
-        listener_obj = ELBListener(elb_obj.connection, elb_obj.module, listener_to_modify, elb_obj.elb['LoadBalancerArn'])
+        listener_obj = ELBListener(alb_obj.connection, alb_obj.module, listener_to_modify, alb_obj.elb['LoadBalancerArn'])
         listener_obj.modify()
         listeners_obj.changed = True
 
-    # If listeners changed, mark ELB as changed
+    # If listeners changed, mark ALB as changed
     if listeners_obj.changed:
-        elb_obj.changed = True
+        alb_obj.changed = True
 
     # Rules of each listener
     for listener in listeners_obj.listeners:
         if 'Rules' in listener:
-            rules_obj = ELBListenerRules(elb_obj.connection, elb_obj.module, elb_obj.elb['LoadBalancerArn'], listener['Rules'], listener['Port'])
-
+            rules_obj = ELBListenerRules(alb_obj.connection, alb_obj.module, alb_obj.elb['LoadBalancerArn'], listener['Rules'], listener['Port'])
             rules_to_add, rules_to_modify, rules_to_delete = rules_obj.compare_rules()
 
+            # Exit on check_mode
+            if alb_obj.module.check_mode and (rules_to_add or rules_to_modify or rules_to_delete):
+                alb_obj.module.exit_json(changed=True, msg='Would have updated ALB if not in check mode.')
+
             # Delete rules
-            if elb_obj.module.params['purge_rules']:
+            if alb_obj.module.params['purge_rules']:
                 for rule in rules_to_delete:
-                    rule_obj = ELBListenerRule(elb_obj.connection, elb_obj.module, {'RuleArn': rule}, rules_obj.listener_arn)
+                    rule_obj = ELBListenerRule(alb_obj.connection, alb_obj.module, {'RuleArn': rule}, rules_obj.listener_arn)
                     rule_obj.delete()
-                    elb_obj.changed = True
+                    alb_obj.changed = True
 
             # Add rules
             for rule in rules_to_add:
-                rule_obj = ELBListenerRule(elb_obj.connection, elb_obj.module, rule, rules_obj.listener_arn)
+                rule_obj = ELBListenerRule(alb_obj.connection, alb_obj.module, rule, rules_obj.listener_arn)
                 rule_obj.create()
-                elb_obj.changed = True
+                alb_obj.changed = True
 
             # Modify rules
             for rule in rules_to_modify:
-                rule_obj = ELBListenerRule(elb_obj.connection, elb_obj.module, rule, rules_obj.listener_arn)
+                rule_obj = ELBListenerRule(alb_obj.connection, alb_obj.module, rule, rules_obj.listener_arn)
                 rule_obj.modify()
-                elb_obj.changed = True
+                alb_obj.changed = True
 
-    # Update ELB ip address type only if option has been provided
-    if elb_obj.module.params.get('ip_address_type') is not None:
-        elb_obj.modify_ip_address_type(elb_obj.module.params.get('ip_address_type'))
-    # Get the ELB again
-    elb_obj.update()
+    # Update ALB ip address type only if option has been provided
+    if alb_obj.module.params.get('ip_address_type') and alb_obj.elb_ip_addr_type != alb_obj.module.params.get('ip_address_type'):
+        # Exit on check_mode
+        if alb_obj.module.check_mode:
+            alb_obj.module.exit_json(changed=True, msg='Would have updated ALB if not in check mode.')
 
-    # Get the ELB listeners again
+        alb_obj.modify_ip_address_type(alb_obj.module.params.get('ip_address_type'))
+
+    # Exit on check_mode - no changes
+    if alb_obj.module.check_mode:
+        alb_obj.module.exit_json(changed=False, msg='IN CHECK MODE - no changes to make to ALB specified.')
+
+    # Get the ALB again
+    alb_obj.update()
+
+    # Get the ALB listeners again
     listeners_obj.update()
 
-    # Update the ELB attributes
-    elb_obj.update_elb_attributes()
+    # Update the ALB attributes
+    alb_obj.update_elb_attributes()
 
     # Convert to snake_case and merge in everything we want to return to the user
-    snaked_elb = camel_dict_to_snake_dict(elb_obj.elb)
-    snaked_elb.update(camel_dict_to_snake_dict(elb_obj.elb_attributes))
-    snaked_elb['listeners'] = []
+    snaked_alb = camel_dict_to_snake_dict(alb_obj.elb)
+    snaked_alb.update(camel_dict_to_snake_dict(alb_obj.elb_attributes))
+    snaked_alb['listeners'] = []
     for listener in listeners_obj.current_listeners:
         # For each listener, get listener rules
-        listener['rules'] = get_elb_listener_rules(elb_obj.connection, elb_obj.module, listener['ListenerArn'])
-        snaked_elb['listeners'].append(camel_dict_to_snake_dict(listener))
+        listener['rules'] = get_elb_listener_rules(alb_obj.connection, alb_obj.module, listener['ListenerArn'])
+        snaked_alb['listeners'].append(camel_dict_to_snake_dict(listener))
 
     # Change tags to ansible friendly dict
-    snaked_elb['tags'] = boto3_tag_list_to_ansible_dict(snaked_elb['tags'])
+    snaked_alb['tags'] = boto3_tag_list_to_ansible_dict(snaked_alb['tags'])
 
     # ip address type
-    snaked_elb['ip_address_type'] = elb_obj.get_elb_ip_address_type()
+    snaked_alb['ip_address_type'] = alb_obj.get_elb_ip_address_type()
 
-    elb_obj.module.exit_json(changed=elb_obj.changed, **snaked_elb)
+    alb_obj.module.exit_json(changed=alb_obj.changed, **snaked_alb)
 
 
-def delete_elb(elb_obj):
+def delete_alb(alb_obj):
 
-    if elb_obj.elb:
-        listeners_obj = ELBListeners(elb_obj.connection, elb_obj.module, elb_obj.elb['LoadBalancerArn'])
+    if alb_obj.elb:
+
+        # Exit on check_mode
+        if alb_obj.module.check_mode:
+            alb_obj.module.exit_json(changed=True, msg='Would have deleted ALB if not in check mode.')
+
+        listeners_obj = ELBListeners(alb_obj.connection, alb_obj.module, alb_obj.elb['LoadBalancerArn'])
         for listener_to_delete in [i['ListenerArn'] for i in listeners_obj.current_listeners]:
-            listener_obj = ELBListener(elb_obj.connection, elb_obj.module, listener_to_delete, elb_obj.elb['LoadBalancerArn'])
+            listener_obj = ELBListener(alb_obj.connection, alb_obj.module, listener_to_delete, alb_obj.elb['LoadBalancerArn'])
             listener_obj.delete()
 
-        elb_obj.delete()
+        alb_obj.delete()
 
-    elb_obj.module.exit_json(changed=elb_obj.changed)
+    else:
+
+        # Exit on check_mode - no changes
+        if alb_obj.module.check_mode:
+            alb_obj.module.exit_json(changed=False, msg='IN CHECK MODE - ALB already absent.')
+
+    alb_obj.module.exit_json(changed=alb_obj.changed)
 
 
 def main():
@@ -648,7 +715,8 @@ def main():
                               ],
                               required_together=[
                                   ['access_logs_enabled', 'access_logs_s3_bucket']
-                              ]
+                              ],
+                              supports_check_mode=True,
                               )
 
     # Quick check of listeners parameters
@@ -668,12 +736,12 @@ def main():
 
     state = module.params.get("state")
 
-    elb = ApplicationLoadBalancer(connection, connection_ec2, module)
+    alb = ApplicationLoadBalancer(connection, connection_ec2, module)
 
     if state == 'present':
-        create_or_update_elb(elb)
-    else:
-        delete_elb(elb)
+        create_or_update_alb(alb)
+    elif state == 'absent':
+        delete_alb(alb)
 
 
 if __name__ == '__main__':
