@@ -1,3 +1,0 @@
-bugfixes:
-- >-
-  aws_acm - No longer raising ResourceNotFound exception while retrieving ACM certificates.

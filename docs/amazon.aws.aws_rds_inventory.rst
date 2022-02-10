@@ -300,6 +300,42 @@ Parameters
             <tr>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>hostvars_prefix</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 3.1.0</div>
+                </td>
+                <td>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>The prefix for host variables names coming from AWS.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>hostvars_suffix</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 3.1.0</div>
+                </td>
+                <td>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>The suffix for host variables names coming from AWS.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>iam_role_arn</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -504,6 +540,8 @@ Examples
         prefix: rds
       - key: tags
       - key: region
+    hostvars_prefix: aws_
+    hostvars_suffix: _rds
 
 
 

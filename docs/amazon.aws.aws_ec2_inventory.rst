@@ -17,7 +17,7 @@ amazon.aws.aws_ec2
 Synopsis
 --------
 - Get inventory hosts from Amazon Web Services EC2.
-- Uses a YAML configuration file that ends with ``aws_ec2.(yml|yaml``).
+- Uses a YAML configuration file that ends with ``aws_ec2.{yml|yaml}``.
 
 
 
@@ -337,6 +337,42 @@ Parameters
                         <div>A list in order of precedence for hostname variables.</div>
                         <div>You can use the options specified in <a href='http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options'>http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options</a>.</div>
                         <div>To use tags as hostnames use the syntax tag:Name=Value to use the hostname Name_Value, or tag:Name to use the value of the Name tag.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>hostvars_prefix</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 3.1.0</div>
+                </td>
+                <td>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>The prefix for host variables names coming from AWS.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>hostvars_suffix</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 3.1.0</div>
+                </td>
+                <td>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>The suffix for host variables names coming from AWS.</div>
                 </td>
             </tr>
             <tr>
@@ -716,6 +752,12 @@ Examples
       ansible_host: public_dns_name
     groups:
       libvpc: vpc_id == 'vpc-####'
+    # Define prefix and suffix for host variables coming from AWS.
+    plugin: aws_ec2
+    regions:
+      - us-east-1
+    hostvars_prefix: 'aws_'
+    hostvars_suffix: '_ec2'
 
 
 

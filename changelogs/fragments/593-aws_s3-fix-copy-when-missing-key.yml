@@ -1,2 +1,0 @@
-bugfixes:
-- aws_s3 - fix exception raised when using module to copy from source to destination and key is missing from source (https://github.com/ansible-collections/amazon.aws/issues/602).
