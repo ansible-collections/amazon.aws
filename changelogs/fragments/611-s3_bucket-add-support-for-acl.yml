@@ -1,2 +1,0 @@
-bugfixes:
-- s3_bucket - Enable the management of bucket-level ACLs (https://github.com/ansible-collections/amazon.aws/issues/573).
