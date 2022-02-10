@@ -8,11 +8,11 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 module: aws_waf_web_acl
-short_description: Create and delete WAF Web ACLs.
+short_description: Create and delete WAF Web ACLs
 version_added: 1.0.0
 description:
-  - Read the AWS documentation for WAF
-    U(https://aws.amazon.com/documentation/waf/).
+  - Module for WAF classic, for WAF v2 use the I(wafv2_*) modules.
+  - Read the AWS documentation for WAF U(https://docs.aws.amazon.com/waf/latest/developerguide/classic-waf-chapter.html).
 
 author:
   - Mike Mochan (@mmochan)
