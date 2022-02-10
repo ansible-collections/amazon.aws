@@ -28,8 +28,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.15.0
-- botocore >= 1.18.0
+- boto3 >= 1.16.0
+- botocore >= 1.19.0
 
 
 Parameters
@@ -264,6 +264,7 @@ Parameters
                 </td>
                 <td>
                         <div>List of one or more route table ids to attach to the endpoint. A route is added to the route table with the destination of the endpoint if provided.</div>
+                        <div>Route table ids are only valid for gateway type endpoints.</div>
                 </td>
             </tr>
             <tr>
