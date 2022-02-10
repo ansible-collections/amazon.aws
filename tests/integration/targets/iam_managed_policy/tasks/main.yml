@@ -1,0 +1,160 @@
+---
+- name: "Run integration tests for IAM managed policy"
+  module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  collections:
+    - amazon.aws
+  block:
+    ## Test policy creation
+    - name: Create IAM managed policy - check mode
+      iam_managed_policy:
+        policy_name: "{{ policy_name }}"
+        policy:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Deny"
+              Action: "logs:CreateLogGroup"
+              Resource: "*"
+        state: present
+      register: result
+      check_mode: yes
+
+    - name: Create IAM managed policy - check mode
+      assert:
+        that:
+          - result.changed
+
+    - name: Create IAM managed policy
+      iam_managed_policy:
+        policy_name: "{{ policy_name }}"
+        policy:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Deny"
+              Action: "logs:CreateLogGroup"
+              Resource: "*"
+        state: present
+      register: result
+
+    - name: Create IAM managed policy
+      assert:
+        that:
+          - result.changed
+          - result.policy.policy_name == policy_name
+
+    - name: Create IAM managed policy - idempotency check
+      iam_managed_policy:
+        policy_name: "{{ policy_name }}"
+        policy:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Deny"
+              Action: "logs:CreateLogGroup"
+              Resource: "*"
+        state: present
+      register: result
+
+    - name: Create IAM managed policy - idempotency check
+      assert:
+        that:
+          - not result.changed
+
+    ## Test policy update
+    - name: Update IAM managed policy - check mode
+      iam_managed_policy:
+        policy_name: "{{ policy_name }}"
+        policy:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Deny"
+              Action: "logs:Describe*"
+              Resource: "*"
+        state: present
+      register: result
+      check_mode: yes
+
+    - name: Update IAM managed policy - check mode
+      assert:
+        that:
+          - result.changed
+
+    - name: Update IAM managed policy
+      iam_managed_policy:
+        policy_name: "{{ policy_name }}"
+        policy:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Deny"
+              Action: "logs:Describe*"
+              Resource: "*"
+        state: present
+      register: result
+
+    - name: Update IAM managed policy
+      assert:
+        that:
+          - result.changed
+          - result.policy.policy_name == policy_name
+
+    - name: Update IAM managed policy - idempotency check
+      iam_managed_policy:
+        policy_name: "{{ policy_name }}"
+        policy:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Deny"
+              Action: "logs:Describe*"
+              Resource: "*"
+        state: present
+      register: result
+
+    - name: Update IAM managed policy - idempotency check
+      assert:
+        that:
+          - not result.changed
+
+    ## Test policy deletion
+    - name: Delete IAM managed policy - check mode
+      iam_managed_policy:
+        policy_name: "{{ policy_name }}"
+        state: absent
+      register: result
+      check_mode: yes
+
+    - name: Delete IAM managed policy - check mode
+      assert:
+        that:
+          - result.changed
+
+    - name: Delete IAM managed policy
+      iam_managed_policy:
+        policy_name: "{{ policy_name }}"
+        state: absent
+      register: result
+
+    - name: Delete IAM managed policy
+      assert:
+        that:
+          - result.changed
+
+    - name: Delete IAM managed policy - idempotency check
+      iam_managed_policy:
+        policy_name: "{{ policy_name }}"
+        state: absent
+      register: result
+
+    - name: Delete IAM managed policy - idempotency check
+      assert:
+        that:
+          - not result.changed
+
+  always:
+    - name: Delete IAM managed policy
+      iam_managed_policy:
+        policy_name: "{{ policy_name }}"
+        state: absent
+      ignore_errors: yes
