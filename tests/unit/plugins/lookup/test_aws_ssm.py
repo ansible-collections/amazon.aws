@@ -252,7 +252,7 @@ def test_skip_on_missing_variable(mocker):
     boto3_double.Session.return_value.client.return_value.get_parameter.side_effect = mock_get_parameter
 
     missing_credentials = copy(dummy_credentials)
-    missing_credentials['on_missing'] = "warn"
+    missing_credentials['on_missing'] = "skip"
     mocker.patch.object(boto3, 'session', boto3_double)
     retval = lookup.run(["missing_variable"], {}, **missing_credentials)
     assert(isinstance(retval, list))
@@ -313,7 +313,7 @@ def test_skip_on_denied_variable(mocker):
     boto3_double.Session.return_value.client.return_value.get_parameter.side_effect = mock_get_parameter
 
     denied_credentials = copy(dummy_credentials)
-    denied_credentials['on_denied'] = "warn"
+    denied_credentials['on_denied'] = "skip"
     mocker.patch.object(boto3, 'session', boto3_double)
     retval = lookup.run(["denied_variable"], {}, **denied_credentials)
     assert(isinstance(retval, list))
