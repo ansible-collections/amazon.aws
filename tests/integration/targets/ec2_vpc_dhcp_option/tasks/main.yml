@@ -314,7 +314,7 @@
 
   - name: delete it for the next test
     ec2_vpc_dhcp_option:
-      dhcp_options_id: "{{ new_dhcp_options_id }}"
+      dhcp_options_id: "{{ original_dhcp_options_id }}"
       state: absent
 
   # Create a DHCP option set that inherits from the default set overwrites a default and deletes the old set
@@ -946,3 +946,4 @@
       name: "{{ resource_prefix }}"
       cidr_block: "{{ vpc_cidr }}"
       state: absent
+    
