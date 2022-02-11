@@ -24,13 +24,13 @@ description:
     parameters. Hierarchies start with a forward slash and end with the parameter name. Up to
     5 layers may be specified.
   - If looking up an explicitly listed parameter by name which does not exist then the lookup
-    will generate an error.  You can use the ```default``` filter to give a default value in
-    this case but must set the ```on_missing``` parameter to ```skip``` or ```warn```.  You must
+    will generate an error. You can use the ```default``` filter to give a default value in
+    this case but must set the ```on_missing``` parameter to ```skip``` or ```warn```. You must
     also set the second parameter of the ```default``` filter to ```true``` (see examples below).
   - When looking up a path for parameters under it a dictionary will be returned for each path.
     If there is no parameter under that path then the lookup will generate an error.
   - If the lookup fails due to lack of permissions or due to an AWS client error then the aws_ssm
-    will generate an error.  If you want to continue in this case then you will have to set up
+    will generate an error. If you want to continue in this case then you will have to set up
     two ansible tasks, one which sets a variable and ignores failures and one which uses the value
     of that variable with a default.  See the examples below.
 
