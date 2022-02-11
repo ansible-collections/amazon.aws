@@ -217,7 +217,8 @@ class AnsibleEc2Igw():
             self._connection, self._module, igw['internet_gateway_id'],
             resource_type='internet-gateway', tags=tags, purge_tags=purge_tags
         )
-        igw_info = self.get_igw_info(self.get_matching_igw(vpc_id), vpc_id)
+        igw = self.get_matching_igw(vpc_id)
+        igw_info = self.get_igw_info(igw, vpc_id)
         self._results.update(igw_info)
 
         return self._results
