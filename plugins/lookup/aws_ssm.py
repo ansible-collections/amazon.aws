@@ -239,9 +239,9 @@ class LookupModule(LookupBase):
 
     def get_path_parameters(self, client, ssm_dict, term, on_missing, on_denied):
         ssm_dict["Path"] = term
-        paramlist = list()
+        paginator = client.get_paginator('get_parameters_by_path')
         try:
-            response = client.get_parameters_by_path(**ssm_dict)
+            paramlist = paginator.paginate(**ssm_dict).build_full_result()['Parameters']
         except is_boto3_error_code('AccessDeniedException'):
             if on_denied == 'error':
                 raise AnsibleError("Failed to access SSM parameter path %s (AccessDenied)" % term)
@@ -252,14 +252,6 @@ class LookupModule(LookupBase):
                 paramlist = [{}]
         except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
             raise AnsibleError("SSM lookup exception: {0}".format(to_native(e)))
-        else:
-            paramlist.extend(response['Parameters'])
-
-            # Manual pagination, since boto doesn't support it yet for
-            # get_parameters_by_path
-            while 'NextToken' in response:
-                response = client.get_parameters_by_path(NextToken=response['NextToken'], **ssm_dict)
-                paramlist.extend(response['Parameters'])
 
         if not len(paramlist):
             if on_missing == "error":
