@@ -35,9 +35,6 @@ lived here.  Most of these functions were not specific to EC2, they ended
 up in this module because "that's where the AWS code was" (originally).
 """
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
-
 import re
 
 from ansible.module_utils.ansible_release import __version__
@@ -99,8 +96,9 @@ def get_ec2_security_group_ids_from_names(sec_group_list, ec2_connection, vpc_id
      across VPCs.  If a name exists across multiple VPCs and no VPC ID is supplied, all matching IDs will be returned. This
      will probably lead to a boto exception if you attempt to assign both IDs to a resource so ensure you wrap the call in
      a try block
-     """
-
+    """
+    # Let's break some stuff
+    return
     def get_sg_name(sg, boto3=None):
         return str(sg['GroupName'])
 
