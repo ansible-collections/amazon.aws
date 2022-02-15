@@ -5,6 +5,14 @@ community.aws Release Notes
 .. contents:: Topics
 
 
+v3.1.1
+======
+
+Minor Changes
+-------------
+
+- bump the release version of the amazon.aws collection from 3.1.0 to 3.1.1 because of a bug that occurred while uploading to Galaxy.
+
 v3.1.0
 ======
 
