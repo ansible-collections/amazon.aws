@@ -225,6 +225,7 @@ def test_path_lookup_variable(mocker, dummy_credentials, record_property):
                                            aws_secret_access_key="notasecret", aws_session_token=None)
     boto3_paginate_double.assert_called_with(Filters=[{'Key': 'name', 'Values': ['/testpath']}])
 
+
 def test_path_lookup_variable_paginated(mocker, dummy_credentials, record_property):
     lookup = aws_secret.LookupModule()
     lookup._load_name = "aws_secret"
