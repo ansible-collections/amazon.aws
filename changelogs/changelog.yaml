@@ -698,3 +698,11 @@ releases:
     - 646-acm-resource-not-found.yml
     - disutils.version.yml
     release_date: '2022-02-10'
+  3.1.1:
+    changes:
+      minor_changes:
+      - bump the release version of the amazon.aws collection from 3.1.0 to 3.1.1
+        because of a bug that occurred while uploading to Galaxy.
+    fragments:
+    - bump_release_version.yml
+    release_date: '2022-02-15'
