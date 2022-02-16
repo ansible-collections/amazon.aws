@@ -27,8 +27,8 @@ options:
   public_ip:
     description:
       - The IP address of a previously allocated EIP.
-      - When I(public_ip=present) and device is specified, the EIP is associated with the device.
-      - When I(public_ip=absent) and device is specified, the EIP is disassociated from the device.
+      - When I(state=present) and device is specified, the EIP is associated with the device.
+      - When I(state=absent) and device is specified, the EIP is disassociated from the device.
     aliases: [ ip ]
     type: str
   state:
@@ -328,7 +328,7 @@ def find_address(ec2, module, public_ip, device_id, is_instance=True):
     except is_boto3_error_code('InvalidAddress.NotFound') as e:
         # If we're releasing and we can't find it, it's already gone...
         if module.params.get('state') == 'absent':
-            module.exit_json(changed=False)
+            module.exit_json(changed=False, disassociated=False, released=False)
         module.fail_json_aws(e, msg="Couldn't obtain list of existing Elastic IP addresses")
 
     addresses = addresses["Addresses"]
@@ -385,6 +385,8 @@ def allocate_address(ec2, module, domain, reuse_existing_ip_allowed, check_mode,
         return allocate_address_from_pool(ec2, module, domain, check_mode, public_ipv4_pool), True
 
     try:
+        if check_mode:
+            return None, True
         result = ec2.allocate_address(Domain=domain, aws_retry=True), True
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Couldn't allocate Elastic IP address")
@@ -493,8 +495,11 @@ def ensure_absent(ec2, module, address, device_id, check_mode, is_instance=True)
 
 
 def allocate_address_from_pool(ec2, module, domain, check_mode, public_ipv4_pool):
-    # type: (EC2Connection, str, bool, str) -> Address
+    # type: (EC2Connection, AnsibleAWSModule, str, bool, str) -> Address
     """ Overrides botocore's allocate_address function to support BYOIP """
+    if check_mode:
+        return None
+
     params = {}
 
     if domain is not None:
@@ -502,9 +507,6 @@ def allocate_address_from_pool(ec2, module, domain, check_mode, public_ipv4_pool
 
     if public_ipv4_pool is not None:
         params['PublicIpv4Pool'] = public_ipv4_pool
-
-    if check_mode:
-        params['DryRun'] = 'true'
 
     try:
         result = ec2.allocate_address(aws_retry=True, **params)
@@ -606,19 +608,33 @@ def main():
                     reuse_existing_ip_allowed, allow_reassociation,
                     module.check_mode, is_instance=is_instance
                 )
+                if 'allocation_id' not in result:
+                    # Don't check tags on check_mode here - no EIP to pass through
+                    module.exit_json(**result)
             else:
                 if address:
-                    changed = False
+                    result = {
+                        'changed': False,
+                        'public_ip': address['PublicIp'],
+                        'allocation_id': address['AllocationId']
+                    }
                 else:
                     address, changed = allocate_address(
                         ec2, module, domain, reuse_existing_ip_allowed,
                         module.check_mode, tag_dict, public_ipv4_pool
                     )
-                result = {
-                    'changed': changed,
-                    'public_ip': address['PublicIp'],
-                    'allocation_id': address['AllocationId']
-                }
+                    if address:
+                        result = {
+                            'changed': changed,
+                            'public_ip': address['PublicIp'],
+                            'allocation_id': address['AllocationId']
+                        }
+                    else:
+                        # Don't check tags on check_mode here - no EIP to pass through
+                        result = {
+                            'changed': changed
+                        }
+                        module.exit_json(**result)
 
             result['changed'] |= ensure_ec2_tags(
                 ec2, module, result['allocation_id'],
@@ -633,21 +649,21 @@ def main():
                     released = release_address(ec2, module, address, module.check_mode)
                     result = {
                         'changed': True,
-                        'disassociated': disassociated,
-                        'released': released
+                        'disassociated': disassociated['changed'],
+                        'released': released['changed']
                     }
                 else:
                     result = {
                         'changed': disassociated['changed'],
-                        'disassociated': disassociated,
-                        'released': {'changed': False}
+                        'disassociated': disassociated['changed'],
+                        'released': False
                     }
             else:
                 released = release_address(ec2, module, address, module.check_mode)
                 result = {
                     'changed': released['changed'],
-                    'disassociated': {'changed': False},
-                    'released': released
+                    'disassociated': False,
+                    'released': released['changed']
                 }
 
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:

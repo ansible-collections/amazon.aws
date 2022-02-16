@@ -44,7 +44,7 @@ EXAMPLES = r'''
   register: my_vm_eips
 
 - ansible.builtin.debug:
-    msg: "{{ my_vm_eips.addresses | json_query(\"[?private_ip_address=='10.0.0.5']\") }}"
+    msg: "{{ my_vm_eips.addresses | selectattr('private_ip_address', 'equalto', '10.0.0.5') }}"
 
 - name: List all EIP addresses for several VMs.
   community.aws.ec2_eip_info:
