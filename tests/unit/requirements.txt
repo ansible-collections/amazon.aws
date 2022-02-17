@@ -1,2 +1,4 @@
+boto
+botocore
 boto3
 placebo

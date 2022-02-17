@@ -1,3 +1,7 @@
+boto
+boto3
+botocore
+
 # netaddr is needed for ansible.netcommon.ipv6
 netaddr
 virtualenv

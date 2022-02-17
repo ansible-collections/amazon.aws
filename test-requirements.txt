@@ -1,3 +1,7 @@
+botocore
+boto3
+boto
+
 coverage==4.5.4
 placebo
 mock
