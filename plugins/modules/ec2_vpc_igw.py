@@ -112,6 +112,7 @@ from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
+# test
 class AnsibleEc2Igw():
 
     def __init__(self, module, results):
