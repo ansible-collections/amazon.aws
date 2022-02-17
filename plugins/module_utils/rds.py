@@ -21,6 +21,8 @@ from .ec2 import boto3_tag_list_to_ansible_dict
 from .ec2 import compare_aws_tags
 from .waiters import get_waiter
 
+# test
+
 Boto3ClientMethod = namedtuple('Boto3ClientMethod', ['name', 'waiter', 'operation_description', 'cluster', 'instance'])
 # Whitelist boto3 client methods for cluster and instance resources
 cluster_method_names = [
