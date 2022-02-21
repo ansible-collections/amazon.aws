@@ -1,6 +1,6 @@
 # Specifically run tests against the oldest versions that we support
-boto3==1.12.249
-botocore==1.9.249
+boto3==1.9.249
+botocore==1.12.249
 
 # AWS CLI has `botocore==` dependencies, provide the one that matches botocore
 # to avoid needing to download over a years worth of awscli wheels.
