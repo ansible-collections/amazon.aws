@@ -439,10 +439,9 @@ def index_of_matching_route(route_spec, routes_to_match):
     for i, route in enumerate(routes_to_match):
         if route_spec_matches_route(route_spec, route):
             return "exact", i
-        if 'Origin' in route_spec and route_spec['Origin'] == 'EnableVgwRoutePropagation':
-            return None
-        if route_spec_matches_route_cidr(route_spec, route):
-            return "replace", i
+        elif 'Origin' in route and route['Origin'] != 'EnableVgwRoutePropagation': # only replace created routes
+            if route_spec_matches_route_cidr(route_spec, route):
+                return "replace", i
 
 
 def ensure_routes(connection=None, module=None, route_table=None, route_specs=None,
