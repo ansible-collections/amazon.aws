@@ -18,7 +18,7 @@ DOCUMENTATION = '''
 
     description:
         - Get inventory hosts from Amazon Web Services EC2.
-        - Uses a YAML configuration file that ends with C(aws_ec2.(yml|yaml)).
+        - Uses a YAML configuration file that ends with C(aws_ec2.{yml|yaml}).
     notes:
         - If no credentials are provided and the control node has an associated IAM instance profile then the
           role will be used for authentication.
