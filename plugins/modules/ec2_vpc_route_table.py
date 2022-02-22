@@ -18,6 +18,10 @@ author:
 - Rob White (@wimnat)
 - Will Thames (@willthames)
 options:
+  gateway_id:
+    description:
+    - The ID of the gateway to associate with the route table.
+    type: str
   lookup:
     description: Look up route table by either tags or by route table ID. Non-unique tag lookup will fail.
       If no tags are specified then no lookup for an existing route table is performed and a new
@@ -141,10 +145,30 @@ route_table:
   type: complex
   contains:
     associations:
-      description: List of subnets associated with the route table
+      description: List of associations between the route table and one or more subnets or a gateway
       returned: always
       type: complex
       contains:
+        association_state:
+          description: The state of the association
+          returned: always
+          type: complex
+          contains:
+            state:
+              description: The state of the association
+              returned: always
+              type: str
+              sample: associated
+            state_message:
+              description: Additional information about the state of the association
+              returned: when available
+              type: str
+              sample: 'Creating association'
+        gateway_id:
+          description: ID of the internet gateway or virtual private gateway
+          returned: when route table is a gateway route table
+          type: str
+          sample: igw-03312309
         main:
           description: Whether this is the main route table
           returned: always
@@ -162,7 +186,7 @@ route_table:
           sample: rtb-bf779ed7
         subnet_id:
           description: ID of the subnet
-          returned: always
+          returned: when route table is a subnet route table
           type: str
           sample: subnet-82055af9
     id:
@@ -400,7 +424,11 @@ def route_spec_matches_route(route_spec, route):
 
 
 def route_spec_matches_route_cidr(route_spec, route):
-    return route_spec['DestinationCidrBlock'] == route.get('DestinationCidrBlock')
+    if route_spec.get('DestinationCidrBlock') and route.get('DestinationCidrBlock'):
+        return route_spec.get('DestinationCidrBlock') == route.get('DestinationCidrBlock')
+    if route_spec.get('DestinationIpv6CidrBlock') and route.get('DestinationIpv6CidrBlock'):
+        return route_spec.get('DestinationIpv6CidrBlock') == route.get('DestinationIpv6CidrBlock')
+    return False
 
 
 def rename_key(d, old_key, new_key):
@@ -411,9 +439,10 @@ def index_of_matching_route(route_spec, routes_to_match):
     for i, route in enumerate(routes_to_match):
         if route_spec_matches_route(route_spec, route):
             return "exact", i
-        elif 'Origin' in route_spec and route_spec['Origin'] != 'EnableVgwRoutePropagation':
-            if route_spec_matches_route_cidr(route_spec, route):
-                return "replace", i
+        if 'Origin' in route_spec and route_spec['Origin'] == 'EnableVgwRoutePropagation':
+            return None
+        if route_spec_matches_route_cidr(route_spec, route):
+            return "replace", i
 
 
 def ensure_routes(connection=None, module=None, route_table=None, route_specs=None,
@@ -538,6 +567,40 @@ def ensure_subnet_associations(connection=None, module=None, route_table=None, s
 
     return {'changed': changed}
 
+def ensure_gateway_association(connection=None, module=None, route_table=None, gateway_id=None,
+                               check_mode=None):
+    changed = False
+    filters = ansible_dict_to_boto3_filter_list({'association.gateway-id': gateway_id, 'vpc-id': route_table['VpcId']})
+    try:
+        route_tables = describe_route_tables_with_backoff(connection, Filters=filters)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Couldn't get route tables")
+    for table in route_tables:
+        if table['RouteTableId'] is None:
+            continue
+        for a in table['Associations']:
+            if a['Main']:
+                continue
+            if a['GatewayId'] == gateway_id:
+                if table['RouteTableId'] == route_table['RouteTableId']:
+                    return {'changed': False, 'association_id': a['RouteTableAssociationId']}
+                else:
+                    if check_mode:
+                        return {'changed': True}
+                    try:
+                        connection.disassociate_route_table(
+                            aws_retry=True, AssociationId=a['RouteTableAssociationId'])
+                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                        module.fail_json_aws(e, msg="Couldn't disassociate gateway from route table")
+
+    try:
+        connection.associate_route_table(aws_retry=True,
+                                         RouteTableId=route_table['RouteTableId'],
+                                         GatewayId=gateway_id)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Couldn't associate gateway with route table")
+    return {'changed': changed}
+
 
 def ensure_propagation(connection=None, module=None, route_table=None, propagating_vgw_ids=None,
                        check_mode=None):
@@ -623,6 +686,7 @@ def create_route_spec(connection, module, vpc_id):
 
 def ensure_route_table_present(connection, module):
 
+    gateway_id = module.params.get('gateway_id')
     lookup = module.params.get('lookup')
     propagating_vgw_ids = module.params.get('propagating_vgw_ids')
     purge_routes = module.params.get('purge_routes')
@@ -696,6 +760,11 @@ def ensure_route_table_present(connection, module):
                                             purge_subnets=purge_subnets)
         changed = changed or result['changed']
 
+    if gateway_id is not None:
+        result = ensure_gateway_association(connection=connection, module=module, route_table=route_table,
+                                            gateway_id=gateway_id, check_mode=module.check_mode)
+        changed = changed or result['changed']
+
     if changed:
         # pause to allow route table routes/subnets/associations to be updated before exiting with final state
         sleep(5)
@@ -704,6 +773,7 @@ def ensure_route_table_present(connection, module):
 
 def main():
     argument_spec = dict(
+        gateway_id=dict(type='str'),
         lookup=dict(default='tag', choices=['tag', 'id']),
         propagating_vgw_ids=dict(type='list', elements='str'),
         purge_routes=dict(default=True, type='bool'),

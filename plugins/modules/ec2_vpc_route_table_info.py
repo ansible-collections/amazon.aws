@@ -59,35 +59,10 @@ route_tables:
   type: complex
   contains:
     associations:
-      description: List of subnets associated with the route table
+      description: List of associations between the route table and one or more subnets or a gateway
       returned: always
       type: complex
       contains:
-        main:
-          description: Whether this is the main route table
-          returned: always
-          type: bool
-          sample: false
-        id:
-          description: ID of association between route table and subnet
-          returned: always
-          type: str
-          sample: rtbassoc-ab47cfc3
-        route_table_association_id:
-          description: ID of association between route table and subnet
-          returned: always
-          type: str
-          sample: rtbassoc-ab47cfc3
-        route_table_id:
-          description: ID of the route table
-          returned: always
-          type: str
-          sample: rtb-bf779ed7
-        subnet_id:
-          description: ID of the subnet
-          returned: always
-          type: str
-          sample: subnet-82055af9
         association_state:
           description: The state of the association
           returned: always
@@ -103,6 +78,31 @@ route_tables:
               returned: when available
               type: str
               sample: 'Creating association'
+        gateway_id:
+          description: ID of the internet gateway or virtual private gateway
+          returned: when route table is a gateway route table
+          type: str
+          sample: igw-03312309
+        main:
+          description: Whether this is the main route table
+          returned: always
+          type: bool
+          sample: false
+        route_table_association_id:
+          description: ID of association between route table and subnet
+          returned: always
+          type: str
+          sample: rtbassoc-ab47cfc3
+        route_table_id:
+          description: ID of the route table
+          returned: always
+          type: str
+          sample: rtb-bf779ed7
+        subnet_id:
+          description: ID of the subnet
+          returned: when route table is a subnet route table
+          type: str
+          sample: subnet-82055af9
     id:
       description: ID of the route table (same as route_table_id for backwards compatibility)
       returned: always
