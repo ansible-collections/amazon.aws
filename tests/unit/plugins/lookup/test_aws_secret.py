@@ -229,45 +229,14 @@ def test_path_lookup_variable(mocker, dummy_credentials, record_property):
 def test_path_lookup_variable_paginated(mocker, dummy_credentials, record_property):
     lookup = aws_secret.LookupModule()
     lookup._load_name = "aws_secret"
+    def secret(value):
+        return {"Name": f"/testpath_paginated/{value}"}
 
+    def get_secret_list(value):
+        return [secret(f"{value}{i}") for i in range(0, 6)]
     path_list_secrets_paginated_success_response = {
         'SecretList': [
-            {
-                'Name': '/testpath_paginated/too',
-            },
-            {
-                'Name': '/testpath_paginated/won',
-            },
-            {
-                'Name': '/testpath_paginated/too1',
-            },
-            {
-                'Name': '/testpath_paginated/won1',
-            },
-            {
-                'Name': '/testpath_paginated/too2',
-            },
-            {
-                'Name': '/testpath_paginated/won2',
-            },
-            {
-                'Name': '/testpath_paginated/too3',
-            },
-            {
-                'Name': '/testpath_paginated/won3',
-            },
-            {
-                'Name': '/testpath_paginated/too4',
-            },
-            {
-                'Name': '/testpath_paginated/won4',
-            },
-            {
-                'Name': '/testpath_paginated/too5',
-            },
-            {
-                'Name': '/testpath_paginated/won5',
-            }
+            item for pair in zip(get_secret_list(f"too"), get_secret_list(f"won")) for item in pair
         ],
         'ResponseMetadata': {
             'RequestId': '21099462-597c-490a-800f-8b7a41e5151c',
@@ -282,62 +251,25 @@ def test_path_lookup_variable_paginated(mocker, dummy_credentials, record_proper
             'RetryAttempts': 0
         }
     }
-
     boto3_double = mocker.MagicMock()
     list_secrets_fn = boto3_double.Session.return_value.client.return_value.list_secrets
     list_secrets_fn.return_value = path_list_secrets_paginated_success_response
-
     get_secret_value_fn = boto3_double.Session.return_value.client.return_value.get_secret_value
-    first_path = copy(simple_variable_success_response)
-    first_path['SecretString'] = 'simple_value_too'
-    second_path = copy(simple_variable_success_response)
-    second_path['SecretString'] = 'simple_value_won'
 
-    third_path = copy(simple_variable_success_response)
-    third_path['SecretString'] = 'simple_value_too1'
-    fourth_path = copy(simple_variable_success_response)
-    fourth_path['SecretString'] = 'simple_value_won1'
+    def secret_string(val):
+        path = copy(simple_variable_success_response)
+        path["SecretString"] = f"simple_value_{val}"
+        return path
 
-    fifth_path = copy(simple_variable_success_response)
-    fifth_path['SecretString'] = 'simple_value_too2'
-    sixth_path = copy(simple_variable_success_response)
-    sixth_path['SecretString'] = 'simple_value_won2'
-
-    seventh_path = copy(simple_variable_success_response)
-    seventh_path['SecretString'] = 'simple_value_too3'
-    eighth_path = copy(simple_variable_success_response)
-    eighth_path['SecretString'] = 'simple_value_won3'
-
-    ninth_path = copy(simple_variable_success_response)
-    ninth_path['SecretString'] = 'simple_value_too4'
-    tenth_path = copy(simple_variable_success_response)
-    tenth_path['SecretString'] = 'simple_value_won4'
-
-    eleventh_path = copy(simple_variable_success_response)
-    eleventh_path['SecretString'] = 'simple_value_too5'
-    twelfth_path = copy(simple_variable_success_response)
-    twelfth_path['SecretString'] = 'simple_value_won5'
-
+    def _get_secret_list(value):
+        return [secret_string(f"{value}{i}") for i in range(0, 6)]
     get_secret_value_fn.side_effect = [
-        first_path,
-        second_path,
-        third_path,
-        fourth_path,
-        fifth_path,
-        sixth_path,
-        seventh_path,
-        eighth_path,
-        ninth_path,
-        tenth_path,
-        eleventh_path,
-        twelfth_path
+       item for pair in zip(_get_secret_list(f"too"), _get_secret_list(f"won")) for item in pair
     ]
-
     boto3_client_double = boto3_double.Session.return_value.client
     boto3_client_get_paginator_double = boto3_double.Session.return_value.client.return_value.get_paginator
     boto3_paginate_double = boto3_client_get_paginator_double.return_value.paginate
     boto3_paginate_double.return_value = [path_list_secrets_paginated_success_response]
-
     mocker.patch.object(boto3, 'session', boto3_double)
     dummy_credentials["bypath"] = 'true'
     dummy_credentials["boto_profile"] = 'test'
@@ -346,10 +278,9 @@ def test_path_lookup_variable_paginated(mocker, dummy_credentials, record_proper
     boto3_paginate_double.assert_called_once()
     boto3_client_get_paginator_double.assert_called_once()
     boto3_client_get_paginator_double.assert_called_once_with('list_secrets')
-
     record_property('KEY', retval)
-    assert (retval[0]["/testpath_paginated/won"] == "simple_value_won")
-    assert (retval[0]["/testpath_paginated/too"] == "simple_value_too")
+    assert (retval[0]["/testpath_paginated/won0"] == "simple_value_won0")
+    assert (retval[0]["/testpath_paginated/too0"] == "simple_value_too0")
     assert (len(retval[0]) == 12)
     boto3_client_double.assert_called_with('secretsmanager', 'eu-west-1', aws_access_key_id='notakey',
                                            aws_secret_access_key="notasecret", aws_session_token=None)
