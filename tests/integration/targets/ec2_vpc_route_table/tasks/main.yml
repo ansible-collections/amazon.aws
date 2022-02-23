@@ -1071,12 +1071,6 @@
   # ############################################################################
   # TEAR DOWN STARTS HERE
   # ############################################################################
-  - name: remove the VPC endpoint
-    ec2_vpc_endpoint:
-      state: absent
-      vpc_endpoint_id: '{{ vpc_endpoint.result.vpc_endpoint_id }}'
-    when: vpc_endpoint is defined
-    ignore_errors: yes
   - name: destroy route tables
     ec2_vpc_route_table:
       route_table_id: '{{ item.route_table.id }}'
