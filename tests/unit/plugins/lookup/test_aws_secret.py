@@ -229,6 +229,7 @@ def test_path_lookup_variable(mocker, dummy_credentials, record_property):
 def test_path_lookup_variable_paginated(mocker, dummy_credentials, record_property):
     lookup = aws_secret.LookupModule()
     lookup._load_name = "aws_secret"
+
     def secret(value):
         return {"Name": f"/testpath_paginated/{value}"}
 
@@ -236,7 +237,7 @@ def test_path_lookup_variable_paginated(mocker, dummy_credentials, record_proper
         return [secret(f"{value}{i}") for i in range(0, 6)]
     path_list_secrets_paginated_success_response = {
         'SecretList': [
-            item for pair in zip(get_secret_list(f"too"), get_secret_list(f"won")) for item in pair
+            item for pair in zip(get_secret_list("too"), get_secret_list("won")) for item in pair
         ],
         'ResponseMetadata': {
             'RequestId': '21099462-597c-490a-800f-8b7a41e5151c',
@@ -264,7 +265,7 @@ def test_path_lookup_variable_paginated(mocker, dummy_credentials, record_proper
     def _get_secret_list(value):
         return [secret_string(f"{value}{i}") for i in range(0, 6)]
     get_secret_value_fn.side_effect = [
-       item for pair in zip(_get_secret_list(f"too"), _get_secret_list(f"won")) for item in pair
+        item for pair in zip(_get_secret_list("too"), _get_secret_list("won")) for item in pair
     ]
     boto3_client_double = boto3_double.Session.return_value.client
     boto3_client_get_paginator_double = boto3_double.Session.return_value.client.return_value.get_paginator
