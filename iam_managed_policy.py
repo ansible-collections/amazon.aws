@@ -56,7 +56,7 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = r'''
-# Create Policy ex nihilo
+# Create a policy
 - name: Create IAM Managed Policy
   community.aws.iam_managed_policy:
     policy_name: "ManagedPolicy"
