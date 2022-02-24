@@ -110,6 +110,7 @@ from ..module_utils.ec2 import camel_dict_to_snake_dict
 from ..module_utils.ec2 import ensure_ec2_tags
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.tagging import boto3_tag_list_to_ansible_dict
+from time import sleep
 
 
 class AnsibleEc2Igw():
@@ -207,6 +208,7 @@ class AnsibleEc2Igw():
                     InternetGatewayId=igw['internet_gateway_id'],
                     VpcId=vpc_id
                 )
+                sleep(5)
                 self._results['changed'] = True
             except botocore.exceptions.WaiterError as e:
                 self._module.fail_json_aws(e, msg="No Internet Gateway exists.")
@@ -218,6 +220,11 @@ class AnsibleEc2Igw():
             resource_type='internet-gateway', tags=tags, purge_tags=purge_tags
         )
         igw = self.get_matching_igw(vpc_id)
+
+        if igw is None:
+            self._module.fail_json(
+                msg='EC2 could not find an Internet Gateway attached to VPC {0}, aborting'.format(vpc_id))
+
         igw_info = self.get_igw_info(igw, vpc_id)
         self._results.update(igw_info)
 
