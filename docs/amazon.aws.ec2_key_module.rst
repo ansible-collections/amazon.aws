@@ -26,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.15.0
-- botocore >= 1.18.0
+- boto3 >= 1.16.0
+- botocore >= 1.19.0
 
 
 Parameters
@@ -178,6 +178,30 @@ Parameters
                 </td>
                 <td>
                         <div>Public key material.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>key_type</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 3.1.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>rsa</li>
+                                    <li>ed25519</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>The type of key pair to create.</div>
+                        <div>Note that ED25519 keys are not supported for Windows instances, EC2 Instance Connect, and EC2 Serial Console.</div>
+                        <div>By default Amazon will create an RSA key.</div>
+                        <div>Mutually exclusive with parameter <em>key_material</em>.</div>
+                        <div>Requires at least botocore version 1.21.23.</div>
                 </td>
             </tr>
             <tr>
@@ -391,6 +415,11 @@ Examples
         name: my_keypair
         key_material: "{{ lookup('file', '/path/to/public_key/id_rsa.pub') }}"
 
+    - name: Create ED25519 key pair
+      amazon.aws.ec2_key:
+        name: my_keypair
+        key_type: ed25519
+
     # try creating a key pair with the name of an already existing keypair
     # but don't overwrite it even if the key is different (force=false)
     - name: try creating a key pair with name of an already existing keypair
@@ -538,6 +567,25 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&quot;my_key&quot;: &quot;my value&quot;}</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>type</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 3.1.0</div>
+                </td>
+                <td>when a new keypair is created by AWS</td>
+                <td>
+                            <div>type of a newly created keypair</div>
+                    <br/>
+                        <div style="font-size: smaller"><b>Sample:</b></div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">rsa</div>
                 </td>
             </tr>
 

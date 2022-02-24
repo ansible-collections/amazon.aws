@@ -197,6 +197,14 @@ options:
         type: str
         description:
         - version ID of the source object.
+  validate_bucket_name:
+    description:
+      - Whether the bucket name should be validated to conform to AWS S3 naming rules.
+      - On by default, this may be disabled for S3 backends that do not enforce these rules.
+      - See https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
+    type: bool
+    version_added: 3.1.0
+    default: True
 author:
     - "Lester Wade (@lwade)"
     - "Sloane Hertel (@s-hertel)"
@@ -928,6 +936,7 @@ def main():
         tags=dict(type='dict'),
         purge_tags=dict(type='bool', default=True),
         copy_src=dict(type='dict', options=dict(bucket=dict(required=True), object=dict(required=True), version_id=dict())),
+        validate_bucket_name=dict(type='bool', default=True),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
@@ -965,7 +974,8 @@ def main():
     object_canned_acl = ["private", "public-read", "public-read-write", "aws-exec-read", "authenticated-read", "bucket-owner-read", "bucket-owner-full-control"]
     bucket_canned_acl = ["private", "public-read", "public-read-write", "authenticated-read"]
 
-    validate_bucket_name(module, bucket)
+    if module.params.get('validate_bucket_name'):
+        validate_bucket_name(module, bucket)
 
     if overwrite not in ['always', 'never', 'different', 'latest']:
         if module.boolean(overwrite):

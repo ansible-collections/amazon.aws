@@ -26,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.15.0
-- botocore >= 1.18.0
+- boto3 >= 1.16.0
+- botocore >= 1.19.0
 
 
 Parameters
@@ -515,10 +515,11 @@ Parameters
                 </td>
                 <td>
                         <div>Force overwrite either locally on the filesystem or remotely with the object/key. Used with <code>PUT</code> and <code>GET</code> operations.</div>
-                        <div>Must be a Boolean, <code>always</code>, <code>never</code> or <code>different</code>.</div>
+                        <div>Must be a Boolean, <code>always</code>, <code>never</code>, <code>different</code> or <code>latest</code>.</div>
                         <div><code>true</code> is the same as <code>always</code>.</div>
                         <div><code>false</code> is equal to <code>never</code>.</div>
                         <div>When this is set to <code>different</code> the MD5 sum of the local file is compared with the &#x27;ETag&#x27; of the object/key in S3. The ETag may or may not be an MD5 digest of the object data. See the ETag response header here <a href='https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html'>https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html</a>.</div>
+                        <div>(<code>GET</code> mode only) When this is set to <code>latest</code> the last modified timestamp of local file is compared with the &#x27;LastModified&#x27; of the object/key in S3.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: force</div>
                 </td>
             </tr>
@@ -709,6 +710,28 @@ Parameters
                 </td>
                 <td>
                         <div>Tags dict to apply to the S3 object.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>validate_bucket_name</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 3.1.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Whether the bucket name should be validated to conform to AWS S3 naming rules.</div>
+                        <div>On by default, this may be disabled for S3 backends that do not enforce these rules.</div>
+                        <div>See https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html</div>
                 </td>
             </tr>
             <tr>

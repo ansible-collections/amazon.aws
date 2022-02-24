@@ -28,8 +28,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.15.0
-- botocore >= 1.18.0
+- boto3 >= 1.16.0
+- botocore >= 1.19.0
 
 
 Parameters
@@ -472,10 +472,10 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <b>Default:</b><br/><div style="color: blue">"t2.micro"</div>
                 </td>
                 <td>
                         <div>Instance type to use for the instance, see <a href='https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html'>https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html</a> Only required when instance is not already present.</div>
+                        <div>If not specified, t2.micro will be used.</div>
                 </td>
             </tr>
             <tr>
@@ -1353,10 +1353,10 @@ Examples
         image_id: ami-123456
         exact_count: 5
         region: us-east-2
+        vpc_subnet_id: subnet-0123456
         network:
           assign_public_ip: yes
           security_group: default
-          vpc_subnet_id: subnet-0123456
         tags:
           foo: bar
 

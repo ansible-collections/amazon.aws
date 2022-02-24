@@ -1,2 +1,0 @@
-minor_changes:
-  - ec2_vol - add support for OutpostArn param (https://github.com/ansible-collections/amazon.aws/pull/597).

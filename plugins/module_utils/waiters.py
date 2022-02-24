@@ -482,6 +482,42 @@ eks_data = {
                     "expected": "ResourceNotFoundException"
                 }
             ]
+        },
+        "FargateProfileActive": {
+            "delay": 20,
+            "maxAttempts": 30,
+            "operation": "DescribeFargateProfile",
+            "acceptors": [
+                {
+                    "state": "success",
+                    "matcher": "path",
+                    "argument": "fargateProfile.status",
+                    "expected": "ACTIVE"
+                },
+                {
+                    "state": "retry",
+                    "matcher": "error",
+                    "expected": "ResourceNotFoundException"
+                }
+            ]
+        },
+        "FargateProfileDeleted": {
+            "delay": 20,
+            "maxAttempts": 30,
+            "operation": "DescribeFargateProfile",
+            "acceptors": [
+                {
+                    "state": "retry",
+                    "matcher": "path",
+                    "argument": "fargateProfile.status == 'DELETING'",
+                    "expected": True
+                },
+                {
+                    "state": "success",
+                    "matcher": "error",
+                    "expected": "ResourceNotFoundException"
+                }
+            ]
         }
     }
 }
@@ -872,6 +908,18 @@ waiters_by_name = {
         eks_model('ClusterDeleted'),
         core_waiter.NormalizedOperationMethod(
             eks.describe_cluster
+        )),
+    ('EKS', 'fargate_profile_active'): lambda eks: core_waiter.Waiter(
+        'fargate_profile_active',
+        eks_model('FargateProfileActive'),
+        core_waiter.NormalizedOperationMethod(
+            eks.describe_fargate_profile
+        )),
+    ('EKS', 'fargate_profile_deleted'): lambda eks: core_waiter.Waiter(
+        'fargate_profile_deleted',
+        eks_model('FargateProfileDeleted'),
+        core_waiter.NormalizedOperationMethod(
+            eks.describe_fargate_profile
         )),
     ('ElasticLoadBalancing', 'any_instance_in_service'): lambda elb: core_waiter.Waiter(
         'any_instance_in_service',
