@@ -524,7 +524,7 @@ def ensure_subnet_association(connection=None, module=None, vpc_id=None, route_t
                         return {'changed': True}
                     try:
                         connection.disassociate_route_table(
-                            aws_retry=True, AssociationId=a['RouteTableAssociationId'])
+                            aws_retry=True, AssociationId=association['RouteTableAssociationId'])
                     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                         module.fail_json_aws(e, msg="Couldn't disassociate subnet from route table")
 
@@ -589,7 +589,7 @@ def ensure_gateway_association(connection=None, module=None, route_table=None, g
                         return {'changed': True}
                     try:
                         connection.disassociate_route_table(
-                            aws_retry=True, AssociationId=a['RouteTableAssociationId'])
+                            aws_retry=True, AssociationId=association['RouteTableAssociationId'])
                     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                         module.fail_json_aws(e, msg="Couldn't disassociate gateway from route table")
 
