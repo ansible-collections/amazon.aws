@@ -66,8 +66,8 @@
       vpc_id: '{{ vpc.vpc.id }}'
       state: present
       tags:
-        Public: '{{ item.public|string }}'
-        Name: "{{ (item.public|bool)|ternary('public', 'private') }}-{{ item.zone }}"
+        Public: '{{ item.public | string }}'
+        Name: "{{ (item.public | bool) | ternary('public', 'private') }}-{{ item.zone }}"
     with_items:
     - cidr: 10.228.224.0/24
       zone: '{{ availability_zone_a }}'
@@ -111,12 +111,12 @@
         vpc-id: '{{ vpc.vpc.id }}'
     register: vpc_subnets
   - set_fact:
-      public_subnets: "{{ (vpc_subnets.subnets| selectattr('tags.Public', 'equalto',\
-        \ 'True')| map(attribute='id')| list) }}"
-      public_cidrs: "{{ (vpc_subnets.subnets| selectattr('tags.Public', 'equalto',\
-        \ 'True')| map(attribute='cidr_block')| list) }}"
-      private_subnets: "{{ (vpc_subnets.subnets| selectattr('tags.Public', 'equalto',\
-        \ 'False')| map(attribute='id')| list)  }}"
+      public_subnets: "{{ (vpc_subnets.subnets | selectattr('tags.Public', 'equalto',\
+        \ 'True') | map(attribute='id') | list) }}"
+      public_cidrs: "{{ (vpc_subnets.subnets | selectattr('tags.Public', 'equalto',\
+        \ 'True') | map(attribute='cidr_block') | list) }}"
+      private_subnets: "{{ (vpc_subnets.subnets | selectattr('tags.Public', 'equalto',\
+        \ 'False') | map(attribute='id') | list) }}"
   - name: create IGW
     ec2_vpc_igw:
       vpc_id: '{{ vpc.vpc.id }}'
@@ -152,13 +152,13 @@
       that:
       - create_public_table.changed
       - create_public_table.route_table.id.startswith('rtb-')
-      - "'Public' in create_public_table.route_table.tags and create_public_table.route_table.tags['Public']\
-        \ == 'true'"
-      # One route for IPv4, one route for IPv6
-      - create_public_table.route_table.routes|length == 2
-      - create_public_table.route_table.associations|length == 0
+      - "'Public' in create_public_table.route_table.tags"
+      - create_public_table.route_table.tags['Public'] == 'true'
+      - create_public_table.route_table.associations | length == 0
       - create_public_table.route_table.vpc_id == "{{ vpc.vpc.id }}"
-      - create_public_table.route_table.propagating_vgws|length == 0
+      - create_public_table.route_table.propagating_vgws | length == 0
+      # One route for IPv4, one route for IPv6
+      - create_public_table.route_table.routes | length == 2
 
   - name: CHECK MODE - route table should already exist
     ec2_vpc_route_table:
@@ -185,12 +185,13 @@
       that:
       - not recreate_public_route_table.changed
       - create_public_table.route_table.id.startswith('rtb-')
-      - "'Public' in create_public_table.route_table.tags and create_public_table.route_table.tags['Public']\
-        \ == 'true'"
-      - create_public_table.route_table.routes|length == 2
-      - create_public_table.route_table.associations|length == 0
+      - "'Public' in create_public_table.route_table.tags"
+      - create_public_table.route_table.tags['Public'] == 'true'
+      - create_public_table.route_table.routes | length == 1
+      - create_public_table.route_table.associations | length == 0
       - create_public_table.route_table.vpc_id == "{{ vpc.vpc.id }}"
-      - create_public_table.route_table.propagating_vgws|length == 0
+      - create_public_table.route_table.propagating_vgws | length == 0
+      - create_public_table.route_table.routes | length == 2
 
   - name: CHECK MODE - add route to public route table
     ec2_vpc_route_table:
@@ -226,17 +227,18 @@
     assert:
       that:
       - add_routes.changed
+      - add_routes.route_table.routes | length == 3
+      - add_routes.route_table.id.startswith('rtb-')
+      - "'Public' in add_routes.route_table.tags"
+      - add_routes.route_table.tags['Public'] == 'true'
       # 10.228.224.0/21
       # 0.0.0.0/0
       # ::/0
       # Amazon-provide IPv6 block
-      - add_routes.route_table.routes|length == 4
-      - add_routes.route_table.id.startswith('rtb-')
-      - "'Public' in add_routes.route_table.tags and add_routes.route_table.tags['Public']\
-        \ == 'true'"
-      - add_routes.route_table.associations|length == 0
+      - add_routes.route_table.routes | length == 4
+      - add_routes.route_table.associations | length == 0
       - add_routes.route_table.vpc_id == "{{ vpc.vpc.id }}"
-      - add_routes.route_table.propagating_vgws|length == 0
+      - add_routes.route_table.propagating_vgws | length == 0
 
   - name: CHECK MODE - re-add route to public route table
     ec2_vpc_route_table:
@@ -268,7 +270,7 @@
     assert:
       that:
       - add_routes is not changed
-      - add_routes.route_table.routes|length == 4
+      - add_routes.route_table.routes | length == 4
 
   - name: CHECK MODE - add subnets to public route table
     ec2_vpc_route_table:
@@ -302,18 +304,8 @@
     assert:
       that:
       - add_subnets.changed
-      - add_subnets.route_table.associations|length == 3
+      - add_subnets.route_table.associations | length == 3
 
-  - name: add a route to public route table
-    ec2_vpc_route_table:
-      vpc_id: '{{ vpc.vpc.id }}'
-      tags:
-        Public: 'true'
-        Name: Public route table
-      routes:
-      - dest: 0.0.0.0/0
-        gateway_id: igw
-    register: add_routes
   - name: CHECK MODE - no routes but purge_routes set to false
     ec2_vpc_route_table:
       vpc_id: '{{ vpc.vpc.id }}'
@@ -342,8 +334,8 @@
     assert:
       that:
       - not no_purge_routes.changed
-      - no_purge_routes.route_table.routes|length == 4
-      - no_purge_routes.route_table.associations|length == 3
+      - no_purge_routes.route_table.routes | length == 4
+      - no_purge_routes.route_table.associations | length == 3
 
   - name: rerun with purge_subnets set to false
     ec2_vpc_route_table:
@@ -360,8 +352,8 @@
     assert:
       that:
       - not no_purge_subnets.changed
-      - no_purge_subnets.route_table.routes|length == 4
-      - no_purge_subnets.route_table.associations|length == 3
+      - no_purge_subnets.route_table.routes | length == 4
+      - no_purge_subnets.route_table.associations | length == 3
 
   - name: rerun with purge_tags not set (implicitly false)
     ec2_vpc_route_table:
@@ -377,8 +369,8 @@
     assert:
       that:
       - not no_purge_tags.changed
-      - "'Public' in no_purge_tags.route_table.tags and no_purge_tags.route_table.tags['Public']\
-        \ == 'true'"
+      - "'Public' in no_purge_tags.route_table.tags"
+      - no_purge_tags.route_table.tags['Public'] == 'true'
 
   - name: CHECK MODE - purge subnets
     ec2_vpc_route_table:
@@ -412,7 +404,7 @@
     assert:
       that:
       - purge_subnets.changed
-      - purge_subnets.route_table.associations|length == 0
+      - purge_subnets.route_table.associations | length == 0
       - purge_subnets.route_table.id == create_public_table.route_table.id
 
   - name: CHECK MODE - purge routes
@@ -443,7 +435,7 @@
     assert:
       that:
       - add_subnets_cidr.changed
-      - add_subnets_cidr.route_table.associations|length == 3
+      - add_subnets_cidr.route_table.associations | length == 3
 
   - name: purge subnets added by cidr
     ec2_vpc_route_table:
@@ -459,7 +451,7 @@
     assert:
       that:
       - purge_subnets_cidr.changed
-      - purge_subnets_cidr.route_table.associations|length == 0
+      - purge_subnets_cidr.route_table.associations | length == 0
 
   - name: add subnets by name to public route table
     ec2_vpc_route_table:
@@ -475,7 +467,7 @@
     assert:
       that:
       - add_subnets_name.changed
-      - add_subnets_name.route_table.associations|length == 3
+      - add_subnets_name.route_table.associations | length == 3
 
   - name: purge subnets added by name
     ec2_vpc_route_table:
@@ -491,7 +483,7 @@
     assert:
       that:
       - purge_subnets_name.changed
-      - purge_subnets_name.route_table.associations|length == 0
+      - purge_subnets_name.route_table.associations | length == 0
 
   - name: purge routes
     ec2_vpc_route_table:
@@ -505,7 +497,7 @@
     assert:
       that:
       - purge_routes.changed
-      - purge_routes.route_table.routes|length == 3
+      - purge_routes.route_table.routes | length == 3
       - purge_routes.route_table.id == create_public_table.route_table.id
 
   - name: CHECK MODE - update tags
@@ -538,8 +530,8 @@
     assert:
       that:
       - update_tags.changed
-      - "'Updated' in update_tags.route_table.tags and update_tags.route_table.tags['Updated']\
-        \ == 'new_tag'"
+      - "'Updated' in update_tags.route_table.tags"
+      - update_tags.route_table.tags['Updated'] == 'new_tag'
       - "'Public' not in update_tags.route_table.tags"
 
   - name: create NAT GW
@@ -669,10 +661,10 @@
       that:
       - route_table_info.route_tables | length == 1
       - '"tags" in route_table_info.route_tables[0]'
-      - '"Public" in route_table_info.route_tables[0].tags and route_table_info.route_tables[0].tags["Public"]
-        == "false"'
-      - '"Name" in route_table_info.route_tables[0].tags and route_table_info.route_tables[0].tags["Name"]
-        == "Private route table"'
+      - '"Public" in route_table_info.route_tables[0].tags'
+      - route_table_info.route_tables[0].tags["Public"] == "false"
+      - '"Name" in route_table_info.route_tables[0].tags'
+      - route_table_info.route_tables[0].tags["Name"] == "Private route table"
 
   - name: create NAT GW
     ec2_vpc_nat_gateway:
@@ -762,8 +754,8 @@
       that:
         - create_gateway_table is changed
         - create_gateway_table.route_table.id.startswith('rtb-')
-        - "'Public' in create_gateway_table.route_table.tags and create_gateway_table.route_table.tags['Public']\
-          \ == 'true'"
+        - "'Public' in create_gateway_table.route_table.tags"
+        - create_gateway_table.route_table.tags['Public'] == 'true'
         - create_gateway_table.route_table.routes | length == 1
         - create_gateway_table.route_table.associations | length == 1
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
@@ -796,8 +788,8 @@
       that:
         - create_gateway_table is not changed
         - create_gateway_table.route_table.id.startswith('rtb-')
-        - "'Public' in create_gateway_table.route_table.tags and create_gateway_table.route_table.tags['Public']\
-          \ == 'true'"
+        - "'Public' in create_gateway_table.route_table.tags"
+        - create_gateway_table.route_table.tags['Public'] == 'true'
         - create_gateway_table.route_table.routes | length == 1
         - create_gateway_table.route_table.associations | length == 1
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
@@ -845,8 +837,8 @@
       that:
         - create_gateway_table is changed
         - create_gateway_table.route_table.id.startswith('rtb-')
-        - "'Public' in create_gateway_table.route_table.tags and create_gateway_table.route_table.tags['Public']\
-          \ == 'true'"
+        - "'Public' in create_gateway_table.route_table.tags"
+        - create_gateway_table.route_table.tags['Public'] == 'true'
         - create_gateway_table.route_table.routes | length == 1
         - create_gateway_table.route_table.associations | length == 1
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
@@ -889,8 +881,8 @@
       that:
         - create_gateway_table is not changed
         - create_gateway_table.route_table.id.startswith('rtb-')
-        - "'Public' in create_gateway_table.route_table.tags and create_gateway_table.route_table.tags['Public']\
-          \ == 'true'"
+        - "'Public' in create_gateway_table.route_table.tags"
+        - create_gateway_table.route_table.tags['Public'] == 'true'
         - create_gateway_table.route_table.routes | length == 1
         - create_gateway_table.route_table.associations | length == 1
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
@@ -935,8 +927,8 @@
       that:
         - create_gateway_table is changed
         - create_gateway_table.route_table.id.startswith('rtb-')
-        - "'Public' in create_gateway_table.route_table.tags and create_gateway_table.route_table.tags['Public']\
-          \ == 'true'"
+        - "'Public' in create_gateway_table.route_table.tags"
+        - create_gateway_table.route_table.tags['Public'] == 'true'
         - create_gateway_table.route_table.routes | length == 2
         - create_gateway_table.route_table.associations | length == 1
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
@@ -977,10 +969,384 @@
       that:
         - create_gateway_table is not changed
         - create_gateway_table.route_table.id.startswith('rtb-')
-        - "'Public' in create_gateway_table.route_table.tags and create_gateway_table.route_table.tags['Public']\
-          \ == 'true'"
+        - "'Public' in create_gateway_table.route_table.tags"
+        - create_gateway_table.route_table.tags['Public'] == 'true'
         - create_gateway_table.route_table.routes | length == 2
         - create_gateway_table.route_table.associations | length == 1
+        - create_gateway_table.route_table.vpc_id == vpc.vpc.id
+        - create_gateway_table.route_table.propagating_vgws | length == 0
+
+  # ------------------------------------------------------------------------------------------
+
+  - name: Ensure gateway doesn't disassociate when not passed in - check_mode
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: 'true'
+        Name: Gateway route table
+      routes:
+      - dest: "10.228.228.0/24"
+        network_interface_id: "{{ eni.interface.id }}"
+      purge_routes: no
+    register: create_gateway_table
+    check_mode: yes
+
+  - assert:
+      that:
+        - create_gateway_table is not changed
+
+  - name: Ensure gateway doesn't disassociate when not passed in
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: 'true'
+        Name: Gateway route table
+      routes:
+      - dest: "10.228.228.0/24"
+        network_interface_id: "{{ eni.interface.id }}"
+      purge_routes: no
+    register: create_gateway_table
+
+  - assert:
+      that:
+        - create_gateway_table is not changed
+        - create_gateway_table.route_table.id.startswith('rtb-')
+        - "'Public' in create_gateway_table.route_table.tags"
+        - create_gateway_table.route_table.tags['Public'] == 'true'
+        - create_gateway_table.route_table.routes | length == 2
+        - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1 }}"
+        - create_gateway_table.route_table.vpc_id == vpc.vpc.id
+        - create_gateway_table.route_table.propagating_vgws | length == 0
+
+  # ------------------------------------------------------------------------------------------
+
+  - name: Disassociate gateway when gateway_id is 'None' - check_mode
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: 'true'
+        Name: Gateway route table
+      gateway_id: None
+      routes:
+      - dest: "10.228.228.0/24"
+        network_interface_id: "{{ eni.interface.id }}"
+      purge_routes: no
+    register: create_gateway_table
+    check_mode: yes
+
+  - assert:
+      that:
+        - create_gateway_table is changed
+
+  - name: Disassociate gateway when gateway_id is 'None'
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: 'true'
+        Name: Gateway route table
+      gateway_id: None
+      routes:
+      - dest: "10.228.228.0/24"
+        network_interface_id: "{{ eni.interface.id }}"
+      purge_routes: no
+    register: create_gateway_table
+
+  - assert:
+      that:
+        - create_gateway_table is changed
+        - create_gateway_table.route_table.id.startswith('rtb-')
+        - "'Public' in create_gateway_table.route_table.tags"
+        - create_gateway_table.route_table.tags['Public'] == 'true'
+        - create_gateway_table.route_table.routes | length == 2
+        - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 0 }}"
+        - create_gateway_table.route_table.vpc_id == vpc.vpc.id
+        - create_gateway_table.route_table.propagating_vgws | length == 0
+
+  - name: Disassociate gateway when gateway_id is 'None' (idempotence) - check_mode
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: 'true'
+        Name: Gateway route table
+      gateway_id: None
+      routes:
+      - dest: "10.228.228.0/24"
+        network_interface_id: "{{ eni.interface.id }}"
+      purge_routes: no
+    register: create_gateway_table
+    check_mode: yes
+
+  - assert:
+      that:
+        - create_gateway_table is not changed
+
+  - name: Disassociate gateway when gateway_id is 'None' (idempotence)
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: 'true'
+        Name: Gateway route table
+      gateway_id: None
+      routes:
+      - dest: "10.228.228.0/24"
+        network_interface_id: "{{ eni.interface.id }}"
+      purge_routes: no
+    register: create_gateway_table
+
+  - assert:
+      that:
+        - create_gateway_table is not changed
+        - create_gateway_table.route_table.id.startswith('rtb-')
+        - "'Public' in create_gateway_table.route_table.tags"
+        - create_gateway_table.route_table.tags['Public'] == 'true'
+        - create_gateway_table.route_table.routes | length == 2
+        - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 0 }}"
+        - create_gateway_table.route_table.vpc_id == vpc.vpc.id
+        - create_gateway_table.route_table.propagating_vgws | length == 0
+
+  # ------------------------------------------------------------------------------------------
+
+  - name: Associate gateway with route table - check_mode
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: 'true'
+        Name: Gateway route table
+      gateway_id: "{{ vpc_igw.gateway_id }}"
+      purge_routes: no
+    register: create_gateway_table
+    check_mode: yes
+
+  - assert:
+      that:
+        - create_gateway_table is changed
+
+  - name: Associate gateway with route table
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: 'true'
+        Name: Gateway route table
+      gateway_id: "{{ vpc_igw.gateway_id }}"
+      purge_routes: no
+    register: create_gateway_table
+
+  - assert:
+      that:
+        - create_gateway_table is changed
+        - create_gateway_table.route_table.id.startswith('rtb-')
+        - "'Public' in create_gateway_table.route_table.tags"
+        - create_gateway_table.route_table.tags['Public'] == 'true'
+        - create_gateway_table.route_table.routes | length == 2
+        - create_gateway_table.route_table.associations | length == 1
+        - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1 }}"
+        - create_gateway_table.route_table.vpc_id == vpc.vpc.id
+        - create_gateway_table.route_table.propagating_vgws | length == 0
+
+  - name: Associate gateway with route table (idempotence) - check_mode
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: 'true'
+        Name: Gateway route table
+      gateway_id: "{{ vpc_igw.gateway_id }}"
+      purge_routes: no
+    register: create_gateway_table
+    check_mode: yes
+
+  - assert:
+      that:
+        - create_gateway_table is not changed
+
+  - name: Associate gateway with route table (idempotence)
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: 'true'
+        Name: Gateway route table
+      gateway_id: "{{ vpc_igw.gateway_id }}"
+      purge_routes: no
+    register: create_gateway_table
+
+  - assert:
+      that:
+        - create_gateway_table is not changed
+        - create_gateway_table.route_table.id.startswith('rtb-')
+        - "'Public' in create_gateway_table.route_table.tags"
+        - create_gateway_table.route_table.tags['Public'] == 'true'
+        - create_gateway_table.route_table.routes | length == 2
+        - create_gateway_table.route_table.associations | length == 1
+        - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1 }}"
+        - create_gateway_table.route_table.vpc_id == vpc.vpc.id
+        - create_gateway_table.route_table.propagating_vgws | length == 0
+
+  # ------------------------------------------------------------------------------------------
+
+  - name: Disassociate gateway when gateway_id is '' - check_mode
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: 'true'
+        Name: Gateway route table
+      gateway_id: ''
+      routes:
+      - dest: "10.228.228.0/24"
+        network_interface_id: "{{ eni.interface.id }}"
+      purge_routes: no
+    register: create_gateway_table
+    check_mode: yes
+
+  - assert:
+      that:
+        - create_gateway_table is changed
+
+  - name: Disassociate gateway when gateway_id is ''
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: 'true'
+        Name: Gateway route table
+      gateway_id: ''
+      routes:
+      - dest: "10.228.228.0/24"
+        network_interface_id: "{{ eni.interface.id }}"
+      purge_routes: no
+    register: create_gateway_table
+
+  - assert:
+      that:
+        - create_gateway_table is changed
+        - create_gateway_table.route_table.id.startswith('rtb-')
+        - "'Public' in create_gateway_table.route_table.tags"
+        - create_gateway_table.route_table.tags['Public'] == 'true'
+        - create_gateway_table.route_table.routes | length == 2
+        - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 0 }}"
+        - create_gateway_table.route_table.vpc_id == vpc.vpc.id
+        - create_gateway_table.route_table.propagating_vgws | length == 0
+
+  - name: Disassociate gateway when gateway_id is '' (idempotence) - check_mode
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: 'true'
+        Name: Gateway route table
+      gateway_id: ''
+      routes:
+      - dest: "10.228.228.0/24"
+        network_interface_id: "{{ eni.interface.id }}"
+      purge_routes: no
+    register: create_gateway_table
+    check_mode: yes
+
+  - assert:
+      that:
+        - create_gateway_table is not changed
+
+  - name: Disassociate gateway when gateway_id is '' (idempotence)
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: 'true'
+        Name: Gateway route table
+      gateway_id: ''
+      routes:
+      - dest: "10.228.228.0/24"
+        network_interface_id: "{{ eni.interface.id }}"
+      purge_routes: no
+    register: create_gateway_table
+
+  - assert:
+      that:
+        - create_gateway_table is not changed
+        - create_gateway_table.route_table.id.startswith('rtb-')
+        - "'Public' in create_gateway_table.route_table.tags"
+        - create_gateway_table.route_table.tags['Public'] == 'true'
+        - create_gateway_table.route_table.routes | length == 2
+        - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 0 }}"
+        - create_gateway_table.route_table.vpc_id == vpc.vpc.id
+        - create_gateway_table.route_table.propagating_vgws | length == 0
+
+  # ------------------------------------------------------------------------------------------
+
+  - name: Create vgw for gateway route table
+    ec2_vpc_vgw:
+      state: present
+      vpc_id: "{{ vpc.vpc.id }}"
+      type: ipsec.1
+      name: '{{ resource_prefix }}_vpc'
+    register: vgw
+
+  - name: Associate vgw with route table - check_mode
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: 'true'
+        Name: Gateway route table
+      gateway_id: "{{ vgw.vgw.id }}"
+      purge_routes: no
+    register: create_gateway_table
+    check_mode: yes
+
+  - assert:
+      that:
+        - create_gateway_table is changed
+
+  - name: Associate vgw with route table
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: 'true'
+        Name: Gateway route table
+      gateway_id: "{{ vgw.vgw.id }}"
+      purge_routes: no
+    register: create_gateway_table
+
+  - assert:
+      that:
+        - create_gateway_table is changed
+        - create_gateway_table.route_table.id.startswith('rtb-')
+        - "'Public' in create_gateway_table.route_table.tags"
+        - create_gateway_table.route_table.tags['Public'] == 'true'
+        - create_gateway_table.route_table.routes | length == 2
+        - create_gateway_table.route_table.associations | length == 2
+        - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1 }}"
+        - create_gateway_table.route_table.vpc_id == vpc.vpc.id
+        - create_gateway_table.route_table.propagating_vgws | length == 0
+
+  - name: Associate vgw with route table (idempotence) - check_mode
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: 'true'
+        Name: Gateway route table
+      gateway_id: "{{ vgw.vgw.id }}"
+      purge_routes: no
+    register: create_gateway_table
+    check_mode: yes
+
+  - assert:
+      that:
+        - create_gateway_table is not changed
+
+  - name: Associate vgw with route table (idempotence)
+    ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      tags:
+        Public: 'true'
+        Name: Gateway route table
+      gateway_id: "{{ vgw.vgw.id }}"
+      purge_routes: no
+    register: create_gateway_table
+
+  - assert:
+      that:
+        - create_gateway_table is not changed
+        - create_gateway_table.route_table.id.startswith('rtb-')
+        - "'Public' in create_gateway_table.route_table.tags"
+        - create_gateway_table.route_table.tags['Public'] == 'true'
+        - create_gateway_table.route_table.routes | length == 2
+        - create_gateway_table.route_table.associations | length == 2
+        - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1 }}"
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
 
@@ -1068,18 +1434,24 @@
         - rt_info.route_tables | length == 0
 
   always:
-  # ############################################################################
+  #############################################################################
   # TEAR DOWN STARTS HERE
-  # ############################################################################
+  #############################################################################
+  - name: remove the VPC endpoint
+    ec2_vpc_endpoint:
+      state: absent
+      vpc_endpoint_id: '{{ vpc_endpoint.result.vpc_endpoint_id }}'
+    when: vpc_endpoint is defined
+    ignore_errors: yes
   - name: destroy route tables
     ec2_vpc_route_table:
       route_table_id: '{{ item.route_table.id }}'
       lookup: id
       state: absent
     with_items:
-    - '{{ create_public_table|default() }}'
-    - '{{ create_private_table|default() }}'
-    - '{{ create_gateway_table|default() }}'
+    - '{{ create_public_table | default() }}'
+    - '{{ create_private_table | default() }}'
+    - '{{ create_gateway_table | default() }}'
     when: item and not item.failed
     ignore_errors: yes
   - name: destroy NAT GW
@@ -1094,6 +1466,13 @@
     ec2_vpc_igw:
       vpc_id: '{{ vpc.vpc.id }}'
       state: absent
+    ignore_errors: yes
+  - name: destroy VGW
+    ec2_vpc_vgw:
+      state: absent
+      type: ipsec.1
+      name: '{{ resource_prefix }}_vpc'
+      vpc_id: "{{ vpc.vpc.id }}"
     ignore_errors: yes
   - name: destroy ENI
     ec2_eni:

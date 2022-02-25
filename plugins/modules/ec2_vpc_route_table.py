@@ -467,13 +467,13 @@ def ensure_routes(connection=None, module=None, route_table=None, route_specs=No
 
     routes_to_delete = []
     if purge_routes:
-        for r in routes_to_match:
-            if not r.get('DestinationCidrBlock'):
+        for route in routes_to_match:
+            if not route.get('DestinationCidrBlock'):
                 module.warn("Skipping purging route {0} because it has no destination cidr block. "
-                            "To remove VPC endpoints from route tables use the ec2_vpc_endpoint module.".format(r))
+                            "To remove VPC endpoints from route tables use the ec2_vpc_endpoint module.".format(route))
                 continue
-            if r['Origin'] == 'CreateRoute':
-                routes_to_delete.append(r)
+            if route['Origin'] == 'CreateRoute':
+                routes_to_delete.append(route)
 
     changed = bool(routes_to_delete or route_specs_to_create or route_specs_to_recreate)
     if changed and not check_mode:
@@ -513,12 +513,12 @@ def ensure_subnet_association(connection=None, module=None, vpc_id=None, route_t
     for route_table in route_tables:
         if route_table['RouteTableId'] is None:
             continue
-        for a in route_table['Associations']:
-            if a['Main']:
+        for association in route_table['Associations']:
+            if association['Main']:
                 continue
-            if a['SubnetId'] == subnet_id:
+            if association['SubnetId'] == subnet_id:
                 if route_table['RouteTableId'] == route_table_id:
-                    return {'changed': False, 'association_id': a['RouteTableAssociationId']}
+                    return {'changed': False, 'association_id': association['RouteTableAssociationId']}
                 else:
                     if check_mode:
                         return {'changed': True}
@@ -539,7 +539,7 @@ def ensure_subnet_association(connection=None, module=None, vpc_id=None, route_t
 
 def ensure_subnet_associations(connection=None, module=None, route_table=None, subnets=None,
                                check_mode=None, purge_subnets=None):
-    current_association_ids = [a['RouteTableAssociationId'] for a in route_table['Associations'] if not a['Main']]
+    current_association_ids = [association['RouteTableAssociationId'] for association in route_table['Associations'] if not association['Main']]
     new_association_ids = []
     changed = False
     for subnet in subnets:
@@ -553,14 +553,14 @@ def ensure_subnet_associations(connection=None, module=None, route_table=None, s
         new_association_ids.append(result['association_id'])
 
     if purge_subnets:
-        to_delete = [a_id for a_id in current_association_ids
-                     if a_id not in new_association_ids]
+        to_delete = [association_id for association_id in current_association_ids
+                     if association_id not in new_association_ids]
 
-        for a_id in to_delete:
+        for association_id in to_delete:
             changed = True
             if not check_mode:
                 try:
-                    connection.disassociate_route_table(aws_retry=True, AssociationId=a_id)
+                    connection.disassociate_route_table(aws_retry=True, AssociationId=association_id)
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     module.fail_json_aws(e, msg="Couldn't disassociate subnet from route table")
 
@@ -578,12 +578,12 @@ def ensure_gateway_association(connection=None, module=None, route_table=None, g
     for table in route_tables:
         if table['RouteTableId'] is None:
             continue
-        for a in table['Associations']:
-            if a['Main']:
+        for association in table['Associations']:
+            if association['Main']:
                 continue
-            if a['GatewayId'] == gateway_id:
+            if association['GatewayId'] == gateway_id:
                 if table['RouteTableId'] == route_table['RouteTableId']:
-                    return {'changed': False, 'association_id': a['RouteTableAssociationId']}
+                    return {'changed': False, 'association_id': association['RouteTableAssociationId']}
                 else:
                     if check_mode:
                         return {'changed': True}
@@ -606,11 +606,11 @@ def ensure_propagation(connection=None, module=None, route_table=None, propagati
                        check_mode=None):
     changed = False
     gateways = [gateway['GatewayId'] for gateway in route_table['PropagatingVgws']]
-    to_add = set(propagating_vgw_ids) - set(gateways)
-    if to_add:
+    vgws_to_add = set(propagating_vgw_ids) - set(gateways)
+    if vgws_to_add:
         changed = True
         if not check_mode:
-            for vgw_id in to_add:
+            for vgw_id in vgws_to_add:
                 try:
                     connection.enable_vgw_route_propagation(
                         aws_retry=True,
