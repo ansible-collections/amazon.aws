@@ -504,8 +504,6 @@
           - new_vol_attach_result.volume.tags["Name"] == '{{ resource_prefix }} - sdh'
 
     - name: volume must be from type gp3 (idempotent)
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
       ec2_vol:
         id: "{{ new_vol_attach_result.volume_id }}"
         zone: "{{ availability_zone }}"
@@ -727,8 +725,6 @@
       when: ansible_version.full is version('2.7', '>=')
 
     - name: test create a new gp3 volume
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
       ec2_vol:
         volume_size: 70
         zone: "{{ availability_zone }}"
@@ -760,8 +756,6 @@
           - gp3_volume.volume.tags["ResourcePrefix"] == "{{ resource_prefix }}"
 
     - name: Read volume information to validate throughput
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
       ec2_vol_info:
         filters:
           volume-id: "{{ gp3_volume.volume_id }}"
@@ -779,8 +773,6 @@
         var: vol_facts
 
     - name: Read volume information to validate throughput
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
       ec2_vol_info:
         filters:
           volume-id: "{{ gp3_volume.volume_id }}"
@@ -798,8 +790,6 @@
         var: vol_facts
 
     - name: increase throughput
-      vars:
-        ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
       ec2_vol:
         volume_size: 70
         zone: "{{ availability_zone }}"

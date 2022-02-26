@@ -101,7 +101,6 @@ options:
       - Volume throughput in MB/s.
       - This parameter is only valid for gp3 volumes.
       - Valid range is from 125 to 1000.
-      - Requires at least botocore version 1.19.27.
     type: int
     version_added: 1.4.0
   multi_attach:
@@ -450,8 +449,7 @@ def update_volume(module, ec2_conn, volume):
             volume['volume_type'] = response.get('VolumeModification').get('TargetVolumeType')
             volume['iops'] = response.get('VolumeModification').get('TargetIops')
             volume['multi_attach_enabled'] = response.get('VolumeModification').get('TargetMultiAttachEnabled')
-            if module.botocore_at_least("1.19.27"):
-                volume['throughput'] = response.get('VolumeModification').get('TargetThroughput')
+            volume['throughput'] = response.get('VolumeModification').get('TargetThroughput')
 
     return volume, changed
 
@@ -679,8 +677,7 @@ def get_volume_info(module, volume, tags=None):
         'tags': tags
     }
 
-    if module.botocore_at_least("1.19.27"):
-        volume_info['throughput'] = volume.get('throughput')
+    volume_info['throughput'] = volume.get('throughput')
 
     return volume_info
 
@@ -758,9 +755,6 @@ def main():
     if state == 'list':
         module.deprecate(
             'Using the "list" state has been deprecated.  Please use the ec2_vol_info module instead', date='2022-06-01', collection_name='amazon.aws')
-
-    if module.params.get('throughput'):
-        module.require_botocore_at_least('1.19.27', reason='to set the throughput for a volume')
 
     # Ensure we have the zone or can get the zone
     if instance is None and zone is None and state == 'present':
