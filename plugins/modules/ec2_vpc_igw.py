@@ -110,8 +110,6 @@ from ..module_utils.ec2 import camel_dict_to_snake_dict
 from ..module_utils.ec2 import ensure_ec2_tags
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.tagging import boto3_tag_list_to_ansible_dict
-from time import sleep
-
 
 class AnsibleEc2Igw():
 
@@ -152,32 +150,6 @@ class AnsibleEc2Igw():
             igw = camel_dict_to_snake_dict(igws[0])
 
         return igw
-
-    def wait_for_igw(self, vpc_id):
-        """
-        Waits for existing igw to be returned via describe_internet_gateways
-        in get_matching_igw
-        :param vpc_id: VPC's ID
-        :return success: True if found, False if not
-        :return igw: igw found
-        """
-        polling_increment_secs = 10
-        max_retries = 10
-        success = False
-
-        for x in range(0, max_retries):
-            try:
-                igw = self.get_matching_igw(vpc_id)
-                if igw:
-                    success = True
-                    break
-                else:
-                    sleep(polling_increment_secs)
-                    igw = self.get_matching_igw(vpc_id)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                self._module.fail_json_aws(e, msg='Failure while waiting for status update')
-
-        return success, igw
 
     @staticmethod
     def get_igw_info(igw, vpc_id):
@@ -234,6 +206,11 @@ class AnsibleEc2Igw():
                     InternetGatewayId=igw['internet_gateway_id'],
                     VpcId=vpc_id
                 )
+
+                # Ensure the gateway is attached before proceeding
+                waiter = get_waiter(self._connection, 'internet_gateway_attached')
+                waiter.wait(InternetGatewayIds=[igw['internet_gateway_id']])
+
                 self._results['changed'] = True
             except botocore.exceptions.WaiterError as e:
                 self._module.fail_json_aws(e, msg="No Internet Gateway exists.")
@@ -244,9 +221,7 @@ class AnsibleEc2Igw():
             self._connection, self._module, igw['internet_gateway_id'],
             resource_type='internet-gateway', tags=tags, purge_tags=purge_tags
         )
-        success, igw = self.wait_for_igw(vpc_id)
-        if not success:
-            self._module.fail_json(msg='Error finding Internet Gateway in VPC {0} - please check the AWS console'.format(vpc_id))
+        igw = self.get_matching_igw(vpc_id)
         igw_info = self.get_igw_info(igw, vpc_id)
         self._results.update(igw_info)
 
