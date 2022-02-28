@@ -22,6 +22,7 @@ options:
     description:
     - The ID of the gateway to associate with the route table.
     type: str
+    version_added: 3.2.0
   lookup:
     description: Look up route table by either tags or by route table ID. Non-unique tag lookup will fail.
       If no tags are specified then no lookup for an existing route table is performed and a new
@@ -519,14 +520,13 @@ def ensure_subnet_association(connection=None, module=None, vpc_id=None, route_t
             if association['SubnetId'] == subnet_id:
                 if route_table['RouteTableId'] == route_table_id:
                     return {'changed': False, 'association_id': association['RouteTableAssociationId']}
-                else:
-                    if check_mode:
-                        return {'changed': True}
-                    try:
-                        connection.disassociate_route_table(
-                            aws_retry=True, AssociationId=association['RouteTableAssociationId'])
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, msg="Couldn't disassociate subnet from route table")
+                if check_mode:
+                    return {'changed': True}
+                try:
+                    connection.disassociate_route_table(
+                        aws_retry=True, AssociationId=association['RouteTableAssociationId'])
+                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                    module.fail_json_aws(e, msg="Couldn't disassociate subnet from route table")
 
     try:
         association_id = connection.associate_route_table(aws_retry=True,
@@ -584,14 +584,13 @@ def ensure_gateway_association(connection=None, module=None, route_table=None, g
             if association['GatewayId'] == gateway_id:
                 if table['RouteTableId'] == route_table['RouteTableId']:
                     return {'changed': False, 'association_id': association['RouteTableAssociationId']}
-                else:
-                    if check_mode:
-                        return {'changed': True}
-                    try:
-                        connection.disassociate_route_table(
-                            aws_retry=True, AssociationId=association['RouteTableAssociationId'])
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, msg="Couldn't disassociate gateway from route table")
+                if check_mode:
+                    return {'changed': True}
+                try:
+                    connection.disassociate_route_table(
+                        aws_retry=True, AssociationId=association['RouteTableAssociationId'])
+                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                    module.fail_json_aws(e, msg="Couldn't disassociate gateway from route table")
 
     try:
         connection.associate_route_table(aws_retry=True,
