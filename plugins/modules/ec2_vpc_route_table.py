@@ -546,6 +546,8 @@ def ensure_subnet_association(connection, module, vpc_id, route_table_id, subnet
                     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                         module.fail_json_aws(e, msg="Couldn't disassociate subnet from route table")
 
+    if module.check_mode:
+        return {'changed': True}
     try:
         association_id = connection.associate_route_table(aws_retry=True,
                                                           RouteTableId=route_table_id,
@@ -625,8 +627,8 @@ def ensure_gateway_association(connection, module, route_table, gateway_id, purg
         if not module.check_mode:
             try:
                 connection.associate_route_table(aws_retry=True,
-                                                RouteTableId=route_table['RouteTableId'],
-                                                GatewayId=gateway_id)
+                                                 RouteTableId=route_table['RouteTableId'],
+                                                 GatewayId=gateway_id)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Couldn't associate gateway with route table")
         return True
