@@ -207,6 +207,11 @@ class AnsibleEc2Igw():
                     InternetGatewayId=igw['internet_gateway_id'],
                     VpcId=vpc_id
                 )
+
+                # Ensure the gateway is attached before proceeding
+                waiter = get_waiter(self._connection, 'internet_gateway_attached')
+                waiter.wait(InternetGatewayIds=[igw['internet_gateway_id']])
+
                 self._results['changed'] = True
             except botocore.exceptions.WaiterError as e:
                 self._module.fail_json_aws(e, msg="No Internet Gateway exists.")
