@@ -194,7 +194,7 @@ route_table:
           description: IPv6 CIDR block of destination
           returned: when the route includes an IPv6 destination
           type: str
-          sample: 10.228.228.0/22
+          sample: 2600:1f1c:1b3:8f00:8000::/65
         gateway_id:
           description: ID of the gateway
           returned: when gateway is local or internet gateway
