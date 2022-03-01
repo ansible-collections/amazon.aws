@@ -495,8 +495,9 @@ def create_image(module, connection):
         if instance_id:
             params['InstanceId'] = instance_id
             params['NoReboot'] = no_reboot
-            if tags and module.botocore_at_least('1.19.30'):
-                params['TagSpecifications'] = boto3_tag_specifications(tags, types=['image', 'snapshot'])
+            tag_spec = boto3_tag_specifications(tags, types=['image', 'snapshot'])
+            if tag_spec:
+                params['TagSpecifications'] = tag_spec
             image_id = connection.create_image(aws_retry=True, **params).get('ImageId')
         else:
             if architecture:
