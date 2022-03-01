@@ -200,6 +200,10 @@ options:
             - The ID of the origin that you want CloudFront to route requests to
               by default.
           type: str
+        response_headers_policy_id:
+          description:
+            - The ID of the header policy that CloudFront adds to responses that it sends to viewers.
+          type: str
         forwarded_values:
           description:
             - A dict that specifies how CloudFront handles query strings and cookies.
@@ -316,6 +320,10 @@ options:
           description:
             - The ID of the origin that you want CloudFront to route requests to
               by default.
+          type: str
+        response_headers_policy_id:
+          description:
+            - The ID of the header policy that CloudFront adds to responses that it sends to viewers.
           type: str
         forwarded_values:
           description:
