@@ -55,6 +55,24 @@ ec2_data = {
                 },
             ]
         },
+        "InternetGatewayAttached": {
+            "operation": "DescribeInternetGateways",
+            "delay": 5,
+            "maxAttempts": 40,
+            "acceptors": [
+                {
+                    "expected": "available",
+                    "matcher": "pathAll",
+                    "state": "success",
+                    "argument": "InternetGateways[].Attachments[].State"
+                },
+                {
+                    "matcher": "error",
+                    "expected": "InvalidInternetGatewayID.NotFound",
+                    "state": "retry"
+                },
+            ]
+        },
         "NetworkInterfaceAttached": {
             "operation": "DescribeNetworkInterfaces",
             "delay": 5,
@@ -750,6 +768,12 @@ waiters_by_name = {
     ('EC2', 'internet_gateway_exists'): lambda ec2: core_waiter.Waiter(
         'internet_gateway_exists',
         ec2_model('InternetGatewayExists'),
+        core_waiter.NormalizedOperationMethod(
+            ec2.describe_internet_gateways
+        )),
+    ('EC2', 'internet_gateway_attached'): lambda ec2: core_waiter.Waiter(
+        'internet_gateway_attached',
+        ec2_model('InternetGatewayAttached'),
         core_waiter.NormalizedOperationMethod(
             ec2.describe_internet_gateways
         )),
