@@ -218,16 +218,18 @@ class LookupModule(LookupBase):
             secrets = {}
             for term in terms:
                 try:
-                    response = client.list_secrets(Filters=[{'Key': 'name', 'Values': [term]}])
+                    paginator = client.get_paginator('list_secrets')
+                    paginator_response = paginator.paginate(
+                        Filters=[{'Key': 'name', 'Values': [term]}])
+                    for object in paginator_response:
+                        if 'SecretList' in object:
+                            for secret_obj in object['SecretList']:
+                                secrets.update({secret_obj['Name']: self.get_secret_value(
+                                    secret_obj['Name'], client, on_missing=missing, on_denied=denied)})
+                    secrets = [secrets]
 
-                    if 'SecretList' in response:
-                        for secret in response['SecretList']:
-                            secrets.update({secret['Name']: self.get_secret_value(secret['Name'], client,
-                                                                                  on_missing=missing,
-                                                                                  on_denied=denied)})
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     raise AnsibleError("Failed to retrieve secret: %s" % to_native(e))
-            secrets = [secrets]
         else:
             secrets = []
             for term in terms:
