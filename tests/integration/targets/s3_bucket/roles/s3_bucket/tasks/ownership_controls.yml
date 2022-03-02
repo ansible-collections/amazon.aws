@@ -51,7 +51,7 @@
           - output.object_ownership
           - output.object_ownership == 'ObjectWriter'
 
-    - name: 'update s3 bucket ownership controls'
+    - name: 'update s3 bucket ownership preferred controls'
       s3_bucket:
         name: '{{ local_bucket_name }}'
         state: present
@@ -64,7 +64,7 @@
           - output.object_ownership
           - output.object_ownership == 'BucketOwnerPreferred'
 
-    - name: 'test idempotency update s3 bucket ownership controls'
+    - name: 'test idempotency update s3 bucket ownership preferred controls'
       s3_bucket:
         name: '{{ local_bucket_name }}'
         state: present
@@ -76,6 +76,32 @@
           - output.changed is false
           - output.object_ownership
           - output.object_ownership == 'BucketOwnerPreferred'
+
+    - name: 'update s3 bucket ownership enforced controls'
+      s3_bucket:
+        name: '{{ local_bucket_name }}'
+        state: present
+        object_ownership: BucketOwnerEnforced
+      register: output
+
+    - assert:
+        that:
+          - output.changed
+          - output.object_ownership
+          - output.object_ownership == 'BucketOwnerEnforced'
+
+    - name: 'test idempotency update s3 bucket ownership preferred controls'
+      s3_bucket:
+        name: '{{ local_bucket_name }}'
+        state: present
+        object_ownership: BucketOwnerEnforced
+      register: output
+
+    - assert:
+        that:
+          - output.changed is false
+          - output.object_ownership
+          - output.object_ownership == 'BucketOwnerEnforced'
 
     - name: 'delete s3 bucket ownership controls'
       s3_bucket:
