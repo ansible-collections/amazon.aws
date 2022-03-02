@@ -124,12 +124,16 @@ options:
   object_ownership:
     description:
       - Allow bucket's ownership controls.
+      - C(BucketOwnerEnforced) - ACLs are disabled and no longer affect access permissions to your
+        bucket. Requests to set or update ACLs fail. However, requests to read ACLs are supported.
+        Bucket owner has full ownership and control.
+Object writer no longer has full ownership and control.
       - C(BucketOwnerPreferred) - Objects uploaded to the bucket change ownership to the bucket owner
         if the objects are uploaded with the bucket-owner-full-control canned ACL.
       - C(ObjectWriter) - The uploading account will own the object
         if the object is uploaded with the bucket-owner-full-control canned ACL.
       - This option cannot be used together with a I(delete_object_ownership) definition.
-    choices: [ 'BucketOwnerPreferred', 'ObjectWriter' ]
+    choices: [ 'BucketOwnerEnforced', 'BucketOwnerPreferred', 'ObjectWriter' ]
     type: str
     version_added: 2.0.0
   delete_object_ownership:
@@ -1016,7 +1020,7 @@ def main():
             block_public_policy=dict(type='bool', default=False),
             restrict_public_buckets=dict(type='bool', default=False))),
         delete_public_access=dict(type='bool', default=False),
-        object_ownership=dict(type='str', choices=['BucketOwnerPreferred', 'ObjectWriter']),
+        object_ownership=dict(type='str', choices=['BucketOwnerEnforced', 'BucketOwnerPreferred', 'ObjectWriter']),
         delete_object_ownership=dict(type='bool', default=False),
         acl=dict(type='str', choices=['private', 'public-read', 'public-read-write', 'authenticated-read']),
         validate_bucket_name=dict(type='bool', default=True),
