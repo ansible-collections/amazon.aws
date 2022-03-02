@@ -35,7 +35,10 @@ options:
     type: list
     elements: str
   purge_gw:
-    description: Purge existing gateway(s) from route table if different than gateway_id.
+    description:
+    - If I(purge_gw=True) and I(gateway_id) is provided, the existing gateway is disassociated from the route table and the new I(gateway_id) is associated.
+    - If I(purge_gw=True) and none I(gateway_id) is provided, the existing gateway is disassociated from the route table.
+    - If I(purge_gw=False) and I(gateway_id) is provided, the I(gateway_id) is associated with the route table only if there is not one already associated.
     default: False
     type: bool
     version_added: 3.2.0
@@ -119,6 +122,11 @@ EXAMPLES = r'''
       - dest: ::/0
         gateway_id: "{{ igw.gateway_id }}"
   register: public_route_table
+
+- name: Create vpc gateway
+  amazon.aws.ec2_vpc_igw:
+    vpc_id: vpc-1245678
+  register: vpc_igw
 
 - name: Create gateway route table
   amazon.aws.ec2_vpc_route_table:
@@ -793,9 +801,10 @@ def ensure_route_table_present(connection, module):
                                             subnets=associated_subnets, purge_subnets=purge_subnets)
         changed = changed or result
 
-    gateway_result = ensure_gateway_association(connection=connection, module=module, route_table=route_table,
+    if gateway_id or purge_gw:
+        gateway_result = ensure_gateway_association(connection=connection, module=module, route_table=route_table,
                                                 gateway_id=gateway_id, purge_gw=purge_gw)
-    changed = changed or gateway_result
+        changed = changed or gateway_result
 
     if changed:
         # pause to allow route table routes/subnets/associations to be updated before exiting with final state
