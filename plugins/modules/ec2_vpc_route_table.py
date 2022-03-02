@@ -803,7 +803,7 @@ def ensure_route_table_present(connection, module):
 
     if gateway_id or purge_gw:
         gateway_result = ensure_gateway_association(connection=connection, module=module, route_table=route_table,
-                                                gateway_id=gateway_id, purge_gw=purge_gw)
+                                                    gateway_id=gateway_id, purge_gw=purge_gw)
         changed = changed or gateway_result
 
     if changed:
