@@ -358,7 +358,7 @@ options:
         type: str
         description: >
           - Wether the instance metadata endpoint is available via IPv6 (C(enabled)) or not (C(disabled)).
-          - Requires boto3 >= 1.18.29
+          - Requires botocore >= 1.21.29
         choices: [enabled, disabled]
         default: 'disabled'
       instance_metadata_tags:
@@ -366,7 +366,7 @@ options:
         type: str
         description:
           - Wether the instance tags are availble (C(enabled)) via metadata endpoint or not (C(disabled)).
-          - Requires boto3 >= 1.20.30
+          - Requires botocore >= 1.23.30
         choices: [enabled, disabled]
         default: 'disabled'
 '''
@@ -534,18 +534,18 @@ def create_or_update(module, template_options):
     lt_data = scrub_none_parameters(lt_data, descend_into_lists=True)
 
     if lt_data.get('MetadataOptions'):
-        if not module.boto3_at_least('1.20.30'):
+        if not module.botocore_at_least('1.23.30'):
             # fail only if enabled is requested
             if lt_data['MetadataOptions'].get('InstanceMetadataTags') == 'enabled':
-                module.require_boto3_at_least('1.20.30', reason='to set instance_metadata_tags')
+                module.require_botocore_at_least('1.23.30', reason='to set instance_metadata_tags')
             # pop if it's not requested to keep backwards compatibility.
             # otherwise the modules failes because parameters are set due default values
             lt_data['MetadataOptions'].pop('InstanceMetadataTags')
 
-        if not module.boto3_at_least('1.18.29'):
+        if not module.botocore_at_least('1.21.29'):
             # fail only if enabled is requested
             if lt_data['MetadataOptions'].get('HttpProtocolIpv6') == 'enabled':
-                module.require_boto3_at_least('1.18.29', reason='to set http_protocol_ipv6')
+                module.require_botocore_at_least('1.21.29', reason='to set http_protocol_ipv6')
             # pop if it's not requested to keep backwards compatibility.
             # otherwise the modules failes because parameters are set due default values
             lt_data['MetadataOptions'].pop('HttpProtocolIpv6')
