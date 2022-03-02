@@ -50,7 +50,6 @@ options:
     instance_type:
         description:
             - The type of Amazon EC2 instances to use for Kafka brokers.
-            - Update operation requires botocore version >= 1.19.58.
         choices:
             - kafka.t3.small
             - kafka.m5.large
@@ -520,7 +519,6 @@ def create_or_update_cluster(client, module):
                 }
             },
             "broker_type": {
-                "botocore_version": "1.19.58",
                 "current_value": cluster["BrokerNodeGroupInfo"]["InstanceType"],
                 "target_value": module.params.get("instance_type"),
                 "update_params": {
