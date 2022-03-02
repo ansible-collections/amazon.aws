@@ -21,6 +21,7 @@ options:
   gateway_id:
     description:
     - The ID of the gateway to associate with the route table.
+    - If I(gateway_id) is 'None' or '', gateway will be disassociated with the route table.
     type: str
     version_added: 3.2.0
   lookup:
@@ -34,14 +35,6 @@ options:
     description: Enable route propagation from virtual gateways specified by ID.
     type: list
     elements: str
-  purge_gw:
-    description:
-    - If I(purge_gw=True) and I(gateway_id) is provided, the existing gateway is disassociated from the route table and the new I(gateway_id) is associated.
-    - If I(purge_gw=True) and none I(gateway_id) is provided, the existing gateway is disassociated from the route table.
-    - If I(purge_gw=False) and I(gateway_id) is provided, the I(gateway_id) is associated with the route table only if there is not one already associated.
-    default: False
-    type: bool
-    version_added: 3.2.0
   purge_routes:
     description: Purge existing routes that are not found in routes.
     type: bool
@@ -141,7 +134,7 @@ EXAMPLES = r'''
     vpc_id: vpc-1245678
     tags:
       Name: Gateway route table
-    purge_gw: yes
+    gateway_id: None
   register: gateway_route_table
 
 - name: Set up NAT-protected route table
@@ -593,55 +586,54 @@ def ensure_subnet_associations(connection, module, route_table, subnets, purge_s
     return changed
 
 
-def ensure_gateway_association(connection, module, route_table, gateway_id, purge_gw):
+def disassociate_gateway(connection, module, route_table):
+    # Delete all gateway associations that have state = associated
+    # Subnet associations are handled in its method
     changed = False
-    if purge_gw:
-        # Delete all gateway associations that have state = associated and are not gateway_id
-        # Subnet associations are handled in its method
-        to_delete = [association['RouteTableAssociationId'] for association in route_table['Associations'] if not association['Main']
-                     and association.get('GatewayId') and association['AssociationState']['State'] == 'associated' and association['GatewayId'] != gateway_id]
-        for association_id in to_delete:
-            changed = True
-            if not module.check_mode:
-                try:
-                    connection.disassociate_route_table(aws_retry=True, AssociationId=association_id)
-                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                    module.fail_json_aws(e, msg="Couldn't disassociate gateway from route table")
-
-    if gateway_id:
-        # gateway_id specified - ensure route table is associated to gateway
-        filters = ansible_dict_to_boto3_filter_list({'association.gateway-id': gateway_id, 'vpc-id': route_table['VpcId']})
-        try:
-            route_tables = describe_route_tables_with_backoff(connection, Filters=filters)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Couldn't get route tables")
-        for table in route_tables:
-            if table.get('RouteTableId'):
-                for association in table.get('Associations'):
-                    if association['Main']:
-                        continue
-                    if association.get('GatewayId') and association['GatewayId'] == gateway_id and association['AssociationState']['State'] == 'associated':
-                        if table['RouteTableId'] == route_table['RouteTableId']:
-                            return changed
-                        elif module.check_mode:
-                            return True
-                        else:
-                            try:
-                                connection.disassociate_route_table(
-                                    aws_retry=True, AssociationId=association['RouteTableAssociationId'])
-                            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                                module.fail_json_aws(e, msg="Couldn't disassociate gateway from route table")
-
+    associations_to_delete = [association['RouteTableAssociationId'] for association in route_table['Associations'] if not association['Main']
+                              and association.get('GatewayId') and association['AssociationState']['State'] == 'associated']
+    for association_id in associations_to_delete:
+        changed = True
         if not module.check_mode:
             try:
-                connection.associate_route_table(aws_retry=True,
-                                                 RouteTableId=route_table['RouteTableId'],
-                                                 GatewayId=gateway_id)
+                connection.disassociate_route_table(aws_retry=True, AssociationId=association_id)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Couldn't associate gateway with route table")
-        return True
+                module.fail_json_aws(e, msg="Couldn't disassociate gateway from route table")
 
     return changed
+
+
+def associate_gateway(connection, module, route_table, gateway_id):
+    filters = ansible_dict_to_boto3_filter_list({'association.gateway-id': gateway_id, 'vpc-id': route_table['VpcId']})
+    try:
+        route_tables = describe_route_tables_with_backoff(connection, Filters=filters)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Couldn't get route tables")
+    for table in route_tables:
+        if table.get('RouteTableId'):
+            for association in table.get('Associations'):
+                if association['Main']:
+                    continue
+                if association.get('GatewayId') and association['GatewayId'] == gateway_id and association['AssociationState']['State'] == 'associated':
+                    if table['RouteTableId'] == route_table['RouteTableId']:
+                        return False
+                    elif module.check_mode:
+                        return True
+                    else:
+                        try:
+                            connection.disassociate_route_table(
+                                aws_retry=True, AssociationId=association['RouteTableAssociationId'])
+                        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                            module.fail_json_aws(e, msg="Couldn't disassociate gateway from route table")
+
+    if not module.check_mode:
+        try:
+            connection.associate_route_table(aws_retry=True,
+                                             RouteTableId=route_table['RouteTableId'],
+                                             GatewayId=gateway_id)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg="Couldn't associate gateway with route table")
+    return True
 
 
 def ensure_propagation(connection, module, route_table, propagating_vgw_ids):
@@ -682,12 +674,11 @@ def ensure_route_table_absent(connection, module):
     if route_table is None:
         return {'changed': False}
 
-    # disassociate subnets and gateways before deleting route table
+    # disassociate subnets and gateway before deleting route table
     if not module.check_mode:
         ensure_subnet_associations(connection=connection, module=module, route_table=route_table,
                                    subnets=[], purge_subnets=purge_subnets)
-        ensure_gateway_association(connection=connection, module=module, route_table=route_table,
-                                   gateway_id=None, purge_gw=True)
+        disassociate_gateway(connection=connection, module=module, route_table=route_table)
         try:
             connection.delete_route_table(aws_retry=True, RouteTableId=route_table['RouteTableId'])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -732,7 +723,6 @@ def ensure_route_table_present(connection, module):
     gateway_id = module.params.get('gateway_id')
     lookup = module.params.get('lookup')
     propagating_vgw_ids = module.params.get('propagating_vgw_ids')
-    purge_gw = module.params.get('purge_gw')
     purge_routes = module.params.get('purge_routes')
     purge_subnets = module.params.get('purge_subnets')
     purge_tags = module.params.get('purge_tags')
@@ -801,10 +791,14 @@ def ensure_route_table_present(connection, module):
                                             subnets=associated_subnets, purge_subnets=purge_subnets)
         changed = changed or result
 
-    if gateway_id or purge_gw:
-        gateway_result = ensure_gateway_association(connection=connection, module=module, route_table=route_table,
-                                                    gateway_id=gateway_id, purge_gw=purge_gw)
-        changed = changed or gateway_result
+    if gateway_id == 'None' or gateway_id == '':
+        gateway_changed = disassociate_gateway(connection=connection, module=module, route_table=route_table)
+    elif gateway_id is not None:
+        gateway_changed = associate_gateway(connection=connection, module=module, route_table=route_table, gateway_id=gateway_id)
+    else:
+        gateway_changed = False
+
+    changed = changed or gateway_changed
 
     if changed:
         # pause to allow route table routes/subnets/associations to be updated before exiting with final state
@@ -817,7 +811,6 @@ def main():
         gateway_id=dict(type='str'),
         lookup=dict(default='tag', choices=['tag', 'id']),
         propagating_vgw_ids=dict(type='list', elements='str'),
-        purge_gw=dict(default=False, type='bool'),
         purge_routes=dict(default=True, type='bool'),
         purge_subnets=dict(default=True, type='bool'),
         purge_tags=dict(default=False, type='bool'),

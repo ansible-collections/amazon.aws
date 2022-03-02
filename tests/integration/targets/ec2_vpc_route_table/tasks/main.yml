@@ -1210,25 +1210,6 @@
       routes:
       - dest: "10.228.228.0/24"
         network_interface_id: "{{ eni.interface.id }}"
-      purge_gw: yes
-      purge_routes: no
-    register: create_gateway_table
-    check_mode: yes
-
-  - assert:
-      that:
-        - create_gateway_table is changed
-
-  - name: Purge gateway
-    ec2_vpc_route_table:
-      vpc_id: "{{ vpc.vpc.id }}"
-      tags:
-        Public: 'true'
-        Name: Gateway route table
-      routes:
-      - dest: "10.228.228.0/24"
-        network_interface_id: "{{ eni.interface.id }}"
-      purge_gw: yes
       purge_routes: no
     register: create_gateway_table
 
@@ -1253,7 +1234,6 @@
       routes:
       - dest: "10.228.228.0/24"
         network_interface_id: "{{ eni.interface.id }}"
-      purge_gw: yes
       purge_routes: no
     register: create_gateway_table
     check_mode: yes
@@ -1272,7 +1252,6 @@
       routes:
       - dest: "10.228.228.0/24"
         network_interface_id: "{{ eni.interface.id }}"
-      purge_gw: yes
       purge_routes: no
     register: create_gateway_table
 
