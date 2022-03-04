@@ -6,7 +6,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = '''
-    callback: aws_resource_actions
+    name: aws_resource_actions
     type: aggregate
     short_description: summarizes all "resource:actions" completed
     description:

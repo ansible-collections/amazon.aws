@@ -6,7 +6,6 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
     name: aws_ec2
-    plugin_type: inventory
     short_description: EC2 inventory source
     requirements:
         - boto3
