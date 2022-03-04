@@ -351,15 +351,21 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
             update_attributes.append({'Key': 'idle_timeout.timeout_seconds', 'Value': str(self.idle_timeout)})
         if self.http2 is not None and str(self.http2).lower() != self.elb_attributes['routing_http2_enabled']:
             update_attributes.append({'Key': 'routing.http2.enabled', 'Value': str(self.http2).lower()})
-        if self.http_desync_mitigation_mode is not None and str(self.http_desync_mitigation_mode).lower() != self.elb_attributes['routing_http_desync_mitigation_mode']:
+        if self.http_desync_mitigation_mode is not None and str(self.http_desync_mitigation_mode).lower() != \
+                self.elb_attributes['routing_http_desync_mitigation_mode']:
             update_attributes.append({'Key': 'routing.http.desync_mitigation_mode', 'Value': str(self.http_desync_mitigation_mode).lower()})
-        if self.http_drop_invalid_header_fields is not None and str(self.http_drop_invalid_header_fields).lower() != self.elb_attributes['routing_http_drop_invalid_header_fields_enabled']:
+        if self.http_drop_invalid_header_fields is not None and str(self.http_drop_invalid_header_fields).lower() != \
+                self.elb_attributes['routing_http_drop_invalid_header_fields_enabled']:
             update_attributes.append({'Key': 'routing.http.drop_invalid_header_fields.enabled', 'Value': str(self.http_drop_invalid_header_fields).lower()})
-        if self.http_x_amzn_tls_version_and_cipher_suite is not None and str(self.http_x_amzn_tls_version_and_cipher_suite).lower() != self.elb_attributes['routing_http_x_amzn_tls_version_and_cipher_suite_enabled']:
-            update_attributes.append({'Key': 'routing.http.x_amzn_tls_version_and_cipher_suite.enabled', 'Value': str(self.http_x_amzn_tls_version_and_cipher_suite).lower()})
-        if self.http_xff_client_port is not None and str(self.http_xff_client_port).lower() != self.elb_attributes['routing_http_xff_client_port_enabled']:
+        if self.http_x_amzn_tls_version_and_cipher_suite is not None and str(self.http_x_amzn_tls_version_and_cipher_suite).lower() != \
+                self.elb_attributes['routing_http_x_amzn_tls_version_and_cipher_suite_enabled']:
+            update_attributes.append({'Key': 'routing.http.x_amzn_tls_version_and_cipher_suite.enabled',
+                                      'Value': str(self.http_x_amzn_tls_version_and_cipher_suite).lower()})
+        if self.http_xff_client_port is not None and str(self.http_xff_client_port).lower() != \
+                self.elb_attributes['routing_http_xff_client_port_enabled']:
             update_attributes.append({'Key': 'routing.http.xff_client_port.enabled', 'Value': str(self.http_xff_client_port).lower()})
-        if self.waf_fail_open is not None and str(self.waf_fail_open).lower() != self.elb_attributes['waf_fail_open_enabled']:
+        if self.waf_fail_open is not None and str(self.waf_fail_open).lower() != \
+                self.elb_attributes['waf_fail_open_enabled']:
             update_attributes.append({'Key': 'waf.fail_open.enabled', 'Value': str(self.waf_fail_open).lower()})
 
         if update_attributes:
