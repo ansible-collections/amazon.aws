@@ -126,8 +126,8 @@ options:
       - Allow bucket's ownership controls.
       - C(BucketOwnerEnforced) - ACLs are disabled and no longer affect access permissions to your
         bucket. Requests to set or update ACLs fail. However, requests to read ACLs are supported.
-        Bucket owner has full ownership and control.
-Object writer no longer has full ownership and control.
+        Bucket owner has full ownership and control. Object writer no longer has full ownership and
+        control.
       - C(BucketOwnerPreferred) - Objects uploaded to the bucket change ownership to the bucket owner
         if the objects are uploaded with the bucket-owner-full-control canned ACL.
       - C(ObjectWriter) - The uploading account will own the object
