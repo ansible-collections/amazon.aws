@@ -10,8 +10,8 @@ DOCUMENTATION = '''
 author:
 - Pat Sharkey (@psharkey) <psharkey@cleo.com>
 - HanumanthaRao MVL (@hanumantharaomvl) <hanumanth@flux7.com>
-- Gaurav Ashtikar (@gau1991 )<gaurav.ashtikar@flux7.com>
-connection: aws_ssm
+- Gaurav Ashtikar (@gau1991) <gaurav.ashtikar@flux7.com>
+name: aws_ssm
 short_description: execute via AWS Systems Manager
 description:
 - This connection plugin allows ansible to execute tasks on an EC2 instance via the aws ssm CLI.
