@@ -6,7 +6,6 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
     name: aws_rds
-    plugin_type: inventory
     short_description: rds instance source
     description:
         - Get instances and clusters from Amazon Web Services RDS.
@@ -49,8 +48,8 @@ DOCUMENTATION = '''
             - The suffix for host variables names coming from AWS.
           type: str
           version_added: 3.1.0
-    note:
-        Ansible versions prior to 2.10 should use the fully qualified plugin name 'amazon.aws.aws_rds'.
+    notes:
+        - Ansible versions prior to 2.10 should use the fully qualified plugin name 'amazon.aws.aws_rds'.
     extends_documentation_fragment:
     - inventory_cache
     - constructed
