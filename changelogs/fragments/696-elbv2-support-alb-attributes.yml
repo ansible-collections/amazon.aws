@@ -1,2 +1,2 @@
 minor_changes:
-  - elbv2 - Add support for alb specific attributes (https://github.com/ansible-collections/amazon.aws/pull/696).
+  - module_utils.elbv2 - Add support for alb specific attributes in module_utils.elbv2 (https://github.com/ansible-collections/amazon.aws/pull/696).
