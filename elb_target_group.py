@@ -76,13 +76,14 @@ options:
     type: str
   port:
     description:
-      - The port on which the targets receive traffic. This port is used unless you specify a port override when registering the target. Required if
-        I(state) is C(present).
+      - The port on which the targets receive traffic. This port is used unless you specify a port override when registering the target.
+      - Required when I(state) is C(present) and I(target_type) is C(instance), C(ip), or C(alb).
     required: false
     type: int
   protocol:
     description:
-      - The protocol to use for routing traffic to the targets. Required when I(state) is C(present).
+      - The protocol to use for routing traffic to the targets.
+      - Required when I(state) is C(present) and I(target_type) is C(instance), C(ip), or C(alb).
     required: false
     choices: [ 'http', 'https', 'tcp', 'tls', 'udp', 'tcp_udp', 'HTTP', 'HTTPS', 'TCP', 'TLS', 'UDP', 'TCP_UDP']
     type: str
@@ -141,15 +142,16 @@ options:
   target_type:
     description:
       - The type of target that you must specify when registering targets with this target group. The possible values are
-        C(instance) (targets are specified by instance ID), C(ip) (targets are specified by IP address) or C(lambda) (target is specified by ARN).
-        Note that you can't specify targets for a target group using more than one type. Target type lambda only accept one target. When more than
+        C(instance) (targets are specified by instance ID), C(ip) (targets are specified by IP address), C(lambda) (target is specified by ARN),
+        or C(alb) (target is specified by ARN).
+        Note that you can't specify targets for a target group using more than one type. Target types lambda and alb only accept one target. When more than
         one target is specified, only the first one is used. All additional targets are ignored.
         If the target type is ip, specify IP addresses from the subnets of the virtual private cloud (VPC) for the target
         group, the RFC 1918 range (10.0.0.0/8, 172.16.0.0/12, and 192.168.0.0/16), and the RFC 6598 range (100.64.0.0/10).
         You can't specify publicly routable IP addresses.
       - The default behavior is C(instance).
     required: false
-    choices: ['instance', 'ip', 'lambda']
+    choices: ['instance', 'ip', 'lambda', 'alb']
     type: str
   targets:
     description:
@@ -165,7 +167,8 @@ options:
     type: int
   vpc_id:
     description:
-      - The identifier of the virtual private cloud (VPC). Required when I(state) is C(present).
+      - The identifier of the virtual private cloud (VPC).
+      - Required when I(state) is C(present) and I(target_type) is C(instance), C(ip), or C(alb).
     required: false
     type: str
   preserve_client_ip_enabled:
@@ -891,7 +894,7 @@ def main():
         state=dict(required=True, choices=['present', 'absent']),
         successful_response_codes=dict(),
         tags=dict(default={}, type='dict'),
-        target_type=dict(choices=['instance', 'ip', 'lambda']),
+        target_type=dict(choices=['instance', 'ip', 'lambda', 'alb']),
         targets=dict(type='list', elements='dict'),
         unhealthy_threshold_count=dict(type='int'),
         vpc_id=dict(),
@@ -905,6 +908,7 @@ def main():
                               required_if=[
                                   ['target_type', 'instance', ['protocol', 'port', 'vpc_id']],
                                   ['target_type', 'ip', ['protocol', 'port', 'vpc_id']],
+                                  ['target_type', 'alb', ['protocol', 'port', 'vpc_id']],
                               ]
                               )
 
