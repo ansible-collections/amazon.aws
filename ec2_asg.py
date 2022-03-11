@@ -220,6 +220,13 @@ options:
       - When I(propagate_at_launch) is true the tags will be propagated to the Instances created.
     type: list
     elements: dict
+  purge_tags:
+    description:
+      - If C(true), existing tags will be purged from the resource to match exactly what is defined by I(tags) parameter.
+      - If the I(tags) parameter is not set then tags will not be modified.
+    default: true
+    type: bool
+    version_added: 3.2.0
   health_check_period:
     description:
       - Length of time in seconds after a new EC2 instance comes into service that Auto Scaling starts checking its health.
@@ -645,6 +652,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import scrub_none_
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 
 ASG_ATTRIBUTES = ('AvailabilityZones', 'DefaultCooldown', 'DesiredCapacity',
                   'HealthCheckGracePeriod', 'HealthCheckType', 'LaunchConfigurationName',
@@ -1097,6 +1105,7 @@ def create_autoscaling_group(connection):
     desired_capacity = module.params.get('desired_capacity')
     vpc_zone_identifier = module.params.get('vpc_zone_identifier')
     set_tags = module.params.get('tags')
+    purge_tags = module.params.get('purge_tags')
     health_check_period = module.params.get('health_check_period')
     health_check_type = module.params.get('health_check_type')
     default_cooldown = module.params.get('default_cooldown')
@@ -1205,9 +1214,12 @@ def create_autoscaling_group(connection):
             changed = True
 
         # process tag changes
+        have_tags = as_group.get('Tags')
+        want_tags = asg_tags
+        if purge_tags and not want_tags and have_tags:
+            connection.delete_tags(Tags=list(have_tags))
+
         if len(set_tags) > 0:
-            have_tags = as_group.get('Tags')
-            want_tags = asg_tags
             if have_tags:
                 have_tags.sort(key=lambda x: x["Key"])
             if want_tags:
@@ -1218,9 +1230,11 @@ def create_autoscaling_group(connection):
 
             for dead_tag in set(have_tag_keyvals).difference(want_tag_keyvals):
                 changed = True
-                dead_tags.append(dict(ResourceId=as_group['AutoScalingGroupName'],
-                                      ResourceType='auto-scaling-group', Key=dead_tag))
+                if purge_tags:
+                    dead_tags.append(dict(
+                        ResourceId=as_group['AutoScalingGroupName'], ResourceType='auto-scaling-group', Key=dead_tag))
                 have_tags = [have_tag for have_tag in have_tags if have_tag['Key'] != dead_tag]
+
             if dead_tags:
                 connection.delete_tags(Tags=dead_tags)
 
@@ -1838,6 +1852,7 @@ def main():
         wait_timeout=dict(type='int', default=300),
         state=dict(default='present', choices=['present', 'absent']),
         tags=dict(type='list', default=[], elements='dict'),
+        purge_tags=dict(type='bool', default=True),
         health_check_period=dict(type='int', default=300),
         health_check_type=dict(default='EC2', choices=['EC2', 'ELB']),
         default_cooldown=dict(type='int', default=300),
