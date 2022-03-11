@@ -48,6 +48,7 @@ options:
       - If I(profile) is set this parameter is ignored.
       - Passing the I(security_token) and I(profile) options at the same time has been deprecated
         and the options will be made mutually exclusive after 2022-06-01.
+      - Aliases I(aws_session_token) and I(session_token) have been added in version 3.2.0.
     type: str
     aliases: [ aws_session_token, session_token, aws_security_token, access_token ]
   aws_ca_bundle:
