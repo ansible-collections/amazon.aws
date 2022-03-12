@@ -114,7 +114,27 @@ class ElBV2UtilsTestSuite(unittest.TestCase):
                 {
                     "Value": "true",
                     "Key": "routing.http2.enabled"
-                }
+                },
+                {
+                    "Value": "defensive",
+                    "Key": "routing.http.desync_mitigation_mode"
+                },
+                {
+                    "Value": "true",
+                    "Key": "routing.http.drop_invalid_header_fields.enabled"
+                },
+                {
+                    "Value": "true",
+                    "Key": "routing.http.x_amzn_tls_version_and_cipher_suite.enabled"
+                },
+                {
+                    "Value": "true",
+                    "Key": "routing.http.xff_client_port.enabled"
+                },
+                {
+                    "Value": "true",
+                    "Key": "waf.fail_open.enabled"
+                },
             ]
         }
         self.connection.describe_tags.return_value = {
@@ -165,3 +185,24 @@ class ElBV2UtilsTestSuite(unittest.TestCase):
         self.connection.set_ip_address_type.assert_called_once()
         # assert we got the expected value
         self.assertEqual(self.elbv2obj.changed, True)
+
+    # Test get_elb_attributes
+    def test_get_elb_attributes(self):
+        # Build expected result
+        expected_elb_attributes = {
+            "access_logs_s3_bucket": "",
+            "access_logs_s3_enabled": "false",
+            "access_logs_s3_prefix": "",
+            "deletion_protection_enabled": "false",
+            "idle_timeout_timeout_seconds": "60",
+            "routing_http2_enabled": "true",
+            "routing_http_desync_mitigation_mode": "defensive",
+            "routing_http_drop_invalid_header_fields_enabled": "true",
+            "routing_http_x_amzn_tls_version_and_cipher_suite_enabled": "true",
+            "routing_http_xff_client_port_enabled": "true",
+            "waf_fail_open_enabled": "true"
+        }
+        # Run module
+        actual_elb_attributes = self.elbv2obj.get_elb_attributes()
+        # Assert we got the expected result
+        self.assertEqual(actual_elb_attributes, expected_elb_attributes)
