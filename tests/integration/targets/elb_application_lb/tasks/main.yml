@@ -25,6 +25,12 @@
       set_fact:
         vpc_id: "{{ vpc.vpc.id }}"
 
+    - name: Get VPC's default security group
+      ec2_group_info:
+        filters:
+          vpc-id: "{{ vpc_id }}"
+      register: default_sg
+
     - name: Create an internet gateway
       ec2_vpc_igw:
         vpc_id: '{{ vpc_id }}'
@@ -200,7 +206,90 @@
 
     # ------------------------------------------------------------------------------------------
 
-    - name: Create an ALB with ip address type - check_mode
+    - name: Create an ALB with defaults - check_mode
+      elb_application_lb:
+        name: "{{ alb_name }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: []
+        state: present
+        listeners:
+          - Protocol: HTTP
+            Port: 80
+            DefaultActions:
+              - Type: forward
+                TargetGroupName: "{{ tg_name }}"
+      register: alb
+      check_mode: yes
+
+    - assert:
+        that:
+          - alb is changed
+          - alb.msg is match('Would have created ALB if not in check mode.')
+
+    - name: Create an ALB with defaults
+      elb_application_lb:
+        name: "{{ alb_name }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: []
+        state: present
+        listeners:
+          - Protocol: HTTP
+            Port: 80
+            DefaultActions:
+              - Type: forward
+                TargetGroupName: "{{ tg_name }}"
+      register: alb
+
+    - assert:
+        that:
+          - alb is changed
+          - alb.listeners[0].rules | length == 1
+          - alb.security_groups | length == 1
+          - alb.security_groups[0] == default_sg.security_groups[0].group_id
+
+    - name: Create an ALB with defaults (idempotence) - check_mode
+      elb_application_lb:
+        name: "{{ alb_name }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: []
+        state: present
+        listeners:
+          - Protocol: HTTP
+            Port: 80
+            DefaultActions:
+              - Type: forward
+                TargetGroupName: "{{ tg_name }}"
+      register: alb
+      check_mode: yes
+
+    - assert:
+        that:
+          - alb is not changed
+          - alb.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
+
+    - name: Create an ALB with defaults (idempotence)
+      elb_application_lb:
+        name: "{{ alb_name }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: []
+        state: present
+        listeners:
+          - Protocol: HTTP
+            Port: 80
+            DefaultActions:
+              - Type: forward
+                TargetGroupName: "{{ tg_name }}"
+      register: alb
+
+    - assert:
+        that:
+          - alb is not changed
+          - alb.listeners[0].rules | length == 1
+          - alb.security_groups[0] == default_sg.security_groups[0].group_id
+
+    # ------------------------------------------------------------------------------------------
+
+    - name: Update an ALB with ip address type - check_mode
       elb_application_lb:
         name: "{{ alb_name }}"
         subnets: "{{ public_subnets }}"
@@ -219,9 +308,9 @@
     - assert:
         that:
           - alb is changed
-          - alb.msg is match('Would have created ALB if not in check mode.')
+          - alb.msg is match('Would have updated ALB if not in check mode.')
 
-    - name: Create an ALB with ip address type
+    - name: Update an ALB with ip address type
       elb_application_lb:
         name: "{{ alb_name }}"
         subnets: "{{ public_subnets }}"

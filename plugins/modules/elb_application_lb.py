@@ -144,7 +144,7 @@ options:
     description:
       - A list of the names or IDs of the security groups to assign to the load balancer.
       - Required if I(state=present).
-    default: []
+      - If C([]), the VPC's default security group will be used.
     type: list
     elements: str
   scheme:
@@ -494,10 +494,16 @@ waf_fail_open_enabled:
     type: bool
     sample: false
 '''
+try:
+    import botocore
+except ImportError:
+    pass  # caught by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
 from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import (
     ApplicationLoadBalancer,
@@ -507,6 +513,29 @@ from ansible_collections.amazon.aws.plugins.module_utils.elbv2 import (
     ELBListeners,
 )
 from ansible_collections.amazon.aws.plugins.module_utils.elb_utils import get_elb_listener_rules
+
+
+@AWSRetry.jittered_backoff()
+def describe_sgs_with_backoff(connection, **params):
+    paginator = connection.get_paginator('describe_security_groups')
+    return paginator.paginate(**params).build_full_result()['SecurityGroups']
+
+
+def find_default_sg(connection, module, vpc_id):
+    """
+    Finds the default security group for the given VPC ID.
+    """
+    filters = ansible_dict_to_boto3_filter_list({'vpc-id': vpc_id, 'group-name': 'default'})
+    try:
+        sg = describe_sgs_with_backoff(connection, Filters=filters)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='No default security group found for VPC {0}'.format(vpc_id))
+    if len(sg) == 1:
+        return sg[0]['GroupId']
+    elif len(sg) == 0:
+        module.fail_json(msg='No default security group found for VPC {0}'.format(vpc_id))
+    else:
+        module.fail_json(msg='Multiple security groups named "default" found for VPC {0}'.format(vpc_id))
 
 
 def create_or_update_alb(alb_obj):
@@ -737,6 +766,11 @@ def main():
     state = module.params.get("state")
 
     alb = ApplicationLoadBalancer(connection, connection_ec2, module)
+
+    # Update security group if default is specified
+    if alb.elb and module.params.get('security_groups') == []:
+        module.params['security_groups'] = [find_default_sg(connection_ec2, module, alb.elb['VpcId'])]
+        alb = ApplicationLoadBalancer(connection, connection_ec2, module)
 
     if state == 'present':
         create_or_update_alb(alb)
