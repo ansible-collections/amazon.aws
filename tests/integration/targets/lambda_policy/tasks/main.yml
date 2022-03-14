@@ -61,7 +61,7 @@
   - name: test state=present - upload the lambda
     lambda:
       name: '{{lambda_function_name}}'
-      runtime: python2.7
+      runtime: python3.9
       handler: mini_http_lambda.handler
       role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'

@@ -37,7 +37,7 @@
   - name: Upload test lambda (version 1)
     lambda:
       name: '{{ lambda_function_name }}'
-      runtime: 'python2.7'
+      runtime: 'python3.7'
       handler: 'mini_lambda.handler'
       role: '{{ lambda_role_name }}'
       zip_file: '{{ zip_res.dest }}'
@@ -50,7 +50,7 @@
   - name: Update lambda (version 2)
     lambda:
       name: '{{ lambda_function_name }}'
-      runtime: 'python3.6'
+      runtime: 'python3.8'
       handler: 'mini_lambda.handler'
       role: '{{ lambda_role_name }}'
     register: lambda_b
@@ -62,7 +62,7 @@
   - name: Update lambda (version 3 / LATEST)
     lambda:
       name: '{{ lambda_function_name }}'
-      runtime: 'python3.7'
+      runtime: 'python3.9'
       handler: 'mini_lambda.handler'
       role: '{{ lambda_role_name }}'
     register: lambda_c
