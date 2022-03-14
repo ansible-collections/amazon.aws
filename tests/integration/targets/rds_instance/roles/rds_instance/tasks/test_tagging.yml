@@ -143,9 +143,9 @@
           - "result.snapshots.0.engine == 'mariadb'"
 
   always:
-    - name: remove snapshot
+    - name: remove final snapshot
       rds_instance_snapshot:
-        db_snapshot_identifier: "{{ tiny_prefix }}-test-snapshot"
+        db_snapshot_identifier: "{{ instance_id }}"
         state: absent
         wait: false
       ignore_errors: yes
