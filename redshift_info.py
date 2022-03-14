@@ -277,7 +277,7 @@ iam_roles:
 import re
 
 try:
-    from botocore.exception import BotoCoreError, ClientError
+    from botocore.exceptions import BotoCoreError, ClientError
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
