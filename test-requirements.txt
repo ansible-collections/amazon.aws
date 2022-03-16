@@ -4,6 +4,7 @@ boto3
 coverage==4.5.4
 placebo
 mock
+pytest==6.2.0
 pytest-xdist
 # We should avoid these two modules with py3
 pytest-mock
