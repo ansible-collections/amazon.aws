@@ -571,10 +571,8 @@ def destroy_role():
     # Before we try to delete the role we need to remove any
     # - attached instance profiles
     # - attached managed policies
-    # - permissions boundary
     remove_instance_profiles(role_params, role)
     update_managed_policies(role_params, role, [], True)
-    update_role_permissions_boundary(boundary_params, role)
 
     try:
         if not module.check_mode:
