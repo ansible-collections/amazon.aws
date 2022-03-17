@@ -1,0 +1,2 @@
+minor_changes:
+  - module_utils.rds - Add support for addition/removal of IAM roles to/from a db instance in module_utils.elbv2 with waiters (https://github.com/ansible-collections/amazon.aws/pull/714).
