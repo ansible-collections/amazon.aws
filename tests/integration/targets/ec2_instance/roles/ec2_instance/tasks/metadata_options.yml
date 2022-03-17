@@ -28,7 +28,7 @@
   vars:
     ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
   block:
-  - name: "fail create t3.nano instance with metadata_options"
+  - name: "create t3.nano instance with metadata_options"
     ec2_instance:
       state: present
       name: "{{ resource_prefix }}-test-t3nano-enabled-required"
