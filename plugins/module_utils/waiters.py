@@ -685,6 +685,50 @@ rds_data = {
                 }
             ]
         },
+        "RoleAssociated": {
+            "delay": 5,
+            "maxAttempts": 40,
+            "operation": "DescribeDBInstances",
+            "acceptors": [
+                {
+                    "state": "success",
+                    "matcher": "pathAll",
+                    "argument": "DBInstances[].AssociatedRoles[].Status",
+                    "expected": "ACTIVE"
+                },
+                {
+                    "state": "retry",
+                    "matcher": "pathAny",
+                    "argument": "DBInstances[].AssociatedRoles[].Status",
+                    "expected": "PENDING"
+                }
+            ]
+        },
+        "RoleDisassociated": {
+            "delay": 5,
+            "maxAttempts": 40,
+            "operation": "DescribeDBInstances",
+            "acceptors": [
+                {
+                    "state": "success",
+                    "matcher": "pathAll",
+                    "argument": "DBInstances[].AssociatedRoles[].Status",
+                    "expected": "ACTIVE"
+                },
+                {
+                    "state": "retry",
+                    "matcher": "pathAny",
+                    "argument": "DBInstances[].AssociatedRoles[].Status",
+                    "expected": "PENDING"
+                },
+                {
+                    "state": "success",
+                    "matcher": "path",
+                    "argument": "length(DBInstances[].AssociatedRoles[]) == `0`",
+                    "expected": True
+                },
+            ]
+        }
     }
 }
 
@@ -992,6 +1036,18 @@ waiters_by_name = {
         rds_model('DBClusterDeleted'),
         core_waiter.NormalizedOperationMethod(
             rds.describe_db_clusters
+        )),
+    ('RDS', 'role_associated'): lambda rds: core_waiter.Waiter(
+        'role_associated',
+        rds_model('RoleAssociated'),
+        core_waiter.NormalizedOperationMethod(
+            rds.describe_db_instances
+        )),
+    ('RDS', 'role_disassociated'): lambda rds: core_waiter.Waiter(
+        'role_disassociated',
+        rds_model('RoleDisassociated'),
+        core_waiter.NormalizedOperationMethod(
+            rds.describe_db_instances
         )),
     ('Route53', 'resource_record_sets_changed'): lambda route53: core_waiter.Waiter(
         'resource_record_sets_changed',

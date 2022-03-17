@@ -32,7 +32,8 @@ instance_method_names = [
     'create_db_instance', 'restore_db_instance_to_point_in_time', 'restore_db_instance_from_s3',
     'restore_db_instance_from_db_snapshot', 'create_db_instance_read_replica', 'modify_db_instance',
     'delete_db_instance', 'add_tags_to_resource', 'remove_tags_from_resource', 'list_tags_for_resource',
-    'promote_read_replica', 'stop_db_instance', 'start_db_instance', 'reboot_db_instance'
+    'promote_read_replica', 'stop_db_instance', 'start_db_instance', 'reboot_db_instance', 'add_role_to_db_instance',
+    'remove_role_from_db_instance'
 ]
 
 snapshot_cluster_method_names = [
@@ -65,6 +66,10 @@ def get_rds_method_attribute(method_name, module):
             waiter = 'db_instance_deleted'
         elif method_name == 'stop_db_instance':
             waiter = 'db_instance_stopped'
+        elif method_name == 'add_role_to_db_instance':
+            waiter = 'role_associated'
+        elif method_name == 'remove_role_from_db_instance':
+            waiter = 'role_disassociated'
         else:
             waiter = 'db_instance_available'
     elif method_name in snapshot_cluster_method_names or method_name in snapshot_instance_method_names:
@@ -304,4 +309,47 @@ def ensure_tags(client, module, resource_arn, existing_tags, tags, purge_tags):
             client, module, method_name='remove_tags_from_resource',
             parameters={'ResourceName': resource_arn, 'TagKeys': tags_to_remove}
         )
+    return changed
+
+
+def compare_iam_roles(existing_roles, target_roles, purge_roles):
+    roles_to_add = []
+    roles_to_remove = []
+    for target_role in target_roles:
+        found = False
+        for existing_role in existing_roles:
+            if target_role['role_arn'] == existing_role['RoleArn'] and target_role['feature_name'] == existing_role['FeatureName']:
+                found = True
+                break
+        if not found:
+            roles_to_add.append(target_role)
+
+    if purge_roles:
+        for existing_role in existing_roles:
+            found = False
+            for target_role in target_roles:
+                if target_role['role_arn'] == existing_role['RoleArn'] and target_role['feature_name'] == existing_role['FeatureName']:
+                    found = True
+                    break
+            if not found:
+                roles_to_remove.append(existing_role)
+
+    return roles_to_add, roles_to_remove
+
+
+def ensure_iam_roles(client, module, instance, instance_id, iam_roles, purge_iam_roles):
+    if iam_roles is None:
+        iam_roles = []
+    roles_to_add, roles_to_remove = compare_iam_roles(instance['AssociatedRoles'], iam_roles, purge_iam_roles)
+    changed = bool(roles_to_add or roles_to_remove)
+    for role in roles_to_remove:
+        params = {'DBInstanceIdentifier': instance_id,
+                  'RoleArn': role['RoleArn'],
+                  'FeatureName': role['FeatureName']}
+        result, changed = call_method(client, module, method_name='remove_role_from_db_instance', parameters=params)
+    for role in roles_to_add:
+        params = {'DBInstanceIdentifier': instance_id,
+                  'RoleArn': role['role_arn'],
+                  'FeatureName': role['feature_name']}
+        result, changed = call_method(client, module, method_name='add_role_to_db_instance', parameters=params)
     return changed
