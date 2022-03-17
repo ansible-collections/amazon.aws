@@ -11,6 +11,7 @@
       metadata_options:
           http_endpoint: enabled
           http_tokens: required
+          instance_metadata_tags: enabled
       wait: false
     register: instance_creation
 
@@ -21,6 +22,7 @@
         - instance_creation is changed
         - "'{{ instance_creation.spec.MetadataOptions.HttpEndpoint }}' == 'enabled'"
         - "'{{ instance_creation.spec.MetadataOptions.HttpTokens }}' == 'required'"
+        - "'{{ instance_creation.spec.MetadataOptions.InstanceMetadataTags }}' == 'enabled'"
 
   - name: "modify metadata_options on existing instance"
     ec2_instance:
