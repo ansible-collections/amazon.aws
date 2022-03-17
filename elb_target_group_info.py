@@ -214,13 +214,19 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry, boto3_tag_list_to_ansible_dict
 
 
-def get_target_group_attributes(connection, module, target_group_arn):
+@AWSRetry.jittered_backoff()
+def get_paginator(client, **kwargs):
+    paginator = client.get_paginator('describe_target_groups')
+    return paginator.paginate(**kwargs).build_full_result()
+
+
+def get_target_group_attributes(target_group_arn):
 
     try:
-        target_group_attributes = boto3_tag_list_to_ansible_dict(connection.describe_target_group_attributes(TargetGroupArn=target_group_arn)['Attributes'])
+        target_group_attributes = boto3_tag_list_to_ansible_dict(client.describe_target_group_attributes(TargetGroupArn=target_group_arn)['Attributes'])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe target group attributes")
 
@@ -229,23 +235,23 @@ def get_target_group_attributes(connection, module, target_group_arn):
                 for (k, v) in target_group_attributes.items())
 
 
-def get_target_group_tags(connection, module, target_group_arn):
+def get_target_group_tags(target_group_arn):
 
     try:
-        return boto3_tag_list_to_ansible_dict(connection.describe_tags(ResourceArns=[target_group_arn])['TagDescriptions'][0]['Tags'])
+        return boto3_tag_list_to_ansible_dict(client.describe_tags(ResourceArns=[target_group_arn])['TagDescriptions'][0]['Tags'])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to describe group tags")
 
 
-def get_target_group_targets_health(connection, module, target_group_arn):
+def get_target_group_targets_health(target_group_arn):
 
     try:
-        return connection.describe_target_health(TargetGroupArn=target_group_arn)['TargetHealthDescriptions']
+        return client.describe_target_health(TargetGroupArn=target_group_arn)['TargetHealthDescriptions']
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to get target health")
 
 
-def list_target_groups(connection, module):
+def list_target_groups():
 
     load_balancer_arn = module.params.get("load_balancer_arn")
     target_group_arns = module.params.get("target_group_arns")
@@ -253,15 +259,14 @@ def list_target_groups(connection, module):
     collect_targets_health = module.params.get("collect_targets_health")
 
     try:
-        target_group_paginator = connection.get_paginator('describe_target_groups')
         if not load_balancer_arn and not target_group_arns and not names:
-            target_groups = target_group_paginator.paginate().build_full_result()
+            target_groups = get_paginator()
         if load_balancer_arn:
-            target_groups = target_group_paginator.paginate(LoadBalancerArn=load_balancer_arn).build_full_result()
+            target_groups = get_paginator(LoadBalancerArn=load_balancer_arn)
         if target_group_arns:
-            target_groups = target_group_paginator.paginate(TargetGroupArns=target_group_arns).build_full_result()
+            target_groups = get_paginator(TargetGroupArns=target_group_arns)
         if names:
-            target_groups = target_group_paginator.paginate(Names=names).build_full_result()
+            target_groups = get_paginator(Names=names)
     except is_boto3_error_code('TargetGroupNotFound'):
         module.exit_json(target_groups=[])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
@@ -269,22 +274,24 @@ def list_target_groups(connection, module):
 
     # Get the attributes and tags for each target group
     for target_group in target_groups['TargetGroups']:
-        target_group.update(get_target_group_attributes(connection, module, target_group['TargetGroupArn']))
+        target_group.update(get_target_group_attributes(target_group['TargetGroupArn']))
 
     # Turn the boto3 result in to ansible_friendly_snaked_names
     snaked_target_groups = [camel_dict_to_snake_dict(target_group) for target_group in target_groups['TargetGroups']]
 
     # Get tags for each target group
     for snaked_target_group in snaked_target_groups:
-        snaked_target_group['tags'] = get_target_group_tags(connection, module, snaked_target_group['target_group_arn'])
+        snaked_target_group['tags'] = get_target_group_tags(snaked_target_group['target_group_arn'])
         if collect_targets_health:
             snaked_target_group['targets_health_description'] = [camel_dict_to_snake_dict(
-                target) for target in get_target_group_targets_health(connection, module, snaked_target_group['target_group_arn'])]
+                target) for target in get_target_group_targets_health(snaked_target_group['target_group_arn'])]
 
     module.exit_json(target_groups=snaked_target_groups)
 
 
 def main():
+    global module
+    global client
 
     argument_spec = dict(
         load_balancer_arn=dict(type='str'),
@@ -300,11 +307,11 @@ def main():
     )
 
     try:
-        connection = module.client('elbv2')
+        client = module.client('elbv2', retry_decorator=AWSRetry.jittered_backoff(retries=10))
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to connect to AWS')
 
-    list_target_groups(connection, module)
+    list_target_groups()
 
 
 if __name__ == '__main__':
