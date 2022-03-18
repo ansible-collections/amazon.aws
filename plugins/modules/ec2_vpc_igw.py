@@ -112,6 +112,12 @@ from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
+@AWSRetry.jittered_backoff(retries=10, delay=10)
+def describe_igws_with_backoff(connection, **params):
+    paginator = connection.get_paginator('describe_internet_gateways')
+    return paginator.paginate(**params).build_full_result()['InternetGateways']
+
+
 class AnsibleEc2Igw():
 
     def __init__(self, module, results):
@@ -135,10 +141,8 @@ class AnsibleEc2Igw():
 
     def get_matching_igw(self, vpc_id):
         filters = ansible_dict_to_boto3_filter_list({'attachment.vpc-id': vpc_id})
-        igws = []
         try:
-            response = self._connection.describe_internet_gateways(aws_retry=True, Filters=filters)
-            igws = response.get('InternetGateways', [])
+            igws = describe_igws_with_backoff(self._connection, Filters=filters)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self._module.fail_json_aws(e)
 
@@ -211,17 +215,20 @@ class AnsibleEc2Igw():
                 # Ensure the gateway is attached before proceeding
                 waiter = get_waiter(self._connection, 'internet_gateway_attached')
                 waiter.wait(InternetGatewayIds=[igw['internet_gateway_id']])
-
                 self._results['changed'] = True
             except botocore.exceptions.WaiterError as e:
                 self._module.fail_json_aws(e, msg="No Internet Gateway exists.")
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 self._module.fail_json_aws(e, msg='Unable to create Internet Gateway')
 
+        # Modify tags
         self._results['changed'] |= ensure_ec2_tags(
             self._connection, self._module, igw['internet_gateway_id'],
-            resource_type='internet-gateway', tags=tags, purge_tags=purge_tags
+            resource_type='internet-gateway', tags=tags, purge_tags=purge_tags,
+            retry_codes='InvalidInternetGatewayID.NotFound'
         )
+
+        # Update igw
         igw = self.get_matching_igw(vpc_id)
         igw_info = self.get_igw_info(igw, vpc_id)
         self._results.update(igw_info)
