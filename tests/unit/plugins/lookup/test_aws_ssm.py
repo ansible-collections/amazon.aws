@@ -128,19 +128,23 @@ def test_path_lookup_variable(mocker):
     lookup._load_name = "aws_ssm"
 
     boto3_double = mocker.MagicMock()
-    get_path_fn = boto3_double.Session.return_value.client.return_value.get_parameters_by_path
-    get_path_fn.return_value = path_success_response
+    get_paginator_fn = boto3_double.Session.return_value.client.return_value.get_paginator
+    paginator = get_paginator_fn.return_value
+    paginator.paginate.return_value.build_full_result.return_value = path_success_response
     boto3_client_double = boto3_double.Session.return_value.client
 
     mocker.patch.object(boto3, 'session', boto3_double)
     args = copy(dummy_credentials)
-    args["bypath"] = 'true'
+    args["bypath"] = True
+    args["recursive"] = True
     retval = lookup.run(["/testpath"], {}, **args)
     assert(retval[0]["/testpath/won"] == "simple_value_won")
     assert(retval[0]["/testpath/too"] == "simple_value_too")
     boto3_client_double.assert_called_with('ssm', 'eu-west-1', aws_access_key_id='notakey',
                                            aws_secret_access_key="notasecret", aws_session_token=None)
-    get_path_fn.assert_called_with(Path="/testpath", Recursive=False, WithDecryption=True)
+    get_paginator_fn.assert_called_with('get_parameters_by_path')
+    paginator.paginate.assert_called_with(Path="/testpath", Recursive=True, WithDecryption=True)
+    paginator.paginate.return_value.build_full_result.assert_called_with()
 
 
 def test_warn_on_missing_match_retvals_to_call_params_with_some_missing_variables(mocker):
