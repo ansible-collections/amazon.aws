@@ -923,11 +923,14 @@ def main():
 
                 return True
 
-            def _task_definition_matches(requested_volumes, requested_containers, requested_task_role_arn, existing_task_definition):
+            def _task_definition_matches(requested_volumes, requested_containers, requested_task_role_arn, requested_launch_type, existing_task_definition):
                 if td['status'] != "ACTIVE":
                     return None
 
                 if requested_task_role_arn != td.get('taskRoleArn', ""):
+                    return None
+
+                if requested_launch_type is not None and requested_launch_type not in td.get('compatibilities', []):
                     return None
 
                 existing_volumes = td.get('volumes', []) or []
@@ -972,7 +975,8 @@ def main():
                 requested_volumes = module.params['volumes'] or []
                 requested_containers = module.params['containers'] or []
                 requested_task_role_arn = module.params['task_role_arn']
-                existing = _task_definition_matches(requested_volumes, requested_containers, requested_task_role_arn, td)
+                requested_launch_type = module.params['launch_type']
+                existing = _task_definition_matches(requested_volumes, requested_containers, requested_task_role_arn, requested_launch_type, td)
 
                 if existing:
                     break
