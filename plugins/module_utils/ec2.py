@@ -193,7 +193,7 @@ def aws_common_argument_spec():
         ec2_url=dict(aliases=['aws_endpoint_url', 'endpoint_url']),
         aws_access_key=dict(aliases=['ec2_access_key', 'access_key'], no_log=False),
         aws_secret_key=dict(aliases=['ec2_secret_key', 'secret_key'], no_log=True),
-        security_token=dict(aliases=['access_token', 'aws_security_token'], no_log=True),
+        security_token=dict(aliases=['access_token', 'aws_security_token', 'session_token', 'aws_session_token'], no_log=True),
         validate_certs=dict(default=True, type='bool'),
         aws_ca_bundle=dict(type='path'),
         profile=dict(aliases=['aws_profile']),
