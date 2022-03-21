@@ -3,3 +3,6 @@ dependencies:
 - role: setup_botocore_pip
 - role: prepare_tests
 - role: setup_ec2_facts
+- role: setup_botocore_pip
+  vars:
+    boto3_version: "1.20.30"
