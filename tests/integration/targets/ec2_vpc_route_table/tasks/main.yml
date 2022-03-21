@@ -20,7 +20,7 @@
       - vpc.changed
   - name: Assign IPv6 CIDR block to existing VPC, check mode
     ec2_vpc_net:
-      cidr_block: 10.228.224.0/21
+      cidr_block: '{{ vpc_cidr }}'
       name: '{{ resource_prefix }}_vpc'
       ipv6_cidr: true
     check_mode: true
@@ -31,7 +31,7 @@
       - vpc_update.changed
   - name: Assign Amazon-provided IPv6 CIDR block to existing VPC
     ec2_vpc_net:
-      cidr_block: 10.228.224.0/21
+      cidr_block: '{{ vpc_cidr }}'
       name: '{{ resource_prefix }}_vpc'
       ipv6_cidr: true
     register: vpc_update
@@ -187,7 +187,6 @@
       - create_public_table.route_table.id.startswith('rtb-')
       - "'Public' in create_public_table.route_table.tags"
       - create_public_table.route_table.tags['Public'] == 'true'
-      - create_public_table.route_table.routes | length == 1
       - create_public_table.route_table.associations | length == 0
       - create_public_table.route_table.vpc_id == "{{ vpc.vpc.id }}"
       - create_public_table.route_table.propagating_vgws | length == 0
@@ -227,7 +226,6 @@
     assert:
       that:
       - add_routes.changed
-      - add_routes.route_table.routes | length == 3
       - add_routes.route_table.id.startswith('rtb-')
       - "'Public' in add_routes.route_table.tags"
       - add_routes.route_table.tags['Public'] == 'true'
@@ -756,7 +754,7 @@
         - create_gateway_table.route_table.id.startswith('rtb-')
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
-        - create_gateway_table.route_table.routes | length == 1
+        - create_gateway_table.route_table.routes | length == 2
         - create_gateway_table.route_table.associations | length == 1
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
@@ -790,7 +788,7 @@
         - create_gateway_table.route_table.id.startswith('rtb-')
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
-        - create_gateway_table.route_table.routes | length == 1
+        - create_gateway_table.route_table.routes | length == 2
         - create_gateway_table.route_table.associations | length == 1
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
@@ -839,7 +837,7 @@
         - create_gateway_table.route_table.id.startswith('rtb-')
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
-        - create_gateway_table.route_table.routes | length == 1
+        - create_gateway_table.route_table.routes | length == 2
         - create_gateway_table.route_table.associations | length == 1
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
@@ -883,7 +881,7 @@
         - create_gateway_table.route_table.id.startswith('rtb-')
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
-        - create_gateway_table.route_table.routes | length == 1
+        - create_gateway_table.route_table.routes | length == 2
         - create_gateway_table.route_table.associations | length == 1
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
@@ -929,7 +927,7 @@
         - create_gateway_table.route_table.id.startswith('rtb-')
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
-        - create_gateway_table.route_table.routes | length == 2
+        - create_gateway_table.route_table.routes | length == 3
         - create_gateway_table.route_table.associations | length == 1
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
@@ -971,7 +969,7 @@
         - create_gateway_table.route_table.id.startswith('rtb-')
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
-        - create_gateway_table.route_table.routes | length == 2
+        - create_gateway_table.route_table.routes | length == 3
         - create_gateway_table.route_table.associations | length == 1
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
@@ -1013,7 +1011,7 @@
         - create_gateway_table.route_table.id.startswith('rtb-')
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
-        - create_gateway_table.route_table.routes | length == 2
+        - create_gateway_table.route_table.routes | length == 3
         - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1 }}"
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
@@ -1057,7 +1055,7 @@
         - create_gateway_table.route_table.id.startswith('rtb-')
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
-        - create_gateway_table.route_table.routes | length == 2
+        - create_gateway_table.route_table.routes | length == 3
         - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 0 }}"
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
@@ -1099,7 +1097,7 @@
         - create_gateway_table.route_table.id.startswith('rtb-')
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
-        - create_gateway_table.route_table.routes | length == 2
+        - create_gateway_table.route_table.routes | length == 3
         - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 0 }}"
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
@@ -1137,7 +1135,7 @@
         - create_gateway_table.route_table.id.startswith('rtb-')
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
-        - create_gateway_table.route_table.routes | length == 2
+        - create_gateway_table.route_table.routes | length == 3
         - create_gateway_table.route_table.associations | length == 1
         - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1 }}"
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
@@ -1174,7 +1172,7 @@
         - create_gateway_table.route_table.id.startswith('rtb-')
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
-        - create_gateway_table.route_table.routes | length == 2
+        - create_gateway_table.route_table.routes | length == 3
         - create_gateway_table.route_table.associations | length == 1
         - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1 }}"
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
@@ -1219,7 +1217,7 @@
         - create_gateway_table.route_table.id.startswith('rtb-')
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
-        - create_gateway_table.route_table.routes | length == 2
+        - create_gateway_table.route_table.routes | length == 3
         - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 0 }}"
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
@@ -1261,7 +1259,7 @@
         - create_gateway_table.route_table.id.startswith('rtb-')
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
-        - create_gateway_table.route_table.routes | length == 2
+        - create_gateway_table.route_table.routes | length == 3
         - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 0 }}"
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
         - create_gateway_table.route_table.propagating_vgws | length == 0
@@ -1307,7 +1305,7 @@
         - create_gateway_table.route_table.id.startswith('rtb-')
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
-        - create_gateway_table.route_table.routes | length == 2
+        - create_gateway_table.route_table.routes | length == 3
         - create_gateway_table.route_table.associations | length == 2
         - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1 }}"
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
@@ -1344,7 +1342,7 @@
         - create_gateway_table.route_table.id.startswith('rtb-')
         - "'Public' in create_gateway_table.route_table.tags"
         - create_gateway_table.route_table.tags['Public'] == 'true'
-        - create_gateway_table.route_table.routes | length == 2
+        - create_gateway_table.route_table.routes | length == 3
         - create_gateway_table.route_table.associations | length == 2
         - "{{ create_gateway_table.route_table.associations | map(attribute='association_state') | selectattr('state', '==', 'associated') | length == 1 }}"
         - create_gateway_table.route_table.vpc_id == vpc.vpc.id
