@@ -47,11 +47,19 @@ options:
     - Required when I(lookup=id).
     type: str
   routes:
-    description: List of routes in the route table.
-        Routes are specified as dicts containing the keys 'dest' and one of 'gateway_id',
-        'instance_id', 'network_interface_id', or 'vpc_peering_connection_id'.
-        If 'gateway_id' is specified, you can refer to the VPC's IGW by using the value 'igw'.
-        Routes are required for present states.
+    description:
+        - >
+          List of routes in the route table.
+        - >
+          Routes are specified as dicts containing the keys 'dest' and one of 'gateway_id',
+          'instance_id', 'network_interface_id', or 'vpc_peering_connection_id'.
+        - >
+          The value of 'dest' is used for the destination match. It may be a IPv4 CIDR block
+          or a IPv6 CIDR block.
+        - >
+          If 'gateway_id' is specified, you can refer to the VPC's IGW by using the value 'igw'.
+        - >
+          Routes are required for present states.
     type: list
     elements: dict
   state:
@@ -61,7 +69,7 @@ options:
     type: str
   subnets:
     description: An array of subnets to add to this route table. Subnets may be specified
-      by either subnet ID, Name tag, or by a CIDR such as '10.0.0.0/24'.
+      by either subnet ID, Name tag, or by a CIDR such as '10.0.0.0/24' or 'fd00::/8'.
     type: list
     elements: str
   tags:
@@ -97,6 +105,8 @@ EXAMPLES = r'''
       - "{{ vpn_subnet.subnet_id }}"
     routes:
       - dest: 0.0.0.0/0
+        gateway_id: "{{ igw.gateway_id }}"
+      - dest: ::/0
         gateway_id: "{{ igw.gateway_id }}"
   register: public_route_table
 
@@ -176,10 +186,15 @@ route_table:
       type: complex
       contains:
         destination_cidr_block:
-          description: CIDR block of destination
+          description: IPv4 CIDR block of destination
           returned: always
           type: str
           sample: 10.228.228.0/22
+        destination_ipv6_cidr_block:
+          description: IPv6 CIDR block of destination
+          returned: when the route includes an IPv6 destination
+          type: str
+          sample: 2600:1f1c:1b3:8f00:8000::/65
         gateway_id:
           description: ID of the gateway
           returned: when gateway is local or internet gateway
