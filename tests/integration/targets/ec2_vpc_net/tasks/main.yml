@@ -144,6 +144,22 @@
           - result.vpc.tags.Name == resource_prefix
           - result.vpc.id == vpc_1
 
+    - name: No-op VPC configuration, missing ipv6_cidr property
+      ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ resource_prefix }}"
+        # Intentionaly commenting out 'ipv6_cidr'
+        # When the 'ipv6_cidr' property is missing, the VPC should retain its configuration.
+        # That should not cause the module to set default value 'false' and disassociate the IPv6 block.
+        #ipv6_cidr: True
+      register: result
+    - name: assert configuration did not change
+      assert:
+        that:
+          - result is successful
+          - result is not changed
+
     # ============================================================
 
     - name: VPC info (no filters)
@@ -1248,6 +1264,76 @@
           - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
           - vpc_cidr_a not in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
           - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | selectattr('cidr_block_state.state', 'equalto', 'associated') | map(attribute='cidr_block') | list)
+
+    # ============================================================
+
+    - name: Remove IPv6 CIDR association from VPC in check mode
+      ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ resource_prefix }}"
+        ipv6_cidr: False
+      check_mode: true
+      register: result
+    - name: assert configuration would change
+      assert:
+        that:
+          - result is successful
+          - result is changed
+
+    - name: Set IPv6 CIDR association to VPC, no change expected
+      # I.e. assert the previous ec2_vpc_net task in check_mode did not
+      # mistakenly modify the VPC configuration.
+      ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ resource_prefix }}"
+        ipv6_cidr: True
+      register: result
+    - name: assert configuration did not change
+      assert:
+        that:
+          - result is successful
+          - result is not changed
+
+    - name: Remove IPv6 CIDR association from VPC
+      ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ resource_prefix }}"
+        ipv6_cidr: False
+      register: result
+    - name: assert IPv6 CIDR association removed from VPC
+      assert:
+        that:
+          - result is successful
+          - result is changed
+          - result.vpc.ipv6_cidr_block_association_set | length == 1
+          - result.vpc.ipv6_cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
+          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.netcommon.ipv6
+          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block_state.state in ["disassociated"]
+
+    - name: Add IPv6 CIDR association to VPC again
+      ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ resource_prefix }}"
+        ipv6_cidr: True
+      register: result
+    - name: assert configuration change
+      assert:
+        that:
+          - result is successful
+          - result is changed
+          # Because the IPv6 CIDR was associated, then disassociated, then reassociated,
+          # now there should be one disassociated block and one associated block.
+          - result.vpc.ipv6_cidr_block_association_set | length == 2
+          - result.vpc.ipv6_cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
+          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.netcommon.ipv6
+          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block_state.state in ["disassociated", "disassociating"]
+          - result.vpc.ipv6_cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
+          - result.vpc.ipv6_cidr_block_association_set[1].ipv6_cidr_block | ansible.netcommon.ipv6
+          - result.vpc.ipv6_cidr_block_association_set[1].ipv6_cidr_block_state.state in ["associated", "associating"]
 
     # ============================================================
 
