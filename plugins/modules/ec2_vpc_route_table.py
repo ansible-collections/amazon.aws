@@ -591,8 +591,7 @@ def disassociate_gateway(connection, module, route_table):
     # Subnet associations are handled in its method
     changed = False
     associations_to_delete = [association['RouteTableAssociationId'] for association in route_table['Associations'] if not association['Main']
-                              and association.get('GatewayId')
-                              and (association['AssociationState']['State'] == 'associated' or association['AssociationState']['State'] == 'associating')]
+                              and association.get('GatewayId') and association['AssociationState']['State'] in ['associated', 'associating']]
     for association_id in associations_to_delete:
         changed = True
         if not module.check_mode:
@@ -615,8 +614,7 @@ def associate_gateway(connection, module, route_table, gateway_id):
             for association in table.get('Associations'):
                 if association['Main']:
                     continue
-                if association.get('GatewayId') and association['GatewayId'] == gateway_id and (association['AssociationState']['State'] == 'associated'
-                                                                                                or association['AssociationState']['State'] == 'associating'):
+                if association.get('GatewayId', '') == gateway_id and (association['AssociationState']['State'] in ['associated', 'associating']):
                     if table['RouteTableId'] == route_table['RouteTableId']:
                         return False
                     elif module.check_mode:
