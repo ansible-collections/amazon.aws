@@ -13,6 +13,7 @@ except ImportError:
     pass
 
 from ansible.module_utils._text import to_text
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
 from .ec2 import AWSRetry
@@ -318,7 +319,7 @@ def compare_iam_roles(existing_roles, target_roles, purge_roles):
     for target_role in target_roles:
         found = False
         for existing_role in existing_roles:
-            if target_role['role_arn'] == existing_role['RoleArn'] and target_role['feature_name'] == existing_role['FeatureName']:
+            if target_role['role_arn'] == existing_role['role_arn'] and target_role['feature_name'] == existing_role['feature_name']:
                 found = True
                 break
         if not found:
@@ -328,7 +329,7 @@ def compare_iam_roles(existing_roles, target_roles, purge_roles):
         for existing_role in existing_roles:
             found = False
             for target_role in target_roles:
-                if target_role['role_arn'] == existing_role['RoleArn'] and target_role['feature_name'] == existing_role['FeatureName']:
+                if target_role['role_arn'] == existing_role['role_arn'] and target_role['feature_name'] == existing_role['feature_name']:
                     found = True
                     break
             if not found:
@@ -337,15 +338,15 @@ def compare_iam_roles(existing_roles, target_roles, purge_roles):
     return roles_to_add, roles_to_remove
 
 
-def ensure_iam_roles(client, module, instance, instance_id, iam_roles, purge_iam_roles):
-    if iam_roles is None:
-        iam_roles = []
-    roles_to_add, roles_to_remove = compare_iam_roles(instance['AssociatedRoles'], iam_roles, purge_iam_roles)
+def ensure_iam_roles(client, module, instance_id, existing_roles, target_roles, purge_iam_roles):
+    if target_roles is None:
+        target_roles = []
+    roles_to_add, roles_to_remove = compare_iam_roles(existing_roles, target_roles, purge_iam_roles)
     changed = bool(roles_to_add or roles_to_remove)
     for role in roles_to_remove:
         params = {'DBInstanceIdentifier': instance_id,
-                  'RoleArn': role['RoleArn'],
-                  'FeatureName': role['FeatureName']}
+                  'RoleArn': role['role_arn'],
+                  'FeatureName': role['feature_name']}
         result, changed = call_method(client, module, method_name='remove_role_from_db_instance', parameters=params)
     for role in roles_to_add:
         params = {'DBInstanceIdentifier': instance_id,
