@@ -227,6 +227,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
 # The mappings give an array of keys to get from the filter name to the value
@@ -408,7 +409,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 raise AnsibleError("Insufficient credentials found: %s" % to_native(e))
         return connection
 
-    def _boto3_assume_role(self, credentials, region):
+    def _boto3_assume_role(self, credentials, region=None):
         """
         Assume an IAM role passed by iam_role_arn parameter
 
@@ -447,6 +448,19 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             except botocore.exceptions.NoRegionError:
                 # above seems to fail depending on boto3 version, ignore and lets try something else
                 pass
+            except is_boto3_error_code('UnauthorizedOperation') as e:  # pylint: disable=duplicate-except
+                if iam_role_arn is not None:
+                    try:
+                        # Describe regions assuming arn role
+                        assumed_credentials = self._boto3_assume_role(credentials)
+                        client = self._get_connection(assumed_credentials)
+                        resp = client.describe_regions()
+                        regions = [x['RegionName'] for x in resp.get('Regions', [])]
+                    except botocore.exceptions.NoRegionError:
+                        # above seems to fail depending on boto3 version, ignore and lets try something else
+                        pass
+                else:
+                    raise AnsibleError("Unauthorized operation: %s" % to_native(e))
 
         # fallback to local list hardcoded in boto3 if still no regions
         if not regions:
