@@ -707,6 +707,7 @@
       service: com.amazonaws.{{ aws_region }}.s3
       route_table_ids:
       - '{{ recreate_private_table.route_table.route_table_id }}'
+      wait: True
     register: vpc_endpoint
   - name: purge routes
     ec2_vpc_route_table:
