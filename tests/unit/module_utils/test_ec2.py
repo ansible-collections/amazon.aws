@@ -5,11 +5,9 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-from plugins.module_utils.ec2 import is_outposts_arn
 __metaclass__ = type
 
 import unittest
-import pytest
 
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import map_complex_type
