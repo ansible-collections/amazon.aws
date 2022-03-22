@@ -1,5 +1,5 @@
-minor_changes:
+bugfixes:
 - >-
   aws_ec2 inventory - use the iam_role_arn configuration parameter to assume the role before trying to call DescribeRegions
   if the regions configuration is not set and AWS credentials provided without enough privilege to perform the DescribeRegions action.
-  (https://github.com/ansible-collections/amazon.aws/issues/566)
+  (https://github.com/ansible-collections/amazon.aws/issues/566).
