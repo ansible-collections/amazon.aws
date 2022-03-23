@@ -1,0 +1,10 @@
+disabled
+
+# Lookup plugins
+aws_ssm  # covered by unit tests
+aws_service_ip_range
+aws_secret  # covered by unit tests
+aws_account_attribute
+
+# Callback plugin 
+aws_resource_actions 
