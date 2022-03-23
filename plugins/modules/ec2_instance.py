@@ -905,7 +905,6 @@ instances:
 '''
 
 from collections import namedtuple
-import re
 import string
 import textwrap
 import time

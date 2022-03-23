@@ -11,7 +11,6 @@ try:
 except ImportError:
     pass  # caught by HAS_BOTO3
 
-import ansible_collections.amazon.aws.plugins.module_utils.core as aws_core
 from ansible_collections.amazon.aws.plugins.module_utils.modules import _RetryingBotoClientWrapper
 
 

@@ -13,7 +13,6 @@ import pytest
 from ansible_collections.amazon.aws.tests.unit.utils.amazon_placebo_fixtures import maybe_sleep, placeboify  # pylint: disable=unused-import
 
 from ansible_collections.amazon.aws.plugins.module_utils.modules import _RetryingBotoClientWrapper
-import ansible_collections.amazon.aws.plugins.module_utils.core as aws_core
 import ansible_collections.amazon.aws.plugins.module_utils.ec2 as aws_ec2
 
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto_exception

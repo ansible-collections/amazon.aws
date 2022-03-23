@@ -223,7 +223,7 @@ from ..module_utils.ec2 import AWSRetry
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import ensure_ec2_tags
-from ..module_utils.ec2 import is_outposts_arn
+from ..module_utils.arn import is_outpost_arn
 from ..module_utils.waiters import get_waiter
 
 
@@ -287,7 +287,7 @@ def create_subnet(conn, module, vpc_id, cidr, ipv6_cidr=None, outpost_arn=None, 
         params['AvailabilityZone'] = az
 
     if outpost_arn:
-        if is_outposts_arn(outpost_arn):
+        if is_outpost_arn(outpost_arn):
             params['OutpostArn'] = outpost_arn
         else:
             module.fail_json('OutpostArn does not match the pattern specified in API specifications.')
