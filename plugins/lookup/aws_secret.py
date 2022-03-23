@@ -141,7 +141,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
 
 def _boto3_conn(region, credentials):
     boto_profile = credentials.pop('aws_profile', None)
-
+    
     try:
         connection = boto3.session.Session(profile_name=boto_profile).client('secretsmanager', region, **credentials)
     except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
@@ -204,6 +204,7 @@ class LookupModule(LookupBase):
         credentials['aws_session_token'] = aws_security_token
 
         # fallback to IAM role credentials
+        # just a test
         if not credentials['aws_profile'] and not (
                 credentials['aws_access_key_id'] and credentials['aws_secret_access_key']):
             session = botocore.session.get_session()
