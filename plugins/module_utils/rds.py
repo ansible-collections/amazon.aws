@@ -13,7 +13,6 @@ except ImportError:
     pass
 
 from ansible.module_utils._text import to_text
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
 from .ec2 import AWSRetry
@@ -314,6 +313,8 @@ def ensure_tags(client, module, resource_arn, existing_tags, tags, purge_tags):
 
 
 def compare_iam_roles(existing_roles, target_roles, purge_roles):
+    if target_roles is None:
+        target_roles = []
     roles_to_add = []
     roles_to_remove = []
     for target_role in target_roles:
@@ -338,11 +339,7 @@ def compare_iam_roles(existing_roles, target_roles, purge_roles):
     return roles_to_add, roles_to_remove
 
 
-def ensure_iam_roles(client, module, instance_id, existing_roles, target_roles, purge_iam_roles):
-    if target_roles is None:
-        target_roles = []
-    roles_to_add, roles_to_remove = compare_iam_roles(existing_roles, target_roles, purge_iam_roles)
-    changed = bool(roles_to_add or roles_to_remove)
+def update_iam_roles(client, module, instance_id, roles_to_add, roles_to_remove):
     for role in roles_to_remove:
         params = {'DBInstanceIdentifier': instance_id,
                   'RoleArn': role['role_arn'],
