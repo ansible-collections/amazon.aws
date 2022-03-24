@@ -133,6 +133,7 @@ options:
       - C(ObjectWriter) - The uploading account will own the object
         if the object is uploaded with the bucket-owner-full-control canned ACL.
       - This option cannot be used together with a I(delete_object_ownership) definition.
+      - C(BucketOwnerEnforced) has been added in version 3.2.0.
     choices: [ 'BucketOwnerEnforced', 'BucketOwnerPreferred', 'ObjectWriter' ]
     type: str
     version_added: 2.0.0
