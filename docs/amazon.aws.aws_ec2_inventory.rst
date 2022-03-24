@@ -17,7 +17,7 @@ amazon.aws.aws_ec2
 Synopsis
 --------
 - Get inventory hosts from Amazon Web Services EC2.
-- Uses a YAML configuration file that ends with ``aws_ec2.(yml|yaml``).
+- Uses a YAML configuration file that ends with ``aws_ec2.{yml|yaml}``.
 
 
 
