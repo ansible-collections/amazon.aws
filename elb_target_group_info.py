@@ -218,7 +218,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry, bo
 
 
 @AWSRetry.jittered_backoff()
-def get_paginator(client, **kwargs):
+def get_paginator(**kwargs):
     paginator = client.get_paginator('describe_target_groups')
     return paginator.paginate(**kwargs).build_full_result()
 
