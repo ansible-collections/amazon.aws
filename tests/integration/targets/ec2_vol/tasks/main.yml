@@ -510,7 +510,7 @@
         volume_type: gp3
         modify_volume: yes
       register: changed_gp3_volume
-      retries: 3
+      retries: 10
       delay: 3
       until: not changed_gp3_volume.failed
       # retry because ebs change is to slow
