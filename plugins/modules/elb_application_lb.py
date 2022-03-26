@@ -49,13 +49,38 @@ options:
   deletion_protection:
     description:
       - Indicates whether deletion protection for the ALB is enabled.
-      - Defaults to C(false).
+      - Defaults to C(False).
     type: bool
   http2:
     description:
       - Indicates whether to enable HTTP2 routing.
-      - Defaults to C(false).
+      - Defaults to C(True).
     type: bool
+  http_desync_mitigation_mode:
+    description:
+      - Determines how the load balancer handles requests that might pose a security risk to an application.
+      - Defaults to C('defensive')
+    type: str
+    choices: ['monitor', 'defensive', 'strictest']
+    version_added: 3.2.0
+  http_drop_invalid_header_fields:
+    description:
+      - Indicates whether HTTP headers with invalid header fields are removed by the load balancer C(True) or routed to targets C(False).
+      - Defaults to C(False).
+    type: bool
+    version_added: 3.2.0
+  http_x_amzn_tls_version_and_cipher_suite:
+    description:
+      - Indicates whether the two headers are added to the client request before sending it to the target.
+      - Defaults to C(False).
+    type: bool
+    version_added: 3.2.0
+  http_xff_client_port:
+    description:
+      - Indicates whether the X-Forwarded-For header should preserve the source port that the client used to connect to the load balancer.
+      - Defaults to C(False).
+    type: bool
+    version_added: 3.2.0
   idle_timeout:
     description:
       - The number of seconds to wait before an idle connection is closed.
@@ -183,6 +208,12 @@ options:
       - Sets the type of IP addresses used by the subnets of the specified Application Load Balancer.
     choices: [ 'ipv4', 'dualstack' ]
     type: str
+  waf_fail_open:
+    description:
+      - Indicates whether to allow a AWS WAF-enabled load balancer to route requests to targets if it is unable to forward the request to AWS WAF.
+      - Defaults to C(False).
+    type: bool
+    version_added: 3.2.0
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -554,6 +585,13 @@ def create_or_update_alb(alb_obj):
                 alb_obj.module.exit_json(changed=True, msg='Would have updated ALB if not in check mode.')
             alb_obj.modify_security_groups()
 
+        # ALB attributes
+        if not alb_obj.compare_elb_attributes():
+            if alb_obj.module.check_mode:
+                alb_obj.module.exit_json(changed=True, msg='Would have updated ALB if not in check mode.')
+            alb_obj.update_elb_attributes()
+            alb_obj.modify_elb_attributes()
+
         # Tags - only need to play with tags if tags parameter has been set to something
         if alb_obj.tags is not None:
 
@@ -577,10 +615,6 @@ def create_or_update_alb(alb_obj):
         if alb_obj.module.check_mode:
             alb_obj.module.exit_json(changed=True, msg='Would have created ALB if not in check mode.')
         alb_obj.create_elb()
-
-    # ALB attributes
-    alb_obj.update_elb_attributes()
-    alb_obj.modify_elb_attributes()
 
     # Listeners
     listeners_obj = ELBListeners(alb_obj.connection, alb_obj.module, alb_obj.elb['LoadBalancerArn'])
@@ -712,6 +746,10 @@ def main():
         access_logs_s3_prefix=dict(type='str'),
         deletion_protection=dict(type='bool'),
         http2=dict(type='bool'),
+        http_desync_mitigation_mode=dict(type='str', choices=['monitor', 'defensive', 'strictest']),
+        http_drop_invalid_header_fields=dict(type='bool'),
+        http_x_amzn_tls_version_and_cipher_suite=dict(type='bool'),
+        http_xff_client_port=dict(type='bool'),
         idle_timeout=dict(type='int'),
         listeners=dict(type='list',
                        elements='dict',
@@ -732,6 +770,7 @@ def main():
         scheme=dict(default='internet-facing', choices=['internet-facing', 'internal']),
         state=dict(choices=['present', 'absent'], default='present'),
         tags=dict(type='dict'),
+        waf_fail_open=dict(type='bool'),
         wait_timeout=dict(type='int'),
         wait=dict(default=False, type='bool'),
         purge_rules=dict(default=True, type='bool'),

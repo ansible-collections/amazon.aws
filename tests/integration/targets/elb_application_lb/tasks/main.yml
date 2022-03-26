@@ -330,6 +330,12 @@
           - alb is changed
           - alb.ip_address_type == 'dualstack'
           - alb.listeners[0].rules | length == 1
+          - alb.routing_http2_enabled | bool
+          - alb.routing_http_desync_mitigation_mode == 'defensive'
+          - not alb.routing_http_drop_invalid_header_fields_enabled | bool
+          - not alb.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
+          - not alb.routing_http_xff_client_port_enabled | bool
+          - not alb.waf_fail_open_enabled | bool
 
     - name: Create an ALB with ip address type (idempotence) - check_mode
       elb_application_lb:
@@ -371,6 +377,132 @@
         that:
           - alb is not changed
           - alb.ip_address_type == 'dualstack'
+          - alb.routing_http2_enabled | bool
+          - alb.routing_http_desync_mitigation_mode == 'defensive'
+          - not alb.routing_http_drop_invalid_header_fields_enabled | bool
+          - not alb.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
+          - not alb.routing_http_xff_client_port_enabled | bool
+          - not alb.waf_fail_open_enabled | bool
+
+    # ------------------------------------------------------------------------------------------
+
+    - name: Update an ALB with different attributes - check_mode
+      elb_application_lb:
+        name: "{{ alb_name }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: present
+        listeners:
+          - Protocol: HTTP
+            Port: 80
+            DefaultActions:
+              - Type: forward
+                TargetGroupName: "{{ tg_name }}"
+        ip_address_type: 'dualstack'
+        http2: no
+        http_desync_mitigation_mode: monitor
+        http_drop_invalid_header_fields: yes
+        http_x_amzn_tls_version_and_cipher_suite: yes
+        http_xff_client_port: yes
+        waf_fail_open: yes
+      register: alb
+      check_mode: yes
+
+    - assert:
+        that:
+          - alb is changed
+          - alb.msg is match('Would have updated ALB if not in check mode.')
+
+    - name: Update an ALB with different attributes
+      elb_application_lb:
+        name: "{{ alb_name }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: present
+        listeners:
+          - Protocol: HTTP
+            Port: 80
+            DefaultActions:
+              - Type: forward
+                TargetGroupName: "{{ tg_name }}"
+        ip_address_type: 'dualstack'
+        http2: no
+        http_desync_mitigation_mode: monitor
+        http_drop_invalid_header_fields: yes
+        http_x_amzn_tls_version_and_cipher_suite: yes
+        http_xff_client_port: yes
+        waf_fail_open: yes
+      register: alb
+
+    - assert:
+        that:
+          - alb is changed
+          - alb.ip_address_type == 'dualstack'
+          - not alb.routing_http2_enabled | bool
+          - alb.routing_http_desync_mitigation_mode == 'monitor'
+          - alb.routing_http_drop_invalid_header_fields_enabled | bool
+          - alb.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
+          - alb.routing_http_xff_client_port_enabled | bool
+          - alb.waf_fail_open_enabled | bool
+
+    - name: Update an ALB with different attributes (idempotence) - check_mode
+      elb_application_lb:
+        name: "{{ alb_name }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: present
+        listeners:
+          - Protocol: HTTP
+            Port: 80
+            DefaultActions:
+              - Type: forward
+                TargetGroupName: "{{ tg_name }}"
+        ip_address_type: 'dualstack'
+        http2: no
+        http_desync_mitigation_mode: monitor
+        http_drop_invalid_header_fields: yes
+        http_x_amzn_tls_version_and_cipher_suite: yes
+        http_xff_client_port: yes
+        waf_fail_open: yes
+      register: alb
+      check_mode: yes
+
+    - assert:
+        that:
+          - alb is not changed
+          - alb.msg is match('IN CHECK MODE - no changes to make to ALB specified.')
+
+    - name: Update an ALB with different attributes (idempotence)
+      elb_application_lb:
+        name: "{{ alb_name }}"
+        subnets: "{{ public_subnets }}"
+        security_groups: "{{ sec_group.group_id }}"
+        state: present
+        listeners:
+          - Protocol: HTTP
+            Port: 80
+            DefaultActions:
+              - Type: forward
+                TargetGroupName: "{{ tg_name }}"
+        ip_address_type: 'dualstack'
+        http2: no
+        http_desync_mitigation_mode: monitor
+        http_drop_invalid_header_fields: yes
+        http_x_amzn_tls_version_and_cipher_suite: yes
+        http_xff_client_port: yes
+        waf_fail_open: yes
+      register: alb
+
+    - assert:
+        that:
+          - alb is not changed
+          - alb.ip_address_type == 'dualstack'
+          - not alb.routing_http2_enabled | bool
+          - alb.routing_http_desync_mitigation_mode == 'monitor'
+          - alb.routing_http_drop_invalid_header_fields_enabled | bool
+          - alb.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
+          - alb.routing_http_xff_client_port_enabled | bool
+          - alb.waf_fail_open_enabled | bool
 
     # ------------------------------------------------------------------------------------------
 
@@ -387,6 +519,12 @@
               - Type: forward
                 TargetGroupName: "{{ tg_name }}"
         ip_address_type: 'ipv4'
+        http2: no
+        http_desync_mitigation_mode: monitor
+        http_drop_invalid_header_fields: yes
+        http_x_amzn_tls_version_and_cipher_suite: yes
+        http_xff_client_port: yes
+        waf_fail_open: yes
       register: alb
       check_mode: yes
 
@@ -408,12 +546,24 @@
               - Type: forward
                 TargetGroupName: "{{ tg_name }}"
         ip_address_type: 'ipv4'
+        http2: no
+        http_desync_mitigation_mode: monitor
+        http_drop_invalid_header_fields: yes
+        http_x_amzn_tls_version_and_cipher_suite: yes
+        http_xff_client_port: yes
+        waf_fail_open: yes
       register: alb
 
     - assert:
         that:
           - alb is changed
           - alb.ip_address_type == 'ipv4'
+          - not alb.routing_http2_enabled | bool
+          - alb.routing_http_desync_mitigation_mode == 'monitor'
+          - alb.routing_http_drop_invalid_header_fields_enabled | bool
+          - alb.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
+          - alb.routing_http_xff_client_port_enabled | bool
+          - alb.waf_fail_open_enabled | bool
 
     - name: Update an ALB with different ip address type (idempotence) - check_mode
       elb_application_lb:
@@ -428,6 +578,12 @@
               - Type: forward
                 TargetGroupName: "{{ tg_name }}"
         ip_address_type: 'ipv4'
+        http2: no
+        http_desync_mitigation_mode: monitor
+        http_drop_invalid_header_fields: yes
+        http_x_amzn_tls_version_and_cipher_suite: yes
+        http_xff_client_port: yes
+        waf_fail_open: yes
       register: alb
       check_mode: yes
 
@@ -449,12 +605,24 @@
               - Type: forward
                 TargetGroupName: "{{ tg_name }}"
         ip_address_type: 'ipv4'
+        http2: no
+        http_desync_mitigation_mode: monitor
+        http_drop_invalid_header_fields: yes
+        http_x_amzn_tls_version_and_cipher_suite: yes
+        http_xff_client_port: yes
+        waf_fail_open: yes
       register: alb
 
     - assert:
         that:
           - alb is not changed
           - alb.ip_address_type == 'ipv4'
+          - not alb.routing_http2_enabled | bool
+          - alb.routing_http_desync_mitigation_mode == 'monitor'
+          - alb.routing_http_drop_invalid_header_fields_enabled | bool
+          - alb.routing_http_x_amzn_tls_version_and_cipher_suite_enabled | bool
+          - alb.routing_http_xff_client_port_enabled | bool
+          - alb.waf_fail_open_enabled | bool
 
     # ------------------------------------------------------------------------------------------
 
