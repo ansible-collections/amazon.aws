@@ -25,6 +25,7 @@ options:
   deregistration_connection_termination:
     description:
       - Indicates whether the load balancer terminates connections at the end of the deregistration timeout.
+      - Using this option is only supported when attaching to a Network Load Balancer (NLB).
     type: bool
     default: false
     required: false
@@ -127,6 +128,14 @@ options:
       - Valid values are C(lb_cookie), C(app_cookie) or C(source_ip).
       - If not set AWS will default to C(lb_cookie) for Application Load Balancers or C(source_ip) for Network Load Balancers.
     type: str
+  load_balancing_algorithm_type:
+    description:
+      - The type of load balancing algorithm to use.
+      - Changing the load balancing algorithm is only supported when used with Application Load Balancers (ALB).
+      - If not set AWS will default to C(round_robin).
+    choices: ['round_robin', 'least_outstanding_requests']
+    type: str
+    version_added: 3.2.0
   successful_response_codes:
     description:
       - The HTTP codes to use when checking for a successful response from a target.
@@ -387,6 +396,12 @@ stickiness_type:
     returned: when state present
     type: str
     sample: lb_cookie
+load_balancing_algorithm_type:
+    description: The type load balancing algorithm used.
+    returned: when state present
+    type: str
+    version_added: 3.2.0
+    sample: least_outstanding_requests
 tags:
     description: The tags attached to the target group.
     returned: when state present
@@ -486,6 +501,71 @@ def wait_for_status(connection, module, target_group_arn, targets, status):
     return status_achieved, result
 
 
+def create_or_update_attributes(connection, module, target_group, new_target_group):
+    changed = False
+    target_type = module.params.get("target_type")
+    deregistration_delay_timeout = module.params.get("deregistration_delay_timeout")
+    deregistration_connection_termination = module.params.get("deregistration_connection_termination")
+    stickiness_enabled = module.params.get("stickiness_enabled")
+    stickiness_lb_cookie_duration = module.params.get("stickiness_lb_cookie_duration")
+    stickiness_type = module.params.get("stickiness_type")
+    stickiness_app_cookie_duration = module.params.get("stickiness_app_cookie_duration")
+    stickiness_app_cookie_name = module.params.get("stickiness_app_cookie_name")
+    preserve_client_ip_enabled = module.params.get("preserve_client_ip_enabled")
+    proxy_protocol_v2_enabled = module.params.get("proxy_protocol_v2_enabled")
+    load_balancing_algorithm_type = module.params.get("load_balancing_algorithm_type")
+
+    # Now set target group attributes
+    update_attributes = []
+
+    # Get current attributes
+    current_tg_attributes = get_tg_attributes(connection, module, target_group['TargetGroupArn'])
+
+    if deregistration_delay_timeout is not None:
+        if str(deregistration_delay_timeout) != current_tg_attributes['deregistration_delay_timeout_seconds']:
+            update_attributes.append({'Key': 'deregistration_delay.timeout_seconds', 'Value': str(deregistration_delay_timeout)})
+    if deregistration_connection_termination is not None:
+        if deregistration_connection_termination and current_tg_attributes.get('deregistration_delay_connection_termination_enabled') != "true":
+            update_attributes.append({'Key': 'deregistration_delay.connection_termination.enabled', 'Value': 'true'})
+    if stickiness_enabled is not None:
+        if stickiness_enabled and current_tg_attributes['stickiness_enabled'] != "true":
+            update_attributes.append({'Key': 'stickiness.enabled', 'Value': 'true'})
+    if stickiness_lb_cookie_duration is not None:
+        if str(stickiness_lb_cookie_duration) != current_tg_attributes['stickiness_lb_cookie_duration_seconds']:
+            update_attributes.append({'Key': 'stickiness.lb_cookie.duration_seconds', 'Value': str(stickiness_lb_cookie_duration)})
+    if stickiness_type is not None:
+        if stickiness_type != current_tg_attributes.get('stickiness_type'):
+            update_attributes.append({'Key': 'stickiness.type', 'Value': stickiness_type})
+    if stickiness_app_cookie_name is not None:
+        if stickiness_app_cookie_name != current_tg_attributes.get('stickiness_app_cookie_name'):
+            update_attributes.append({'Key': 'stickiness.app_cookie.cookie_name', 'Value': str(stickiness_app_cookie_name)})
+    if stickiness_app_cookie_duration is not None:
+        if str(stickiness_app_cookie_duration) != current_tg_attributes['stickiness_app_cookie_duration_seconds']:
+            update_attributes.append({'Key': 'stickiness.app_cookie.duration_seconds', 'Value': str(stickiness_app_cookie_duration)})
+    if preserve_client_ip_enabled is not None:
+        if target_type not in ('udp', 'tcp_udp'):
+            if str(preserve_client_ip_enabled).lower() != current_tg_attributes.get('preserve_client_ip_enabled'):
+                update_attributes.append({'Key': 'preserve_client_ip.enabled', 'Value': str(preserve_client_ip_enabled).lower()})
+    if proxy_protocol_v2_enabled is not None:
+        if str(proxy_protocol_v2_enabled).lower() != current_tg_attributes.get('proxy_protocol_v2_enabled'):
+            update_attributes.append({'Key': 'proxy_protocol_v2.enabled', 'Value': str(proxy_protocol_v2_enabled).lower()})
+    if load_balancing_algorithm_type is not None:
+        if str(load_balancing_algorithm_type) != current_tg_attributes['load_balancing_algorithm_type']:
+            update_attributes.append({'Key': 'load_balancing.algorithm.type', 'Value': str(load_balancing_algorithm_type)})
+
+    if update_attributes:
+        try:
+            connection.modify_target_group_attributes(TargetGroupArn=target_group['TargetGroupArn'], Attributes=update_attributes, aws_retry=True)
+            changed = True
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            # Something went wrong setting attributes. If this target group was created during this task, delete it to leave a consistent state
+            if new_target_group:
+                connection.delete_target_group(TargetGroupArn=target_group['TargetGroupArn'], aws_retry=True)
+            module.fail_json_aws(e, msg="Couldn't delete target group")
+
+    return changed
+
+
 def create_or_update_target_group(connection, module):
 
     changed = False
@@ -500,15 +580,6 @@ def create_or_update_target_group(connection, module):
         params['VpcId'] = module.params.get("vpc_id")
     tags = module.params.get("tags")
     purge_tags = module.params.get("purge_tags")
-    deregistration_delay_timeout = module.params.get("deregistration_delay_timeout")
-    deregistration_connection_termination = module.params.get("deregistration_connection_termination")
-    stickiness_enabled = module.params.get("stickiness_enabled")
-    stickiness_lb_cookie_duration = module.params.get("stickiness_lb_cookie_duration")
-    stickiness_type = module.params.get("stickiness_type")
-    stickiness_app_cookie_duration = module.params.get("stickiness_app_cookie_duration")
-    stickiness_app_cookie_name = module.params.get("stickiness_app_cookie_name")
-    preserve_client_ip_enabled = module.params.get("preserve_client_ip_enabled")
-    proxy_protocol_v2_enabled = module.params.get("proxy_protocol_v2_enabled")
 
     health_option_keys = [
         "health_check_path", "health_check_protocol", "health_check_interval", "health_check_timeout",
@@ -549,11 +620,11 @@ def create_or_update_target_group(connection, module):
                 params['Matcher']['HttpCode'] = module.params.get("successful_response_codes")
 
     # Get target group
-    tg = get_target_group(connection, module)
+    target_group = get_target_group(connection, module)
 
-    if tg:
+    if target_group:
         diffs = [param for param in ('Port', 'Protocol', 'VpcId')
-                 if tg.get(param) != params.get(param)]
+                 if target_group.get(param) != params.get(param)]
         if diffs:
             module.fail_json(msg="Cannot modify %s parameter(s) for a target group" %
                              ", ".join(diffs))
@@ -564,39 +635,39 @@ def create_or_update_target_group(connection, module):
         if health_options:
 
             # Health check protocol
-            if 'HealthCheckProtocol' in params and tg['HealthCheckProtocol'] != params['HealthCheckProtocol']:
+            if 'HealthCheckProtocol' in params and target_group['HealthCheckProtocol'] != params['HealthCheckProtocol']:
                 health_check_params['HealthCheckProtocol'] = params['HealthCheckProtocol']
 
             # Health check port
-            if 'HealthCheckPort' in params and tg['HealthCheckPort'] != params['HealthCheckPort']:
+            if 'HealthCheckPort' in params and target_group['HealthCheckPort'] != params['HealthCheckPort']:
                 health_check_params['HealthCheckPort'] = params['HealthCheckPort']
 
             # Health check interval
-            if 'HealthCheckIntervalSeconds' in params and tg['HealthCheckIntervalSeconds'] != params['HealthCheckIntervalSeconds']:
+            if 'HealthCheckIntervalSeconds' in params and target_group['HealthCheckIntervalSeconds'] != params['HealthCheckIntervalSeconds']:
                 health_check_params['HealthCheckIntervalSeconds'] = params['HealthCheckIntervalSeconds']
 
             # Health check timeout
-            if 'HealthCheckTimeoutSeconds' in params and tg['HealthCheckTimeoutSeconds'] != params['HealthCheckTimeoutSeconds']:
+            if 'HealthCheckTimeoutSeconds' in params and target_group['HealthCheckTimeoutSeconds'] != params['HealthCheckTimeoutSeconds']:
                 health_check_params['HealthCheckTimeoutSeconds'] = params['HealthCheckTimeoutSeconds']
 
             # Healthy threshold
-            if 'HealthyThresholdCount' in params and tg['HealthyThresholdCount'] != params['HealthyThresholdCount']:
+            if 'HealthyThresholdCount' in params and target_group['HealthyThresholdCount'] != params['HealthyThresholdCount']:
                 health_check_params['HealthyThresholdCount'] = params['HealthyThresholdCount']
 
             # Unhealthy threshold
-            if 'UnhealthyThresholdCount' in params and tg['UnhealthyThresholdCount'] != params['UnhealthyThresholdCount']:
+            if 'UnhealthyThresholdCount' in params and target_group['UnhealthyThresholdCount'] != params['UnhealthyThresholdCount']:
                 health_check_params['UnhealthyThresholdCount'] = params['UnhealthyThresholdCount']
 
             # Only need to check response code and path for http(s) health checks
-            if tg['HealthCheckProtocol'] in ['HTTP', 'HTTPS']:
+            if target_group['HealthCheckProtocol'] in ['HTTP', 'HTTPS']:
                 # Health check path
-                if 'HealthCheckPath' in params and tg['HealthCheckPath'] != params['HealthCheckPath']:
+                if 'HealthCheckPath' in params and target_group['HealthCheckPath'] != params['HealthCheckPath']:
                     health_check_params['HealthCheckPath'] = params['HealthCheckPath']
 
                 # Matcher (successful response codes)
                 # TODO: required and here?
                 if 'Matcher' in params:
-                    current_matcher_list = tg['Matcher']['HttpCode'].split(',')
+                    current_matcher_list = target_group['Matcher']['HttpCode'].split(',')
                     requested_matcher_list = params['Matcher']['HttpCode'].split(',')
                     if set(current_matcher_list) != set(requested_matcher_list):
                         health_check_params['Matcher'] = {}
@@ -604,7 +675,7 @@ def create_or_update_target_group(connection, module):
 
             try:
                 if health_check_params:
-                    connection.modify_target_group(TargetGroupArn=tg['TargetGroupArn'], aws_retry=True, **health_check_params)
+                    connection.modify_target_group(TargetGroupArn=target_group['TargetGroupArn'], aws_retry=True, **health_check_params)
                     changed = True
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Couldn't update target group")
@@ -615,7 +686,7 @@ def create_or_update_target_group(connection, module):
             # describe_target_health seems to be the only way to get them
             try:
                 current_targets = connection.describe_target_health(
-                    TargetGroupArn=tg['TargetGroupArn'], aws_retry=True)
+                    TargetGroupArn=target_group['TargetGroupArn'], aws_retry=True)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Couldn't get target group health")
 
@@ -647,14 +718,16 @@ def create_or_update_target_group(connection, module):
 
                         changed = True
                         try:
-                            connection.register_targets(TargetGroupArn=tg['TargetGroupArn'], Targets=instances_to_add, aws_retry=True)
+                            connection.register_targets(TargetGroupArn=target_group['TargetGroupArn'], Targets=instances_to_add, aws_retry=True)
                         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                             module.fail_json_aws(e, msg="Couldn't register targets")
 
                         if module.params.get("wait"):
-                            status_achieved, registered_instances = wait_for_status(connection, module, tg['TargetGroupArn'], instances_to_add, 'healthy')
+                            status_achieved, registered_instances = wait_for_status(
+                                connection, module, target_group['TargetGroupArn'], instances_to_add, 'healthy')
                             if not status_achieved:
-                                module.fail_json(msg='Error waiting for target registration to be healthy - please check the AWS console')
+                                module.fail_json(
+                                    msg='Error waiting for target registration to be healthy - please check the AWS console')
 
                     remove_instances = set(current_instance_ids) - set(new_instance_ids)
 
@@ -666,14 +739,16 @@ def create_or_update_target_group(connection, module):
 
                         changed = True
                         try:
-                            connection.deregister_targets(TargetGroupArn=tg['TargetGroupArn'], Targets=instances_to_remove, aws_retry=True)
+                            connection.deregister_targets(TargetGroupArn=target_group['TargetGroupArn'], Targets=instances_to_remove, aws_retry=True)
                         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                             module.fail_json_aws(e, msg="Couldn't remove targets")
 
                         if module.params.get("wait"):
-                            status_achieved, registered_instances = wait_for_status(connection, module, tg['TargetGroupArn'], instances_to_remove, 'unused')
+                            status_achieved, registered_instances = wait_for_status(
+                                connection, module, target_group['TargetGroupArn'], instances_to_remove, 'unused')
                             if not status_achieved:
-                                module.fail_json(msg='Error waiting for target deregistration - please check the AWS console')
+                                module.fail_json(
+                                    msg='Error waiting for target deregistration - please check the AWS console')
 
                 # register lambda target
                 else:
@@ -691,7 +766,7 @@ def create_or_update_target_group(connection, module):
                         if changed:
                             if target.get("Id"):
                                 response = connection.register_targets(
-                                    TargetGroupArn=tg['TargetGroupArn'],
+                                    TargetGroupArn=target_group['TargetGroupArn'],
                                     Targets=[
                                         {
                                             "Id": target['Id']
@@ -715,14 +790,16 @@ def create_or_update_target_group(connection, module):
 
                         changed = True
                         try:
-                            connection.deregister_targets(TargetGroupArn=tg['TargetGroupArn'], Targets=instances_to_remove, aws_retry=True)
+                            connection.deregister_targets(TargetGroupArn=target_group['TargetGroupArn'], Targets=instances_to_remove, aws_retry=True)
                         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                             module.fail_json_aws(e, msg="Couldn't remove targets")
 
                         if module.params.get("wait"):
-                            status_achieved, registered_instances = wait_for_status(connection, module, tg['TargetGroupArn'], instances_to_remove, 'unused')
+                            status_achieved, registered_instances = wait_for_status(
+                                connection, module, target_group['TargetGroupArn'], instances_to_remove, 'unused')
                             if not status_achieved:
-                                module.fail_json(msg='Error waiting for target deregistration - please check the AWS console')
+                                module.fail_json(
+                                    msg='Error waiting for target deregistration - please check the AWS console')
 
                 # remove lambda targets
                 else:
@@ -733,7 +810,7 @@ def create_or_update_target_group(connection, module):
                         target_to_remove = current_targets["TargetHealthDescriptions"][0]["Target"]["Id"]
                     if changed:
                         connection.deregister_targets(
-                            TargetGroupArn=tg['TargetGroupArn'], Targets=[{"Id": target_to_remove}], aws_retry=True)
+                            TargetGroupArn=target_group['TargetGroupArn'], Targets=[{"Id": target_to_remove}], aws_retry=True)
     else:
         try:
             connection.create_target_group(aws_retry=True, **params)
@@ -742,18 +819,18 @@ def create_or_update_target_group(connection, module):
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Couldn't create target group")
 
-        tg = get_target_group(connection, module, retry_missing=True)
+        target_group = get_target_group(connection, module, retry_missing=True)
 
         if module.params.get("targets"):
             if target_type != "lambda":
                 params['Targets'] = module.params.get("targets")
                 try:
-                    connection.register_targets(TargetGroupArn=tg['TargetGroupArn'], Targets=params['Targets'], aws_retry=True)
+                    connection.register_targets(TargetGroupArn=target_group['TargetGroupArn'], Targets=params['Targets'], aws_retry=True)
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     module.fail_json_aws(e, msg="Couldn't register targets")
 
                 if module.params.get("wait"):
-                    status_achieved, registered_instances = wait_for_status(connection, module, tg['TargetGroupArn'], params['Targets'], 'healthy')
+                    status_achieved, registered_instances = wait_for_status(connection, module, target_group['TargetGroupArn'], params['Targets'], 'healthy')
                     if not status_achieved:
                         module.fail_json(msg='Error waiting for target registration to be healthy - please check the AWS console')
 
@@ -761,7 +838,7 @@ def create_or_update_target_group(connection, module):
                 try:
                     target = module.params.get("targets")[0]
                     response = connection.register_targets(
-                        TargetGroupArn=tg['TargetGroupArn'],
+                        TargetGroupArn=target_group['TargetGroupArn'],
                         Targets=[
                             {
                                 "Id": target["Id"]
@@ -774,61 +851,21 @@ def create_or_update_target_group(connection, module):
                     module.fail_json_aws(
                         e, msg="Couldn't register targets")
 
-    # Now set target group attributes
-    update_attributes = []
+    attributes_update = create_or_update_attributes(connection, module, target_group, new_target_group)
 
-    # Get current attributes
-    current_tg_attributes = get_tg_attributes(connection, module, tg['TargetGroupArn'])
-
-    if deregistration_delay_timeout is not None:
-        if str(deregistration_delay_timeout) != current_tg_attributes['deregistration_delay_timeout_seconds']:
-            update_attributes.append({'Key': 'deregistration_delay.timeout_seconds', 'Value': str(deregistration_delay_timeout)})
-    if deregistration_connection_termination is not None:
-        if deregistration_connection_termination and current_tg_attributes.get('deregistration_delay_connection_termination_enabled') != "true":
-            update_attributes.append({'Key': 'deregistration_delay.connection_termination.enabled', 'Value': 'true'})
-    if stickiness_enabled is not None:
-        if stickiness_enabled and current_tg_attributes['stickiness_enabled'] != "true":
-            update_attributes.append({'Key': 'stickiness.enabled', 'Value': 'true'})
-    if stickiness_lb_cookie_duration is not None:
-        if str(stickiness_lb_cookie_duration) != current_tg_attributes['stickiness_lb_cookie_duration_seconds']:
-            update_attributes.append({'Key': 'stickiness.lb_cookie.duration_seconds', 'Value': str(stickiness_lb_cookie_duration)})
-    if stickiness_type is not None:
-        if stickiness_type != current_tg_attributes.get('stickiness_type'):
-            update_attributes.append({'Key': 'stickiness.type', 'Value': stickiness_type})
-    if stickiness_app_cookie_name is not None:
-        if stickiness_app_cookie_name != current_tg_attributes.get('stickiness_app_cookie_name'):
-            update_attributes.append({'Key': 'stickiness.app_cookie.cookie_name', 'Value': str(stickiness_app_cookie_name)})
-    if stickiness_app_cookie_duration is not None:
-        if str(stickiness_app_cookie_duration) != current_tg_attributes['stickiness_app_cookie_duration_seconds']:
-            update_attributes.append({'Key': 'stickiness.app_cookie.duration_seconds', 'Value': str(stickiness_app_cookie_duration)})
-    if preserve_client_ip_enabled is not None:
-        if target_type not in ('udp', 'tcp_udp'):
-            if str(preserve_client_ip_enabled).lower() != current_tg_attributes.get('preserve_client_ip_enabled'):
-                update_attributes.append({'Key': 'preserve_client_ip.enabled', 'Value': str(preserve_client_ip_enabled).lower()})
-    if proxy_protocol_v2_enabled is not None:
-        if str(proxy_protocol_v2_enabled).lower() != current_tg_attributes.get('proxy_protocol_v2_enabled'):
-            update_attributes.append({'Key': 'proxy_protocol_v2.enabled', 'Value': str(proxy_protocol_v2_enabled).lower()})
-
-    if update_attributes:
-        try:
-            connection.modify_target_group_attributes(TargetGroupArn=tg['TargetGroupArn'], Attributes=update_attributes, aws_retry=True)
-            changed = True
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            # Something went wrong setting attributes. If this target group was created during this task, delete it to leave a consistent state
-            if new_target_group:
-                connection.delete_target_group(TargetGroupArn=tg['TargetGroupArn'], aws_retry=True)
-            module.fail_json_aws(e, msg="Couldn't delete target group")
+    if attributes_update:
+        changed = True
 
     # Tags - only need to play with tags if tags parameter has been set to something
     if tags:
         # Get tags
-        current_tags = get_target_group_tags(connection, module, tg['TargetGroupArn'])
+        current_tags = get_target_group_tags(connection, module, target_group['TargetGroupArn'])
 
         # Delete necessary tags
         tags_need_modify, tags_to_delete = compare_aws_tags(boto3_tag_list_to_ansible_dict(current_tags), tags, purge_tags)
         if tags_to_delete:
             try:
-                connection.remove_tags(ResourceArns=[tg['TargetGroupArn']], TagKeys=tags_to_delete, aws_retry=True)
+                connection.remove_tags(ResourceArns=[target_group['TargetGroupArn']], TagKeys=tags_to_delete, aws_retry=True)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Couldn't delete tags from target group")
             changed = True
@@ -836,21 +873,21 @@ def create_or_update_target_group(connection, module):
         # Add/update tags
         if tags_need_modify:
             try:
-                connection.add_tags(ResourceArns=[tg['TargetGroupArn']], Tags=ansible_dict_to_boto3_tag_list(tags_need_modify), aws_retry=True)
+                connection.add_tags(ResourceArns=[target_group['TargetGroupArn']], Tags=ansible_dict_to_boto3_tag_list(tags_need_modify), aws_retry=True)
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Couldn't add tags to target group")
             changed = True
 
     # Get the target group again
-    tg = get_target_group(connection, module)
+    target_group = get_target_group(connection, module)
 
     # Get the target group attributes again
-    tg.update(get_tg_attributes(connection, module, tg['TargetGroupArn']))
+    target_group.update(get_tg_attributes(connection, module, target_group['TargetGroupArn']))
 
-    # Convert tg to snake_case
-    snaked_tg = camel_dict_to_snake_dict(tg)
+    # Convert target_group to snake_case
+    snaked_tg = camel_dict_to_snake_dict(target_group)
 
-    snaked_tg['tags'] = boto3_tag_list_to_ansible_dict(get_target_group_tags(connection, module, tg['TargetGroupArn']))
+    snaked_tg['tags'] = boto3_tag_list_to_ansible_dict(get_target_group_tags(connection, module, target_group['TargetGroupArn']))
 
     module.exit_json(changed=changed, **snaked_tg)
 
@@ -891,6 +928,7 @@ def main():
         stickiness_lb_cookie_duration=dict(type='int'),
         stickiness_app_cookie_duration=dict(type='int'),
         stickiness_app_cookie_name=dict(),
+        load_balancing_algorithm_type=dict(type='str', choices=['round_robin', 'least_outstanding_requests']),
         state=dict(required=True, choices=['present', 'absent']),
         successful_response_codes=dict(),
         tags=dict(default={}, type='dict'),
