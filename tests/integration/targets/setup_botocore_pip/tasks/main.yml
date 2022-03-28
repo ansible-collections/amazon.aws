@@ -4,6 +4,7 @@
 
 - name: 'Create temporary directory for pip environment'
   tempfile:
+    path: /var/tmp
     state: directory
     prefix: botocore
     suffix: .test
