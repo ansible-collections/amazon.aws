@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: sqs_queue
 version_added: 1.0.0
@@ -64,7 +64,9 @@ options:
     type: int
   policy:
     description:
-      - The JSON dict policy to attach to queue.
+      - Policy to attach to the queue.
+      - Policy body can be YAML or JSON.
+      - This is required for certain use cases for example with S3 bucket notifications.
     type: dict
   redrive_policy:
     description:
@@ -96,12 +98,12 @@ options:
     type: bool
     default: false
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 
 '''
 
-RETURN = '''
+RETURN = r'''
 content_based_deduplication:
     description: Enables content-based deduplication. Used for FIFOs only.
     type: bool
@@ -169,7 +171,7 @@ tags:
     sample: '{"Env": "prod"}'
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 - name: Create SQS queue with redrive policy
   community.aws.sqs_queue:
     name: my-queue
@@ -210,6 +212,29 @@ EXAMPLES = '''
     region: ap-southeast-2
     kms_master_key_id: alias/MyQueueKey
     kms_data_key_reuse_period_seconds: 3600
+
+- name: Example queue allowing s3 bucket notifications
+  sqs_queue:
+    name: "S3Notifications"
+    default_visibility_timeout: 120
+    message_retention_period: 86400
+    maximum_message_size: 1024
+    delivery_delay: 30
+    receive_message_wait_time: 20
+    policy:
+      Version: 2012-10-17
+      Id: s3-queue-policy
+      Statement:
+        - Sid: allowNotifications
+          Effect: Allow
+          Principal:
+            Service: s3.amazonaws.com
+          Action:
+            - SQS:SendMessage
+          Resource: "arn:aws:sqs:*:*:S3Notifications"
+          Condition:
+            ArnLike:
+              aws:SourceArn: "arn:aws:s3:*:*:SomeBucket"
 
 - name: Delete SQS queue
   community.aws.sqs_queue:

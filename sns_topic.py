@@ -44,6 +44,8 @@ options:
   policy:
     description:
       - Policy to apply to the SNS topic.
+      - Policy body can be YAML or JSON.
+      - This is required for certain use cases for example with S3 bucket notifications.
     type: dict
   delivery_policy:
     description:
@@ -155,20 +157,45 @@ EXAMPLES = r"""
     delivery_policy:
       http:
         defaultHealthyRetryPolicy:
-            minDelayTarget: 2
-            maxDelayTarget: 4
-            numRetries: 3
-            numMaxDelayRetries: 5
-            backoffFunction: "<linear|arithmetic|geometric|exponential>"
+          minDelayTarget: 2
+          maxDelayTarget: 4
+          numRetries: 9
+          numMaxDelayRetries: 5
+          numMinDelayRetries: 2
+          numNoDelayRetries: 2
+          backoffFunction: "linear"
         disableSubscriptionOverrides: True
         defaultThrottlePolicy:
-            maxReceivesPerSecond: 10
+          maxReceivesPerSecond: 10
     subscriptions:
       - endpoint: "my_email_address@example.com"
         protocol: "email"
       - endpoint: "my_mobile_number"
         protocol: "sms"
 
+- name: Create a topic permitting S3 bucket notifications
+  community.aws.sns_topic:
+    name: "S3Notifications"
+    state: present
+    display_name: "S3 notifications SNS topic"
+    policy:
+      Id: s3-topic-policy
+      Version: 2012-10-17
+      Statement:
+        - Sid: Statement-id
+          Effect: Allow
+          Resource: "arn:aws:sns:*:*:S3Notifications"
+          Principal:
+            Service: s3.amazonaws.com
+          Action: sns:Publish
+          Condition:
+            ArnLike:
+              aws:SourceArn: "arn:aws:s3:*:*:SomeBucket"
+
+- name: Example deleting a topic
+  community.aws.sns_topic:
+    name: "ExampleTopic"
+    state: absent
 """
 
 RETURN = r'''
@@ -177,7 +204,7 @@ sns_arn:
     type: str
     returned: always
     sample: "arn:aws:sns:us-east-2:111111111111:my_topic_name"
-community.aws.sns_topic:
+sns_topic:
   description: Dict of sns topic details
   type: complex
   returned: always
