@@ -514,7 +514,7 @@
       lookup: id
       purge_tags: yes
       tags:
-        Name: Public routeroute_spec table
+        Name: Public route table
         Updated: new_tag
     check_mode: true
     register: check_mode_results

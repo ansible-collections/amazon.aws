@@ -48,18 +48,13 @@ options:
     type: str
   routes:
     description:
-        - >
-          List of routes in the route table.
-        - >
-          Routes are specified as dicts containing the keys 'dest' and one of 'gateway_id',
-          'instance_id', 'network_interface_id', or 'vpc_peering_connection_id'.
-        - >
-          The value of 'dest' is used for the destination match. It may be a IPv4 CIDR block
+        - List of routes in the route table.
+        - Routes are specified as dicts containing the keys C(dest) and one of C(gateway_id),
+          C(instance_id), C(network_interface_id), or C(vpc_peering_connection_id).
+        - The value of C(dest) is used for the destination match. It may be a IPv4 CIDR block
           or a IPv6 CIDR block.
-        - >
-          If 'gateway_id' is specified, you can refer to the VPC's IGW by using the value 'igw'.
-        - >
-          Routes are required for present states.
+        - If I(gateway_id) is specified, you can refer to the VPC's IGW by using the value C(igw).
+        - Routes are required for present states.
     type: list
     elements: dict
   state:
