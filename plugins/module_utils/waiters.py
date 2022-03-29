@@ -685,6 +685,25 @@ rds_data = {
                 }
             ]
         },
+        "ReadReplicaPromoted": {
+            "delay": 5,
+            "maxAttempts": 40,
+            "operation": "DescribeDBInstances",
+            "acceptors": [
+                {
+                    "state": "success",
+                    "matcher": "path",
+                    "argument": "length(DBInstances[].StatusInfos) == `0`",
+                    "expected": True
+                },
+                {
+                    "state": "retry",
+                    "matcher": "pathAny",
+                    "argument": "DBInstances[].StatusInfos[].Status",
+                    "expected": "replicating"
+                }
+            ]
+        },
         "RoleAssociated": {
             "delay": 5,
             "maxAttempts": 40,
@@ -1036,6 +1055,12 @@ waiters_by_name = {
         rds_model('DBClusterDeleted'),
         core_waiter.NormalizedOperationMethod(
             rds.describe_db_clusters
+        )),
+    ('RDS', 'read_replica_promoted'): lambda rds: core_waiter.Waiter(
+        'read_replica_promoted',
+        rds_model('ReadReplicaPromoted'),
+        core_waiter.NormalizedOperationMethod(
+            rds.describe_db_instances
         )),
     ('RDS', 'role_associated'): lambda rds: core_waiter.Waiter(
         'role_associated',
