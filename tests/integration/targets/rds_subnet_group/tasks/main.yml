@@ -64,7 +64,7 @@
     register: subnets
 
   - set_fact:
-      subnet_ids: '{{ subnets | community.general.json_query("results[].subnet.id") | list }}'
+      subnet_ids: '{{ subnets.results | map(attribute="subnet.id") | list }}'
 
   # ============================================================
 
