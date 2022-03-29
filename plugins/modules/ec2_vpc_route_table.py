@@ -18,6 +18,12 @@ author:
 - Rob White (@wimnat)
 - Will Thames (@willthames)
 options:
+  gateway_id:
+    description:
+    - The ID of the gateway to associate with the route table.
+    - If I(gateway_id) is C('None') or C(''), gateway will be disassociated with the route table.
+    type: str
+    version_added: 3.2.0
   lookup:
     description: Look up route table by either tags or by route table ID. Non-unique tag lookup will fail.
       If no tags are specified then no lookup for an existing route table is performed and a new
@@ -32,15 +38,15 @@ options:
   purge_routes:
     description: Purge existing routes that are not found in routes.
     type: bool
-    default: 'yes'
+    default: True
   purge_subnets:
     description: Purge existing subnets that are not found in subnets. Ignored unless the subnets option is supplied.
-    default: 'true'
+    default: True
     type: bool
   purge_tags:
     description: Purge existing tags that are not found in route table.
     type: bool
-    default: 'no'
+    default: False
   route_table_id:
     description:
     - The ID of the route table to update or delete.
@@ -105,6 +111,27 @@ EXAMPLES = r'''
         gateway_id: "{{ igw.gateway_id }}"
   register: public_route_table
 
+- name: Create vpc gateway
+  amazon.aws.ec2_vpc_igw:
+    vpc_id: vpc-1245678
+  register: vpc_igw
+
+- name: Create gateway route table
+  amazon.aws.ec2_vpc_route_table:
+    vpc_id: vpc-1245678
+    tags:
+      Name: Gateway route table
+    gateway_id: "{{ vpc_igw.gateway_id }}"
+  register: gateway_route_table
+
+- name: Disassociate gateway from route table
+  amazon.aws.ec2_vpc_route_table:
+    vpc_id: vpc-1245678
+    tags:
+      Name: Gateway route table
+    gateway_id: None
+  register: gateway_route_table
+
 - name: Set up NAT-protected route table
   amazon.aws.ec2_vpc_route_table:
     vpc_id: vpc-1245678
@@ -131,52 +158,72 @@ EXAMPLES = r'''
 
 RETURN = r'''
 route_table:
-  description: Route Table result
+  description: Route Table result.
   returned: always
   type: complex
   contains:
     associations:
-      description: List of subnets associated with the route table
+      description: List of associations between the route table and one or more subnets or a gateway.
       returned: always
       type: complex
       contains:
+        association_state:
+          description: The state of the association.
+          returned: always
+          type: complex
+          contains:
+            state:
+              description: The state of the association.
+              returned: always
+              type: str
+              sample: associated
+            state_message:
+              description: Additional information about the state of the association.
+              returned: when available
+              type: str
+              sample: 'Creating association'
+        gateway_id:
+          description: ID of the internet gateway or virtual private gateway.
+          returned: when route table is a gateway route table
+          type: str
+          sample: igw-03312309
         main:
-          description: Whether this is the main route table
+          description: Whether this is the main route table.
           returned: always
           type: bool
           sample: false
         route_table_association_id:
-          description: ID of association between route table and subnet
+          description: ID of association between route table and subnet.
           returned: always
           type: str
           sample: rtbassoc-ab47cfc3
         route_table_id:
-          description: ID of the route table
+          description: ID of the route table.
           returned: always
           type: str
           sample: rtb-bf779ed7
         subnet_id:
-          description: ID of the subnet
-          returned: always
+          description: ID of the subnet.
+          returned: when route table is a subnet route table
           type: str
           sample: subnet-82055af9
     id:
-      description: ID of the route table (same as route_table_id for backwards compatibility)
+      description: ID of the route table (same as route_table_id for backwards compatibility).
       returned: always
       type: str
       sample: rtb-bf779ed7
     propagating_vgws:
-      description: List of Virtual Private Gateways propagating routes
+      description: List of Virtual Private Gateways propagating routes.
       returned: always
       type: list
       sample: []
     route_table_id:
-      description: ID of the route table
+      description: ID of the route table.
       returned: always
       type: str
       sample: rtb-bf779ed7
     routes:
-      description: List of routes in the route table
+      description: List of routes in the route table.
       returned: always
       type: complex
       contains:
@@ -191,44 +238,44 @@ route_table:
           type: str
           sample: 2600:1f1c:1b3:8f00:8000::/65
         gateway_id:
-          description: ID of the gateway
+          description: ID of the gateway.
           returned: when gateway is local or internet gateway
           type: str
           sample: local
         instance_id:
-          description: ID of a NAT instance
+          description: ID of a NAT instance.
           returned: when the route is via an EC2 instance
           type: str
           sample: i-abcd123456789
         instance_owner_id:
-          description: AWS account owning the NAT instance
+          description: AWS account owning the NAT instance.
           returned: when the route is via an EC2 instance
           type: str
           sample: 123456789012
         nat_gateway_id:
-          description: ID of the NAT gateway
+          description: ID of the NAT gateway.
           returned: when the route is via a NAT gateway
           type: str
           sample: local
         origin:
-          description: mechanism through which the route is in the table
+          description: mechanism through which the route is in the table.
           returned: always
           type: str
           sample: CreateRouteTable
         state:
-          description: state of the route
+          description: state of the route.
           returned: always
           type: str
           sample: active
     tags:
-      description: Tags applied to the route table
+      description: Tags applied to the route table.
       returned: always
       type: dict
       sample:
         Name: Public route table
         Public: 'true'
     vpc_id:
-      description: ID for the VPC in which the route lives
+      description: ID for the VPC in which the route lives.
       returned: always
       type: str
       sample: vpc-6e2d2407
@@ -395,7 +442,11 @@ def route_spec_matches_route(route_spec, route):
 
 
 def route_spec_matches_route_cidr(route_spec, route):
-    return route_spec['DestinationCidrBlock'] == route.get('DestinationCidrBlock')
+    if route_spec.get('DestinationCidrBlock') and route.get('DestinationCidrBlock'):
+        return route_spec.get('DestinationCidrBlock') == route.get('DestinationCidrBlock')
+    if route_spec.get('DestinationIpv6CidrBlock') and route.get('DestinationIpv6CidrBlock'):
+        return route_spec.get('DestinationIpv6CidrBlock') == route.get('DestinationIpv6CidrBlock')
+    return False
 
 
 def rename_key(d, old_key, new_key):
@@ -406,13 +457,12 @@ def index_of_matching_route(route_spec, routes_to_match):
     for i, route in enumerate(routes_to_match):
         if route_spec_matches_route(route_spec, route):
             return "exact", i
-        elif 'Origin' in route_spec and route_spec['Origin'] != 'EnableVgwRoutePropagation':
+        elif 'Origin' in route and route['Origin'] != 'EnableVgwRoutePropagation':  # only replace created routes
             if route_spec_matches_route_cidr(route_spec, route):
                 return "replace", i
 
 
-def ensure_routes(connection=None, module=None, route_table=None, route_specs=None,
-                  propagating_vgw_ids=None, check_mode=None, purge_routes=None):
+def ensure_routes(connection, module, route_table, route_specs, purge_routes):
     routes_to_match = list(route_table['Routes'])
     route_specs_to_create = []
     route_specs_to_recreate = []
@@ -434,16 +484,16 @@ def ensure_routes(connection=None, module=None, route_table=None, route_specs=No
 
     routes_to_delete = []
     if purge_routes:
-        for r in routes_to_match:
-            if not r.get('DestinationCidrBlock'):
+        for route in routes_to_match:
+            if not route.get('DestinationCidrBlock'):
                 module.warn("Skipping purging route {0} because it has no destination cidr block. "
-                            "To remove VPC endpoints from route tables use the ec2_vpc_endpoint module.".format(r))
+                            "To remove VPC endpoints from route tables use the ec2_vpc_endpoint module.".format(route))
                 continue
-            if r['Origin'] == 'CreateRoute':
-                routes_to_delete.append(r)
+            if route['Origin'] == 'CreateRoute':
+                routes_to_delete.append(route)
 
     changed = bool(routes_to_delete or route_specs_to_create or route_specs_to_recreate)
-    if changed and not check_mode:
+    if changed and not module.check_mode:
         for route in routes_to_delete:
             try:
                 connection.delete_route(
@@ -467,34 +517,33 @@ def ensure_routes(connection=None, module=None, route_table=None, route_specs=No
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
                 module.fail_json_aws(e, msg="Couldn't create route")
 
-    return {'changed': bool(changed)}
+    return changed
 
 
-def ensure_subnet_association(connection=None, module=None, vpc_id=None, route_table_id=None, subnet_id=None,
-                              check_mode=None):
+def ensure_subnet_association(connection, module, vpc_id, route_table_id, subnet_id):
     filters = ansible_dict_to_boto3_filter_list({'association.subnet-id': subnet_id, 'vpc-id': vpc_id})
     try:
         route_tables = describe_route_tables_with_backoff(connection, Filters=filters)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Couldn't get route tables")
     for route_table in route_tables:
-        if route_table['RouteTableId'] is None:
-            continue
-        for a in route_table['Associations']:
-            if a['Main']:
-                continue
-            if a['SubnetId'] == subnet_id:
-                if route_table['RouteTableId'] == route_table_id:
-                    return {'changed': False, 'association_id': a['RouteTableAssociationId']}
-                else:
-                    if check_mode:
+        if route_table.get('RouteTableId'):
+            for association in route_table['Associations']:
+                if association['Main']:
+                    continue
+                if association['SubnetId'] == subnet_id:
+                    if route_table['RouteTableId'] == route_table_id:
+                        return {'changed': False, 'association_id': association['RouteTableAssociationId']}
+                    if module.check_mode:
                         return {'changed': True}
                     try:
                         connection.disassociate_route_table(
-                            aws_retry=True, AssociationId=a['RouteTableAssociationId'])
+                            aws_retry=True, AssociationId=association['RouteTableAssociationId'])
                     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                         module.fail_json_aws(e, msg="Couldn't disassociate subnet from route table")
 
+    if module.check_mode:
+        return {'changed': True}
     try:
         association_id = connection.associate_route_table(aws_retry=True,
                                                           RouteTableId=route_table_id,
@@ -504,45 +553,92 @@ def ensure_subnet_association(connection=None, module=None, vpc_id=None, route_t
     return {'changed': True, 'association_id': association_id}
 
 
-def ensure_subnet_associations(connection=None, module=None, route_table=None, subnets=None,
-                               check_mode=None, purge_subnets=None):
-    current_association_ids = [a['RouteTableAssociationId'] for a in route_table['Associations'] if not a['Main']]
+def ensure_subnet_associations(connection, module, route_table, subnets, purge_subnets):
+    current_association_ids = [association['RouteTableAssociationId'] for association in route_table['Associations']
+                               if not association['Main'] and association.get('SubnetId')]
     new_association_ids = []
     changed = False
     for subnet in subnets:
         result = ensure_subnet_association(
             connection=connection, module=module, vpc_id=route_table['VpcId'],
-            route_table_id=route_table['RouteTableId'], subnet_id=subnet['SubnetId'],
-            check_mode=check_mode)
+            route_table_id=route_table['RouteTableId'], subnet_id=subnet['SubnetId'])
         changed = changed or result['changed']
-        if changed and check_mode:
-            return {'changed': True}
+        if changed and module.check_mode:
+            return True
         new_association_ids.append(result['association_id'])
 
     if purge_subnets:
-        to_delete = [a_id for a_id in current_association_ids
-                     if a_id not in new_association_ids]
-
-        for a_id in to_delete:
+        to_delete = [association_id for association_id in current_association_ids
+                     if association_id not in new_association_ids]
+        for association_id in to_delete:
             changed = True
-            if not check_mode:
+            if not module.check_mode:
                 try:
-                    connection.disassociate_route_table(aws_retry=True, AssociationId=a_id)
+                    connection.disassociate_route_table(aws_retry=True, AssociationId=association_id)
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     module.fail_json_aws(e, msg="Couldn't disassociate subnet from route table")
 
-    return {'changed': changed}
+    return changed
 
 
-def ensure_propagation(connection=None, module=None, route_table=None, propagating_vgw_ids=None,
-                       check_mode=None):
+def disassociate_gateway(connection, module, route_table):
+    # Delete all gateway associations that have state = associated
+    # Subnet associations are handled in its method
+    changed = False
+    associations_to_delete = [association['RouteTableAssociationId'] for association in route_table['Associations'] if not association['Main']
+                              and association.get('GatewayId') and association['AssociationState']['State'] in ['associated', 'associating']]
+    for association_id in associations_to_delete:
+        changed = True
+        if not module.check_mode:
+            try:
+                connection.disassociate_route_table(aws_retry=True, AssociationId=association_id)
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                module.fail_json_aws(e, msg="Couldn't disassociate gateway from route table")
+
+    return changed
+
+
+def associate_gateway(connection, module, route_table, gateway_id):
+    filters = ansible_dict_to_boto3_filter_list({'association.gateway-id': gateway_id, 'vpc-id': route_table['VpcId']})
+    try:
+        route_tables = describe_route_tables_with_backoff(connection, Filters=filters)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Couldn't get route tables")
+    for table in route_tables:
+        if table.get('RouteTableId'):
+            for association in table.get('Associations'):
+                if association['Main']:
+                    continue
+                if association.get('GatewayId', '') == gateway_id and (association['AssociationState']['State'] in ['associated', 'associating']):
+                    if table['RouteTableId'] == route_table['RouteTableId']:
+                        return False
+                    elif module.check_mode:
+                        return True
+                    else:
+                        try:
+                            connection.disassociate_route_table(
+                                aws_retry=True, AssociationId=association['RouteTableAssociationId'])
+                        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                            module.fail_json_aws(e, msg="Couldn't disassociate gateway from route table")
+
+    if not module.check_mode:
+        try:
+            connection.associate_route_table(aws_retry=True,
+                                             RouteTableId=route_table['RouteTableId'],
+                                             GatewayId=gateway_id)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg="Couldn't associate gateway with route table")
+    return True
+
+
+def ensure_propagation(connection, module, route_table, propagating_vgw_ids):
     changed = False
     gateways = [gateway['GatewayId'] for gateway in route_table['PropagatingVgws']]
-    to_add = set(propagating_vgw_ids) - set(gateways)
-    if to_add:
+    vgws_to_add = set(propagating_vgw_ids) - set(gateways)
+    if vgws_to_add:
         changed = True
-        if not check_mode:
-            for vgw_id in to_add:
+        if not module.check_mode:
+            for vgw_id in vgws_to_add:
                 try:
                     connection.enable_vgw_route_propagation(
                         aws_retry=True,
@@ -551,7 +647,7 @@ def ensure_propagation(connection=None, module=None, route_table=None, propagati
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     module.fail_json_aws(e, msg="Couldn't enable route propagation")
 
-    return {'changed': changed}
+    return changed
 
 
 def ensure_route_table_absent(connection, module):
@@ -573,10 +669,11 @@ def ensure_route_table_absent(connection, module):
     if route_table is None:
         return {'changed': False}
 
-    # disassociate subnets before deleting route table
+    # disassociate subnets and gateway before deleting route table
     if not module.check_mode:
         ensure_subnet_associations(connection=connection, module=module, route_table=route_table,
-                                   subnets=[], check_mode=False, purge_subnets=purge_subnets)
+                                   subnets=[], purge_subnets=purge_subnets)
+        disassociate_gateway(connection=connection, module=module, route_table=route_table)
         try:
             connection.delete_route_table(aws_retry=True, RouteTableId=route_table['RouteTableId'])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -618,6 +715,7 @@ def create_route_spec(connection, module, vpc_id):
 
 def ensure_route_table_present(connection, module):
 
+    gateway_id = module.params.get('gateway_id')
     lookup = module.params.get('lookup')
     propagating_vgw_ids = module.params.get('propagating_vgw_ids')
     purge_routes = module.params.get('purge_routes')
@@ -668,14 +766,13 @@ def ensure_route_table_present(connection, module):
 
     if routes is not None:
         result = ensure_routes(connection=connection, module=module, route_table=route_table,
-                               route_specs=routes, propagating_vgw_ids=propagating_vgw_ids,
-                               check_mode=module.check_mode, purge_routes=purge_routes)
-        changed = changed or result['changed']
+                               route_specs=routes, purge_routes=purge_routes)
+        changed = changed or result
 
     if propagating_vgw_ids is not None:
         result = ensure_propagation(connection=connection, module=module, route_table=route_table,
-                                    propagating_vgw_ids=propagating_vgw_ids, check_mode=module.check_mode)
-        changed = changed or result['changed']
+                                    propagating_vgw_ids=propagating_vgw_ids)
+        changed = changed or result
 
     if not tags_valid and tags is not None:
         changed |= ensure_ec2_tags(connection, module, route_table['RouteTableId'],
@@ -685,11 +782,18 @@ def ensure_route_table_present(connection, module):
 
     if subnets is not None:
         associated_subnets = find_subnets(connection, module, vpc_id, subnets)
-
         result = ensure_subnet_associations(connection=connection, module=module, route_table=route_table,
-                                            subnets=associated_subnets, check_mode=module.check_mode,
-                                            purge_subnets=purge_subnets)
-        changed = changed or result['changed']
+                                            subnets=associated_subnets, purge_subnets=purge_subnets)
+        changed = changed or result
+
+    if gateway_id == 'None' or gateway_id == '':
+        gateway_changed = disassociate_gateway(connection=connection, module=module, route_table=route_table)
+    elif gateway_id is not None:
+        gateway_changed = associate_gateway(connection=connection, module=module, route_table=route_table, gateway_id=gateway_id)
+    else:
+        gateway_changed = False
+
+    changed = changed or gateway_changed
 
     if changed:
         # pause to allow route table routes/subnets/associations to be updated before exiting with final state
@@ -699,6 +803,7 @@ def ensure_route_table_present(connection, module):
 
 def main():
     argument_spec = dict(
+        gateway_id=dict(type='str'),
         lookup=dict(default='tag', choices=['tag', 'id']),
         propagating_vgw_ids=dict(type='list', elements='str'),
         purge_routes=dict(default=True, type='bool'),
