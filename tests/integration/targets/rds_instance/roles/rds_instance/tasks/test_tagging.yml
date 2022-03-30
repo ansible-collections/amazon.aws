@@ -28,7 +28,7 @@
     - assert:
         that:
           - result.failed
-          - '"DB engine thisisnotavalidengine should be one of" in result.msg'
+          - '"value of engine must be one of" in result.msg'
 
     # Test creation, adding tags and enabling encryption
     - name: Create a mariadb instance
