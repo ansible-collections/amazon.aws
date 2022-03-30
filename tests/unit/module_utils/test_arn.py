@@ -27,6 +27,7 @@ arn_bad_values = [
     ("arn:aws:outpost:us east 1:123456789012:outpost/op-1234567890abcdef0"),
     ("invalid:aws:outpost:us-east-1:123456789012:outpost/op-1234567890abcdef0"),
     ("arn:junk:outpost:us-east-1:123456789012:outpost/op-1234567890abcdef0"),
+    ("arn:aws:outpost:us-east-1:junk:outpost/op-1234567890abcdef0"),
 ]
 
 arn_good_values = [
@@ -52,6 +53,9 @@ arn_good_values = [
     # Some more unusual service names
     dict(partition='aws', service='network-firewall', region='us-east-1', account_id='123456789012', resource='stateful-rulegroup/ExampleDomainList'),
     dict(partition='aws', service='resource-groups', region='us-east-1', account_id='123456789012', resource='group/group-name'),
+    # A special case for resources AWS curate
+    dict(partition='aws', service='network-firewall', region='us-east-1', account_id='aws-managed', resource='stateful-rulegroup/BotNetCommandAndControlDomainsActionOrder'),
+    dict(partition='aws', service='iam', region='', account_id='aws', resource='policy/AWSDirectConnectReadOnlyAccess'),
 ]
 
 
