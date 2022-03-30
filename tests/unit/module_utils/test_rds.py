@@ -285,14 +285,6 @@ def test__handle_errors(method_name, exception, expected):
             ),
         ),
         (
-            "create_db_instance",
-            build_exception("create_db_instance", code="InvalidParameterValue"),
-            *expected(
-                "DB engine fake_engine should be one of aurora, aurora-mysql, aurora-postgresql, mariadb, mysql, oracle-ee, oracle-se, oracle-se1, "
-                + "oracle-se2, postgres, sqlserver-ee, sqlserver-ex, sqlserver-se, sqlserver-web"
-            ),
-        ),
-        (
             "create_db_cluster",
             build_exception("create_db_cluster", code="InvalidParameterValue"),
             *expected(
