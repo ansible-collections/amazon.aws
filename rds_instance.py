@@ -187,8 +187,8 @@ options:
     engine:
         description:
           - The name of the database engine to be used for this DB instance. This is required to create an instance.
-            Valid choices are aurora | aurora-mysql | aurora-postgresql | mariadb | mysql | oracle-ee | oracle-se |
-            oracle-se1 | oracle-se2 | postgres | sqlserver-ee | sqlserver-ex | sqlserver-se | sqlserver-web
+        choices: ['aurora', 'aurora-mysql', 'aurora-postgresql', 'mariadb', 'mysql', 'oracle-ee', 'oracle-ee-cdb',
+                  'oracle-se2', 'oracle-se2-cdb', 'postgres', 'sqlserver-ee', 'sqlserver-se', 'sqlserver-ex', 'sqlserver-web']
         type: str
     engine_version:
         description:
@@ -787,6 +787,9 @@ from ansible_collections.amazon.aws.plugins.module_utils.rds import get_final_id
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_rds_method_attribute
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
 
+valid_engines = ['aurora', 'aurora-mysql', 'aurora-postgresql', 'mariadb', 'mysql', 'oracle-ee', 'oracle-ee-cdb',
+                 'oracle-se2', 'oracle-se2-cdb', 'postgres', 'sqlserver-ee', 'sqlserver-se', 'sqlserver-ex', 'sqlserver-web']
+
 
 def get_rds_method_attribute_name(instance, state, creation_source, read_replica):
     method_name = None
@@ -1147,7 +1150,7 @@ def main():
         enable_cloudwatch_logs_exports=dict(type='list', aliases=['cloudwatch_log_exports'], elements='str'),
         enable_iam_database_authentication=dict(type='bool'),
         enable_performance_insights=dict(type='bool'),
-        engine=dict(),
+        engine=dict(type='str', choices=valid_engines),
         engine_version=dict(),
         final_db_snapshot_identifier=dict(aliases=['final_snapshot_identifier']),
         force_failover=dict(type='bool'),
