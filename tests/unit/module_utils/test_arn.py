@@ -32,30 +32,45 @@ arn_bad_values = [
 
 arn_good_values = [
     # Play about with partition name in valid ways
-    dict(partition='aws', service='outpost', region='us-east-1', account_id='123456789012', resource='outpost/op-1234567890abcdef0'),
-    dict(partition='aws-gov', service='outpost', region='us-gov-east-1', account_id='123456789012', resource='outpost/op-1234567890abcdef0'),
-    dict(partition='aws-cn', service='outpost', region='us-east-1', account_id='123456789012', resource='outpost/op-1234567890abcdef0'),
+    dict(partition='aws', service='outpost', region='us-east-1', account_id='123456789012',
+         resource='outpost/op-1234567890abcdef0'),
+    dict(partition='aws-gov', service='outpost', region='us-gov-east-1', account_id='123456789012',
+         resource='outpost/op-1234567890abcdef0'),
+    dict(partition='aws-cn', service='outpost', region='us-east-1', account_id='123456789012',
+         resource='outpost/op-1234567890abcdef0'),
     # Start the account ID with 0s, it's a 12 digit *string*, if someone treats
     # it as an integer the leading 0s can disappear.
-    dict(partition='aws-cn', service='outpost', region='us-east-1', account_id='000123000123', resource='outpost/op-1234567890abcdef0'),
+    dict(partition='aws-cn', service='outpost', region='us-east-1', account_id='000123000123',
+         resource='outpost/op-1234567890abcdef0'),
     # S3 doesn't "need" region/account_id as bucket names are globally unique
     dict(partition='aws', service='s3', region='', account_id='', resource='bucket/object'),
     # IAM is a 'global' service, so the ARNs don't have regions
-    dict(partition='aws', service='iam', region='', account_id='123456789012', resource='policy/foo/bar/PolicyName'),
-    dict(partition='aws', service='iam', region='', account_id='123456789012', resource='instance-profile/ExampleProfile'),
+    dict(partition='aws', service='iam', region='', account_id='123456789012',
+         resource='policy/foo/bar/PolicyName'),
+    dict(partition='aws', service='iam', region='', account_id='123456789012',
+         resource='instance-profile/ExampleProfile'),
     dict(partition='aws', service='iam', region='', account_id='123456789012', resource='root'),
     # Some examples with different regions
-    dict(partition='aws', service='sqs', region='eu-west-3', account_id='123456789012', resource='example-queue'),
-    dict(partition='aws', service='sqs', region='us-gov-east-1', account_id='123456789012', resource='example-queue'),
-    dict(partition='aws', service='sqs', region='sa-east-1', account_id='123456789012', resource='example-queue'),
-    dict(partition='aws', service='sqs', region='ap-northeast-2', account_id='123456789012', resource='example-queue'),
-    dict(partition='aws', service='sqs', region='ca-central-1', account_id='123456789012', resource='example-queue'),
+    dict(partition='aws', service='sqs', region='eu-west-3', account_id='123456789012',
+         resource='example-queue'),
+    dict(partition='aws', service='sqs', region='us-gov-east-1', account_id='123456789012',
+         resource='example-queue'),
+    dict(partition='aws', service='sqs', region='sa-east-1', account_id='123456789012',
+         resource='example-queue'),
+    dict(partition='aws', service='sqs', region='ap-northeast-2', account_id='123456789012',
+         resource='example-queue'),
+    dict(partition='aws', service='sqs', region='ca-central-1', account_id='123456789012',
+         resource='example-queue'),
     # Some more unusual service names
-    dict(partition='aws', service='network-firewall', region='us-east-1', account_id='123456789012', resource='stateful-rulegroup/ExampleDomainList'),
-    dict(partition='aws', service='resource-groups', region='us-east-1', account_id='123456789012', resource='group/group-name'),
+    dict(partition='aws', service='network-firewall', region='us-east-1', account_id='123456789012',
+         resource='stateful-rulegroup/ExampleDomainList'),
+    dict(partition='aws', service='resource-groups', region='us-east-1', account_id='123456789012',
+         resource='group/group-name'),
     # A special case for resources AWS curate
-    dict(partition='aws', service='network-firewall', region='us-east-1', account_id='aws-managed', resource='stateful-rulegroup/BotNetCommandAndControlDomainsActionOrder'),
-    dict(partition='aws', service='iam', region='', account_id='aws', resource='policy/AWSDirectConnectReadOnlyAccess'),
+    dict(partition='aws', service='network-firewall', region='us-east-1', account_id='aws-managed',
+         resource='stateful-rulegroup/BotNetCommandAndControlDomainsActionOrder'),
+    dict(partition='aws', service='iam', region='', account_id='aws',
+         resource='policy/AWSDirectConnectReadOnlyAccess'),
 ]
 
 
