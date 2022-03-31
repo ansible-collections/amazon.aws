@@ -318,29 +318,9 @@ def compare_iam_roles(existing_roles, target_roles, purge_roles):
             roles_to_add (list): List of IAM roles to add
             roles_to_delete (list): List of IAM roles to delete
     '''
-    if target_roles is None:
-        target_roles = []
-    roles_to_add = []
-    roles_to_remove = []
-    for target_role in target_roles:
-        found = False
-        for existing_role in existing_roles:
-            if target_role['role_arn'] == existing_role['role_arn'] and target_role['feature_name'] == existing_role['feature_name']:
-                found = True
-                break
-        if not found:
-            roles_to_add.append(target_role)
-
-    if purge_roles:
-        for existing_role in existing_roles:
-            found = False
-            for target_role in target_roles:
-                if target_role['role_arn'] == existing_role['role_arn'] and target_role['feature_name'] == existing_role['feature_name']:
-                    found = True
-                    break
-            if not found:
-                roles_to_remove.append(existing_role)
-
+    existing_roles = [dict((k, v) for k, v in role.items() if k != 'status') for role in existing_roles]
+    roles_to_add = [role for role in target_roles if role not in existing_roles]
+    roles_to_remove = [role for role in existing_roles if role not in target_roles] if purge_roles else []
     return roles_to_add, roles_to_remove
 
 
