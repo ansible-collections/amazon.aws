@@ -9,7 +9,7 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 ---
 module: eks_fargate_profile
-version_added: 3.2.0
+version_added: 4.0.0
 short_description: Manage EKS Fargate Profile
 description:
     - Manage EKS Fargate Profile.
