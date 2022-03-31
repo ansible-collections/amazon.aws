@@ -350,8 +350,8 @@ def update_iam_roles(client, module, instance_id, roles_to_add, roles_to_remove)
 
         Parameters:
             client: RDS client
-            module: AWSModule
-            instance_id: DB's instance ID
+            module: AnsibleAWSModule
+            instance_id (str): DB's instance ID
             roles_to_add (list): List of IAM roles to add
             roles_to_delete (list): List of IAM roles to delete
 
