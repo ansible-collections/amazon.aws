@@ -322,14 +322,14 @@ options:
         default: optional
         type: str
       http_put_response_hop_limit:
-        version_added: 3.2.0
+        version_added: 3.3.0
         type: int
         description: >
           The desired HTTP PUT response hop limit for instance metadata requests.
           The larger the number, the further instance metadata requests can travel.
         default: 1
       http_protocol_ipv6:
-        version_added: 3.2.0
+        version_added: 3.3.0
         type: str
         description: >
           - Wether the instance metadata endpoint is available via IPv6 (C(enabled)) or not (C(disabled)).
@@ -337,7 +337,7 @@ options:
         choices: [enabled, disabled]
         default: 'disabled'
       instance_metadata_tags:
-        version_added: 3.2.0
+        version_added: 3.3.0
         type: str
         description:
           - Wether the instance tags are availble (C(enabled)) via metadata endpoint or not (C(disabled)).
