@@ -1,4 +1,4 @@
 minor_changes:
-  - module_utils.rds - Add support and unit tests for addition/removal of IAM roles to/from a db instance in module_utils.elbv2 with waiters (https://github.com/ansible-collections/amazon.aws/pull/714).
+  - module_utils.rds - Add support and unit tests for addition/removal of IAM roles to/from a db instance in module_utils.rds with waiters (https://github.com/ansible-collections/amazon.aws/pull/714).
 bugfixes:
   - module.utils.rds - Add waiter for promoting read replica to fix idempotency issue (https://github.com/ansible-collections/amazon.aws/pull/714).
