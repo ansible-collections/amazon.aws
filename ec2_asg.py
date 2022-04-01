@@ -1138,6 +1138,9 @@ def create_autoscaling_group(connection):
                                      ResourceType='auto-scaling-group',
                                      ResourceId=group_name))
     if not as_groups:
+        if module.check_mode:
+            module.exit_json(changed=True, msg="Would have created AutoScalingGroup if not in check_mode.")
+
         if not vpc_zone_identifier and not availability_zones:
             availability_zones = module.params['availability_zones'] = [zone['ZoneName'] for
                                                                         zone in ec2_connection.describe_availability_zones()['AvailabilityZones']]
@@ -1206,6 +1209,9 @@ def create_autoscaling_group(connection):
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Failed to create Autoscaling Group.")
     else:
+        if module.check_mode:
+            module.exit_json(changed=True, msg="Would have modified AutoScalingGroup if required if not in check_mode.")
+
         as_group = as_groups[0]
         initial_asg_properties = get_properties(as_group)
         changed = False
@@ -1401,6 +1407,8 @@ def delete_autoscaling_group(connection):
         del_notification_config(connection, group_name, notification_topic)
     groups = describe_autoscaling_groups(connection, group_name)
     if groups:
+        if module.check_mode:
+            module.exit_json(changed=True, msg="Would have deleted AutoScalingGroup if not in check_mode.")
         wait_timeout = time.time() + wait_timeout
         if not wait_for_instances:
             delete_asg(connection, group_name, force_delete=True)
@@ -1456,6 +1464,7 @@ def replace(connection):
     min_size = module.params.get('min_size')
     desired_capacity = module.params.get('desired_capacity')
     launch_config_name = module.params.get('launch_config_name')
+
     # Required to maintain the default value being set to 'true'
     if launch_config_name:
         lc_check = module.params.get('lc_check')
@@ -1891,6 +1900,7 @@ def main():
     global module
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
+        supports_check_mode=True,
         mutually_exclusive=[
             ['replace_all_instances', 'replace_instances'],
             ['replace_all_instances', 'detach_instances'],
