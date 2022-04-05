@@ -32,7 +32,8 @@ instance_method_names = [
     'create_db_instance', 'restore_db_instance_to_point_in_time', 'restore_db_instance_from_s3',
     'restore_db_instance_from_db_snapshot', 'create_db_instance_read_replica', 'modify_db_instance',
     'delete_db_instance', 'add_tags_to_resource', 'remove_tags_from_resource', 'list_tags_for_resource',
-    'promote_read_replica', 'stop_db_instance', 'start_db_instance', 'reboot_db_instance'
+    'promote_read_replica', 'stop_db_instance', 'start_db_instance', 'reboot_db_instance', 'add_role_to_db_instance',
+    'remove_role_from_db_instance'
 ]
 
 snapshot_cluster_method_names = [
@@ -65,6 +66,12 @@ def get_rds_method_attribute(method_name, module):
             waiter = 'db_instance_deleted'
         elif method_name == 'stop_db_instance':
             waiter = 'db_instance_stopped'
+        elif method_name == 'add_role_to_db_instance':
+            waiter = 'role_associated'
+        elif method_name == 'remove_role_from_db_instance':
+            waiter = 'role_disassociated'
+        elif method_name == 'promote_read_replica':
+            waiter = 'read_replica_promoted'
         else:
             waiter = 'db_instance_available'
     elif method_name in snapshot_cluster_method_names or method_name in snapshot_instance_method_names:
@@ -130,15 +137,6 @@ def handle_errors(module, exception, method_name, parameters):
             changed = False
         else:
             module.fail_json_aws(exception, msg='Unable to {0}'.format(get_rds_method_attribute(method_name, module).operation_description))
-    elif method_name == 'create_db_instance' and error_code == 'InvalidParameterValue':
-        accepted_engines = [
-            'aurora', 'aurora-mysql', 'aurora-postgresql', 'mariadb', 'mysql', 'oracle-ee', 'oracle-se',
-            'oracle-se1', 'oracle-se2', 'postgres', 'sqlserver-ee', 'sqlserver-ex', 'sqlserver-se', 'sqlserver-web'
-        ]
-        if parameters.get('Engine') not in accepted_engines:
-            module.fail_json_aws(exception, msg='DB engine {0} should be one of {1}'.format(parameters.get('Engine'), accepted_engines))
-        else:
-            module.fail_json_aws(exception, msg='Unable to {0}'.format(get_rds_method_attribute(method_name, module).operation_description))
     elif method_name == 'create_db_cluster' and error_code == 'InvalidParameterValue':
         accepted_engines = [
             'aurora', 'aurora-mysql', 'aurora-postgresql'
@@ -161,10 +159,10 @@ def call_method(client, module, method_name, parameters):
         # TODO: stabilize by adding get_rds_method_attribute(method_name).extra_retry_codes
         method = getattr(client, method_name)
         try:
-            if method_name == 'modify_db_instance':
+            if method_name in ['modify_db_instance', 'promote_read_replica']:
                 # check if instance is in an available state first, if possible
                 if wait:
-                    wait_for_status(client, module, module.params['db_instance_identifier'], method_name)
+                    wait_for_status(client, module, module.params['db_instance_identifier'], 'modify_db_instance')
                 result = AWSRetry.jittered_backoff(catch_extra_error_codes=['InvalidDBInstanceState'])(method)(**parameters)
             elif method_name == 'modify_db_cluster':
                 # check if cluster is in an available state first, if possible
@@ -304,4 +302,50 @@ def ensure_tags(client, module, resource_arn, existing_tags, tags, purge_tags):
             client, module, method_name='remove_tags_from_resource',
             parameters={'ResourceName': resource_arn, 'TagKeys': tags_to_remove}
         )
+    return changed
+
+
+def compare_iam_roles(existing_roles, target_roles, purge_roles):
+    '''
+    Returns differences between target and existing IAM roles
+
+        Parameters:
+            existing_roles (list): Existing IAM roles
+            target_roles (list): Target IAM roles
+            purge_roles (bool): Remove roles not in target_roles if True
+
+        Returns:
+            roles_to_add (list): List of IAM roles to add
+            roles_to_delete (list): List of IAM roles to delete
+    '''
+    existing_roles = [dict((k, v) for k, v in role.items() if k != 'status') for role in existing_roles]
+    roles_to_add = [role for role in target_roles if role not in existing_roles]
+    roles_to_remove = [role for role in existing_roles if role not in target_roles] if purge_roles else []
+    return roles_to_add, roles_to_remove
+
+
+def update_iam_roles(client, module, instance_id, roles_to_add, roles_to_remove):
+    '''
+    Update a DB instance's associated IAM roles
+
+        Parameters:
+            client: RDS client
+            module: AnsibleAWSModule
+            instance_id (str): DB's instance ID
+            roles_to_add (list): List of IAM roles to add
+            roles_to_delete (list): List of IAM roles to delete
+
+        Returns:
+            changed (bool): True if changes were successfully made to DB instance's IAM roles; False if not
+    '''
+    for role in roles_to_remove:
+        params = {'DBInstanceIdentifier': instance_id,
+                  'RoleArn': role['role_arn'],
+                  'FeatureName': role['feature_name']}
+        result, changed = call_method(client, module, method_name='remove_role_from_db_instance', parameters=params)
+    for role in roles_to_add:
+        params = {'DBInstanceIdentifier': instance_id,
+                  'RoleArn': role['role_arn'],
+                  'FeatureName': role['feature_name']}
+        result, changed = call_method(client, module, method_name='add_role_to_db_instance', parameters=params)
     return changed
