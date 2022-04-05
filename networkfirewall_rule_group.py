@@ -262,6 +262,21 @@ options:
     type: bool
     required: false
     default: True
+  wait:
+    description:
+      - Whether to wait for the firewall rule group to reach the
+        C(ACTIVE) or C(DELETED) state before the module returns.
+    type: bool
+    required: false
+    default: true
+  wait_timeout:
+    description:
+      - Maximum time, in seconds, to wait for the firewall rule group
+        to reach the expected state.
+      - Defaults to 600 seconds.
+    type: int
+    required: false
+
 
 author: Mark Chappell (@tremble)
 extends_documentation_fragment:
@@ -401,304 +416,309 @@ rule_group:
   type: dict
   returned: success
   contains:
-    rule_variables:
-      description: Settings that are available for use in the rules in the rule group.
-      returned: When rule variables are attached to the rule group.
-      type: complex
-      contains:
-        ip_sets:
-          description: A dictionary mapping variable names to IP addresses in CIDR format.
-          returned: success
-          type: dict
-          example: ['192.0.2.0/24']
-        port_sets:
-          description: A dictionary mapping variable names to ports
-          returned: success
-          type: dict
-          example: ['42']
-    stateful_rule_options:
-      description: Additional options governing how Network Firewall handles stateful rules.
-      returned: When the rule group is either "rules string" or "rules list" based.
+    rule_group:
+      description: Details of the rules in the rule group
       type: dict
-      contains:
-        rule_order:
-          description: The order in which rules will be evaluated.
-          returned: success
-          type: str
-          example: 'DEFAULT_ACTION_ORDER'
-    rules_source:
-      description: Inspection criteria used for a 5-tuple based rule group.
       returned: success
-      type: dict
       contains:
-        stateful_rules:
-          description: A list of dictionaries describing the rules that the rule group is comprised of.
-          returned: When the rule group is "rules list" based.
-          type: list
-          elements: dict
+        rule_variables:
+          description: Settings that are available for use in the rules in the rule group.
+          returned: When rule variables are attached to the rule group.
+          type: complex
           contains:
-            action:
-              description: What action to perform when a flow matches the rule criteria.
-              returned: success
-              type: str
-              example: 'PASS'
-            header:
-              description: A description of the criteria used for the rule.
+            ip_sets:
+              description: A dictionary mapping variable names to IP addresses in CIDR format.
               returned: success
               type: dict
-              contains:
-                protocol:
-                  description: The protocol to inspect for.
-                  returned: success
-                  type: str
-                  example: 'IP'
-                source:
-                  description: The source address or range of addresses to inspect for.
-                  returned: success
-                  type: str
-                  example: '203.0.113.98'
-                source_port:
-                  description: The source port to inspect for.
-                  returned: success
-                  type: str
-                  example: '42'
-                destination:
-                  description: The destination address or range of addresses to inspect for.
-                  returned: success
-                  type: str
-                  example: '198.51.100.0/24'
-                destination_port:
-                  description: The destination port to inspect for.
-                  returned: success
-                  type: str
-                  example: '6666:6667'
-                direction:
-                  description: The direction of traffic flow to inspect.
-                  returned: success
-                  type: str
-                  example: 'FORWARD'
-            rule_options:
-              description: Additional Suricata RuleOptions settings for the rule.
+              example: ['192.0.2.0/24']
+            port_sets:
+              description: A dictionary mapping variable names to ports
               returned: success
-              type: list
-              elements: dict
-              contains:
-                keyword:
-                  description: The keyword for the setting.
-                  returned: success
-                  type: str
-                  example: 'sid:1'
-                settings:
-                  description: A list of values passed to the setting.
-                  returned: When values are available
-                  type: list
-                  elements: str
-        rules_string:
-          description: A string describing the rules that the rule group is comprised of.
-          returned: When the rule group is "rules string" based.
-          type: str
-        rules_source_list:
-          description: A description of the criteria for a domain list rule group.
-          returned: When the rule group is "domain list" based.
+              type: dict
+              example: ['42']
+        stateful_rule_options:
+          description: Additional options governing how Network Firewall handles stateful rules.
+          returned: When the rule group is either "rules string" or "rules list" based.
           type: dict
           contains:
-            targets:
-              description: A list of domain names to be inspected for.
-              returned: success
-              type: list
-              elements: str
-              example: ['abc.example.com', '.example.net']
-            target_types:
-              description: The protocols to be inspected by the rule group.
-              returned: success
-              type: list
-              elements: str
-              example: ['TLS_SNI', 'HTTP_HOST']
-            generated_rules_type:
-              description: Whether the rule group allows or denies access to the domains in the list.
+            rule_order:
+              description: The order in which rules will be evaluated.
               returned: success
               type: str
-              example: 'ALLOWLIST'
-        stateless_rules_and_custom_actions:
-          description: A description of the criteria for a stateless rule group.
-          returned: When the rule group is a stateless rule group.
+              example: 'DEFAULT_ACTION_ORDER'
+        rules_source:
+          description: Inspection criteria used for a 5-tuple based rule group.
+          returned: success
           type: dict
           contains:
-            stateless_rules:
-              description: A list of stateless rules for use in a stateless rule group.
+            stateful_rules:
+              description: A list of dictionaries describing the rules that the rule group is comprised of.
+              returned: When the rule group is "rules list" based.
               type: list
               elements: dict
               contains:
-                rule_definition:
-                  description: Describes the stateless 5-tuple inspection criteria and actions for the rule.
-                  returned: success
-                  type: dict
-                  contains:
-                    match_attributes:
-                      description: Describes the stateless 5-tuple inspection criteria for the rule.
-                      returned: success
-                      type: dict
-                      contains:
-                        sources:
-                          description: The source IP addresses and address ranges to inspect for.
-                          returned: success
-                          type: list
-                          elements: dict
-                          contains:
-                            address_definition:
-                              description: An IP address or a block of IP addresses in CIDR notation.
-                              returned: success
-                              type: str
-                              example: '192.0.2.3'
-                        destinations:
-                          description: The destination IP addresses and address ranges to inspect for.
-                          returned: success
-                          type: list
-                          elements: dict
-                          contains:
-                            address_definition:
-                              description: An IP address or a block of IP addresses in CIDR notation.
-                              returned: success
-                              type: str
-                              example: '192.0.2.3'
-                        source_ports:
-                          description: The source port ranges to inspect for.
-                          returned: success
-                          type: list
-                          elements: dict
-                          contains:
-                            from_port:
-                              description: The lower limit of the port range.
-                              returned: success
-                              type: int
-                            to_port:
-                              description: The upper limit of the port range.
-                              returned: success
-                              type: int
-                        destination_ports:
-                          description: The destination port ranges to inspect for.
-                          returned: success
-                          type: list
-                          elements: dict
-                          contains:
-                            from_port:
-                              description: The lower limit of the port range.
-                              returned: success
-                              type: int
-                            to_port:
-                              description: The upper limit of the port range.
-                              returned: success
-                              type: int
-                        protocols:
-                          description: The IANA protocol numbers of the protocols to inspect for.
-                          returned: success
-                          type: list
-                          elements: int
-                          example: [6]
-                        tcp_flags:
-                          description: The TCP flags and masks to inspect for.
-                          returned: success
-                          type: list
-                          elements: dict
-                          contains:
-                            flags:
-                              description: Used with masks to define the TCP flags that flows are inspected for.
-                              returned: success
-                              type: list
-                              elements: str
-                            masks:
-                              description: The set of flags considered during inspection.
-                              returned: success
-                              type: list
-                              elements: str
-                    actions:
-                      description: The actions to take when a flow matches the rule.
-                      returned: success
-                      type: list
-                      elements: str
-                      example: ['aws:pass', 'CustomActionName']
-                priority:
-                  description: Indicates the order in which to run this rule relative to all of the rules that are defined for a stateless rule group.
-                  returned: success
-                  type: int
-            custom_actions:
-              description: A list of individual custom action definitions that are available for use in stateless rules.
-              type: list
-              elements: dict
-              contains:
-                action_name:
-                  description: The name for the custom action.
+                action:
+                  description: What action to perform when a flow matches the rule criteria.
                   returned: success
                   type: str
-                action_definition:
-                  description: The custom action associated with the action name.
+                  example: 'PASS'
+                header:
+                  description: A description of the criteria used for the rule.
                   returned: success
                   type: dict
                   contains:
-                    publish_metric_action:
-                      description: The description of an action which publishes to CloudWatch.
-                      returned: When the action publishes to CloudWatch.
+                    protocol:
+                      description: The protocol to inspect for.
+                      returned: success
+                      type: str
+                      example: 'IP'
+                    source:
+                      description: The source address or range of addresses to inspect for.
+                      returned: success
+                      type: str
+                      example: '203.0.113.98'
+                    source_port:
+                      description: The source port to inspect for.
+                      returned: success
+                      type: str
+                      example: '42'
+                    destination:
+                      description: The destination address or range of addresses to inspect for.
+                      returned: success
+                      type: str
+                      example: '198.51.100.0/24'
+                    destination_port:
+                      description: The destination port to inspect for.
+                      returned: success
+                      type: str
+                      example: '6666:6667'
+                    direction:
+                      description: The direction of traffic flow to inspect.
+                      returned: success
+                      type: str
+                      example: 'FORWARD'
+                rule_options:
+                  description: Additional Suricata RuleOptions settings for the rule.
+                  returned: success
+                  type: list
+                  elements: dict
+                  contains:
+                    keyword:
+                      description: The keyword for the setting.
+                      returned: success
+                      type: str
+                      example: 'sid:1'
+                    settings:
+                      description: A list of values passed to the setting.
+                      returned: When values are available
+                      type: list
+                      elements: str
+            rules_string:
+              description: A string describing the rules that the rule group is comprised of.
+              returned: When the rule group is "rules string" based.
+              type: str
+            rules_source_list:
+              description: A description of the criteria for a domain list rule group.
+              returned: When the rule group is "domain list" based.
+              type: dict
+              contains:
+                targets:
+                  description: A list of domain names to be inspected for.
+                  returned: success
+                  type: list
+                  elements: str
+                  example: ['abc.example.com', '.example.net']
+                target_types:
+                  description: The protocols to be inspected by the rule group.
+                  returned: success
+                  type: list
+                  elements: str
+                  example: ['TLS_SNI', 'HTTP_HOST']
+                generated_rules_type:
+                  description: Whether the rule group allows or denies access to the domains in the list.
+                  returned: success
+                  type: str
+                  example: 'ALLOWLIST'
+            stateless_rules_and_custom_actions:
+              description: A description of the criteria for a stateless rule group.
+              returned: When the rule group is a stateless rule group.
+              type: dict
+              contains:
+                stateless_rules:
+                  description: A list of stateless rules for use in a stateless rule group.
+                  type: list
+                  elements: dict
+                  contains:
+                    rule_definition:
+                      description: Describes the stateless 5-tuple inspection criteria and actions for the rule.
+                      returned: success
                       type: dict
                       contains:
-                        dimensions:
-                          description: The value to use in an Amazon CloudWatch custom metric dimension.
+                        match_attributes:
+                          description: Describes the stateless 5-tuple inspection criteria for the rule.
+                          returned: success
+                          type: dict
+                          contains:
+                            sources:
+                              description: The source IP addresses and address ranges to inspect for.
+                              returned: success
+                              type: list
+                              elements: dict
+                              contains:
+                                address_definition:
+                                  description: An IP address or a block of IP addresses in CIDR notation.
+                                  returned: success
+                                  type: str
+                                  example: '192.0.2.3'
+                            destinations:
+                              description: The destination IP addresses and address ranges to inspect for.
+                              returned: success
+                              type: list
+                              elements: dict
+                              contains:
+                                address_definition:
+                                  description: An IP address or a block of IP addresses in CIDR notation.
+                                  returned: success
+                                  type: str
+                                  example: '192.0.2.3'
+                            source_ports:
+                              description: The source port ranges to inspect for.
+                              returned: success
+                              type: list
+                              elements: dict
+                              contains:
+                                from_port:
+                                  description: The lower limit of the port range.
+                                  returned: success
+                                  type: int
+                                to_port:
+                                  description: The upper limit of the port range.
+                                  returned: success
+                                  type: int
+                            destination_ports:
+                              description: The destination port ranges to inspect for.
+                              returned: success
+                              type: list
+                              elements: dict
+                              contains:
+                                from_port:
+                                  description: The lower limit of the port range.
+                                  returned: success
+                                  type: int
+                                to_port:
+                                  description: The upper limit of the port range.
+                                  returned: success
+                                  type: int
+                            protocols:
+                              description: The IANA protocol numbers of the protocols to inspect for.
+                              returned: success
+                              type: list
+                              elements: int
+                              example: [6]
+                            tcp_flags:
+                              description: The TCP flags and masks to inspect for.
+                              returned: success
+                              type: list
+                              elements: dict
+                              contains:
+                                flags:
+                                  description: Used with masks to define the TCP flags that flows are inspected for.
+                                  returned: success
+                                  type: list
+                                  elements: str
+                                masks:
+                                  description: The set of flags considered during inspection.
+                                  returned: success
+                                  type: list
+                                  elements: str
+                        actions:
+                          description: The actions to take when a flow matches the rule.
                           returned: success
                           type: list
-                          elements: dict
+                          elements: str
+                          example: ['aws:pass', 'CustomActionName']
+                    priority:
+                      description: Indicates the order in which to run this rule relative to all of the rules that are defined for a stateless rule group.
+                      returned: success
+                      type: int
+                custom_actions:
+                  description: A list of individual custom action definitions that are available for use in stateless rules.
+                  type: list
+                  elements: dict
+                  contains:
+                    action_name:
+                      description: The name for the custom action.
+                      returned: success
+                      type: str
+                    action_definition:
+                      description: The custom action associated with the action name.
+                      returned: success
+                      type: dict
+                      contains:
+                        publish_metric_action:
+                          description: The description of an action which publishes to CloudWatch.
+                          returned: When the action publishes to CloudWatch.
+                          type: dict
                           contains:
-                            value:
-                              description: The value to use in the custom metric dimension.
+                            dimensions:
+                              description: The value to use in an Amazon CloudWatch custom metric dimension.
                               returned: success
-                              type: str
-rule_group_metadata:
-  description: Details of the rules in the rule group
-  type: dict
-  returned: success
-  contains:
-    capacity:
-      description: The maximum operating resources that this rule group can use.
-      type: int
-      returned: success
-    consumed_capacity:
-      description: The number of capacity units currently consumed by the rule group rules.
-      type: int
-      returned: success
-    description:
-      description: A description of the rule group.
-      type: str
-      returned: success
-    number_of_associations:
-      description: The number of firewall policies that use this rule group.
-      type: int
-      returned: success
-    rule_group_arn:
-      description: The ARN for the rule group
-      type: int
-      returned: success
-      example: 'arn:aws:network-firewall:us-east-1:123456789012:stateful-rulegroup/ExampleGroup'
-    rule_group_id:
-      description: A unique identifier for the rule group.
-      type: int
-      returned: success
-      example: '12345678-abcd-1234-abcd-123456789abc'
-    rule_group_name:
-      description: The name of the rule group.
-      type: str
-      returned: success
-    rule_group_status:
-      description: The current status of a rule group.
-      type: str
-      returned: success
-      example: 'DELETING'
-    tags:
-      description: A dictionary representing the tags associated with the rule group.
+                              type: list
+                              elements: dict
+                              contains:
+                                value:
+                                  description: The value to use in the custom metric dimension.
+                                  returned: success
+                                  type: str
+    rule_group_metadata:
+      description: Details of the rules in the rule group
       type: dict
       returned: success
-    type:
-      description: Whether the rule group is stateless or stateful.
-      type: str
-      returned: success
-      example: 'STATEFUL'
+      contains:
+        capacity:
+          description: The maximum operating resources that this rule group can use.
+          type: int
+          returned: success
+        consumed_capacity:
+          description: The number of capacity units currently consumed by the rule group rules.
+          type: int
+          returned: success
+        description:
+          description: A description of the rule group.
+          type: str
+          returned: success
+        number_of_associations:
+          description: The number of firewall policies that use this rule group.
+          type: int
+          returned: success
+        rule_group_arn:
+          description: The ARN for the rule group
+          type: int
+          returned: success
+          example: 'arn:aws:network-firewall:us-east-1:123456789012:stateful-rulegroup/ExampleGroup'
+        rule_group_id:
+          description: A unique identifier for the rule group.
+          type: int
+          returned: success
+          example: '12345678-abcd-1234-abcd-123456789abc'
+        rule_group_name:
+          description: The name of the rule group.
+          type: str
+          returned: success
+        rule_group_status:
+          description: The current status of a rule group.
+          type: str
+          returned: success
+          example: 'DELETING'
+        tags:
+          description: A dictionary representing the tags associated with the rule group.
+          type: dict
+          returned: success
+        type:
+          description: Whether the rule group is stateless or stateful.
+          type: str
+          returned: success
+          example: 'STATEFUL'
 '''
 
 
@@ -746,6 +766,8 @@ def main():
         rule_list=dict(type='list', elements='dict', aliases=['stateful_rule_list'], options=rule_list_spec, required=False),
         tags=dict(type='dict', required=False),
         purge_tags=dict(type='bool', required=False, default=True),
+        wait=dict(type='bool', required=False, default=True),
+        wait_timeout=dict(type='int', required=False),
     )
 
     module = AnsibleAWSModule(
@@ -785,6 +807,8 @@ def main():
         module.require_botocore_at_least('1.23.23', reason='to set the rule order')
 
     manager = NetworkFirewallRuleManager(module, arn=arn, name=name, rule_type=rule_type)
+    manager.set_wait(module.params.get('wait', None))
+    manager.set_wait_timeout(module.params.get('wait_timeout', None))
 
     if state == 'absent':
         manager.delete()

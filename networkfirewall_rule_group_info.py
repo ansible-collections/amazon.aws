@@ -378,7 +378,7 @@ rule_groups:
           returned: success
           example: 'DELETING'
         tags:
-          description: A dcitionary representing the tags associated with the rule group.
+          description: A dictionary representing the tags associated with the rule group.
           type: dict
           returned: success
         type:
