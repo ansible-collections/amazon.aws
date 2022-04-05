@@ -261,13 +261,13 @@ volume:
 
 import time
 
+from ..module_utils.arn import is_outpost_arn
 from ..module_utils.core import AnsibleAWSModule
 from ..module_utils.ec2 import camel_dict_to_snake_dict
 from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.ec2 import describe_ec2_tags
 from ..module_utils.ec2 import ensure_ec2_tags
-from ..module_utils.ec2 import is_outposts_arn
 from ..module_utils.ec2 import AWSRetry
 from ..module_utils.core import is_boto3_error_code
 from ..module_utils.tagging import boto3_tag_specifications
@@ -502,7 +502,7 @@ def create_volume(module, ec2_conn, zone):
                 additional_params['MultiAttachEnabled'] = True
 
             if outpost_arn:
-                if is_outposts_arn(outpost_arn):
+                if is_outpost_arn(outpost_arn):
                     additional_params['OutpostArn'] = outpost_arn
                 else:
                     module.fail_json('OutpostArn does not match the pattern specified in API specifications.')
