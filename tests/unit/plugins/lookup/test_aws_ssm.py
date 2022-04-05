@@ -128,51 +128,43 @@ def test_path_lookup_variable(mocker):
     lookup._load_name = "aws_ssm"
 
     boto3_double = mocker.MagicMock()
-    get_paginator_fn = boto3_double.Session.return_value.client.return_value.get_paginator
-    paginator = get_paginator_fn.return_value
-    paginator.paginate.return_value.build_full_result.return_value = path_success_response
+    get_path_fn = boto3_double.Session.return_value.client.return_value.get_parameters_by_path
+    get_path_fn.return_value = path_success_response
     boto3_client_double = boto3_double.Session.return_value.client
 
     mocker.patch.object(boto3, 'session', boto3_double)
     args = copy(dummy_credentials)
-    args["bypath"] = True
-    args["recursive"] = True
+    args["bypath"] = 'true'
     retval = lookup.run(["/testpath"], {}, **args)
     assert(retval[0]["/testpath/won"] == "simple_value_won")
     assert(retval[0]["/testpath/too"] == "simple_value_too")
     boto3_client_double.assert_called_with('ssm', 'eu-west-1', aws_access_key_id='notakey',
                                            aws_secret_access_key="notasecret", aws_session_token=None)
-    get_paginator_fn.assert_called_with('get_parameters_by_path')
-    paginator.paginate.assert_called_with(Path="/testpath", Recursive=True, WithDecryption=True)
-    paginator.paginate.return_value.build_full_result.assert_called_with()
+    get_path_fn.assert_called_with(Path="/testpath", Recursive=False, WithDecryption=True)
 
 
-def test_warn_on_missing_match_retvals_to_call_params_with_some_missing_variables(mocker):
-    """If we get a complex list of variables with some missing and some
-    not, and on_missing is warn, we still have to return a list which
-    matches with the original variable list.
+def test_return_none_for_missing_variable(mocker):
+    """
+    during jinja2 templates, we can't shouldn't normally raise exceptions since this blocks the ability to use defaults.
 
+    for this reason we return ```None``` for missing variables
     """
     lookup = aws_ssm.LookupModule()
     lookup._load_name = "aws_ssm"
 
     boto3_double = mocker.MagicMock()
-
     boto3_double.Session.return_value.client.return_value.get_parameter.side_effect = mock_get_parameter
 
     mocker.patch.object(boto3, 'session', boto3_double)
-    args = copy(dummy_credentials)
-    args["on_missing"] = 'warn'
-    retval = lookup.run(["simple", "missing_variable", "/testpath/won", "simple"], {}, **args)
+    retval = lookup.run(["missing_variable"], {}, **dummy_credentials)
     assert(isinstance(retval, list))
-    assert(retval == ["simple_value", None, "simple_value_won", "simple_value"])
+    assert(retval[0] is None)
 
 
-def test_skip_on_missing_match_retvals_to_call_params_with_some_missing_variables(mocker):
-    """If we get a complex list of variables with some missing and some
-    not, and on_missing is skip, we still have to return a list which
-    matches with the original variable list.
-
+def test_match_retvals_to_call_params_even_with_some_missing_variables(mocker):
+    """
+    If we get a complex list of variables with some missing and some not, we still have to return a
+    list which matches with the original variable list.
     """
     lookup = aws_ssm.LookupModule()
     lookup._load_name = "aws_ssm"
@@ -182,9 +174,7 @@ def test_skip_on_missing_match_retvals_to_call_params_with_some_missing_variable
     boto3_double.Session.return_value.client.return_value.get_parameter.side_effect = mock_get_parameter
 
     mocker.patch.object(boto3, 'session', boto3_double)
-    args = copy(dummy_credentials)
-    args["on_missing"] = 'skip'
-    retval = lookup.run(["simple", "missing_variable", "/testpath/won", "simple"], {}, **args)
+    retval = lookup.run(["simple", "missing_variable", "/testpath/won", "simple"], {}, **dummy_credentials)
     assert(isinstance(retval, list))
     assert(retval == ["simple_value", None, "simple_value_won", "simple_value"])
 
@@ -256,7 +246,7 @@ def test_skip_on_missing_variable(mocker):
     boto3_double.Session.return_value.client.return_value.get_parameter.side_effect = mock_get_parameter
 
     missing_credentials = copy(dummy_credentials)
-    missing_credentials['on_missing'] = "skip"
+    missing_credentials['on_missing'] = "warn"
     mocker.patch.object(boto3, 'session', boto3_double)
     retval = lookup.run(["missing_variable"], {}, **missing_credentials)
     assert(isinstance(retval, list))
@@ -317,7 +307,7 @@ def test_skip_on_denied_variable(mocker):
     boto3_double.Session.return_value.client.return_value.get_parameter.side_effect = mock_get_parameter
 
     denied_credentials = copy(dummy_credentials)
-    denied_credentials['on_denied'] = "skip"
+    denied_credentials['on_denied'] = "warn"
     mocker.patch.object(boto3, 'session', boto3_double)
     retval = lookup.run(["denied_variable"], {}, **denied_credentials)
     assert(isinstance(retval, list))
