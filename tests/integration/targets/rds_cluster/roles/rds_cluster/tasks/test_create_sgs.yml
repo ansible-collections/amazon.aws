@@ -1,0 +1,206 @@
+---
+- block:
+  - name: Ensure the resource doesn't exist
+    rds_cluster:
+      id: "{{ cluster_id }}"
+      state: absent
+      engine: "{{ engine}}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      skip_final_snapshot: True
+    register: _result_delete_db_cluster
+
+  - assert:
+      that:
+        - not _result_delete_db_cluster.changed
+    ignore_errors: yes
+
+  - name: Create a VPC
+    ec2_vpc_net:
+      name: "{{ vpc_name }}"
+      state: present
+      cidr_block: "{{ vpc_cidr }}"
+      tags:
+        Name: "{{ vpc_name }}"
+        Description: "Created by rds_cluster integration tests"
+    register: _result_create_vpc
+
+  - name: Create subnets
+    ec2_vpc_subnet:
+      cidr: "{{ item.cidr }}"
+      az: "{{ item.zone }}"
+      vpc_id: "{{ _result_create_vpc.vpc.id }}"
+      tags:
+        Name: "{{ resource_prefix }}-subnet"
+        Description: "created by rds_cluster integration tests"
+      state: present
+    register: _result_create_subnet
+    loop: "{{ subnets }}"
+
+  - name: Create security groups
+    ec2_group:
+      name: "{{ item }}"
+      description: "Created by rds_cluster integration tests"
+      state: present
+    register: _result_create_sg
+    loop: "{{ security_groups }}"
+
+  - name: Create an RDS cluster in the VPC with two security groups
+    rds_cluster:
+      id: "{{ cluster_id }}"
+      engine: "{{ engine }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      vpc_security_group_ids:
+        - "{{ _result_create_sg.results.0.group_id }}"
+        - "{{ _result_create_sg.results.1.group_id }}"
+    register: _result_create_db_cluster
+
+  - assert:
+      that:
+      - _result_create_db_cluster.changed
+      - "'allocated_storage' in _result_create_db_cluster"
+      - _result_create_db_cluster.allocated_storage == 1
+      - "'cluster_create_time' in _result_create_db_cluster"
+      - _result_create_db_cluster.copy_tags_to_snapshot == false
+      - "'db_cluster_arn' in _result_create_db_cluster"
+      - "'db_cluster_identifier' in _result_create_db_cluster"
+      - _result_create_db_cluster.db_cluster_identifier == "{{ cluster_id }}"
+      - "'db_cluster_parameter_group' in _result_create_db_cluster"
+      - "'db_cluster_resource_id' in _result_create_db_cluster"
+      - "'endpoint' in _result_create_db_cluster"
+      - "'engine' in _result_create_db_cluster"
+      - _result_create_db_cluster.engine == "{{ engine }}"
+      - "'engine_mode' in _result_create_db_cluster"
+      - _result_create_db_cluster.engine_mode == "provisioned"
+      - "'engine_version' in _result_create_db_cluster"
+      - "'master_username' in _result_create_db_cluster"
+      - _result_create_db_cluster.master_username == "{{ username }}"
+      - "'port' in _result_create_db_cluster"
+      - "_result_create_db_cluster.port == {{ port }}"
+      - "'status' in _result_create_db_cluster"
+      - _result_create_db_cluster.status == 'available'
+      - _result_create_db_cluster.storage_encrypted == false
+      - "'tags' in _result_create_db_cluster"
+      - "'vpc_security_groups' in _result_create_db_cluster"
+      - "_result_create_db_cluster.vpc_security_groups | selectattr('status', 'in', ['active', 'adding']) | list | length == 2"
+
+  - name: Add a new security group without purge (check_mode)
+    rds_cluster:
+      id: "{{ cluster_id }}"
+      state: present
+      vpc_security_group_ids:
+        - "{{ _result_create_sg.results.2.group_id }}"
+      apply_immediately: true
+      purge_security_groups: false
+    check_mode: true
+    register: _result_create_db_cluster
+
+  - assert:
+      that:
+        - _result_create_db_cluster.changed
+
+  - name: Add a new security group without purge
+    rds_cluster:
+      id: "{{ cluster_id }}"
+      state: present
+      vpc_security_group_ids:
+        - "{{ _result_create_sg.results.2.group_id }}"
+      apply_immediately: true
+      purge_security_groups: false
+    register: _result_create_db_cluster
+
+  - assert:
+      that:
+      - _result_create_db_cluster.changed
+      - "'allocated_storage' in _result_create_db_cluster"
+      - _result_create_db_cluster.allocated_storage == 1
+      - "'cluster_create_time' in _result_create_db_cluster"
+      - _result_create_db_cluster.copy_tags_to_snapshot == false
+      - "'db_cluster_arn' in _result_create_db_cluster"
+      - "'db_cluster_identifier' in _result_create_db_cluster"
+      - _result_create_db_cluster.db_cluster_identifier == "{{ cluster_id }}"
+      - "'db_cluster_parameter_group' in _result_create_db_cluster"
+      - "'db_cluster_resource_id' in _result_create_db_cluster"
+      - "'endpoint' in _result_create_db_cluster"
+      - "'engine' in _result_create_db_cluster"
+      - _result_create_db_cluster.engine == "{{ engine }}"
+      - "'engine_mode' in _result_create_db_cluster"
+      - _result_create_db_cluster.engine_mode == "provisioned"
+      - "'engine_version' in _result_create_db_cluster"
+      - "'master_username' in _result_create_db_cluster"
+      - _result_create_db_cluster.master_username == "{{ username }}"
+      - "'port' in _result_create_db_cluster"
+      - "_result_create_db_cluster.port == {{ port }}"
+      - "'status' in _result_create_db_cluster"
+      - _result_create_db_cluster.status == 'available'
+      - _result_create_db_cluster.storage_encrypted == false
+      - "'tags' in _result_create_db_cluster"
+      - "'vpc_security_groups' in _result_create_db_cluster"
+      - "_result_create_db_cluster.vpc_security_groups | selectattr('status', 'in', ['active', 'adding']) | list | length == 3"
+
+  - name: Add a new security group without purge (test idempotence)
+    rds_cluster:
+      id: "{{ cluster_id }}"
+      state: present
+      vpc_security_group_ids:
+        - "{{ _result_create_sg.results.2.group_id }}"
+      apply_immediately: true
+      purge_security_groups: false
+    register: _result_create_db_cluster
+
+  - assert:
+      that:
+        - not _result_create_db_cluster.changed
+
+  - name: Add a security group with purge
+    rds_cluster:
+      id: "{{ cluster_id }}"
+      state: present
+      vpc_security_group_ids:
+        - "{{ _result_create_sg .results.2.group_id }}"
+      apply_immediately: true
+    register: _result_create_db_cluster
+
+  - assert:
+      that:
+        - _result_create_db_cluster.changed
+        - "_result_create_db_cluster.db_cluster_identifier == '{{ cluster_id }}'"
+        - "_result_create_db_cluster.vpc_security_groups | selectattr('status', 'in', ['active', 'adding']) | list | length == 1"
+
+  always:
+  - name: Delete DB cluster without creating a final snapshot
+    rds_cluster:
+      state: absent
+      cluster_id: "{{ cluster_id }}"
+      skip_final_snapshot: True
+    ignore_errors: true
+
+  - name: Remove security groups
+    ec2_group:
+      name: "{{ item }}"
+      description: "created by rds_cluster integration tests"
+      state: absent
+    loop: "{{ security_groups }}"
+
+  - name: Remove subnets
+    ec2_vpc_subnet:
+      cidr: "{{ item.cidr }}"
+      az: "{{ item.zone }}"
+      vpc_id: "{{ _result_create_vpc.vpc.id }}"
+      tags:
+        Name: "{{ resource_prefix }}-subnet"
+        Description: "Created by rds_cluster integration tests"
+      state: absent
+    ignore_errors: yes
+    loop: "{{ subnets }}"
+
+  - name: Delete VPC
+    ec2_vpc_net:
+      name: "{{ vpc_name }}"
+      state: absent
+      cidr_block: "{{ vpc_cidr }}"
+      tags:
+        Name: "{{ vpc_name }}"
+        Description: "Created by rds_cluster integration tests"
+    ignore_errors: yes

@@ -1,0 +1,186 @@
+---
+- block:
+  - name: Ensure the resource doesn't exist
+    rds_cluster:
+      id: "{{ cluster_id }}"
+      state: absent
+      engine: "{{ engine}}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      skip_final_snapshot: True
+    register: _result_delete_db_cluster
+
+  - assert:
+      that:
+        - not _result_delete_db_cluster.changed
+    ignore_errors: yes
+
+  - name: Set the two regions for the source DB and the read replica
+    set_fact:
+      region_src: "{{ aws_region }}"
+      region_dest: "{{ aws_region }}"
+
+  - name: Create a source DB cluster
+    rds_cluster:
+      cluster_id: "{{ cluster_id }}"
+      state: present
+      engine: "{{ engine}}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      region: "{{ region_src }}"
+      tags:
+        Name: "{{ cluster_id }}"
+        Created_by: Ansible rds_cluster tests
+    register: _result_create_src_db_cluster
+
+  - assert:
+      that:
+        - _result_create_src_db_cluster.changed
+        - "'allocated_storage' in _result_create_src_db_cluster"
+        - _result_create_src_db_cluster.allocated_storage == 1
+        - "'cluster_create_time' in _result_create_src_db_cluster"
+        - _result_create_src_db_cluster.copy_tags_to_snapshot == false
+        - "'db_cluster_arn' in _result_create_src_db_cluster"
+        - "_result_create_src_db_cluster.db_cluster_identifier == '{{ cluster_id }}'"
+        - "'db_cluster_parameter_group' in _result_create_src_db_cluster"
+        - "'db_cluster_resource_id' in _result_create_src_db_cluster"
+        - "'endpoint' in _result_create_src_db_cluster"
+        - "'engine' in _result_create_src_db_cluster"
+        - _result_create_src_db_cluster.engine == "{{ engine }}"
+        - "'engine_mode' in _result_create_src_db_cluster"
+        - _result_create_src_db_cluster.engine_mode == "provisioned"
+        - "'engine_version' in _result_create_src_db_cluster"
+        - "'master_username' in _result_create_src_db_cluster"
+        - _result_create_src_db_cluster.master_username == "{{ username }}"
+        - "'port' in _result_create_src_db_cluster"
+        - "_result_create_src_db_cluster.port == {{ port }}"
+        - "'status' in _result_create_src_db_cluster"
+        - _result_create_src_db_cluster.status == "available"
+        - "'tags' in _result_create_src_db_cluster"
+        - "_result_create_src_db_cluster.tags | length == 2"
+        - "_result_create_src_db_cluster.tags.Name == '{{ cluster_id }}'"
+        - "_result_create_src_db_cluster.tags.Created_by == 'Ansible rds_cluster tests'"
+        - "'vpc_security_groups' in _result_create_src_db_cluster"
+
+  - name: Get info on DB cluster
+    rds_cluster_info:
+      db_cluster_identifier: "{{ cluster_id }}"
+    register: _result_cluster_info
+
+  - assert:
+      that:
+      - _result_cluster_info is successful
+  
+  - name: Set the ARN of the source DB cluster
+    set_fact:
+      src_db_cluster_arn: "{{ _result_cluster_info.clusters[0].db_cluster_arn}}"
+
+  - name: Create a DB cluster read replica in a different region
+    rds_cluster:
+      id: "{{ cluster_id }}-replica"
+      state: present
+      replication_source_identifier: "{{ src_db_cluster_arn }}"
+      engine: "{{ engine}}"
+      region: "{{ region_dest }}"
+      tags:
+        Name: "{{ cluster_id }}"
+        Created_by: Ansible rds_cluster tests
+      wait: yes
+    register: _result_create_replica_db_cluster
+
+  - assert:
+      that:
+        - _result_create_replica_db_cluster.changed
+        - "'allocated_storage' in _result_create_replica_db_cluster"
+        - _result_create_replica_db_cluster.allocated_storage == 1
+        - "'cluster_create_time' in _result_create_replica_db_cluster"
+        - _result_create_replica_db_cluster.copy_tags_to_snapshot == false
+        - "'db_cluster_arn' in _result_create_replica_db_cluster"
+        - "_result_create_replica_db_cluster.db_cluster_identifier == '{{ cluster_id }}'"
+        - "'db_cluster_parameter_group' in _result_create_replica_db_cluster"
+        - "'db_cluster_resource_id' in _result_create_replica_db_cluster"
+        - "'endpoint' in _result_create_replica_db_cluster"
+        - "'engine' in _result_create_replica_db_cluster"
+        - _result_create_replica_db_cluster.engine == "{{ engine }}"
+        - "'engine_mode' in _result_create_replica_db_cluster"
+        - _result_create_replica_db_cluster.engine_mode == "provisioned"
+        - "'engine_version' in _result_create_replica_db_cluster"
+        - "'master_username' in _result_create_replica_db_cluster"
+        - _result_create_replica_db_cluster.master_username == "{{ username }}"
+        - "'port' in _result_create_replica_db_cluster"
+        - "_result_create_replica_db_cluster.port == {{ port }}"
+        - "'status' in _result_create_replica_db_cluster"
+        - _result_create_replica_db_cluster.status == "available"
+        - "'tags' in _result_create_replica_db_cluster"
+        - "_result_create_replica_db_cluster.tags | length == 2"
+        - "_result_create_replica_db_cluster.tags.Name == '{{ cluster_id }}'"
+        - "_result_create_replica_db_cluster.tags.Created_by == 'Ansible rds_cluster tests'"
+        - "'vpc_security_groups' in _result_create_replica_db_cluster"
+
+  - name: Test idempotence with a DB cluster read replica
+    rds_cluster:
+      id: "{{ cluster_id }}-replica"
+      state: present
+      replication_source_identifier: "{{ src_db_cluster_arn }}"
+      engine: "{{ engine}}"
+      region: "{{ region_dest }}"
+      tags:
+        Name: "{{ cluster_id }}"
+        Created_by: Ansible rds_cluster tests
+    register: _result_create_replica_db_cluster
+
+  - assert:
+      that:
+      - not _result_create_replica_db_cluster.changed
+  
+  - name: Get info of existing DB cluster
+    rds_cluster_info:
+      db_cluster_identifier: "{{ cluster_id }}-replica"
+      region: "{{ region_dest }}"
+    register: _result_cluster_info
+
+  - assert:
+      that:
+      - _result_cluster_info is successful
+      # - _result_cluster_info.clusters | length == 0
+
+  - name: Promote the DB cluster read replica
+    rds_cluster:
+      cluster_id: "{{ cluster_id }}-replica"
+      state: present
+      promote: True
+      region: "{{ region_dest }}"
+    register: _result_promote_replica_db_cluster
+
+  - assert:
+      that:
+      - _result_promote_replica_db_cluster.changed
+
+  - name: Promote the DB cluster read replica (idempotence)
+    rds_cluster:
+      cluster_id: "{{ cluster_id }}-replica"
+      state: present
+      promote: True
+      region: "{{ region_dest }}"
+    register: _result_promote_replica_db_cluster
+
+  - assert:
+      that:
+      - not _result_promote_replica_db_cluster.changed
+
+  always:
+  - name: Remove the DB cluster
+    rds_cluster:
+      id: "{{ cluster_id }}"
+      state: absent
+      skip_final_snapshot: True
+      region: "{{ region_src }}"
+    ignore_errors: yes
+
+  - name: Remove the DB cluster read replica
+    rds_cluster:
+      id: "{{ cluster_id }}-replica"
+      state: absent
+      skip_final_snapshot: True
+      region: "{{ region_dest }}"
+    ignore_errors: yes

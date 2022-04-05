@@ -1,0 +1,197 @@
+---
+- block:
+  - name: Ensure the resource doesn't exist
+    rds_cluster:
+      id: "{{ cluster_id }}"
+      state: absent
+      engine: "{{ engine}}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      skip_final_snapshot: True
+    register: _result_delete_db_cluster
+
+  - assert:
+      that:
+        - not _result_delete_db_cluster.changed
+    ignore_errors: yes
+        
+  - name: Create a DB cluster
+    rds_cluster:
+      id: "{{ cluster_id }}"
+      state: present
+      engine: "{{ engine}}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+    register: _result_create_source_db_cluster
+
+  - assert:
+      that:
+      - _result_create_source_db_cluster.changed
+      - _result_create_source_db_cluster.changed
+      - "'allocated_storage' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.allocated_storage == 1
+      - "'cluster_create_time' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.copy_tags_to_snapshot == false
+      - "'db_cluster_arn' in _result_create_source_db_cluster"
+      - "_result_create_source_db_cluster.db_cluster_identifier == '{{ cluster_id }}'"
+      - "'db_cluster_parameter_group' in _result_create_source_db_cluster"
+      - "'db_cluster_resource_id' in _result_create_source_db_cluster"
+      - "'endpoint' in _result_create_source_db_cluster"
+      - "'engine' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.engine == "{{ engine }}"
+      - "'engine_mode' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.engine_mode == "provisioned"
+      - "'engine_version' in _result_create_source_db_cluster"
+      - "'master_username' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.master_username == "{{ username }}"
+      - "'port' in _result_create_source_db_cluster"
+      - "_result_create_source_db_cluster.port == {{ port }}"
+      - "'status' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.status == "available"
+      - "'tags' in _result_create_source_db_cluster"
+      - "'vpc_security_groups' in _result_create_source_db_cluster"
+
+  - name: Modify DB cluster password
+    rds_cluster:
+      id: "{{ cluster_id }}"
+      state: present
+      password: "{{ new_password }}"
+      force_update_password: True
+      apply_immediately: True
+    register: _result_modify_password
+
+  - assert:
+      that:
+      - _result_modify_password.changed
+      - "'allocated_storage' in _result_modify_password"
+      - _result_modify_password.allocated_storage == 1
+      - "'cluster_create_time' in _result_modify_password"
+      - _result_modify_password.copy_tags_to_snapshot == false
+      - "'db_cluster_arn' in _result_modify_password"
+      - "_result_modify_password.db_cluster_identifier == '{{ cluster_id }}'"
+      - "'db_cluster_parameter_group' in _result_modify_password"
+      - "'db_cluster_resource_id' in _result_modify_password"
+      - "'endpoint' in _result_modify_password"
+      - "'engine' in _result_modify_password"
+      - _result_modify_password.engine == "{{ engine }}"
+      - "'engine_mode' in _result_modify_password"
+      - _result_modify_password.engine_mode == "provisioned"
+      - "'engine_version' in _result_modify_password"
+      - "'master_username' in _result_modify_password"
+      - _result_modify_password.master_username == "{{ username }}"
+      - "'port' in _result_create_source_db_cluster"
+      - "_result_modify_password.port == {{ port }}"
+      - "'status' in _result_modify_password"
+      - _result_modify_password.status == "available"
+      - "'tags' in _result_modify_password"
+      - "'vpc_security_groups' in _result_modify_password"
+
+  - name: Modify DB cluster port
+    rds_cluster:
+      id: "{{ cluster_id }}"
+      state: present
+      port: "{{ new_port }}"
+    register: _result_modify_port
+
+  - assert:
+      that:
+      - _result_modify_port.changed
+      - "'allocated_storage' in _result_modify_port"
+      - _result_modify_port.allocated_storage == 1
+      - "'cluster_create_time' in _result_modify_port"
+      - _result_modify_port.copy_tags_to_snapshot == false
+      - "'db_cluster_arn' in _result_modify_port"
+      - "_result_modify_port.db_cluster_identifier == '{{ cluster_id }}'"
+      - "'db_cluster_parameter_group' in _result_modify_port"
+      - "'db_cluster_resource_id' in _result_modify_port"
+      - "'endpoint' in _result_modify_port"
+      - "'engine' in _result_modify_port"
+      - _result_modify_port.engine == "{{ engine }}"
+      - "'engine_mode' in _result_modify_port"
+      - _result_modify_port.engine_mode == "provisioned"
+      - "'engine_version' in _result_modify_port"
+      - "'master_username' in _result_modify_port"
+      - _result_modify_port.master_username == "{{ username }}"
+      - "'port' in _result_modify_port"
+      - "_result_modify_port.port == {{ new_port }}"
+      - "'status' in _result_modify_port"
+      - _result_modify_port.status == "available"
+      - "'tags' in _result_modify_port"
+      - "'vpc_security_groups' in _result_modify_port"
+
+  - name: Modify DB cluster identifier
+    rds_cluster:
+      id: "{{ cluster_id }}"
+      state: present
+      purge_tags: False
+      new_cluster_id: "{{ new_cluster_id }}"
+      apply_immediately: True
+    register: _result_modify_id
+
+  - assert:
+      that:
+      - _result_modify_id.changed
+      - "'allocated_storage' in _result_modify_id"
+      - _result_modify_id.allocated_storage == 1
+      - "'cluster_create_time' in _result_modify_id"
+      - _result_modify_id.copy_tags_to_snapshot == false
+      - "'db_cluster_arn' in _result_modify_id"
+      - "_result_modify_id.db_cluster_identifier == '{{ new_cluster_id }}'"
+      - "'db_cluster_parameter_group' in _result_modify_id"
+      - "'db_cluster_resource_id' in _result_modify_id"
+      - "'endpoint' in _result_modify_id"
+      - "'engine' in _result_modify_id"
+      - _result_modify_id.engine == "{{ engine }}"
+      - "'engine_mode' in _result_modify_id"
+      - _result_modify_id.engine_mode == "provisioned"
+      - "'engine_version' in _result_modify_id"
+      - "'master_username' in _result_modify_id"
+      - _result_modify_id.master_username == "{{ username }}"
+      - "'port' in _result_modify_id"
+      - "_result_modify_id.port == {{ new_port }}"
+      - "'status' in _result_modify_id"
+      - _result_modify_id.status == "available"
+      - "'tags' in _result_modify_id"
+      - "'vpc_security_groups' in _result_modify_id"
+
+  - name: Delete DB cluster without creating a final snapshot (CHECK MODE)
+    rds_cluster:
+      state: absent
+      cluster_id: "{{ new_cluster_id }}"
+      skip_final_snapshot: True
+    register: _result_delete_cluster
+    check_mode: true
+
+  - assert:
+      that:
+      - _result_delete_cluster.changed
+      
+  - name: Delete DB cluster without creating a final snapshot
+    rds_cluster:
+      state: absent
+      cluster_id: "{{ new_cluster_id }}"
+      skip_final_snapshot: True
+    register: _result_delete_cluster
+
+  - assert:
+      that:
+      - _result_delete_cluster.changed
+  
+  - name: Delete DB cluster without creating a final snapshot (idempotence)
+    rds_cluster:
+      state: absent
+      cluster_id: "{{ new_cluster_id }}"
+      skip_final_snapshot: True
+    register: _result_delete_cluster
+
+  - assert:
+      that:
+      - not _result_delete_cluster.changed
+  
+  always:
+  - name: Delete DB cluster without creating a final snapshot
+    rds_cluster:
+      state: absent
+      cluster_id: "{{ cluster_id }}"
+      skip_final_snapshot: True
+    ignore_errors: true
