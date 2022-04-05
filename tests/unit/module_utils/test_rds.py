@@ -7,9 +7,9 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-from ansible_collections.amazon.aws.tests.unit.compat.mock import MagicMock
 from ansible_collections.amazon.aws.plugins.module_utils import rds
-
+from ansible_collections.amazon.aws.tests.unit.compat import unittest
+from ansible_collections.amazon.aws.tests.unit.compat.mock import MagicMock
 
 from contextlib import nullcontext
 import pytest
@@ -285,14 +285,6 @@ def test__handle_errors(method_name, exception, expected):
             ),
         ),
         (
-            "create_db_instance",
-            build_exception("create_db_instance", code="InvalidParameterValue"),
-            *expected(
-                "DB engine fake_engine should be one of aurora, aurora-mysql, aurora-postgresql, mariadb, mysql, oracle-ee, oracle-se, oracle-se1, "
-                + "oracle-se2, postgres, sqlserver-ee, sqlserver-ex, sqlserver-se, sqlserver-web"
-            ),
-        ),
-        (
             "create_db_cluster",
             build_exception("create_db_cluster", code="InvalidParameterValue"),
             *expected(
@@ -308,3 +300,81 @@ def test__handle_errors_failed(method_name, exception, expected, error):
         rds.handle_errors(module, exception, method_name, {"Engine": "fake_engine"})
         module.fail_json_aws.assert_called_once
         module.fail_json_aws.call_args[1]["msg"] == expected
+
+
+class RdsUtils(unittest.TestCase):
+
+    # ========================================================
+    # Setup some initial data that we can use within our tests
+    # ========================================================
+    def setUp(self):
+        self.target_role_list = [
+            {
+                'role_arn': 'role_won',
+                'feature_name': 's3Export'
+            },
+            {
+                'role_arn': 'role_too',
+                'feature_name': 'Lambda'
+            },
+            {
+                'role_arn': 'role_thrie',
+                'feature_name': 's3Import'
+            }
+        ]
+
+    # ========================================================
+    #   rds.compare_iam_roles
+    # ========================================================
+
+    def test_compare_iam_roles_equal(self):
+        existing_list = self.target_role_list
+        roles_to_add, roles_to_delete = rds.compare_iam_roles(existing_list, self.target_role_list, purge_roles=False)
+        self.assertEqual([], roles_to_add)
+        self.assertEqual([], roles_to_delete)
+        roles_to_add, roles_to_delete = rds.compare_iam_roles(existing_list, self.target_role_list, purge_roles=True)
+        self.assertEqual([], roles_to_add)
+        self.assertEqual([], roles_to_delete)
+
+    def test_compare_iam_roles_empty_arr_existing(self):
+        roles_to_add, roles_to_delete = rds.compare_iam_roles([], self.target_role_list, purge_roles=False)
+        self.assertEqual(self.target_role_list, roles_to_add)
+        self.assertEqual([], roles_to_delete)
+        roles_to_add, roles_to_delete = rds.compare_iam_roles([], self.target_role_list, purge_roles=True)
+        self.assertEqual(self.target_role_list, roles_to_add)
+        self.assertEqual([], roles_to_delete)
+
+    def test_compare_iam_roles_empty_arr_target(self):
+        existing_list = self.target_role_list
+        roles_to_add, roles_to_delete = rds.compare_iam_roles(existing_list, [], purge_roles=False)
+        self.assertEqual([], roles_to_add)
+        self.assertEqual([], roles_to_delete)
+        roles_to_add, roles_to_delete = rds.compare_iam_roles(existing_list, [], purge_roles=True)
+        self.assertEqual([], roles_to_add)
+        self.assertEqual(self.target_role_list, roles_to_delete)
+
+    def test_compare_iam_roles_different(self):
+        existing_list = [
+            {
+                'role_arn': 'role_wonn',
+                'feature_name': 's3Export'
+            }]
+        roles_to_add, roles_to_delete = rds.compare_iam_roles(existing_list, self.target_role_list, purge_roles=False)
+        self.assertEqual(self.target_role_list, roles_to_add)
+        self.assertEqual([], roles_to_delete)
+        roles_to_add, roles_to_delete = rds.compare_iam_roles(existing_list, self.target_role_list, purge_roles=True)
+        self.assertEqual(self.target_role_list, roles_to_add)
+        self.assertEqual(existing_list, roles_to_delete)
+
+        existing_list = self.target_role_list.copy()
+        self.target_role_list = [
+            {
+                'role_arn': 'role_wonn',
+                'feature_name': 's3Export'
+            }]
+        roles_to_add, roles_to_delete = rds.compare_iam_roles(existing_list, self.target_role_list, purge_roles=False)
+        self.assertEqual(self.target_role_list, roles_to_add)
+        self.assertEqual([], roles_to_delete)
+        roles_to_add, roles_to_delete = rds.compare_iam_roles(existing_list, self.target_role_list, purge_roles=True)
+        self.assertEqual(self.target_role_list, roles_to_add)
+        self.assertEqual(existing_list, roles_to_delete)
