@@ -227,12 +227,13 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>no</li>
                                     <li>yes</li>
                         </ul>
                 </td>
                 <td>
-                        <div>Request an Amazon-provided IPv6 CIDR block with /56 prefix length.  You cannot specify the range of IPv6 addresses, or the size of the CIDR block.</div>
+                        <div>Request an Amazon-provided IPv6 CIDR block with /56 prefix length. You cannot specify the range of IPv6 addresses, or the size of the CIDR block.</div>
+                        <div>Default value is <code>false</code> when creating a new VPC.</div>
                 </td>
             </tr>
             <tr>

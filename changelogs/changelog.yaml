@@ -706,3 +706,40 @@ releases:
     fragments:
     - bump_release_version.yml
     release_date: '2022-02-15'
+  3.2.0:
+    changes:
+      bugfixes:
+      - aws_ec2 inventory - use the iam_role_arn configuration parameter to assume
+        the role before trying to call DescribeRegions if the regions configuration
+        is not set and AWS credentials provided without enough privilege to perform
+        the DescribeRegions action. (https://github.com/ansible-collections/amazon.aws/issues/566).
+      - ec2_vol - changing a volume from a type that does not support IOPS (like ``standard``)
+        to a type that does (like ``gp3``) fails (https://github.com/ansible-collections/amazon.aws/issues/626).
+      - ec2_vpc_igw - fix 'NoneType' object is not subscriptable error (https://github.com/ansible-collections/amazon.aws/pull/691).
+      - ec2_vpc_igw - use paginator for describe internet gateways and add retry to
+        fix NoneType object is not subscriptable error (https://github.com/ansible-collections/amazon.aws/pull/695).
+      - ec2_vpc_net - In check mode, ensure the module does not change the configuration.
+        Handle case when Amazon-provided ipv6 block is enabled, then disabled, then
+        enabled again. Do not disable IPv6 CIDR association (using Amazon pool) if
+        ipv6_cidr property is not present in the task. If the VPC already exists and
+        ipv6_cidr property, retain the current config (https://github.com/ansible-collections/amazon.aws/pull/631).
+      minor_changes:
+      - aws_secret - add pagination for ``bypath`` functionality (https://github.com/ansible-collections/amazon.aws/pull/591).
+      - ec2_instance - Fix scope of deprecation warning to not show warning when ``state``
+        in ``absent`` (https://github.com/ansible-collections/amazon.aws/pull/719).
+      - ec2_vpc_route_table - support associating internet gateways (https://github.com/ansible-collections/amazon.aws/pull/690).
+      - module_utils.elbv2 - Add support for alb specific attributes and compare_elb_attributes
+        method to support check_mode in module_utils.elbv2 (https://github.com/ansible-collections/amazon.aws/pull/696).
+      - s3_bucket - Add support for enforced bucket owner object ownership (https://github.com/ansible-collections/amazon.aws/pull/694).
+    fragments:
+    - 591-aws_secrets-handle-pagination.yml
+    - 619-inventory-aws_ec2-assume-arn-role-when-listing-regions.yml
+    - 626-ec2_vol-iops-when-source-does-not-have-iops.yml
+    - 631-ec2_vpc_net-check_mode.yml
+    - 690-ec2_vpc_route_table-associate-igw.yml
+    - 691-ec2_vpc_igw-fix-null-igw-error.yml
+    - 694-s3_bucket-owner_enforcement.yml
+    - 695-ec2_vpc_igw-fix-nonetype-with-paginator.yml
+    - 696-elbv2-support-alb-attributes.yml
+    - 719-ec2_instance-fix-deprecation-warning-scope.yml
+    release_date: '2022-04-05'

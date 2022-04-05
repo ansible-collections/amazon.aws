@@ -312,15 +312,18 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>BucketOwnerEnforced</li>
                                     <li>BucketOwnerPreferred</li>
                                     <li>ObjectWriter</li>
                         </ul>
                 </td>
                 <td>
                         <div>Allow bucket&#x27;s ownership controls.</div>
+                        <div><code>BucketOwnerEnforced</code> - ACLs are disabled and no longer affect access permissions to your bucket. Requests to set or update ACLs fail. However, requests to read ACLs are supported. Bucket owner has full ownership and control. Object writer no longer has full ownership and control.</div>
                         <div><code>BucketOwnerPreferred</code> - Objects uploaded to the bucket change ownership to the bucket owner if the objects are uploaded with the bucket-owner-full-control canned ACL.</div>
                         <div><code>ObjectWriter</code> - The uploading account will own the object if the object is uploaded with the bucket-owner-full-control canned ACL.</div>
                         <div>This option cannot be used together with a <em>delete_object_ownership</em> definition.</div>
+                        <div><code>BucketOwnerEnforced</code> has been added in version 3.2.0.</div>
                 </td>
             </tr>
             <tr>
