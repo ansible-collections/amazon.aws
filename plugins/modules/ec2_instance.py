@@ -1598,6 +1598,13 @@ def ensure_instance_state(desired_module_state):
             filters=module.params.get('filters'),
             desired_module_state='stopped',
         )
+
+        if failed:
+            module.fail_json(
+                msg="Unable to stop instances: {0}".format(failure_reason),
+                stop_success=list(_changed),
+                stop_failed=failed)
+
         changed |= bool(len(_changed))
         _changed, failed, instances, failure_reason = change_instance_state(
             filters=module.params.get('filters'),
@@ -1794,7 +1801,7 @@ def handle_existing(existing_matches, state):
     )
 
     state_results = ensure_instance_state(state)
-
+    alter_config_result['changed'] |= state_results.pop('changed', False)
     result = {**state_results, **alter_config_result}
 
     return result
