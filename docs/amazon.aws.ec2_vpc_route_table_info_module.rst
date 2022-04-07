@@ -313,7 +313,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>List of subnets associated with the route table</div>
+                            <div>List of associations between the route table and one or more subnets or a gateway</div>
                     <br/>
                 </td>
             </tr>
@@ -380,18 +380,18 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="return-"></div>
-                    <b>id</b>
+                    <b>gateway_id</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td>always</td>
+                <td>when route table is a gateway route table</td>
                 <td>
-                            <div>ID of association between route table and subnet</div>
+                            <div>ID of the internet gateway or virtual private gateway</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
-                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">rtbassoc-ab47cfc3</div>
+                        <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">igw-03312309</div>
                 </td>
             </tr>
             <tr>
@@ -460,7 +460,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                       <span style="color: purple">string</span>
                     </div>
                 </td>
-                <td>always</td>
+                <td>when route table is a subnet route table</td>
                 <td>
                             <div>ID of the subnet</div>
                     <br/>
