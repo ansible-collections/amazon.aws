@@ -1473,6 +1473,8 @@ def find_instances(ids=None, filters=None):
         for key in list(filters.keys()):
             if not key.startswith("tag:"):
                 sanitized_filters[key.replace("_", "-")] = filters[key]
+            else:
+                sanitized_filters[key] = filters[key]
         params = dict(Filters=ansible_dict_to_boto3_filter_list(sanitized_filters))
 
     try:
