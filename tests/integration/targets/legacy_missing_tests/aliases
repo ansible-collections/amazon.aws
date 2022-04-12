@@ -1,0 +1,7 @@
+disabled
+
+# Lookup plugins
+aws_ssm  # covered by unit tests
+
+# Callback plugin 
+aws_resource_actions 
