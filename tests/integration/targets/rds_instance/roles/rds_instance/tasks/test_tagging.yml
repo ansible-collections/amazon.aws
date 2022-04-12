@@ -56,6 +56,22 @@
           - result.kms_key_id
           - result.storage_encrypted == true
 
+    - name: Test impotency omitting tags - check_mode
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        engine: mariadb
+        username: "{{ username }}"
+        password: "{{ password }}"
+        db_instance_class: "{{ db_instance_class }}"
+        allocated_storage: "{{ allocated_storage }}"
+      register: result
+      check_mode: yes
+
+    - assert:
+        that:
+          - not result.changed
+
     - name: Test impotency omitting tags
       rds_instance:
         id: "{{ instance_id }}"
@@ -103,6 +119,21 @@
           - not result.changed
           - "result.tags | length == 2"
 
+    - name: Add a tag and remove a tag - check_mode
+      rds_instance:
+        db_instance_identifier: "{{ instance_id }}"
+        state: present
+        tags:
+          Name: "{{ instance_id }}-new"
+          Created_by: Ansible rds_instance tests
+        purge_tags: True
+      register: result
+      check_mode: yes
+
+    - assert:
+        that:
+          - result.changed
+
     - name: Add a tag and remove a tag
       rds_instance:
         db_instance_identifier: "{{ instance_id }}"
@@ -116,6 +147,37 @@
     - assert:
         that:
           - result.changed
+          - "result.tags | length == 2"
+          - "result.tags.Name == '{{ instance_id }}-new'"
+
+    - name: Add a tag and remove a tag (idempotence) - check_mode
+      rds_instance:
+        db_instance_identifier: "{{ instance_id }}"
+        state: present
+        tags:
+          Name: "{{ instance_id }}-new"
+          Created_by: Ansible rds_instance tests
+        purge_tags: True
+      register: result
+      check_mode: yes
+
+    - assert:
+        that:
+          - not result.changed
+
+    - name: Add a tag and remove a tag (idempotence)
+      rds_instance:
+        db_instance_identifier: "{{ instance_id }}"
+        state: present
+        tags:
+          Name: "{{ instance_id }}-new"
+          Created_by: Ansible rds_instance tests
+        purge_tags: True
+      register: result
+
+    - assert:
+        that:
+          - not result.changed
           - "result.tags | length == 2"
           - "result.tags.Name == '{{ instance_id }}-new'"
 

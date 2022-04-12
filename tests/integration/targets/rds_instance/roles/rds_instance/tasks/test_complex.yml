@@ -41,10 +41,58 @@
           - result.changed
           - "result.db_instance_identifier == '{{ instance_id }}'"
 
+    - name: Add IAM roles to mariab (should fail - iam roles not supported for mariadb)
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        engine: mariadb
+        engine_version: "{{ mariadb_engine_version }}"
+        allow_major_version_upgrade: true
+        username: "{{ username }}"
+        password: "{{ password }}"
+        db_instance_class: "{{ db_instance_class }}"
+        allocated_storage: "{{ io1_allocated_storage }}"
+        storage_type: "{{ storage_type }}"
+        iops: "{{ iops }}"
+        iam_roles:
+          - role_arn: 'my_role'
+            feature_name: 'my_feature'
+      register: result
+      ignore_errors: True
+
+    - assert:
+        that:
+          - result.failed
+          - '"is not valid for adding IAM roles" in result.msg'
+
     # TODO: test modifying db_subnet_group_name, db_security_groups, db_parameter_group_name, option_group_name,
     # monitoring_role_arn, monitoring_interval, domain, domain_iam_role_name, cloudwatch_logs_export_configuration
 
     # Test multiple modifications including enabling enhanced monitoring
+
+    - name: Modify several attributes - check_mode
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        allocated_storage: "{{ io1_modified_allocated_storage }}"
+        storage_type: "{{ storage_type }}"
+        db_instance_class: "{{ modified_db_instance_class }}"
+        backup_retention_period: 2
+        preferred_backup_window: "05:00-06:00"
+        preferred_maintenance_window: "{{ preferred_maintenance_window }}"
+        auto_minor_version_upgrade: false
+        monitoring_interval: "{{ monitoring_interval }}"
+        monitoring_role_arn: "{{ enhanced_monitoring_role.arn }}"
+        iops: "{{ iops }}"
+        port: 1150
+        max_allocated_storage: 150
+        apply_immediately: True
+      register: result
+      check_mode: yes
+
+    - assert:
+        that:
+          - result.changed
 
     - name: Modify several attributes
       rds_instance:
@@ -73,6 +121,32 @@
           - '"port" in result.pending_modified_values or result.endpoint.port == 1150'
           - '"db_instance_class" in result.pending_modified_values or result.db_instance_class == modified_db_instance_class'
           - '"monitoring_interval" in result.pending_modified_values or result.monitoring_interval == monitoring_interval'
+
+    - name: Idempotence modifying several pending attributes - check_mode
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        allocated_storage: "{{ io1_modified_allocated_storage }}"
+        storage_type: "{{ storage_type }}"
+        db_instance_class: "{{ modified_db_instance_class }}"
+        backup_retention_period: 2
+        preferred_backup_window: "05:00-06:00"
+        preferred_maintenance_window: "{{ preferred_maintenance_window }}"
+        auto_minor_version_upgrade: false
+        monitoring_interval: "{{ monitoring_interval }}"
+        monitoring_role_arn: "{{ enhanced_monitoring_role.arn }}"
+        iops: "{{ iops }}"
+        port: 1150
+        max_allocated_storage: 150
+      register: result
+      retries: 30
+      delay: 10
+      until: result is not failed
+      check_mode: yes
+
+    - assert:
+        that:
+          - not result.changed
 
     - name: Idempotence modifying several pending attributes
       rds_instance:
