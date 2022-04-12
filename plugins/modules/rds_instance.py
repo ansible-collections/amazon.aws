@@ -205,6 +205,23 @@ options:
         description:
           - Set to true to conduct the reboot through a MultiAZ failover.
         type: bool
+    iam_roles:
+        description:
+          - List of Amazon Web Services Identity and Access Management (IAM) roles to associate with DB instance.
+        type: list
+        elements: dict
+        suboptions:
+          feature_name:
+            description:
+              - The name of the feature associated with the IAM role.
+            type: str
+            required: yes
+          role_arn:
+            description:
+              - The ARN of the IAM role to associate with the DB instance.
+            type: str
+            required: yes
+        version_added: 3.3.0
     iops:
         description:
           - The Provisioned IOPS (I/O operations per second) value. Is only set when using I(storage_type) is set to io1.
@@ -316,6 +333,12 @@ options:
             a publicly resolvable DNS name, which resolves to a public IP address. A value of false specifies an internal
             instance with a DNS name that resolves to a private IP address.
         type: bool
+    purge_iam_roles:
+        description:
+          - Set to C(True) to remove any IAM roles that aren't specified in the task and are associated with the instance.
+        type: bool
+        default: False
+        version_added: 3.3.0
     restore_time:
         description:
           - If using I(creation_source=instance) this indicates the UTC date and time to restore from the source instance.
@@ -462,7 +485,49 @@ EXAMPLES = r'''
     vpc_security_group_ids:
       - sg-0be17ba10c9286b0b
     purge_security_groups: false
-    register: result
+  register: result
+
+# Add IAM role to db instance
+- name: Create IAM policy
+  community.aws.iam_managed_policy:
+    policy_name: "my-policy"
+    policy: "{{ lookup('file','files/policy.json') }}"
+    state: present
+  register: iam_policy
+
+- name: Create IAM role
+  community.aws.iam_role:
+    assume_role_policy_document: "{{ lookup('file','files/assume_policy.json') }}"
+    name: "my-role"
+    state: present
+    managed_policy: "{{ iam_policy.policy.arn }}"
+  register: iam_role
+
+- name: Create DB instance with added IAM role
+  community.aws.rds_instance:
+    id: "my-instance-id"
+    state: present
+    engine: postgres
+    engine_version: 14.2
+    username: "{{ username }}"
+    password: "{{ password }}"
+    db_instance_class: db.m6g.large
+    allocated_storage: "{{ allocated_storage }}"
+    iam_roles:
+      - role_arn: "{{ iam_role.arn }}"
+        feature_name: 's3Export'
+
+- name: Remove IAM role from DB instance
+  community.aws.rds_instance:
+    id: "my-instance-id"
+    state: present
+    engine: postgres
+    engine_version: 14.2
+    username: "{{ username }}"
+    password: "{{ password }}"
+    db_instance_class: db.m6g.large
+    allocated_storage: "{{ allocated_storage }}"
+    purge_iam_roles: yes
 '''
 
 RETURN = r'''
@@ -780,15 +845,22 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_er
 from ansible_collections.amazon.aws.plugins.module_utils.core import get_boto3_client_method_parameters
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.rds import arg_spec_to_rds_params
 from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
+from ansible_collections.amazon.aws.plugins.module_utils.rds import compare_iam_roles
 from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_final_identifier
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_rds_method_attribute
 from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
+from ansible_collections.amazon.aws.plugins.module_utils.rds import update_iam_roles
+
 
 valid_engines = ['aurora', 'aurora-mysql', 'aurora-postgresql', 'mariadb', 'mysql', 'oracle-ee', 'oracle-ee-cdb',
                  'oracle-se2', 'oracle-se2-cdb', 'postgres', 'sqlserver-ee', 'sqlserver-se', 'sqlserver-ex', 'sqlserver-web']
+
+valid_engines_iam_roles = ['aurora-postgresql', 'oracle-ee', 'oracle-ee-cdb', 'oracle-se2', 'oracle-se2-cdb',
+                           'postgres', 'sqlserver-ee', 'sqlserver-se', 'sqlserver-ex', 'sqlserver-web']
 
 
 def get_rds_method_attribute_name(instance, state, creation_source, read_replica):
@@ -945,12 +1017,14 @@ def get_current_attributes_with_inconsistent_keys(instance):
     options['DBSecurityGroups'] = [sg['DBSecurityGroupName'] for sg in instance['DBSecurityGroups'] if sg['Status'] in ['adding', 'active']]
     options['VpcSecurityGroupIds'] = [sg['VpcSecurityGroupId'] for sg in instance['VpcSecurityGroups'] if sg['Status'] in ['adding', 'active']]
     options['DBParameterGroupName'] = [parameter_group['DBParameterGroupName'] for parameter_group in instance['DBParameterGroups']]
-    options['AllowMajorVersionUpgrade'] = None
     options['EnableIAMDatabaseAuthentication'] = instance['IAMDatabaseAuthenticationEnabled']
     # PerformanceInsightsEnabled is not returned on older RDS instances it seems
     options['EnablePerformanceInsights'] = instance.get('PerformanceInsightsEnabled', False)
-    options['MasterUserPassword'] = None
     options['NewDBInstanceIdentifier'] = instance['DBInstanceIdentifier']
+
+    # Neither of these are returned via describe_db_instances, so if either is specified during a check_mode run, changed=True
+    options['AllowMajorVersionUpgrade'] = None
+    options['MasterUserPassword'] = None
 
     return options
 
@@ -958,10 +1032,6 @@ def get_current_attributes_with_inconsistent_keys(instance):
 def get_changing_options_with_inconsistent_keys(modify_params, instance, purge_cloudwatch_logs, purge_security_groups):
     changing_params = {}
     current_options = get_current_attributes_with_inconsistent_keys(instance)
-
-    if current_options.get("MaxAllocatedStorage") is None:
-        current_options["MaxAllocatedStorage"] = None
-
     for option in current_options:
         current_option = current_options[option]
         desired_option = modify_params.pop(option, None)
@@ -982,9 +1052,14 @@ def get_changing_options_with_inconsistent_keys(modify_params, instance, purge_c
                 if desired_option in current_option:
                     continue
 
-        if current_option == desired_option:
+        # Current option and desired option are the same - continue loop
+        if option != 'ProcessorFeatures' and current_option == desired_option:
             continue
 
+        if option == 'ProcessorFeatures' and current_option == boto3_tag_list_to_ansible_dict(desired_option, 'Name', 'Value'):
+            continue
+
+        # Current option and desired option are different - add to changing_params list
         if option == 'ProcessorFeatures' and desired_option == []:
             changing_params['UseDefaultProcessorFeatures'] = True
         elif option == 'CloudwatchLogsExportConfiguration':
@@ -1074,13 +1149,48 @@ def update_instance(client, module, instance, instance_id):
 def promote_replication_instance(client, module, instance, read_replica):
     changed = False
     if read_replica is False:
-        changed = bool(instance.get('ReadReplicaSourceDBInstanceIdentifier') or instance.get('StatusInfos'))
-    if changed:
-        try:
-            call_method(client, module, method_name='promote_read_replica', parameters={'DBInstanceIdentifier': instance['DBInstanceIdentifier']})
-            changed = True
-        except is_boto3_error_message('DB Instance is not a read replica'):
-            pass
+        # 'StatusInfos' only exists when the instance is a read replica
+        # See https://awscli.amazonaws.com/v2/documentation/api/latest/reference/rds/describe-db-instances.html
+        if bool(instance.get('StatusInfos')):
+            try:
+                result, changed = call_method(client, module, method_name='promote_read_replica',
+                                              parameters={'DBInstanceIdentifier': instance['DBInstanceIdentifier']})
+            except is_boto3_error_message('DB Instance is not a read replica'):
+                pass
+    return changed
+
+
+def ensure_iam_roles(client, module, instance_id):
+    '''
+    Ensure specified IAM roles are associated with DB instance
+
+        Parameters:
+            client: RDS client
+            module: AWSModule
+            instance_id: DB's instance ID
+
+        Returns:
+            changed (bool): True if changes were successfully made to DB instance's IAM roles; False if not
+    '''
+    instance = camel_dict_to_snake_dict(get_instance(client, module, instance_id), ignore_list=['Tags', 'ProcessorFeatures'])
+
+    # Ensure engine type supports associating IAM roles
+    engine = instance.get('engine')
+    if engine not in valid_engines_iam_roles:
+        module.fail_json(msg='DB engine {0} is not valid for adding IAM roles. Valid engines are {1}'.format(engine, valid_engines_iam_roles))
+
+    changed = False
+    purge_iam_roles = module.params.get('purge_iam_roles')
+    target_roles = module.params.get('iam_roles') if module.params.get('iam_roles') else []
+    existing_roles = instance.get('associated_roles', [])
+    roles_to_add, roles_to_remove = compare_iam_roles(existing_roles, target_roles, purge_iam_roles)
+    if bool(roles_to_add or roles_to_remove):
+        changed = True
+        # Don't update on check_mode
+        if module.check_mode:
+            module.exit_json(changed=changed, **instance)
+        else:
+            update_iam_roles(client, module, instance_id, roles_to_add, roles_to_remove)
     return changed
 
 
@@ -1121,6 +1231,7 @@ def main():
         creation_source=dict(choices=['snapshot', 's3', 'instance']),
         force_update_password=dict(type='bool', default=False, no_log=False),
         purge_cloudwatch_logs_exports=dict(type='bool', default=True),
+        purge_iam_roles=dict(type='bool', default=False),
         purge_tags=dict(type='bool', default=True),
         read_replica=dict(type='bool'),
         wait=dict(type='bool', default=True),
@@ -1154,6 +1265,7 @@ def main():
         engine_version=dict(),
         final_db_snapshot_identifier=dict(aliases=['final_snapshot_identifier']),
         force_failover=dict(type='bool'),
+        iam_roles=dict(type='list', elements='dict'),
         iops=dict(type='int'),
         kms_key_id=dict(),
         license_model=dict(),
@@ -1230,6 +1342,13 @@ def main():
     if module.params['preferred_maintenance_window']:
         module.params['preferred_maintenance_window'] = module.params['preferred_maintenance_window'].lower()
 
+    # Throw warning regarding case when allow_major_version_upgrade is specified in check_mode
+    # describe_rds_instance never returns this value, so on check_mode, it will always return changed=True
+    # In non-check mode runs, changed will return the correct value, so no need to warn there.
+    # see: amazon.aws.module_util.rds.handle_errors.
+    if module.params.get('allow_major_version_upgrade') and module.check_mode:
+        module.warn('allow_major_version_upgrade is not returned when describing db instances, so changed will always be `True` on check mode runs.')
+
     client = module.client('rds')
     changed = False
     state = module.params['state']
@@ -1239,17 +1358,30 @@ def main():
     method_name = get_rds_method_attribute_name(instance, state, module.params['creation_source'], module.params['read_replica'])
 
     if method_name:
-        raw_parameters = arg_spec_to_rds_params(dict((k, module.params[k]) for k in module.params if k in parameter_options))
-        parameters = get_parameters(client, module, raw_parameters, method_name)
 
-        if parameters:
-            result, changed = call_method(client, module, method_name, parameters)
+        # Exit on create/delete if check_mode
+        if module.check_mode and method_name in ['create_db_instance', 'delete_db_instance']:
+            module.exit_json(changed=True, **camel_dict_to_snake_dict(instance, ignore_list=['Tags', 'ProcessorFeatures']))
+
+        raw_parameters = arg_spec_to_rds_params(dict((k, module.params[k]) for k in module.params if k in parameter_options))
+        parameters_to_modify = get_parameters(client, module, raw_parameters, method_name)
+
+        if parameters_to_modify:
+            # Exit on check_mode when parameters to modify
+            if module.check_mode:
+                module.exit_json(changed=True, **camel_dict_to_snake_dict(instance, ignore_list=['Tags', 'ProcessorFeatures']))
+            result, changed = call_method(client, module, method_name, parameters_to_modify)
 
         instance_id = get_final_identifier(method_name, module)
 
-        # Check tagging/promoting/rebooting/starting/stopping instance
-        if state != 'absent' and (not module.check_mode or instance):
-            changed |= update_instance(client, module, instance, instance_id)
+        if state != 'absent':
+            # Check tagging/promoting/rebooting/starting/stopping instance
+            if not module.check_mode or instance:
+                changed |= update_instance(client, module, instance, instance_id)
+
+            # Check IAM roles
+            if module.params.get('iam_roles') or module.params.get('purge_iam_roles'):
+                changed |= ensure_iam_roles(client, module, instance_id)
 
         if changed:
             instance = get_instance(client, module, instance_id)
