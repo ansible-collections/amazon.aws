@@ -1,0 +1,9 @@
+plugins/inventory/aws_ec2.py pylint:use-a-generator # (new test) Should be an easy fix but not worth blocking gating
+plugins/modules/ec2_group.py pylint:use-a-generator # (new test) Should be an easy fix but not worth blocking gating
+plugins/modules/ec2_tag.py validate-modules:parameter-state-invalid-choice  # Deprecated choice that can't be removed until 2022
+plugins/modules/ec2_vol.py validate-modules:parameter-state-invalid-choice  # Deprecated choice that can't be removed until 2022
+plugins/module_utils/compat/_ipaddress.py no-assert  # Vendored library
+plugins/module_utils/compat/_ipaddress.py no-unicode-literals  # Vendored library
+plugins/module_utils/core.py pylint:property-with-parameters  # Breaking change required to fix - https://github.com/ansible-collections/amazon.aws/pull/290
+tests/utils/shippable/check_matrix.py replace-urlopen  # Standalone script used as part of testing
+tests/utils/shippable/timing.py shebang  # Standalone script used as part of testing
