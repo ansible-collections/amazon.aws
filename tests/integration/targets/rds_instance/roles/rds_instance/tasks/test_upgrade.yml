@@ -32,7 +32,26 @@
 
     # Test upgrade of DB instance
 
-    - name: Uprade a mariadb instance
+    - name: Upgrade a mariadb instance - check_mode
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        engine: mariadb
+        engine_version: "{{ mariadb_engine_version_2 }}"
+        allow_major_version_upgrade: true
+        username: "{{ username }}"
+        password: "{{ password }}"
+        db_instance_class: "{{ db_instance_class }}"
+        allocated_storage: "{{ allocated_storage }}"
+        apply_immediately: True
+      register: result
+      check_mode: yes
+
+    - assert:
+        that:
+          - result.changed
+
+    - name: Upgrade a mariadb instance
       rds_instance:
         id: "{{ instance_id }}"
         state: present
@@ -51,7 +70,30 @@
           - result.changed
           - '"engine_version" in result.pending_modified_values or result.engine_version == mariadb_engine_version_2'
 
-    - name: Idempotence uprading a mariadb instance
+    - name: Idempotence upgrading a mariadb instance - check_mode
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        engine: mariadb
+        engine_version: "{{ mariadb_engine_version_2 }}"
+        allow_major_version_upgrade: true
+        username: "{{ username }}"
+        password: "{{ password }}"
+        db_instance_class: "{{ db_instance_class }}"
+        allocated_storage: "{{ allocated_storage }}"
+      register: result
+      retries: 30
+      delay: 10
+      until: result is not failed
+      check_mode: yes
+
+    ### Specifying allow_major_version_upgrade with check_mode will always result in changed=True
+    ### since it's not returned in describe_db_instances api call
+    # - assert:
+    #     that:
+    #       - not result.changed
+
+    - name: Idempotence upgrading a mariadb instance
       rds_instance:
         id: "{{ instance_id }}"
         state: present

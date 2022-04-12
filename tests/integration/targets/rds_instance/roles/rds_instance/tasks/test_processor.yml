@@ -30,7 +30,7 @@
           that:
             - result.changed
 
-      - name: Check mode - modify the processor features
+      - name: Modify the processor features - check_mode
         rds_instance:
           id: "{{ instance_id }}"
           state: present
@@ -66,6 +66,45 @@
       - assert:
           that:
             - result.changed
+            - 'result.pending_modified_values.processor_features.coreCount == "{{ modified_processor_features.coreCount }}"'
+            - 'result.pending_modified_values.processor_features.threadsPerCore == "{{ modified_processor_features.threadsPerCore }}"'
+
+      - name: Modify the processor features (idempotence) - check_mode
+        rds_instance:
+          id: "{{ instance_id }}"
+          state: present
+          engine: oracle-ee
+          username: "{{ username }}"
+          password: "{{ password }}"
+          db_instance_class: "{{ oracle_ee_db_instance_class }}"
+          allocated_storage: "{{ allocated_storage }}"
+          storage_encrypted: True
+          processor_features: "{{ modified_processor_features }}"
+          apply_immediately: true
+        register: result
+        check_mode: True
+
+      - assert:
+          that:
+            - not result.changed
+
+      - name: Modify the processor features (idempotence)
+        rds_instance:
+          id: "{{ instance_id }}"
+          state: present
+          engine: oracle-ee
+          username: "{{ username }}"
+          password: "{{ password }}"
+          db_instance_class: "{{ oracle_ee_db_instance_class }}"
+          allocated_storage: "{{ allocated_storage }}"
+          storage_encrypted: True
+          processor_features: "{{ modified_processor_features }}"
+          apply_immediately: true
+        register: result
+
+      - assert:
+          that:
+            - not result.changed
             - 'result.pending_modified_values.processor_features.coreCount == "{{ modified_processor_features.coreCount }}"'
             - 'result.pending_modified_values.processor_features.threadsPerCore == "{{ modified_processor_features.threadsPerCore }}"'
 

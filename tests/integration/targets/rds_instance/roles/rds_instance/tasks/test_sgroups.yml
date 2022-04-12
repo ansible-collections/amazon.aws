@@ -40,8 +40,6 @@
           - "{{ resource_prefix }}-sg-2"
           - "{{ resource_prefix }}-sg-3"
 
-      - debug: var=sgs_result
-
       - name: Ensure the resource doesn't exist
         rds_instance:
           id: "{{ instance_id }}"
@@ -53,6 +51,27 @@
           that:
             - not result.changed
         ignore_errors: yes
+
+    # ------------------------------------------------------------------------------------------
+
+      - name: Create a DB instance in the VPC with two security groups - check_mode
+        rds_instance:
+          id: "{{ instance_id }}"
+          state: present
+          engine: mariadb
+          username: "{{ username }}"
+          password: "{{ password }}"
+          db_instance_class: "{{ db_instance_class }}"
+          allocated_storage: "{{ allocated_storage }}"
+          vpc_security_group_ids:
+            - "{{ sgs_result.results.0.group_id }}"
+            - "{{ sgs_result.results.1.group_id }}"
+        register: result
+        check_mode: yes
+
+      - assert:
+          that:
+            - result.changed
 
       - name: Create a DB instance in the VPC with two security groups
         rds_instance:
@@ -74,7 +93,48 @@
             - "result.db_instance_identifier == '{{ instance_id }}'"
             - "result.vpc_security_groups | selectattr('status', 'in', ['active', 'adding']) | list | length == 2"
 
-      - name: Add a new security group without purge (check_mode)
+      - name: Create a DB instance in the VPC with two security groups (idempotence) - check_mode
+        rds_instance:
+          id: "{{ instance_id }}"
+          state: present
+          engine: mariadb
+          username: "{{ username }}"
+          password: "{{ password }}"
+          db_instance_class: "{{ db_instance_class }}"
+          allocated_storage: "{{ allocated_storage }}"
+          vpc_security_group_ids:
+            - "{{ sgs_result.results.0.group_id }}"
+            - "{{ sgs_result.results.1.group_id }}"
+        register: result
+        check_mode: yes
+
+      - assert:
+          that:
+            - not result.changed
+
+      - name: Create a DB instance in the VPC with two security groups (idempotence)
+        rds_instance:
+          id: "{{ instance_id }}"
+          state: present
+          engine: mariadb
+          username: "{{ username }}"
+          password: "{{ password }}"
+          db_instance_class: "{{ db_instance_class }}"
+          allocated_storage: "{{ allocated_storage }}"
+          vpc_security_group_ids:
+            - "{{ sgs_result.results.0.group_id }}"
+            - "{{ sgs_result.results.1.group_id }}"
+        register: result
+
+      - assert:
+          that:
+            - not result.changed
+            - "result.db_instance_identifier == '{{ instance_id }}'"
+            - "result.vpc_security_groups | selectattr('status', 'in', ['active', 'adding']) | list | length == 2"
+
+    # ------------------------------------------------------------------------------------------
+
+      - name: Add a new security group without purge - check_mode
         rds_instance:
           id: "{{ instance_id }}"
           state: present
@@ -106,7 +166,23 @@
             - "result.db_instance_identifier == '{{ instance_id }}'"
             - "result.vpc_security_groups | selectattr('status', 'in', ['active', 'adding']) | list | length == 3"
 
-      - name: Add a new security group without purge (test idempotence)
+      - name: Add a new security group without purge (idempotence) - check_mode
+        rds_instance:
+          id: "{{ instance_id }}"
+          state: present
+          vpc_security_group_ids:
+            - "{{ sgs_result.results.2.group_id }}"
+          apply_immediately: true
+          purge_security_groups: false
+        register: result
+        check_mode: yes
+
+      - assert:
+          that:
+            - not result.changed
+            - "result.db_instance_identifier == '{{ instance_id }}'"
+
+      - name: Add a new security group without purge (idempotence)
         rds_instance:
           id: "{{ instance_id }}"
           state: present
@@ -120,6 +196,23 @@
           that:
             - not result.changed
             - "result.db_instance_identifier == '{{ instance_id }}'"
+            - "result.vpc_security_groups | selectattr('status', 'in', ['active', 'adding']) | list | length == 3"
+
+    # ------------------------------------------------------------------------------------------
+
+      - name: Add a security group with purge - check_mode
+        rds_instance:
+          id: "{{ instance_id }}"
+          state: present
+          vpc_security_group_ids:
+            - "{{ sgs_result.results.2.group_id }}"
+          apply_immediately: true
+        register: result
+        check_mode: yes
+
+      - assert:
+          that:
+            - result.changed
 
       - name: Add a security group with purge
         rds_instance:
@@ -136,6 +229,35 @@
             - "result.db_instance_identifier == '{{ instance_id }}'"
             - "result.vpc_security_groups | selectattr('status', 'in', ['active', 'adding']) | list | length == 1"
             - "result.vpc_security_groups | selectattr('status', 'equalto', 'removing') | list | length == 2"
+
+      - name: Add a security group with purge (idempotence) - check_mode
+        rds_instance:
+          id: "{{ instance_id }}"
+          state: present
+          vpc_security_group_ids:
+            - "{{ sgs_result.results.2.group_id }}"
+          apply_immediately: true
+        register: result
+        check_mode: yes
+
+      - assert:
+          that:
+            - not result.changed
+
+      - name: Add a security group with purge (idempotence)
+        rds_instance:
+          id: "{{ instance_id }}"
+          state: present
+          vpc_security_group_ids:
+            - "{{ sgs_result.results.2.group_id }}"
+          apply_immediately: true
+        register: result
+
+      - assert:
+          that:
+            - not result.changed
+            - "result.db_instance_identifier == '{{ instance_id }}'"
+            - "result.vpc_security_groups | selectattr('status', 'in', ['active', 'adding']) | list | length == 1"
 
     always:
 

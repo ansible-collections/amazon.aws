@@ -40,6 +40,31 @@
             - source_db.changed
             - "source_db.db_instance_identifier == '{{ instance_id }}'"
 
+    # ------------------------------------------------------------------------------------------
+
+      - name: Create a read replica in a different region - check_mode
+        rds_instance:
+          id: "{{ instance_id }}-replica"
+          state: present
+          source_db_instance_identifier: "{{ instance_id }}"
+          engine: mysql
+          username: "{{ username }}"
+          password: "{{ password }}"
+          read_replica: True
+          db_instance_class: "{{ db_instance_class }}"
+          allocated_storage: "{{ allocated_storage }}"
+          region: "{{ region_dest }}"
+          tags:
+            Name: "{{ instance_id }}"
+            Created_by: Ansible rds_instance tests
+          wait: yes
+        register: result
+        check_mode: yes
+
+      - assert:
+          that:
+            - result.changed
+
       - name: Create a read replica in a different region
         rds_instance:
           id: "{{ instance_id }}-replica"
@@ -66,6 +91,27 @@
             - "result.tags.Name == '{{ instance_id }}'"
             - "result.tags.Created_by == 'Ansible rds_instance tests'"
 
+      - name: Test idempotence with a read replica - check_mode
+        rds_instance:
+          id: "{{ instance_id }}-replica"
+          state: present
+          source_db_instance_identifier: "{{ instance_id }}"
+          engine: mysql
+          username: "{{ username }}"
+          password: "{{ password }}"
+          db_instance_class: "{{ db_instance_class }}"
+          allocated_storage: "{{ allocated_storage }}"
+          region: "{{ region_dest }}"
+          tags:
+            Name: "{{ instance_id }}"
+            Created_by: Ansible rds_instance tests
+        register: result
+        check_mode: yes
+
+      - assert:
+          that:
+            - not result.changed
+
       - name: Test idempotence with a read replica
         rds_instance:
           id: "{{ instance_id }}-replica"
@@ -82,10 +128,9 @@
             Created_by: Ansible rds_instance tests
         register: result
 
-      ## XXX Bug
-      # - assert:
-      #     that:
-      #       - not result.changed
+      - assert:
+          that:
+            - not result.changed
 
       - name: Test idempotence with read_replica=True
         rds_instance:
@@ -104,6 +149,25 @@
             Created_by: Ansible rds_instance tests
         register: result
 
+      - assert:
+          that:
+            - not result.changed
+
+    # ------------------------------------------------------------------------------------------
+
+      - name: Promote the read replica - check_mode
+        rds_instance:
+          id: "{{ instance_id }}-replica"
+          state: present
+          read_replica: False
+          region: "{{ region_dest }}"
+        register: result
+        check_mode: yes
+
+      - assert:
+          that:
+            - result.changed
+
       - name: Promote the read replica
         rds_instance:
           id: "{{ instance_id }}-replica"
@@ -116,6 +180,19 @@
           that:
             - result.changed
 
+      - name: Test idempotence - check_mode
+        rds_instance:
+          id: "{{ instance_id }}-replica"
+          state: present
+          read_replica: False
+          region: "{{ region_dest }}"
+        register: result
+        check_mode: yes
+
+      - assert:
+         that:
+           - not result.changed
+
       - name: Test idempotence
         rds_instance:
           id: "{{ instance_id }}-replica"
@@ -124,10 +201,9 @@
           region: "{{ region_dest }}"
         register: result
 
-      ## XXX Bug
-      #- assert:
-      #    that:
-      #      - not result.changed
+      - assert:
+         that:
+           - not result.changed
 
     always:
 
