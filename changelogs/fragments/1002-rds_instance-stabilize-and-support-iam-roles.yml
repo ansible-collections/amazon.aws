@@ -1,0 +1,4 @@
+minor_changes:
+  - rds_instance - add support for addition/removal of iam roles to db instance (https://github.com/ansible-collections/community.aws/pull/1002).
+bugfixes:
+  - rds_instance - fix check_mode and idempotency issues and added integration tests for all tests in suite (https://github.com/ansible-collections/community.aws/pull/1002).

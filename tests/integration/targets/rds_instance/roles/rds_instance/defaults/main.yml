@@ -29,3 +29,7 @@ modified_processor_features:
 # For mariadb tests
 mariadb_engine_version: 10.3.31
 mariadb_engine_version_2: 10.4.21
+
+# For iam roles tests
+postgres_db_instance_class: db.m6g.large # smallest psql instance
+postgres_db_engine_version: 14.2

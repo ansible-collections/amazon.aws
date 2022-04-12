@@ -15,6 +15,9 @@ tagging
 replica
 upgrade
 
+# TODO: uncomment after adding iam:CreatePolicy and iam:DeletePolicy
+# iam_roles
+
 # TODO: uncomment after adding rds_cluster module
 # aurora
 
