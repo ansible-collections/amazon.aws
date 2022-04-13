@@ -1,2 +1,0 @@
-minor_changes:
-  - rds_instance - add `choices` for valid engine value (https://github.com/ansible-collections/community.aws/pull/1034).
