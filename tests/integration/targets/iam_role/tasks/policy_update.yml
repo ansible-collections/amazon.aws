@@ -25,6 +25,19 @@
       - iam_role is changed
       - iam_role.iam_role.role_name == test_role
 
+- name: "Add Managed Policy (no change) - check mode"
+  iam_role:
+    name: "{{ test_role }}"
+    purge_policies: no
+    managed_policy:
+      - "{{ safe_managed_policy }}"
+  register: iam_role
+  check_mode: yes
+
+- assert:
+    that:
+      - iam_role is not changed
+
 - name: "Add Managed Policy (no change)"
   iam_role:
     name: "{{ test_role }}"
@@ -69,6 +82,8 @@
       - '"TagB" in role_info.iam_roles[0].tags'
       - role_info.iam_roles[0].tags.TagB == "ValueB"
 
+# ------------------------------------------------------------------------------------------
+
 - name: "Update Managed Policy without purge (CHECK MODE)"
   iam_role:
     name: "{{ test_role }}"
@@ -94,6 +109,19 @@
     that:
       - iam_role is changed
       - iam_role.iam_role.role_name == test_role
+
+- name: "Update Managed Policy without purge (no change) - check mode"
+  iam_role:
+    name: "{{ test_role }}"
+    purge_policies: no
+    managed_policy:
+      - "{{ custom_policy_name }}"
+  register: iam_role
+  check_mode: yes
+
+- assert:
+    that:
+      - iam_role is not changed
 
 - name: "Update Managed Policy without purge (no change)"
   iam_role:
@@ -139,6 +167,8 @@
       - '"TagB" in role_info.iam_roles[0].tags'
       - role_info.iam_roles[0].tags.TagB == "ValueB"
 
+# ------------------------------------------------------------------------------------------
+
 # Managed Policies are purged by default
 - name: "Update Managed Policy with purge (CHECK MODE)"
   iam_role:
@@ -163,6 +193,18 @@
     that:
       - iam_role is changed
       - iam_role.iam_role.role_name == test_role
+
+- name: "Update Managed Policy with purge (no change) - check mode"
+  iam_role:
+    name: "{{ test_role }}"
+    managed_policy:
+      - "{{ custom_policy_name }}"
+  register: iam_role
+  check_mode: yes
+
+- assert:
+    that:
+      - iam_role is not changed
 
 - name: "Update Managed Policy with purge (no change)"
   iam_role:

@@ -77,8 +77,8 @@
   iam_role:
     name: "{{ test_role }}"
     create_instance_profile: no
-  check_mode: yes
   register: iam_role
+  check_mode: yes
 
 - assert:
     that:
@@ -113,6 +113,17 @@
       - iam_role.iam_role.role_name == test_role
       - '"create_date" in iam_role.iam_role'
       - '"role_id" in iam_role.iam_role'
+
+- name: "Minimal IAM Role without instance profile (no change) - check mode"
+  iam_role:
+    name: "{{ test_role }}"
+    create_instance_profile: no
+  register: iam_role
+  check_mode: yes
+
+- assert:
+    that:
+      - iam_role is not changed
 
 - name: "Minimal IAM Role without instance profile (no change)"
   iam_role:
@@ -170,6 +181,8 @@
       - role_info is succeeded
       - role_info.iam_roles | length == 0
 
+# ------------------------------------------------------------------------------------------
+
 # (with path)
 - name: "Minimal IAM Role with path (CHECK MODE)"
   iam_role:
@@ -202,6 +215,17 @@
       - iam_role.iam_role.role_name == test_role
       - '"create_date" in iam_role.iam_role'
       - '"role_id" in iam_role.iam_role'
+
+- name: "Minimal IAM Role with path (no change) - check mode"
+  iam_role:
+    name: "{{ test_role }}"
+    path: "{{ test_path }}"
+  register: iam_role
+  check_mode: yes
+
+- assert:
+    that:
+      - iam_role is not changed
 
 - name: "Minimal IAM Role with path (no change)"
   iam_role:
@@ -292,7 +316,20 @@
       - role_info is succeeded
       - role_info.iam_roles | length == 0
 
+# ------------------------------------------------------------------------------------------
+
 # (with Instance profile)
+- name: "Minimal IAM Role with instance profile - check mode"
+  iam_role:
+    name: "{{ test_role }}"
+    create_instance_profile: yes
+  register: iam_role
+  check_mode: yes
+
+- assert:
+    that:
+      - iam_role is changed
+
 - name: "Minimal IAM Role with instance profile"
   iam_role:
     name: "{{ test_role }}"
@@ -313,6 +350,17 @@
       - iam_role.iam_role.role_name == test_role
       - '"create_date" in iam_role.iam_role'
       - '"role_id" in iam_role.iam_role'
+
+- name: "Minimal IAM Role wth instance profile (no change) - check mode"
+  iam_role:
+    name: "{{ test_role }}"
+    create_instance_profile: yes
+  register: iam_role
+  check_mode: yes
+
+- assert:
+    that:
+      - iam_role is not changed
 
 - name: "Minimal IAM Role wth instance profile (no change)"
   iam_role:

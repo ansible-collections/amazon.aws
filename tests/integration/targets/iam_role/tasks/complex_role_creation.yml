@@ -60,6 +60,27 @@
       - '"create_date" in iam_role.iam_role'
       - '"role_id" in iam_role.iam_role'
 
+- name: "Complex IAM role (no change) - check mode"
+  iam_role:
+    name: "{{ test_role }}"
+    assume_role_policy_document: '{{ lookup("file", "deny-assume.json") }}'
+    boundary: "{{ boundary_policy }}"
+    create_instance_profile: no
+    description: "Ansible Test Role {{ resource_prefix }}"
+    managed_policy:
+      - "{{ safe_managed_policy }}"
+      - "{{ custom_policy_name }}"
+    max_session_duration: 43200
+    path: "{{ test_path }}"
+    tags:
+      TagA: "ValueA"
+  register: iam_role
+  check_mode: yes
+
+- assert:
+    that:
+      - iam_role is not changed
+
 - name: "Complex IAM role (no change)"
   iam_role:
     name: "{{ test_role }}"
