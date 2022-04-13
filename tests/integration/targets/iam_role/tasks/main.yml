@@ -18,9 +18,7 @@
 # - There are some known timing issues with boto3 returning before actions
 #   complete in the case of problems with "changed" status it's worth enabling
 #   the standard_pauses and paranoid_pauses options as a first step in debugging
-#
-# Possible Bugs:
-# - Fails to delete role if inline policies not removed first
+
 
 - name: "Setup AWS connection info"
   module_defaults:
@@ -92,23 +90,6 @@
   always:
     # ===================================================================
     # Cleanup
-
-    # XXX iam_role fails to remove inline policies before deleting the role
-    - name: "Detach inline policy a"
-      iam_policy:
-        state: absent
-        iam_type: "role"
-        iam_name: "{{ test_role }}"
-        policy_name: "inline-policy-a"
-      ignore_errors: true
-
-    - name: "Detach inline policy b"
-      iam_policy:
-        state: absent
-        iam_type: "role"
-        iam_name: "{{ test_role }}"
-        policy_name: "inline-policy-b"
-      ignore_errors: true
 
     - name: "Remove IAM Role"
       iam_role:

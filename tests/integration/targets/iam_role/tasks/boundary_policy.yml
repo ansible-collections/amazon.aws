@@ -34,6 +34,18 @@
       - iam_role is changed
       - iam_role.iam_role.role_name == test_role
 
+- name: "Configure Boundary Policy (no change) - check mode"
+  iam_role:
+    name: "{{ test_role }}"
+    create_instance_profile: no
+    boundary: "{{ boundary_policy }}"
+  register: iam_role
+  check_mode: yes
+
+- assert:
+    that:
+      - iam_role is not changed
+
 - name: "Configure Boundary Policy (no change)"
   iam_role:
     name: "{{ test_role }}"

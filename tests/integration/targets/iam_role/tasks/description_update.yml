@@ -22,6 +22,17 @@
       - iam_role.iam_role.role_name == test_role
       - iam_role.iam_role.description == 'Ansible Test Role {{ resource_prefix }}'
 
+- name: "Add Description (no change) - check mode"
+  iam_role:
+    name: "{{ test_role }}"
+    description: "Ansible Test Role {{ resource_prefix }}"
+  register: iam_role
+  check_mode: yes
+
+- assert:
+    that:
+      - iam_role is not changed
+
 - name: "Add Description (no change)"
   iam_role:
     name: "{{ test_role }}"
@@ -61,6 +72,8 @@
       - role_info.iam_roles[0].role_name == test_role
       - role_info.iam_roles[0].tags | length == 0
 
+# ------------------------------------------------------------------------------------------
+
 - name: "Update Description (CHECK MODE)"
   iam_role:
     name: "{{ test_role }}"
@@ -83,6 +96,17 @@
       - iam_role is changed
       - iam_role.iam_role.role_name == test_role
       - iam_role.iam_role.description == 'Ansible Test Role (updated) {{ resource_prefix }}'
+
+- name: "Update Description (no change) - check mode"
+  iam_role:
+    name: "{{ test_role }}"
+    description: "Ansible Test Role (updated) {{ resource_prefix }}"
+  register: iam_role
+  check_mode: yes
+
+- assert:
+    that:
+      - iam_role is not changed
 
 - name: "Update Description (no change)"
   iam_role:

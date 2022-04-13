@@ -26,6 +26,18 @@
       - '"TagA" in iam_role.iam_role.tags'
       - iam_role.iam_role.tags.TagA == "ValueA"
 
+- name: "Add Tag (no change) - check mode"
+  iam_role:
+    name: "{{ test_role }}"
+    tags:
+      TagA: ValueA
+  register: iam_role
+  check_mode: yes
+
+- assert:
+    that:
+      - iam_role is not changed
+
 - name: "Add Tag (no change)"
   iam_role:
     name: "{{ test_role }}"
@@ -69,6 +81,8 @@
       - '"TagA" in role_info.iam_roles[0].tags'
       - role_info.iam_roles[0].tags.TagA == "ValueA"
 
+# ------------------------------------------------------------------------------------------
+
 - name: "Update Tag (CHECK MODE)"
   iam_role:
     name: "{{ test_role }}"
@@ -94,6 +108,18 @@
       - iam_role.iam_role.role_name == test_role
       - '"TagA" in iam_role.iam_role.tags'
       - iam_role.iam_role.tags.TagA == "AValue"
+
+- name: "Update Tag (no change) - check mode"
+  iam_role:
+    name: "{{ test_role }}"
+    tags:
+      TagA: AValue
+  register: iam_role
+  check_mode: yes
+
+- assert:
+    that:
+      - iam_role is not changed
 
 - name: "Update Tag (no change)"
   iam_role:
@@ -138,6 +164,8 @@
       - '"TagA" in role_info.iam_roles[0].tags'
       - role_info.iam_roles[0].tags.TagA == "AValue"
 
+# ------------------------------------------------------------------------------------------
+
 - name: "Add second Tag without purge (CHECK MODE)"
   iam_role:
     name: "{{ test_role }}"
@@ -165,6 +193,19 @@
       - iam_role.iam_role.role_name == test_role
       - '"TagB" in iam_role.iam_role.tags'
       - iam_role.iam_role.tags.TagB == "ValueB"
+
+- name: "Add second Tag without purge (no change) - check mode"
+  iam_role:
+    name: "{{ test_role }}"
+    purge_tags: no
+    tags:
+      TagB: ValueB
+  register: iam_role
+  check_mode: yes
+
+- assert:
+    that:
+      - iam_role is not changed
 
 - name: "Add second Tag without purge (no change)"
   iam_role:
@@ -212,6 +253,8 @@
       - '"TagB" in role_info.iam_roles[0].tags'
       - role_info.iam_roles[0].tags.TagB == "ValueB"
 
+# ------------------------------------------------------------------------------------------
+
 - name: "Purge first tag (CHECK MODE)"
   iam_role:
     name: "{{ test_role }}"
@@ -239,6 +282,18 @@
       - iam_role.iam_role.role_name == test_role
       - '"TagB" in iam_role.iam_role.tags'
       - iam_role.iam_role.tags.TagB == "ValueB"
+
+- name: "Purge first tag (no change) - check mode"
+  iam_role:
+    name: "{{ test_role }}"
+    purge_tags: yes
+    tags:
+      TagB: ValueB
+  register: iam_role
+
+- assert:
+    that:
+      - iam_role is not changed
 
 - name: "Purge first tag (no change)"
   iam_role:
