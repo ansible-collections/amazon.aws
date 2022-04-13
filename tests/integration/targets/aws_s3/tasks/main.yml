@@ -19,6 +19,7 @@
     - name: Create temporary directory
       tempfile:
         state: directory
+        path: /var/tmp
       register: tmpdir
 
     - name: Create content
@@ -632,7 +633,7 @@
         bucket: "{{ bucket_name }}"
         object: put-template.txt
         mode: put
-        content: "{{ lookup('template', 'templates/put-template.txt.j2') }}"
+        content: "{{ lookup('template', 'templates/put-template.txt.j2')|replace('\n', '') }}"
       register: result
 
     - assert:
@@ -648,7 +649,7 @@
 
     - assert:
         that:
-          - result.contents == "{{ lookup('template', 'templates/put-template.txt.j2') }}"
+          - result.contents == "template:test template"
 
     # at present, there is no lookup that can process binary data, so we use slurp instead
     - slurp:
