@@ -185,6 +185,8 @@ def create_lifecycle_hook(connection, module):
 
     if not existing_hook:
         try:
+            if module.check_mode:
+                module.exit_json(changed=True, msg="Would have created AutoScalingGroup Lifecycle Hook if not in check_mode.")
             return_object['changed'] = True
             connection.put_lifecycle_hook(**lch_params)
             return_object['lifecycle_hook_info'] = connection.describe_lifecycle_hooks(
@@ -196,6 +198,8 @@ def create_lifecycle_hook(connection, module):
         added, removed, modified, same = dict_compare(lch_params, existing_hook[0])
         if modified:
             try:
+                if module.check_mode:
+                    module.exit_json(changed=True, msg="Would have modified AutoScalingGroup Lifecycle Hook if not in check_mode.")
                 return_object['changed'] = True
                 connection.put_lifecycle_hook(**lch_params)
                 return_object['lifecycle_hook_info'] = connection.describe_lifecycle_hooks(
@@ -245,6 +249,8 @@ def delete_lifecycle_hook(connection, module):
             }
 
             try:
+                if module.check_mode:
+                    module.exit_json(changed=True, msg="Would have deleted AutoScalingGroup Lifecycle Hook if not in check_mode.")
                 connection.delete_lifecycle_hook(**lch_params)
                 return_object['changed'] = True
                 return_object['lifecycle_hook_removed'] = {'LifecycleHookName': lch_name, 'AutoScalingGroupName': asg_name}
@@ -269,8 +275,12 @@ def main():
         state=dict(default='present', choices=['present', 'absent'])
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              required_if=[['state', 'present', ['transition']]])
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+        required_if=[['state', 'present', ['transition']]],
+    )
+
     state = module.params.get('state')
 
     connection = module.client('autoscaling')
