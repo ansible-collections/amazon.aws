@@ -31,7 +31,17 @@
 - assert:
     that:
       - iam_role is not changed
-      - iam_role.iam_role.role_name == test_role
+
+- name: "Update Max Session Duration (no change) - check mode"
+  iam_role:
+    name: "{{ test_role }}"
+    max_session_duration: 43200
+  register: iam_role
+  check_mode: yes
+
+- assert:
+    that:
+      - iam_role is not changed
 
 - name: "iam_role_info after updating Max Session Duration"
   iam_role_info:

@@ -41,6 +41,18 @@
       - role_info is succeeded
       - role_info.iam_roles | length == 0
 
+- name: "Remove IAM Role (should be gone already) - check mode"
+  iam_role:
+    state: absent
+    name: "{{ test_role }}"
+    delete_instance_profile: yes
+  register: iam_role
+  check_mode: yes
+
+- assert:
+    that:
+      - iam_role is not changed
+
 - name: "Remove IAM Role (should be gone already)"
   iam_role:
     state: absent
