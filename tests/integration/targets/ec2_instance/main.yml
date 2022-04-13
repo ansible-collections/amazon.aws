@@ -4,6 +4,19 @@
 # '{{ inventory_hostname }}'.yml file in roles/ec2_instance/tasks/
 
 
+- hosts: controller
+  gather_facts: no
+  tasks:
+  - module_defaults:
+      group/aws:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        security_token: "{{ security_token | default(omit) }}"
+        region: "{{ aws_region }}"
+    - include_role:
+        name: 'ec2_instance'
+        tasks_from: env_setup.yml
+
 # Prepare the VPC and figure out which AMI to use
 - hosts: all
   gather_facts: no
@@ -14,22 +27,9 @@
         aws_secret_key: "{{ aws_secret_key }}"
         security_token: "{{ security_token | default(omit) }}"
         region: "{{ aws_region }}"
-    vars:
-      # We can't just use "run_once" because the facts don't propagate when
-      # running an 'include' that was run_once
-      setup_run_once: yes
-    block:
     - include_role:
         name: 'ec2_instance'
         tasks_from: env_setup.yml
-    rescue:
-    - include_role:
-        name: 'ec2_instance'
-        tasks_from: env_cleanup.yml
-      run_once: yes
-    - fail:
-        msg: 'Environment preparation failed'
-      run_once: yes
 
 # VPC should get cleaned up once all hosts have run
 - hosts: all
@@ -38,3 +38,16 @@
   serial: 6
   roles:
     - ec2_instance
+
+- hosts: controller
+  gather_facts: no
+  tasks:
+  - module_defaults:
+      group/aws:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        security_token: "{{ security_token | default(omit) }}"
+        region: "{{ aws_region }}"
+    - include_role:
+        name: 'ec2_instance'
+        tasks_from: env_cleanup.yml
