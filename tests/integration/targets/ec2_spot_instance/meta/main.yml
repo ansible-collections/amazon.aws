@@ -1,4 +1,2 @@
 dependencies:
-  - prepare_tests
-  - setup_ec2
   - setup_ec2_facts

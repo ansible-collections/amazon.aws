@@ -1,16 +1,8 @@
 ---
-- name: Get a list of images
-  ec2_ami_info:
-    filters:
-      owner-alias: amazon
-      name: "amzn2-ami-minimal-hvm-*"
-      description: "Amazon Linux 2 AMI *"
-  register: images_info
-
 - name: Create instance a
   ec2_instance:
     name: "ansible-test-{{ tiny_prefix }}-elb-a"
-    image_id: "{{ images_info.images | sort(attribute='creation_date') | reverse | first | json_query('image_id') }}"
+    image_id: "{{ ec2_ami_id }}"
     vpc_subnet_id: "{{ subnet_a }}"
     instance_type: t2.micro
     wait: false
@@ -20,7 +12,7 @@
 - name: Create instance b
   ec2_instance:
     name: "ansible-test-{{ tiny_prefix }}-elb-b"
-    image_id: "{{ images_info.images | sort(attribute='creation_date') | reverse | first | json_query('image_id') }}"
+    image_id: "{{ ec2_ami_id }}"
     vpc_subnet_id: "{{ subnet_b }}"
     instance_type: t2.micro
     wait: false
