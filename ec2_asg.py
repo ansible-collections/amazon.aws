@@ -224,7 +224,7 @@ options:
     description:
       - If C(true), existing tags will be purged from the resource to match exactly what is defined by I(tags) parameter.
       - If the I(tags) parameter is not set then tags will not be modified.
-    default: true
+    default: false
     type: bool
     version_added: 3.2.0
   health_check_period:
@@ -1861,7 +1861,7 @@ def main():
         wait_timeout=dict(type='int', default=300),
         state=dict(default='present', choices=['present', 'absent']),
         tags=dict(type='list', default=[], elements='dict'),
-        purge_tags=dict(type='bool', default=True),
+        purge_tags=dict(type='bool', default=False),
         health_check_period=dict(type='int', default=300),
         health_check_type=dict(default='EC2', choices=['EC2', 'ELB']),
         default_cooldown=dict(type='int', default=300),
