@@ -506,7 +506,8 @@ def create_or_update_role(module, client):
     role['AttachedPolicies'] = get_attached_policy_list(module, client, role_name)
     role['tags'] = get_role_tags(module, client)
 
-    module.exit_json(changed=changed, iam_role=camel_dict_to_snake_dict(role, ignore_list=['tags']))
+    camel_role = camel_dict_to_snake_dict(role, ignore_list=['tags'])
+    module.exit_json(changed=changed, iam_role=camel_role, **camel_role)
 
 
 def create_instance_profiles(module, client, role_name, path):
