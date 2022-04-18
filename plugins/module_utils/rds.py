@@ -163,7 +163,8 @@ def call_method(client, module, method_name, parameters):
                 # check if instance is in an available state first, if possible
                 if wait:
                     wait_for_status(client, module, module.params['db_instance_identifier'], 'modify_db_instance')
-                result = AWSRetry.jittered_backoff(catch_extra_error_codes=['InvalidDBInstanceState'])(method)(**parameters)
+                error_codes = ['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
+                result = AWSRetry.jittered_backoff(catch_extra_error_codes=error_codes)(method)(**parameters)
             elif method_name == 'modify_db_cluster':
                 # check if cluster is in an available state first, if possible
                 if wait:
