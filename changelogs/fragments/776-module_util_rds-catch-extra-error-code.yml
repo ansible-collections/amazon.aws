@@ -1,0 +1,2 @@
+bugfixes:
+  - module.utils.rds - Catch InvalidDBSecurityGroupStateFault when modifying db instance's security groups (https://github.com/ansible-collections/amazon.aws/pull/776).
