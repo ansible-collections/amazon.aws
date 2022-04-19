@@ -75,6 +75,7 @@ def test__wait_for_snapshot_status_failed(input, expected):
     module.fail_json_aws.assert_called_once
     module.fail_json_aws.call_args[1]["msg"] == expected
 
+
 @pytest.mark.parametrize(
     "method_name, params, expected, error",
     [
@@ -166,7 +167,24 @@ def test__wait_for_snapshot_status_failed(input, expected):
         (
             "fake_method",
             {
-                "db_cluster_snapshot_identifier": "test",
+                "wait": False
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="fake_method",
+                    waiter="",
+                    operation_description="fake method",
+                    cluster=False,
+                    instance=False,
+                    snapshot=False,
+                    retry_codes=[]
+                )
+            ),
+        ),
+        (
+            "fake_method",
+            {
+                "wait": True
             },
             *error(
                 NotImplementedError,
@@ -180,6 +198,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
     module.params = params
     with error:
         assert rds.get_rds_method_attribute(method_name, module) == expected
+
 
 @pytest.mark.parametrize(
     "method_name, params, expected, error",
@@ -340,7 +359,24 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
         (
             "fake_method",
             {
-                "db_instance_snapshot_identifier": "test",
+                "wait": False
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="fake_method",
+                    waiter="",
+                    operation_description="fake method",
+                    cluster=False,
+                    instance=False,
+                    snapshot=False,
+                    retry_codes=[]
+                )
+            ),
+        ),
+        (
+            "fake_method",
+            {
+                "wait": True
             },
             *error(
                 NotImplementedError,
@@ -354,6 +390,7 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
     module.params = params
     with error:
         assert rds.get_rds_method_attribute(method_name, module) == expected
+
 
 @pytest.mark.parametrize(
     "method_name, params, expected, error",
@@ -463,7 +500,24 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
         (
             "fake_method",
             {
-                "db_cluster_snapshot_identifier": "test",
+                "wait": False
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="fake_method",
+                    waiter="",
+                    operation_description="fake method",
+                    cluster=False,
+                    instance=False,
+                    snapshot=False,
+                    retry_codes=[]
+                )
+            ),
+        ),
+        (
+            "fake_method",
+            {
+                "wait": True
             },
             *error(
                 NotImplementedError,

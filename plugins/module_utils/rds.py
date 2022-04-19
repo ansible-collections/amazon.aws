@@ -50,10 +50,12 @@ snapshot_instance_method_names = [
 def get_rds_method_attribute(method_name, module):
     waiter = ''
     readable_op = method_name.replace('_', ' ').replace('db', 'DB')
+    cluster = False
+    instance = False
+    snapshot = False
+    retry_codes = []
     if method_name in cluster_method_names and 'new_db_cluster_identifier' in module.params:
         cluster = True
-        instance = False
-        snapshot = False
         if method_name == 'delete_db_cluster':
             waiter = 'cluster_deleted'
         else:
@@ -64,9 +66,7 @@ def get_rds_method_attribute(method_name, module):
         else:
             retry_codes = ['InvalidDBClusterState']
     elif method_name in instance_method_names and 'new_db_instance_identifier' in module.params:
-        cluster = False
         instance = True
-        snapshot = False
         if method_name == 'delete_db_instance':
             waiter = 'db_instance_deleted'
         elif method_name == 'stop_db_instance':
@@ -85,8 +85,6 @@ def get_rds_method_attribute(method_name, module):
         else:
             retry_codes = ['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
     elif method_name in snapshot_cluster_method_names and 'db_cluster_snapshot_identifier' in module.params:
-        cluster = False
-        instance = False
         snapshot = True
         if method_name == 'delete_db_cluster_snapshot':
             waiter = 'db_cluster_snapshot_deleted'
@@ -99,8 +97,6 @@ def get_rds_method_attribute(method_name, module):
             waiter = 'db_cluster_snapshot_available'
             retry_codes = ['InvalidDBClusterSnapshotState']
     elif method_name in snapshot_instance_method_names and 'db_snapshot_identifier' in module.params:
-        cluster = False
-        instance = False
         snapshot = True
         if method_name == 'delete_db_snapshot':
             waiter = 'db_snapshot_deleted'
@@ -113,9 +109,11 @@ def get_rds_method_attribute(method_name, module):
             waiter = 'db_snapshot_available'
             retry_codes = ['InvalidDBSnapshotState']
     else:
-        raise NotImplementedError("method {0} hasn't been added to the list of accepted methods to use a waiter in module_utils/rds.py".format(method_name))
+        if module.params.get('wait'):
+            raise NotImplementedError("method {0} hasn't been added to the list of accepted methods to use a waiter in module_utils/rds.py".format(method_name))
 
-    return Boto3ClientMethod(name=method_name, waiter=waiter, operation_description=readable_op, cluster=cluster, instance=instance, snapshot=snapshot, retry_codes=retry_codes)
+    return Boto3ClientMethod(name=method_name, waiter=waiter, operation_description=readable_op,
+                             cluster=cluster, instance=instance, snapshot=snapshot, retry_codes=retry_codes)
 
 
 def get_final_identifier(method_name, module):
