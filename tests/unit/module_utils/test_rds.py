@@ -75,12 +75,294 @@ def test__wait_for_snapshot_status_failed(input, expected):
     module.fail_json_aws.assert_called_once
     module.fail_json_aws.call_args[1]["msg"] == expected
 
+@pytest.mark.parametrize(
+    "method_name, params, expected, error",
+    [
+        (
+            "delete_db_cluster",
+            {
+                "new_db_cluster_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="delete_db_cluster",
+                    waiter="cluster_deleted",
+                    operation_description="delete DB cluster",
+                    cluster=True,
+                    instance=False,
+                    snapshot=False,
+                    retry_codes=['InvalidDBClusterState']
+                )
+            ),
+        ),
+        (
+            "create_db_cluster",
+            {
+                "new_db_cluster_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="create_db_cluster",
+                    waiter="cluster_available",
+                    operation_description="create DB cluster",
+                    cluster=True,
+                    instance=False,
+                    snapshot=False,
+                    retry_codes=['InvalidDBClusterState']
+                )
+            ),
+        ),
+        (
+            "restore_db_cluster_from_snapshot",
+            {
+                "new_db_cluster_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="restore_db_cluster_from_snapshot",
+                    waiter="cluster_available",
+                    operation_description="restore DB cluster from snapshot",
+                    cluster=True,
+                    instance=False,
+                    snapshot=False,
+                    retry_codes=['InvalidDBClusterSnapshotState']
+                )
+            ),
+        ),
+        (
+            "modify_db_cluster",
+            {
+                "new_db_cluster_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="modify_db_cluster",
+                    waiter="cluster_available",
+                    operation_description="modify DB cluster",
+                    cluster=True,
+                    instance=False,
+                    snapshot=False,
+                    retry_codes=['InvalidDBClusterState']
+                )
+            ),
+        ),
+        (
+            "list_tags_for_resource",
+            {
+                "new_db_cluster_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="list_tags_for_resource",
+                    waiter="cluster_available",
+                    operation_description="list tags for resource",
+                    cluster=True,
+                    instance=False,
+                    snapshot=False,
+                    retry_codes=['InvalidDBClusterState']
+                )
+            ),
+        ),
+        (
+            "fake_method",
+            {
+                "db_cluster_snapshot_identifier": "test",
+            },
+            *error(
+                NotImplementedError,
+                match="method fake_method hasn't been added to the list of accepted methods to use a waiter in module_utils/rds.py",
+            ),
+        ),
+    ],
+)
+def test__get_rds_method_attribute_cluster(method_name, params, expected, error):
+    module = MagicMock()
+    module.params = params
+    with error:
+        assert rds.get_rds_method_attribute(method_name, module) == expected
 
 @pytest.mark.parametrize(
-    "input, expected, error",
+    "method_name, params, expected, error",
+    [
+        (
+            "delete_db_instance",
+            {
+                "new_db_instance_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="delete_db_instance",
+                    waiter="db_instance_deleted",
+                    operation_description="delete DB instance",
+                    cluster=False,
+                    instance=True,
+                    snapshot=False,
+                    retry_codes=['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
+                )
+            ),
+        ),
+        (
+            "create_db_instance",
+            {
+                "new_db_instance_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="create_db_instance",
+                    waiter="db_instance_available",
+                    operation_description="create DB instance",
+                    cluster=False,
+                    instance=True,
+                    snapshot=False,
+                    retry_codes=['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
+                )
+            ),
+        ),
+        (
+            "stop_db_instance",
+            {
+                "new_db_instance_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="stop_db_instance",
+                    waiter="db_instance_stopped",
+                    operation_description="stop DB instance",
+                    cluster=False,
+                    instance=True,
+                    snapshot=False,
+                    retry_codes=['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
+                )
+            ),
+        ),
+        (
+            "promote_read_replica",
+            {
+                "new_db_instance_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="promote_read_replica",
+                    waiter="read_replica_promoted",
+                    operation_description="promote read replica",
+                    cluster=False,
+                    instance=True,
+                    snapshot=False,
+                    retry_codes=['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
+                )
+            ),
+        ),
+        (
+            "restore_db_instance_from_db_snapshot",
+            {
+                "new_db_instance_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="restore_db_instance_from_db_snapshot",
+                    waiter="db_instance_available",
+                    operation_description="restore DB instance from DB snapshot",
+                    cluster=False,
+                    instance=True,
+                    snapshot=False,
+                    retry_codes=['InvalidDBSnapshotState']
+                )
+            ),
+        ),
+        (
+            "modify_db_instance",
+            {
+                "new_db_instance_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="modify_db_instance",
+                    waiter="db_instance_available",
+                    operation_description="modify DB instance",
+                    cluster=False,
+                    instance=True,
+                    snapshot=False,
+                    retry_codes=['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
+                )
+            ),
+        ),
+        (
+            "add_role_to_db_instance",
+            {
+                "new_db_instance_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="add_role_to_db_instance",
+                    waiter="role_associated",
+                    operation_description="add role to DB instance",
+                    cluster=False,
+                    instance=True,
+                    snapshot=False,
+                    retry_codes=['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
+                )
+            ),
+        ),
+        (
+            "remove_role_from_db_instance",
+            {
+                "new_db_instance_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="remove_role_from_db_instance",
+                    waiter="role_disassociated",
+                    operation_description="remove role from DB instance",
+                    cluster=False,
+                    instance=True,
+                    snapshot=False,
+                    retry_codes=['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
+                )
+            ),
+        ),
+        (
+            "list_tags_for_resource",
+            {
+                "new_db_instance_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="list_tags_for_resource",
+                    waiter="db_instance_available",
+                    operation_description="list tags for resource",
+                    cluster=False,
+                    instance=True,
+                    snapshot=False,
+                    retry_codes=['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
+                )
+            ),
+        ),
+        (
+            "fake_method",
+            {
+                "db_instance_snapshot_identifier": "test",
+            },
+            *error(
+                NotImplementedError,
+                match="method fake_method hasn't been added to the list of accepted methods to use a waiter in module_utils/rds.py",
+            ),
+        ),
+    ],
+)
+def test__get_rds_method_attribute_instance(method_name, params, expected, error):
+    module = MagicMock()
+    module.params = params
+    with error:
+        assert rds.get_rds_method_attribute(method_name, module) == expected
+
+@pytest.mark.parametrize(
+    "method_name, params, expected, error",
     [
         (
             "delete_db_snapshot",
+            {
+                "db_snapshot_identifier": "test",
+            },
             *expected(
                 rds.Boto3ClientMethod(
                     name="delete_db_snapshot",
@@ -89,11 +371,15 @@ def test__wait_for_snapshot_status_failed(input, expected):
                     cluster=False,
                     instance=False,
                     snapshot=True,
+                    retry_codes=['InvalidDBSnapshotState']
                 )
             ),
         ),
         (
             "create_db_snapshot",
+            {
+                "db_snapshot_identifier": "test",
+            },
             *expected(
                 rds.Boto3ClientMethod(
                     name="create_db_snapshot",
@@ -102,11 +388,32 @@ def test__wait_for_snapshot_status_failed(input, expected):
                     cluster=False,
                     instance=False,
                     snapshot=True,
+                    retry_codes=['InvalidDBInstanceState']
+                )
+            ),
+        ),
+        (
+            "list_tags_for_resource",
+            {
+                "db_snapshot_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="list_tags_for_resource",
+                    waiter="db_snapshot_available",
+                    operation_description="list tags for resource",
+                    cluster=False,
+                    instance=False,
+                    snapshot=True,
+                    retry_codes=['InvalidDBSnapshotState']
                 )
             ),
         ),
         (
             "delete_db_cluster_snapshot",
+            {
+                "db_cluster_snapshot_identifier": "test",
+            },
             *expected(
                 rds.Boto3ClientMethod(
                     name="delete_db_cluster_snapshot",
@@ -115,11 +422,15 @@ def test__wait_for_snapshot_status_failed(input, expected):
                     cluster=False,
                     instance=False,
                     snapshot=True,
+                    retry_codes=['InvalidDBClusterSnapshotState']
                 )
             ),
         ),
         (
             "create_db_cluster_snapshot",
+            {
+                "db_cluster_snapshot_identifier": "test",
+            },
             *expected(
                 rds.Boto3ClientMethod(
                     name="create_db_cluster_snapshot",
@@ -128,11 +439,32 @@ def test__wait_for_snapshot_status_failed(input, expected):
                     cluster=False,
                     instance=False,
                     snapshot=True,
+                    retry_codes=['InvalidDBClusterState']
+                )
+            ),
+        ),
+        (
+            "list_tags_for_resource",
+            {
+                "db_cluster_snapshot_identifier": "test",
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="list_tags_for_resource",
+                    waiter="db_cluster_snapshot_available",
+                    operation_description="list tags for resource",
+                    cluster=False,
+                    instance=False,
+                    snapshot=True,
+                    retry_codes=['InvalidDBClusterSnapshotState']
                 )
             ),
         ),
         (
             "fake_method",
+            {
+                "db_cluster_snapshot_identifier": "test",
+            },
             *error(
                 NotImplementedError,
                 match="method fake_method hasn't been added to the list of accepted methods to use a waiter in module_utils/rds.py",
@@ -140,9 +472,11 @@ def test__wait_for_snapshot_status_failed(input, expected):
         ),
     ],
 )
-def test__get_rds_method_attribute(input, expected, error):
+def test__get_rds_method_attribute_snapshot(method_name, params, expected, error):
+    module = MagicMock()
+    module.params = params
     with error:
-        assert rds.get_rds_method_attribute(input, MagicMock()) == expected
+        assert rds.get_rds_method_attribute(method_name, module) == expected
 
 
 @pytest.mark.parametrize(

@@ -21,10 +21,10 @@ from .ec2 import boto3_tag_list_to_ansible_dict
 from .ec2 import compare_aws_tags
 from .waiters import get_waiter
 
-Boto3ClientMethod = namedtuple('Boto3ClientMethod', ['name', 'waiter', 'operation_description', 'cluster', 'instance', 'snapshot'])
+Boto3ClientMethod = namedtuple('Boto3ClientMethod', ['name', 'waiter', 'operation_description', 'cluster', 'instance', 'snapshot', 'retry_codes'])
 # Whitelist boto3 client methods for cluster and instance resources
 cluster_method_names = [
-    'create_db_cluster', 'restore_db_cluster_from_db_snapshot', 'restore_db_cluster_from_s3',
+    'create_db_cluster', 'restore_db_cluster_from_snapshot', 'restore_db_cluster_from_s3',
     'restore_db_cluster_to_point_in_time', 'modify_db_cluster', 'delete_db_cluster', 'add_tags_to_resource',
     'remove_tags_from_resource', 'list_tags_for_resource', 'promote_read_replica_db_cluster'
 ]
@@ -58,6 +58,11 @@ def get_rds_method_attribute(method_name, module):
             waiter = 'cluster_deleted'
         else:
             waiter = 'cluster_available'
+        # Handle retry codes
+        if method_name == 'restore_db_cluster_from_snapshot':
+            retry_codes = ['InvalidDBClusterSnapshotState']
+        else:
+            retry_codes = ['InvalidDBClusterState']
     elif method_name in instance_method_names and 'new_db_instance_identifier' in module.params:
         cluster = False
         instance = True
@@ -74,22 +79,43 @@ def get_rds_method_attribute(method_name, module):
             waiter = 'read_replica_promoted'
         else:
             waiter = 'db_instance_available'
-    elif method_name in snapshot_cluster_method_names or method_name in snapshot_instance_method_names:
+        # Handle retry codes
+        if method_name == 'restore_db_instance_from_db_snapshot':
+            retry_codes = ['InvalidDBSnapshotState']
+        else:
+            retry_codes = ['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
+    elif method_name in snapshot_cluster_method_names and 'db_cluster_snapshot_identifier' in module.params:
+        cluster = False
+        instance = False
+        snapshot = True
+        if method_name == 'delete_db_cluster_snapshot':
+            waiter = 'db_cluster_snapshot_deleted'
+            retry_codes = ['InvalidDBClusterSnapshotState']
+        elif method_name == 'create_db_cluster_snapshot':
+            waiter = 'db_cluster_snapshot_available'
+            retry_codes = ['InvalidDBClusterState']
+        else:
+            # Tagging
+            waiter = 'db_cluster_snapshot_available'
+            retry_codes = ['InvalidDBClusterSnapshotState']
+    elif method_name in snapshot_instance_method_names and 'db_snapshot_identifier' in module.params:
         cluster = False
         instance = False
         snapshot = True
         if method_name == 'delete_db_snapshot':
             waiter = 'db_snapshot_deleted'
-        elif method_name == 'delete_db_cluster_snapshot':
-            waiter = 'db_cluster_snapshot_deleted'
+            retry_codes = ['InvalidDBSnapshotState']
         elif method_name == 'create_db_snapshot':
             waiter = 'db_snapshot_available'
-        elif method_name == 'create_db_cluster_snapshot':
-            waiter = 'db_cluster_snapshot_available'
+            retry_codes = ['InvalidDBInstanceState']
+        else:
+            # Tagging
+            waiter = 'db_snapshot_available'
+            retry_codes = ['InvalidDBSnapshotState']
     else:
         raise NotImplementedError("method {0} hasn't been added to the list of accepted methods to use a waiter in module_utils/rds.py".format(method_name))
 
-    return Boto3ClientMethod(name=method_name, waiter=waiter, operation_description=readable_op, cluster=cluster, instance=instance, snapshot=snapshot)
+    return Boto3ClientMethod(name=method_name, waiter=waiter, operation_description=readable_op, cluster=cluster, instance=instance, snapshot=snapshot, retry_codes=retry_codes)
 
 
 def get_final_identifier(method_name, module):
@@ -156,22 +182,10 @@ def call_method(client, module, method_name, parameters):
     changed = True
     if not module.check_mode:
         wait = module.params.get('wait')
-        # TODO: stabilize by adding get_rds_method_attribute(method_name).extra_retry_codes
+        retry_codes = get_rds_method_attribute(method_name, module).retry_codes
         method = getattr(client, method_name)
         try:
-            if method_name in ['modify_db_instance', 'promote_read_replica']:
-                # check if instance is in an available state first, if possible
-                if wait:
-                    wait_for_status(client, module, module.params['db_instance_identifier'], 'modify_db_instance')
-                error_codes = ['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
-                result = AWSRetry.jittered_backoff(catch_extra_error_codes=error_codes)(method)(**parameters)
-            elif method_name == 'modify_db_cluster':
-                # check if cluster is in an available state first, if possible
-                if wait:
-                    wait_for_status(client, module, module.params['db_cluster_identifier'], method_name)
-                result = AWSRetry.jittered_backoff(catch_extra_error_codes=['InvalidDBClusterStateFault'])(method)(**parameters)
-            else:
-                result = AWSRetry.jittered_backoff()(method)(**parameters)
+            result = AWSRetry.jittered_backoff(catch_extra_error_codes=retry_codes)(method)(**parameters)
         except (BotoCoreError, ClientError) as e:
             changed = handle_errors(module, e, method_name, parameters)
 
@@ -182,27 +196,22 @@ def call_method(client, module, method_name, parameters):
 
 
 def wait_for_instance_status(client, module, db_instance_id, waiter_name):
-    def wait(client, db_instance_id, waiter_name, extra_retry_codes):
-        retry = AWSRetry.jittered_backoff(catch_extra_error_codes=extra_retry_codes)
+    def wait(client, db_instance_id, waiter_name):
         try:
             waiter = client.get_waiter(waiter_name)
         except ValueError:
             # using a waiter in module_utils/waiters.py
             waiter = get_waiter(client, waiter_name)
-        waiter.wait(WaiterConfig={'Delay': 60, 'MaxAttempts': 60}, DBInstanceIdentifier=db_instance_id)
+        waiter.wait(DBInstanceIdentifier=db_instance_id)
 
     waiter_expected_status = {
         'db_instance_deleted': 'deleted',
         'db_instance_stopped': 'stopped',
     }
     expected_status = waiter_expected_status.get(waiter_name, 'available')
-    if expected_status == 'available':
-        extra_retry_codes = ['DBInstanceNotFound']
-    else:
-        extra_retry_codes = []
     for attempt_to_wait in range(0, 10):
         try:
-            wait(client, db_instance_id, waiter_name, extra_retry_codes)
+            wait(client, db_instance_id, waiter_name)
             break
         except WaiterError as e:
             # Instance may be renamed and AWSRetry doesn't handle WaiterError
