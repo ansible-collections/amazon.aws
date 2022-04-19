@@ -22,7 +22,7 @@
     - name: Make instance with an instance_role
       ec2_launch_template:
         name: "{{ resource_prefix }}-test-instance-role"
-        image_id: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_id }}"
         instance_type: t2.micro
         iam_instance_profile: "{{ test_role_name }}-1"
       register: template_with_role
@@ -34,7 +34,7 @@
     - name: Create template again, with no change to instance_role
       ec2_launch_template:
         name: "{{ resource_prefix }}-test-instance-role"
-        image_id: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_id }}"
         instance_type: t2.micro
         iam_instance_profile: "{{ test_role_name }}-1"
       register: template_with_role
@@ -47,7 +47,7 @@
     - name: Update instance with new instance_role
       ec2_launch_template:
         name: "{{ resource_prefix }}-test-instance-role"
-        image_id: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_id }}"
         instance_type: t2.micro
         iam_instance_profile: "{{ test_role_name }}-2"
       register: template_with_updated_role
@@ -63,7 +63,7 @@
     - name: Re-set with same new instance_role
       ec2_launch_template:
         name: "{{ resource_prefix }}-test-instance-role"
-        image_id: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_id }}"
         instance_type: t2.micro
         iam_instance_profile: "{{ test_role_name }}-2"
       register: template_with_updated_role
@@ -76,7 +76,7 @@
     - name: Update instance with original instance_role (pass profile ARN)
       ec2_launch_template:
         name: "{{ resource_prefix }}-test-instance-role"
-        image_id: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_id }}"
         instance_type: t2.micro
         # By default an instance profile will be created with the same name as the role
         iam_instance_profile: '{{ iam_role.arn.replace(":role/", ":instance-profile/") }}'
@@ -93,7 +93,7 @@
     - name: Re-set with same new instance_role (pass profile ARN)
       ec2_launch_template:
         name: "{{ resource_prefix }}-test-instance-role"
-        image_id: "{{ ec2_ami_image }}"
+        image_id: "{{ ec2_ami_id }}"
         instance_type: t2.micro
         iam_instance_profile: '{{ iam_role.arn.replace(":role/", ":instance-profile/") }}'
       register: template_with_updated_role
