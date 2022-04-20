@@ -1,2 +1,0 @@
-bugfixes:
-  - ec2_vpc_igw - add manual waiter to fix 'NoneType' object is not subscriptable error (https://github.com/ansible-collections/amazon.aws/pull/766).

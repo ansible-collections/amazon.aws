@@ -110,9 +110,6 @@ from ..module_utils.ec2 import camel_dict_to_snake_dict
 from ..module_utils.ec2 import ensure_ec2_tags
 from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ..module_utils.tagging import boto3_tag_list_to_ansible_dict
-from time import sleep
-from time import time
-from random import randint
 
 
 @AWSRetry.jittered_backoff(retries=10, delay=10)
@@ -142,10 +139,23 @@ class AnsibleEc2Igw():
         elif state == 'absent':
             self.ensure_igw_absent(vpc_id)
 
-    def get_matching_igw(self, vpc_id):
+    def get_matching_igw(self, vpc_id, gateway_id=None):
+        '''
+        Returns the internet gateway found.
+            Parameters:
+                vpc_id (str): VPC ID
+                gateway_id (str): Internet Gateway ID, if specified
+            Returns:
+                igw (dict): dict of igw found, None if none found
+        '''
         filters = ansible_dict_to_boto3_filter_list({'attachment.vpc-id': vpc_id})
         try:
-            igws = describe_igws_with_backoff(self._connection, Filters=filters)
+            # If we know the gateway_id, use it to avoid bugs with using filters
+            # See https://github.com/ansible-collections/amazon.aws/pull/766
+            if not gateway_id:
+                igws = describe_igws_with_backoff(self._connection, Filters=filters)
+            else:
+                igws = describe_igws_with_backoff(self._connection, InternetGatewayIds=[gateway_id])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self._module.fail_json_aws(e)
 
@@ -158,31 +168,6 @@ class AnsibleEc2Igw():
             igw = camel_dict_to_snake_dict(igws[0])
 
         return igw
-
-    def wait_for_igw(self, vpc_id):
-        """
-        Waits for existing igw to be returned via describe_internet_gateways
-        in get_matching_igw with exponential backoff
-        :param vpc_id: VPC's ID
-        :return igw: igw found
-        """
-        max_backoff = 64
-        timeout = 3000
-        failure_counter = 0
-        start_time = time()
-
-        while True:
-            if time() - start_time >= timeout:
-                self._module.fail_json(msg='Error finding Internet Gateway in VPC {0} - please check the AWS console'.format(vpc_id))
-            try:
-                igw = self.get_matching_igw(vpc_id)
-                if igw:
-                    return igw
-                sleep_time = min(2 ** failure_counter + randint(1, 1000) / 1000, max_backoff)
-                sleep(sleep_time)
-                failure_counter += 1
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                self._module.fail_json_aws(e, msg='Failure while waiting for status update')
 
     @staticmethod
     def get_igw_info(igw, vpc_id):
@@ -249,23 +234,15 @@ class AnsibleEc2Igw():
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 self._module.fail_json_aws(e, msg='Unable to create Internet Gateway')
 
-        # Ensure we can get igw object prior to modifying tags
-        igw = self.wait_for_igw(vpc_id)
-
         # Modify tags
-        tags_changed = ensure_ec2_tags(
+        self._results['changed'] |= ensure_ec2_tags(
             self._connection, self._module, igw['internet_gateway_id'],
             resource_type='internet-gateway', tags=tags, purge_tags=purge_tags,
             retry_codes='InvalidInternetGatewayID.NotFound'
         )
-        self._results['changed'] |= tags_changed
-
-        # Wait for igw again if tags were modified to be safe
-        if tags_changed:
-            igw = self.wait_for_igw(vpc_id)
 
         # Update igw
-        igw = self.get_matching_igw(vpc_id)
+        igw = self.get_matching_igw(vpc_id, gateway_id=igw['internet_gateway_id'])
         igw_info = self.get_igw_info(igw, vpc_id)
         self._results.update(igw_info)
 
