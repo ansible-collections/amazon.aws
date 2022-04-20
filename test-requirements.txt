@@ -14,3 +14,11 @@ netaddr
 awscli
 # Used for comparing SSH Public keys to the Amazon fingerprints
 pycrypto
+
+# Work around ansible.netcommon installing python38-six, ansible-test will pull in a
+# later version which then breaks the urllib3 install
+# https://github.com/urllib3/urllib3/issues/1518
+six==1.16.0
+urllib3<1.27,>=1.26
+#
+rstcheck
