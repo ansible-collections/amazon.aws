@@ -106,6 +106,8 @@
       async: 30
       poll: 0
 
+    - debug: var=test_async
+
     - name: ensure it completed
       async_status:
         jid: "{{ test_async.ansible_job_id }}"
