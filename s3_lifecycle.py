@@ -314,7 +314,7 @@ def build_rule(client, module):
             t_out = dict()
             if transition.get('transition_date'):
                 t_out['Date'] = transition['transition_date']
-            elif transition.get('transition_days'):
+            elif transition.get('transition_days') is not None:
                 t_out['Days'] = transition['transition_days']
             if transition.get('storage_class'):
                 t_out['StorageClass'] = transition['storage_class'].upper()
@@ -596,7 +596,7 @@ def main():
                                  'noncurrent_version_transition_days',
                                  'noncurrent_version_transitions')
         for param in required_when_present:
-            if module.params.get(param):
+            if module.params.get(param) is None:
                 break
         else:
             msg = "one of the following is required when 'state' is 'present': %s" % ', '.join(required_when_present)
