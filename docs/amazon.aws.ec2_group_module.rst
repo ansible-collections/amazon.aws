@@ -8,7 +8,7 @@ amazon.aws.ec2_group
 **maintain an ec2 VPC security group.**
 
 
-Version added: 1.0.0
+Version added: 1.1.0
 
 .. contents::
    :local:
@@ -358,6 +358,24 @@ Parameters
                     <td class="elbow-placeholder"></td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>icmp_type</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>When using <code>proto: icmp</code> or <code>code: icmpv6</code> parameter, allows you to specify the ICMP type to use.</div>
+                        <div>The option is mutually exclusive with the <code>from_port</code> parameter.</div>
+                        <div>See the list of available ICMP types from the <a href="https://www.iana.org/assignments/icmp-parameters/icmp-parameters.xhtml">IANA website</a></div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>group_desc</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -455,7 +473,7 @@ Parameters
                 </td>
             </tr>
             <tr>
-                    <td class="elbow-placeholder"></td>
+                <td class="elbow-placeholder"></td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>to_port</b>
@@ -464,6 +482,24 @@ Parameters
                         <span style="color: purple">integer</span>
                     </div>
                 </td>
+                <tr>
+                   <td class="elbow-placeholder"></td>
+                    <td colspan="1">
+                        <div class="ansibleOptionAnchor" id="parameter-"></div>
+                        <b>icmp_code</b>
+                        <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                        <div style="font-size: small">
+                            <span style="color: purple">integer</span>
+                        </div>
+                    </td>
+                    <td>
+                    </td>
+                    <td>
+                            <div>When using <code>proto: icmp</code> or <code>proto: icmpv6</code> parameter, allows you to specify the ICMP code to use.</div>
+                            <div>The option is mutually exclusive with the <code>to_port</code> parameter.</div>
+                            <div>See the list of available ICMP codes from the <a href="https://www.iana.org/assignments/icmp-parameters/icmp-parameters.xhtml">IANA website</a></div>
+                    </td>
+                </tr>
                 <td>
                 </td>
                 <td>
@@ -783,6 +819,19 @@ Examples
             cidr_ip: 0.0.0.0/0
             rule_desc: allow all on port 80
 
+    - name: example using ICMP type and code
+      amazon.aws.ec2_group:
+        name: "{{ name }}"
+        description: sg for ICMP
+        vpc_id: vpc-xxxxxxxx
+        profile: "{{ aws_profile }}"
+        region: us-east-1
+        rules:
+          - proto: icmp
+            icmp_type: 3
+            icmp_code: 1
+            cidr_ip: 0.0.0.0/0
+
     - name: example ec2 group
       amazon.aws.ec2_group:
         name: example
@@ -1048,3 +1097,4 @@ Authors
 ~~~~~~~
 
 - Andrew de Quincey (@adq)
+- Razique Mahroua (@razique)

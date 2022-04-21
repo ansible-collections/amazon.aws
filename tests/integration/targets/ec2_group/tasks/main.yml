@@ -62,6 +62,7 @@
     - include: ./numeric_protos.yml
     - include: ./rule_group_create.yml
     - include: ./egress_tests.yml
+    - include: ./icmp_verbs.yml
     - include: ./data_validation.yml
     - include: ./multi_nested_target.yml
     - include: ./group_info.yml

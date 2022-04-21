@@ -10,8 +10,10 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_group
-version_added: 1.0.0
-author: "Andrew de Quincey (@adq)"
+version_added: 1.1.0
+author:
+  - "Andrew de Quincey (@adq)"
+  - "Razique Mahroua (@Razique)"
 short_description: maintain an ec2 VPC security group.
 description:
     - Maintains ec2 security groups.
@@ -92,7 +94,10 @@ options:
         proto:
             type: str
             description:
-            - The IP protocol name (C(tcp), C(udp), C(icmp), C(icmpv6)) or number (U(https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers))
+            - The IP protocol name (C(tcp), C(udp), C(icmp), C(icmpv6)) or
+            - number (U(https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers))
+            - When using a protocol of ICMP, you can pass the C(icmp_type)
+            - and C(icmp_code) parameters instead of C(from_port) and C(to_port).
         from_port:
             type: int
             description:
@@ -105,6 +110,18 @@ options:
             - The end of the range of ports that traffic is coming from.
             - A value can be between C(0) to C(65535).
             - A value of C(-1) indicates all ports (only supported when I(proto=icmp)).
+        icmp_type:
+          type: int
+          description:
+          - When using C(proto: icmp) or C(proto: icmpv6), allows you to
+          - specify the ICMP type to use. The option is mutually exclusive with C(from_port).
+          - A value of C(-1) indicates all ICMP types.
+        icmp_code:
+          type: int
+          description:
+          - When using C(proto: icmp) or C(proto: icmpv6), allows you to specify
+          - the ICMP code to use. The option is mutually exclusive with C(to_port).
+          - A value of C(-1) indicates all ICMP codes.
         rule_desc:
             type: str
             description: A description for the rule.
@@ -159,7 +176,10 @@ options:
         proto:
             type: str
             description:
-            - The IP protocol name (C(tcp), C(udp), C(icmp), C(icmpv6)) or number (U(https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers))
+            - The IP protocol name (C(tcp), C(udp), C(icmp), C(icmpv6)) or
+            - number (U(https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers))
+            - When using a C(proto: icmp) or C(proto: icmpv6), you can pass the
+            - C(icmp_type) and C(icmp_code) parameters instead of C(from_port) and C(to_port).
         from_port:
             type: int
             description:
@@ -172,6 +192,18 @@ options:
             - The end of the range of ports that traffic is going to.
             - A value can be between C(0) to C(65535).
             - A value of C(-1) indicates all ports (only supported when I(proto=icmp)).
+        icmp_type:
+          type: int
+          description:
+          - When using C(proto: icmp) or C(proto: icmpv6), allows you to specify
+          - the ICMP type to use. The option is mutually exclusive with from_port.
+          - A value of C(-1) indicates all ICMP types.
+        icmp_code:
+          type: int
+          description:
+          - When using C(proto: icmp) or C(proto: icmpv6), allows you to specify
+          - the ICMP code to use. The option is mutually exclusive with C(to_port).
+          - A value of C(-1) indicates all ICMP codes.
         rule_desc:
             type: str
             description: A description for the rule.
@@ -205,8 +237,8 @@ options:
     aliases: ['resource_tags']
   purge_tags:
     description:
-      - If yes, existing tags will be purged from the resource to match exactly what is defined by I(tags) parameter. If the I(tags) parameter is not set then
-        tags will not be modified.
+      - If yes, existing tags will be purged from the resource to match exactly what is defined by I(tags) parameter.
+      - If the I(tags) parameter is not set then tags are not modified.
     required: false
     default: yes
     type: bool
@@ -237,6 +269,19 @@ EXAMPLES = '''
         - 80
         cidr_ip: 0.0.0.0/0
         rule_desc: allow all on port 80
+
+- name: example using ICMP types and codes
+  amazon.aws.ec2_group:
+    name: "{{ name }}"
+    description: sg for ICMP
+    vpc_id: vpc-xxxxxxxx
+    profile: "{{ aws_profile }}"
+    region: us-east-1
+    rules:
+      - proto: icmp
+        icmp_type: 3
+        icmp_code: 1
+        cidr_ip: 0.0.0.0/0
 
 - name: example ec2 group
   amazon.aws.ec2_group:
@@ -281,10 +326,11 @@ EXAMPLES = '''
         # the containing group name may be specified here
         group_name: example
       - proto: all
-        # in the 'proto' attribute, if you specify -1 (only supported when I(proto=icmp)), all, or a protocol number other than tcp, udp, icmp, or 58 (ICMPv6),
-        # traffic on all ports is allowed, regardless of any ports you specify
+        # in the 'proto' attribute, if you specify -1 (only supported when I(proto=icmp)), all, or a protocol number
+        # other than tcp, udp, icmp, or 58 (ICMPv6), traffic on all ports is allowed, regardless of any ports that
+        # you specify.
         from_port: 10050 # this value is ignored
-        to_port: 10050 # this value is ignored
+        to_port: 10050   # this value is ignored
         cidr_ip: 10.0.0.0/8
 
     rules_egress:
@@ -304,7 +350,8 @@ EXAMPLES = '''
     vpc_id: 12345
     region: eu-west-1
     rules:
-      # 'ports' rule keyword was introduced in version 2.4. It accepts a single port value or a list of values including ranges (from_port-to_port).
+      # 'ports' rule keyword was introduced in version 2.4. It accepts a single
+      # port value or a list of values including ranges (from_port-to_port).
       - proto: tcp
         ports: 22
         group_name: example-vpn
@@ -314,7 +361,8 @@ EXAMPLES = '''
           - 443
           - 8080-8099
         cidr_ip: 0.0.0.0/0
-      # Rule sources list support was added in version 2.4. This allows to define multiple sources per source type as well as multiple source types per rule.
+      # Rule sources list support was added in version 2.4. This allows to
+      # define multiple sources per source type as well as multiple source types per rule.
       - proto: tcp
         ports:
           - 6379
@@ -591,9 +639,21 @@ def deduplicate_rules_args(rules):
 
 
 def validate_rule(module, rule):
-    VALID_PARAMS = ('cidr_ip', 'cidr_ipv6', 'ip_prefix',
-                    'group_id', 'group_name', 'group_desc',
-                    'proto', 'from_port', 'to_port', 'rule_desc')
+    VALID_PARAMS = (
+        'cidr_ip',
+        'cidr_ipv6',
+        'ip_prefix',
+        'group_id',
+        'group_name',
+        'group_desc',
+        'proto',
+        'from_port',
+        'to_port',
+        'icmp_type',
+        'icmp_code',
+        'icmp_keys',
+        'rule_desc',
+    )
     if not isinstance(rule, dict):
         module.fail_json(msg='Invalid rule parameter type [%s].' % type(rule))
     for k in rule:
@@ -612,6 +672,12 @@ def validate_rule(module, rule):
         module.fail_json(msg="Specify cidr_ip OR cidr_ipv6, not both")
     elif 'group_id' in rule and 'group_name' in rule:
         module.fail_json(msg='Specify group_id OR group_name, not both')
+    elif ('icmp_type' in rule or 'icmp_code' in rule) and 'ports' in rule:
+        module.fail_json(msg='Specify icmp_code/icmp_type OR ports, not both')
+    elif ('from_port' in rule or 'to_port' in rule) and ('icmp_type' in rule or 'icmp_code' in rule) and 'icmp_keys' not in rule:
+        module.fail_json(msg='Specify from_port/to_port OR icmp_type/icmp_code, not both')
+    elif ('icmp_type' in rule or 'icmp_code' in rule) and ('icmp' not in rule['proto']):
+        module.fail_json(msg='Specify proto: icmp or icmpv6 when using icmp_type/icmp_code')
 
 
 def get_target_from_rule(module, client, rule, name, group, groups, vpc_id):
@@ -741,11 +807,27 @@ def ports_expand(ports):
 
 def rule_expand_ports(rule):
     # takes a rule dict and returns a list of expanded rule dicts
+    # uses icmp_code and icmp_type instead of from_ports and to_ports when
+    # available.
     if 'ports' not in rule:
-        if isinstance(rule.get('from_port'), string_types):
-            rule['from_port'] = int(rule.get('from_port'))
-        if isinstance(rule.get('to_port'), string_types):
-            rule['to_port'] = int(rule.get('to_port'))
+        non_icmp_params = any([
+            rule.get('icmp_type', None) is None, rule.get('icmp_code', None) is None])
+        conflict = not non_icmp_params and any([
+            rule.get('from_port', None), rule.get('to_port', None)])
+
+        if non_icmp_params:
+            if isinstance(rule.get('from_port'), string_types):
+                rule['from_port'] = int(rule.get('from_port'))
+            if isinstance(rule.get('to_port'), string_types):
+                rule['to_port'] = int(rule.get('to_port'))
+        else:
+            rule['from_port'] = int(rule.get('icmp_type')) if isinstance(rule.get('icmp_type'), string_types) else rule.get('icmp_type')
+            rule['to_port'] = int(rule.get('icmp_code')) if isinstance(rule.get('icmp_code'), string_types) else rule.get('icmp_code')
+            # Used temporarily to track the fact that icmp keys were converted
+            # to from_port/to_port
+            if not conflict:
+                rule['icmp_keys'] = True
+
         return [rule]
 
     ports = rule['ports'] if isinstance(rule['ports'], list) else [rule['ports']]
@@ -786,7 +868,7 @@ def rule_expand_source(rule, source_type):
 
 
 def rule_expand_sources(rule):
-    # takes a rule dict and returns a list of expanded rule discts
+    # takes a rule dict and returns a list of expanded rule dicts
     source_types = (stype for stype in ('cidr_ip', 'cidr_ipv6', 'group_id', 'group_name', 'ip_prefix') if stype in rule)
 
     return [r for stype in source_types
@@ -845,8 +927,7 @@ def revoke(client, module, ip_permissions, group_id, rule_type):
                     aws_retry=True, GroupId=group_id, IpPermissions=ip_permissions)
             elif rule_type == 'out':
                 client.revoke_security_group_egress(
-                    aws_retry=True,
-                    GroupId=group_id, IpPermissions=ip_permissions)
+                    aws_retry=True, GroupId=group_id, IpPermissions=ip_permissions)
         except (BotoCoreError, ClientError) as e:
             rules = 'ingress rules' if rule_type == 'in' else 'egress rules'
             module.fail_json_aws(e, "Unable to revoke {0}: {1}".format(rules, ip_permissions))
@@ -1106,6 +1187,7 @@ def get_diff_final_resource(client, module, security_group):
             # Order final rules consistently
             final_rules.sort(key=get_ip_permissions_sort_key)
         return final_rules
+
     security_group_ingress = security_group.get('ip_permissions', [])
     specified_ingress = module.params['rules']
     purge_ingress = module.params['purge_rules']
@@ -1273,10 +1355,15 @@ def main():
                     module, client, rule, name, group, groups, vpc_id)
                 changed |= target_group_created
 
+                rule.pop('icmp_type', None)
+                rule.pop('icmp_code', None)
+                rule.pop('icmp_keys', None)
+
                 if rule.get('proto', 'tcp') in ('all', '-1', -1):
                     rule['proto'] = '-1'
                     rule['from_port'] = None
                     rule['to_port'] = None
+
                 try:
                     int(rule.get('proto', 'tcp'))
                     rule['proto'] = to_text(rule.get('proto', 'tcp'))
@@ -1285,7 +1372,6 @@ def main():
                 except ValueError:
                     # rule does not use numeric protocol spec
                     pass
-
                 named_tuple_rule_list.append(
                     Rule(
                         port_range=(rule['from_port'], rule['to_port']),
