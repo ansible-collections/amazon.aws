@@ -4,3 +4,5 @@ mock
 pytest-xdist
 # We should avoid these two modules with py3
 pytest-mock
+# Used for comparing SSH Public keys to the Amazon fingerprints
+pycrypto
