@@ -1,5 +1,4 @@
 dependencies:
-  - prepare_tests
   - setup_sshkey
   - setup_ec2
   - role: setup_botocore_pip
