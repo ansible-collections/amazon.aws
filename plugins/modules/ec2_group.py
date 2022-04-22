@@ -113,7 +113,7 @@ options:
         icmp_type:
           type: int
           description:
-          - When using C(proto: icmp) or C(proto: icmpv6), allows you to
+          - When using I(proto=icmp) or I(proto=icmpv6), allows you to
           - specify the ICMP type to use. The option is mutually exclusive with C(from_port).
           - A value of C(-1) indicates all ICMP types.
         icmp_code:
