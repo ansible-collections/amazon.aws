@@ -10,7 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = '''
 ---
 module: ec2_group
-version_added: 1.1.0
+version_added: 1.0.0
 author:
   - "Andrew de Quincey (@adq)"
   - "Razique Mahroua (@Razique)"
