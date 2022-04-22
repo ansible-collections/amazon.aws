@@ -178,8 +178,8 @@ options:
             description:
             - The IP protocol name (C(tcp), C(udp), C(icmp), C(icmpv6)) or
             - number (U(https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers))
-            - When using a C(proto: icmp) or C(proto: icmpv6), you can pass the
-            - C(icmp_type) and C(icmp_code) parameters instead of C(from_port) and C(to_port).
+            - When using a I(proto=icmp) or I(proto=icmpv6), you can pass the
+              I(icmp_type) and I(icmp_code) parameters instead of I(from_port) and I(to_port).
         from_port:
             type: int
             description:
