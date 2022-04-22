@@ -11,7 +11,6 @@
 # TODO - name: test 'validate_certs' parameter
 
 # ============================================================
-# - include: ../../setup_ec2/tasks/common.yml module_name=rds_param_group
 
 - name: rds_option_group tests
   collections:
