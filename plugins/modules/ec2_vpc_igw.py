@@ -139,10 +139,23 @@ class AnsibleEc2Igw():
         elif state == 'absent':
             self.ensure_igw_absent(vpc_id)
 
-    def get_matching_igw(self, vpc_id):
+    def get_matching_igw(self, vpc_id, gateway_id=None):
+        '''
+        Returns the internet gateway found.
+            Parameters:
+                vpc_id (str): VPC ID
+                gateway_id (str): Internet Gateway ID, if specified
+            Returns:
+                igw (dict): dict of igw found, None if none found
+        '''
         filters = ansible_dict_to_boto3_filter_list({'attachment.vpc-id': vpc_id})
         try:
-            igws = describe_igws_with_backoff(self._connection, Filters=filters)
+            # If we know the gateway_id, use it to avoid bugs with using filters
+            # See https://github.com/ansible-collections/amazon.aws/pull/766
+            if not gateway_id:
+                igws = describe_igws_with_backoff(self._connection, Filters=filters)
+            else:
+                igws = describe_igws_with_backoff(self._connection, InternetGatewayIds=[gateway_id])
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self._module.fail_json_aws(e)
 
@@ -229,7 +242,7 @@ class AnsibleEc2Igw():
         )
 
         # Update igw
-        igw = self.get_matching_igw(vpc_id)
+        igw = self.get_matching_igw(vpc_id, gateway_id=igw['internet_gateway_id'])
         igw_info = self.get_igw_info(igw, vpc_id)
         self._results.update(igw_info)
 
