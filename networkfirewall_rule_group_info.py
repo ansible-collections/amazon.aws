@@ -430,8 +430,10 @@ def main():
 
     if name or arn:
         rule = manager.get_rule_group(name=name, rule_type=rule_type, arn=arn)
-        rules = [rule]
-        results['rule_groups'] = rules
+        if rule:
+            results['rule_groups'] = [rule]
+        else:
+            results['rule_groups'] = []
     else:
         rule_list = manager.list(scope=scope)
         results['rule_list'] = rule_list
