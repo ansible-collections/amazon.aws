@@ -96,8 +96,9 @@ options:
             description:
             - The IP protocol name (C(tcp), C(udp), C(icmp), C(icmpv6)) or
             - number (U(https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers))
-            - When using a protocol of ICMP, you can pass the C(icmp_type)
-            - and C(icmp_code) parameters instead of C(from_port) and C(to_port).
+            - When using C(icmp) or C(icmpv6) as the protocol, you can pass
+            - the C(icmp_type) and C(icmp_code) parameters instead of
+            - C(from_port) and C(to_port).
         from_port:
             type: int
             description:
@@ -114,14 +115,14 @@ options:
           version_added: 3.3.0
           type: int
           description:
-          - When using C(proto: icmp) or C(proto: icmpv6), allows you to
+          - When using C(icmp) or C(icmpv6) as the protocol, allows you to
           - specify the ICMP type to use. The option is mutually exclusive with C(from_port).
           - A value of C(-1) indicates all ICMP types.
         icmp_code:
           version_added: 3.3.0
           type: int
           description:
-          - When using C(proto: icmp) or C(proto: icmpv6), allows you to specify
+          - When using C(icmp) or C(icmpv6) as the protocol, allows you to specify
           - the ICMP code to use. The option is mutually exclusive with C(to_port).
           - A value of C(-1) indicates all ICMP codes.
         rule_desc:
@@ -180,7 +181,7 @@ options:
             description:
             - The IP protocol name (C(tcp), C(udp), C(icmp), C(icmpv6)) or
             - number (U(https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers))
-            - When using a C(proto: icmp) or C(proto: icmpv6), you can pass the
+            - When using C(icmp) or C(icmpv6) as the protocol, you can pass the
             - C(icmp_type) and C(icmp_code) parameters instead of C(from_port) and C(to_port).
         from_port:
             type: int
@@ -198,14 +199,14 @@ options:
           version_added: 3.3.0
           type: int
           description:
-          - When using C(proto: icmp) or C(proto: icmpv6), allows you to specify
-          - the ICMP type to use. The option is mutually exclusive with from_port.
+          - When using C(icmp) or C(icmpv6) as the protocol, allows you to specify
+          - the ICMP type to use. The option is mutually exclusive with C(from_port).
           - A value of C(-1) indicates all ICMP types.
         icmp_code:
           version_added: 3.3.0
           type: int
           description:
-          - When using C(proto: icmp) or C(proto: icmpv6), allows you to specify
+          - When using C(icmp) or C(icmpv6) as the protocol, allows you to specify
           - the ICMP code to use. The option is mutually exclusive with C(to_port).
           - A value of C(-1) indicates all ICMP codes.
         rule_desc:
