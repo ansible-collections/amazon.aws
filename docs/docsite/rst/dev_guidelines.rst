@@ -377,7 +377,7 @@ along with the message.
                         exception=traceback.format_exc(),
                         **camel_dict_to_snake_dict(e.response))
 
-Note: we use `str(e)` rather than `e.message` as the latter doesn't
+Note: we use ``str(e)`` rather than ``e.message`` as the latter doesn't
 work with python3
 
 If you need to perform an action based on the error boto3 returned, use the error code.
@@ -467,7 +467,7 @@ create a client:
    module.client('ec2', retry_decorator=AWSRetry.jittered_backoff(retries=10))
 
 Any calls from that client can be made to use the decorator passed at call-time
-using the `aws_retry` argument. By default, no retries are used.
+using the ``aws_retry`` argument. By default, no retries are used.
 
 .. code-block:: python
 
@@ -486,7 +486,7 @@ don't need to be wrapped in the backoff decorator.
 
 You can also use customization for ``retries``, ``delay`` and ``max_delay`` parameters used by
 ``AWSRetry.jittered_backoff`` API using module params. You can take a look at
-the `cloudformation <cloudformation_module>` module for example.
+the ``cloudformation <cloudformation_module>`` module for example.
 
 To make all Amazon modules uniform, prefix the module param with ``backoff_``, so ``retries`` becomes ``backoff_retries``
  and likewise with ``backoff_delay`` and ``backoff_max_delay``.
@@ -501,7 +501,7 @@ should return in the module.  As well as information related to the call itself,
 some response metadata.  It is OK to return this to the user as well as they may find it useful.
 
 Boto3 returns all values CamelCased.  Ansible follows Python standards for variable names and uses
-snake_case. There is a helper function in module_utils/ec2.py called `camel_dict_to_snake_dict`
+snake_case. There is a helper function in module_utils/ec2.py called ``camel_dict_to_snake_dict``
 that allows you to easily convert the boto3 response to snake_case.
 
 You should use this helper function and avoid changing the names of values returned by Boto3.
@@ -532,9 +532,9 @@ example:
    )
 
 Note that AWS is unlikely to return the policy in the same order that is was submitted. Therefore,
-use the `compare_policies` helper function which handles this variance.
+use the ``compare_policies`` helper function which handles this variance.
 
-`compare_policies` takes two dictionaries, recursively sorts and makes them hashable for comparison
+``compare_policies`` takes two dictionaries, recursively sorts and makes them hashable for comparison
 and returns True if they are different.
 
 .. code-block:: python
@@ -565,13 +565,13 @@ Dealing with tags
 AWS has a concept of resource tags. Usually the boto3 API has separate calls for tagging and
 untagging a resource.  For example, the ec2 API has a create_tags and delete_tags call.
 
-It is common practice in Ansible AWS modules to have a `purge_tags` parameter that defaults to
+It is common practice in Ansible AWS modules to have a ``purge_tags`` parameter that defaults to
 true.
 
-The `purge_tags` parameter means that existing tags will be deleted if they are not specified by
+The ``purge_tags`` parameter means that existing tags will be deleted if they are not specified by
 the Ansible task.
 
-There is a helper function `compare_aws_tags` to ease dealing with tags. It can compare two dicts
+There is a helper function ``compare_aws_tags`` to ease dealing with tags. It can compare two dicts
 and return the tags to set and the tags to delete.  See the Helper function section below for more
 detail.
 
@@ -600,22 +600,22 @@ Passing ``reversible=True`` converts HTTPEndpoint to ``h_t_t_p_endpoint`` which 
 snake_dict_to_camel_dict
 ------------------------
 
-`snake_dict_to_camel_dict` converts snake cased keys to camel case. By default, because it was
+``snake_dict_to_camel_dict`` converts snake cased keys to camel case. By default, because it was
 first introduced for ECS purposes, this converts to dromedaryCase. An optional
-parameter called `capitalize_first`, which defaults to `False`, can be used to convert to CamelCase.
+parameter called ``capitalize_first``, which defaults to ``False``, can be used to convert to CamelCase.
 
 ansible_dict_to_boto3_filter_list
 ---------------------------------
 
 Converts a an Ansible list of filters to a boto3 friendly list of dicts.  This is useful for any
-boto3 `_facts` modules.
+boto3 ``_facts`` modules.
 
 boto_exception
 --------------
 
 Pass an exception returned from boto or boto3, and this function will consistently get the message from the exception.
 
-Deprecated: use `AnsibleAWSModule`'s `fail_json_aws` instead.
+Deprecated: use ``AnsibleAWSModule``'s ``fail_json_aws`` instead.
 
 
 boto3_tag_list_to_ansible_dict
@@ -658,11 +658,11 @@ Pass two dicts of tags and an optional purge parameter and this function will re
 containing key pairs you need to modify and a list of tag key names that you need to remove.  Purge
 is True by default.  If purge is False then any existing tags will not be modified.
 
-This function is useful when using boto3 'add_tags' and 'remove_tags' functions. Be sure to use the
-other helper function `boto3_tag_list_to_ansible_dict` to get an appropriate tag dict before
+This function is useful when using boto3 ``add_tags`` and ``remove_tags`` functions. Be sure to use the
+other helper function ``boto3_tag_list_to_ansible_dict`` to get an appropriate tag dict before
 calling this function. Since the AWS APIs are not uniform (for example, EC2 is different from Lambda) this will work
 without modification for some (Lambda) and others may need modification before using these values
-(such as EC2, with requires the tags to unset to be in the form `[{'Key': key1}, {'Key': key2}]`).
+(such as EC2, with requires the tags to unset to be in the form ``[{'Key': key1}, {'Key': key2}]``).
 
 .. _ansible_collections.amazon.aws.docsite.dev_tests:
 
@@ -676,9 +676,9 @@ documented return values are present in the module result.
 For general information on running the integration tests see the :ref:`Integration Tests page of the
 Module Development Guide <testing_integration>`, especially the section on configuration for cloud tests.
 
-The integration tests for your module should be added in `test/integration/targets/MODULE_NAME`.
+The integration tests for your module should be added in ``test/integration/targets/MODULE_NAME``.
 
-You must also have a aliases file in `test/integration/targets/MODULE_NAME/aliases`. This file serves
+You must also have a aliases file in ``test/integration/targets/MODULE_NAME/aliases``. This file serves
 two purposes. First indicates it's in an AWS test causing the test framework to make AWS credentials
 available during the test run. Second putting the test in a test group causing it to be run in the
 continuous integration build.
@@ -692,10 +692,10 @@ AWS Credentials for Integration Tests
 The testing framework handles running the test with appropriate AWS credentials, these are made available
 to your test in the following variables:
 
-* `aws_region`
-* `aws_access_key`
-* `aws_secret_key`
-* `security_token`
+* ``aws_region``
+* ``aws_access_key``
+* ``aws_secret_key``
+* ``security_token``
 
 So all invocations of AWS modules in the test should set these parameters. To avoid duplicating these
 for every call, it's preferable to use :ref:`module_defaults <module_defaults>`. For example:
@@ -732,7 +732,7 @@ If your module interacts with a new service or otherwise requires new permission
 We do not automatically grant additional permissions to the roles used by the continuous integration builds.
 You will need to raise a Pull Request against `mattclay/aws-terminator <https://github.com/mattclay/aws-terminator>`_ to add them.
 
-If your PR has test failures, check carefully to be certain the failure is only due to the missing permissions. If you've ruled out other sources of failure, add a comment with the `ready_for_review`
+If your PR has test failures, check carefully to be certain the failure is only due to the missing permissions. If you've ruled out other sources of failure, add a comment with the ``ready_for_review``
 tag and explain that it's due to missing permissions.
 
 Your pull request cannot be merged until the tests are passing. If your pull request is failing due to missing permissions,
@@ -741,12 +741,12 @@ run the tests.
 
 There are two ways to figure out which IAM permissions you need for your PR to pass:
 
-* Start with the most permissive IAM policy, run the tests to collect information about which resources your tests actually use, then construct a policy based on that output. This approach only works on modules that use `AnsibleAWSModule`.
-* Start with the least permissive IAM policy, run the tests to discover a failure, add permissions for the resource that addresses that failure, then repeat. If your module uses `AnsibleModule` instead of `AnsibleAWSModule`, you must use this approach.
+* Start with the most permissive IAM policy, run the tests to collect information about which resources your tests actually use, then construct a policy based on that output. This approach only works on modules that use ``AnsibleAWSModule``.
+* Start with the least permissive IAM policy, run the tests to discover a failure, add permissions for the resource that addresses that failure, then repeat. If your module uses ``AnsibleModule`` instead of ``AnsibleAWSModule``, you must use this approach.
 
 To start with the most permissive IAM policy:
 
-1) `Create an IAM policy <https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_create.html#access_policies_create-start>`_ that allows all actions (set ``Action`` and ``Resource`` to ``*```).
+1) `Create an IAM policy <https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_create.html#access_policies_create-start>`_ that allows all actions (set ``Action`` and ``Resource`` to ``*``).
 2) Run your tests locally with this policy. On AnsibleAWSModule-based modules, the ``debug_botocore_endpoint_logs`` option is automatically set to ``yes``, so you should see a list of AWS ACTIONS after the PLAY RECAP showing all the permissions used. If your tests use a boto/AnsibleModule module, you must start with the least permissive policy (see below).
 3) Modify your policy to allow only the actions your tests use. Restrict account, region, and prefix where possible. Wait a few minutes for your policy to update.
 4) Run the tests again with a user or role that allows only the new policy.
@@ -759,7 +759,7 @@ To start from the least permissive IAM policy:
 2) Examine the error when the tests reach a failure.
     a) If the error message indicates the action used in the request, add the action to your policy.
     b) If the error message does not indicate the action used in the request:
-        - Usually the action is a CamelCase version of the method name - for example, for an ec2 client the method `describe_security_groups` correlates to the action `ec2:DescribeSecurityGroups`.
+        - Usually the action is a CamelCase version of the method name - for example, for an ec2 client the method ``describe_security_groups`` correlates to the action ``ec2:DescribeSecurityGroups``.
         - Refer to the documentation to identify the action.
     c) If the error message indicates the resource ARN used in the request, limit the action to that resource.
     d) If the error message does not indicate the resource ARN used:
@@ -775,7 +775,7 @@ Troubleshooting IAM policies
 
 - When you make changes to a policy, wait a few minutes for the policy to update before re-running the tests.
 - Use the `policy simulator <https://policysim.aws.amazon.com/>`_ to verify that each action (limited by resource when applicable) in your policy is allowed.
-- If you're restricting actions to certain resources, replace resources temporarily with `*`. If the tests pass with wildcard resources, there is a problem with the resource definition in your policy.
+- If you're restricting actions to certain resources, replace resources temporarily with ``*``. If the tests pass with wildcard resources, there is a problem with the resource definition in your policy.
 - If the initial troubleshooting above doesn't provide any more insight, AWS may be using additional undisclosed resources and actions.
 - Examine the AWS FullAccess policy for the service for clues.
 - Re-read the AWS documentation, especially the list of `Actions, Resources and Condition Keys <https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_actions-resources-contextkeys.html>`_ for the various AWS services.
@@ -788,7 +788,7 @@ Unsupported Integration tests
 
 There are a limited number of reasons why it may not be practical to run integration
 tests for a module within CI.  Where these apply you should add the keyword
-`unsupported` to the aliases file in `test/integration/targets/MODULE_NAME/aliases`.
+``unsupported`` to the aliases file in ``test/integration/targets/MODULE_NAME/aliases``.
 
 Some cases where tests should be marked as unsupported:
 1) The tests take longer than 10 or 15 minutes to complete
