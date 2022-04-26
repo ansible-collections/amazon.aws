@@ -1,0 +1,51 @@
+name: Collection Docs
+concurrency:
+  group: docs-${{ github.head_ref }}
+  cancel-in-progress: true
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, closed]
+
+jobs:
+  build-docs:
+    permissions:
+      contents: read
+    name: Build Ansible Docs
+    uses: ansible-community/github-docs-build/.github/workflows/_shared-docs-build-pr.yml@main
+
+  comment:
+    permissions:
+      pull-requests: write
+    runs-on: ubuntu-latest
+    needs: build-docs
+    name: PR comments
+    steps:
+      - name: PR comment
+        uses: ansible-community/github-docs-build/actions/ansible-docs-build-comment@main
+        with:
+          body-includes: '## Docs Build'
+          reactions: heart
+          action: ${{ needs.build-docs.outputs.changed != 'true' && 'remove' || '' }}
+          on-closed-body: |
+            ## Docs Build 📝
+
+            This PR is closed and any previously published docsite has been unpublished.
+          on-merged-body: |
+            ## Docs Build 📝
+
+            Thank you for contribution!✨
+
+            This PR has been merged and your docs changes will be incorporated when they are next published.
+          body: |
+            ## Docs Build 📝
+
+            Thank you for contribution!✨
+
+            The docsite for **this PR** is available for download as an artifact from this run:
+            ${{ needs.build-docs.outputs.artifact-url }}
+
+            File changes:
+
+            ${{ needs.build-docs.outputs.diff-files-rendered }}
+
+            ${{ needs.build-docs.outputs.diff-rendered }}
