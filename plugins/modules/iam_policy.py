@@ -82,8 +82,7 @@ EXAMPLES = '''
 # Advanced example, create two new groups and add a READ-ONLY policy to both
 # groups.
 - name: Create Two Groups, Mario and Luigi
-  community.aws.iam:
-    iam_type: group
+  community.aws.iam_group:
     name: "{{ item }}"
     state: present
   loop:
@@ -94,9 +93,9 @@ EXAMPLES = '''
 - name: Apply READ-ONLY policy to new groups that have been recently created
   community.aws.iam_policy:
     iam_type: group
-    iam_name: "{{ item.created_group.group_name }}"
+    iam_name: "{{ item.iam_group.group.group_name }}"
     policy_name: "READ-ONLY"
-    policy_document: readonlypolicy.json
+    policy_json: "{{ lookup('template', 'readonly.json.j2') }}"
     state: present
   loop: "{{ new_groups.results }}"
 
@@ -107,12 +106,20 @@ EXAMPLES = '''
     iam_name: "{{ item.user }}"
     policy_name: "s3_limited_access_{{ item.prefix }}"
     state: present
-    policy_json: " {{ lookup( 'template', 's3_policy.json.j2') }} "
+    policy_json: "{{ lookup('template', 's3_policy.json.j2') }}"
     loop:
       - user: s3_user
         prefix: s3_user_prefix
 
 '''
+RETURN = '''
+policies:
+    description: A list of names of the inline policies embedded in the specified IAM resource (user, group, or role).
+    returned: always
+    type: list
+    elements: str
+'''
+
 import json
 
 try:
@@ -120,9 +127,10 @@ try:
 except ImportError:
     pass
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies, AWSRetry
 from ansible.module_utils.six import string_types
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
 
 
 class PolicyError(Exception):
@@ -174,9 +182,9 @@ class Policy:
             self.changed = False
             return
 
-        self.changed = True
         if not self.check_mode:
             self._delete(self.name, self.policy_name)
+        self.changed = True
 
     def get_policy_text(self):
         try:
@@ -298,8 +306,16 @@ def main():
         skip_duplicates=dict(type='bool', default=None, required=False)
     )
     mutually_exclusive = [['policy_document', 'policy_json']]
+    required_if = [
+        ('state', 'present', ('policy_document', 'policy_json'), True),
+    ]
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, mutually_exclusive=mutually_exclusive, supports_check_mode=True)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        mutually_exclusive=mutually_exclusive,
+        required_if=required_if,
+        supports_check_mode=True
+    )
 
     skip_duplicates = module.params.get('skip_duplicates')
 
