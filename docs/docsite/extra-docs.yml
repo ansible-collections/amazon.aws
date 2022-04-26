@@ -3,3 +3,6 @@ sections:
   - title: Scenario Guide
     toctree:
       - guide_aws
+  - title: Module Development Guidelines
+    toctree:
+      - dev_guidelines
