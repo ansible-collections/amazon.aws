@@ -67,7 +67,7 @@ options:
     type: str
   last_snapshot_min_age:
     description:
-      - If the volume's most recent snapshot has started less than `last_snapshot_min_age' minutes ago, a new snapshot will not be created.
+      - If the volume's most recent snapshot has started less than I(last_snapshot_min_age) minutes ago, a new snapshot will not be created.
     required: false
     default: 0
     type: int
