@@ -202,7 +202,7 @@ EXAMPLES = '''
 - name: create/update a certificate with a chain
   community.aws.aws_acm:
     certificate: "{{ lookup('file', 'cert.pem' ) }}"
-    privateKey: "{{ lookup('file', 'key.pem' ) }}"
+    private_key: "{{ lookup('file', 'key.pem' ) }}"
     name_tag: my_cert
     certificate_chain: "{{ lookup('file', 'chain.pem' ) }}"
     state: present
