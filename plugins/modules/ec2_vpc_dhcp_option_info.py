@@ -93,7 +93,7 @@ dhcp_options:
               - '{"Key": "CreatedBy", "Value": "ansible-test"}'
               - '{"Key": "Collection", "Value": "amazon.aws"}'
 dhcp_config:
-    description: The boto2-style DHCP options created, associated or found. Provided for consistency with ec2_vpc_dhcp_option's `new_config`.
+    description: The boto2-style DHCP options created, associated or found. Provided for consistency with ec2_vpc_dhcp_option's C(dhcp_config).
     returned: always
     type: list
     contains:
