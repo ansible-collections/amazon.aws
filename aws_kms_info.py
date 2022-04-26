@@ -150,9 +150,10 @@ kms_keys:
         Name: myKey
         Purpose: protecting_stuff
     policies:
-      description: list of policy documents for the keys. Empty when access is denied even if there are policies.
+      description: list of policy documents for the key. Empty when access is denied even if there are policies.
       type: list
       returned: always
+      elements: str
       sample:
         Version: "2012-10-17"
         Id: "auto-ebs-2"
@@ -183,6 +184,42 @@ kms_keys:
           - "kms:List*"
           - "kms:RevokeGrant"
           Resource: "*"
+    key_policies:
+      description: list of policy documents for the key. Empty when access is denied even if there are policies.
+      type: list
+      returned: always
+      elements: dict
+      sample:
+        Version: "2012-10-17"
+        Id: "auto-ebs-2"
+        Statement:
+        - Sid: "Allow access through EBS for all principals in the account that are authorized to use EBS"
+          Effect: "Allow"
+          Principal:
+            AWS: "*"
+          Action:
+          - "kms:Encrypt"
+          - "kms:Decrypt"
+          - "kms:ReEncrypt*"
+          - "kms:GenerateDataKey*"
+          - "kms:CreateGrant"
+          - "kms:DescribeKey"
+          Resource: "*"
+          Condition:
+            StringEquals:
+              kms:CallerAccount: "111111111111"
+              kms:ViaService: "ec2.ap-southeast-2.amazonaws.com"
+        - Sid: "Allow direct access to key metadata to the account"
+          Effect: "Allow"
+          Principal:
+            AWS: "arn:aws:iam::111111111111:root"
+          Action:
+          - "kms:Describe*"
+          - "kms:Get*"
+          - "kms:List*"
+          - "kms:RevokeGrant"
+          Resource: "*"
+      version_added: 3.3.0
     grants:
       description: list of grants associated with a key
       type: complex
@@ -240,6 +277,7 @@ kms_keys:
           sample: arn:aws:sts::0123456789012:assumed-role/lambda_xyz/xyz
 '''
 
+import json
 
 try:
     import botocore
@@ -418,6 +456,7 @@ def get_key_details(connection, module, key_id, tokens=None):
     result = camel_dict_to_snake_dict(result)
     result['tags'] = boto3_tag_list_to_ansible_dict(tags, 'TagKey', 'TagValue')
     result['policies'] = get_kms_policies(connection, module, key_id)
+    result['key_policies'] = [json.loads(policy) for policy in result['policies']]
     return result
 
 
@@ -459,6 +498,9 @@ def main():
         connection = module.client('kms')
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to connect to AWS')
+
+    module.deprecate("The 'policies' return key is deprecated and will be replaced by 'key_policies'. Both values are returned for now.",
+                     date='2024-05-01', collection_name='community.aws')
 
     all_keys = get_kms_info(connection, module)
     filtered_keys = [key for key in all_keys if key_matches_filters(key, module.params['filters'])]

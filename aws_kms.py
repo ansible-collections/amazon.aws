@@ -199,6 +199,12 @@ extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 
+
+notes:
+  - There are known inconsistencies in the amount of time required for updates of KMS keys to be fully reflected on AWS.
+    This can cause issues when running duplicate tasks in succession or using the aws_kms_info module to fetch key metadata
+    shortly after modifying keys.
+    For this reason, it is recommended to use the return data from this module (aws_kms) to fetch a key's metadata.
 '''
 
 EXAMPLES = r'''
@@ -310,6 +316,11 @@ enabled:
   type: str
   returned: always
   sample: false
+enable_key_rotation:
+  description: Whether the automatic annual key rotation is enabled. Returns None if key rotation status can't be determined.
+  type: bool
+  returned: always
+  sample: false
 aliases:
   description: list of aliases associated with the key
   type: list
@@ -318,9 +329,45 @@ aliases:
     - aws/acm
     - aws/ebs
 policies:
-  description: list of policy documents for the keys. Empty when access is denied even if there are policies.
+  description: list of policy documents for the key. Empty when access is denied even if there are policies.
   type: list
   returned: always
+  elements: str
+  sample:
+    Version: "2012-10-17"
+    Id: "auto-ebs-2"
+    Statement:
+    - Sid: "Allow access through EBS for all principals in the account that are authorized to use EBS"
+      Effect: "Allow"
+      Principal:
+      AWS: "*"
+      Action:
+      - "kms:Encrypt"
+      - "kms:Decrypt"
+      - "kms:ReEncrypt*"
+      - "kms:GenerateDataKey*"
+      - "kms:CreateGrant"
+      - "kms:DescribeKey"
+      Resource: "*"
+      Condition:
+        StringEquals:
+          kms:CallerAccount: "111111111111"
+          kms:ViaService: "ec2.ap-southeast-2.amazonaws.com"
+    - Sid: "Allow direct access to key metadata to the account"
+      Effect: "Allow"
+      Principal:
+      AWS: "arn:aws:iam::111111111111:root"
+      Action:
+      - "kms:Describe*"
+      - "kms:Get*"
+      - "kms:List*"
+      - "kms:RevokeGrant"
+      Resource: "*"
+key_policies:
+  description: list of policy documents for the key. Empty when access is denied even if there are policies.
+  type: list
+  returned: always
+  elements: dict
   sample:
     Version: "2012-10-17"
     Id: "auto-ebs-2"
@@ -351,6 +398,7 @@ policies:
       - "kms:List*"
       - "kms:RevokeGrant"
       Resource: "*"
+  version_added: 3.3.0
 tags:
   description: dictionary of tags applied to the key
   type: dict
@@ -584,6 +632,7 @@ def get_key_details(connection, module, key_id):
     tags = get_kms_tags(connection, module, key_id)
     result['tags'] = boto3_tag_list_to_ansible_dict(tags, 'TagKey', 'TagValue')
     result['policies'] = get_kms_policies(connection, module, key_id)
+    result['key_policies'] = [json.loads(policy) for policy in result['policies']]
     return result
 
 
@@ -817,13 +866,15 @@ def update_key_rotation(connection, module, key, enable_key_rotation):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Unable to get current key rotation status")
 
-    try:
-        if enable_key_rotation:
-            connection.enable_key_rotation(KeyId=key_id)
-        else:
-            connection.disable_key_rotation(KeyId=key_id)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to enable/disable key rotation")
+    if not module.check_mode:
+        try:
+            if enable_key_rotation:
+                connection.enable_key_rotation(KeyId=key_id)
+            else:
+                connection.disable_key_rotation(KeyId=key_id)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg="Failed to enable/disable key rotation")
+
     return True
 
 
@@ -1030,6 +1081,11 @@ def canonicalize_alias_name(alias):
 
 
 def fetch_key_metadata(connection, module, key_id, alias):
+    # Note - fetching a key's metadata is very inconsistent shortly after any sort of update to a key has occurred.
+    # Combinations of manual waiters, checking expecting key values to actual key value, and static sleeps
+    #        have all been exhausted, but none of those available options have solved the problem.
+    # Integration tests will wait for 10 seconds to combat this issue.
+    # See https://github.com/ansible-collections/community.aws/pull/1052.
 
     alias = canonicalize_alias_name(module.params.get('alias'))
 
@@ -1104,10 +1160,13 @@ def main():
 
     kms = module.client('kms')
 
+    module.deprecate("The 'policies' return key is deprecated and will be replaced by 'key_policies'. Both values are returned for now.",
+                     date='2024-05-01', collection_name='community.aws')
+
     key_metadata = fetch_key_metadata(kms, module, module.params.get('key_id'), module.params.get('alias'))
     # We can't create keys with a specific ID, if we can't access the key we'll have to fail
     if module.params.get('state') == 'present' and module.params.get('key_id') and not key_metadata:
-        module.fail_json(msg="Could not find key with id %s to update")
+        module.fail_json(msg="Could not find key with id {0} to update".format(module.params.get('key_id')))
 
     if module.params.get('policy_grant_types') or mode == 'deny':
         module.deprecate('Managing the KMS IAM Policy via policy_mode and policy_grant_types is fragile'
