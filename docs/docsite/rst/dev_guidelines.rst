@@ -366,7 +366,7 @@ The combination of these two approaches is then:
 
 .. code-block:: python
 
-   @AWSRetry.exponential_backoff(retries=5, delay=5)
+   @AWSRetry.jittered_backoff(retries=5, delay=5)
    def describe_some_resource_with_backoff(client, **kwargs):
         paginator = client.get_paginator('describe_some_resource')
         return paginator.paginate(**kwargs).build_full_result()['SomeResource']
@@ -388,7 +388,7 @@ argument on the decorator.
 
 .. code-block:: python
 
-   @AWSRetry.exponential_backoff(retries=5, delay=5, catch_extra_error_codes=['ResourceNotFound'])
+   @AWSRetry.jittered_backoff(retries=5, delay=5, catch_extra_error_codes=['ResourceNotFound'])
    def describe_some_resource_retry_missing(client, **kwargs):
         return client.describe_some_resource(ResourceName=kwargs['name'])['Resources']
 
