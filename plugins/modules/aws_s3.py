@@ -121,6 +121,8 @@ options:
   s3_url:
     description:
       - S3 URL endpoint for usage with Ceph, Eucalyptus and fakes3 etc. Otherwise assumes AWS.
+      - The S3_URL alias for this option has been deprecated and will be removed
+        in release 5.0.0.
     aliases: [ S3_URL ]
     type: str
   dualstack:
@@ -925,7 +927,7 @@ def main():
         overwrite=dict(aliases=['force'], default='always'),
         prefix=dict(default=""),
         retries=dict(aliases=['retry'], type='int', default=0),
-        s3_url=dict(aliases=['S3_URL']),
+        s3_url=dict(aliases=['S3_URL'], deprecated_aliases=[dict(name='S3_URL', version='5.0.0', collection_name='amazon.aws')]),
         dualstack=dict(default='no', type='bool'),
         rgw=dict(default='no', type='bool'),
         src=dict(type='path'),
