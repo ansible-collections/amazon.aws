@@ -65,6 +65,23 @@ A changelog fragment must be added to any PR that changes functionality or fixes
 a bug.  More information about changelog fragments can be found in the
 `Making your PR merge-worthy section of the Ansible Development Cycle documentation<community_changelogs>`
 
+Breaking Changes
+----------------
+
+Changes that are likely to break existing playbooks using the AWS collections should be
+avoided, should only be made in a major release, and where practical should be
+preceeded by a deprecation cycle of at least 1 full major release.  Deprecations
+may be backported to the stable branches.
+
+For example:
+- A deprecation added in release 3.0.0 may be removed in release 4.0.0.
+- A deprecation added in release 1.2.0 may be removed in release 3.0.0.
+
+Breaking changes include:
+- Removing a parameter.
+- Making a parameter ``required``.
+- Updating the default value of a parameter.
+- Changing or removing an existing return value.
 
 Adding new features
 -------------------
