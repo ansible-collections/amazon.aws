@@ -651,6 +651,62 @@ continuous integration build.
 Tests for new modules should be added to the ``cloud/aws`` group. In general just copy
 an existing aliases file such as the `aws_s3 tests aliases file <https://github.com/ansible-collections/amazon.aws/blob/master/tests/integration/targets/aws_s3/aliases>`_.
 
+
+Custom SDK versions for Integration Tests
+-----------------------------------------
+
+By default integration tests will run against the earliest supported version of
+the AWS SDK.  The current supported versions can be found in
+``tests/integration/constraints.txt`` and should not be updated.  Where a module
+needs access to a later version of the SDK this can be installed by depending on
+the ``setup_botocore_pip`` role and setting the ``botocore_version`` variable in
+the ``meta/main.yml`` file for your tests.
+
+.. code-block:: yaml
+
+    dependencies:
+      - role: setup_botocore_pip
+        vars:
+          botocore_version: "1.20.24"
+
+
+Creating EC2 instances in Integration Tests
+-------------------------------------------
+
+When started, the integration tests will be passed ``aws_region`` as an extra var.
+Any resources created should be created in in this region, this includes EC2
+instances.  Since AMIs are region specific there is a role which can be
+included which will query the APIs for an AMI to use and set the ``ec2_ami_id``
+fact.  This role can be included by adding the ``setup_ec2_facts`` role as a
+dependency in the ``meta/main.yml`` file for your tests.
+
+
+.. code-block:: yaml
+
+    dependencies:
+      - role: setup_ec2_facts
+
+The ``ec2_ami_id`` fact can then be used in the tests.
+
+.. code-block:: yaml
+
+    - name: Create launch configuration 1
+      community.aws.ec2_lc:
+        name: '{{ resource_prefix }}-lc1'
+        image_id: '{{ ec2_ami_id }}'
+        assign_public_ip: yes
+        instance_type: '{{ ec2_instance_type }}'
+        security_groups: '{{ sg.group_id }}'
+        volumes:
+          - device_name: /dev/xvda
+            volume_size: 10
+            volume_type: gp2
+            delete_on_termination: true
+
+To improve test result reproducability across regions, tests should use this
+role and the fact it provides to chose an AMI to use.
+
+
 Resource naming in Integration Tests
 ------------------------------------
 
