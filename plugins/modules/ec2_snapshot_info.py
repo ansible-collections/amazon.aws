@@ -6,16 +6,16 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ec2_snapshot_info
 version_added: 1.0.0
-short_description: Gather information about ec2 volume snapshots in AWS
+short_description: Gathers information about EC2 volume snapshots in AWS
 description:
-    - Gather information about ec2 volume snapshots in AWS.
+  - Gathers information about EC2 volume snapshots in AWS.
 author:
-    - "Rob White (@wimnat)"
-    - Aubin Bikouo (@abikouo)
+  - Rob White (@wimnat)
+  - Aubin Bikouo (@abikouo)
 options:
   snapshot_ids:
     description:
@@ -70,12 +70,11 @@ notes:
     the account use the filter 'owner-id'.
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.ec2
+  - amazon.aws.aws
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all snapshots, including public ones
@@ -113,7 +112,7 @@ EXAMPLES = '''
 
 '''
 
-RETURN = '''
+RETURN = r'''
 snapshots:
     description: snapshots retrieved
     type: list
