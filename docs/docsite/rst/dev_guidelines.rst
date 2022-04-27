@@ -51,16 +51,14 @@ And handled using the ``botocore_at_least`` helper method:
         if not module.botocore_at_least("1.19.27"):
             module.fail_json(msg="botocore >= 1.19.27 is required to set the throughput for a volume")
 
+Starting with the 4.0 releases of both collections, all support for the original boto SDK has been dropped.  AWS Modules must be written using the botocore and boto3 SDKs.
+
 .. _ansible_collections.amazon.aws.docsite.dev_module_maint:
 
 Maintaining existing modules
 ============================
 
-Fixing bugs
------------
 
-Bug fixes to code that relies on boto will still be accepted. When possible,
-the code should be ported to use boto3.
 
 Adding new features
 -------------------
@@ -80,12 +78,6 @@ supports a feature rather than version checking. For example, from the ``ec2`` m
    else:
        if instance_profile_name is not None:
            module.fail_json(msg="instance_profile_name parameter requires boto version 2.5.0 or higher")
-
-Migrating to boto3
-------------------
-
-Prior to Ansible 2.0, modules were written in either boto3 or boto. We are
-still porting some modules to boto3. Modules that still require boto should be ported to use boto3 rather than using both libraries (boto and boto3). We would like to remove the boto dependency from all modules.
 
 Porting code to AnsibleAWSModule
 ---------------------------------
