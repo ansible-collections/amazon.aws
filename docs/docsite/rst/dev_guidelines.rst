@@ -58,6 +58,12 @@ Starting with the 4.0 releases of both collections, all support for the original
 Maintaining existing modules
 ============================
 
+Changelogs
+----------
+
+A changelog fragment must be added to any PR that changes functionality or fixes
+a bug.  More information about changelog fragments can be found in the
+`Making your PR merge-worthy section of the Ansible Development Cycle documentation<community_changelogs>`
 
 
 Adding new features
