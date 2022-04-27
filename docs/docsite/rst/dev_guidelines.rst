@@ -628,6 +628,17 @@ continuous integration build.
 Tests for new modules should be added to the ``cloud/aws`` group. In general just copy
 an existing aliases file such as the `aws_s3 tests aliases file <https://github.com/ansible-collections/amazon.aws/blob/master/tests/integration/targets/aws_s3/aliases>`_.
 
+Resource naming in Integration Tests
+------------------------------------
+
+AWS has a range of limitations for the name of resources.  Where possible,
+resource names should include a string which makes the resource names unique
+to the test.
+
+The ``ansible-test`` tool used for running the integration tests provides two
+helpful extra vars: ``resource_prefix`` and ``tiny_prefix`` which are unique to the
+test set, and should generally used as part of the name.  ``resource_prefix`` will generate a prefix based on the host the test is being run on.  Sometimes this may result in a resource name that exceeds the character limit allowed by AWS.  In these cases, ``tiny_prefix`` will provide a 12-character randomly generated prefix.
+
 AWS Credentials for Integration Tests
 -------------------------------------
 
