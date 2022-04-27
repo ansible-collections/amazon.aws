@@ -79,56 +79,6 @@ supports a feature rather than version checking. For example, from the ``ec2`` m
        if instance_profile_name is not None:
            module.fail_json(msg="instance_profile_name parameter requires boto version 2.5.0 or higher")
 
-Porting code to AnsibleAWSModule
----------------------------------
-
-Some old AWS modules use the generic ``AnsibleModule`` as a base rather than the more efficient ``AnsibleAWSModule``. To port an old module to ``AnsibleAWSModule``, change:
-
-.. code-block:: python
-
-   from ansible.module_utils.basic import AnsibleModule
-   ...
-   module = AnsibleModule(...)
-
-to:
-
-.. code-block:: python
-
-   from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-   ...
-   module = AnsibleAWSModule(...)
-
-Few other changes are required. AnsibleAWSModule
-does not inherit methods from AnsibleModule by default, but most useful methods
-are included. If you do find an issue, please raise a bug report.
-
-When porting, keep in mind that AnsibleAWSModule also will add the default ec2
-argument spec by default. In pre-port modules, you should see common arguments
-specified with:
-
-.. code-block:: python
-
-   def main():
-       argument_spec = ec2_argument_spec()
-       argument_spec.update(dict(
-           state=dict(default='present', choices=['present', 'absent', 'enabled', 'disabled']),
-           name=dict(default='default'),
-           # ... and so on ...
-       ))
-       module = AnsibleModule(argument_spec=argument_spec, supports_check_mode=True,)
-
-These can be replaced with:
-
-.. code-block:: python
-
-   def main():
-       argument_spec = dict(
-           state=dict(default='present', choices=['present', 'absent', 'enabled', 'disabled']),
-           name=dict(default='default'),
-           # ... and so on ...
-       )
-       module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True,)
-
 .. _ansible_collections.amazon.aws.docsite.dev_module_create:
 
 Creating new AWS modules
