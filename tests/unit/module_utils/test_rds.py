@@ -44,8 +44,13 @@ def build_exception(
 
 
 @pytest.mark.parametrize("waiter_name", ["", "db_snapshot_available"])
-def test__wait_for_snapshot_status(waiter_name):
-    rds.wait_for_snapshot_status(MagicMock(), MagicMock(), "test", waiter_name)
+def test__wait_for_instance_snapshot_status(waiter_name):
+    rds.wait_for_instance_snapshot_status(MagicMock(), MagicMock(), "test", waiter_name)
+
+
+@pytest.mark.parametrize("waiter_name", ["", "db_cluster_snapshot_available"])
+def test__wait_for_cluster_snapshot_status(waiter_name):
+    rds.wait_for_cluster_snapshot_status(MagicMock(), MagicMock(), "test", waiter_name)
 
 
 @pytest.mark.parametrize(
@@ -56,22 +61,39 @@ def test__wait_for_snapshot_status(waiter_name):
             "Failed to wait for DB snapshot test to be available",
         ),
         (
-            "db_cluster_snapshot_available",
-            "Failed to wait for DB snapshot test to be available",
-        ),
-        ("db_snapshot_deleted", "Failed to wait for DB snapshot test to be deleted"),
-        (
-            "db_cluster_snapshot_deleted",
-            "Failed to wait for DB snapshot test to be deleted",
-        ),
+            "db_snapshot_deleted",
+            "Failed to wait for DB snapshot test to be deleted"),
     ],
 )
-def test__wait_for_snapshot_status_failed(input, expected):
+def test__wait_for_instance_snapshot_status_failed(input, expected):
     spec = {"get_waiter.side_effect": [WaiterError(None, None, None)]}
     client = MagicMock(**spec)
     module = MagicMock()
 
-    rds.wait_for_snapshot_status(client, module, "test", input)
+    rds.wait_for_instance_snapshot_status(client, module, "test", input)
+    module.fail_json_aws.assert_called_once
+    module.fail_json_aws.call_args[1]["msg"] == expected
+
+
+@pytest.mark.parametrize(
+    "input, expected",
+    [
+        (
+            "db_cluster_snapshot_available",
+            "Failed to wait for DB cluster snapshot test to be available",
+        ),
+        (
+            "db_cluster_snapshot_deleted",
+            "Failed to wait for DB cluster snapshot test to be deleted",
+        ),
+    ],
+)
+def test__wait_for_cluster_snapshot_status_failed(input, expected):
+    spec = {"get_waiter.side_effect": [WaiterError(None, None, None)]}
+    client = MagicMock(**spec)
+    module = MagicMock()
+
+    rds.wait_for_cluster_snapshot_status(client, module, "test", input)
     module.fail_json_aws.assert_called_once
     module.fail_json_aws.call_args[1]["msg"] == expected
 
@@ -89,9 +111,7 @@ def test__wait_for_snapshot_status_failed(input, expected):
                     name="delete_db_cluster",
                     waiter="cluster_deleted",
                     operation_description="delete DB cluster",
-                    cluster=True,
-                    instance=False,
-                    snapshot=False,
+                    resource='cluster',
                     retry_codes=['InvalidDBClusterState']
                 )
             ),
@@ -106,9 +126,7 @@ def test__wait_for_snapshot_status_failed(input, expected):
                     name="create_db_cluster",
                     waiter="cluster_available",
                     operation_description="create DB cluster",
-                    cluster=True,
-                    instance=False,
-                    snapshot=False,
+                    resource='cluster',
                     retry_codes=['InvalidDBClusterState']
                 )
             ),
@@ -123,9 +141,7 @@ def test__wait_for_snapshot_status_failed(input, expected):
                     name="restore_db_cluster_from_snapshot",
                     waiter="cluster_available",
                     operation_description="restore DB cluster from snapshot",
-                    cluster=True,
-                    instance=False,
-                    snapshot=False,
+                    resource='cluster',
                     retry_codes=['InvalidDBClusterSnapshotState']
                 )
             ),
@@ -140,9 +156,7 @@ def test__wait_for_snapshot_status_failed(input, expected):
                     name="modify_db_cluster",
                     waiter="cluster_available",
                     operation_description="modify DB cluster",
-                    cluster=True,
-                    instance=False,
-                    snapshot=False,
+                    resource='cluster',
                     retry_codes=['InvalidDBClusterState']
                 )
             ),
@@ -157,9 +171,7 @@ def test__wait_for_snapshot_status_failed(input, expected):
                     name="list_tags_for_resource",
                     waiter="cluster_available",
                     operation_description="list tags for resource",
-                    cluster=True,
-                    instance=False,
-                    snapshot=False,
+                    resource='cluster',
                     retry_codes=['InvalidDBClusterState']
                 )
             ),
@@ -174,9 +186,7 @@ def test__wait_for_snapshot_status_failed(input, expected):
                     name="fake_method",
                     waiter="",
                     operation_description="fake method",
-                    cluster=False,
-                    instance=False,
-                    snapshot=False,
+                    resource = '',
                     retry_codes=[]
                 )
             ),
@@ -213,9 +223,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
                     name="delete_db_instance",
                     waiter="db_instance_deleted",
                     operation_description="delete DB instance",
-                    cluster=False,
-                    instance=True,
-                    snapshot=False,
+                    resource='instance',
                     retry_codes=['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
                 )
             ),
@@ -230,9 +238,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
                     name="create_db_instance",
                     waiter="db_instance_available",
                     operation_description="create DB instance",
-                    cluster=False,
-                    instance=True,
-                    snapshot=False,
+                    resource='instance',
                     retry_codes=['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
                 )
             ),
@@ -247,9 +253,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
                     name="stop_db_instance",
                     waiter="db_instance_stopped",
                     operation_description="stop DB instance",
-                    cluster=False,
-                    instance=True,
-                    snapshot=False,
+                    resource='instance',
                     retry_codes=['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
                 )
             ),
@@ -264,9 +268,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
                     name="promote_read_replica",
                     waiter="read_replica_promoted",
                     operation_description="promote read replica",
-                    cluster=False,
-                    instance=True,
-                    snapshot=False,
+                    resource='instance',
                     retry_codes=['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
                 )
             ),
@@ -281,9 +283,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
                     name="restore_db_instance_from_db_snapshot",
                     waiter="db_instance_available",
                     operation_description="restore DB instance from DB snapshot",
-                    cluster=False,
-                    instance=True,
-                    snapshot=False,
+                    resource='instance',
                     retry_codes=['InvalidDBSnapshotState']
                 )
             ),
@@ -298,9 +298,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
                     name="modify_db_instance",
                     waiter="db_instance_available",
                     operation_description="modify DB instance",
-                    cluster=False,
-                    instance=True,
-                    snapshot=False,
+                    resource='instance',
                     retry_codes=['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
                 )
             ),
@@ -315,9 +313,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
                     name="add_role_to_db_instance",
                     waiter="role_associated",
                     operation_description="add role to DB instance",
-                    cluster=False,
-                    instance=True,
-                    snapshot=False,
+                    resource='instance',
                     retry_codes=['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
                 )
             ),
@@ -332,9 +328,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
                     name="remove_role_from_db_instance",
                     waiter="role_disassociated",
                     operation_description="remove role from DB instance",
-                    cluster=False,
-                    instance=True,
-                    snapshot=False,
+                    resource='instance',
                     retry_codes=['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
                 )
             ),
@@ -349,9 +343,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
                     name="list_tags_for_resource",
                     waiter="db_instance_available",
                     operation_description="list tags for resource",
-                    cluster=False,
-                    instance=True,
-                    snapshot=False,
+                    resource='instance',
                     retry_codes=['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
                 )
             ),
@@ -366,9 +358,7 @@ def test__get_rds_method_attribute_cluster(method_name, params, expected, error)
                     name="fake_method",
                     waiter="",
                     operation_description="fake method",
-                    cluster=False,
-                    instance=False,
-                    snapshot=False,
+                    resource='',
                     retry_codes=[]
                 )
             ),
@@ -405,9 +395,7 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
                     name="delete_db_snapshot",
                     waiter="db_snapshot_deleted",
                     operation_description="delete DB snapshot",
-                    cluster=False,
-                    instance=False,
-                    snapshot=True,
+                    resource='instance_snapshot',
                     retry_codes=['InvalidDBSnapshotState']
                 )
             ),
@@ -422,9 +410,7 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
                     name="create_db_snapshot",
                     waiter="db_snapshot_available",
                     operation_description="create DB snapshot",
-                    cluster=False,
-                    instance=False,
-                    snapshot=True,
+                    resource='instance_snapshot',
                     retry_codes=['InvalidDBInstanceState']
                 )
             ),
@@ -440,9 +426,7 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
                     name="copy_db_snapshot",
                     waiter="db_snapshot_available",
                     operation_description="copy DB snapshot",
-                    cluster=False,
-                    instance=False,
-                    snapshot=True,
+                    resource='instance_snapshot',
                     retry_codes=['InvalidDBSnapshotState']
                 )
             ),
@@ -457,9 +441,7 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
                     name="list_tags_for_resource",
                     waiter="db_snapshot_available",
                     operation_description="list tags for resource",
-                    cluster=False,
-                    instance=False,
-                    snapshot=True,
+                    resource='instance_snapshot',
                     retry_codes=['InvalidDBSnapshotState']
                 )
             ),
@@ -474,9 +456,7 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
                     name="delete_db_cluster_snapshot",
                     waiter="db_cluster_snapshot_deleted",
                     operation_description="delete DB cluster snapshot",
-                    cluster=False,
-                    instance=False,
-                    snapshot=True,
+                    resource='cluster_snapshot',
                     retry_codes=['InvalidDBClusterSnapshotState']
                 )
             ),
@@ -491,9 +471,7 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
                     name="create_db_cluster_snapshot",
                     waiter="db_cluster_snapshot_available",
                     operation_description="create DB cluster snapshot",
-                    cluster=False,
-                    instance=False,
-                    snapshot=True,
+                    resource='cluster_snapshot',
                     retry_codes=['InvalidDBClusterState']
                 )
             ),
@@ -508,9 +486,7 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
                     name="list_tags_for_resource",
                     waiter="db_cluster_snapshot_available",
                     operation_description="list tags for resource",
-                    cluster=False,
-                    instance=False,
-                    snapshot=True,
+                    resource='cluster_snapshot',
                     retry_codes=['InvalidDBClusterSnapshotState']
                 )
             ),
@@ -525,9 +501,7 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
                     name="fake_method",
                     waiter="",
                     operation_description="fake method",
-                    cluster=False,
-                    instance=False,
-                    snapshot=False,
+                    resource='',
                     retry_codes=[]
                 )
             ),
@@ -554,10 +528,19 @@ def test__get_rds_method_attribute_snapshot(method_name, params, expected, error
 @pytest.mark.parametrize(
     "method_name, params, expected",
     [
-        ("create_db_snapshot", {"db_snapshot_identifier": "test"}, "test"),
         (
             "create_db_snapshot",
-            {"db_snapshot_identifier": "test", "apply_immediately": True},
+            {
+                "db_snapshot_identifier": "test"
+            },
+            "test"
+        ),
+        (
+            "create_db_snapshot",
+            {
+                "db_snapshot_identifier": "test",
+                "apply_immediately": True
+            },
             "test",
         ),
         (
@@ -570,7 +553,10 @@ def test__get_rds_method_attribute_snapshot(method_name, params, expected, error
         ),
         (
             "create_db_snapshot",
-            {"db_snapshot_identifier": "test", "apply_immediately": True},
+            {
+                "db_snapshot_identifier": "test",
+                "apply_immediately": True
+            },
             "test",
         ),
         (
@@ -592,7 +578,10 @@ def test__get_rds_method_attribute_snapshot(method_name, params, expected, error
         ),
         (
             "create_db_snapshot",
-            {"db_snapshot_identifier": "test", "apply_immediately": True},
+            {
+                "db_snapshot_identifier": "test",
+                "apply_immediately": True
+            },
             "test",
         ),
         (

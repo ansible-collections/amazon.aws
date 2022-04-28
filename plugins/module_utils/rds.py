@@ -21,7 +21,7 @@ from .ec2 import boto3_tag_list_to_ansible_dict
 from .ec2 import compare_aws_tags
 from .waiters import get_waiter
 
-Boto3ClientMethod = namedtuple('Boto3ClientMethod', ['name', 'waiter', 'operation_description', 'cluster', 'instance', 'snapshot', 'retry_codes'])
+Boto3ClientMethod = namedtuple('Boto3ClientMethod', ['name', 'waiter', 'operation_description', 'resource', 'retry_codes'])
 # Whitelist boto3 client methods for cluster and instance resources
 cluster_method_names = [
     'create_db_cluster', 'restore_db_cluster_from_snapshot', 'restore_db_cluster_from_s3',
@@ -36,26 +36,43 @@ instance_method_names = [
     'remove_role_from_db_instance'
 ]
 
-snapshot_cluster_method_names = [
+cluster_snapshot_method_names = [
     'create_db_cluster_snapshot', 'delete_db_cluster_snapshot', 'add_tags_to_resource', 'remove_tags_from_resource',
     'list_tags_for_resource'
 ]
 
-snapshot_instance_method_names = [
+instance_snapshot_method_names = [
     'create_db_snapshot', 'delete_db_snapshot', 'add_tags_to_resource', 'remove_tags_from_resource',
     'copy_db_snapshot', 'list_tags_for_resource'
 ]
 
 
 def get_rds_method_attribute(method_name, module):
+    '''
+    Returns rds attributes of the specified method.
+
+        Parameters:
+            method_name (str): RDS method to call
+            module: AnsibleAWSModule
+
+        Returns:
+            Boto3ClientMethod (dict):
+                name (str): Name of method
+                waiter (str): Name of waiter associated with given method
+                operation_description (str): Description of method
+                resource (str): Type of resource this method applies to
+                                One of ['instance', 'cluster', 'instance_snapshot', 'cluster_snapshot']
+                retry_codes (list): List of extra error codes to retry on
+
+        Raises:
+            NotImplementedError if wait is True but no waiter can be found for specified method
+    '''
     waiter = ''
     readable_op = method_name.replace('_', ' ').replace('db', 'DB')
-    cluster = False
-    instance = False
-    snapshot = False
+    resource = ''
     retry_codes = []
     if method_name in cluster_method_names and 'new_db_cluster_identifier' in module.params:
-        cluster = True
+        resource = 'cluster'
         if method_name == 'delete_db_cluster':
             waiter = 'cluster_deleted'
         else:
@@ -66,7 +83,7 @@ def get_rds_method_attribute(method_name, module):
         else:
             retry_codes = ['InvalidDBClusterState']
     elif method_name in instance_method_names and 'new_db_instance_identifier' in module.params:
-        instance = True
+        resource = 'instance'
         if method_name == 'delete_db_instance':
             waiter = 'db_instance_deleted'
         elif method_name == 'stop_db_instance':
@@ -84,8 +101,8 @@ def get_rds_method_attribute(method_name, module):
             retry_codes = ['InvalidDBSnapshotState']
         else:
             retry_codes = ['InvalidDBInstanceState', 'InvalidDBSecurityGroupState']
-    elif method_name in snapshot_cluster_method_names and 'db_cluster_snapshot_identifier' in module.params:
-        snapshot = True
+    elif method_name in cluster_snapshot_method_names and 'db_cluster_snapshot_identifier' in module.params:
+        resource = 'cluster_snapshot'
         if method_name == 'delete_db_cluster_snapshot':
             waiter = 'db_cluster_snapshot_deleted'
             retry_codes = ['InvalidDBClusterSnapshotState']
@@ -96,8 +113,8 @@ def get_rds_method_attribute(method_name, module):
             # Tagging
             waiter = 'db_cluster_snapshot_available'
             retry_codes = ['InvalidDBClusterSnapshotState']
-    elif method_name in snapshot_instance_method_names and 'db_snapshot_identifier' in module.params:
-        snapshot = True
+    elif method_name in instance_snapshot_method_names and 'db_snapshot_identifier' in module.params:
+        resource = 'instance_snapshot'
         if method_name == 'delete_db_snapshot':
             waiter = 'db_snapshot_deleted'
             retry_codes = ['InvalidDBSnapshotState']
@@ -113,20 +130,23 @@ def get_rds_method_attribute(method_name, module):
             raise NotImplementedError("method {0} hasn't been added to the list of accepted methods to use a waiter in module_utils/rds.py".format(method_name))
 
     return Boto3ClientMethod(name=method_name, waiter=waiter, operation_description=readable_op,
-                             cluster=cluster, instance=instance, snapshot=snapshot, retry_codes=retry_codes)
+                             resource=resource, retry_codes=retry_codes)
 
 
 def get_final_identifier(method_name, module):
     updated_identifier = None
     apply_immediately = module.params.get('apply_immediately')
-    if get_rds_method_attribute(method_name, module).cluster:
+    resource = get_rds_method_attribute(method_name, module).resource
+    if resource == 'cluster':
         identifier = module.params['db_cluster_identifier']
         updated_identifier = module.params['new_db_cluster_identifier']
-    elif get_rds_method_attribute(method_name, module).instance:
+    elif resource == 'instance':
         identifier = module.params['db_instance_identifier']
         updated_identifier = module.params['new_db_instance_identifier']
-    elif get_rds_method_attribute(method_name, module).snapshot:
+    elif resource == 'instance_snapshot':
         identifier = module.params['db_snapshot_identifier']
+    elif resource == 'cluster_snapshot':
+        identifier = module.params['db_cluster_snapshot_identifier']
     else:
         raise NotImplementedError("method {0} hasn't been added to the list of accepted methods in module_utils/rds.py".format(method_name))
     if not module.check_mode and updated_identifier and apply_immediately:
@@ -180,7 +200,10 @@ def call_method(client, module, method_name, parameters):
     changed = True
     if not module.check_mode:
         wait = module.params.get('wait')
-        retry_codes = get_rds_method_attribute(method_name, module).retry_codes
+        rds_method_attributes = get_rds_method_attribute(method_name, module)
+        retry_codes = rds_method_attributes.retry_codes
+        waiter = rds_method_attributes.waiter
+        resource = rds_method_attributes.resource
         method = getattr(client, method_name)
         try:
             result = AWSRetry.jittered_backoff(catch_extra_error_codes=retry_codes)(method)(**parameters)
@@ -189,7 +212,7 @@ def call_method(client, module, method_name, parameters):
 
         if wait and changed:
             identifier = get_final_identifier(method_name, module)
-            wait_for_status(client, module, identifier, method_name)
+            wait_for_status(client, module, resource, identifier, waiter)
     return result, changed
 
 
@@ -225,7 +248,7 @@ def wait_for_instance_status(client, module, db_instance_id, waiter_name):
 
 def wait_for_cluster_status(client, module, db_cluster_id, waiter_name):
     try:
-        waiter = get_waiter(client, waiter_name).wait(DBClusterIdentifier=db_cluster_id)
+        get_waiter(client, waiter_name).wait(DBClusterIdentifier=db_cluster_id)
     except WaiterError as e:
         if waiter_name == 'cluster_deleted':
             msg = "Failed to wait for DB cluster {0} to be deleted".format(db_cluster_id)
@@ -236,19 +259,11 @@ def wait_for_cluster_status(client, module, db_cluster_id, waiter_name):
         module.fail_json_aws(e, msg="Failed with an unexpected error while waiting for the DB cluster {0}".format(db_cluster_id))
 
 
-def wait_for_snapshot_status(client, module, db_snapshot_id, waiter_name):
-    params = {}
-    # Covers the corner case when tags have to be updated and 'wait: yes'. There is no waiter defined.
-    if not waiter_name:
-        return
-    if "cluster" in waiter_name:
-        params = {"DBClusterSnapshotIdentifier": db_snapshot_id}
-    else:
-        params = {"DBSnapshotIdentifier": db_snapshot_id}
+def wait_for_instance_snapshot_status(client, module, db_snapshot_id, waiter_name):
     try:
-        client.get_waiter(waiter_name).wait(**params)
+        client.get_waiter(waiter_name).wait(DBSnapshotIdentifier=db_snapshot_id)
     except WaiterError as e:
-        if waiter_name in ('db_snapshot_deleted', 'db_cluster_snapshot_deleted'):
+        if waiter_name == 'db_snapshot_deleted':
             msg = "Failed to wait for DB snapshot {0} to be deleted".format(db_snapshot_id)
         else:
             msg = "Failed to wait for DB snapshot {0} to be available".format(db_snapshot_id)
@@ -257,16 +272,28 @@ def wait_for_snapshot_status(client, module, db_snapshot_id, waiter_name):
         module.fail_json_aws(e, msg="Failed with an unexpected error while waiting for the DB snapshot {0}".format(db_snapshot_id))
 
 
-def wait_for_status(client, module, identifier, method_name):
-    waiter_name = get_rds_method_attribute(method_name, module).waiter
-    if get_rds_method_attribute(method_name, module).cluster:
+def wait_for_cluster_snapshot_status(client, module, db_snapshot_id, waiter_name):
+    try:
+        client.get_waiter(waiter_name).wait(DBClusterSnapshotIdentifier=db_snapshot_id)
+    except WaiterError as e:
+        if waiter_name == 'db_cluster_snapshot_deleted':
+            msg = "Failed to wait for DB cluster snapshot {0} to be deleted".format(db_snapshot_id)
+        else:
+            msg = "Failed to wait for DB cluster snapshot {0} to be available".format(db_snapshot_id)
+        module.fail_json_aws(e, msg=msg)
+    except (BotoCoreError, ClientError) as e:
+        module.fail_json_aws(e, msg="Failed with an unexpected error while waiting for the DB cluster snapshot {0}".format(db_snapshot_id))
+
+
+def wait_for_status(client, module, resource, identifier, waiter_name):
+    if resource == 'cluster':
         wait_for_cluster_status(client, module, identifier, waiter_name)
-    elif get_rds_method_attribute(method_name, module).instance:
+    elif resource == 'instance':
         wait_for_instance_status(client, module, identifier, waiter_name)
-    elif get_rds_method_attribute(method_name, module).snapshot:
-        wait_for_snapshot_status(client, module, identifier, waiter_name)
-    else:
-        raise NotImplementedError("method {0} hasn't been added to the whitelist of handled methods".format(method_name))
+    elif resource == 'instance_snapshot':
+        wait_for_instance_snapshot_status(client, module, identifier, waiter_name)
+    elif resource == 'cluster_snapshot':
+        wait_for_cluster_snapshot_status(client, module, identifier, waiter_name)
 
 
 def get_tags(client, module, resource_arn):

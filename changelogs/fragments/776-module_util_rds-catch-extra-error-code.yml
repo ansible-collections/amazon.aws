@@ -1,6 +1,0 @@
-minor_changes:
-  - module.utils.rds - add retry_codes to get_rds_method_attribute return data to use in call_method (https://github.com/ansible-collections/amazon.aws/pull/776).
-  - module.utils.rds - add/update unit tests to reflect these changes and remove some unused code (https://github.com/ansible-collections/amazon.aws/pull/776).
-
-bugfixes:
-  - module.utils.rds - Catch InvalidDBSecurityGroupStateFault when modifying a db instance (https://github.com/ansible-collections/amazon.aws/pull/776).
