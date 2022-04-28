@@ -157,6 +157,7 @@ options:
         description:
         - a list of ENI IDs (strings) or a list of objects containing the key I(id).
         type: list
+        elements: str
       assign_public_ip:
         description:
         - when true assigns a public IP address to the interface
@@ -169,6 +170,7 @@ options:
         description:
         - a list of IPv6 addresses to assign to the network interface
         type: list
+        elements: str
       source_dest_check:
         description:
         - controls whether source/destination checking is enabled on the interface
@@ -181,6 +183,7 @@ options:
         description:
         - a list of IPv4 addresses to assign to the network interface
         type: list
+        elements: str
       subnet_id:
         description:
         - the subnet to connect the network interface to
@@ -198,6 +201,7 @@ options:
         description:
         - a list of security group IDs to attach to the interface
         type: list
+        elements: str
   volumes:
     description:
     - A list of block device mappings, by default this will always use the AMI root device so the volumes option is primarily for adding more storage.
