@@ -63,7 +63,7 @@ options:
                 description: The name of the condition.  The condition must already exist.
     purge_conditions:
         description:
-          - Whether or not to remove conditions that are not passed when updating `conditions`.
+          - Whether or not to remove conditions that are not passed when updating I(conditions).
         default: false
         type: bool
     waf_regional:

@@ -43,7 +43,7 @@ options:
       type: str
     target_paths:
       description:
-        - A list of paths on the distribution to invalidate. Each path should begin with '/'. Wildcards are allowed. eg. '/foo/bar/*'
+        - A list of paths on the distribution to invalidate. Each path should begin with C(/). Wildcards are allowed. eg. C(/foo/bar/*)
       required: true
       type: list
       elements: str

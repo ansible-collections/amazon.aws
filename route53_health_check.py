@@ -60,7 +60,7 @@ options:
   fqdn:
     description:
       - Domain name of the endpoint to check. Either this or I(ip_address) has
-        to be provided. When both are given the `fqdn` is used in the `Host:`
+        to be provided. When both are given the I(fqdn) is used in the C(Host:)
         header of the HTTP request.
     type: str
   string_match:

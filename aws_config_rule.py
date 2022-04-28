@@ -69,9 +69,9 @@ options:
         description:
         - Provides the source and type of the event that causes AWS Config to evaluate your AWS resources.
         - This parameter expects a list of dictionaries.  Each dictionary expects the following key/value pairs.
-        - Key `EventSource` The source of the event, such as an AWS service, that triggers AWS Config to evaluate your AWS resources.
-        - Key `MessageType` The type of notification that triggers AWS Config to run an evaluation for a rule.
-        - Key `MaximumExecutionFrequency` The frequency at which you want AWS Config to run evaluations for a custom rule with a periodic trigger.
+        - Key C(EventSource) The source of the event, such as an AWS service, that triggers AWS Config to evaluate your AWS resources.
+        - Key C(MessageType) The type of notification that triggers AWS Config to run an evaluation for a rule.
+        - Key C(MaximumExecutionFrequency) The frequency at which you want AWS Config to run evaluations for a custom rule with a periodic trigger.
     type: dict
     required: true
   input_parameters:

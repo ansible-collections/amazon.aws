@@ -40,7 +40,7 @@ options:
   kms_key_id:
     description:
     - Specifies the ARN or alias of the AWS KMS customer master key (CMK) to be
-      used to encrypt the `secret_string` or `secret_binary` values in the versions stored in this secret.
+      used to encrypt the I(secret) values in the versions stored in this secret.
     type: str
   secret_type:
     description:

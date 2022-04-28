@@ -83,7 +83,7 @@ options:
   include:
     description:
     - Shell pattern-style file matching.
-    - Used before exclude to determine eligible files (for instance, only "*.gif")
+    - Used before exclude to determine eligible files (for instance, only C("*.gif"))
     - For multiple patterns, comma-separate them.
     required: false
     default: "*"
@@ -91,7 +91,7 @@ options:
   exclude:
     description:
     - Shell pattern-style file matching.
-    - Used after include to remove files (for instance, skip "*.txt")
+    - Used after include to remove files (for instance, skip C("*.txt"))
     - For multiple patterns, comma-separate them.
     required: false
     default: ".*"

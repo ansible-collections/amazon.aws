@@ -46,8 +46,9 @@ options:
     type: dict
   image:
     description:
-      - The image used to start a container. This string is passed directly to the Docker daemon. Images in the Docker
-        Hub registry are available by default. Other repositories are specified with `` repository-url /image <colon>tag ``.
+      - >
+        The image used to start a container. This string is passed directly to the Docker daemon. Images in the Docker
+        Hub registry are available by default. Other repositories are specified with C(repository-url/image-name:tag).
         Up to 255 letters (uppercase and lowercase), numbers, hyphens, underscores, colons, periods, forward slashes,
         and number signs are allowed. This parameter maps to Image in the Create a container section of the Docker
         Remote API and the IMAGE parameter of docker run.
