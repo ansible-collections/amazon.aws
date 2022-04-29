@@ -14,6 +14,7 @@
       aws_secret_key: "{{ aws_secret_key }}"
       security_token: "{{ security_token | default(omit) }}"
   collections:
+    - amazon.aws
     - community.aws
   block:
   - name: define secret name
