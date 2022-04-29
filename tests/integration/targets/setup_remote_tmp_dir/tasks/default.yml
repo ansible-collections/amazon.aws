@@ -1,5 +1,6 @@
 - name: create temporary directory
   tempfile:
+    path: /var/tmp
     state: directory
     suffix: .test
   register: remote_tmp_dir

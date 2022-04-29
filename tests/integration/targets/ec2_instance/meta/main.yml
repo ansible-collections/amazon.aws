@@ -1,6 +1,5 @@
 # this just makes sure they're in the right place
 dependencies:
-- role: prepare_tests
 - role: setup_ec2_facts
 - role: setup_botocore_pip
   vars:
