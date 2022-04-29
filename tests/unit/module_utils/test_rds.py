@@ -186,7 +186,7 @@ def test__wait_for_cluster_snapshot_status_failed(input, expected):
                     name="fake_method",
                     waiter="",
                     operation_description="fake method",
-                    resource = '',
+                    resource='',
                     retry_codes=[]
                 )
             ),
