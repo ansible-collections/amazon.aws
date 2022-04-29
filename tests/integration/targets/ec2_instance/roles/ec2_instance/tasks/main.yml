@@ -30,6 +30,7 @@
           # don't support any configuration of the delay between retries.
           max_attempts: 20
   collections:
+    - amazon.aws
     - community.aws
   block:
     - debug:
