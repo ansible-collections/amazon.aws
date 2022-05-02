@@ -48,6 +48,8 @@ options:
       - S3 URL endpoint for usage with DigitalOcean, Ceph, Eucalyptus and FakeS3 etc.
       - Assumes AWS if not specified.
       - For Walrus, use FQDN of the endpoint without scheme nor path.
+      - The S3_URL alias for this option has been deprecated and will be removed
+        in release 5.0.0.
     aliases: [ S3_URL ]
     type: str
   ceph:
@@ -1007,7 +1009,7 @@ def main():
         policy=dict(type='json'),
         name=dict(required=True),
         requester_pays=dict(type='bool'),
-        s3_url=dict(aliases=['S3_URL']),
+        s3_url=dict(aliases=['S3_URL'], deprecated_aliases=[dict(name='S3_URL', version='5.0.0', collection_name='amazon.aws')]),
         state=dict(default='present', choices=['present', 'absent']),
         tags=dict(type='dict'),
         purge_tags=dict(type='bool', default=True),

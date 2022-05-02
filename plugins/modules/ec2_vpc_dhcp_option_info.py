@@ -23,6 +23,8 @@ options:
   dhcp_options_ids:
     description:
       - Get details of specific DHCP Option IDs.
+      - The C(DhcpOptionIds) alias has been deprecated and will be removed in
+        release 5.0.0.
     aliases: ['DhcpOptionIds']
     type: list
     elements: str
@@ -30,6 +32,8 @@ options:
     description:
       - Checks whether you have the required permissions to view the DHCP
         Options.
+      - The C(DryRun) alias has been deprecated and will be removed in
+        release 5.0.0.
     aliases: ['DryRun']
     type: bool
     default: false
@@ -178,8 +182,12 @@ def list_dhcp_options(client, module):
 def main():
     argument_spec = dict(
         filters=dict(type='dict', default={}),
-        dry_run=dict(type='bool', default=False, aliases=['DryRun']),
-        dhcp_options_ids=dict(type='list', elements='str', aliases=['DhcpOptionIds'])
+        dry_run=dict(
+            type='bool', default=False, aliases=['DryRun'],
+            deprecated_aliases=[dict(name='DryRun', version='5.0.0', collection_name='amazon.aws')]),
+        dhcp_options_ids=dict(
+            type='list', elements='str', aliases=['DhcpOptionIds'],
+            deprecated_aliases=[dict(name='DhcpOptionIds', version='5.0.0', collection_name='amazon.aws')]),
     )
 
     module = AnsibleAWSModule(
