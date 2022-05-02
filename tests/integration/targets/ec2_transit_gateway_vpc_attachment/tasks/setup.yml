@@ -1,0 +1,101 @@
+---
+- name: 'Pick 2 AZs available for use'
+  set_fact:
+    subnet_az_a_1: '{{ ec2_availability_zone_names[0] }}'
+    subnet_az_a_1a: '{{ ec2_availability_zone_names[0] }}'
+    subnet_az_a_2: '{{ ec2_availability_zone_names[1] }}'
+    subnet_az_a_3: '{{ ec2_availability_zone_names[2] }}'
+    subnet_az_b_1: '{{ ec2_availability_zone_names[0] }}'
+    subnet_az_b_2: '{{ ec2_availability_zone_names[1] }}'
+
+- name: 'Create Transit Gateways'
+  ec2_transit_gateway:
+    description: '{{ item.description }}'
+    tags:
+      Name: '{{ item.name }}'
+  loop:
+  - description: 'Transit Gateway for testing ec2_transit_gateway_attachment'
+    name: '{{ tgw_name }}'
+  - description: 'Second Transit Gateway for testing ec2_transit_gateway_attachment'
+    name: '{{ tgw_name_2 }}'
+  register: create_tgws
+
+- name: 'Create VPCs to attach to TGW'
+  ec2_vpc_net:
+    cidr_block: '{{ item.cidr }}'
+    name: '{{ item.name }}'
+    ipv6_cidr: True
+  loop:
+  - cidr: '{{ vpc_cidr_a }}'
+    name: '{{ vpc_name_a }}'
+  - cidr: '{{ vpc_cidr_b }}'
+    name: '{{ vpc_name_b }}'
+  register: create_vpcs
+
+- set_fact:
+    tgw_id: '{{ create_tgws.results[0].transit_gateway.transit_gateway_id }}'
+    tgw_id_2: '{{ create_tgws.results[1].transit_gateway.transit_gateway_id }}'
+    vpc_id_a: '{{ vpc_a.id }}'
+    vpc_id_b: '{{ vpc_b.id }}'
+    vpc_owner_a: '{{ vpc_a.owner_id }}'
+    vpc_owner_b: '{{ vpc_b.owner_id }}'
+    subnet_ipv6_a_1: '{{ vpc_ipv6_a | replace("0::/56","0::/64") }}'
+    subnet_ipv6_a_2: '{{ vpc_ipv6_a | replace("0::/56","1::/64") }}'
+    subnet_ipv6_a_3: '{{ vpc_ipv6_a | replace("0::/56","2::/64") }}'
+    subnet_ipv6_a_1a: '{{ vpc_ipv6_a | replace("0::/56","3::/64") }}'
+    subnet_ipv6_b_1: '{{ vpc_ipv6_b | replace("0::/56","0::/64") }}'
+    subnet_ipv6_b_2: '{{ vpc_ipv6_b | replace("0::/56","1::/64") }}'
+  vars:
+    vpc_a: '{{ create_vpcs.results[0].vpc }}'
+    vpc_b: '{{ create_vpcs.results[1].vpc }}'
+    vpc_ipv6_a: '{{ vpc_a.ipv6_cidr_block_association_set[0].ipv6_cidr_block }}'
+    vpc_ipv6_b: '{{ vpc_b.ipv6_cidr_block_association_set[0].ipv6_cidr_block }}'
+
+- name: 'Create subnets'
+  ec2_vpc_subnet:
+    az: '{{ item.az }}'
+    cidr: '{{ item.cidr }}'
+    ipv6_cidr: '{{ item.ipv6_cidr }}'
+    tags:
+      Name: '{{ item.name }}'
+    vpc_id: '{{ item.vpc_id }}'
+  loop:
+  - az: '{{ subnet_az_a_1 }}'
+    cidr: '{{ subnet_cidr_a_1 }}'
+    ipv6_cidr: '{{ subnet_ipv6_a_1 }}'
+    vpc_id: '{{ vpc_id_a }}'
+    name: '{{ subnet_name_a_1 }}'
+  - az: '{{ subnet_az_a_2 }}'
+    cidr: '{{ subnet_cidr_a_2 }}'
+    ipv6_cidr: '{{ subnet_ipv6_a_2 }}'
+    vpc_id: '{{ vpc_id_a }}'
+    name: '{{ subnet_name_a_2 }}'
+  - az: '{{ subnet_az_a_3 }}'
+    cidr: '{{ subnet_cidr_a_3 }}'
+    ipv6_cidr: '{{ subnet_ipv6_a_3 }}'
+    vpc_id: '{{ vpc_id_a }}'
+    name: '{{ subnet_name_a_3 }}'
+  - az: '{{ subnet_az_b_1 }}'
+    cidr: '{{ subnet_cidr_b_1 }}'
+    ipv6_cidr: '{{ subnet_ipv6_b_1 }}'
+    vpc_id: '{{ vpc_id_b }}'
+    name: '{{ subnet_name_b_1 }}'
+  - az: '{{ subnet_az_b_2 }}'
+    cidr: '{{ subnet_cidr_b_2 }}'
+    ipv6_cidr: '{{ subnet_ipv6_b_2 }}'
+    vpc_id: '{{ vpc_id_b }}'
+    name: '{{ subnet_name_b_2 }}'
+  - az: '{{ subnet_az_a_1a }}'
+    cidr: '{{ subnet_cidr_a_1a }}'
+    ipv6_cidr: '{{ subnet_ipv6_a_1a }}'
+    vpc_id: '{{ vpc_id_a }}'
+    name: '{{ subnet_name_a_1a }}'
+  register: create_subnets
+
+- set_fact:
+    subnet_id_a_1: '{{ create_subnets.results[0].subnet.id }}'
+    subnet_id_a_2: '{{ create_subnets.results[1].subnet.id }}'
+    subnet_id_a_3: '{{ create_subnets.results[2].subnet.id }}'
+    subnet_id_b_1: '{{ create_subnets.results[3].subnet.id }}'
+    subnet_id_b_2: '{{ create_subnets.results[4].subnet.id }}'
+    subnet_id_a_1a: '{{ create_subnets.results[5].subnet.id }}'

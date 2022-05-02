@@ -1,0 +1,24 @@
+---
+- name: 'ec2_transit_gateway_vpc_attachment integration tests'
+  collections:
+    - amazon.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+
+  block:
+    # Prepares various resources
+    - include_tasks: 'setup.yml'
+
+    # Tests create / update on parameters simulatniously
+    - include_tasks: 'complex.yml'
+
+    # Tests create / update / delete on individual parameters
+    - include_tasks: 'simple.yml'
+
+  always:
+    # Cleanup after ourselves
+    - include_tasks: 'cleanup.yml'

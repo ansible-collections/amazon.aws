@@ -1,0 +1,3611 @@
+---
+# =============================================================================
+# Creation
+- block:
+  - name: '(CHECK_MODE) Create an attachment - minimal parameters'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      transit_gateway: '{{ tgw_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Create an attachment - minimal parameters'
+    ec2_transit_gateway_vpc_attachment:
+      transit_gateway: '{{ tgw_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.transit_gateway_attachment_id.startswith('tgw-attach-')
+      - attachment.state == 'available'
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: Save Attachment ID
+    set_fact:
+      simple_attachment_id: '{{ simple_attach.attachments[0].transit_gateway_attachment_id }}'
+
+  - name: '(CHECK_MODE) Create an attachment - minimal parameters -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      transit_gateway: '{{ tgw_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Create an attachment - minimal parameters -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      transit_gateway: '{{ tgw_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: '(CHECK_MODE) By Id - minimal parameters -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'By Id - minimal parameters -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =============================================================================
+# Set a name
+
+  - name: '(CHECK_MODE) Set name'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      name: '{{ attachment_name }}'
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Set name'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      name: '{{ attachment_name }}'
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: '(CHECK_MODE) Set name -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      name: '{{ attachment_name }}'
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Set name -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      name: '{{ attachment_name }}'
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: '(CHECK_MODE) By Name - minimal parameters -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'By Name - minimal parameters -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =============================================================================
+# Describe
+
+  - name: 'Describe all attachments'
+    ec2_transit_gateway_vpc_attachment_info:
+    register: info
+
+  - assert:
+      that:
+      - info is not changed
+      - '"attachments" in info'
+      - info.attachments | length >= 2
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length >= 1
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - '"Name" in attachment.tags'
+    vars:
+      attachment: '{{ info.attachments[0] }}'
+
+  - name: 'Describe attachments on a specific VPC'
+    ec2_transit_gateway_vpc_attachment_info:
+      filters:
+        transit-gateway-id: '{{ tgw_id }}'
+    register: info
+
+  - assert:
+      that:
+      - info is not changed
+      - '"attachments" in info'
+      - info.attachments | length == 2
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length >= 1
+      - attachment.transit_gateway_id == tgw_id
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - '"Name" in attachment.tags'
+    vars:
+      attachment: '{{ info.attachments[0] }}'
+
+  - name: 'Describe attachment with a specific name'
+    ec2_transit_gateway_vpc_attachment_info:
+      name: '{{ attachment_name }}'
+    register: info
+
+  - assert:
+      that:
+      - info is not changed
+      - '"attachments" in info'
+      - info.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ info.attachments[0] }}'
+
+  - name: 'Describe attachment by ID'
+    ec2_transit_gateway_vpc_attachment_info:
+      id: '{{ simple_attachment_id }}'
+    register: info
+
+  - assert:
+      that:
+      - info is not changed
+      - '"attachments" in info'
+      - info.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ info.attachments[0] }}'
+
+# =============================================================================
+# Tag attachment
+
+  - name: '(CHECK_MODE) Set tags'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags:
+        CamelCase: CamelCaseValue
+        pascalCase: pascalCaseValue
+        snake_case: snake_case_value
+        "Tag with Space": value with space
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value'
+      - attachment.tags['Tag with Space'] == 'value with space'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Set tags'
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags:
+        CamelCase: CamelCaseValue
+        pascalCase: pascalCaseValue
+        snake_case: snake_case_value
+        "Tag with Space": value with space
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value'
+      - attachment.tags['Tag with Space'] == 'value with space'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: '(CHECK_MODE) Set tags -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags:
+        CamelCase: CamelCaseValue
+        pascalCase: pascalCaseValue
+        snake_case: snake_case_value
+        "Tag with Space": value with space
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value'
+      - attachment.tags['Tag with Space'] == 'value with space'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Set tags -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags:
+        CamelCase: CamelCaseValue
+        pascalCase: pascalCaseValue
+        snake_case: snake_case_value
+        "Tag with Space": value with space
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value'
+      - attachment.tags['Tag with Space'] == 'value with space'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Describe attachment with tags set'
+    ec2_transit_gateway_vpc_attachment_info:
+      id: '{{ simple_attachment_id }}'
+    register: info
+
+  - assert:
+      that:
+      - info is not changed
+      - '"attachments" in info'
+      - info.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value'
+      - attachment.tags['Tag with Space'] == 'value with space'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ info.attachments[0] }}'
+
+# =====
+
+  - name: '(CHECK_MODE) No change to tags with name set -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value'
+      - attachment.tags['Tag with Space'] == 'value with space'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'No change to tags with name set -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value'
+      - attachment.tags['Tag with Space'] == 'value with space'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: '(CHECK_MODE) Update tags'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      purge_tags: False
+      tags:
+        snake_case: snake_case_value 2
+        "Tag with Space": value with space 2
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value 2'
+      - attachment.tags['Tag with Space'] == 'value with space 2'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Update tags'
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      purge_tags: False
+      tags:
+        snake_case: snake_case_value 2
+        "Tag with Space": value with space 2
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value 2'
+      - attachment.tags['Tag with Space'] == 'value with space 2'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: '(CHECK_MODE) Update tags -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      purge_tags: False
+      tags:
+        snake_case: snake_case_value 2
+        "Tag with Space": value with space 2
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value 2'
+      - attachment.tags['Tag with Space'] == 'value with space 2'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Update tags -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      purge_tags: False
+      tags:
+        snake_case: snake_case_value 2
+        "Tag with Space": value with space 2
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 5
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"snake_case" in attachment.tags'
+      - '"Tag with Space" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.snake_case == 'snake_case_value 2'
+      - attachment.tags['Tag with Space'] == 'value with space 2'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: '(CHECK_MODE) Remove tags'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags:
+        CamelCase: CamelCaseValue
+        pascalCase: pascalCaseValue
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 3
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Remove tags'
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags:
+        CamelCase: CamelCaseValue
+        pascalCase: pascalCaseValue
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 3
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: '(CHECK_MODE) Remove tags -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags:
+        CamelCase: CamelCaseValue
+        pascalCase: pascalCaseValue
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 3
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Remove tags -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags:
+        CamelCase: CamelCaseValue
+        pascalCase: pascalCaseValue
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 3
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: '(CHECK_MODE) Add tags with no purge'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      purge_tags: False
+      tags:
+        AnotherTag: Another Value
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 4
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"AnotherTag" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.AnotherTag == 'Another Value'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Add tags with no purge'
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      purge_tags: False
+      tags:
+        AnotherTag: Another Value
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 4
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"AnotherTag" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.AnotherTag == 'Another Value'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: '(CHECK_MODE) Add tags with no purge -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      purge_tags: False
+      tags:
+        AnotherTag: Another Value
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 4
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"AnotherTag" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.AnotherTag == 'Another Value'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Add tags with no purge -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      purge_tags: False
+      tags:
+        AnotherTag: Another Value
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 4
+      - '"Name" in attachment.tags'
+      - '"CamelCase" in attachment.tags'
+      - '"pascalCase" in attachment.tags'
+      - '"AnotherTag" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.tags.CamelCase == 'CamelCaseValue'
+      - attachment.tags.pascalCase == 'pascalCaseValue'
+      - attachment.tags.AnotherTag == 'Another Value'
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: '(CHECK_MODE) Remove all tags with name set'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags: {}
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Remove all tags with name set'
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags: {}
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: '(CHECK_MODE) Remove all tags with name set -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags: {}
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Remove all tags with name set -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      name: '{{ attachment_name }}'
+      tags: {}
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 1
+      - '"Name" in attachment.tags'
+      - attachment.tags.Name == attachment_name
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: '(CHECK_MODE) Remove all tags including name'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      tags: {}
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Remove all tags including name'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      tags: {}
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: '(CHECK_MODE) Remove all tags including name -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      tags: {}
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Remove all tags including name -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      tags: {}
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =============================================================================
+# Options
+
+  - name: '(CHECK_MODE) Set IPv6 support'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      ipv6_support: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Set IPv6 support'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      ipv6_support: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: '(CHECK_MODE) Set IPv6 support -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      ipv6_support: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Set IPv6 support -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      ipv6_support: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: '(CHECK_MODE) Set DNS support'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      dns_support: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Set DNS support'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      dns_support: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: '(CHECK_MODE) Set DNS support -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      dns_support: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Set DNS support -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      dns_support: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: '(CHECK_MODE) Set Appliance Mode support'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      appliance_mode_support: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Set Appliance Mode support'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      appliance_mode_support: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: '(CHECK_MODE) Set Appliance Mode support -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      appliance_mode_support: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Set Appliance Mode support -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      appliance_mode_support: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'enable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: '(CHECK_MODE) Update IPv6 support'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      ipv6_support: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Update IPv6 support'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      ipv6_support: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: '(CHECK_MODE) Update IPv6 support -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      ipv6_support: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Update IPv6 support -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      ipv6_support: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'disable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: '(CHECK_MODE) Update DNS support'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      dns_support: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Update DNS support'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      dns_support: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: '(CHECK_MODE) Update DNS support -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      dns_support: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Update DNS support -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      dns_support: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'enable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: '(CHECK_MODE) Update Appliance Mode support'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      appliance_mode_support: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Update Appliance Mode support'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      appliance_mode_support: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: '(CHECK_MODE) Update Appliance Mode support -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      appliance_mode_support: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Update Appliance Mode support -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      appliance_mode_support: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 1
+      - subnet_id_a_1 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =============================================================================
+# Subnet Management
+
+  - name: '(CHECK_MODE) Try to add subnet from a different VPC - no purge'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_b_2 }}'
+      purge_subnets: False
+    register: simple_attach
+    ignore_errors: True
+
+  - assert:
+      that:
+      - simple_attach is failed
+
+  - name: 'Try to add subnet from a different VPC - no purge'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_b_2 }}'
+      purge_subnets: False
+    register: simple_attach
+    ignore_errors: True
+
+  - assert:
+      that:
+      - simple_attach is failed
+
+# =====
+
+  - name: '(CHECK_MODE) Try to add subnet from a different VPC - with purge'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_b_2 }}'
+      purge_subnets: True
+    register: simple_attach
+    ignore_errors: True
+
+  - assert:
+      that:
+      - simple_attach is failed
+
+  - name: 'Try to add subnet from a different VPC - with purge'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_b_2 }}'
+      purge_subnets: True
+    register: simple_attach
+    ignore_errors: True
+
+  - assert:
+      that:
+      - simple_attach is failed
+
+# =====
+
+  - name: '(CHECK_MODE) Try to add subnet in the same AZ - no purge'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_b_1a }}'
+      purge_subnets: False
+    register: simple_attach
+    ignore_errors: True
+
+  - assert:
+      that:
+      - simple_attach is failed
+
+  - name: 'Try to add subnet in the same AZ - no purge'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1a }}'
+      purge_subnets: False
+    register: simple_attach
+    ignore_errors: True
+
+  - assert:
+      that:
+      - simple_attach is failed
+
+# =====
+
+  - name: '(CHECK_MODE) Try to add subnet in the same AZ - with purge'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_1a }}'
+      purge_subnets: True
+    register: simple_attach
+    ignore_errors: True
+
+  - assert:
+      that:
+      - simple_attach is failed
+
+  - name: 'Try to add subnet in the same AZ - with purge'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_1a }}'
+      purge_subnets: True
+    register: simple_attach
+    ignore_errors: True
+
+  - assert:
+      that:
+      - simple_attach is failed
+
+# =====
+
+  - name: '(CHECK_MODE) Add subnet - without purge'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_2 }}'
+      purge_subnets: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Add subnet - without purge'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_2 }}'
+      purge_subnets: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: '(CHECK_MODE) Add subnet - without purge -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_2 }}'
+      purge_subnets: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Add subnet - without purge -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_2 }}'
+      purge_subnets: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: '(CHECK_MODE) Add subnet - with purge'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_2 }}'
+      - '{{ subnet_id_a_3 }}'
+      purge_subnets: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 3
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - subnet_id_a_3 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Add subnet - with purge'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_2 }}'
+      - '{{ subnet_id_a_3 }}'
+      purge_subnets: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 3
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - subnet_id_a_3 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: '(CHECK_MODE) Add subnet - with purge -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_2 }}'
+      - '{{ subnet_id_a_3 }}'
+      purge_subnets: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 3
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - subnet_id_a_3 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Add subnet - with purge -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_2 }}'
+      - '{{ subnet_id_a_3 }}'
+      purge_subnets: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 3
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - subnet_id_a_3 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: '(CHECK_MODE) Remove subnet'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_2 }}'
+      - '{{ subnet_id_a_3 }}'
+      purge_subnets: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_2 in attachment.subnet_ids
+      - subnet_id_a_3 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Remove subnet'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_2 }}'
+      - '{{ subnet_id_a_3 }}'
+      purge_subnets: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_2 in attachment.subnet_ids
+      - subnet_id_a_3 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: '(CHECK_MODE) Remove subnet -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_2 }}'
+      - '{{ subnet_id_a_3 }}'
+      purge_subnets: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_2 in attachment.subnet_ids
+      - subnet_id_a_3 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Remove subnet -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_2 }}'
+      - '{{ subnet_id_a_3 }}'
+      purge_subnets: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_2 in attachment.subnet_ids
+      - subnet_id_a_3 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =====
+
+  - name: '(CHECK_MODE) Remove and add subnet'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_2 }}'
+      purge_subnets: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Remove and add subnet'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_2 }}'
+      purge_subnets: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: '(CHECK_MODE) Remove and add subnet -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_2 }}'
+      purge_subnets: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+  - name: 'Remove and add subnet -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      id: '{{ simple_attachment_id }}'
+      subnets:
+      - '{{ subnet_id_a_1 }}'
+      - '{{ subnet_id_a_2 }}'
+      purge_subnets: True
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+      - '"attachments" in simple_attach'
+      - simple_attach.attachments | length == 1
+      - '"subnet_ids" in attachment'
+      - '"transit_gateway_id" in attachment'
+      - '"vpc_id" in attachment'
+      - attachment.subnet_ids | length == 2
+      - subnet_id_a_1 in attachment.subnet_ids
+      - subnet_id_a_2 in attachment.subnet_ids
+      - attachment.transit_gateway_id == tgw_id
+      - attachment.vpc_id == vpc_id_a
+      - '"creation_time" in attachment'
+      - '"options" in attachment'
+      - '"state" in attachment'
+      - '"tags" in attachment'
+      - '"transit_gateway_attachment_id" in attachment'
+      - '"vpc_owner_id" in attachment'
+      - '"appliance_mode_support" in attachment.options'
+      - '"dns_support" in attachment.options'
+      - '"ipv6_support" in attachment.options'
+      - attachment.options.appliance_mode_support == 'disable'
+      - attachment.options.dns_support == 'enable'
+      - attachment.options.ipv6_support == 'disable'
+      - attachment.state == 'available'
+      - attachment.transit_gateway_attachment_id == simple_attachment_id
+      - attachment.tags | length == 0
+      - attachment.vpc_owner_id == vpc_owner_a
+    vars:
+      attachment: '{{ simple_attach.attachments[0] }}'
+
+# =============================================================================
+# Deletion
+
+  - name: '(CHECK_MODE) Delete an attachment - minimal parameters'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      state: absent
+      id: '{{ simple_attachment_id }}'
+      wait: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+
+  - name: 'Delete an attachment - minimal parameters'
+    ec2_transit_gateway_vpc_attachment:
+      state: absent
+      id: '{{ simple_attachment_id }}'
+      wait: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is changed
+
+  - name: '(CHECK_MODE) Delete an attachment - minimal parameters -- IDEMPOTENCY'
+    check_mode: True
+    ec2_transit_gateway_vpc_attachment:
+      state: absent
+      id: '{{ simple_attachment_id }}'
+      wait: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+
+  - name: 'Delete an attachment - minimal parameters -- IDEMPOTENCY'
+    ec2_transit_gateway_vpc_attachment:
+      state: absent
+      id: '{{ simple_attachment_id }}'
+      wait: False
+    register: simple_attach
+
+  - assert:
+      that:
+      - simple_attach is not changed
+
+  always:
+  - name: 'Delete attachment'
+    ec2_transit_gateway_vpc_attachment:
+      state: absent
+      id: '{{ simple_attachment_id }}'
+      wait: False
+    ignore_errors: True
