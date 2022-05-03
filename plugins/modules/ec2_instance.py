@@ -1457,6 +1457,8 @@ def change_network_attachments(instance, params):
 
 def find_instances(ids=None, filters=None):
     paginator = client.get_paginator('describe_instances')
+    sanitized_filters = dict()
+
     if ids:
         params = dict(InstanceIds=ids)
     elif filters is None:
@@ -1464,13 +1466,16 @@ def find_instances(ids=None, filters=None):
     else:
         for key in list(filters.keys()):
             if not key.startswith("tag:"):
-                filters[key.replace("_", "-")] = filters.pop(key)
-        params = dict(Filters=ansible_dict_to_boto3_filter_list(filters))
+                sanitized_filters[key.replace("_", "-")] = filters[key]
+            else:
+                sanitized_filters[key] = filters[key]
+        params = dict(Filters=ansible_dict_to_boto3_filter_list(sanitized_filters))
 
     try:
         results = _describe_instances(**params)
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Could not describe instances")
+
     retval = list(results)
     return retval
 
