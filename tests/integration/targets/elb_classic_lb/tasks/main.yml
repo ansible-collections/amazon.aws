@@ -20,8 +20,8 @@
       aws_secret_key: "{{ aws_secret_key }}"
       security_token: "{{ security_token | default(omit) }}"
   collections:
-    - community.aws
     - amazon.aws
+    - community.aws
   block:
 
     - include_tasks: missing_params.yml
