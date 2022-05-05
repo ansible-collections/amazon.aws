@@ -111,6 +111,7 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
@@ -142,14 +143,18 @@ def list_iam_users(connection, module):
             params['UserName'] = name
         try:
             iam_users.append(connection.get_user(**params)['User'])
-        except (ClientError, BotoCoreError) as e:
+        except is_boto3_error_code('NoSuchEntity'):
+            pass
+        except (ClientError, BotoCoreError) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Couldn't get IAM user info for user %s" % name)
 
     if group:
         params['GroupName'] = group
         try:
             iam_users = list_iam_users_with_backoff(connection, 'get_group', **params)['Users']
-        except (ClientError, BotoCoreError) as e:
+        except is_boto3_error_code('NoSuchEntity'):
+            pass
+        except (ClientError, BotoCoreError) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Couldn't get IAM user info for group %s" % group)
         if name:
             iam_users = [user for user in iam_users if user['UserName'] == name]
@@ -158,7 +163,9 @@ def list_iam_users(connection, module):
         params['PathPrefix'] = path
         try:
             iam_users = list_iam_users_with_backoff(connection, 'list_users', **params)['Users']
-        except (ClientError, BotoCoreError) as e:
+        except is_boto3_error_code('NoSuchEntity'):
+            pass
+        except (ClientError, BotoCoreError) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Couldn't get IAM user info for path %s" % path)
         if name:
             iam_users = [user for user in iam_users if user['UserName'] == name]

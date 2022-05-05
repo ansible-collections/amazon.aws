@@ -44,6 +44,18 @@
       that:
         - iam_user is changed
 
+  - name: ensure test user exists (no change - check mode)
+    iam_user:
+      name: "{{ test_user }}"
+      state: present
+    register: iam_user
+    check_mode: yes
+
+  - name: assert that user would not change
+    assert:
+      that:
+        - iam_user is not changed
+
   - name: ensure test user exists (no change)
     iam_user:
       name: "{{ test_user }}"
@@ -61,8 +73,8 @@
 
   - assert:
       that:
-        - 'test_iam_user.arn.startswith("arn:aws:iam")'
-        - 'test_iam_user.arn.endswith("user/" + test_user )'
+        - test_iam_user.arn.startswith("arn:aws:iam")
+        - test_iam_user.arn.endswith("user/" + test_user )
         - test_iam_user.create_date is not none
         - test_iam_user.path == '{{ test_path }}'
         - test_iam_user.user_id is not none
@@ -82,8 +94,6 @@
       name: "{{ test_user }}"
     register: iam_user_info
 
-  - debug: var=iam_user_info
-
   - assert:
       that:
         - iam_user_info.iam_users | length == 1
@@ -93,6 +103,8 @@
         - iam_user_info.iam_users[0].user_id == test_iam_user.user_id
         - iam_user_info.iam_users[0].user_name == test_iam_user.user_name
         - iam_user_info.iam_users[0].tags | length == 0
+
+  # ------------------------------------------------------------------------------------------
 
   - name: create test user with password (check mode)
     iam_user:
@@ -113,6 +125,7 @@
       password: "{{ test_password }}"
       password_reset_required: yes
       state: present
+      wait: False
     register: iam_user
 
   - name: assert that the second user is created
@@ -137,8 +150,22 @@
         - iam_user_info.iam_users[0].user_name == test_iam_user.user_name
         - iam_user_info.iam_users[0].tags | length == 0
 
+  # ------------------------------------------------------------------------------------------
   ## Test tags creation / updates
-  - name: "Add Tag"
+  - name: Add Tag (check mode)
+    iam_user:
+      name: "{{ test_user }}"
+      state: present
+      tags:
+        TagA: ValueA
+    register: iam_user
+    check_mode: yes
+
+  - assert:
+      that:
+        - iam_user is changed
+
+  - name: Add Tag
     iam_user:
       name: "{{ test_user }}"
       state: present
@@ -154,7 +181,20 @@
         - '"TagA" in iam_user.iam_user.user.tags'
         - iam_user.iam_user.user.tags.TagA == "ValueA"
 
-  - name: "Add Tag (no change)"
+  - name: Add Tag (no change - check mode)
+    iam_user:
+      name: "{{ test_user }}"
+      state: present
+      tags:
+        TagA: ValueA
+    register: iam_user
+    check_mode: yes
+
+  - assert:
+      that:
+        - iam_user is not changed
+
+  - name: Add Tag (no change)
     iam_user:
       name: "{{ test_user }}"
       state: present
@@ -235,6 +275,19 @@
         - '"TagA" in iam_user.iam_user.user.tags'
         - iam_user.iam_user.user.tags.TagA == "ValueA"
 
+  - name: "Change Tag (check mode)"
+    iam_user:
+      name: "{{ test_user }}"
+      state: present
+      tags:
+        TagA: AnotherValueA
+    register: iam_user
+    check_mode: yes
+
+  - assert:
+      that:
+        - iam_user is changed
+
   - name: "Change Tag"
     iam_user:
       name: "{{ test_user }}"
@@ -264,7 +317,34 @@
         - iam_user.iam_user.user.user_name == test_user
         - iam_user.iam_user.user.tags | length == 0
 
+  - name: "Remove All Tags (no change)"
+    iam_user:
+      name: "{{ test_user }}"
+      state: present
+      tags: {}
+    register: iam_user
+
+  - assert:
+      that:
+        - iam_user is not changed
+        - iam_user.iam_user.user.user_name == test_user
+        - iam_user.iam_user.user.tags | length == 0
+
+  # ------------------------------------------------------------------------------------------
   ## Test user password update
+  - name: test update IAM password with on_create only (check mode)
+    iam_user:
+      name: "{{ test_user3 }}"
+      password: "{{ test_new_password }}"
+      update_password: "on_create"
+      state: present
+    register: iam_user_update
+    check_mode: yes
+
+  - assert:
+      that:
+        - iam_user_update is not changed
+
   - name: test update IAM password with on_create only
     iam_user:
       name: "{{ test_user3 }}"
@@ -276,6 +356,18 @@
   - assert:
       that:
         - iam_user_update is not changed
+
+  - name: update IAM password (check mode)
+    iam_user:
+      name: "{{ test_user3 }}"
+      password: "{{ test_new_password }}"
+      state: present
+    register: iam_user_update
+    check_mode: yes
+
+  - assert:
+      that:
+        - iam_user_update is changed
 
   # flakey, there is no waiter for login profiles
   # Login Profile for User ansible-user-c cannot be modified while login profile is being created.
@@ -302,13 +394,13 @@
   # - ServiceQuotasReadOnlyAccess
   #
   - name: attach managed policy to user (check mode)
-    check_mode: yes
     iam_user:
       name: "{{ test_user }}"
       state: present
       managed_policy:
         - arn:aws:iam::aws:policy/AWSDenyAll
     register: iam_user
+    check_mode: yes
 
   - name: assert that the user is changed
     assert:
@@ -328,6 +420,20 @@
       that:
         - iam_user is changed
 
+  - name: ensure managed policy is attached to user (no change - check mode)
+    iam_user:
+      name: "{{ test_user }}"
+      state: present
+      managed_policy:
+        - arn:aws:iam::aws:policy/AWSDenyAll
+    register: iam_user
+    check_mode: yes
+
+  - name: assert that the user hasn't changed
+    assert:
+      that:
+        - iam_user is not changed
+
   - name: ensure managed policy is attached to user (no change)
     iam_user:
       name: "{{ test_user }}"
@@ -340,6 +446,8 @@
     assert:
       that:
         - iam_user is not changed
+
+  # ------------------------------------------------------------------------------------------
 
   - name: attach different managed policy to user (check mode)
     check_mode: yes
@@ -369,6 +477,21 @@
     assert:
       that:
         - iam_user is changed
+
+  - name: attach different managed policy to user (no change - check mode)
+    iam_user:
+      name: "{{ test_user }}"
+      state: present
+      managed_policy:
+        - arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess
+      purge_policy: no
+    register: iam_user
+    check_mode: yes
+
+  - name: assert that the user hasn't changed
+    assert:
+      that:
+        - iam_user is not changed
 
   - name: Check first policy wasn't purged
     iam_user:
@@ -415,6 +538,8 @@
       that:
         - iam_user is not changed
 
+  # ------------------------------------------------------------------------------------------
+
   - name: Remove one of the managed policies - with purge (check mode)
     check_mode: yes
     iam_user:
@@ -444,7 +569,22 @@
       that:
         - iam_user is changed
 
-  - name: Check we only have the one policy attached
+  - name: Remove one of the managed policies - with purge (no change - check mode)
+    iam_user:
+      name: "{{ test_user }}"
+      state: present
+      managed_policy:
+        - arn:aws:iam::aws:policy/ServiceQuotasReadOnlyAccess
+      purge_policy: yes
+    register: iam_user
+    check_mode: yes
+
+  - name: assert that the user hasn't changed
+    assert:
+      that:
+        - iam_user is not changed
+
+  - name: Remove one of the managed policies - with purge (no change)
     iam_user:
       name: "{{ test_user }}"
       state: present
@@ -453,10 +593,12 @@
       purge_policy: yes
     register: iam_user
 
-  - name: assert that the user changed
+  - name: assert that the user hasn't changed
     assert:
       that:
         - iam_user is not changed
+
+  # ------------------------------------------------------------------------------------------
 
   - name: ensure group exists
     iam_group:
@@ -599,6 +741,26 @@
       that:
         - not iam_group.changed
 
+  # ------------------------------------------------------------------------------------------
+
+  - name: Remove user with attached policy (check mode)
+    iam_user:
+      name: "{{ test_user }}"
+      state: absent
+    register: iam_user
+    check_mode: yes
+
+  - name: get info on IAM user(s) after deleting in check mode
+    iam_user_info:
+      name: "{{ test_user }}"
+    register: iam_user_info
+
+  - name: Assert user was not removed in check mode
+    assert:
+      that:
+        - iam_user.changed
+        - iam_user_info.iam_users | length == 1
+
   - name: Remove user with attached policy
     iam_user:
       name: "{{ test_user }}"
@@ -607,29 +769,52 @@
 
   - name: get info on IAM user(s) after deleting
     iam_user_info:
-      group: "{{ test_user }}"
-    ignore_errors: yes
+      name: "{{ test_user }}"
     register: iam_user_info
 
   - name: Assert user was removed
     assert:
       that:
         - iam_user.changed
-        - "'cannot be found' in iam_user_info.msg"
+        - iam_user_info.iam_users | length == 0
+
+  - name: Remove user with attached policy (idempotent - check mode)
+    iam_user:
+      name: "{{ test_user }}"
+      state: absent
+    register: iam_user
+    check_mode: yes
+
+  - name: Assert no change
+    assert:
+      that:
+        - not iam_user.changed
 
   - name: Remove user with attached policy (idempotent)
     iam_user:
       name: "{{ test_user }}"
       state: absent
-    ignore_errors: yes
     register: iam_user
 
-  - name: Assert user was removed
+  - name: Assert no change
     assert:
       that:
         - not iam_user.changed
 
+  # ------------------------------------------------------------------------------------------
   ## Test user password removal
+  - name: Delete IAM password (check mode)
+    iam_user:
+      name: "{{ test_user3 }}"
+      remove_password: yes
+      state: present
+    register: iam_user_password_removal
+    check_mode: yes
+
+  - assert:
+      that:
+        - iam_user_password_removal is changed
+
   - name: Delete IAM password
     iam_user:
       name: "{{ test_user3 }}"
@@ -640,6 +825,29 @@
   - assert:
       that:
         - iam_user_password_removal is changed
+
+  - name: Delete IAM password again (check mode)
+    iam_user:
+      name: "{{ test_user3 }}"
+      remove_password: yes
+      state: present
+    register: iam_user_password_removal
+    check_mode: yes
+
+  - assert:
+      that:
+        - iam_user_password_removal is not changed
+
+  - name: Delete IAM password again
+    iam_user:
+      name: "{{ test_user3 }}"
+      remove_password: yes
+      state: present
+    register: iam_user_password_removal
+
+  - assert:
+      that:
+        - iam_user_password_removal is not changed
 
   always:
     - name: remove group
