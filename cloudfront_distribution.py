@@ -558,6 +558,7 @@ options:
                 restriction should apply to.
               - 'See the ISO website for a full list of codes U(https://www.iso.org/obp/ui/#search/code/).'
               type: list
+              elements: str
 
     web_acl_id:
       description:

@@ -88,6 +88,7 @@ options:
                     - This parameter is only supported if I(network_mode=bridge).
                 required: False
                 type: list
+                elements: str
             portMappings:
                 description: The list of port mappings for the container.
                 required: False
@@ -118,9 +119,10 @@ options:
                 required: False
                 type: str
             command:
-                description: The command that is passed to the container.
+                description: The command that is passed to the container. If there are multiple arguments, each argument is a separated string in the array.
                 required: False
                 type: list
+                elements: str
             environment:
                 description: The environment variables to pass to a container.
                 required: False
@@ -210,6 +212,7 @@ options:
                                           "NET_ADMIN", "NET_BIND_SERVICE", "NET_BROADCAST", "NET_RAW", "SETFCAP", "SETGID", "SETPCAP", "SETUID",
                                           "SYS_ADMIN", "SYS_BOOT", "SYS_CHROOT", "SYS_MODULE", "SYS_NICE", "SYS_PACCT", "SYS_PTRACE", "SYS_RAWIO",
                                           "SYS_RESOURCE", "SYS_TIME", "SYS_TTY_CONFIG", "SYSLOG", "WAKE_ALARM"]
+                                elements: str
                             drop:
                                 description:
                                     - The Linux capabilities for the container that have been removed from the default configuration provided by Docker.
@@ -220,6 +223,7 @@ options:
                                           "NET_ADMIN", "NET_BIND_SERVICE", "NET_BROADCAST", "NET_RAW", "SETFCAP", "SETGID", "SETPCAP", "SETUID",
                                           "SYS_ADMIN", "SYS_BOOT", "SYS_CHROOT", "SYS_MODULE", "SYS_NICE", "SYS_PACCT", "SYS_PTRACE", "SYS_RAWIO",
                                           "SYS_RESOURCE", "SYS_TIME", "SYS_TTY_CONFIG", "SYSLOG", "WAKE_ALARM"]
+                                elements: str
                     devices:
                         description:
                             - Any host devices to expose to the container.
@@ -240,6 +244,7 @@ options:
                                 description: The explicit permissions to provide to the container for the device.
                                 required: False
                                 type: list
+                                elements: str
                     initProcessEnabled:
                         description: Run an init process inside the container that forwards signals and reaps processes.
                         required: False
@@ -274,6 +279,7 @@ options:
                                           "remount", "mand", "nomand", "atime", "noatime", "diratime", "nodiratime", "bind", "rbind", "unbindable",
                                           "runbindable", "private", "rprivate", "shared", "rshared", "slave", "rslave", "relatime", "norelatime",
                                           "strictatime", "nostrictatime", "mode", "uid", "gid", "nr_inodes", "nr_blocks", "mpol"]
+                                elements: str
                     maxSwap:
                         description:
                             - The total amount of swap memory (in MiB) a container can use.
@@ -359,12 +365,14 @@ options:
                     - This parameter is not supported for Windows containers.
                 required: False
                 type: list
+                elements: str
             dnsSearchDomains:
                 description:
                     - A list of DNS search domains that are presented to the container.
                     - This parameter is not supported for Windows containers.
                 required: False
                 type: list
+                elements: str
             extraHosts:
                 description:
                     - A list of hostnames and IP address mappings to append to the /etc/hosts file on the container.
@@ -387,6 +395,7 @@ options:
                     - This parameter is not supported for Windows containers.
                 required: False
                 type: list
+                elements: str
             interactive:
                 description:
                     - When I(interactive=True), it allows to deploy containerized applications that require stdin or a tty to be allocated.
@@ -461,12 +470,29 @@ options:
                 description: A list of namespaced kernel parameters to set in the container.
                 required: False
                 type: list
+                elements: dict
+                suboptions:
+                    namespace:
+                        description: The namespaced kernel parameter to set a C(value) for.
+                        type: str
+                    value:
+                        description: The value for the namespaced kernel parameter that's specified in C(namespace).
+                        type: str
             resourceRequirements:
                 description:
                     - The type and amount of a resource to assign to a container.
-                    - The only supported resource is a C(GPU).
+                    - The only supported resources are C(GPU) and C(InferenceAccelerator).
                 required: False
                 type: list
+                elements: dict
+                suboptions:
+                    value:
+                        description: The value for the specified resource type.
+                        type: str
+                    type:
+                        description: The type of resource to assign to a container.
+                        type: str
+                        choices: ['GPU', 'InferenceAccelerator']
     network_mode:
         description:
             - The Docker networking mode to use for the containers in the task.
