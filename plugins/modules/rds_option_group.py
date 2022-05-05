@@ -70,6 +70,7 @@ options:
             description: The option settings to include in an option group.
             required: false
             type: list
+            elements: dict
             suboptions:
                 name:
                     description: The name of the option that has settings that you can set.
@@ -111,10 +112,12 @@ options:
             description: A list of C(DBSecurityGroupMembership) name strings used for this option.
             required: false
             type: list
+            elements: str
         vpc_security_group_memberships:
             description: A list of C(VpcSecurityGroupMembership) name strings used for this option.
             required: false
             type: list
+            elements: str
   tags:
     description:
       - A dictionary of key value pairs to assign the option group.
