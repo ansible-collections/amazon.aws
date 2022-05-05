@@ -169,45 +169,146 @@ EXAMPLES = r'''
 
 RETURN = r'''
 code:
-    description: the lambda function location returned by get_function in boto3
+    description: The lambda function's code returned by get_function in boto3.
     returned: success
     type: dict
-    sample:
-      {
-        'location': 'a presigned S3 URL',
-        'repository_type': 'S3',
-      }
+    contains:
+        location:
+            description:
+                - The presigned URL you can use to download the function's .zip file that you previously uploaded.
+                - The URL is valid for up to 10 minutes.
+            returned: success
+            type: str
+            sample: 'https://prod-04-2014-tasks.s3.us-east-1.amazonaws.com/snapshots/sample'
+        repository_type:
+            description: The repository from which you can download the function.
+            returned: success
+            type: str
+            sample: 'S3'
 configuration:
-    description: the lambda function metadata returned by get_function in boto3
+    description: the lambda function's configuration metadata returned by get_function in boto3
     returned: success
     type: dict
-    sample:
-      {
-        'code_sha256': 'zOAGfF5JLFuzZoSNirUtOrQp+S341IOA3BcoXXoaIaU=',
-        'code_size': 123,
-        'description': 'My function',
-        'environment': {
-          'variables': {
-            'key': 'value'
-          }
-        },
-        'function_arn': 'arn:aws:lambda:us-east-1:123456789012:function:myFunction:1',
-        'function_name': 'myFunction',
-        'handler': 'index.handler',
-        'last_modified': '2017-08-01T00:00:00.000+0000',
-        'memory_size': 128,
-        'revision_id': 'a2x9886d-d48a-4a0c-ab64-82abc005x80c',
-        'role': 'arn:aws:iam::123456789012:role/lambda_basic_execution',
-        'runtime': 'nodejs6.10',
-        'tracing_config': { 'mode': 'Active' },
-        'timeout': 3,
-        'version': '1',
-        'vpc_config': {
-          'security_group_ids': [],
-          'subnet_ids': [],
-          'vpc_id': '123'
-        }
-      }
+    contains:
+        code_sha256:
+            description: The SHA256 hash of the function's deployment package.
+            returned: success
+            type: str
+            sample: 'zOAGfF5JLFuzZoSNirUtOrQp+S341IOA3BcoXXoaIaU='
+        code_size:
+            description: The size of the function's deployment package in bytes.
+            returned: success
+            type: int
+            sample: 123
+        dead_letter_config:
+            description: The function's dead letter queue.
+            returned: when the function has a dead letter queue configured
+            type: dict
+            sample: { 'target_arn': arn:aws:lambda:us-east-1:123456789012:function:myFunction:1 }
+            contains:
+                target_arn:
+                    description: The ARN of an SQS queue or SNS topic.
+                    returned: when the function has a dead letter queue configured
+                    type: str
+                    sample: arn:aws:lambda:us-east-1:123456789012:function:myFunction:1
+        description:
+            description: The function's description.
+            returned: success
+            type: str
+            sample: 'My function'
+        environment:
+            description: The function's environment variables.
+            returned: when environment variables exist
+            type: dict
+            contains:
+                variables:
+                    description: Environment variable key-value pairs.
+                    returned: when environment variables exist
+                    type: dict
+                    sample: {'key': 'value'}
+                error:
+                    description: Error message for environment variables that could not be applied.
+                    returned: when there is an error applying environment variables
+                    type: dict
+                    contains:
+                        error_code:
+                            description: The error code.
+                            returned: when there is an error applying environment variables
+                            type: str
+                        message:
+                            description: The error message.
+                            returned: when there is an error applying environment variables
+                            type: str
+        function_arn:
+            description: The function's Amazon Resource Name (ARN).
+            returned: on success
+            type: str
+            sample: 'arn:aws:lambda:us-east-1:123456789012:function:myFunction:1'
+        function_name:
+            description: The function's name.
+            returned: on success
+            type: str
+            sample: 'myFunction'
+        handler:
+            description: The function Lambda calls to begin executing your function.
+            returned: on success
+            type: str
+            sample: 'index.handler'
+        last_modified:
+            description: The date and time that the function was last updated, in ISO-8601 format (YYYY-MM-DDThh:mm:ssTZD).
+            returned: on success
+            type: str
+            sample: '2017-08-01T00:00:00.000+0000'
+        memory_size:
+            description: The memory allocated to the function.
+            returned: on success
+            type: int
+            sample: 128
+        revision_id:
+            description: The latest updated revision of the function or alias.
+            returned: on success
+            type: str
+            sample: 'a2x9886d-d48a-4a0c-ab64-82abc005x80c'
+        role:
+            description: The function's execution role.
+            returned: on success
+            type: str
+            sample: 'arn:aws:iam::123456789012:role/lambda_basic_execution'
+        runtime:
+            description: The funtime environment for the Lambda function.
+            returned: on success
+            type: str
+            sample: 'nodejs6.10'
+        tracing_config:
+            description: The function's AWS X-Ray tracing configuration.
+            returned: on success
+            type: dict
+            sample: { 'mode': 'Active' }
+            contains:
+                mode:
+                    description: The tracing mode.
+                    returned: on success
+                    type: str
+                    sample: 'Active'
+        timeout:
+            description: The amount of time that Lambda allows a function to run before terminating it.
+            returned: on success
+            type: int
+            sample: 3
+        version:
+            description: The version of the Lambda function.
+            returned: on success
+            type: str
+            sample: '1'
+        vpc_config:
+            description: The function's networking configuration.
+            returned: on success
+            type: dict
+            sample: {
+              'security_group_ids': [],
+              'subnet_ids': [],
+              'vpc_id': '123'
+            }
 '''
 
 import base64
