@@ -134,12 +134,14 @@ options:
                 Conditions:
                     type: list
                     description: Conditions which must be met for the actions to be applied.
+                    elements: dict
                 Priority:
                     type: int
                     description: The rule priority.
                 Actions:
                     type: list
                     description: Actions to apply if all of the rule's conditions are met.
+                    elements: dict
   name:
     description:
       - The name of the load balancer. This name must be unique within your AWS account, can have a maximum of 32 characters, must contain only alphanumeric
