@@ -93,6 +93,19 @@
       - '"parameters are required together" in result.msg'
 
   # Prepare minimal Lambda
+  - name: test state=present - upload the lambda (check mode)
+    lambda:
+      name: '{{ lambda_function_name }}'
+      runtime: python3.6
+      handler: mini_lambda.handler
+      role: '{{ lambda_role_name }}'
+      zip_file: '{{ zip_res.dest }}'
+    register: result
+    check_mode: yes
+  - name: assert lambda upload succeeded
+    assert:
+      that:
+      - result.changed
 
   - name: test state=present - upload the lambda
     lambda:
@@ -105,7 +118,7 @@
   - name: assert lambda upload succeeded
     assert:
       that:
-      - result is not failed
+      - result.changed
       - result.configuration.tracing_config.mode == "PassThrough"
 
   # Test basic operation of Uploaded lambda
@@ -122,6 +135,25 @@
       - result.result.output.message == "hello Mr Ansible Tests"
 
   # Test updating Lambda
+  - name: test lambda config updates (check mode)
+    lambda:
+      name: '{{lambda_function_name}}'
+      runtime: nodejs14.x
+      tracing_mode: Active
+      handler: mini_lambda.handler
+      role: '{{ lambda_role_name }}'
+      tags:
+        CamelCase: 'ACamelCaseValue'
+        snake_case: 'a_snake_case_value'
+        'Spaced key': 'A value with spaces'
+    register: update_result
+    check_mode: yes
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not failed
+      - update_result.changed == True
+
   - name: test lambda config updates
     lambda:
       name: '{{lambda_function_name}}'
@@ -141,6 +173,25 @@
       - update_result.changed == True
       - update_result.configuration.runtime == 'nodejs14.x'
       - update_result.configuration.tracing_config.mode == 'Active'
+
+  - name: test no changes are made with the same parameters repeated (check mode)
+    lambda:
+      name: '{{lambda_function_name}}'
+      runtime: nodejs14.x
+      tracing_mode: Active
+      handler: mini_lambda.handler
+      role: '{{ lambda_role_name }}'
+      tags:
+        CamelCase: 'ACamelCaseValue'
+        snake_case: 'a_snake_case_value'
+        'Spaced key': 'A value with spaces'
+    register: update_result
+    check_mode: yes
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not failed
+      - update_result.changed == False
 
   - name: test no changes are made with the same parameters repeated
     lambda:
@@ -184,6 +235,7 @@
       name: '{{ lambda_function_name }}'
       query: all
     register: lambda_infos_all
+    check_mode: yes
   - name: lambda_info | Assert successfull retrieval of all information
     assert:
       that:
@@ -278,6 +330,23 @@
       - result is not failed
       - result.changed == False
 
+  - name: test putting an environment variable changes lambda (check mode)
+    lambda:
+      name: '{{lambda_function_name}}'
+      runtime: python3.6
+      handler: mini_lambda.handler
+      role: '{{ lambda_role_name }}'
+      zip_file: '{{zip_res.dest}}'
+      environment_variables:
+        EXTRA_MESSAGE: I think you are great!!
+    register: result
+    check_mode: yes
+  - name: assert lambda upload succeeded
+    assert:
+      that:
+      - result is not failed
+      - result.changed == True
+
   - name: test putting an environment variable changes lambda
     lambda:
       name: '{{lambda_function_name}}'
@@ -293,6 +362,8 @@
       that:
       - result is not failed
       - result.changed == True
+      - result.configuration.environment.variables.extra_message == "I think you are great!!"
+
   - name: test lambda works
     execute_lambda:
       name: '{{lambda_function_name}}'
@@ -306,6 +377,19 @@
       - result.result.output.message == "hello Mr Ansible Tests. I think you are great!!"
 
   # Deletion behavious
+  - name: test state=absent (expect changed=True) (check mode)
+    lambda:
+      name: '{{lambda_function_name}}'
+      state: absent
+    register: result
+    check_mode: yes
+
+  - name: assert state=absent
+    assert:
+      that:
+      - result is not failed
+      - result is changed
+
   - name: test state=absent (expect changed=True)
     lambda:
       name: '{{lambda_function_name}}'
@@ -317,6 +401,19 @@
       that:
       - result is not failed
       - result is changed
+
+  - name: test state=absent (expect changed=False) when already deleted (check mode)
+    lambda:
+      name: '{{lambda_function_name}}'
+      state: absent
+    register: result
+    check_mode: yes
+
+  - name: assert state=absent
+    assert:
+      that:
+      - result is not failed
+      - result is not changed
 
   - name: test state=absent (expect changed=False) when already deleted
     lambda:
