@@ -497,16 +497,6 @@ def get_attached_policy_list(connection, module, name):
         module.fail_json_aws(e, msg="Unable to get policies for user {0}".format(name))
 
 
-def delete_user_login_profile(connection, module, user_name):
-
-    try:
-        return connection.delete_login_profile(UserName=user_name)
-    except is_boto3_error_code('NoSuchEntity'):
-        return None
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Unable to delete login profile for user {0}".format(user_name))
-
-
 def user_has_login_profile(connection, module, name):
     '''
     Returns whether or not given user has a login profile.
