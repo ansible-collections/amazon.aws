@@ -260,8 +260,10 @@ def main():
 
 def wait_for_lambda(client, module, name):
     try:
-        waiter = client.get_waiter('function_active')
-        waiter.wait(FunctionName=name)
+        client_active_waiter = client.get_waiter('function_active')
+        client_updated_waiter = client.get_waiter('function_updated')
+        client_active_waiter.wait(FunctionName=name)
+        client_updated_waiter.wait(FunctionName=name)
     except botocore.exceptions.WaiterError as e:
         module.fail_json_aws(e, msg='Timeout while waiting on lambda to be Active')
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
