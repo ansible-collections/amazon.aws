@@ -70,6 +70,16 @@
       - '"handler" in result.msg'
       - '"role" in result.msg'
 
+  - name: test execute lambda with no function arn or name
+    execute_lambda:
+    register: result
+    ignore_errors: true
+  - name: assert failure when called with no parameters
+    assert:
+      that:
+      - result.failed
+      - "result.msg == 'one of the following is required: name, function_arn'"
+
   - name: test state=present with security group but no vpc
     lambda:
       name: '{{ lambda_function_name }}'
@@ -122,6 +132,19 @@
       - result.configuration.tracing_config.mode == "PassThrough"
 
   # Test basic operation of Uploaded lambda
+  - name: test lambda works (check mode)
+    execute_lambda:
+      name: '{{lambda_function_name}}'
+      payload:
+        name: Mr Ansible Tests
+    register: result
+    check_mode: yes
+  - name: assert check mode works correctly
+    assert:
+      that:
+        - result.changed
+        - "'result' not in result"
+
   - name: test lambda works
     execute_lambda:
       name: '{{lambda_function_name}}'
