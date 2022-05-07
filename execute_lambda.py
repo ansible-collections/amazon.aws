@@ -108,20 +108,25 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
-output:
-    description: Function output if wait=true and the function returns a value
+result:
+    description: Resulting data structure from a successful task execution.
     returned: success
     type: dict
-    sample: "{ 'output': 'something' }"
-logs:
-    description: The last 4KB of the function logs. Only provided if I(tail_log) is true
-    type: str
-    returned: if I(tail_log) == true
-status:
-    description: C(StatusCode) of API call exit (200 for synchronous invokes, 202 for async)
-    type: int
-    sample: 200
-    returned: always
+    contains:
+        output:
+            description: Function output if wait=true and the function returns a value
+            returned: success
+            type: dict
+            sample: "{ 'output': 'something' }"
+        logs:
+            description: The last 4KB of the function logs. Only provided if I(tail_log) is C(true)
+            type: str
+            returned: if I(tail_log) == true
+        status:
+            description: C(StatusCode) of API call exit (200 for synchronous invokes, 202 for async)
+            type: int
+            sample: 200
+            returned: always
 '''
 
 import base64
@@ -134,6 +139,7 @@ except ImportError:
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 
 
 def main():
@@ -151,7 +157,10 @@ def main():
         supports_check_mode=True,
         mutually_exclusive=[
             ['name', 'function_arn'],
-        ]
+        ],
+        required_one_of=[
+            ('name', 'function_arn')
+        ],
     )
 
     name = module.params.get('name')
@@ -162,11 +171,8 @@ def main():
     version_qualifier = module.params.get('version_qualifier')
     payload = module.params.get('payload')
 
-    if not (name or function_arn):
-        module.fail_json(msg="Must provide either a function_arn or a name to invoke.")
-
     try:
-        client = module.client('lambda')
+        client = module.client('lambda', retry_decorator=AWSRetry.jittered_backoff())
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to connect to AWS')
 
@@ -202,11 +208,12 @@ def main():
     elif name:
         invoke_params['FunctionName'] = name
 
-    if not module.check_mode:
-        wait_for_lambda(client, module, name)
+    if module.check_mode:
+        module.exit_json(changed=True)
 
     try:
-        response = client.invoke(**invoke_params)
+        wait_for_lambda(client, module, name)
+        response = client.invoke(**invoke_params, aws_retry=True)
     except is_boto3_error_code('ResourceNotFoundException') as nfe:
         module.fail_json_aws(nfe, msg="Could not find Lambda to execute. Make sure "
                              "the ARN is correct and your profile has "
