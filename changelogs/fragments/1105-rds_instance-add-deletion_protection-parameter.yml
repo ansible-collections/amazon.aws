@@ -1,0 +1,2 @@
+minor_changes:
+  - rds_instance - add `deletion_protection` parameter (https://github.com/ansible-collections/community.aws/pull/1105).
