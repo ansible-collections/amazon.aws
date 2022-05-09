@@ -1,0 +1,4 @@
+minor_changes:
+- rds_instance_snapshot - update module to use handlers defined in module_utils/rds.py (https://github.com/ansible-collections/community.aws/pull/789).
+- rds_instance_snapshot - add ``check_mode`` (https://github.com/ansible-collections/community.aws/pull/789).
+- rds_instance_snapshot - add integration tests (https://github.com/ansible-collections/community.aws/pull/789).

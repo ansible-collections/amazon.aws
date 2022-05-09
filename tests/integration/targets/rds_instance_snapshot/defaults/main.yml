@@ -1,0 +1,14 @@
+---
+# defaults file for rds_instance_snapshot
+
+# Create RDS instance
+instance_id: 'ansible-test-instance-{{ resource_prefix }}'
+username: 'testrdsusername'
+password: 'test-rds_password'
+db_instance_class: db.t3.micro
+allocated_storage: 10
+engine: 'mariadb'
+mariadb_engine_version: 10.3.31
+
+# Create snapshot
+snapshot_id: 'ansible-test-instance-snapshot-{{ resource_prefix }}'
