@@ -160,6 +160,13 @@ options:
         aliases:
           - subnet_group
         type: str
+    deletion_protection:
+        description:
+          -  A value that indicates whether the DB instance has deletion protection enabled.
+             The database can't be deleted when deletion protection is enabled.
+             By default, deletion protection is disabled.
+        type: bool
+        version_added: 3.3.0
     domain:
         description:
           - The Active Directory Domain to restore the instance in.
@@ -666,6 +673,12 @@ dbi_resource_id:
   returned: always
   type: str
   sample: db-UHV3QRNWX4KB6GALCIGRML6QFA
+deletion_protection:
+  description: C(True) if the DB instance has deletion protection enabled, C(False) if not.
+  returned: always
+  type: bool
+  sample: False
+  version_added: 3.3.0
 domain_memberships:
   description: The Active Directory Domain membership records associated with the DB instance.
   returned: always
@@ -1256,6 +1269,7 @@ def main():
         db_security_groups=dict(type='list', elements='str'),
         db_snapshot_identifier=dict(),
         db_subnet_group_name=dict(aliases=['subnet_group']),
+        deletion_protection=dict(type='bool'),
         domain=dict(),
         domain_iam_role_name=dict(),
         enable_cloudwatch_logs_exports=dict(type='list', aliases=['cloudwatch_log_exports'], elements='str'),
