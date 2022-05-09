@@ -188,6 +188,12 @@ instances:
       returned: always
       type: str
       sample: db-AAAAAAAAAAAAAAAAAAAAAAAAAA
+    deletion_protection:
+      description: C(True) if the DB instance has deletion protection enabled, C(False) if not.
+      returned: always
+      type: bool
+      sample: False
+      version_added: 3.3.0
     domain_memberships:
       description: List of domain memberships
       returned: always
