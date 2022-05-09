@@ -8,11 +8,11 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: rds_instance_snapshot
 version_added: 1.0.0
-short_description: manage Amazon RDS snapshots.
+short_description: Manage Amazon RDS instance snapshots
 description:
      - Creates or deletes RDS snapshots.
 options:
@@ -58,13 +58,14 @@ options:
 author:
     - "Will Thames (@willthames)"
     - "Michael De La Rue (@mikedlr)"
+    - "Alina Buzachis (@alinabuzachis)"
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
 
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 - name: Create snapshot
   community.aws.rds_instance_snapshot:
     db_instance_identifier: new-database
@@ -76,7 +77,7 @@ EXAMPLES = '''
     state: absent
 '''
 
-RETURN = '''
+RETURN = r'''
 allocated_storage:
   description: How much storage is allocated in GB.
   returned: always
@@ -201,143 +202,106 @@ except ImportError:
 
 # import module snippets
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, AWSRetry, compare_aws_tags
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict, ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.rds import get_tags
+from ansible_collections.amazon.aws.plugins.module_utils.rds import ensure_tags
+from ansible_collections.amazon.aws.plugins.module_utils.rds import call_method
 
 
-def get_snapshot(client, module, snapshot_id):
+def get_snapshot(snapshot_id):
     try:
         response = client.describe_db_snapshots(DBSnapshotIdentifier=snapshot_id)
-    except client.exceptions.DBSnapshotNotFoundFault:
+    except is_boto3_error_code("DBSnapshotNotFoundFault"):
         return None
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+    except is_boto3_error_code("DBSnapshotNotFound"):  # pylint: disable=duplicate-except
+        return None
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Couldn't get snapshot {0}".format(snapshot_id))
     return response['DBSnapshots'][0]
 
 
-def snapshot_to_facts(client, module, snapshot):
-    try:
-        snapshot['Tags'] = boto3_tag_list_to_ansible_dict(client.list_tags_for_resource(ResourceName=snapshot['DBSnapshotArn'],
-                                                                                        aws_retry=True)['TagList'])
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "Couldn't get tags for snapshot %s" % snapshot['DBSnapshotIdentifier'])
-    except KeyError:
-        module.fail_json(msg=str(snapshot))
+def fetch_tags(snapshot):
+    snapshot["Tags"] = get_tags(client, module, snapshot["DBSnapshotArn"])
 
-    return camel_dict_to_snake_dict(snapshot, ignore_list=['Tags'])
+    return camel_dict_to_snake_dict(snapshot, ignore_list=["Tags"])
 
 
-def wait_for_snapshot_status(client, module, db_snapshot_id, waiter_name):
-    if not module.params['wait']:
-        return
-    timeout = module.params['wait_timeout']
-    try:
-        client.get_waiter(waiter_name).wait(DBSnapshotIdentifier=db_snapshot_id,
-                                            WaiterConfig=dict(
-                                                Delay=5,
-                                                MaxAttempts=int((timeout + 2.5) / 5)
-                                            ))
-    except botocore.exceptions.WaiterError as e:
-        if waiter_name == 'db_snapshot_deleted':
-            msg = "Failed to wait for DB snapshot {0} to be deleted".format(db_snapshot_id)
-        else:
-            msg = "Failed to wait for DB snapshot {0} to be available".format(db_snapshot_id)
-        module.fail_json_aws(e, msg=msg)
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
-        module.fail_json_aws(e, msg="Failed with an unexpected error while waiting for the DB cluster {0}".format(db_snapshot_id))
-
-
-def ensure_snapshot_absent(client, module):
-    snapshot_name = module.params.get('db_snapshot_identifier')
+def ensure_snapshot_absent():
+    snapshot_name = module.params.get("db_snapshot_identifier")
+    params = {"DBSnapshotIdentifier": snapshot_name}
     changed = False
 
-    snapshot = get_snapshot(client, module, snapshot_name)
-    if snapshot and snapshot['Status'] != 'deleting':
-        try:
-            client.delete_db_snapshot(DBSnapshotIdentifier=snapshot_name)
-            changed = True
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="trying to delete snapshot")
-
-    # If we're not waiting for a delete to complete then we're all done
-    # so just return
-    if not snapshot or not module.params.get('wait'):
+    snapshot = get_snapshot(snapshot_name)
+    if not snapshot:
         return dict(changed=changed)
-    try:
-        wait_for_snapshot_status(client, module, snapshot_name, 'db_snapshot_deleted')
-        return dict(changed=changed)
-    except client.exceptions.DBSnapshotNotFoundFault:
-        return dict(changed=changed)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, "awaiting snapshot deletion")
+    elif snapshot and snapshot["Status"] != "deleting":
+        snapshot, changed = call_method(client, module, "delete_db_snapshot", params)
+
+    return dict(changed=changed)
 
 
-def ensure_tags(client, module, resource_arn, existing_tags, tags, purge_tags):
-    if tags is None:
-        return False
-    tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, tags, purge_tags)
-    changed = bool(tags_to_add or tags_to_remove)
-    if tags_to_add:
-        try:
-            client.add_tags_to_resource(ResourceName=resource_arn, Tags=ansible_dict_to_boto3_tag_list(tags_to_add))
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, "Couldn't add tags to snapshot {0}".format(resource_arn))
-    if tags_to_remove:
-        try:
-            client.remove_tags_from_resource(ResourceName=resource_arn, TagKeys=tags_to_remove)
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, "Couldn't remove tags from snapshot {0}".format(resource_arn))
-    return changed
-
-
-def ensure_snapshot_present(client, module):
+def ensure_snapshot_present():
     db_instance_identifier = module.params.get('db_instance_identifier')
     snapshot_name = module.params.get('db_snapshot_identifier')
     changed = False
-    snapshot = get_snapshot(client, module, snapshot_name)
+    snapshot = get_snapshot(snapshot_name)
     if not snapshot:
-        try:
-            snapshot = client.create_db_snapshot(DBSnapshotIdentifier=snapshot_name,
-                                                 DBInstanceIdentifier=db_instance_identifier)['DBSnapshot']
-            changed = True
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="trying to create db snapshot")
+        params = {
+            "DBSnapshotIdentifier": snapshot_name,
+            "DBInstanceIdentifier": db_instance_identifier
+        }
+        if module.params.get("tags"):
+            params['Tags'] = ansible_dict_to_boto3_tag_list(module.params.get("tags"))
+        _result, changed = call_method(client, module, "create_db_snapshot", params)
 
-    if module.params.get('wait'):
-        wait_for_snapshot_status(client, module, snapshot_name, 'db_snapshot_available')
+        if module.check_mode:
+            return dict(changed=changed)
 
-    existing_tags = boto3_tag_list_to_ansible_dict(client.list_tags_for_resource(ResourceName=snapshot['DBSnapshotArn'],
-                                                                                 aws_retry=True)['TagList'])
-    desired_tags = module.params['tags']
-    purge_tags = module.params['purge_tags']
-    changed |= ensure_tags(client, module, snapshot['DBSnapshotArn'], existing_tags, desired_tags, purge_tags)
+        return dict(changed=changed, **fetch_tags(get_snapshot(snapshot_name)))
 
-    snapshot = get_snapshot(client, module, snapshot_name)
+    existing_tags = get_tags(client, module, snapshot["DBSnapshotArn"])
+    changed |= ensure_tags(client, module, snapshot["DBSnapshotArn"], existing_tags,
+                           module.params["tags"], module.params["purge_tags"])
 
-    return dict(changed=changed, **snapshot_to_facts(client, module, snapshot))
+    if module.check_mode:
+        return dict(changed=changed)
+
+    return dict(changed=changed, **fetch_tags(get_snapshot(snapshot_name)))
 
 
 def main():
+    global client
+    global module
 
-    module = AnsibleAWSModule(
-        argument_spec=dict(
-            state=dict(choices=['present', 'absent'], default='present'),
-            db_snapshot_identifier=dict(aliases=['id', 'snapshot_id'], required=True),
-            db_instance_identifier=dict(aliases=['instance_id']),
-            wait=dict(type='bool', default=False),
-            wait_timeout=dict(type='int', default=300),
-            tags=dict(type='dict'),
-            purge_tags=dict(type='bool', default=True),
-        ),
-        required_if=[['state', 'present', ['db_instance_identifier']]]
+    argument_spec = dict(
+        state=dict(choices=['present', 'absent'], default='present'),
+        db_snapshot_identifier=dict(aliases=['id', 'snapshot_id'], required=True),
+        db_instance_identifier=dict(aliases=['instance_id']),
+        wait=dict(type='bool', default=False),
+        wait_timeout=dict(type='int', default=300),
+        tags=dict(type='dict'),
+        purge_tags=dict(type='bool', default=True),
     )
 
-    client = module.client('rds', retry_decorator=AWSRetry.jittered_backoff(retries=10, catch_extra_error_codes=['DBSnapshotNotFound']))
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        required_if=[['state', 'present', ['db_instance_identifier']]],
+        supports_check_mode=True,
+    )
+
+    retry_decorator = AWSRetry.jittered_backoff(retries=10)
+    try:
+        client = module.client('rds', retry_decorator=retry_decorator)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to connect to AWS.")
 
     if module.params['state'] == 'absent':
-        ret_dict = ensure_snapshot_absent(client, module)
+        ret_dict = ensure_snapshot_absent()
     else:
-        ret_dict = ensure_snapshot_present(client, module)
+        ret_dict = ensure_snapshot_present()
 
     module.exit_json(**ret_dict)
 
