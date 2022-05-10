@@ -635,7 +635,314 @@
         - weighted_record is not failed
         - weighted_record is not changed
 
+#Test Geo Location - Continent Code
+  - name: Create a record with geo_location - continent_code (check_mode)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: 'geo-test-1.{{ zone_one }}'
+      identifier: "geohost1@www"
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        continent_code: NA
+    check_mode: true
+    register: create_geo_continent_check_mode
+  - assert:
+      that:
+        - create_geo_continent_check_mode is changed
+        - create_geo_continent_check_mode is not failed
+        - '"route53:ChangeResourceRecordSets" not in create_geo_continent_check_mode.resource_actions'
+
+  - name: Create a record with geo_location - continent_code
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: 'geo-test-1.{{ zone_one }}'
+      identifier: "geohost1@www"
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        continent_code: NA
+    register: create_geo_continent
+  # Get resulting A record and geo_location parameters are applied
+  - name: 'get Route53 A record information'
+    route53_info:
+      type: A
+      query: record_sets
+      hosted_zone_id: '{{ z1.zone_id }}'
+      start_record_name: 'geo-test-1.{{ zone_one }}'
+      max_items: 1
+    register: result
+
+  - assert:
+      that:
+        - create_geo_continent is changed
+        - create_geo_continent is not failed
+        - '"route53:ChangeResourceRecordSets" in create_geo_continent.resource_actions'
+        - result.ResourceRecordSets[0].GeoLocation.ContinentCode == "NA"
+
+  - name: Create a record with geo_location - continent_code (idempotency)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: 'geo-test-1.{{ zone_one }}'
+      identifier: "geohost1@www"
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        continent_code: NA
+    register: create_geo_continent_idem
+  - assert:
+      that:
+        - create_geo_continent_idem is not changed
+        - create_geo_continent_idem is not failed
+        - '"route53:ChangeResourceRecordSets" not in create_geo_continent_idem.resource_actions'
+
+  - name: Create a record with geo_location - continent_code (idempotency - check_mode)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: 'geo-test-1.{{ zone_one }}'
+      identifier: "geohost1@www"
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        continent_code: NA
+    check_mode: true
+    register: create_geo_continent_idem_check
+
+  - assert:
+      that:
+        - create_geo_continent_idem_check is not changed
+        - create_geo_continent_idem_check is not failed
+        - '"route53:ChangeResourceRecordSets" not in create_geo_continent_idem_check.resource_actions'
+
+#Test Geo Location - Country Code
+  - name: Create a record with geo_location - country_code (check_mode)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: 'geo-test-2.{{ zone_one }}'
+      identifier: "geohost2@www"
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+    check_mode: true
+    register: create_geo_country_check_mode
+  - assert:
+      that:
+        - create_geo_country_check_mode is changed
+        - create_geo_country_check_mode is not failed
+        - '"route53:ChangeResourceRecordSets" not in create_geo_country_check_mode.resource_actions'
+
+  - name: Create a record with geo_location - country_code
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: 'geo-test-2.{{ zone_one }}'
+      identifier: "geohost2@www"
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+    register: create_geo_country
+  # Get resulting A record and geo_location parameters are applied
+  - name: 'get Route53 A record information'
+    route53_info:
+      type: A
+      query: record_sets
+      hosted_zone_id: '{{ z1.zone_id }}'
+      start_record_name: 'geo-test-2.{{ zone_one }}'
+      max_items: 1
+    register: result
+  - assert:
+      that:
+        - create_geo_country is changed
+        - create_geo_country is not failed
+        - '"route53:ChangeResourceRecordSets" in create_geo_country.resource_actions'
+        - result.ResourceRecordSets[0].GeoLocation.CountryCode == "US"
+
+  - name: Create a record with geo_location - country_code (idempotency)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: 'geo-test-2.{{ zone_one }}'
+      identifier: "geohost2@www"
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+    register: create_geo_country_idem
+  - assert:
+      that:
+        - create_geo_country_idem is not changed
+        - create_geo_country_idem is not failed
+        - '"route53:ChangeResourceRecordSets" not in create_geo_country_idem.resource_actions'
+
+  - name: Create a record with geo_location - country_code (idempotency - check_mode)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: 'geo-test-2.{{ zone_one }}'
+      identifier: "geohost2@www"
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+    check_mode: true
+    register: create_geo_country_idem_check
+
+  - assert:
+      that:
+        - create_geo_country_idem_check is not changed
+        - create_geo_country_idem_check is not failed
+        - '"route53:ChangeResourceRecordSets" not in create_geo_country_idem_check.resource_actions'
+
+#Test Geo Location - Subdivision Code
+  - name: Create a record with geo_location - subdivision_code (check_mode)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: 'geo-test-3.{{ zone_one }}'
+      identifier: "geohost3@www"
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+        subdivision_code: TX
+    check_mode: true
+    register: create_geo_subdivision_check_mode
+  - assert:
+      that:
+        - create_geo_subdivision_check_mode is changed
+        - create_geo_subdivision_check_mode is not failed
+        - '"route53:ChangeResourceRecordSets" not in create_geo_subdivision_check_mode.resource_actions'
+
+  - name: Create a record with geo_location - subdivision_code
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: 'geo-test-3.{{ zone_one }}'
+      identifier: "geohost3@www"
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+        subdivision_code: TX
+    register: create_geo_subdivision
+  # Get resulting A record and geo_location parameters are applied
+  - name: 'get Route53 A record information'
+    route53_info:
+      type: A
+      query: record_sets
+      hosted_zone_id: '{{ z1.zone_id }}'
+      start_record_name: 'geo-test-3.{{ zone_one }}'
+      max_items: 1
+    register: result
+  - assert:
+      that:
+        - create_geo_subdivision is changed
+        - create_geo_subdivision is not failed
+        - '"route53:ChangeResourceRecordSets" in create_geo_subdivision.resource_actions'
+        - result.ResourceRecordSets[0].GeoLocation.CountryCode == "US"
+        - result.ResourceRecordSets[0].GeoLocation.SubdivisionCode == "TX"
+
+  - name: Create a record with geo_location - subdivision_code (idempotency)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: 'geo-test-3.{{ zone_one }}'
+      identifier: "geohost3@www"
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+        subdivision_code: TX
+    register: create_geo_subdivision_idem
+  - assert:
+      that:
+        - create_geo_subdivision_idem is not changed
+        - create_geo_subdivision_idem is not failed
+        - '"route53:ChangeResourceRecordSets" not in create_geo_subdivision_idem.resource_actions'
+
+  - name: Create a record with geo_location - subdivision_code (idempotency - check_mode)
+    route53:
+      state: present
+      zone: '{{ zone_one }}'
+      record: 'geo-test-3.{{ zone_one }}'
+      identifier: "geohost3@www"
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+        subdivision_code: TX
+    check_mode: true
+    register: create_geo_subdivision_idem_check
+
+  - assert:
+      that:
+        - create_geo_subdivision_idem_check is not changed
+        - create_geo_subdivision_idem_check is not failed
+        - '"route53:ChangeResourceRecordSets" not in create_geo_subdivision_idem_check.resource_actions'
+
+#Cleanup------------------------------------------------------
+
   always:
+
+  - name: delete a record with geo_location - continent_code
+    route53:
+      state: absent
+      zone: '{{ zone_one }}'
+      record: 'geo-test-1.{{ zone_one }}'
+      identifier: "geohost1@www"
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        continent_code: NA
+    ignore_errors: true
+
+  - name: delete a record with geo_location - country_code
+    route53:
+      state: absent
+      zone: '{{ zone_one }}'
+      record: 'geo-test-2.{{ zone_one }}'
+      identifier: "geohost2@www"
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+    ignore_errors: true
+
+  - name: delete a record with geo_location - subdivision_code
+    route53:
+      state: absent
+      zone: '{{ zone_one }}'
+      record: 'geo-test-3.{{ zone_one }}'
+      identifier: "geohost3@www"
+      type: A
+      value: 127.0.0.1
+      ttl: 30
+      geo_location:
+        country_code: US
+        subdivision_code: TX
+    ignore_errors: true
+
   - route53_info:
       query: record_sets
       hosted_zone_id: '{{ z1.zone_id }}'
@@ -737,7 +1044,7 @@
       state: absent
       zone: '{{ zone_one }}'
     register: delete_one
-    ignore_errors: yes
+    ignore_errors: true
     retries: 10
     until: delete_one is not failed
 
@@ -746,7 +1053,7 @@
       state: absent
       zone: '{{ zone_two }}'
     register: delete_two
-    ignore_errors: yes
+    ignore_errors: True
     retries: 10
     until: delete_two is not failed
 
