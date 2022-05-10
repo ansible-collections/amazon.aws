@@ -108,6 +108,30 @@ options:
         latency-based routing
       - Mutually exclusive with I(weight) and I(failover).
     type: str
+  geo_location:
+    description:
+      - Allows to control how Amazon Route 53 responds to DNS queries based on the geographic origin of the query.
+      - Two geolocation resource record sets that specify same geographic location cannot be created.
+      - Non-geolocation resource record sets that have the same values for the Name and Type elements as geolocation
+        resource record sets cannot be created.
+    suboptions:
+      continent_code:
+        description:
+          - The two-letter code for the continent.
+          - Specifying I(continent_code) with either I(country_code) or I(subdivision_code) returns an InvalidInput error.
+        type: str
+      country_code:
+        description:
+          - The two-letter code for a country.
+          - Amazon Route 53 uses the two-letter country codes that are specified in ISO standard 3166-1 alpha-2 .
+        type: str
+      subdivision_code:
+        description:
+          - The two-letter code for a state of the United States.
+          - To specify I(subdivision_code), I(country_code) must be set to C(US).
+        type: str
+    type: dict
+    version_added: 3.3.0
   health_check:
     description:
       - Health check to associate with this record
@@ -166,6 +190,12 @@ set:
       returned: always
       type: str
       sample: PRIMARY
+    geo_location:
+      description: geograpic location based on which Route53 resonds to DNS queries.
+      returned: when configured
+      type: dict
+      sample: { continent_code: "NA", country_code: "US", subdivision_code: "CA" }
+      version_added: 3.3.0
     health_check:
       description: health_check associated with this record.
       returned: always
@@ -350,6 +380,29 @@ EXAMPLES = r'''
       - 0 issue "ca.example.net"
       - 0 issuewild ";"
       - 0 iodef "mailto:security@example.com"
+- name: Create a record with geo_location - country_code
+  community.aws.route53:
+    state: present
+    zone: '{{ zone_one }}'
+    record: 'geo-test.{{ zone_one }}'
+    identifier: "geohost@www"
+    type: A
+    value: 1.1.1.1
+    ttl: 30
+    geo_location:
+      country_code: US
+- name: Create a record with geo_location - subdivision code
+  community.aws.route53:
+    state: present
+    zone: '{{ zone_one }}'
+    record: 'geo-test.{{ zone_one }}'
+    identifier: "geohost@www"
+    type: A
+    value: 1.1.1.1
+    ttl: 30
+    geo_location:
+      country_code: US
+      subdivision_code: TX
 '''
 
 from operator import itemgetter
@@ -495,6 +548,12 @@ def main():
         identifier=dict(type='str'),
         weight=dict(type='int'),
         region=dict(type='str'),
+        geo_location=dict(type='dict',
+                          options=dict(
+                              continent_code=dict(type="str"),
+                              country_code=dict(type="str"),
+                              subdivision_code=dict(type="str")),
+                          required=False),
         health_check=dict(type='str'),
         failover=dict(type='str', choices=['PRIMARY', 'SECONDARY']),
         vpc_id=dict(type='str'),
@@ -518,11 +577,12 @@ def main():
             ('failover', 'region', 'weight'),
             ('alias', 'ttl'),
         ],
-        # failover, region and weight require identifier
+        # failover, region, weight and geo_location require identifier
         required_by=dict(
             failover=('identifier',),
             region=('identifier',),
             weight=('identifier',),
+            geo_location=('identifier'),
         ),
     )
 
@@ -557,6 +617,7 @@ def main():
     vpc_id_in = module.params.get('vpc_id')
     wait_in = module.params.get('wait')
     wait_timeout_in = module.params.get('wait_timeout')
+    geo_location = module.params.get('geo_location')
 
     if zone_in[-1:] != '.':
         zone_in += "."
@@ -567,8 +628,8 @@ def main():
     if command_in == 'create' or command_in == 'delete':
         if alias_in and len(value_in) != 1:
             module.fail_json(msg="parameter 'value' must contain a single dns name for alias records")
-        if (weight_in is None and region_in is None and failover_in is None) and identifier_in is not None:
-            module.fail_json(msg="You have specified identifier which makes sense only if you specify one of: weight, region or failover.")
+        if not any([weight_in, region_in, failover_in, geo_location]) and identifier_in is not None:
+            module.fail_json(msg="You have specified identifier which makes sense only if you specify one of: weight, region, geo_location or failover.")
 
     retry_decorator = AWSRetry.jittered_backoff(
         retries=MAX_AWS_RETRIES,
@@ -604,6 +665,30 @@ def main():
         'HealthCheckId': health_check_in,
         'SetIdentifier': identifier_in,
     })
+
+    if geo_location:
+        continent_code = geo_location.get('continent_code')
+        country_code = geo_location.get('country_code')
+        subdivision_code = geo_location.get('subdivision_code')
+
+        if continent_code and (country_code or subdivision_code):
+            module.fail_json(changed=False, msg='While using geo_location, continent_code is mutually exclusive with country_code and subdivision_code.')
+
+        if not any([continent_code, country_code, subdivision_code]):
+            module.fail_json(changed=False, msg='To use geo_location please specify either continent_code, country_code, or subdivision_code.')
+
+        if geo_location.get('subdivision_code') and geo_location.get('country_code').lower() != 'us':
+            module.fail_json(changed=False, msg='To use subdivision_code, you must specify country_code as US.')
+
+        # Build geo_location suboptions specification
+        resource_record_set['GeoLocation'] = {}
+        if continent_code:
+            resource_record_set['GeoLocation']['ContinentCode'] = continent_code
+        if country_code:
+            resource_record_set['GeoLocation']['CountryCode'] = country_code
+        if subdivision_code:
+            resource_record_set['GeoLocation']['SubdivisionCode'] = subdivision_code
+
     if command_in == 'delete' and aws_record is not None:
         resource_record_set['TTL'] = aws_record.get('TTL')
         if not resource_record_set['ResourceRecords']:
