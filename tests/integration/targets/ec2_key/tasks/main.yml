@@ -1,7 +1,7 @@
 ---
 # TODO - name: test 'validate_certs' parameter
 # TODO - name: test creating key pair with another_key_material with force=yes
-# ============================================================
+# =============================================================
 
 - module_defaults:
     group/aws:
