@@ -204,14 +204,14 @@ from ansible.module_utils._text import to_native
 from ansible.module_utils.common.network import to_subnet
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
-from ..module_utils.core import AnsibleAWSModule
-from ..module_utils.core import is_boto3_error_message
-from ..module_utils.ec2 import AWSRetry
-from ..module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ..module_utils.ec2 import compare_aws_tags
-from ..module_utils.waiters import get_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
 def vpc_exists(module, vpc, name, cidr_block, multi):

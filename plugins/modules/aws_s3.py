@@ -375,18 +375,18 @@ from ansible.module_utils.basic import to_text
 from ansible.module_utils.basic import to_native
 from ansible.module_utils.six.moves.urllib.parse import urlparse
 
-from ..module_utils.core import AnsibleAWSModule
-from ..module_utils.core import is_boto3_error_code
-from ..module_utils.core import is_boto3_error_message
-from ..module_utils.ec2 import AWSRetry
-from ..module_utils.ec2 import boto3_conn
-from ..module_utils.ec2 import get_aws_connection_info
-from ..module_utils.ec2 import ansible_dict_to_boto3_tag_list
-from ..module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ..module_utils.s3 import HAS_MD5
-from ..module_utils.s3 import calculate_etag
-from ..module_utils.s3 import calculate_etag_content
-from ..module_utils.s3 import validate_bucket_name
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import HAS_MD5
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import calculate_etag
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import calculate_etag_content
+from ansible_collections.amazon.aws.plugins.module_utils.s3 import validate_bucket_name
 
 IGNORE_S3_DROP_IN_EXCEPTIONS = ['XNotImplemented', 'NotImplemented']
 
