@@ -132,7 +132,7 @@ options:
         U(https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html).
       - When I(mode=get) and I(overwrite=latest) the last modified timestamp of local file
         is compared with the 'LastModified' of the object/key in S3.
-    default: 'always'
+    default: 'different'
     aliases: ['force']
     type: str
   retries:
@@ -228,7 +228,7 @@ options:
 author:
   - "Lester Wade (@lwade)"
   - "Sloane Hertel (@s-hertel)"
-  - "Alina Buzachis (@linabuzachis)"
+  - "Alina Buzachis (@alinabuzachis)"
 notes:
   - Support for I(tags) and I(purge_tags) was added in release 2.0.0.
 extends_documentation_fragment:
@@ -954,7 +954,7 @@ def main():
         object=dict(),
         permission=dict(type='list', elements='str', default=['private']),
         version=dict(default=None),
-        overwrite=dict(aliases=['force'], default='always'),
+        overwrite=dict(aliases=['force'], default='different'),
         prefix=dict(default=""),
         retries=dict(aliases=['retry'], type='int', default=0),
         s3_url=dict(aliases=['S3_URL'], deprecated_aliases=[dict(name='S3_URL', version='5.0.0', collection_name='amazon.aws')]),
@@ -1011,7 +1011,8 @@ def main():
 
     if overwrite not in ['always', 'never', 'different', 'latest']:
         if module.boolean(overwrite):
-            overwrite = 'always'
+            # Fall to default configuration
+            overwrite = 'different'
         else:
             overwrite = 'never'
 
