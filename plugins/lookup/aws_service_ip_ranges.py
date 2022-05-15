@@ -5,9 +5,9 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = '''
-lookup: aws_service_ip_ranges
+name: aws_service_ip_ranges
 author:
-  - James Turner <turnerjsm@gmail.com>
+  - James Turner (!UNKNOWN) <turnerjsm@gmail.com>
 requirements:
   - must have public internet connectivity
 short_description: Look up the IP ranges for services provided in AWS such as EC2 and S3.

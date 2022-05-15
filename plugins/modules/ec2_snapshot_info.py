@@ -6,17 +6,17 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ec2_snapshot_info
 version_added: 1.0.0
-short_description: Gather information about ec2 volume snapshots in AWS
+short_description: Gathers information about EC2 volume snapshots in AWS
 description:
-    - Gather information about ec2 volume snapshots in AWS.
-    - This module was called C(ec2_snapshot_facts) before Ansible 2.9. The usage did not change.
+  - Gathers information about EC2 volume snapshots in AWS.
+  - This module was called C(ec2_snapshot_facts) before Ansible 2.9. The usage did not change.
 author:
-    - "Rob White (@wimnat)"
-    - Aubin Bikouo (@abikouo)
+  - Rob White (@wimnat)
+  - Aubin Bikouo (@abikouo)
 options:
   snapshot_ids:
     description:
@@ -71,12 +71,11 @@ notes:
     the account use the filter 'owner-id'.
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.ec2
+  - amazon.aws.aws
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all snapshots, including public ones
@@ -114,7 +113,7 @@ EXAMPLES = '''
 
 '''
 
-RETURN = '''
+RETURN = r'''
 snapshots:
     description: snapshots retrieved
     type: list
@@ -137,9 +136,10 @@ snapshots:
             returned: always
             sample: completed
         state_message:
-            description: Encrypted Amazon EBS snapshots are copied asynchronously. If a snapshot copy operation fails (for example, if the proper
-                         AWS Key Management Service (AWS KMS) permissions are not obtained) this field displays error state details to help you diagnose why the
-                         error occurred.
+            description:
+              - Encrypted Amazon EBS snapshots are copied asynchronously. If a snapshot copy operation fails (for example, if the proper
+                AWS Key Management Service (AWS KMS) permissions are not obtained) this field displays error state details to help you diagnose why the
+                error occurred.
             type: str
             returned: always
             sample:
@@ -184,14 +184,16 @@ snapshots:
             returned: always
             sample: "True"
         kms_key_id:
-            description: The full ARN of the AWS Key Management Service (AWS KMS) customer master key (CMK) that was used to \
-            protect the volume encryption key for the parent volume.
+            description:
+              - The full ARN of the AWS Key Management Service (AWS KMS) customer master key (CMK) that was used to
+                protect the volume encryption key for the parent volume.
             type: str
             returned: always
             sample: "74c9742a-a1b2-45cb-b3fe-abcdef123456"
         data_encryption_key_id:
-            description: The data encryption key identifier for the snapshot. This value is a unique identifier that \
-            corresponds to the data encryption key that was used to encrypt the original volume or snapshot copy.
+            description:
+              - The data encryption key identifier for the snapshot. This value is a unique identifier that
+                corresponds to the data encryption key that was used to encrypt the original volume or snapshot copy.
             type: str
             returned: always
             sample: "arn:aws:kms:ap-southeast-2:012345678900:key/74c9742a-a1b2-45cb-b3fe-abcdef123456"

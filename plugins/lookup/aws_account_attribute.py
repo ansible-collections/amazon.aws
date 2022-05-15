@@ -4,9 +4,9 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = '''
-lookup: aws_account_attribute
+name: aws_account_attribute
 author:
-  - Sloane Hertel <shertel@redhat.com>
+  - Sloane Hertel (@s-hertel) <shertel@redhat.com>
 requirements:
   - python >= 3.6
   - boto3
