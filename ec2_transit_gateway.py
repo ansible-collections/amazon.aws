@@ -242,7 +242,11 @@ class AnsibleEc2Tgw(object):
     def __init__(self, module, results):
         self._module = module
         self._results = results
-        self._connection = self._module.client('ec2')
+        retry_decorator = AWSRetry.jittered_backoff(
+            catch_extra_error_codes=['IncorrectState'],
+        )
+        connection = module.client('ec2', retry_decorator=retry_decorator)
+        self._connection = connection
         self._check_mode = self._module.check_mode
 
     def process(self):
