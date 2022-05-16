@@ -51,16 +51,37 @@ And handled using the ``botocore_at_least`` helper method:
         if not module.botocore_at_least("1.19.27"):
             module.fail_json(msg="botocore >= 1.19.27 is required to set the throughput for a volume")
 
+Starting with the 4.0 releases of both collections, all support for the original boto SDK has been dropped.  AWS Modules must be written using the botocore and boto3 SDKs.
+
 .. _ansible_collections.amazon.aws.docsite.dev_module_maint:
 
 Maintaining existing modules
 ============================
 
-Fixing bugs
------------
+Changelogs
+----------
 
-Bug fixes to code that relies on boto will still be accepted. When possible,
-the code should be ported to use boto3.
+A changelog fragment must be added to any PR that changes functionality or fixes
+a bug.  More information about changelog fragments can be found in the
+`Making your PR merge-worthy section of the Ansible Development Cycle documentation<community_changelogs>`
+
+Breaking Changes
+----------------
+
+Changes that are likely to break existing playbooks using the AWS collections should be
+avoided, should only be made in a major release, and where practical should be
+preceeded by a deprecation cycle of at least 1 full major release.  Deprecations
+may be backported to the stable branches.
+
+For example:
+- A deprecation added in release 3.0.0 may be removed in release 4.0.0.
+- A deprecation added in release 1.2.0 may be removed in release 3.0.0.
+
+Breaking changes include:
+- Removing a parameter.
+- Making a parameter ``required``.
+- Updating the default value of a parameter.
+- Changing or removing an existing return value.
 
 Adding new features
 -------------------
@@ -80,62 +101,6 @@ supports a feature rather than version checking. For example, from the ``ec2`` m
    else:
        if instance_profile_name is not None:
            module.fail_json(msg="instance_profile_name parameter requires boto version 2.5.0 or higher")
-
-Migrating to boto3
-------------------
-
-Prior to Ansible 2.0, modules were written in either boto3 or boto. We are
-still porting some modules to boto3. Modules that still require boto should be ported to use boto3 rather than using both libraries (boto and boto3). We would like to remove the boto dependency from all modules.
-
-Porting code to AnsibleAWSModule
----------------------------------
-
-Some old AWS modules use the generic ``AnsibleModule`` as a base rather than the more efficient ``AnsibleAWSModule``. To port an old module to ``AnsibleAWSModule``, change:
-
-.. code-block:: python
-
-   from ansible.module_utils.basic import AnsibleModule
-   ...
-   module = AnsibleModule(...)
-
-to:
-
-.. code-block:: python
-
-   from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-   ...
-   module = AnsibleAWSModule(...)
-
-Few other changes are required. AnsibleAWSModule
-does not inherit methods from AnsibleModule by default, but most useful methods
-are included. If you do find an issue, please raise a bug report.
-
-When porting, keep in mind that AnsibleAWSModule also will add the default ec2
-argument spec by default. In pre-port modules, you should see common arguments
-specified with:
-
-.. code-block:: python
-
-   def main():
-       argument_spec = ec2_argument_spec()
-       argument_spec.update(dict(
-           state=dict(default='present', choices=['present', 'absent', 'enabled', 'disabled']),
-           name=dict(default='default'),
-           # ... and so on ...
-       ))
-       module = AnsibleModule(argument_spec=argument_spec, supports_check_mode=True,)
-
-These can be replaced with:
-
-.. code-block:: python
-
-   def main():
-       argument_spec = dict(
-           state=dict(default='present', choices=['present', 'absent', 'enabled', 'disabled']),
-           name=dict(default='default'),
-           # ... and so on ...
-       )
-       module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True,)
 
 .. _ansible_collections.amazon.aws.docsite.dev_module_create:
 
@@ -424,7 +389,7 @@ The combination of these two approaches is then:
 
 .. code-block:: python
 
-   @AWSRetry.exponential_backoff(retries=5, delay=5)
+   @AWSRetry.jittered_backoff(retries=5, delay=5)
    def describe_some_resource_with_backoff(client, **kwargs):
         paginator = client.get_paginator('describe_some_resource')
         return paginator.paginate(**kwargs).build_full_result()['SomeResource']
@@ -446,7 +411,7 @@ argument on the decorator.
 
 .. code-block:: python
 
-   @AWSRetry.exponential_backoff(retries=5, delay=5, catch_extra_error_codes=['ResourceNotFound'])
+   @AWSRetry.jittered_backoff(retries=5, delay=5, catch_extra_error_codes=['ResourceNotFound'])
    def describe_some_resource_retry_missing(client, **kwargs):
         return client.describe_some_resource(ResourceName=kwargs['name'])['Resources']
 
@@ -683,8 +648,75 @@ two purposes. First indicates it's in an AWS test causing the test framework to 
 available during the test run. Second putting the test in a test group causing it to be run in the
 continuous integration build.
 
-Tests for new modules should be added to the same group as existing AWS tests. In general just copy
+Tests for new modules should be added to the ``cloud/aws`` group. In general just copy
 an existing aliases file such as the `aws_s3 tests aliases file <https://github.com/ansible-collections/amazon.aws/blob/master/tests/integration/targets/aws_s3/aliases>`_.
+
+
+Custom SDK versions for Integration Tests
+-----------------------------------------
+
+By default integration tests will run against the earliest supported version of
+the AWS SDK.  The current supported versions can be found in
+``tests/integration/constraints.txt`` and should not be updated.  Where a module
+needs access to a later version of the SDK this can be installed by depending on
+the ``setup_botocore_pip`` role and setting the ``botocore_version`` variable in
+the ``meta/main.yml`` file for your tests.
+
+.. code-block:: yaml
+
+    dependencies:
+      - role: setup_botocore_pip
+        vars:
+          botocore_version: "1.20.24"
+
+
+Creating EC2 instances in Integration Tests
+-------------------------------------------
+
+When started, the integration tests will be passed ``aws_region`` as an extra var.
+Any resources created should be created in in this region, this includes EC2
+instances.  Since AMIs are region specific there is a role which can be
+included which will query the APIs for an AMI to use and set the ``ec2_ami_id``
+fact.  This role can be included by adding the ``setup_ec2_facts`` role as a
+dependency in the ``meta/main.yml`` file for your tests.
+
+
+.. code-block:: yaml
+
+    dependencies:
+      - role: setup_ec2_facts
+
+The ``ec2_ami_id`` fact can then be used in the tests.
+
+.. code-block:: yaml
+
+    - name: Create launch configuration 1
+      community.aws.ec2_lc:
+        name: '{{ resource_prefix }}-lc1'
+        image_id: '{{ ec2_ami_id }}'
+        assign_public_ip: yes
+        instance_type: '{{ ec2_instance_type }}'
+        security_groups: '{{ sg.group_id }}'
+        volumes:
+          - device_name: /dev/xvda
+            volume_size: 10
+            volume_type: gp2
+            delete_on_termination: true
+
+To improve test result reproducability across regions, tests should use this
+role and the fact it provides to chose an AMI to use.
+
+
+Resource naming in Integration Tests
+------------------------------------
+
+AWS has a range of limitations for the name of resources.  Where possible,
+resource names should include a string which makes the resource names unique
+to the test.
+
+The ``ansible-test`` tool used for running the integration tests provides two
+helpful extra vars: ``resource_prefix`` and ``tiny_prefix`` which are unique to the
+test set, and should generally used as part of the name.  ``resource_prefix`` will generate a prefix based on the host the test is being run on.  Sometimes this may result in a resource name that exceeds the character limit allowed by AWS.  In these cases, ``tiny_prefix`` will provide a 12-character randomly generated prefix.
 
 AWS Credentials for Integration Tests
 -------------------------------------
