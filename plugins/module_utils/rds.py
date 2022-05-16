@@ -223,7 +223,7 @@ def wait_for_instance_status(client, module, db_instance_id, waiter_name):
         except ValueError:
             # using a waiter in module_utils/waiters.py
             waiter = get_waiter(client, waiter_name)
-        waiter.wait(DBInstanceIdentifier=db_instance_id)
+        waiter.wait(WaiterConfig={'Delay': 60, 'MaxAttempts': 60}, DBInstanceIdentifier=db_instance_id)
 
     waiter_expected_status = {
         'db_instance_deleted': 'deleted',
