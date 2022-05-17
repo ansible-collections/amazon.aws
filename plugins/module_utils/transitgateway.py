@@ -103,7 +103,23 @@ class TGWAttachmentBoto3Mixin(Boto3Mixin):
         return attachment
 
 
-class TransitGatewayVpcAttachmentManager(TGWAttachmentBoto3Mixin, BaseEc2Manager):
+class BaseTGWManager(BaseEc2Manager):
+
+    @Boto3Mixin.aws_error_handler('connect to AWS')
+    def _create_client(self, client_name='ec2'):
+        if client_name == 'ec2':
+            error_codes = ['IncorrectState']
+        else:
+            error_codes = []
+
+        retry_decorator = AWSRetry.jittered_backoff(
+            catch_extra_error_codes=error_codes,
+        )
+        client = self.module.client(client_name, retry_decorator=retry_decorator)
+        return client
+
+
+class TransitGatewayVpcAttachmentManager(TGWAttachmentBoto3Mixin, BaseTGWManager):
 
     TAG_RESOURCE_TYPE = 'transit-gateway-attachment'
 
