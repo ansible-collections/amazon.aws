@@ -23,8 +23,6 @@
 # Common functionality to be used by the modules:
 #   - acm
 
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
 
 """
 Common Amazon Certificate Manager facts shared between modules
