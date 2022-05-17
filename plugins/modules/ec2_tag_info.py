@@ -51,8 +51,8 @@ tags:
   type: dict
 '''
 
-from ..module_utils.core import AnsibleAWSModule
-from ..module_utils.ec2 import describe_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_ec2_tags
 
 
 def main():

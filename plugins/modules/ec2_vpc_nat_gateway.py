@@ -243,14 +243,14 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
-from ..module_utils.core import AnsibleAWSModule
-from ..module_utils.core import is_boto3_error_code
-from ..module_utils.waiters import get_waiter
-from ..module_utils.ec2 import AWSRetry
-from ..module_utils.ec2 import camel_dict_to_snake_dict
-from ..module_utils.ec2 import describe_ec2_tags
-from ..module_utils.ec2 import ensure_ec2_tags
-from ..module_utils.tagging import boto3_tag_specifications
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import describe_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 
 
 @AWSRetry.jittered_backoff(retries=10)
