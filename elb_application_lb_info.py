@@ -223,7 +223,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_er
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry, boto3_tag_list_to_ansible_dict
 
 
-@AWSRetry.jittered_backoff()
+@AWSRetry.jittered_backoff(retries=10)
 def get_paginator(connection, **kwargs):
     paginator = connection.get_paginator('describe_load_balancers')
     return paginator.paginate(**kwargs).build_full_result()
