@@ -1,4 +1,13 @@
+plugins/callback/aws_resource_actions.py validate-modules:invalid-documentation  # Branch accepting security fixes only
 plugins/inventory/aws_ec2.py pylint:use-a-generator # (new test) Should be an easy fix but not worth blocking gating
+plugins/inventory/aws_ec2.py validate-modules:invalid-documentation  # Branch accepting security fixes only
+plugins/inventory/aws_ec2.py validate-modules:parameter-list-no-elements  # Branch accepting security fixes only
+plugins/inventory/aws_rds.py validate-modules:invalid-documentation  # Branch accepting security fixes only
+plugins/inventory/aws_rds.py validate-modules:parameter-list-no-elements  # Branch accepting security fixes only
+plugins/lookup/aws_account_attribute.py validate-modules:invalid-documentation  # Branch accepting security fixes only
+plugins/lookup/aws_secret.py validate-modules:invalid-documentation  # Branch accepting security fixes only
+plugins/lookup/aws_service_ip_ranges.py validate-modules:invalid-documentation  # Branch accepting security fixes only
+plugins/lookup/aws_ssm.py validate-modules:invalid-documentation  # Branch accepting security fixes only
 plugins/modules/ec2_group.py pylint:use-a-generator # (new test) Should be an easy fix but not worth blocking gating
 plugins/modules/ec2_tag.py validate-modules:parameter-state-invalid-choice  # Deprecated choice that can't be removed until 2022
 plugins/modules/ec2_vol.py validate-modules:parameter-state-invalid-choice  # Deprecated choice that can't be removed until 2022
