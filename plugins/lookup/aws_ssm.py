@@ -8,11 +8,11 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = '''
-lookup: aws_ssm
+name: aws_ssm
 author:
-  - Bill Wang <ozbillwang(at)gmail.com>
-  - Marat Bakeev <hawara(at)gmail.com>
-  - Michael De La Rue <siblemitcom.mddlr@spamgourmet.com>
+  - Bill Wang (!UNKNOWN) <ozbillwang(at)gmail.com>
+  - Marat Bakeev (!UNKNOWN) <hawara(at)gmail.com>
+  - Michael De La Rue (!UNKNOWN) <siblemitcom.mddlr@spamgourmet.com>
 requirements:
   - python >= 3.6
   - boto3

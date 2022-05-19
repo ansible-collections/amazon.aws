@@ -6,7 +6,6 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
     name: aws_rds
-    plugin_type: inventory
     short_description: rds instance source
     description:
         - Get instances and clusters from Amazon Web Services RDS.
@@ -33,14 +32,15 @@ DOCUMENTATION = '''
         statuses:
           description: A list of desired states for instances/clusters to be added to inventory. Set to ['all'] as a shorthand to find everything.
           type: list
+          elements: str
           default:
               - creating
               - available
         iam_role_arn:
           description: The ARN of the IAM role to assume to perform the inventory lookup. You should still provide
               AWS credentials with enough privilege to perform the AssumeRole action.
-    note:
-        Ansible versions prior to 2.10 should use the fully qualified plugin name 'amazon.aws.aws_rds'.
+    notes:
+        - Ansible versions prior to 2.10 should use the fully qualified plugin name 'amazon.aws.aws_rds'.
     extends_documentation_fragment:
     - inventory_cache
     - constructed

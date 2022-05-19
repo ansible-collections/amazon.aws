@@ -6,7 +6,6 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
     name: aws_ec2
-    plugin_type: inventory
     short_description: EC2 inventory source
     requirements:
         - boto3
@@ -37,6 +36,7 @@ DOCUMENTATION = '''
               - A list of regions in which to describe EC2 instances.
               - If empty (the default) default this will include all regions, except possibly restricted ones like us-gov-west-1 and cn-north-1.
           type: list
+          elements: str
           default: []
         hostnames:
           description:
@@ -44,6 +44,7 @@ DOCUMENTATION = '''
               - You can use the options specified in U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
               - To use tags as hostnames use the syntax tag:Name=Value to use the hostname Name_Value, or tag:Name to use the value of the Name tag.
           type: list
+          elements: dict
           default: []
         filters:
           description:
@@ -58,6 +59,7 @@ DOCUMENTATION = '''
               - Every entry in this list triggers a search query. As such, from a performance point of view, it's better to
                 keep the list as short as possible.
           type: list
+          elements: dict
           default: []
         exclude_filters:
           description:
@@ -67,6 +69,7 @@ DOCUMENTATION = '''
               - Every entry in this list triggers a search query. As such, from a performance point of view, it's better to
                 keep the list as short as possible.
           type: list
+          elements: dict
           default: []
         include_extra_api_calls:
           description:
