@@ -7,11 +7,8 @@ DOCUMENTATION = '''
 name: aws_account_attribute
 author:
   - Sloane Hertel (@s-hertel) <shertel@redhat.com>
-requirements:
-  - python >= 3.6
-  - boto3
-  - botocore >= 1.19.0
 extends_documentation_fragment:
+- amazon.aws.aws_boto3
 - amazon.aws.aws_credentials
 - amazon.aws.aws_region
 
