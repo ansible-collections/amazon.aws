@@ -111,7 +111,7 @@
         jid: "{{ test_async.ansible_job_id }}"
       register: status
       until: status is finished
-      retries: 10
+      retries: 30
 
     - name: test put with overwrite=different and unmodified object
       s3_object:
