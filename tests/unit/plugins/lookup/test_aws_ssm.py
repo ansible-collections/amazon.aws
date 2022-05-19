@@ -158,7 +158,7 @@ def test_path_lookup_variable(mocker):
         endpoint_url=None,
         config=ANY,
         verify=None,
-        )
+    )
     get_paginator_fn.assert_called_with('get_parameters_by_path')
     paginator.paginate.assert_called_with(Path="/testpath", Recursive=True, WithDecryption=True)
     paginator.paginate.return_value.build_full_result.assert_called_with()
