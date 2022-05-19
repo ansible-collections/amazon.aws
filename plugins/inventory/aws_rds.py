@@ -54,11 +54,9 @@ DOCUMENTATION = '''
     extends_documentation_fragment:
     - inventory_cache
     - constructed
+    - amazon.aws.aws_boto3
     - amazon.aws.aws_credentials
 
-    requirements:
-        - boto3
-        - botocore
     author: Sloane Hertel (@s-hertel)
 '''
 

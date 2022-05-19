@@ -13,10 +13,6 @@ author:
   - Bill Wang (!UNKNOWN) <ozbillwang(at)gmail.com>
   - Marat Bakeev (!UNKNOWN) <hawara(at)gmail.com>
   - Michael De La Rue (!UNKNOWN) <siblemitcom.mddlr@spamgourmet.com>
-requirements:
-  - python >= 3.6
-  - boto3
-  - botocore >= 1.19.0
 short_description: Get the value for a SSM parameter or all parameters under a path.
 description:
   - Get the value for an Amazon Simple Systems Manager parameter or a hierarchy of parameters.
@@ -74,6 +70,8 @@ options:
     type: string
     choices: ['error', 'skip', 'warn']
     version_added: 2.0.0
+extends_documentation_fragment:
+- amazon.aws.aws_boto3
 '''
 
 EXAMPLES = '''
