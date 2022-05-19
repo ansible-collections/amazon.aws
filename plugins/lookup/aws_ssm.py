@@ -273,7 +273,7 @@ class LookupModule(LookupBase):
                 self._display.warning('Skipping, did not find SSM parameter path %s' % term)
 
         return paramlist
-    
+
     def fail_json(self, msg, **kwargs):
         raise AnsibleError(msg)
 
