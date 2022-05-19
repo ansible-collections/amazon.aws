@@ -7,12 +7,10 @@ __metaclass__ = type
 DOCUMENTATION = '''
     name: aws_ec2
     short_description: EC2 inventory source
-    requirements:
-        - boto3
-        - botocore
     extends_documentation_fragment:
     - inventory_cache
     - constructed
+    - amazon.aws.aws_boto3
     - amazon.aws.aws_credentials
 
     description:
