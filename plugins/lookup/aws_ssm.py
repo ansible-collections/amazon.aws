@@ -70,6 +70,7 @@ options:
   endpoint:
     description: Use a custom endpoint when connecting to SSM service
     type: string
+    version_added: 3.4.0
 extends_documentation_fragment:
 - amazon.aws.aws_boto3
 '''
