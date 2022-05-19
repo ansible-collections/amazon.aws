@@ -145,6 +145,7 @@ display = Display()
 
 
 def _boto3_conn(region, credentials):
+    # Test
     if 'boto_profile' in credentials:
         boto_profile = credentials.pop('boto_profile')
     else:
