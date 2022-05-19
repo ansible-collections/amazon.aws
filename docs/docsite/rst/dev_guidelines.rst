@@ -232,7 +232,6 @@ and that the more esoteric connection options are documented. For example:
    DOCUMENTATION = '''
    module: my_module
    # some lines omitted here
-   requirements: [ 'botocore', 'boto3' ]
    extends_documentation_fragment:
        - amazon.aws.aws
        - amazon.aws.ec2
