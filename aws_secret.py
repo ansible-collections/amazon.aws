@@ -62,8 +62,17 @@ options:
     version_added: 3.1.0
   tags:
     description:
-    - Specifies a list of user-defined tags that are attached to the secret.
+    - Specifies a dictionary of user-defined tags that are attached to the secret.
+    - To remove all tags set I(tags={}) and I(purge_tags=true).
     type: dict
+  purge_tags:
+    description:
+    - If I(purge_tags=true) and I(tags) is set, existing tags will be purged from the resource
+      to match exactly what is defined by I(tags) parameter.
+    type: bool
+    required: false
+    default: true
+    version_added: 4.0.0
   rotation_lambda:
     description:
     - Specifies the ARN of the Lambda function that can rotate the secret.
@@ -110,12 +119,17 @@ secret:
   type: complex
   contains:
     arn:
-      description: The ARN of the secret
+      description: The ARN of the secret.
       returned: always
       type: str
       sample: arn:aws:secretsmanager:eu-west-1:xxxxxxxxxx:secret:xxxxxxxxxxx
+    description:
+      description: A description of the secret.
+      returned: when the secret has a description
+      type: str
+      sample: An example description
     last_accessed_date:
-      description: The date the secret was last accessed
+      description: The date the secret was last accessed.
       returned: always
       type: str
       sample: '2018-11-20T01:00:00+01:00'
@@ -139,6 +153,29 @@ secret:
       returned: always
       type: dict
       sample: { "dc1ed59b-6d8e-4450-8b41-536dfe4600a9": [ "AWSCURRENT" ] }
+    tags:
+      description:
+        - A list of dictionaries representing the tags associated with the secret in the standard boto3 format.
+      returned: when the secret has tags
+      type: list
+      elements: dict
+      contains:
+        key:
+          description: The name or key of the tag.
+          type: str
+          example: MyTag
+          returned: success
+        value:
+          description: The value of the tag.
+          type: str
+          example: Some value.
+          returned: success
+    tags_dict:
+      description: A dictionary representing the tags associated with the secret.
+      type: dict
+      returned: when the secret has tags
+      example: {'MyTagName': 'Some Value'}
+      version_added: 4.0.0
 '''
 
 from ansible.module_utils._text import to_bytes
@@ -328,12 +365,16 @@ class SecretsManagerInterface(object):
         return response
 
     def tag_secret(self, secret_name, tags):
+        if self.module.check_mode:
+            self.module.exit_json(changed=True)
         try:
             self.client.tag_resource(SecretId=secret_name, Tags=tags)
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e, msg="Failed to add tag(s) to secret")
 
     def untag_secret(self, secret_name, tag_keys):
+        if self.module.check_mode:
+            self.module.exit_json(changed=True)
         try:
             self.client.untag_resource(SecretId=secret_name, TagKeys=tag_keys)
         except (BotoCoreError, ClientError) as e:
@@ -391,7 +432,8 @@ def main():
             'secret_type': dict(choices=['binary', 'string'], default="string"),
             'secret': dict(default="", no_log=True),
             'resource_policy': dict(type='json', default=None),
-            'tags': dict(type='dict', default={}),
+            'tags': dict(type='dict', default=None),
+            'purge_tags': dict(type='bool', default=True),
             'rotation_lambda': dict(),
             'rotation_interval': dict(type='int', default=30),
             'recovery_window': dict(type='int', default=30),
@@ -414,6 +456,7 @@ def main():
         lambda_arn=module.params.get('rotation_lambda'),
         rotation_interval=module.params.get('rotation_interval')
     )
+    purge_tags = module.params.get('purge_tags')
 
     current_secret = secrets_mgr.get_secret(secret.name)
 
@@ -453,15 +496,18 @@ def main():
                 else:
                     result = secrets_mgr.put_resource_policy(secret)
                 changed = True
-            current_tags = boto3_tag_list_to_ansible_dict(current_secret.get('Tags', []))
-            tags_to_add, tags_to_remove = compare_aws_tags(current_tags, secret.tags)
-            if tags_to_add:
-                secrets_mgr.tag_secret(secret.name, ansible_dict_to_boto3_tag_list(tags_to_add))
-                changed = True
-            if tags_to_remove:
-                secrets_mgr.untag_secret(secret.name, tags_to_remove)
-                changed = True
+            if module.params.get('tags') is not None:
+                current_tags = boto3_tag_list_to_ansible_dict(current_secret.get('Tags', []))
+                tags_to_add, tags_to_remove = compare_aws_tags(current_tags, secret.tags, purge_tags)
+                if tags_to_add:
+                    secrets_mgr.tag_secret(secret.name, ansible_dict_to_boto3_tag_list(tags_to_add))
+                    changed = True
+                if tags_to_remove:
+                    secrets_mgr.untag_secret(secret.name, tags_to_remove)
+                    changed = True
         result = camel_dict_to_snake_dict(secrets_mgr.get_secret(secret.name))
+        if result.get('tags', None) is not None:
+            result['tags_dict'] = boto3_tag_list_to_ansible_dict(result.get('tags', []))
         result.pop("response_metadata")
 
     module.exit_json(changed=changed, secret=result)
