@@ -41,6 +41,9 @@ class Ec2Utils(unittest.TestCase):
 
         self.tag_minimal_dict = {'mykey': 'myvalue'}
 
+        self.tag_aws_dict = {'aws:cloudformation:stack-name': 'ExampleStack'}
+        self.tag_aws_changed = {'aws:cloudformation:stack-name': 'AnotherStack'}
+
     # ========================================================
     #   tagging.ansible_dict_to_boto3_tag_list
     # ========================================================
@@ -138,6 +141,19 @@ class Ec2Utils(unittest.TestCase):
         keys_to_set, keys_to_unset = compare_aws_tags(self.tag_example_dict, new_dict, purge_tags=True)
         self.assertEqual(new_keys, keys_to_set)
         self.assertEqual(['Normal case'], keys_to_unset)
+
+    def test_compare_aws_tags_aws(self):
+        starting_tags = dict(self.tag_aws_dict)
+        desired_tags = dict(self.tag_minimal_dict)
+        tags_to_set, tags_to_unset = compare_aws_tags(starting_tags, desired_tags, purge_tags=True)
+        self.assertEqual(desired_tags, tags_to_set)
+        self.assertEqual([], tags_to_unset)
+        # If someone explicitly passes a changed 'aws:' key the APIs will probably
+        # throw an error, but this is their responsibility.
+        desired_tags.update(self.tag_aws_changed)
+        tags_to_set, tags_to_unset = compare_aws_tags(starting_tags, desired_tags, purge_tags=True)
+        self.assertEqual(desired_tags, tags_to_set)
+        self.assertEqual([], tags_to_unset)
 
     # ========================================================
     #   tagging.boto3_tag_specifications

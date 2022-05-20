@@ -164,8 +164,14 @@ def compare_aws_tags(current_tags_dict, new_tags_dict, purge_tags=True):
     tag_key_value_pairs_to_set = {}
     tag_keys_to_unset = []
 
-    for key in current_tags_dict.keys():
-        if key not in new_tags_dict and purge_tags:
+    if purge_tags:
+        for key in current_tags_dict.keys():
+            if key in new_tags_dict:
+                continue
+            # Amazon have reserved 'aws:*' tags, we should avoid purging them as
+            # this probably isn't what people want to do...
+            if key.startswith('aws:'):
+                continue
             tag_keys_to_unset.append(key)
 
     for key in set(new_tags_dict.keys()) - set(tag_keys_to_unset):
