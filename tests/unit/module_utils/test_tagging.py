@@ -155,6 +155,24 @@ class Ec2Utils(unittest.TestCase):
         self.assertEqual(desired_tags, tags_to_set)
         self.assertEqual([], tags_to_unset)
 
+    def test_compare_aws_tags_aws_complex(self):
+        old_dict = dict(self.tag_example_dict)
+        old_dict.update(self.tag_aws_dict)
+        # Adds 'Me too!', Changes 'UpperCamel' and removes 'Normal case'
+        new_dict = dict(self.tag_example_dict)
+        new_keys = {'UpperCamel': 'anotherCamelValue', 'Me too!': 'Contributing'}
+        new_dict.update(new_keys)
+        del new_dict['Normal case']
+        keys_to_set, keys_to_unset = compare_aws_tags(old_dict, new_dict)
+        self.assertEqual(new_keys, keys_to_set)
+        self.assertEqual(['Normal case'], keys_to_unset)
+        keys_to_set, keys_to_unset = compare_aws_tags(old_dict, new_dict, purge_tags=False)
+        self.assertEqual(new_keys, keys_to_set)
+        self.assertEqual([], keys_to_unset)
+        keys_to_set, keys_to_unset = compare_aws_tags(old_dict, new_dict, purge_tags=True)
+        self.assertEqual(new_keys, keys_to_set)
+        self.assertEqual(['Normal case'], keys_to_unset)
+
     # ========================================================
     #   tagging.boto3_tag_specifications
     # ========================================================
