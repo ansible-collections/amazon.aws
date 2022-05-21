@@ -35,6 +35,6 @@
 - hosts: all
   gather_facts: no
   strategy: free
-  serial: 6
+  serial: 7
   roles:
     - ec2_instance
