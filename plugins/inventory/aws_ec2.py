@@ -387,9 +387,11 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             :param instance: instance dict returned by boto3 ec2 describe_instances()
         '''
         allowed_filters = sorted(list(instance_data_filter_to_boto_attr.keys()) + list(instance_meta_filter_to_boto_attr.keys()))
+
+        # If filter not in allow_filters -> use it as a literal string
         if filter_name not in allowed_filters:
-            raise AnsibleError("Invalid filter '%s' provided; filter must be one of %s." % (filter_name,
-                                                                                            allowed_filters))
+            return filter_name
+
         if filter_name in instance_data_filter_to_boto_attr:
             boto_attr_list = instance_data_filter_to_boto_attr[filter_name]
         else:
