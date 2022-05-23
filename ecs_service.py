@@ -549,7 +549,14 @@ class EcsServiceManager:
         raise Exception("Unknown problem describing service %s." % service_name)
 
     def is_matching_service(self, expected, existing):
-        if expected['task_definition'] != existing['taskDefinition']:
+        # aws returns the arn of the task definition
+        #   arn:aws:ecs:eu-central-1:123456789:task-definition/ansible-fargate-nginx:3
+        # but the user is just entering
+        #   ansible-fargate-nginx:3
+        if expected['task_definition'] != existing['taskDefinition'].split('/')[-1]:
+            return False
+
+        if expected.get('health_check_grace_period_seconds') != existing.get('healthCheckGracePeriodSeconds'):
             return False
 
         if (expected['load_balancers'] or []) != existing['loadBalancers']:
