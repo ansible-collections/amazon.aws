@@ -200,10 +200,7 @@ def call_method(client, module, method_name, parameters):
     changed = True
     if not module.check_mode:
         wait = module.params.get('wait')
-        rds_method_attributes = get_rds_method_attribute(method_name, module)
-        retry_codes = rds_method_attributes.retry_codes
-        waiter = rds_method_attributes.waiter
-        resource = rds_method_attributes.resource
+        retry_codes = get_rds_method_attribute(method_name, module).retry_codes
         method = getattr(client, method_name)
         try:
             result = AWSRetry.jittered_backoff(catch_extra_error_codes=retry_codes)(method)(**parameters)
@@ -212,7 +209,7 @@ def call_method(client, module, method_name, parameters):
 
         if wait and changed:
             identifier = get_final_identifier(method_name, module)
-            wait_for_status(client, module, resource, identifier, waiter)
+            wait_for_status(client, module, identifier, method_name)
     return result, changed
 
 
@@ -285,7 +282,11 @@ def wait_for_cluster_snapshot_status(client, module, db_snapshot_id, waiter_name
         module.fail_json_aws(e, msg="Failed with an unexpected error while waiting for the DB cluster snapshot {0}".format(db_snapshot_id))
 
 
-def wait_for_status(client, module, resource, identifier, waiter_name):
+def wait_for_status(client, module, identifier, method_name):
+    rds_method_attributes = get_rds_method_attribute(method_name, module)
+    waiter_name = rds_method_attributes.waiter
+    resource = rds_method_attributes.resource
+
     if resource == 'cluster':
         wait_for_cluster_status(client, module, identifier, waiter_name)
     elif resource == 'instance':
