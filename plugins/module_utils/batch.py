@@ -32,55 +32,7 @@ This module adds shared support for Batch modules.
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-try:
-    from botocore.exceptions import ClientError
-except ImportError:
-    pass
-
 from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
-
-from .ec2 import boto3_conn
-from .ec2 import get_aws_connection_info
-
-
-class AWSConnection(object):
-    """
-    Create the connection object and client objects as required.
-    """
-
-    def __init__(self, ansible_obj, resources, boto3=True):
-
-        ansible_obj.deprecate("The 'AWSConnection' class is deprecated, please use 'AnsibleAWSModule.client()'",
-                              date='2022-06-01', collection_name='amazon.aws')
-
-        self.region, self.endpoint, aws_connect_kwargs = get_aws_connection_info(ansible_obj, boto3=boto3)
-
-        self.resource_client = dict()
-        if not resources:
-            resources = ['batch']
-
-        resources.append('iam')
-
-        for resource in resources:
-            aws_connect_kwargs.update(dict(region=self.region,
-                                           endpoint=self.endpoint,
-                                           conn_type='client',
-                                           resource=resource
-                                           ))
-            self.resource_client[resource] = boto3_conn(ansible_obj, **aws_connect_kwargs)
-
-        # if region is not provided, then get default profile/session region
-        if not self.region:
-            self.region = self.resource_client['batch'].meta.region_name
-
-        # set account ID
-        try:
-            self.account_id = self.resource_client['iam'].get_user()['User']['Arn'].split(':')[4]
-        except (ClientError, ValueError, KeyError, IndexError):
-            self.account_id = ''
-
-    def client(self, resource='batch'):
-        return self.resource_client[resource]
 
 
 def cc(key):
