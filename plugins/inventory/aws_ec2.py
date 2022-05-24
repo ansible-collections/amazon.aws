@@ -39,11 +39,31 @@ DOCUMENTATION = '''
         hostnames:
           description:
               - A list in order of precedence for hostname variables.
-              - You can use the options specified in U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
-              - To use tags as hostnames use the syntax tag:Name=Value to use the hostname Name_Value, or tag:Name to use the value of the Name tag.
           type: list
           elements: dict
           default: []
+          suboptions:
+            name:
+                description:
+                    - Name of the host.
+                    - Can be one of the options specified in U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
+                    - To use tags as hostnames use the syntax tag:Name=Value to use the hostname Name_Value, or tag:Name to use the value of the Name tag.
+                    - If value provided does not exist in the above options, it will be used as a literal string.
+                type: str
+                required: True
+            prefix:
+                description:
+                    - Prefix to prepend to I(name). Same options as I(name).
+                    - If I(prefix) is specified, final hostname will be I(prefix) +  I(separator) + I(name).
+                type: str
+                default: ''
+                required: False
+            separator:
+                description:
+                    - Value to separate I(prefix) and I(name) when I(prefix) is specified.
+                type: str
+                default: '_'
+                required: False
         filters:
           description:
               - A dictionary of filter value pairs.
@@ -149,6 +169,9 @@ hostnames:
   - name: 'private-ip-address'
     separator: '_'
     prefix: 'tag:Name'
+  - name: 'test_literal' # Using literal values for hostname
+    separator: '-'       # Hostname will be aws-test_literal
+    prefix: 'aws'
 
 # Example using constructed features to create groups and set ansible_host
 plugin: aws_ec2
