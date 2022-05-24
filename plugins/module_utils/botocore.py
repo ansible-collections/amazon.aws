@@ -183,10 +183,7 @@ def get_aws_connection_info(module, boto3=None):
             profile_name = os.environ.get('AWS_DEFAULT_PROFILE')
 
     if profile_name and (access_key or secret_key or security_token):
-        module.deprecate("Passing both a profile and access tokens has been deprecated."
-                         "  Only the profile will be used."
-                         "  In later versions of Ansible the options will be mutually exclusive",
-                         date='2022-06-01', collection_name='amazon.aws')
+        module.fail("Passing both a profile and access tokens is not supported.")
 
     if not ec2_url:
         if 'AWS_URL' in os.environ:
