@@ -15,11 +15,6 @@
         zone: "{{ aws_region }}a"
       register: volume
 
-    - name: List the tags on the volume (ec2_tag)
-      ec2_tag:
-        resource: "{{ volume.volume_id }}"
-        state: list
-      register: result
     - name: List the tags on the volume (ec2_tag_info)
       ec2_tag_info:
         resource: "{{ volume.volume_id }}"
@@ -27,8 +22,6 @@
 
     - assert:
         that:
-          - result.tags | length == 1
-          - result.tags.Name == '{{ resource_prefix }} ec2_tag volume'
           - result_info.tags | length == 1
           - result_info.tags.Name == '{{ resource_prefix }} ec2_tag volume'
 

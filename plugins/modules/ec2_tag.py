@@ -24,11 +24,12 @@ options:
   state:
     description:
       - Whether the tags should be present or absent on the resource.
-      - The use of I(state=list) to interrogate the tags of an instance has been
-        deprecated and will be removed after 2022-06-01.  The 'list'
-        functionality has been moved to a dedicated module M(amazon.aws.ec2_tag_info).
+      - The use of I(state=list) to interrogate the tags of an instance was
+        deprecated in release 1.0.0 and is no longer available in release 4.0.0.
+        The 'list' functionality has been moved to a dedicated module
+        M(amazon.aws.ec2_tag_info).
     default: present
-    choices: ['present', 'absent', 'list']
+    choices: ['present', 'absent']
     type: str
   tags:
     description:
@@ -125,7 +126,7 @@ def main():
         resource=dict(required=True),
         tags=dict(type='dict'),
         purge_tags=dict(type='bool', default=False),
-        state=dict(default='present', choices=['present', 'absent', 'list']),
+        state=dict(default='present', choices=['present', 'absent']),
     )
     required_if = [('state', 'present', ['tags']), ('state', 'absent', ['tags'])]
 
@@ -141,11 +142,6 @@ def main():
     ec2 = module.client('ec2')
 
     current_tags = describe_ec2_tags(ec2, module, resource)
-
-    if state == 'list':
-        module.deprecate(
-            'Using the "list" state has been deprecated.  Please use the ec2_tag_info module instead', date='2022-06-01', collection_name='amazon.aws')
-        module.exit_json(changed=False, tags=current_tags)
 
     if state == 'absent':
         removed_tags = {}
