@@ -82,9 +82,6 @@
         db_instance_class: "{{ db_instance_class }}"
         allocated_storage: "{{ allocated_storage }}"
       register: result
-      retries: 30
-      delay: 10
-      until: result is not failed
       check_mode: yes
 
     ### Specifying allow_major_version_upgrade with check_mode will always result in changed=True
@@ -105,9 +102,6 @@
         db_instance_class: "{{ db_instance_class }}"
         allocated_storage: "{{ allocated_storage }}"
       register: result
-      retries: 30
-      delay: 10
-      until: result is not failed
 
     - assert:
         that:

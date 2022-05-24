@@ -33,3 +33,6 @@ mariadb_engine_version_2: 10.4.21
 # For iam roles tests
 postgres_db_instance_class: db.m6g.large # smallest psql instance
 postgres_db_engine_version: 14.2
+
+# For snapshot tests
+snapshot_id: "{{ instance_id }}-ss"

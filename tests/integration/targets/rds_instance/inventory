@@ -1,25 +1,19 @@
 # inventory names shortened down to fit resource name length limits
 [tests]
-# processor feature tests
 processor
-# restore instance tests
 restore
-# security groups db tests
 sgroups
-# modify complex tests
 complex
-# other tests
 states
 modify
 tagging
 replica
 upgrade
+snapshot
+aurora
 
 # TODO: uncomment after adding iam:CreatePolicy and iam:DeletePolicy
 # iam_roles
-
-# TODO: uncomment after adding rds_cluster module
-# aurora
 
 
 [all:vars]
