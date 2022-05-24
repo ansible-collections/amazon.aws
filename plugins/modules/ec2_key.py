@@ -38,15 +38,6 @@ options:
     choices: [ present, absent ]
     default: 'present'
     type: str
-  wait:
-    description:
-      - This option has no effect since version 2.5 and will be removed after 2022-06-01.
-    type: bool
-  wait_timeout:
-    description:
-      - This option has no effect since version 2.5 and will be removed after 2022-06-01.
-    type: int
-    required: false
   tags:
     description:
       - A dictionary of tags to set on the key pair.
@@ -325,8 +316,6 @@ def main():
         tags=dict(type='dict'),
         purge_tags=dict(type='bool', default=False),
         key_type=dict(type='str', choices=['rsa', 'ed25519']),
-        wait=dict(type='bool', removed_at_date='2022-06-01', removed_from_collection='amazon.aws'),
-        wait_timeout=dict(type='int', removed_at_date='2022-06-01', removed_from_collection='amazon.aws')
     )
 
     module = AnsibleAWSModule(
