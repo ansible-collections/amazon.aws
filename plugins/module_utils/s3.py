@@ -88,8 +88,8 @@ def calculate_etag_content(module, content, etag, s3, bucket, obj, version=None)
 
 def validate_bucket_name(module, name):
     # See: https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
-    if len(name) < 4:
-        module.fail_json(msg='the S3 bucket name is too short')
+    if len(name) < 3:
+        module.fail_json(msg='the length of an S3 bucket must be at least 3 characters')
     if len(name) > 63:
         module.fail_json(msg='the length of an S3 bucket cannot exceed 63 characters')
 
