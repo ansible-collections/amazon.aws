@@ -289,8 +289,8 @@ options:
     version_added: 2.1.0
 
 notes:
-- The ec2_elb fact currently set by this module has been deprecated and will no
-  longer be set after release 4.0.0 of the collection.
+- The ec2_elb fact previously set by this module was deprecated in release 2.1.0 and since release
+  4.0.0 is no longer set.
 
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -2147,10 +2147,7 @@ def main():
         elb = elb_man.get_info()
         ec2_result = dict(elb=elb)
 
-    ansible_facts = {'ec2_elb': 'info'}
-
     module.exit_json(
-        ansible_facts=ansible_facts,
         changed=elb_man.changed,
         **ec2_result,
     )
