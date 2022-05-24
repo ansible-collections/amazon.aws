@@ -100,6 +100,7 @@
     ec2_vpc_igw_info:
       filters:
         attachment.vpc-id: '{{ vpc_id }}'
+      convert_tags: false
     register: igw_info
 
   - name: Check standard IGW details
@@ -133,7 +134,6 @@
   - name: Fetch IGW by ID
     ec2_vpc_igw_info:
       internet_gateway_ids: '{{ igw_id }}'
-      convert_tags: yes
     register: igw_info
 
   - name: Check standard IGW details
