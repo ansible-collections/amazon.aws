@@ -139,9 +139,6 @@
         port: 1150
         max_allocated_storage: 150
       register: result
-      retries: 30
-      delay: 10
-      until: result is not failed
       check_mode: yes
 
     - assert:
@@ -165,9 +162,6 @@
         port: 1150
         max_allocated_storage: 150
       register: result
-      retries: 30
-      delay: 10
-      until: result is not failed
 
     - assert:
         that:
@@ -184,4 +178,11 @@
         state: absent
         skip_final_snapshot: True
         wait: false
+      ignore_errors: yes
+
+    - name: Remove enhanced monitoring role
+      iam_role:
+        assume_role_policy_document: "{{ lookup('file','files/enhanced_monitoring_assume_policy.json') }}"
+        name: "{{ instance_id }}-role"
+        state: absent
       ignore_errors: yes

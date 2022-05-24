@@ -1,0 +1,216 @@
+---
+- block:
+    - name: Ensure the resource doesn't exist
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: absent
+        skip_final_snapshot: True
+      register: result
+
+    - assert:
+        that:
+          - not result.changed
+      ignore_errors: yes
+
+    - name: Create a mariadb instance
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: present
+        engine: mariadb
+        username: "{{ username }}"
+        password: "{{ password }}"
+        db_instance_class: "{{ db_instance_class }}"
+        allocated_storage: "{{ allocated_storage }}"
+        tags:
+          Name: "{{ instance_id }}"
+          Created_by: Ansible rds_instance tests
+      register: result
+
+    - assert:
+        that:
+          - result.changed
+          - "result.db_instance_identifier == '{{ instance_id }}'"
+          - "result.tags | length == 2"
+          - "result.tags.Name == '{{ instance_id }}'"
+          - "result.tags.Created_by == 'Ansible rds_instance tests'"
+
+    - name: Create a snapshot
+      rds_instance_snapshot:
+        instance_id: "{{ instance_id }}"
+        snapshot_id: "{{ snapshot_id }}"
+        state: present
+        wait: yes
+      register: result
+
+    - assert:
+        that:
+          - result.changed
+          - result.db_instance_identifier == "{{ instance_id }}"
+          - result.db_snapshot_identifier == "{{ snapshot_id }}"
+
+    # ------------------------------------------------------------------------------------------
+    # Test restoring db from snapshot
+
+    - name: Restore DB from snapshot - check_mode
+      rds_instance:
+        id: "{{ snapshot_id }}"
+        creation_source: snapshot
+        snapshot_identifier: "{{ snapshot_id }}"
+        engine: mariadb
+        state: present
+      register: result
+      check_mode: yes
+
+    - assert:
+        that:
+          - result.changed
+
+    - name: Restore DB from snapshot
+      rds_instance:
+        id: "{{ snapshot_id }}"
+        creation_source: snapshot
+        snapshot_identifier: "{{ snapshot_id }}"
+        engine: mariadb
+        state: present
+      register: result
+
+    - assert:
+        that:
+          - result.changed
+          - result.db_instance_identifier == "{{ snapshot_id }}"
+          - result.tags | length == 2
+          - result.tags.Name == "{{ instance_id }}"
+          - result.tags.Created_by == 'Ansible rds_instance tests'
+          - result.db_instance_status == 'available'
+
+    - name: Restore DB from snapshot (idempotence) - check_mode
+      rds_instance:
+        id: "{{ snapshot_id }}"
+        creation_source: snapshot
+        snapshot_identifier: "{{ snapshot_id }}"
+        engine: mariadb
+        state: present
+      register: result
+      check_mode: yes
+
+    - assert:
+        that:
+          - not result.changed
+
+    - name: Restore DB from snapshot (idempotence)
+      rds_instance:
+        id: "{{ snapshot_id }}"
+        creation_source: snapshot
+        snapshot_identifier: "{{ snapshot_id }}"
+        engine: mariadb
+        state: present
+      register: result
+
+    - assert:
+        that:
+          - not result.changed
+          - result.db_instance_identifier == "{{ snapshot_id }}"
+          - result.tags | length == 2
+          - result.tags.Name == "{{ instance_id }}"
+          - result.tags.Created_by == 'Ansible rds_instance tests'
+          - result.db_instance_status == 'available'
+
+    # ------------------------------------------------------------------------------------------
+    # Test final snapshot on deletion
+
+    - name: Ensure instance exists prior to deleting
+      rds_instance_info:
+          db_instance_identifier: '{{ instance_id }}'
+      register: db_info
+
+    - assert:
+        that:
+          - db_info.instances | length == 1
+
+    - name: Delete the instance keeping snapshot - check_mode
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: absent
+        final_snapshot_identifier: "{{ instance_id }}"
+      register: result
+      check_mode: yes
+
+    - assert:
+        that:
+          - result.changed
+
+    - name: Delete the instance keeping snapshot
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: absent
+        final_snapshot_identifier: "{{ instance_id }}"
+      register: result
+
+    - assert:
+        that:
+          - result.changed
+          - "result.final_snapshot.db_instance_identifier == '{{ instance_id }}'"
+
+    - name: Check that snapshot exists
+      rds_snapshot_info:
+        db_snapshot_identifier: "{{ instance_id }}"
+      register: result
+
+    - assert:
+        that:
+          - "result.snapshots | length == 1"
+          - "result.snapshots.0.engine == 'mariadb'"
+
+    - name: Ensure instance was deleted
+      rds_instance_info:
+          db_instance_identifier: '{{ instance_id }}'
+      register: db_info
+
+    - assert:
+        that:
+          - db_info.instances | length == 0
+
+    - name: Delete the instance (idempotence) - check_mode
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: absent
+        skip_final_snapshot: True
+      register: result
+      check_mode: yes
+
+    - assert:
+        that:
+          - not result.changed
+
+    - name: Delete the instance (idempotence)
+      rds_instance:
+        id: "{{ instance_id }}"
+        state: absent
+        skip_final_snapshot: True
+      register: result
+
+    - assert:
+        that:
+          - not result.changed
+
+  always:
+    - name: Remove snapshots
+      rds_instance_snapshot:
+        db_snapshot_identifier: "{{ item }}"
+        state: absent
+        wait: false
+      ignore_errors: yes
+      with_items:
+        - "{{ instance_id }}"
+        - "{{ snapshot_id }}"
+
+    - name: Remove DB instances
+      rds_instance:
+        id: "{{ item }}"
+        state: absent
+        skip_final_snapshot: True
+        wait: false
+      ignore_errors: yes
+      with_items:
+        - "{{ instance_id }}"
+        - "{{ snapshot_id }}"

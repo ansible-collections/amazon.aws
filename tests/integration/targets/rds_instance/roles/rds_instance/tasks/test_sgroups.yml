@@ -279,6 +279,10 @@
           - "{{ resource_prefix }}-sg-1"
           - "{{ resource_prefix }}-sg-2"
           - "{{ resource_prefix }}-sg-3"
+        ignore_errors: yes
+        retries: 30
+        until: sgs_result is not failed
+        delay: 10
 
       - name: remove subnets
         ec2_vpc_subnet:
