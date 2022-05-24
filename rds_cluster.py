@@ -758,7 +758,7 @@ def get_rds_method_attribute_name(cluster):
             method_name = 'modify_db_cluster'
             method_options_name = 'get_modify_options'
         elif creation_source == 'snapshot':
-            method_name = 'restore_db_cluster_from_db_snapshot'
+            method_name = 'restore_db_cluster_from_snapshot'
             method_options_name = 'get_restore_snapshot_options'
         elif creation_source == 's3':
             method_name = 'restore_db_cluster_from_s3'

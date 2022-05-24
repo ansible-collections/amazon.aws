@@ -38,7 +38,7 @@ options:
         type: str
     force_update_password:
         description:
-          - Set to True to update your cluster password with I(master_user_password). Since comparing passwords to determine
+          - Set to C(True) to update your instance password with I(master_user_password). Since comparing passwords to determine
             if it needs to be updated is not possible this is set to False by default to allow idempotence.
         type: bool
         default: False
@@ -52,12 +52,12 @@ options:
         default: True
     read_replica:
         description:
-          - Set to False to promote a read replica cluster or true to create one. When creating a read replica C(creation_source) should
+          - Set to C(False) to promote a read replica instance or true to create one. When creating a read replica C(creation_source) should
             be set to 'instance' or not provided. C(source_db_instance_identifier) must be provided with this option.
         type: bool
     wait:
         description:
-          - Whether to wait for the cluster to be available, stopped, or deleted. At a later time a wait_timeout option may be added.
+          - Whether to wait for the instance to be available, stopped, or deleted. At a later time a I(wait_timeout) option may be added.
             Following each API call to create/modify/delete the instance a waiter is used with a 60 second delay 30 times until the instance reaches
             the expected state (available/stopped/deleted). The total task time may also be influenced by AWSRetry which helps stabilize if the
             instance is in an invalid state to operate on to begin with (such as if you try to stop it when it is in the process of rebooting).
@@ -76,7 +76,7 @@ options:
         type: bool
     apply_immediately:
         description:
-          - A value that specifies whether modifying a cluster with I(new_db_instance_identifier) and I(master_user_password)
+          - A value that specifies whether modifying an instance with I(new_db_instance_identifier) and I(master_user_password)
             should be applied as soon as possible, regardless of the I(preferred_maintenance_window) setting. If false, changes
             are applied during the next maintenance window.
         type: bool
@@ -87,8 +87,8 @@ options:
         type: bool
     availability_zone:
         description:
-          - A list of EC2 Availability Zones that instances in the DB cluster can be created in.
-            May be used when creating a cluster or when restoring from S3 or a snapshot. Mutually exclusive with I(multi_az).
+          - A list of EC2 Availability Zones that the DB instance can be created in.
+            May be used when creating an instance or when restoring from S3 or a snapshot. Mutually exclusive with I(multi_az).
         aliases:
           - az
           - zone
@@ -97,7 +97,7 @@ options:
         description:
           - The number of days for which automated backups are retained.
           - When set to C(0), automated backups will be disabled. (Not applicable if the DB instance is a source to read replicas)
-          - May be used when creating a new cluster, when restoring from S3, or when modifying a cluster.
+          - May be used when creating a new instance, when restoring from S3, or when modifying an instance.
         type: int
     ca_certificate_identifier:
         description:
@@ -105,7 +105,7 @@ options:
         type: str
     character_set_name:
         description:
-          - The character set to associate with the DB cluster.
+          - The character set to associate with the DB instance.
         type: str
     copy_tags_to_snapshot:
         description:
@@ -152,8 +152,11 @@ options:
         elements: str
     db_snapshot_identifier:
         description:
-          - The identifier for the DB snapshot to restore from if using I(creation_source=snapshot).
+          - The identifier or ARN of the DB snapshot to restore from when using I(creation_source=snapshot).
         type: str
+        aliases:
+          - snapshot_identifier
+          - snapshot_id
     db_subnet_group_name:
         description:
           - The DB subnet group name to use for the DB instance.
@@ -185,7 +188,7 @@ options:
     enable_iam_database_authentication:
         description:
           - Enable mapping of AWS Identity and Access Management (IAM) accounts to database accounts.
-            If this option is omitted when creating the cluster, Amazon RDS sets this to False.
+            If this option is omitted when creating the instance, Amazon RDS sets this to False.
         type: bool
     enable_performance_insights:
         description:
@@ -256,7 +259,7 @@ options:
         type: str
     master_username:
         description:
-          - The name of the master user for the DB cluster. Must be 1-16 letters or numbers and begin with a letter.
+          - The name of the master user for the DB instance. Must be 1-16 letters or numbers and begin with a letter.
         aliases:
           - username
         type: str
@@ -279,7 +282,7 @@ options:
         type: bool
     new_db_instance_identifier:
         description:
-          - The new DB cluster (lowercase) identifier for the DB cluster when renaming a DB instance. The identifier must contain
+          - The new DB instance (lowercase) identifier for the DB instance when renaming a DB instance. The identifier must contain
             from 1 to 63 letters, numbers, or hyphens and the first character must be a letter and may not end in a hyphen or
             contain consecutive hyphens. Use I(apply_immediately) to rename immediately, otherwise it is updated during the
             next maintenance window.
@@ -369,14 +372,10 @@ options:
         type: str
     skip_final_snapshot:
         description:
-          - Whether a final DB cluster snapshot is created before the DB cluster is deleted. If this is false I(final_db_snapshot_identifier)
+          - Whether a final DB instance snapshot is created before the DB instance is deleted. If this is false I(final_db_snapshot_identifier)
             must be provided.
         type: bool
         default: false
-    snapshot_identifier:
-        description:
-          - The ARN of the DB snapshot to restore from when using I(creation_source=snapshot).
-        type: str
     source_db_instance_identifier:
         description:
           - The identifier or ARN of the source DB instance from which to restore when creating a read replica or spinning up a point-in-time
@@ -410,7 +409,7 @@ options:
         type: str
     tags:
         description:
-          - A dictionary of key value pairs to assign the DB cluster.
+          - A dictionary of key value pairs to assign the DB instance.
         type: dict
     tde_credential_arn:
         description:
@@ -439,7 +438,7 @@ options:
           - restore_from_latest
     vpc_security_group_ids:
         description:
-          - A list of EC2 VPC security groups to associate with the DB cluster.
+          - A list of EC2 VPC security groups to associate with the DB instance.
         type: list
         elements: str
     purge_security_groups:
@@ -528,13 +527,25 @@ EXAMPLES = r'''
   community.aws.rds_instance:
     id: "my-instance-id"
     state: present
-    engine: postgres
-    engine_version: 14.2
-    username: "{{ username }}"
-    password: "{{ password }}"
-    db_instance_class: db.m6g.large
-    allocated_storage: "{{ allocated_storage }}"
     purge_iam_roles: yes
+
+# Restore DB instance from snapshot
+- name: Create a snapshot and wait until completion
+  community.aws.rds_instance_snapshot:
+    instance_id: 'my-instance-id'
+    snapshot_id: 'my-new-snapshot'
+    state: present
+    wait: yes
+  register: snapshot
+
+- name: Restore DB from snapshot
+  community.aws.rds_instance:
+    id: 'my-restored-db'
+    creation_source: snapshot
+    snapshot_identifier: 'my-new-snapshot'
+    engine: mariadb
+    state: present
+  register: restored_db
 '''
 
 RETURN = r'''
@@ -1267,7 +1278,7 @@ def main():
         db_name=dict(),
         db_parameter_group_name=dict(),
         db_security_groups=dict(type='list', elements='str'),
-        db_snapshot_identifier=dict(),
+        db_snapshot_identifier=dict(type='str', aliases=['snapshot_identifier', 'snapshot_id']),
         db_subnet_group_name=dict(aliases=['subnet_group']),
         deletion_protection=dict(type='bool'),
         domain=dict(),
@@ -1304,7 +1315,6 @@ def main():
         s3_ingestion_role_arn=dict(),
         s3_prefix=dict(),
         skip_final_snapshot=dict(type='bool', default=False),
-        snapshot_identifier=dict(),
         source_db_instance_identifier=dict(),
         source_engine=dict(choices=['mysql']),
         source_engine_version=dict(),
@@ -1325,13 +1335,13 @@ def main():
         ('engine', 'aurora-mysql', ('db_cluster_identifier',)),
         ('engine', 'aurora-postresql', ('db_cluster_identifier',)),
         ('storage_type', 'io1', ('iops', 'allocated_storage')),
-        ('creation_source', 'snapshot', ('snapshot_identifier', 'engine')),
+        ('creation_source', 'snapshot', ('db_snapshot_identifier', 'engine')),
         ('creation_source', 's3', (
             's3_bucket_name', 'engine', 'master_username', 'master_user_password',
             'source_engine', 'source_engine_version', 's3_ingestion_role_arn')),
     ]
     mutually_exclusive = [
-        ('s3_bucket_name', 'source_db_instance_identifier', 'snapshot_identifier'),
+        ('s3_bucket_name', 'source_db_instance_identifier', 'db_snapshot_identifier'),
         ('use_latest_restorable_time', 'restore_time'),
         ('availability_zone', 'multi_az'),
     ]
