@@ -1,7 +1,6 @@
 requires_ansible: '>=2.9.10'
 action_groups:
   aws:
-  - aws_az_facts
   - aws_az_info
   - aws_caller_info
   - aws_s3
