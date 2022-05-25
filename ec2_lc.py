@@ -180,10 +180,6 @@ options:
       - When not set AWS will default to C(default).
     type: str
     choices: ['default', 'dedicated']
-  associate_public_ip_address:
-    description:
-      - The I(associate_public_ip_address) option does nothing and will be removed after 2022-06-01
-    type: bool
 
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -668,7 +664,6 @@ def main():
         ramdisk_id=dict(),
         instance_profile_name=dict(),
         ebs_optimized=dict(default=False, type='bool'),
-        associate_public_ip_address=dict(type='bool', removed_at_date='2022-06-01', removed_from_collection='community.aws'),
         instance_monitoring=dict(default=False, type='bool'),
         assign_public_ip=dict(type='bool'),
         classic_link_vpc_security_groups=dict(type='list', elements='str'),
