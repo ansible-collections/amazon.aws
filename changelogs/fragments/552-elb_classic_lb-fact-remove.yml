@@ -1,0 +1,2 @@
+breaking_changes:
+- elb_classic_lb - the ``ec2_elb`` fact has been removed (https://github.com/ansible-collections/amazon.aws/pull/827).
