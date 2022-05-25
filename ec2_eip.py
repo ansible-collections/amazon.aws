@@ -88,10 +88,6 @@ options:
       - Allocates the new Elastic IP from the provided public IPv4 pool (BYOIP)
         only applies to newly allocated Elastic IPs, isn't validated when I(reuse_existing_ip_allowed=true).
     type: str
-  wait_timeout:
-    description:
-      - The I(wait_timeout) option does nothing and will be removed after 2022-06-01
-    type: int
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -546,7 +542,6 @@ def main():
                                        default=False),
         release_on_disassociation=dict(required=False, type='bool', default=False),
         allow_reassociation=dict(type='bool', default=False),
-        wait_timeout=dict(type='int', removed_at_date='2022-06-01', removed_from_collection='community.aws'),
         private_ip_address=dict(),
         tags=dict(required=False, type='dict'),
         purge_tags=dict(required=False, type='bool', default=True),
