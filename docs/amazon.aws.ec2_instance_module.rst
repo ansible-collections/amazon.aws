@@ -730,6 +730,7 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=string</span>
                     </div>
                 </td>
                 <td>
@@ -746,6 +747,7 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=string</span>
                     </div>
                 </td>
                 <td>
@@ -762,6 +764,7 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=string</span>
                     </div>
                 </td>
                 <td>
@@ -794,6 +797,7 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=string</span>
                     </div>
                 </td>
                 <td>

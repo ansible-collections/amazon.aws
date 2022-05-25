@@ -28,7 +28,7 @@ Requirements
 The below requirements are needed on the local Ansible controller node that executes this lookup.
 
 - python >= 3.6
-- boto3
+- boto3 >= 1.15.0
 - botocore >= 1.18.0
 
 
@@ -242,9 +242,9 @@ Status
 Authors
 ~~~~~~~
 
-- Bill Wang <ozbillwang(at)gmail.com>
-- Marat Bakeev <hawara(at)gmail.com>
-- Michael De La Rue <siblemitcom.mddlr@spamgourmet.com>
+- Bill Wang (!UNKNOWN) <ozbillwang(at)gmail.com>
+- Marat Bakeev (!UNKNOWN) <hawara(at)gmail.com>
+- Michael De La Rue (!UNKNOWN) <siblemitcom.mddlr@spamgourmet.com>
 
 
 .. hint::

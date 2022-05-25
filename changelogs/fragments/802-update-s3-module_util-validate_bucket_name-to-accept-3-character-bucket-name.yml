@@ -1,2 +1,0 @@
-bugfixes:
-  - module.utils.s3 - Update validate_bucket_name minimum length to 3 (https://github.com/ansible-collections/amazon.aws/pull/802).
