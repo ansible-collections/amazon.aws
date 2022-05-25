@@ -1,0 +1,5 @@
+minor_changes:
+  - rds_instance_snapshot - add copy_db_snapshot functionality (https://github.com/ansible-collections/community.aws/pull/1078).
+
+bugfixes:
+  - don't require `db_instance_identifier` on state = present (https://github.com/ansible-collections/community.aws/pull/1078).
