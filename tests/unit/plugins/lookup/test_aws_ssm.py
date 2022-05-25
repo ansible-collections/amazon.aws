@@ -18,10 +18,11 @@
 
 # Make coding more python3-ish
 from __future__ import (absolute_import, division, print_function)
-from unittest.mock import ANY
+
 __metaclass__ = type
 
 import pytest
+from unittest.mock import ANY
 from copy import copy
 
 from ansible.errors import AnsibleError

@@ -68,9 +68,9 @@ options:
     choices: ['error', 'skip', 'warn']
     version_added: 2.0.0
   endpoint:
-    description: Use a custom endpoint when connecting to SSM service
+    description: Use a custom endpoint when connecting to SSM service.
     type: string
-    version_added: 3.4.0
+    version_added: 3.3.0
 extends_documentation_fragment:
 - amazon.aws.aws_boto3
 '''
@@ -211,15 +211,7 @@ class LookupModule(LookupBase):
             endpoint=cli_endpoint,
         ))
 
-        try:
-            client = boto3_conn(module=self, **cli_boto_params)
-        except (
-            botocore.exceptions.ProfileNotFound,
-            botocore.exceptions.PartialCredentialsError,
-            botocore.exceptions.ClientError,
-            botocore.exceptions.ParamValidationError,
-        ):
-            raise AnsibleError("Insufficient credentials found.")
+        client = boto3_conn(module=self, **cli_boto_params)
 
         ssm_dict['WithDecryption'] = decrypt
 
@@ -273,9 +265,6 @@ class LookupModule(LookupBase):
                 self._display.warning('Skipping, did not find SSM parameter path %s' % term)
 
         return paramlist
-
-    def fail_json(self, msg, **kwargs):
-        raise AnsibleError(msg)
 
     def get_parameter_value(self, client, ssm_dict, term, on_missing, on_denied):
         ssm_dict["Name"] = term
