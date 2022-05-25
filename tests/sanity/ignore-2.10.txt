@@ -1,1 +1,0 @@
-plugins/modules/ec2_tag.py validate-modules:parameter-state-invalid-choice  # Deprecated choice that can't be removed until 2022
