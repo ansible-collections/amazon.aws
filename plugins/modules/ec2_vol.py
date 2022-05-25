@@ -74,11 +74,11 @@ options:
   state:
     description:
       - Whether to ensure the volume is present or absent.
-      - The use of I(state=list) to interrogate the volume has been deprecated
-        and will be removed after 2022-06-01.  The 'list' functionality
-        has been moved to a dedicated module M(amazon.aws.ec2_vol_info).
+      - I(state=list) was deprecated in release 1.1.0 and is no longer available
+        with release 4.0.0.  The 'list' functionality has been moved to a dedicated
+        module M(amazon.aws.ec2_vol_info).
     default: present
-    choices: ['absent', 'present', 'list']
+    choices: ['absent', 'present']
     type: str
   tags:
     description:
@@ -185,12 +185,6 @@ EXAMPLES = '''
 - amazon.aws.ec2_vol:
     id: vol-XXXXXXXX
     instance: None
-    region: us-west-2
-
-# List volumes for an instance
-- amazon.aws.ec2_vol:
-    instance: i-XXXXXX
-    state: list
     region: us-west-2
 
 # Create new volume using SSD storage
@@ -720,7 +714,7 @@ def main():
         delete_on_termination=dict(default=False, type='bool'),
         zone=dict(aliases=['availability_zone', 'aws_zone', 'ec2_zone']),
         snapshot=dict(),
-        state=dict(default='present', choices=['absent', 'present', 'list']),
+        state=dict(default='present', choices=['absent', 'present']),
         tags=dict(default={}, type='dict'),
         modify_volume=dict(default=False, type='bool'),
         throughput=dict(type='int'),
@@ -751,10 +745,6 @@ def main():
     volume_type = module.params.get('volume_type')
     throughput = module.params.get('throughput')
     multi_attach = module.params.get('multi_attach')
-
-    if state == 'list':
-        module.deprecate(
-            'Using the "list" state has been deprecated.  Please use the ec2_vol_info module instead', date='2022-06-01', collection_name='amazon.aws')
 
     # Ensure we have the zone or can get the zone
     if instance is None and zone is None and state == 'present':
@@ -790,15 +780,6 @@ def main():
     changed = False
 
     ec2_conn = module.client('ec2', AWSRetry.jittered_backoff())
-
-    if state == 'list':
-        returned_volumes = []
-        vols = get_volumes(module, ec2_conn)
-
-        for v in vols:
-            returned_volumes.append(get_volume_info(module, v))
-
-        module.exit_json(changed=False, volumes=returned_volumes)
 
     # Here we need to get the zone info for the instance. This covers situation where
     # instance is specified but zone isn't.

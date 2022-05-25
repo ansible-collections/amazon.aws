@@ -413,19 +413,6 @@
           - attach_new_vol_from_snapshot_result.volume.attachment_set[0].status in ['attached', 'attaching']
           - attach_new_vol_from_snapshot_result.volume.attachment_set[0].instance_id == test_instance.instance_ids[0]
 
-    - name: list volumes attached to instance
-      ec2_vol:
-        instance: "{{ test_instance.instance_ids[0] }}"
-        state: list
-      register: inst_vols
-
-    - name: check task return attributes
-      assert:
-        that:
-          - not inst_vols.changed
-          - "'volumes' in inst_vols"
-          - inst_vols.volumes | length == 4
-
     - name: get info on ebs volumes
       ec2_vol_info:
       register: ec2_vol_info
