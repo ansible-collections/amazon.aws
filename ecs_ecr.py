@@ -43,11 +43,9 @@ options:
     purge_policy:
         description:
             - If yes, remove the policy from the repository.
-            - Alias C(delete_policy) has been deprecated and will be removed after 2022-06-01.
             - Defaults to C(false).
         required: false
         type: bool
-        aliases: [ delete_policy ]
     image_tag_mutability:
         description:
             - Configure whether repository should be mutable (ie. an already existing tag can be overwritten) or not.
@@ -536,8 +534,7 @@ def main():
         policy=dict(required=False, type='json'),
         image_tag_mutability=dict(required=False, choices=['mutable', 'immutable'],
                                   default='mutable'),
-        purge_policy=dict(required=False, type='bool', aliases=['delete_policy'],
-                          deprecated_aliases=[dict(name='delete_policy', date='2022-06-01', collection_name='community.aws')]),
+        purge_policy=dict(required=False, type='bool'),
         lifecycle_policy=dict(required=False, type='json'),
         purge_lifecycle_policy=dict(required=False, type='bool'),
         scan_on_push=(dict(required=False, type='bool', default=False))
