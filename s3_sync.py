@@ -124,10 +124,6 @@ options:
     required: false
     default: no
     type: bool
-  retries:
-    description:
-      - The I(retries) option does nothing and will be removed after 2022-06-01
-    type: str
 
 author: Ted Timmons (@tedder)
 extends_documentation_fragment:
@@ -542,7 +538,6 @@ def main():
         file_root=dict(required=True, type='path'),
         permission=dict(required=False, choices=['private', 'public-read', 'public-read-write', 'authenticated-read',
                                                  'aws-exec-read', 'bucket-owner-read', 'bucket-owner-full-control']),
-        retries=dict(required=False, removed_at_date='2022-06-01', removed_from_collection='community.aws'),
         mime_map=dict(required=False, type='dict'),
         exclude=dict(required=False, default=".*"),
         include=dict(required=False, default="*"),
