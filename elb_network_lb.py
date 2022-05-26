@@ -108,11 +108,10 @@ options:
   state:
     description:
       - Create or destroy the load balancer.
-      - The current default is C(absent).  However, this behavior is inconsistent with other modules
-        and as such the default will change to C(present) in a release after 2022-06-01.
-        To maintain the existing behavior explicitly set I(state=absent).
+      - The default changed from C('absent') to C('present') in release 4.0.0.
     choices: [ 'present', 'absent' ]
     type: str
+    default: 'present'
   tags:
     description:
       - A dictionary of one or more tags to assign to the load balancer.
@@ -448,7 +447,7 @@ def main():
             subnets=dict(type='list', elements='str'),
             subnet_mappings=dict(type='list', elements='dict'),
             scheme=dict(default='internet-facing', choices=['internet-facing', 'internal']),
-            state=dict(choices=['present', 'absent'], type='str'),
+            state=dict(choices=['present', 'absent'], type='str', default='present'),
             tags=dict(type='dict'),
             wait_timeout=dict(type='int'),
             wait=dict(type='bool'),
@@ -456,20 +455,16 @@ def main():
         )
     )
 
+    required_if = [
+        ('state', 'present', ('subnets', 'subnet_mappings',), True)
+    ]
+
     module = AnsibleAWSModule(argument_spec=argument_spec,
+                              required_if=required_if,
                               mutually_exclusive=[['subnets', 'subnet_mappings']])
 
     # Check for subnets or subnet_mappings if state is present
     state = module.params.get("state")
-    if state == 'present':
-        if module.params.get("subnets") is None and module.params.get("subnet_mappings") is None:
-            module.fail_json(msg="'subnets' or 'subnet_mappings' is required when state=present")
-
-    if state is None:
-        # See below, unless state==present we delete.  Ouch.
-        module.deprecate('State currently defaults to absent.  This is inconsistent with other modules'
-                         ' and the default will be changed to `present` in a release after 2022-06-01',
-                         date='2022-06-01', collection_name='community.aws')
 
     # Quick check of listeners parameters
     listeners = module.params.get("listeners")
