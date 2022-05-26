@@ -59,7 +59,6 @@ options:
     comparison:
         description:
           - Determines how the threshold value is compared
-          - Symbolic comparison operators have been deprecated, and will be removed after 2022-06-22.
         required: false
         type: str
         choices:
@@ -67,10 +66,6 @@ options:
           - 'GreaterThanThreshold'
           - 'LessThanThreshold'
           - 'LessThanOrEqualToThreshold'
-          - '<='
-          - '<'
-          - '>='
-          - '>'
     threshold:
         description:
           - Sets the min/max bound for triggering the alarm.
@@ -192,7 +187,7 @@ EXAMPLES = r'''
       metric: "StatusCheckFailed_System"
       namespace: "AWS/EC2"
       statistic: "Minimum"
-      comparison: ">="
+      comparison: "GreaterThanOrEqualToThreshold"
       threshold: 1.0
       period: 60
       evaluation_periods: 2
@@ -213,16 +208,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSM
 
 def create_metric_alarm(connection, module, params):
     alarms = connection.describe_alarms(AlarmNames=[params['AlarmName']])
-
-    comparisons = {'<=': 'LessThanOrEqualToThreshold',
-                   '<': 'LessThanThreshold',
-                   '>=': 'GreaterThanOrEqualToThreshold',
-                   '>': 'GreaterThanThreshold'}
-    if params['ComparisonOperator'] in ('<=', '<', '>', '>='):
-        module.deprecate('Using the <=, <, > and >= operators for comparison has been deprecated. Please use LessThanOrEqualToThreshold, '
-                         'LessThanThreshold, GreaterThanThreshold or GreaterThanOrEqualToThreshold instead.',
-                         date='2022-06-01', collection_name='community.aws')
-        params['ComparisonOperator'] = comparisons[params['ComparisonOperator']]
 
     if not isinstance(params['Dimensions'], list):
         fixed_dimensions = []
@@ -314,7 +299,7 @@ def main():
         namespace=dict(type='str'),
         statistic=dict(type='str', choices=['SampleCount', 'Average', 'Sum', 'Minimum', 'Maximum']),
         comparison=dict(type='str', choices=['LessThanOrEqualToThreshold', 'LessThanThreshold', 'GreaterThanThreshold',
-                                             'GreaterThanOrEqualToThreshold', '<=', '<', '>', '>=']),
+                                             'GreaterThanOrEqualToThreshold']),
         threshold=dict(type='float'),
         period=dict(type='int'),
         unit=dict(type='str', choices=['Seconds', 'Microseconds', 'Milliseconds', 'Bytes', 'Kilobytes', 'Megabytes', 'Gigabytes',
