@@ -724,7 +724,8 @@ def _generate_index(index, include_throughput=True):
         ProjectionType=index['type'],
     )
     if index['type'] != 'ALL':
-        projection['NonKeyAttributes'] = non_key_attributes
+        if non_key_attributes:
+            projection['NonKeyAttributes'] = non_key_attributes
     else:
         if non_key_attributes:
             module.fail_json(
