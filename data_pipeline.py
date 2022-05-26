@@ -121,10 +121,6 @@ options:
     description:
       - A dict of key:value pair(s) to add to the pipeline.
     type: dict
-  version:
-    description:
-      - The version option has never had any effect and will be removed after 2022-06-01.
-    type: str
 '''
 
 EXAMPLES = r'''
@@ -600,7 +596,6 @@ def create_pipeline(client, module):
 def main():
     argument_spec = dict(
         name=dict(required=True),
-        version=dict(removed_at_date='2022-06-01', removed_from_collection='community.aws'),
         description=dict(required=False, default=''),
         objects=dict(required=False, type='list', default=[], elements='dict'),
         parameters=dict(required=False, type='list', default=[], elements='dict'),
