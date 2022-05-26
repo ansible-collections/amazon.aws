@@ -1,2 +1,0 @@
-minor_changes:
-- module_utils - add new aliases ``aws_session_token`` and ``session_token`` to the ``security_token`` paramater to be more in-line with the boto SDK (https://github.com/ansible-collections/amazon.aws/pull/631).
