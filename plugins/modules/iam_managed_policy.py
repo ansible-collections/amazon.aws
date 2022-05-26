@@ -44,10 +44,6 @@ options:
     default: present
     choices: [ "present", "absent" ]
     type: str
-  fail_on_delete:
-    description:
-    - The I(fail_on_delete) option does nothing and will be removed after 2022-06-01
-    type: bool
 
 author: "Dan Kozlowski (@dkhenry)"
 extends_documentation_fragment:
@@ -345,7 +341,6 @@ def main():
         policy=dict(type='json'),
         make_default=dict(type='bool', default=True),
         only_version=dict(type='bool', default=False),
-        fail_on_delete=dict(type='bool', removed_at_date='2022-06-01', removed_from_collection='community.aws'),
         state=dict(default='present', choices=['present', 'absent']),
     )
 
