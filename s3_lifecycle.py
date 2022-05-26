@@ -133,10 +133,6 @@ options:
           I(storage_class)
     type: list
     elements: dict
-  requester_pays:
-    description:
-      - The I(requester_pays) option does nothing and will be removed after 2022-06-01
-    type: bool
   wait:
     description:
       - Wait for the configuration to complete before returning.
@@ -574,7 +570,6 @@ def main():
         noncurrent_version_transition_days=dict(type='int'),
         noncurrent_version_transitions=dict(type='list', elements='dict'),
         prefix=dict(),
-        requester_pays=dict(type='bool', removed_at_date='2022-06-01', removed_from_collection='community.aws'),
         rule_id=dict(),
         state=dict(default='present', choices=['present', 'absent']),
         status=dict(default='enabled', choices=['enabled', 'disabled']),
