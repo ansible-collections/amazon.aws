@@ -749,8 +749,6 @@ releases:
       - Include ``PSF-license.txt`` file for ``plugins/module_utils/_version.py``.
       - aws_account_attribute lookup plugin - fix linting errors in documentation
         data (https://github.com/ansible-collections/amazon.aws/pull/701).
-      - aws_account_attribute lookup plugin - fix linting errors in documentation
-        data (https://github.com/ansible-collections/amazon.aws/pull/701).
       - aws_ec2 inventory plugin - fix linting errors in documentation data (https://github.com/ansible-collections/amazon.aws/pull/701).
       - aws_rds inventory plugin - fix linting errors in documentation data (https://github.com/ansible-collections/amazon.aws/pull/701).
       - aws_resource_actions callback plugin - fix linting errors in documentation
@@ -777,7 +775,7 @@ releases:
       - module.utils.rds - refactor to utilize get_rds_method_attribute return data
         (https://github.com/ansible-collections/amazon.aws/pull/776).
       - module_utils - add new aliases ``aws_session_token`` and ``session_token``
-        to the ``security_token`` paramater to be more in-line with the boto SDK (https://github.com/ansible-collections/amazon.aws/pull/631).
+        to the ``security_token`` parameter to be more in-line with the boto SDK (https://github.com/ansible-collections/amazon.aws/pull/631).
       - module_utils.rds - Add support and unit tests for addition/removal of IAM
         roles to/from a db instance in module_utils.rds with waiters (https://github.com/ansible-collections/amazon.aws/pull/714).
     fragments:
