@@ -5,7 +5,7 @@
 amazon.aws.ec2_snapshot_info
 ****************************
 
-**Gather information about ec2 volume snapshots in AWS**
+**Gathers information about EC2 volume snapshots in AWS**
 
 
 Version added: 1.0.0
@@ -17,7 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Gather information about ec2 volume snapshots in AWS.
+- Gathers information about EC2 volume snapshots in AWS.
 - This module was called ``ec2_snapshot_facts`` before Ansible 2.9. The usage did not change.
 
 
@@ -435,7 +435,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>The data encryption key identifier for the snapshot. This value is a unique identifier that             corresponds to the data encryption key that was used to encrypt the original volume or snapshot copy.</div>
+                            <div>The data encryption key identifier for the snapshot. This value is a unique identifier that corresponds to the data encryption key that was used to encrypt the original volume or snapshot copy.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">arn:aws:kms:ap-southeast-2:012345678900:key/74c9742a-a1b2-45cb-b3fe-abcdef123456</div>
@@ -489,7 +489,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>The full ARN of the AWS Key Management Service (AWS KMS) customer master key (CMK) that was used to             protect the volume encryption key for the parent volume.</div>
+                            <div>The full ARN of the AWS Key Management Service (AWS KMS) customer master key (CMK) that was used to protect the volume encryption key for the parent volume.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">74c9742a-a1b2-45cb-b3fe-abcdef123456</div>
