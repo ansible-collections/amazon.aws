@@ -19,13 +19,23 @@ author:
 options:
   name:
     description:
-      - The name to give your VPC. This is used in combination with C(cidr_block) to determine if a VPC already exists.
-    required: yes
+      - The name to give your VPC. This is used in combination with I(cidr_block)
+        to determine if a VPC already exists.
+      - The value of I(name) overrides any value set for C(Name) in the I(tags)
+        parameter.
+      - At least one of I(name) and I(vpc_id) must be specified.
+      - I(name) must be specified when creating a new VPC.
+    type: str
+  vpc_id:
+    description:
+      - The ID of the VPC.
+      - At least one of I(name) and I(vpc_id) must be specified.
     type: str
   cidr_block:
     description:
-      - The primary CIDR of the VPC. After 2.5 a list of CIDRs can be provided. The first in the list will be used as the primary CIDR
-        and is used in conjunction with the C(name) to ensure idempotence.
+      - The primary CIDR of the VPC.
+      - The first in the list will be used as the primary CIDR
+        and is used in conjunction with I(name) to ensure idempotence.
     required: yes
     type: list
     elements: str
@@ -60,12 +70,6 @@ options:
     description:
       - The id of the DHCP options to use for this VPC.
     type: str
-  tags:
-    description:
-      - The tags you want attached to the VPC. This is independent of the name value, note if you pass a 'Name' key it would override the Name of
-        the VPC if it's different.
-    aliases: [ 'resource_tags' ]
-    type: dict
   state:
     description:
       - The state of the VPC. Either absent or present.
@@ -81,6 +85,7 @@ options:
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
+- amazon.aws.tags.deprecated_purge
 
 '''
 
@@ -210,7 +215,8 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
 
 
@@ -270,7 +276,7 @@ def wait_for_vpc(module, connection, **params):
         module.fail_json_aws(e, msg="Unable to wait for VPC state to update.")
 
 
-def get_vpc(module, connection, vpc_id):
+def get_vpc(module, connection, vpc_id, wait=True):
     wait_for_vpc(module, connection, VpcIds=[vpc_id])
     try:
         vpc_obj = connection.describe_vpcs(VpcIds=[vpc_id], aws_retry=True)['Vpcs'][0]
@@ -282,31 +288,28 @@ def get_vpc(module, connection, vpc_id):
     return vpc_obj
 
 
-def update_vpc_tags(connection, module, vpc_id, tags, name):
+def update_vpc_tags(connection, module, vpc_id, tags, name, purge_tags):
+    # Name is a tag rather than a direct parameter, we need to inject 'Name'
+    # into tags, but since tags isn't explicitly passed we'll treat it not being
+    # set as purge_tags == False
+    if name:
+        if purge_tags and tags is None:
+            purge_tags = False
+        tags = tags or {}
+        tags.update({'Name': name})
+
     if tags is None:
-        tags = dict()
+        return False
 
-    tags.update({'Name': name})
-    tags = dict((k, to_native(v)) for k, v in tags.items())
-    try:
-        filters = ansible_dict_to_boto3_filter_list({'resource-id': vpc_id})
-        current_tags = dict((t['Key'], t['Value']) for t in connection.describe_tags(Filters=filters, aws_retry=True)['Tags'])
-        tags_to_update, dummy = compare_aws_tags(current_tags, tags, False)
-        if tags_to_update:
-            if not module.check_mode:
-                tags = ansible_dict_to_boto3_tag_list(tags_to_update)
-                vpc_obj = connection.create_tags(Resources=[vpc_id], Tags=tags, aws_retry=True)
+    changed = ensure_ec2_tags(connection, module, vpc_id, tags=tags, purge_tags=purge_tags)
+    if not changed or module.check_mode:
+        return changed
 
-                # Wait for tags to be updated
-                expected_tags = boto3_tag_list_to_ansible_dict(tags)
-                filters = [{'Name': 'tag:{0}'.format(key), 'Values': [value]} for key, value in expected_tags.items()]
-                wait_for_vpc(module, connection, VpcIds=[vpc_id], Filters=filters)
+    tag_list = ansible_dict_to_boto3_tag_list(tags)
+    filters = [{'Name': 'tag:{0}'.format(t['Key']), 'Values': [t['Value']]} for t in tag_list]
+    wait_for_vpc(module, connection, VpcIds=[vpc_id], Filters=filters)
 
-            return True
-        else:
-            return False
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to update tags")
+    return True
 
 
 def update_dhcp_opts(connection, module, vpc_obj, dhcp_id):
@@ -326,12 +329,19 @@ def update_dhcp_opts(connection, module, vpc_obj, dhcp_id):
         return False
 
 
-def create_vpc(connection, module, cidr_block, tenancy):
+def create_vpc(connection, module, cidr_block, tenancy, tags):
+    if module.check_mode:
+        module.exit_json(changed=True, msg="VPC would be created if not in check mode")
+
+    create_args = dict(
+        CidrBlock=cidr_block, InstanceTenancy=tenancy,
+    )
+
+    if tags:
+        create_args['TagSpecifications'] = boto3_tag_specifications(tags, 'vpc')
+
     try:
-        if not module.check_mode:
-            vpc_obj = connection.create_vpc(CidrBlock=cidr_block, InstanceTenancy=tenancy, aws_retry=True)
-        else:
-            module.exit_json(changed=True, msg="VPC would be created if not in check mode")
+        vpc_obj = connection.create_vpc(aws_retry=True, **create_args)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, "Failed to create the VPC")
 
@@ -421,9 +431,27 @@ def get_cidr_network_bits(module, cidr_block):
     return fixed_cidrs
 
 
+def delete_vpc(connection, module, vpc_id):
+    if vpc_id is None:
+        return False
+    if module.check_mode:
+        return True
+
+    try:
+        connection.delete_vpc(VpcId=vpc_id, aws_retry=True)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(
+            e, msg="Failed to delete VPC {0} You may want to use the ec2_vpc_subnet, ec2_vpc_igw, "
+            "and/or ec2_vpc_route_table modules to ensure that all depenednt components are absent.".format(vpc_id)
+        )
+
+    return True
+
+
 def main():
     argument_spec = dict(
-        name=dict(required=True),
+        name=dict(required=False),
+        vpc_id=dict(type='str', required=False, default=None),
         cidr_block=dict(type='list', required=True, elements='str'),
         ipv6_cidr=dict(type='bool', default=None),
         tenancy=dict(choices=['default', 'dedicated'], default='default'),
@@ -431,6 +459,7 @@ def main():
         dns_hostnames=dict(type='bool', default=True),
         dhcp_opts_id=dict(),
         tags=dict(type='dict', aliases=['resource_tags']),
+        purge_tags=dict(type='bool', default=None),
         state=dict(choices=['present', 'absent'], default='present'),
         multi_ok=dict(type='bool', default=False),
         purge_cidrs=dict(type='bool', default=False),
@@ -438,10 +467,20 @@ def main():
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
+        required_one_of=[['name', 'vpc_id']],
         supports_check_mode=True
     )
 
+    if module.params.get('purge_tags') is None:
+        module.deprecate(
+            'The purge_tags parameter currently defaults to False.'
+            ' For consistency across the collection, this default value'
+            ' will change to True in release 5.0.0.',
+            version='5.0.0', collection_name='amazon.aws')
+        module.params['purge_tags'] = False
+
     name = module.params.get('name')
+    vpc_id = module.params.get('vpc_id')
     cidr_block = get_cidr_network_bits(module, module.params.get('cidr_block'))
     ipv6_cidr = module.params.get('ipv6_cidr')
     purge_cidrs = module.params.get('purge_cidrs')
@@ -450,6 +489,7 @@ def main():
     dns_hostnames = module.params.get('dns_hostnames')
     dhcp_id = module.params.get('dhcp_opts_id')
     tags = module.params.get('tags')
+    purge_tags = module.params.get('purge_tags')
     state = module.params.get('state')
     multi = module.params.get('multi_ok')
 
@@ -459,20 +499,24 @@ def main():
         'ec2',
         retry_decorator=AWSRetry.jittered_backoff(
             retries=8, delay=3, catch_extra_error_codes=['InvalidVpcID.NotFound']
-        )
+        ),
     )
 
     if dns_hostnames and not dns_support:
         module.fail_json(msg='In order to enable DNS Hostnames you must also enable DNS support')
 
+    if vpc_id is None:
+        vpc_id = vpc_exists(module, connection, name, cidr_block, multi)
+
     if state == 'present':
 
         # Check if VPC exists
-        vpc_id = vpc_exists(module, connection, name, cidr_block, multi)
         is_new_vpc = False
         if vpc_id is None:
             is_new_vpc = True
-            vpc_id = create_vpc(connection, module, cidr_block[0], tenancy)
+            if module.params.get('name') is None:
+                module.fail_json('The name parameter must be specified when creating a new VPC.')
+            vpc_id = create_vpc(connection, module, cidr_block[0], tenancy, tags)
             changed = True
             if ipv6_cidr is None:
                 # default value when creating new VPC.
@@ -561,7 +605,7 @@ def main():
 
         if tags is not None or name is not None:
             try:
-                if update_vpc_tags(connection, module, vpc_id, tags, name):
+                if update_vpc_tags(connection, module, vpc_id, tags, name, purge_tags):
                     changed = True
             except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                 module.fail_json_aws(e, msg="Failed to update tags")
@@ -604,20 +648,7 @@ def main():
         module.exit_json(changed=changed, vpc=final_state, debugging=debugging)
 
     elif state == 'absent':
-
-        # Check if VPC exists
-        vpc_id = vpc_exists(module, connection, name, cidr_block, multi)
-
-        if vpc_id is not None:
-            try:
-                if not module.check_mode:
-                    connection.delete_vpc(VpcId=vpc_id, aws_retry=True)
-                changed = True
-
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Failed to delete VPC {0} You may want to use the ec2_vpc_subnet, ec2_vpc_igw, "
-                                     "and/or ec2_vpc_route_table modules to ensure the other components are absent.".format(vpc_id))
-
+        changed = delete_vpc(connection, module, vpc_id)
         module.exit_json(changed=changed, vpc={})
 
 

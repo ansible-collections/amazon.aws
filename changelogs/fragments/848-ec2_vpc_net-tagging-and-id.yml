@@ -1,0 +1,4 @@
+minor_changes:
+- ec2_vpc_net - Add support for managing VPCs by ID (https://github.com/ansible-collections/amazon.aws/pull/848).
+deprecated_features:
+- ec2_vpc_net - the current default value of ``False`` for ``purge_tags`` has been deprecated and will be updated in release 5.0.0 to ``True`` (https://github.com/ansible-collections/amazon.aws/pull/848).
