@@ -47,19 +47,6 @@ options:
     required: false
     default: false
     type: bool
-  tags:
-    description:
-      - A dict of tags to apply to the NAT gateway.
-      - To remove all tags set I(tags={}) and I(purge_tags=true).
-    aliases: [ 'resource_tags' ]
-    type: dict
-    version_added: 1.4.0
-  purge_tags:
-    description:
-      - Remove tags not listed in I(tags).
-    type: bool
-    default: true
-    version_added: 1.4.0
   release_eip:
     description:
       - Deallocate the EIP from the VPC.
@@ -88,9 +75,12 @@ author:
   - Jon Hadfield (@jonhadfield)
   - Karen Cheng (@Etherdaemon)
   - Alina Buzachis (@alinabuzachis)
+notes:
+  - Support for I(tags) and I(purge_tags) was added in release 1.4.0.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = r'''

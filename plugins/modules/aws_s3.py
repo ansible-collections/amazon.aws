@@ -166,18 +166,6 @@ options:
     description:
       - KMS key id to use when encrypting objects using I(encrypting=aws:kms). Ignored if I(encryption) is not C(aws:kms).
     type: str
-  tags:
-    description:
-      - Tags dict to apply to the S3 object.
-    type: dict
-    version_added: 2.0.0
-  purge_tags:
-    description:
-      - Whether or not to remove tags assigned to the S3 object if not specified in the playbook.
-      - To remove all tags set I(tags) to an empty dictionary in conjunction with this.
-    type: bool
-    default: True
-    version_added: 2.0.0
   copy_src:
     description:
     - The source details of the object to copy.
@@ -211,10 +199,12 @@ author:
     - "Lester Wade (@lwade)"
     - "Sloane Hertel (@s-hertel)"
     - "Alina Buzachis (@linabuzachis)"
+notes:
+- Support for I(tags) and I(purge_tags) was added in release 2.0.0.
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
+- amazon.aws.tags
 '''
 
 EXAMPLES = '''
@@ -935,7 +925,7 @@ def main():
         content_base64=dict(),
         ignore_nonexistent_bucket=dict(default=False, type='bool'),
         encryption_kms_key_id=dict(),
-        tags=dict(type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=True),
         copy_src=dict(type='dict', options=dict(bucket=dict(required=True), object=dict(required=True), version_id=dict())),
         validate_bucket_name=dict(type='bool', default=True),

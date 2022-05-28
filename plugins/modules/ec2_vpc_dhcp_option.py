@@ -78,15 +78,9 @@ options:
   tags:
     description:
       - Tags to be applied to a VPC options set if a new one is created, or
-        if the resource_id is provided. (options must match)
+        if I(dhcp_options_id) is provided. (options must match)
     aliases: [ 'resource_tags']
     type: dict
-  purge_tags:
-    description:
-      - Remove tags not listed in I(tags).
-    type: bool
-    default: true
-    version_added: 2.0.0
   dhcp_options_id:
     description:
       - The resource_id of an existing DHCP options set.
@@ -101,9 +95,12 @@ options:
     default: present
     choices: [ 'absent', 'present' ]
     type: str
+notes:
+- Support for I(purge_tags) was added in release 2.0.0.
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
+- amazon.aws.tags
 '''
 
 RETURN = """

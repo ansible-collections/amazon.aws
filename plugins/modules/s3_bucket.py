@@ -70,15 +70,6 @@ options:
     default: present
     choices: [ 'present', 'absent' ]
     type: str
-  tags:
-    description:
-      - Tags dict to apply to bucket.
-    type: dict
-  purge_tags:
-    description:
-      - Whether to remove tags that aren't present in the I(tags) parameter.
-    type: bool
-    default: True
   versioning:
     description:
       - Whether versioning is enabled or disabled (note that once versioning is enabled, it can only be suspended).
@@ -166,6 +157,7 @@ options:
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
+- amazon.aws.tags
 
 notes:
     - If C(requestPayment), C(policy), C(tagging) or C(versioning)
@@ -1011,7 +1003,7 @@ def main():
         requester_pays=dict(type='bool'),
         s3_url=dict(aliases=['S3_URL'], deprecated_aliases=[dict(name='S3_URL', version='5.0.0', collection_name='amazon.aws')]),
         state=dict(default='present', choices=['present', 'absent']),
-        tags=dict(type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=True),
         versioning=dict(type='bool'),
         ceph=dict(default=False, type='bool'),

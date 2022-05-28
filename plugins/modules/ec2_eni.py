@@ -108,37 +108,21 @@ options:
     type: bool
   name:
     description:
-      - Name for the ENI. This will create a tag called "Name" with the value assigned here.
+      - Name for the ENI. This will create a tag with the key C(Name) and the value assigned here.
       - This can be used in conjunction with I(subnet_id) as another means of identifiying a network interface.
-      - AWS does not enforce unique Name tags, so duplicate names are possible if you configure it that way.
+      - AWS does not enforce unique C(Name) tags, so duplicate names are possible if you configure it that way.
         If that is the case, you will need to provide other identifying information such as I(private_ip_address) or I(eni_id).
     required: false
     type: str
-  tags:
-    description:
-      - A hash/dictionary of tags to add to the new ENI or to add/remove from an existing one. Please note that
-        the name field sets the "Name" tag.
-      - To clear all tags, set this option to an empty dictionary to use in conjunction with I(purge_tags).
-        If you provide I(name), that tag will not be removed.
-      - To prevent removing any tags set I(purge_tags) to false.
-    type: dict
-    required: false
-    version_added: 1.3.0
-  purge_tags:
-    description:
-      - Indicates whether to remove tags not specified in I(tags) or I(name). This means you have to specify all
-        the desired tags on each task affecting a network interface.
-      - If I(tags) is omitted or None this option is disregarded.
-    default: true
-    type: bool
-    version_added: 1.3.0
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
+- amazon.aws.tags
 
 notes:
     - This module identifies and ENI based on either the I(eni_id), a combination of I(private_ip_address) and I(subnet_id),
       or a combination of I(instance_id) and I(device_id). Any of these options will let you specify a particular ENI.
+    - Support for I(tags) and I(purge_tags) was added in release 1.3.0.
 '''
 
 EXAMPLES = '''
@@ -853,8 +837,8 @@ def main():
         allow_reassignment=dict(default=False, type='bool'),
         attached=dict(default=None, type='bool'),
         name=dict(default=None, type='str'),
-        tags=dict(type='dict'),
-        purge_tags=dict(default=True, type='bool')
+        tags=dict(type='dict', aliases=['resource_tags']),
+        purge_tags=dict(default=True, type='bool'),
     )
 
     module = AnsibleAWSModule(
