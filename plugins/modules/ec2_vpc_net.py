@@ -30,13 +30,14 @@ options:
     description:
       - The ID of the VPC.
       - At least one of I(name) and I(vpc_id) must be specified.
+      - At least one of I(name) and I(cidr_block) must be specified.
     type: str
   cidr_block:
     description:
       - The primary CIDR of the VPC.
       - The first in the list will be used as the primary CIDR
         and is used in conjunction with I(name) to ensure idempotence.
-    required: yes
+      - Required when I(vpc_id) is not set.
     type: list
     elements: str
   ipv6_cidr:
@@ -47,24 +48,25 @@ options:
     type: bool
   purge_cidrs:
     description:
-      - Remove CIDRs that are associated with the VPC and are not specified in C(cidr_block).
+      - Remove CIDRs that are associated with the VPC and are not specified in I(cidr_block).
     default: no
     type: bool
   tenancy:
     description:
-      - Whether to be default or dedicated tenancy. This cannot be changed after the VPC has been created.
+      - Whether to be default or dedicated tenancy.
+      - This cannot be changed after the VPC has been created.
     default: default
     choices: [ 'default', 'dedicated' ]
     type: str
   dns_support:
     description:
       - Whether to enable AWS DNS support.
-    default: yes
+      - Default value is C(true) when creating a new VPC.
     type: bool
   dns_hostnames:
     description:
       - Whether to enable AWS hostname support.
-    default: yes
+      - Default value is C(true) when creating a new VPC.
     type: bool
   dhcp_opts_id:
     description:
@@ -151,6 +153,12 @@ vpc:
       returned: always
       type: str
       sample: vpc-12345678
+    name:
+      description: The Name tag of the VPC.
+      returned: When the Name tag has been set on the VPC
+      type: str
+      sample: MyVPC
+      version_added: 4.0.0
     instance_tenancy:
       description: indicates whether VPC uses default or dedicated tenancy
       returned: always
@@ -305,31 +313,26 @@ def update_vpc_tags(connection, module, vpc_id, tags, name, purge_tags):
     if not changed or module.check_mode:
         return changed
 
-    tag_list = ansible_dict_to_boto3_tag_list(tags)
-    filters = [{'Name': 'tag:{0}'.format(t['Key']), 'Values': [t['Value']]} for t in tag_list]
-    wait_for_vpc(module, connection, VpcIds=[vpc_id], Filters=filters)
-
     return True
 
 
 def update_dhcp_opts(connection, module, vpc_obj, dhcp_id):
-    if vpc_obj['DhcpOptionsId'] != dhcp_id:
-        if not module.check_mode:
-            try:
-                connection.associate_dhcp_options(DhcpOptionsId=dhcp_id, VpcId=vpc_obj['VpcId'], aws_retry=True)
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Failed to associate DhcpOptionsId {0}".format(dhcp_id))
-
-            # Wait for DhcpOptionsId to be updated
-            filters = [{'Name': 'dhcp-options-id', 'Values': [dhcp_id]}]
-            wait_for_vpc(module, connection, VpcIds=[vpc_obj['VpcId']], Filters=filters)
-
-        return True
-    else:
+    if dhcp_id is None:
         return False
+    if vpc_obj['DhcpOptionsId'] == dhcp_id:
+        return False
+    if module.check_mode:
+        return True
+
+    try:
+        connection.associate_dhcp_options(DhcpOptionsId=dhcp_id, VpcId=vpc_obj['VpcId'], aws_retry=True)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to associate DhcpOptionsId {0}".format(dhcp_id))
+
+    return True
 
 
-def create_vpc(connection, module, cidr_block, tenancy, tags):
+def create_vpc(connection, module, cidr_block, tenancy, tags, ipv6_cidr, name):
     if module.check_mode:
         module.exit_json(changed=True, msg="VPC would be created if not in check mode")
 
@@ -337,8 +340,15 @@ def create_vpc(connection, module, cidr_block, tenancy, tags):
         CidrBlock=cidr_block, InstanceTenancy=tenancy,
     )
 
+    if name:
+        tags = tags or {}
+        tags['Name'] = name
     if tags:
         create_args['TagSpecifications'] = boto3_tag_specifications(tags, 'vpc')
+
+    # Defaults to False (including None)
+    if ipv6_cidr:
+        create_args['AmazonProvidedIpv6CidrBlock'] = True
 
     try:
         vpc_obj = connection.create_vpc(aws_retry=True, **create_args)
@@ -352,7 +362,7 @@ def create_vpc(connection, module, cidr_block, tenancy, tags):
         WaiterConfig=dict(MaxAttempts=30)
     )
     # Wait for the VPC to enter an 'Available' State
-    wait_for_vpc_to_exist(
+    wait_for_vpc(
         module, connection,
         VpcIds=[vpc_obj['Vpc']['VpcId']],
         WaiterConfig=dict(MaxAttempts=30)
@@ -362,6 +372,11 @@ def create_vpc(connection, module, cidr_block, tenancy, tags):
 
 
 def wait_for_vpc_attribute(connection, module, vpc_id, attribute, expected_value):
+    if expected_value is None:
+        return
+    if module.check_mode:
+        return
+
     start_time = time()
     updated = False
     while time() < start_time + 300:
@@ -384,6 +399,12 @@ def wait_for_vpc_ipv6_state(module, connection, vpc_id, ipv6_assoc_state):
     If ipv6_assoc_state is True, wait for VPC to be associated with at least one Amazon-provided IPv6 CIDR block.
     If ipv6_assoc_state is False, wait for VPC to be dissociated from all Amazon-provided IPv6 CIDR blocks.
     """
+
+    if ipv6_assoc_state is None:
+        return
+    if module.check_mode:
+        return
+
     start_time = time()
     criteria_match = False
     while time() < start_time + 300:
@@ -414,6 +435,9 @@ def wait_for_vpc_ipv6_state(module, connection, vpc_id, ipv6_assoc_state):
 
 
 def get_cidr_network_bits(module, cidr_block):
+    if cidr_block is None:
+        return None
+
     fixed_cidrs = []
     for cidr in cidr_block:
         split_addr = cidr.split('/')
@@ -429,6 +453,113 @@ def get_cidr_network_bits(module, cidr_block):
             # let AWS handle invalid CIDRs
             fixed_cidrs.append(cidr)
     return fixed_cidrs
+
+
+def update_ipv6_cidrs(connection, module, vpc_obj, vpc_id, ipv6_cidr):
+    if ipv6_cidr is None:
+        return False
+
+    # Fetch current state from vpc_object
+    current_ipv6_cidr = False
+    if 'Ipv6CidrBlockAssociationSet' in vpc_obj.keys():
+        for ipv6_assoc in vpc_obj['Ipv6CidrBlockAssociationSet']:
+            if ipv6_assoc['Ipv6Pool'] == 'Amazon' and ipv6_assoc['Ipv6CidrBlockState']['State'] in ['associated', 'associating']:
+                current_ipv6_cidr = True
+                break
+
+    if ipv6_cidr == current_ipv6_cidr:
+        return False
+
+    if module.check_mode:
+        return True
+
+    # There's no block associated, and we want one to be associated
+    if ipv6_cidr:
+        try:
+            connection.associate_vpc_cidr_block(AmazonProvidedIpv6CidrBlock=ipv6_cidr, VpcId=vpc_id, aws_retry=True)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, "Unable to associate IPv6 CIDR")
+    else:
+        for ipv6_assoc in vpc_obj['Ipv6CidrBlockAssociationSet']:
+            if ipv6_assoc['Ipv6Pool'] == 'Amazon' and ipv6_assoc['Ipv6CidrBlockState']['State'] in ['associated', 'associating']:
+                try:
+                    connection.disassociate_vpc_cidr_block(AssociationId=ipv6_assoc['AssociationId'], aws_retry=True)
+                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                    module.fail_json_aws(e, "Unable to disassociate IPv6 CIDR {0}.".format(ipv6_assoc['AssociationId']))
+    return True
+
+
+def update_cidrs(connection, module, vpc_obj, vpc_id, cidr_block, purge_cidrs):
+    if cidr_block is None:
+        return False, None
+
+    associated_cidrs = dict((cidr['CidrBlock'], cidr['AssociationId']) for cidr in vpc_obj.get('CidrBlockAssociationSet', [])
+                            if cidr['CidrBlockState']['State'] not in ['disassociating', 'disassociated'])
+
+    current_cidrs = set(associated_cidrs.keys())
+    desired_cidrs = set(cidr_block)
+    if not purge_cidrs:
+        desired_cidrs = desired_cidrs.union(current_cidrs)
+
+    cidrs_to_add = list(desired_cidrs.difference(current_cidrs))
+    cidrs_to_remove = list(current_cidrs.difference(desired_cidrs))
+
+    if not cidrs_to_add and not cidrs_to_remove:
+        return False, None
+
+    if module.check_mode:
+        return True, list(desired_cidrs)
+
+    for cidr in cidrs_to_add:
+        try:
+            connection.associate_vpc_cidr_block(CidrBlock=cidr, VpcId=vpc_id, aws_retry=True)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, "Unable to associate CIDR {0}.".format(cidr))
+
+    for cidr in cidrs_to_remove:
+        association_id = associated_cidrs[cidr]
+        try:
+            connection.disassociate_vpc_cidr_block(AssociationId=association_id, aws_retry=True)
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, "Unable to disassociate {0}. You must detach or delete all gateways and resources that "
+                                 "are associated with the CIDR block before you can disassociate it.".format(association_id))
+    return True, list(desired_cidrs)
+
+
+def update_dns_enabled(connection, module, vpc_id, dns_support):
+    if dns_support is None:
+        return False
+
+    current_dns_enabled = connection.describe_vpc_attribute(Attribute='enableDnsSupport', VpcId=vpc_id, aws_retry=True)['EnableDnsSupport']['Value']
+    if current_dns_enabled == dns_support:
+        return False
+
+    if module.check_mode:
+        return True
+
+    try:
+        connection.modify_vpc_attribute(VpcId=vpc_id, EnableDnsSupport={'Value': dns_support}, aws_retry=True)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, "Failed to update enabled dns support attribute")
+    return True
+
+
+def update_dns_hostnames(connection, module, vpc_id, dns_hostnames):
+    if dns_hostnames is None:
+        return False
+
+    current_dns_hostnames = connection.describe_vpc_attribute(Attribute='enableDnsHostnames', VpcId=vpc_id, aws_retry=True)['EnableDnsHostnames']['Value']
+    if current_dns_hostnames == dns_hostnames:
+        return False
+
+    if module.check_mode:
+        return True
+
+    try:
+        connection.modify_vpc_attribute(VpcId=vpc_id, EnableDnsHostnames={'Value': dns_hostnames}, aws_retry=True)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, "Failed to update enabled dns hostnames attribute")
+    return True
 
 
 def delete_vpc(connection, module, vpc_id):
@@ -448,15 +579,44 @@ def delete_vpc(connection, module, vpc_id):
     return True
 
 
+def wait_for_updates(connection, module, vpc_id, ipv6_cidr, expected_cidrs, dns_support, dns_hostnames, tags, dhcp_id):
+
+    if module.check_mode:
+        return
+
+    if expected_cidrs:
+        wait_for_vpc(
+            module, connection,
+            VpcIds=[vpc_id],
+            Filters=[{'Name': 'cidr-block-association.cidr-block', 'Values': expected_cidrs}]
+        )
+    wait_for_vpc_ipv6_state(module, connection, vpc_id, ipv6_cidr)
+
+    if tags is not None:
+        tag_list = ansible_dict_to_boto3_tag_list(tags)
+        filters = [{'Name': 'tag:{0}'.format(t['Key']), 'Values': [t['Value']]} for t in tag_list]
+        wait_for_vpc(module, connection, VpcIds=[vpc_id], Filters=filters)
+
+    wait_for_vpc_attribute(connection, module, vpc_id, 'enableDnsSupport', dns_support)
+    wait_for_vpc_attribute(connection, module, vpc_id, 'enableDnsHostnames', dns_hostnames)
+
+    if dhcp_id is not None:
+        # Wait for DhcpOptionsId to be updated
+        filters = [{'Name': 'dhcp-options-id', 'Values': [dhcp_id]}]
+        wait_for_vpc(module, connection, VpcIds=[vpc_id], Filters=filters)
+
+    return
+
+
 def main():
     argument_spec = dict(
         name=dict(required=False),
         vpc_id=dict(type='str', required=False, default=None),
-        cidr_block=dict(type='list', required=True, elements='str'),
+        cidr_block=dict(type='list', elements='str'),
         ipv6_cidr=dict(type='bool', default=None),
         tenancy=dict(choices=['default', 'dedicated'], default='default'),
-        dns_support=dict(type='bool', default=True),
-        dns_hostnames=dict(type='bool', default=True),
+        dns_support=dict(type='bool'),
+        dns_hostnames=dict(type='bool'),
         dhcp_opts_id=dict(),
         tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=None),
@@ -464,10 +624,14 @@ def main():
         multi_ok=dict(type='bool', default=False),
         purge_cidrs=dict(type='bool', default=False),
     )
+    required_one_of = [
+        ['vpc_id', 'name'],
+        ['vpc_id', 'cidr_block'],
+    ]
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
-        required_one_of=[['name', 'vpc_id']],
+        required_one_of=required_one_of,
         supports_check_mode=True
     )
 
@@ -481,7 +645,7 @@ def main():
 
     name = module.params.get('name')
     vpc_id = module.params.get('vpc_id')
-    cidr_block = get_cidr_network_bits(module, module.params.get('cidr_block'))
+    cidr_block = module.params.get('cidr_block')
     ipv6_cidr = module.params.get('ipv6_cidr')
     purge_cidrs = module.params.get('purge_cidrs')
     tenancy = module.params.get('tenancy')
@@ -505,147 +669,55 @@ def main():
     if dns_hostnames and not dns_support:
         module.fail_json(msg='In order to enable DNS Hostnames you must also enable DNS support')
 
+    cidr_block = get_cidr_network_bits(module, module.params.get('cidr_block'))
+
     if vpc_id is None:
         vpc_id = vpc_exists(module, connection, name, cidr_block, multi)
 
     if state == 'present':
 
         # Check if VPC exists
-        is_new_vpc = False
         if vpc_id is None:
-            is_new_vpc = True
             if module.params.get('name') is None:
                 module.fail_json('The name parameter must be specified when creating a new VPC.')
-            vpc_id = create_vpc(connection, module, cidr_block[0], tenancy, tags)
+            vpc_id = create_vpc(connection, module, cidr_block[0], tenancy, tags, ipv6_cidr, name)
             changed = True
-            if ipv6_cidr is None:
-                # default value when creating new VPC.
-                ipv6_cidr = False
-
-        vpc_obj = get_vpc(module, connection, vpc_id)
-        if not is_new_vpc and ipv6_cidr is None:
-            # 'ipv6_cidr' wasn't specified in the task.
-            # Retain the value from the existing VPC.
-            ipv6_cidr = False
-            if 'Ipv6CidrBlockAssociationSet' in vpc_obj.keys():
-                for ipv6_assoc in vpc_obj['Ipv6CidrBlockAssociationSet']:
-                    if ipv6_assoc['Ipv6Pool'] == 'Amazon' and ipv6_assoc['Ipv6CidrBlockState']['State'] in ['associated', 'associating']:
-                        ipv6_cidr = True
-                        break
-
-        associated_cidrs = dict((cidr['CidrBlock'], cidr['AssociationId']) for cidr in vpc_obj.get('CidrBlockAssociationSet', [])
-                                if cidr['CidrBlockState']['State'] != 'disassociated')
-        to_add = [cidr for cidr in cidr_block if cidr not in associated_cidrs]
-        to_remove = [associated_cidrs[cidr] for cidr in associated_cidrs if cidr not in cidr_block]
-        expected_cidrs = [cidr for cidr in associated_cidrs if associated_cidrs[cidr] not in to_remove] + to_add
-
-        if len(cidr_block) > 1:
-            for cidr in to_add:
-                changed = True
-                if not module.check_mode:
-                    try:
-                        connection.associate_vpc_cidr_block(CidrBlock=cidr, VpcId=vpc_id, aws_retry=True)
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, "Unable to associate CIDR {0}.".format(ipv6_cidr))
-        if ipv6_cidr:
-            if 'Ipv6CidrBlockAssociationSet' not in vpc_obj.keys():
-                changed = True
-                if not module.check_mode:
-                    try:
-                        connection.associate_vpc_cidr_block(AmazonProvidedIpv6CidrBlock=ipv6_cidr, VpcId=vpc_id, aws_retry=True)
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, "Unable to associate CIDR {0}.".format(ipv6_cidr))
+            vpc_obj = get_vpc(module, connection, vpc_id)
+            if len(cidr_block) > 1:
+                cidrs_changed, desired_cidrs = update_cidrs(connection, module, vpc_obj, vpc_id, cidr_block, purge_cidrs)
+                changed |= cidrs_changed
             else:
-                # If the VPC has been created with IPv6 CIDR, and the ipv6 blocks were subsequently
-                # disassociated, a Amazon-provide block must be associate a new block.
-                assoc_needed = True
-                for ipv6_assoc in vpc_obj['Ipv6CidrBlockAssociationSet']:
-                    if ipv6_assoc['Ipv6Pool'] == 'Amazon' and ipv6_assoc['Ipv6CidrBlockState']['State'] in ['associated', 'associating']:
-                        assoc_needed = False
-                        break
-                if assoc_needed:
-                    changed = True
-                    if not module.check_mode:
-                        try:
-                            connection.associate_vpc_cidr_block(AmazonProvidedIpv6CidrBlock=ipv6_cidr, VpcId=vpc_id, aws_retry=True)
-                        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                            module.fail_json_aws(e, "Unable to associate CIDR {0}.".format(ipv6_cidr))
-                        wait_for_vpc_ipv6_state(module, connection, vpc_id, True)
+                desired_cidrs = None
+            # Set on-creation defaults
+            if dns_hostnames is None:
+                dns_hostnames = True
+            if dns_support is None:
+                dns_support = True
         else:
-            # ipv6_cidr is False
-            if 'Ipv6CidrBlockAssociationSet' in vpc_obj.keys() and len(vpc_obj['Ipv6CidrBlockAssociationSet']) > 0:
-                assoc_disable = False
-                for ipv6_assoc in vpc_obj['Ipv6CidrBlockAssociationSet']:
-                    if ipv6_assoc['Ipv6Pool'] == 'Amazon' and ipv6_assoc['Ipv6CidrBlockState']['State'] in ['associated', 'associating']:
-                        assoc_disable = True
-                        changed = True
-                        if not module.check_mode:
-                            try:
-                                connection.disassociate_vpc_cidr_block(AssociationId=ipv6_assoc['AssociationId'], aws_retry=True)
-                            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                                module.fail_json_aws(e, "Unable to disassociate IPv6 CIDR {0}.".format(ipv6_assoc['AssociationId']))
-                if assoc_disable and not module.check_mode:
-                    wait_for_vpc_ipv6_state(module, connection, vpc_id, False)
-        if purge_cidrs:
-            for association_id in to_remove:
-                changed = True
-                if not module.check_mode:
-                    try:
-                        connection.disassociate_vpc_cidr_block(AssociationId=association_id, aws_retry=True)
-                    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                        module.fail_json_aws(e, "Unable to disassociate {0}. You must detach or delete all gateways and resources that "
-                                             "are associated with the CIDR block before you can disassociate it.".format(association_id))
+            vpc_obj = get_vpc(module, connection, vpc_id)
+            cidrs_changed, desired_cidrs = update_cidrs(connection, module, vpc_obj, vpc_id, cidr_block, purge_cidrs)
+            changed |= cidrs_changed
+            ipv6_changed = update_ipv6_cidrs(connection, module, vpc_obj, vpc_id, ipv6_cidr)
+            changed |= ipv6_changed
+            tags_changed = update_vpc_tags(connection, module, vpc_id, tags, name, purge_tags)
+            changed |= tags_changed
 
-        if dhcp_id is not None:
-            try:
-                if update_dhcp_opts(connection, module, vpc_obj, dhcp_id):
-                    changed = True
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, "Failed to update DHCP options")
+        dhcp_changed = update_dhcp_opts(connection, module, vpc_obj, dhcp_id)
+        changed |= dhcp_changed
+        dns_changed = update_dns_enabled(connection, module, vpc_id, dns_support)
+        changed |= dns_changed
+        hostnames_changed = update_dns_hostnames(connection, module, vpc_id, dns_hostnames)
+        changed |= hostnames_changed
 
-        if tags is not None or name is not None:
-            try:
-                if update_vpc_tags(connection, module, vpc_id, tags, name, purge_tags):
-                    changed = True
-            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                module.fail_json_aws(e, msg="Failed to update tags")
+        wait_for_updates(connection, module, vpc_id, ipv6_cidr, desired_cidrs, dns_support, dns_hostnames, tags, dhcp_id)
 
-        current_dns_enabled = connection.describe_vpc_attribute(Attribute='enableDnsSupport', VpcId=vpc_id, aws_retry=True)['EnableDnsSupport']['Value']
-        current_dns_hostnames = connection.describe_vpc_attribute(Attribute='enableDnsHostnames', VpcId=vpc_id, aws_retry=True)['EnableDnsHostnames']['Value']
-        if current_dns_enabled != dns_support:
-            changed = True
-            if not module.check_mode:
-                try:
-                    connection.modify_vpc_attribute(VpcId=vpc_id, EnableDnsSupport={'Value': dns_support}, aws_retry=True)
-                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                    module.fail_json_aws(e, "Failed to update enabled dns support attribute")
-
-        if current_dns_hostnames != dns_hostnames:
-            changed = True
-            if not module.check_mode:
-                try:
-                    connection.modify_vpc_attribute(VpcId=vpc_id, EnableDnsHostnames={'Value': dns_hostnames}, aws_retry=True)
-                except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-                    module.fail_json_aws(e, "Failed to update enabled dns hostnames attribute")
-
-        # wait for associated cidrs to match
-        if to_add or to_remove:
-            wait_for_vpc(
-                module, connection,
-                VpcIds=[vpc_id],
-                Filters=[{'Name': 'cidr-block-association.cidr-block', 'Values': expected_cidrs}]
-            )
-
-        # try to wait for enableDnsSupport and enableDnsHostnames to match
-        wait_for_vpc_attribute(connection, module, vpc_id, 'enableDnsSupport', dns_support)
-        wait_for_vpc_attribute(connection, module, vpc_id, 'enableDnsHostnames', dns_hostnames)
-
-        final_state = camel_dict_to_snake_dict(get_vpc(module, connection, vpc_id))
-        final_state['tags'] = boto3_tag_list_to_ansible_dict(final_state.get('tags', []))
+        updated_obj = get_vpc(module, connection, vpc_id)
+        final_state = camel_dict_to_snake_dict(updated_obj)
+        final_state['tags'] = boto3_tag_list_to_ansible_dict(updated_obj.get('Tags', []))
+        final_state['name'] = final_state['tags'].get('Name', None)
         final_state['id'] = final_state.pop('vpc_id')
-        debugging = dict(to_add=to_add, to_remove=to_remove, expected_cidrs=expected_cidrs)
 
-        module.exit_json(changed=changed, vpc=final_state, debugging=debugging)
+        module.exit_json(changed=changed, vpc=final_state)
 
     elif state == 'absent':
         changed = delete_vpc(connection, module, vpc_id)

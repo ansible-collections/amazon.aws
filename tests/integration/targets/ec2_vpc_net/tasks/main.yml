@@ -6,7 +6,34 @@
       aws_secret_key: "{{ aws_secret_key }}"
       security_token: "{{ security_token | default(omit) }}"
       region: "{{ aws_region }}"
-
+  vars:
+    first_tags:
+      'Key with Spaces': Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+    second_tags:
+      'New Key with Spaces': Value with spaces
+      NewCamelCaseKey: CamelCaseValue
+      newPascalCaseKey: pascalCaseValue
+      new_snake_case_key: snake_case_value
+    third_tags:
+      'Key with Spaces': Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+      'New Key with Spaces': Updated Value with spaces
+    final_tags:
+      'Key with Spaces': Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+      'New Key with Spaces': Updated Value with spaces
+      NewCamelCaseKey: CamelCaseValue
+      newPascalCaseKey: pascalCaseValue
+      new_snake_case_key: snake_case_value
+    name_tags:
+      Name: "{{ vpc_name }}"
   block:
 
     # ============================================================
@@ -24,14 +51,15 @@
       assert:
         that:
           - result is failed
-          - result.msg.startswith("missing required arguments")
+          #- result.msg.startswith("missing required arguments")
+          - result.msg.startswith("one of")
 
     # ============================================================
 
     - name: Fetch existing VPC info
       ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
     - name: Check no-one is using the Prefix before we start
       assert:
@@ -42,12 +70,12 @@
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
       check_mode: true
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: check for a change
@@ -62,12 +90,12 @@
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         ipv6_cidr: True
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the VPC was created successfully
@@ -97,7 +125,7 @@
           - '"is_default" in result.vpc'
           - '"state" in result.vpc'
           - result.vpc.tags.keys() | length == 1
-          - result.vpc.tags.Name == resource_prefix
+          - result.vpc.tags.Name == vpc_name
 
     - name: set the first VPC's details as facts for comparison and cleanup
       set_fact:
@@ -110,12 +138,12 @@
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         ipv6_cidr: True
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert nothing changed
@@ -141,14 +169,14 @@
           - '"is_default" in result.vpc'
           - '"state" in result.vpc'
           - result.vpc.tags.keys() | length == 1
-          - result.vpc.tags.Name == resource_prefix
+          - result.vpc.tags.Name == vpc_name
           - result.vpc.id == vpc_1
 
     - name: No-op VPC configuration, missing ipv6_cidr property
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         # Intentionaly commenting out 'ipv6_cidr'
         # When the 'ipv6_cidr' property is missing, the VPC should retain its configuration.
         # That should not cause the module to set default value 'false' and disassociate the IPv6 block.
@@ -177,7 +205,7 @@
     - name: VPC info (Simple tag filter)
       ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: Test vpc_info results
@@ -210,12 +238,12 @@
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         ipv6_cidr: True
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: Assert no changes made
@@ -230,14 +258,14 @@
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         ipv6_cidr: True
         multi_ok: yes
       check_mode: true
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert a change would be made
@@ -255,14 +283,14 @@
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         ipv6_cidr: True
         tenancy: dedicated
         multi_ok: yes
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert a new VPC was created
@@ -319,7 +347,7 @@
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         ipv6_cidr: True
         tenancy: dedicated
         multi_ok: no
@@ -327,7 +355,7 @@
       ignore_errors: yes
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert failure
@@ -339,39 +367,66 @@
 
     # ============================================================
 
-    # FIXME: right now if there are multiple matching VPCs they cannot be removed,
-    # as there is no vpc_id option for idempotence. A workaround is to retag the VPC.
-    - name: remove Name tag on new VPC
-      ec2_tag:
-        state: absent
-        resource: "{{ vpc_2 }}"
-        tags:
-          Name: "{{ resource_prefix }}"
-
-    - name: add a unique name tag
-      ec2_tag:
-        state: present
-        resource: "{{ vpc_2 }}"
-        tags:
-          Name: "{{ resource_prefix }}-changed"
-
-    - name: delete one of the VPCs
+    - name: Set new name for second VPC
       ec2_vpc_net:
-        state: absent
+        state: present
+        vpc_id: "{{ vpc_2 }}"
+        name: "{{ vpc_name_updated }}"
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}-changed"
       register: result
+
+    - name: assert name changed
+      assert:
+        that:
+          - '"cidr_block" in result.vpc'
+          - result.vpc.cidr_block == vpc_cidr
+          - result.vpc.cidr_block_association_set | length == 1
+          - result.vpc.cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
+          - result.vpc.cidr_block_association_set[0].cidr_block == vpc_cidr
+          - result.vpc.cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
+          - '"classic_link_enabled" in result.vpc'
+          - result.vpc.dhcp_options_id.startswith("dopt-")
+          - '"instance_tenancy" in result.vpc'
+          - result.vpc.ipv6_cidr_block_association_set | length == 1
+          - result.vpc.ipv6_cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
+          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block | ansible.utils.ipv6
+          - result.vpc.ipv6_cidr_block_association_set[0].ipv6_cidr_block_state.state in ["associated", "associating"]
+          - '"is_default" in result.vpc'
+          - '"state" in result.vpc'
+          - result.vpc.tags.keys() | length == 1
+          - result.vpc.tags.Name == vpc_name_updated
+          - result.vpc.id == vpc_2
+
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert success
       assert:
         that:
           - result is changed
-          - not result.vpc
           - vpc_info.vpcs | length == 1
+          - vpc_info.vpcs[0].vpc_id == vpc_1
+
+    - ec2_vpc_net_info:
+        filters:
+          "tag:Name": "{{ vpc_name_updated }}"
+      register: vpc_info
+
+    - name: assert success
+      assert:
+        that:
+          - result is changed
+          - vpc_info.vpcs | length == 1
+          - vpc_info.vpcs[0].vpc_id == vpc_2
+
+    - name: delete second VPC (by id)
+      ec2_vpc_net:
+        vpc_id: "{{ vpc_2 }}"
+        state: absent
+        cidr_block: "{{ vpc_cidr }}"
+      register: result
 
     # ============================================================
 
@@ -379,7 +434,7 @@
       ec2_vpc_net:
         state: absent
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}-changed"
+        name: "{{ vpc_name }}-does-not-exist"
       register: result
 
     - name: assert no changes were made
@@ -396,7 +451,7 @@
           - 4.4.4.4
           - 8.8.8.8
         tags:
-          Name: "{{ resource_prefix }}"
+          Name: "{{ vpc_name }}"
       register: new_dhcp
     - name: assert the DHCP option set was successfully created
       assert:
@@ -407,13 +462,13 @@
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         dhcp_opts_id: "{{ new_dhcp.dhcp_options_id }}"
       register: result
       check_mode: True
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the DHCP option set changed but didn't update
@@ -428,12 +483,12 @@
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         dhcp_opts_id: "{{ new_dhcp.dhcp_options_id }}"
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the DHCP option set changed
@@ -450,12 +505,12 @@
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         dhcp_opts_id: "{{ new_dhcp.dhcp_options_id }}"
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the DHCP option set changed
@@ -469,39 +524,38 @@
 
     # ============================================================
 
-    # XXX #62677
-    #- name: disable dns_hostnames (check mode)
-    #  ec2_vpc_net:
-    #    state: present
-    #    cidr_block: "{{ vpc_cidr }}"
-    #    name: "{{ resource_prefix }}"
-    #    dns_hostnames: False
-    #  register: result
-    #  check_mode: True
-    #- ec2_vpc_net_info:
-    #    filters:
-    #      "tag:Name": "{{ resource_prefix }}"
-    #  register: vpc_info
+    - name: disable dns_hostnames (check mode)
+      ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ vpc_name }}"
+        dns_hostnames: False
+      register: result
+      check_mode: True
+    - ec2_vpc_net_info:
+        filters:
+          "tag:Name": "{{ vpc_name }}"
+      register: vpc_info
 
-    #- name: assert changed was set but not made
-    #  assert:
-    #    that:
-    #      - result is successful
-    #      - result is changed
-    #      - vpc_info.vpcs | length == 1
-    #      - vpc_info.vpcs[0].enable_dns_hostnames | bool == True
-    #      - vpc_info.vpcs[0].enable_dns_support | bool == True
+    - name: assert changed was set but not made
+      assert:
+        that:
+          - result is successful
+          - result is changed
+          - vpc_info.vpcs | length == 1
+          - vpc_info.vpcs[0].enable_dns_hostnames | bool == True
+          - vpc_info.vpcs[0].enable_dns_support | bool == True
 
     - name: disable dns_hostnames
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         dns_hostnames: False
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert a change was made
@@ -518,12 +572,12 @@
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         dns_hostnames: False
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert a change was made
@@ -536,42 +590,41 @@
           - vpc_info.vpcs[0].enable_dns_hostnames | bool == False
           - vpc_info.vpcs[0].enable_dns_support | bool == True
 
-    # XXX #62677
-    #- name: disable dns_support (check mode)
-    #  ec2_vpc_net:
-    #    state: present
-    #    cidr_block: "{{ vpc_cidr }}"
-    #    name: "{{ resource_prefix }}"
-    #    dns_hostnames: False
-    #    dns_support: False
-    #  check_mode: True
-    #  register: result
-    #- ec2_vpc_net_info:
-    #    filters:
-    #      "tag:Name": "{{ resource_prefix }}"
-    #  register: vpc_info
+    - name: disable dns_support (check mode)
+      ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ vpc_name }}"
+        dns_hostnames: False
+        dns_support: False
+      check_mode: True
+      register: result
+    - ec2_vpc_net_info:
+        filters:
+          "tag:Name": "{{ vpc_name }}"
+      register: vpc_info
 
-    #- name: assert changed was set but not made
-    #  assert:
-    #    that:
-    #      - result is successful
-    #      - result is changed
-    #      - result.vpc.id == vpc_1
-    #      - vpc_info.vpcs | length == 1
-    #      - vpc_info.vpcs[0].enable_dns_hostnames | bool == False
-    #      - vpc_info.vpcs[0].enable_dns_support | bool == True
+    - name: assert changed was set but not made
+      assert:
+        that:
+          - result is successful
+          - result is changed
+          - result.vpc.id == vpc_1
+          - vpc_info.vpcs | length == 1
+          - vpc_info.vpcs[0].enable_dns_hostnames | bool == False
+          - vpc_info.vpcs[0].enable_dns_support | bool == True
 
     - name: disable dns_support
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         dns_hostnames: False
         dns_support: False
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert a change was made
@@ -588,13 +641,13 @@
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         dns_hostnames: False
         dns_support: False
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert a change was not made
@@ -607,38 +660,41 @@
           - vpc_info.vpcs[0].enable_dns_hostnames | bool == False
           - vpc_info.vpcs[0].enable_dns_support | bool == False
 
-    # XXX #62677
-    #- name: re-enable dns_support (check mode)
-    #  ec2_vpc_net:
-    #    state: present
-    #    cidr_block: "{{ vpc_cidr }}"
-    #    name: "{{ resource_prefix }}"
-    #  register: result
-    #  check_mode: True
-    #- ec2_vpc_net_info:
-    #    filters:
-    #      "tag:Name": "{{ resource_prefix }}"
-    #  register: vpc_info
+    - name: re-enable dns_support (check mode)
+      ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ vpc_name }}"
+        dns_hostnames: True
+        dns_support: True
+      register: result
+      check_mode: True
+    - ec2_vpc_net_info:
+        filters:
+          "tag:Name": "{{ vpc_name }}"
+      register: vpc_info
 
-    #- name: assert a change was made
-    #  assert:
-    #    that:
-    #      - result is successful
-    #      - result is changed
-    #      - result.vpc.id == vpc_1
-    #      - vpc_info.vpcs | length == 1
-    #      - vpc_info.vpcs[0].enable_dns_hostnames | bool == True
-    #      - vpc_info.vpcs[0].enable_dns_support | bool == True
+    - name: assert a change would be made but has not been
+      assert:
+        that:
+          - result is successful
+          - result is changed
+          - result.vpc.id == vpc_1
+          - vpc_info.vpcs | length == 1
+          - vpc_info.vpcs[0].enable_dns_hostnames | bool == False
+          - vpc_info.vpcs[0].enable_dns_support | bool == False
 
     - name: re-enable dns_support
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
+        dns_hostnames: True
+        dns_support: True
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert a change was made
@@ -655,11 +711,13 @@
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
+        dns_hostnames: True
+        dns_support: True
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert a change was not made
@@ -674,18 +732,17 @@
 
     # ============================================================
 
-    - name: modify tags (check mode)
+    - name: add tags (check mode)
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
-        tags:
-          Ansible: Test
+        name: "{{ vpc_name }}"
+        tags: "{{ first_tags }}"
       check_mode: true
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the VPC has Name but not Ansible tag
@@ -695,28 +752,21 @@
           - result is changed
           - result.vpc.id == vpc_1
           - result.vpc.tags | length == 1
-          - result.vpc.tags.Name == resource_prefix
+          - result.vpc.tags.Name == vpc_name
           - vpc_info.vpcs | length == 1
-          - vpc_info.vpcs[0].tags | length == 1
-          - vpc_info.vpcs[0].tags.Name == resource_prefix
+          - vpc_info.vpcs[0].tags == name_tags
 
-    - name: modify tags
+    - name: add tags
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
-        tags:
-          Ansible: Test
+        name: "{{ vpc_name }}"
+        tags: "{{ first_tags }}"
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
-      until:
-        - vpc_info.vpcs | length == 1
-        - vpc_info.vpcs[0].tags | length == 2
-      retries: 5
-      delay: 5
 
     - name: assert the VPC has Name and Ansible tags
       assert:
@@ -724,27 +774,20 @@
           - result is successful
           - result is changed
           - result.vpc.id == vpc_1
-          - result.vpc.tags | length == 2
-          - result.vpc.tags.Ansible == "Test"
-          - result.vpc.tags.Name == resource_prefix
+          - result.vpc.tags == (first_tags | combine(name_tags))
           - vpc_info.vpcs | length == 1
-          - vpc_info.vpcs[0].tags | length == 2
-          - vpc_info.vpcs[0].tags.Ansible == "Test"
-          - vpc_info.vpcs[0].tags.Name == resource_prefix
+          - vpc_info.vpcs[0].tags == (first_tags | combine(name_tags))
 
-    - name: modify tags (no change)
+    - name: add tags (no change)
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
-        dns_support: True
-        dns_hostnames: True
-        tags:
-          Ansible: Test
+        name: "{{ vpc_name }}"
+        tags: "{{ first_tags }}"
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the VPC has Name and Ansible tags
@@ -753,50 +796,187 @@
           - result is successful
           - result is not changed
           - result.vpc.id == vpc_1
-          - result.vpc.tags|length == 2
-          - result.vpc.tags.Ansible == "Test"
-          - result.vpc.tags.Name == resource_prefix
+          - result.vpc.tags == (first_tags | combine(name_tags))
           - vpc_info.vpcs | length == 1
-          - vpc_info.vpcs[0].tags|length == 2
-          - vpc_info.vpcs[0].tags.Ansible == "Test"
-          - vpc_info.vpcs[0].tags.Name == resource_prefix
+          - vpc_info.vpcs[0].tags == (first_tags | combine(name_tags))
 
     # ============================================================
 
-    # #62678
-    #- name: modify CIDR (check mode)
-    #  ec2_vpc_net:
-    #    state: present
-    #    cidr_block:
-    #    - "{{ vpc_cidr }}"
-    #    - "{{ vpc_cidr_a }}"
-    #    name: "{{ resource_prefix }}"
-    #  check_mode: true
-    #  register: result
-    #- ec2_vpc_net_info:
-    #    filters:
-    #      "tag:Name": "{{ resource_prefix }}"
-    #  register: vpc_info
+    - name: modify tags with purge (check mode)
+      ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ vpc_name }}"
+        tags: "{{ second_tags }}"
+        purge_tags: true
+      check_mode: true
+      register: result
+    - ec2_vpc_net_info:
+        filters:
+          "tag:Name": "{{ vpc_name }}"
+      register: vpc_info
 
-    #- name: Check the CIDRs weren't changed
-    #  assert:
-    #    that:
-    #      - result is successful
-    #      - result is changed
-    #      - result.vpc.id == vpc_1
-    #      - vpc_info.vpcs | length == 1
-    #      - vpc_info.vpcs[0].cidr_block == vpc_cidr
-    #      - vpc_cidr in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
-    #      - vpc_cidr_a not in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
-    #      - vpc_cidr_b not in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
-    #      - vpc_info.vpcs[0].cidr_block_association_set | length == 1
-    #      - vpc_info.vpcs[0].cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
-    #      - vpc_info.vpcs[0].cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
-    #      - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
-    #      - vpc_info.vpcs[0].cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
-    #      - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
-    #      - vpc_cidr_a not in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
-    #      - vpc_cidr_b not in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+    - name: assert the VPC has Name but not Ansible tag
+      assert:
+        that:
+          - result is successful
+          - result is changed
+          - result.vpc.id == vpc_1
+          - result.vpc.tags == (first_tags | combine(name_tags))
+          - vpc_info.vpcs | length == 1
+          - vpc_info.vpcs[0].tags == (first_tags | combine(name_tags))
+
+    - name: modify tags with purge
+      ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ vpc_name }}"
+        tags: "{{ second_tags }}"
+        purge_tags: true
+      register: result
+    - ec2_vpc_net_info:
+        filters:
+          "tag:Name": "{{ vpc_name }}"
+      register: vpc_info
+
+    - name: assert the VPC has Name and Ansible tags
+      assert:
+        that:
+          - result is successful
+          - result is changed
+          - result.vpc.id == vpc_1
+          - result.vpc.tags == (second_tags | combine(name_tags))
+          - vpc_info.vpcs | length == 1
+          - vpc_info.vpcs[0].tags == (second_tags | combine(name_tags))
+
+    - name: modify tags with purge (no change)
+      ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ vpc_name }}"
+        tags: "{{ second_tags }}"
+        purge_tags: true
+      register: result
+    - ec2_vpc_net_info:
+        filters:
+          "tag:Name": "{{ vpc_name }}"
+      register: vpc_info
+
+    - name: assert the VPC has Name and Ansible tags
+      assert:
+        that:
+          - result is successful
+          - result is not changed
+          - result.vpc.id == vpc_1
+          - result.vpc.tags == (second_tags | combine(name_tags))
+          - vpc_info.vpcs | length == 1
+          - vpc_info.vpcs[0].tags == (second_tags | combine(name_tags))
+
+    # ============================================================
+
+    - name: modify tags without purge (check mode)
+      ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ vpc_name }}"
+        tags: "{{ third_tags }}"
+        purge_tags: false
+      check_mode: true
+      register: result
+    - ec2_vpc_net_info:
+        filters:
+          "tag:Name": "{{ vpc_name }}"
+      register: vpc_info
+
+    - name: assert the VPC has Name but not Ansible tag
+      assert:
+        that:
+          - result is successful
+          - result is changed
+          - result.vpc.id == vpc_1
+          - result.vpc.tags == (second_tags | combine(name_tags))
+          - vpc_info.vpcs | length == 1
+          - vpc_info.vpcs[0].tags == (second_tags | combine(name_tags))
+
+    - name: modify tags with purge
+      ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ vpc_name }}"
+        tags: "{{ third_tags }}"
+        purge_tags: false
+      register: result
+    - ec2_vpc_net_info:
+        filters:
+          "tag:Name": "{{ vpc_name }}"
+      register: vpc_info
+
+    - name: assert the VPC has Name and Ansible tags
+      assert:
+        that:
+          - result is successful
+          - result is changed
+          - result.vpc.id == vpc_1
+          - result.vpc.tags == (final_tags | combine(name_tags))
+          - vpc_info.vpcs | length == 1
+          - vpc_info.vpcs[0].tags == (final_tags | combine(name_tags))
+
+    - name: modify tags with purge (no change)
+      ec2_vpc_net:
+        state: present
+        cidr_block: "{{ vpc_cidr }}"
+        name: "{{ vpc_name }}"
+        tags: "{{ third_tags }}"
+        purge_tags: false
+      register: result
+    - ec2_vpc_net_info:
+        filters:
+          "tag:Name": "{{ vpc_name }}"
+      register: vpc_info
+
+    - name: assert the VPC has Name and Ansible tags
+      assert:
+        that:
+          - result is successful
+          - result is not changed
+          - result.vpc.id == vpc_1
+          - result.vpc.tags == (final_tags | combine(name_tags))
+          - vpc_info.vpcs | length == 1
+          - vpc_info.vpcs[0].tags == (final_tags | combine(name_tags))
+
+    # ============================================================
+
+    - name: modify CIDR (check mode)
+      ec2_vpc_net:
+        state: present
+        cidr_block:
+        - "{{ vpc_cidr }}"
+        - "{{ vpc_cidr_a }}"
+        name: "{{ vpc_name }}"
+      check_mode: true
+      register: result
+    - ec2_vpc_net_info:
+        filters:
+          "tag:Name": "{{ vpc_name }}"
+      register: vpc_info
+
+    - name: Check the CIDRs weren't changed
+      assert:
+        that:
+          - result is successful
+          - result is changed
+          - result.vpc.id == vpc_1
+          - vpc_info.vpcs | length == 1
+          - vpc_info.vpcs[0].cidr_block == vpc_cidr
+          - vpc_cidr in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a not in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b not in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_info.vpcs[0].cidr_block_association_set | length == 1
+          - vpc_info.vpcs[0].cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
+          - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
+          - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a not in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b not in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR
       ec2_vpc_net:
@@ -804,11 +984,11 @@
         cidr_block:
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_a }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs changed
@@ -843,11 +1023,11 @@
         cidr_block:
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_a }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs didn't change
@@ -876,39 +1056,38 @@
           - vpc_cidr_a in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
           - vpc_cidr_b not in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
-    # #62678
-    #- name: modify CIDR - no purge (check mode)
-    #  ec2_vpc_net:
-    #    state: present
-    #    cidr_block:
-    #    - "{{ vpc_cidr }}"
-    #    - "{{ vpc_cidr_b }}"
-    #    name: "{{ resource_prefix }}"
-    #  check_mode: true
-    #  register: result
-    #- ec2_vpc_net_info:
-    #    filters:
-    #      "tag:Name": "{{ resource_prefix }}"
-    #  register: vpc_info
+    - name: modify CIDR - no purge (check mode)
+      ec2_vpc_net:
+        state: present
+        cidr_block:
+        - "{{ vpc_cidr }}"
+        - "{{ vpc_cidr_b }}"
+        name: "{{ vpc_name }}"
+      check_mode: true
+      register: result
+    - ec2_vpc_net_info:
+        filters:
+          "tag:Name": "{{ vpc_name }}"
+      register: vpc_info
 
-    #- name: Check the CIDRs weren't changed
-    #  assert:
-    #    that:
-    #      - result is successful
-    #      - result is changed
-    #      - vpc_info.vpcs | length == 1
-    #      - vpc_info.vpcs[0].cidr_block == vpc_cidr
-    #      - vpc_cidr in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
-    #      - vpc_cidr_a in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
-    #      - vpc_cidr_b not in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
-    #      - vpc_info.vpcs[0].cidr_block_association_set | length == 2
-    #      - vpc_info.vpcs[0].cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
-    #      - vpc_info.vpcs[0].cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
-    #      - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
-    #      - vpc_info.vpcs[0].cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
-    #      - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
-    #      - vpc_cidr_a in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
-    #      - vpc_cidr_b not in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+    - name: Check the CIDRs weren't changed
+      assert:
+        that:
+          - result is successful
+          - result is changed
+          - vpc_info.vpcs | length == 1
+          - vpc_info.vpcs[0].cidr_block == vpc_cidr
+          - vpc_cidr in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b not in (result.vpc.cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_info.vpcs[0].cidr_block_association_set | length == 2
+          - vpc_info.vpcs[0].cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
+          - vpc_info.vpcs[0].cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
+          - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
+          - vpc_info.vpcs[0].cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
+          - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b not in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR - no purge
       ec2_vpc_net:
@@ -916,11 +1095,11 @@
         cidr_block:
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_b }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs changed
@@ -959,11 +1138,11 @@
         cidr_block:
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_b }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs didn't change
@@ -1002,11 +1181,11 @@
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_a }}"
         - "{{ vpc_cidr_b }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs didn't change
@@ -1045,11 +1224,11 @@
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_a }}"
         - "{{ vpc_cidr_b }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs didn't change
@@ -1088,11 +1267,11 @@
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_b }}"
         - "{{ vpc_cidr_a }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs didn't change
@@ -1131,11 +1310,11 @@
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_b }}"
         - "{{ vpc_cidr_a }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs didn't change
@@ -1167,39 +1346,38 @@
           - vpc_cidr_a in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
           - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
-    # #62678
-    #- name: modify CIDR - purge (check mode)
-    #  ec2_vpc_net:
-    #    state: present
-    #    cidr_block:
-    #    - "{{ vpc_cidr }}"
-    #    - "{{ vpc_cidr_b }}"
-    #    name: "{{ resource_prefix }}"
-    #    purge_cidrs: yes
-    #  check_mode: true
-    #  register: result
-    #- ec2_vpc_net_info:
-    #    filters:
-    #      "tag:Name": "{{ resource_prefix }}"
-    #  register: vpc_info
+    - name: modify CIDR - purge (check mode)
+      ec2_vpc_net:
+        state: present
+        cidr_block:
+        - "{{ vpc_cidr }}"
+        - "{{ vpc_cidr_b }}"
+        name: "{{ vpc_name }}"
+        purge_cidrs: yes
+      check_mode: true
+      register: result
+    - ec2_vpc_net_info:
+        filters:
+          "tag:Name": "{{ vpc_name }}"
+      register: vpc_info
 
-    #- name: Check the CIDRs weren't changed
-    #  assert:
-    #    that:
-    #      - result is successful
-    #      - result is changed
-    #      - vpc_info.vpcs | length == 1
-    #      - vpc_info.vpcs[0].cidr_block == vpc_cidr
-    #      - vpc_info.vpcs[0].cidr_block_association_set | length == 3
-    #      - vpc_info.vpcs[0].cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
-    #      - vpc_info.vpcs[0].cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
-    #      - vpc_info.vpcs[0].cidr_block_association_set[2].association_id.startswith("vpc-cidr-assoc-")
-    #      - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
-    #      - vpc_info.vpcs[0].cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
-    #      - vpc_info.vpcs[0].cidr_block_association_set[2].cidr_block_state.state in ["associated", "associating"]
-    #      - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
-    #      - vpc_cidr_a in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
-    #      - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+    - name: Check the CIDRs weren't changed
+      assert:
+        that:
+          - result is successful
+          - result is changed
+          - vpc_info.vpcs | length == 1
+          - vpc_info.vpcs[0].cidr_block == vpc_cidr
+          - vpc_info.vpcs[0].cidr_block_association_set | length == 3
+          - vpc_info.vpcs[0].cidr_block_association_set[0].association_id.startswith("vpc-cidr-assoc-")
+          - vpc_info.vpcs[0].cidr_block_association_set[1].association_id.startswith("vpc-cidr-assoc-")
+          - vpc_info.vpcs[0].cidr_block_association_set[2].association_id.startswith("vpc-cidr-assoc-")
+          - vpc_info.vpcs[0].cidr_block_association_set[0].cidr_block_state.state in ["associated", "associating"]
+          - vpc_info.vpcs[0].cidr_block_association_set[1].cidr_block_state.state in ["associated", "associating"]
+          - vpc_info.vpcs[0].cidr_block_association_set[2].cidr_block_state.state in ["associated", "associating"]
+          - vpc_cidr in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_a in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
+          - vpc_cidr_b in (vpc_info.vpcs[0].cidr_block_association_set | map(attribute="cidr_block") | list)
 
     - name: modify CIDR - purge
       ec2_vpc_net:
@@ -1207,12 +1385,12 @@
         cidr_block:
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_b }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         purge_cidrs: yes
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs changed
@@ -1239,12 +1417,12 @@
         cidr_block:
         - "{{ vpc_cidr }}"
         - "{{ vpc_cidr_b }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         purge_cidrs: yes
       register: result
     - ec2_vpc_net_info:
         filters:
-          "tag:Name": "{{ resource_prefix }}"
+          "tag:Name": "{{ vpc_name }}"
       register: vpc_info
 
     - name: assert the CIDRs didn't change
@@ -1271,7 +1449,7 @@
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         ipv6_cidr: False
       check_mode: true
       register: result
@@ -1287,7 +1465,7 @@
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         ipv6_cidr: True
       register: result
     - name: assert configuration did not change
@@ -1300,7 +1478,7 @@
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         ipv6_cidr: False
       register: result
     - name: assert IPv6 CIDR association removed from VPC
@@ -1317,7 +1495,7 @@
       ec2_vpc_net:
         state: present
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         ipv6_cidr: True
       register: result
     - name: assert configuration change
@@ -1335,12 +1513,13 @@
           - result.vpc.ipv6_cidr_block_association_set[1].ipv6_cidr_block | ansible.netcommon.ipv6
           - result.vpc.ipv6_cidr_block_association_set[1].ipv6_cidr_block_state.state in ["associated", "associating"]
 
+
     # ============================================================
 
     - name: test check mode to delete a VPC
       ec2_vpc_net:
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         state: absent
       check_mode: true
       register: result
@@ -1354,10 +1533,14 @@
 
   always:
 
+    - name: Describe VPCs before deleting them (for debugging)
+      ec2_vpc_net_info:
+      ignore_errors: true
+
     - name: replace the DHCP options set so the new one can be deleted
       ec2_vpc_net:
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         state: present
         multi_ok: no
         dhcp_opts_id: "{{ default_dhcp_options_id }}"
@@ -1369,13 +1552,9 @@
         state: absent
       ignore_errors: true
 
-    - name: Describe VPCs before deleting them (for debugging)
-      ec2_vpc_net_info:
-      ignore_errors: true
-
     - name: remove the VPC
       ec2_vpc_net:
         cidr_block: "{{ vpc_cidr }}"
-        name: "{{ resource_prefix }}"
+        name: "{{ vpc_name }}"
         state: absent
       ignore_errors: true
