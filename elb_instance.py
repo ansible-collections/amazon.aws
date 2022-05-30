@@ -55,8 +55,8 @@ options:
     default: 0
     type: int
 notes:
-- The ec2_elb fact currently set by this module has been deprecated and will no
-  longer be set after release 4.0.0 of the collection.
+- The ec2_elbs fact previously set by this module was deprecated in release 2.1.0 and since release
+  4.0.0 is no longer set.
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -388,13 +388,8 @@ def main():
     elif module.params['state'] == 'absent':
         elb_man.deregister(wait, timeout)
 
-    # XXX We're not an _fact module we shouldn't be returning a fact and poluting
-    # the namespace
-    ansible_facts = {'ec2_elbs': [lb['LoadBalancerName'] for lb in elb_man.lbs]}
-
     module.exit_json(
         changed=elb_man.changed,
-        ansible_facts=ansible_facts,
         updated_elbs=list(elb_man.updated_elbs),
     )
 
