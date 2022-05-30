@@ -45,14 +45,6 @@ options:
     description: Whether to get full details (tags, grants etc.) of keys pending deletion.
     default: False
     type: bool
-  keys_attr:
-    description:
-      - Returning the C(keys) attribute conflicted with the builtin keys()
-        method on dictionaries and as such was deprecated.
-      - This parameter now does nothing, and after version C(4.0.0) this
-        parameter will be removed.
-    type: bool
-    version_added: 2.0.0
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -496,7 +488,6 @@ def main():
         key_id=dict(aliases=['key_arn']),
         filters=dict(type='dict'),
         pending_deletion=dict(type='bool', default=False),
-        keys_attr=dict(type='bool'),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec,
@@ -515,12 +506,6 @@ def main():
     filtered_keys = [key for key in all_keys if key_matches_filters(key, module.params['filters'])]
     ret_params = dict(kms_keys=filtered_keys)
 
-    # We originally returned "keys"
-    if module.params.get('keys_attr') is not None:
-        module.deprecate("Returning results in the 'keys' attribute conflicts with the builtin keys() method on "
-                         "dicts and as such was removed in version 3.0.0.  Please use the kms_keys attribute. "
-                         "This parameter is now ignored and will be removed in version 4.0.0.",
-                         version='4.0.0', collection_name='community.aws')
     module.exit_json(**ret_params)
 
 
