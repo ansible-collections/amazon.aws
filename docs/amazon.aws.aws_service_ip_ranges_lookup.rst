@@ -155,7 +155,7 @@ Status
 Authors
 ~~~~~~~
 
-- James Turner <turnerjsm@gmail.com>
+- James Turner (!UNKNOWN) <turnerjsm@gmail.com>
 
 
 .. hint::
