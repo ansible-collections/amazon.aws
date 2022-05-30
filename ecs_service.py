@@ -113,6 +113,7 @@ options:
             type: str
           expression:
             description: A cluster query language expression to apply to the constraint.
+            required: false
             type: str
     placement_strategy:
         description:
@@ -584,7 +585,6 @@ class EcsServiceManager:
             clientToken=client_token,
             role=role,
             deploymentConfiguration=deployment_configuration,
-            placementConstraints=placement_constraints,
             placementStrategy=placement_strategy
         )
         if network_configuration:
@@ -597,6 +597,13 @@ class EcsServiceManager:
             params['healthCheckGracePeriodSeconds'] = health_check_grace_period_seconds
         if service_registries:
             params['serviceRegistries'] = service_registries
+
+        # filter placement_constraint and left only those where value is not None
+        # use-case: `distinctInstance` type should never contain `expression`, but None will fail `str` type validation
+        if placement_constraints:
+            params['placementConstraints'] = [{key: value for key, value in constraint.items() if value is not None}
+                                              for constraint in placement_constraints]
+
         # desired count is not required if scheduling strategy is daemon
         if desired_count is not None:
             params['desiredCount'] = desired_count
@@ -674,7 +681,7 @@ def main():
             elements='dict',
             options=dict(
                 type=dict(type='str'),
-                expression=dict(type='str')
+                expression=dict(required=False, type='str')
             )
         ),
         placement_strategy=dict(
