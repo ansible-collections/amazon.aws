@@ -8,6 +8,8 @@ AWS related modules and plugins supported by the Ansible community are in the [c
 
 This collection has been tested against following Ansible versions: **>=2.9.10**.
 
+For collections that support Ansible 2.9, please ensure you update your `network_os` to use the
+fully qualified collection name (for example, `cisco.ios.ios`).
 Plugins and modules within a collection may be tested with only specific Ansible versions.
 A collection may contain metadata that identifies these versions.
 PEP440 is the schema used to describe the versions of Ansible.
@@ -62,7 +64,7 @@ Name | Description
 [amazon.aws.ec2_key](https://github.com/ansible-collections/amazon.aws/blob/stable-3/docs/amazon.aws.ec2_key_module.rst)|create or delete an ec2 key pair
 [amazon.aws.ec2_metadata_facts](https://github.com/ansible-collections/amazon.aws/blob/stable-3/docs/amazon.aws.ec2_metadata_facts_module.rst)|gathers facts (instance metadata) about remote hosts within EC2
 [amazon.aws.ec2_snapshot](https://github.com/ansible-collections/amazon.aws/blob/stable-3/docs/amazon.aws.ec2_snapshot_module.rst)|Creates a snapshot from an existing volume
-[amazon.aws.ec2_snapshot_info](https://github.com/ansible-collections/amazon.aws/blob/stable-3/docs/amazon.aws.ec2_snapshot_info_module.rst)|Gather information about ec2 volume snapshots in AWS
+[amazon.aws.ec2_snapshot_info](https://github.com/ansible-collections/amazon.aws/blob/stable-3/docs/amazon.aws.ec2_snapshot_info_module.rst)|Gathers information about EC2 volume snapshots in AWS
 [amazon.aws.ec2_spot_instance](https://github.com/ansible-collections/amazon.aws/blob/stable-3/docs/amazon.aws.ec2_spot_instance_module.rst)|request, stop, reboot or cancel spot instance
 [amazon.aws.ec2_spot_instance_info](https://github.com/ansible-collections/amazon.aws/blob/stable-3/docs/amazon.aws.ec2_spot_instance_info_module.rst)|Gather information about ec2 spot instance requests
 [amazon.aws.ec2_tag](https://github.com/ansible-collections/amazon.aws/blob/stable-3/docs/amazon.aws.ec2_tag_module.rst)|create and remove tags on ec2 resources

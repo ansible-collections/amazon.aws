@@ -27,7 +27,7 @@ Requirements
 The below requirements are needed on the local Ansible controller node that executes this lookup.
 
 - python >= 3.6
-- boto3
+- boto3 >= 1.16.0
 - botocore >= 1.19.0
 
 
@@ -415,7 +415,7 @@ Status
 Authors
 ~~~~~~~
 
-- Aaron Smith <ajsmith10381@gmail.com>
+- Aaron Smith (!UNKNOWN) <ajsmith10381@gmail.com>
 
 
 .. hint::
