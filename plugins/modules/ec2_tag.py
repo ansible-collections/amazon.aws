@@ -35,8 +35,8 @@ options:
     description:
       - A dictionary of tags to add or remove from the resource.
       - If the value provided for a key is not set and I(state=absent), the tag will be removed regardless of its current value.
-      - Required when I(state=present) or I(state=absent).
     type: dict
+    required: true
   purge_tags:
     description:
       - Whether unspecified tags should be removed from the resource.
@@ -124,13 +124,11 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import remove_ec2_t
 def main():
     argument_spec = dict(
         resource=dict(required=True),
-        tags=dict(type='dict'),
+        tags=dict(type='dict', required=True),
         purge_tags=dict(type='bool', default=False),
         state=dict(default='present', choices=['present', 'absent']),
     )
-    required_if = [('state', 'present', ['tags']), ('state', 'absent', ['tags'])]
-
-    module = AnsibleAWSModule(argument_spec=argument_spec, required_if=required_if, supports_check_mode=True)
+    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
 
     resource = module.params['resource']
     tags = module.params['tags']
