@@ -172,6 +172,22 @@ authentication parameters.  To do the same for your new module, add an entry for
   aws_module_name:
   - aws
 
+Module behavior
+---------------
+
+To reduce the chance of breaking changes occurring when new features are added,
+the module should avoid modifying the resource attribute when a parameter is
+not explicitly set in a task.
+
+By convention, when a parameter is explicitly set in a task, the module should
+set the resource attribute to match what was set in the task.  In some cases,
+such as tags or associations, it can be helpful to add an additional parameter
+which can be set to change the behavior from replacive to additive.  However, the
+default behavior should still be replacive rather than additive.
+
+See the `Dealing with tags<ansible_collections.amazon.aws.docsite.dev_tags>`
+section for an example with ``tags`` and ``purge_tags``.
+
 .. _ansible_collections.amazon.aws.docsite.dev_module_connection:
 
 Connecting to AWS
@@ -526,18 +542,40 @@ and returns True if they are different.
 Dealing with tags
 =================
 
-AWS has a concept of resource tags. Usually the boto3 API has separate calls for tagging and
-untagging a resource.  For example, the ec2 API has a create_tags and delete_tags call.
+AWS has a concept of resource tags. Usually the boto3 API has separate calls
+for tagging and untagging a resource.  For example, the EC2 API has
+``create_tags`` and ``delete_tags`` calls.
 
-It is common practice in Ansible AWS modules to have a ``purge_tags`` parameter that defaults to
-true.
+When adding tagging support, Ansible AWS modules should add a ``tags`` parameter
+that defaults to ``None`` and a ``purge_tags`` parameter that defaults to
+``True``.
 
-The ``purge_tags`` parameter means that existing tags will be deleted if they are not specified by
-the Ansible task.
 
-There is a helper function ``compare_aws_tags`` to ease dealing with tags. It can compare two dicts
-and return the tags to set and the tags to delete.  See the Helper function section below for more
-detail.
+.. code-block:: python
+
+   argument_spec.update(
+       dict(
+           tags=dict(type='dict', required=False, default=None),
+           purge_tags=dict(type='bool', required=False, default=True),
+       )
+   )
+
+When the ``purge_tags`` parameter is set to ``True`` **and** the ``tags``
+parameter is explicitly set in the task, then any tags not explicitly set in
+``tags`` should be removed.
+
+If the ``tags`` parameter is not set then tags should not be modified, even if
+``purge_tags`` is set to ``True``.  This means that removing all tags requires
+``tags`` be explicitly set to an empty dictionary ``{}`` in the Ansible task.
+
+
+There is a helper function ``compare_aws_tags`` to ease dealing with tags. It
+compares two dictionaries, the current tags and the desired tags, and returns
+the tags to set and the tags to delete.  See the Helper function section below
+for more detail.
+
+There is also a documentation fragment ``amazon.aws.tags`` which should be
+included when adding tagging support.
 
 .. _ansible_collections.amazon.aws.docsite.dev_helpers:
 
