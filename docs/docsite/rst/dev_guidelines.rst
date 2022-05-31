@@ -176,8 +176,7 @@ Module behavior
 ---------------
 
 To reduce the chance of breaking changes occurring when new features are added,
-when a parameter is not explicitly set in a task, the module should avoid
-modifying the resource attribute.
+the module should avoid modifying the resource attribute when a parameter is not explicitly set in a task.
 
 By convention, when a parameter is explicitly set in a task, the module should
 set the resource attribute to match what was set in the task.  In some cases,
