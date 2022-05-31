@@ -27,6 +27,7 @@ options:
       - I(name) must be specified when creating a new VPC.
     type: str
   vpc_id:
+    version_added: 4.0.0
     description:
       - The ID of the VPC.
       - At least one of I(name) and I(vpc_id) must be specified.
