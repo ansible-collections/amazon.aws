@@ -20,27 +20,18 @@ options:
       - The VPC ID for the VPC in which to manage the Internet Gateway.
     required: true
     type: str
-  tags:
-    description:
-      - A dict of tags to apply to the internet gateway.
-      - To remove all tags set I(tags={}) and I(purge_tags=true).
-    aliases: [ 'resource_tags' ]
-    type: dict
-  purge_tags:
-    description:
-      - Remove tags not listed in I(tags).
-    type: bool
-    default: true
-    version_added: 1.3.0
   state:
     description:
       - Create or terminate the IGW
     default: present
     choices: [ 'present', 'absent' ]
     type: str
+notes:
+- Support for I(purge_tags) was added in release 1.3.0.
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
+- amazon.aws.tags
 '''
 
 EXAMPLES = '''

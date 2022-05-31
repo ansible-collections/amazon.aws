@@ -234,23 +234,11 @@ options:
     default: 'true'
     aliases: []
     type: bool
-  tags:
-    description:
-      - A dictionary of one or more tags to assign to the security group.
-    required: false
-    type: dict
-    aliases: ['resource_tags']
-  purge_tags:
-    description:
-      - If yes, existing tags will be purged from the resource to match exactly what is defined by I(tags) parameter.
-      - If the I(tags) parameter is not set then tags are not modified.
-    required: false
-    default: yes
-    type: bool
 
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
+- amazon.aws.tags
 
 
 notes:

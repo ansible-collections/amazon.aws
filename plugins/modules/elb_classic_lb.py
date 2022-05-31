@@ -275,26 +275,16 @@ options:
       - A maximum of 600 seconds (10 minutes) is allowed.
     type: int
     default: 180
-  tags:
-    description:
-      - A dictionary of tags to apply to the ELB.
-      - To delete all tags supply an empty dict (C({})) and set
-        I(purge_tags=true).
-    type: dict
-  purge_tags:
-    description:
-      - Whether to remove existing tags that aren't passed in the I(tags) parameter.
-    type: bool
-    default: true
-    version_added: 2.1.0
 
 notes:
 - The ec2_elb fact previously set by this module was deprecated in release 2.1.0 and since release
   4.0.0 is no longer set.
+- Support for I(purge_tags) was added in release 2.1.0.
 
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
+- amazon.aws.tags
 '''
 
 EXAMPLES = """
@@ -2112,7 +2102,7 @@ def main():
         access_logs=dict(type='dict', options=access_log_spec),
         wait=dict(default=False, type='bool'),
         wait_timeout=dict(default=180, type='int'),
-        tags=dict(type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(default=True, type='bool'),
     )
 

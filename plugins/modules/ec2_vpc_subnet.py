@@ -37,11 +37,6 @@ options:
       - If set, allows to create subnet in an Outpost.
       - To specify outpost_arn, availability zone of Outpost subnet must be specified.
     type: str
-  tags:
-    description:
-      - "A dict of tags to apply to the subnet. Any tags currently applied to the subnet and not present here will be removed."
-    aliases: [ 'resource_tags' ]
-    type: dict
   state:
     description:
       - "Create or remove the subnet."
@@ -73,15 +68,10 @@ options:
       - "Number of seconds to wait for subnet to become available I(wait=True)."
     default: 300
     type: int
-  purge_tags:
-    description:
-      - Whether or not to remove tags that do not appear in the I(tags) list.
-    type: bool
-    default: true
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
+- amazon.aws.tags
 '''
 
 EXAMPLES = '''
