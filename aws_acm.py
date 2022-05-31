@@ -28,8 +28,7 @@ __metaclass__ = type
 DOCUMENTATION = r'''
 ---
 module: aws_acm
-short_description: >
-  Upload and delete certificates in the AWS Certificate Manager service
+short_description: Upload and delete certificates in the AWS Certificate Manager service
 version_added: 1.0.0
 description:
   - >
@@ -45,7 +44,7 @@ description:
   - >
     When I(state=present),
     if there is one certificate in ACM
-    with a C(Name) tag equal to the C(name_tag) parameter,
+    with a C(Name) tag equal to the I(name_tag) parameter,
     and an identical body and chain,
     this task will succeed without effect.
   - >
@@ -139,6 +138,12 @@ options:
       - >
         If I(state=absent), you must provide exactly one of
         I(certificate_arn), I(domain_name) or I(name_tag).
+      - >
+        If both I(name_tag) and the 'Name' tag in I(tags) are set,
+        the values must be the same.
+      - >
+        If the 'Name' tag in I(tags) is not set and I(name_tag) is set,
+        the I(name_tag) value is copied to I(tags).
     type: str
     aliases: [name]
   private_key:
@@ -163,30 +168,14 @@ options:
     default: present
     type: str
 
-  tags:
-    description:
-      - Tags to apply to certificates imported in ACM.
-      - >
-        If both I(name_tag) and the 'Name' tag in I(tags) are set,
-        the values must be the same.
-      - >
-        If the 'Name' tag in I(tags) is not set and I(name_tag) is set,
-        the I(name_tag) value is copied to I(tags).
-    type: dict
-    version_added: 3.2.0
-
-  purge_tags:
-    description:
-      - whether to remove tags not present in the C(tags) parameter.
-    default: false
-    type: bool
-    version_added: 3.2.0
-
+notes:
+  - Support for I(tags) and I(purge_tags) was added in release 3.2.0
 author:
   - Matthew Davis (@matt-telstra) on behalf of Telstra Corporation Limited
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
+  - amazon.aws.tags.deprecated_purge
 
 '''
 
@@ -504,8 +493,8 @@ def main():
         domain_name=dict(aliases=['domain']),
         name_tag=dict(aliases=['name']),
         private_key=dict(no_log=True),
-        tags=dict(type='dict'),
-        purge_tags=dict(type='bool', default=False),
+        tags=dict(type='dict', aliases=['resource_tags']),
+        purge_tags=dict(type='bool'),
         state=dict(default='present', choices=['present', 'absent']),
     )
     module = AnsibleAWSModule(
@@ -513,6 +502,14 @@ def main():
         supports_check_mode=True,
     )
     acm = ACMServiceManager(module)
+
+    if module.params.get('purge_tags') is None:
+        module.deprecate(
+            'The purge_tags parameter currently defaults to False.'
+            ' For consistency across the collection, this default value'
+            ' will change to True in release 5.0.0.',
+            version='5.0.0', collection_name='community.aws')
+        module.params['purge_tags'] = False
 
     # Check argument requirements
     if module.params['state'] == 'present':

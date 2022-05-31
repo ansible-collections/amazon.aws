@@ -87,20 +87,10 @@ options:
     description:
       - Enables content-based deduplication. Used for FIFOs only.
       - Defaults to C(false).
-  tags:
-    description:
-      - Tag dict to apply to the queue.
-      - To remove all tags set I(tags={}) and I(purge_tags=true).
-    type: dict
-  purge_tags:
-    description:
-      - Remove tags not listed in I(tags).
-    type: bool
-    default: false
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
-
+  - amazon.aws.tags.deprecated_purge
 '''
 
 RETURN = r'''
@@ -483,10 +473,18 @@ def main():
         kms_master_key_id=dict(type='str'),
         kms_data_key_reuse_period_seconds=dict(type='int', aliases=['kms_data_key_reuse_period'], no_log=False),
         content_based_deduplication=dict(type='bool'),
-        tags=dict(type='dict'),
-        purge_tags=dict(type='bool', default=False),
+        tags=dict(type='dict', aliases=['resource_tags']),
+        purge_tags=dict(type='bool'),
     )
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
+
+    if module.params.get('purge_tags') is None:
+        module.deprecate(
+            'The purge_tags parameter currently defaults to False.'
+            ' For consistency across the collection, this default value'
+            ' will change to True in release 5.0.0.',
+            version='5.0.0', collection_name='community.aws')
+        module.params['purge_tags'] = False
 
     state = module.params.get('state')
     retry_decorator = AWSRetry.jittered_backoff(catch_extra_error_codes=['AWS.SimpleQueueService.NonExistentQueue'])

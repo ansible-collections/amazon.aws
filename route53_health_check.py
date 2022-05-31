@@ -86,21 +86,14 @@ options:
       - Will default to C(3) if not specified on creation.
     choices: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
     type: int
-  tags:
-    description:
-      - A hash/dictionary of tags to set on the health check.
-    type: dict
-    version_added: 2.1.0
-  purge_tags:
-    description:
-      - Delete any tags not specified in I(tags).
-    default: false
-    type: bool
-    version_added: 2.1.0
-author: "zimbatm (@zimbatm)"
+author:
+  - "zimbatm (@zimbatm)"
+notes:
+  - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags.deprecated_purge
 '''
 
 EXAMPLES = '''
@@ -432,8 +425,8 @@ def main():
         string_match=dict(),
         request_interval=dict(type='int', choices=[10, 30], default=30),
         failure_threshold=dict(type='int', choices=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
-        tags=dict(type='dict'),
-        purge_tags=dict(type='bool', default=False),
+        tags=dict(type='dict', aliases=['resource_tags']),
+        purge_tags=dict(type='bool'),
     )
 
     args_one_of = [
@@ -453,6 +446,14 @@ def main():
         required_if=args_if,
         supports_check_mode=True,
     )
+
+    if module.params.get('purge_tags') is None:
+        module.deprecate(
+            'The purge_tags parameter currently defaults to False.'
+            ' For consistency across the collection, this default value'
+            ' will change to True in release 5.0.0.',
+            version='5.0.0', collection_name='community.aws')
+        module.params['purge_tags'] = False
 
     state_in = module.params.get('state')
     ip_addr_in = module.params.get('ip_address')
