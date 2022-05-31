@@ -46,23 +46,14 @@ options:
             - The reusable delegation set ID to be associated with the zone.
             - Note that you can't associate a reusable delegation set with a private hosted zone.
         type: str
-    tags:
-        description:
-            - A hash/dictionary of tags to add to the new instance or to add/remove from an existing one.
-        type: dict
-        version_added: 2.1.0
-    purge_tags:
-        description:
-            - Delete any tags not specified in the task that are on the zone.
-              This means you have to specify all the desired tags on each task affecting a zone.
-        default: false
-        type: bool
-        version_added: 2.1.0
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
-author: "Christopher Troup (@minichate)"
+    - amazon.aws.aws
+    - amazon.aws.ec2
+    - amazon.aws.tags.deprecated_purge
+notes:
+    - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
+author:
+    - "Christopher Troup (@minichate)"
 '''
 
 EXAMPLES = r'''
@@ -445,8 +436,8 @@ def main():
         comment=dict(default=''),
         hosted_zone_id=dict(),
         delegation_set_id=dict(),
-        tags=dict(type='dict'),
-        purge_tags=dict(type='bool', default=False),
+        tags=dict(type='dict', aliases=['resource_tags']),
+        purge_tags=dict(type='bool'),
     )
 
     mutually_exclusive = [
@@ -459,6 +450,14 @@ def main():
         mutually_exclusive=mutually_exclusive,
         supports_check_mode=True,
     )
+
+    if module.params.get('purge_tags') is None:
+        module.deprecate(
+            'The purge_tags parameter currently defaults to False.'
+            ' For consistency across the collection, this default value'
+            ' will change to True in release 5.0.0.',
+            version='5.0.0', collection_name='community.aws')
+        module.params['purge_tags'] = False
 
     zone_in = module.params.get('zone').lower()
     state = module.params.get('state').lower()
