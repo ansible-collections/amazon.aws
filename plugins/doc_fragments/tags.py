@@ -21,10 +21,11 @@ options:
     aliases: ['resource_tags']
   purge_tags:
     description:
-      - If I(purge_tags=true) existing tags will be purged from the resource to
-        match exactly what is defined by I(tags) parameter.
-      - If the I(tags) parameter is not set then tags will not be modified.
-      - Tag keys beginning with C("aws:") are reserved by Amazon and can not be
+      - If I(purge_tags=true) and I(tags) is set, existing tags will be purged
+        from the resource to match exactly what is defined by I(tags) parameter.
+      - If the I(tags) parameter is not set then tags will not be modified, even
+        if I(purge_tags=True).
+      - Tag keys beginning with C(aws:) are reserved by Amazon and can not be
         modified.  As such they will be ignored for the purposes of the
         I(purge_tags) parameter.  See the Amazon documentation for more information
         U(https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions).
@@ -45,10 +46,11 @@ options:
     aliases: ['resource_tags']
   purge_tags:
     description:
-      - If I(purge_tags=true) existing tags will be purged from the resource to
-        match exactly what is defined by I(tags) parameter.
-      - If the I(tags) parameter is not set then tags will not be modified.
-      - Tag keys beginning with C("aws:") are reserved by Amazon and can not be
+      - If I(purge_tags=true) and I(tags) is set, existing tags will be purged
+        from the resource to match exactly what is defined by I(tags) parameter.
+      - If the I(tags) parameter is not set then tags will not be modified, even
+        if I(purge_tags=True).
+      - Tag keys beginning with C(aws:) are reserved by Amazon and can not be
         modified.  As such they will be ignored for the purposes of the
         I(purge_tags) parameter.  See the Amazon documentation for more information
         U(https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions).

@@ -176,14 +176,17 @@ Module behavior
 ---------------
 
 To reduce the chance of breaking changes occurring when new features are added,
-the module should avoid modifying the resource attribute when a parameter is not explicitly set in a task.
+the module should avoid modifying the resource attribute when a parameter is
+not explicitly set in a task.
 
 By convention, when a parameter is explicitly set in a task, the module should
 set the resource attribute to match what was set in the task.  In some cases,
 such as tags or associations, it can be helpful to add an additional parameter
-which changes this behavior to add the new setting to the attribute rather than
-replacing the current attributes.  Such a parameter should default to the
-replacive rather than additive behavior.
+which can be set to change the behavior from replacive to additive.  However, the
+default behavior should still be replacive rather than additive.
+
+See the `Dealing with tags<ansible_collections.amazon.aws.docsite.dev_tags>`
+section for an example with ``tags`` and ``purge_tags``.
 
 .. _ansible_collections.amazon.aws.docsite.dev_module_connection:
 
