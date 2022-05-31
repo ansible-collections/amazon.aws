@@ -25,9 +25,14 @@ options:
     type: str
     version_added: 3.2.0
   lookup:
-    description: Look up route table by either tags or by route table ID. Non-unique tag lookup will fail.
-      If no tags are specified then no lookup for an existing route table is performed and a new
-      route table will be created. To change tags of a route table you must look up by id.
+    description:
+      - Look up route table by either I(tags) or by I(route_table_id).
+      - If I(lookup=tag) and I(tags) is not specified then no lookup for an
+        existing route table is performed and a new route table will be created.
+      - When using I(lookup=tag), multiple matches being found will result in
+        a failure and no changes will be made.
+      - To change the tags of a route table use I(lookup=id).
+      - I(vpc_id) must be specified when I(lookup=tag).
     default: tag
     choices: [ 'tag', 'id' ]
     type: str
@@ -43,10 +48,6 @@ options:
     description: Purge existing subnets that are not found in subnets. Ignored unless the subnets option is supplied.
     default: True
     type: bool
-  purge_tags:
-    description: Purge existing tags that are not found in route table.
-    type: bool
-    default: False
   route_table_id:
     description:
     - The ID of the route table to update or delete.
@@ -73,21 +74,17 @@ options:
       by either subnet ID, Name tag, or by a CIDR such as '10.0.0.0/24' or 'fd00::/8'.
     type: list
     elements: str
-  tags:
-    description: >
-      A dictionary of resource tags of the form: C({ tag1: value1, tag2: value2 }). Tags are
-      used to uniquely identify route tables within a VPC when the route_table_id is not supplied.
-    aliases: [ "resource_tags" ]
-    type: dict
   vpc_id:
     description:
     - VPC ID of the VPC in which to create the route table.
     - Required when I(state=present) or I(lookup=tag).
     type: str
+notes:
+- Tags are used to uniquely identify route tables within a VPC when the I(route_table_id) is not supplied.
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
+- amazon.aws.tags.deprecated_purge
 '''
 
 EXAMPLES = r'''
@@ -808,7 +805,7 @@ def main():
         propagating_vgw_ids=dict(type='list', elements='str'),
         purge_routes=dict(default=True, type='bool'),
         purge_subnets=dict(default=True, type='bool'),
-        purge_tags=dict(default=False, type='bool'),
+        purge_tags=dict(type='bool'),
         route_table_id=dict(),
         routes=dict(default=[], type='list', elements='dict'),
         state=dict(default='present', choices=['present', 'absent']),
@@ -822,6 +819,14 @@ def main():
                                            ['lookup', 'tag', ['vpc_id']],
                                            ['state', 'present', ['vpc_id']]],
                               supports_check_mode=True)
+
+    if module.params.get('purge_tags') is None:
+        module.deprecate(
+            'The purge_tags parameter currently defaults to False.'
+            ' For consistency across the collection, this default value'
+            ' will change to True in release 5.0.0.',
+            version='5.0.0', collection_name='amazon.aws')
+        module.params['purge_tags'] = False
 
     # The tests for RouteTable existing uses its own decorator, we can safely
     # retry on InvalidRouteTableID.NotFound

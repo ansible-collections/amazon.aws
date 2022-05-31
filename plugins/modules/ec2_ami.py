@@ -123,14 +123,6 @@ options:
       - Delete snapshots when deregistering the AMI.
     default: false
     type: bool
-  tags:
-    description:
-      - A dictionary of tags to add to the new image; '{"key":"value"}' and '{"key":"value","key":"value"}'
-    type: dict
-  purge_tags:
-    description: Whether to remove existing tags that aren't passed in the C(tags) parameter
-    default: false
-    type: bool
   launch_permissions:
     description:
       - Users and groups that should be able to launch the AMI. Expects dictionary with a key of user_ids and/or group_names. user_ids should
@@ -166,7 +158,7 @@ author:
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
+- amazon.aws.tags.deprecated_purge
 '''
 
 # Thank you to iAcquire for sponsoring development of this module.
@@ -742,14 +734,14 @@ def main():
         no_reboot=dict(default=False, type='bool'),
         state=dict(default='present', choices=['present', 'absent']),
         device_mapping=dict(type='list', elements='dict', options=mapping_options),
-        tags=dict(type='dict'),
         launch_permissions=dict(type='dict'),
         image_location=dict(),
         enhanced_networking=dict(type='bool'),
         billing_products=dict(type='list', elements='str',),
         ramdisk_id=dict(),
         sriov_net_support=dict(),
-        purge_tags=dict(type='bool', default=False)
+        tags=dict(type='dict', aliases=['resource_tags']),
+        purge_tags=dict(type='bool'),
     )
 
     module = AnsibleAWSModule(
@@ -764,6 +756,14 @@ def main():
     # the required_if for state=absent, so check manually instead
     if not any([module.params['image_id'], module.params['name']]):
         module.fail_json(msg="one of the following is required: name, image_id")
+
+    if module.params.get('purge_tags') is None:
+        module.deprecate(
+            'The purge_tags parameter currently defaults to False.'
+            ' For consistency across the collection, this default value'
+            ' will change to True in release 5.0.0.',
+            version='5.0.0', collection_name='amazon.aws')
+        module.params['purge_tags'] = False
 
     connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 

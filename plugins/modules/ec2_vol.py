@@ -80,16 +80,6 @@ options:
     default: present
     choices: ['absent', 'present']
     type: str
-  tags:
-    description:
-      - tag:value pairs to add to the volume after creation.
-    default: {}
-    type: dict
-  purge_tags:
-    description: Whether to remove existing tags that aren't passed in the I(tags) parameter
-    default: false
-    type: bool
-    version_added: 1.5.0
   modify_volume:
     description:
       - The volume won't be modified unless this key is C(true).
@@ -117,9 +107,12 @@ options:
     type: str
     version_added: 3.1.0
 author: "Lester Wade (@lwade)"
+notes:
+- Support for I(purge_tags) was added in release 1.5.0.
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
+- amazon.aws.tags.deprecated_purge
 '''
 
 EXAMPLES = '''
@@ -459,7 +452,7 @@ def create_volume(module, ec2_conn, zone):
     throughput = module.params.get('throughput')
     multi_attach = module.params.get('multi_attach')
     outpost_arn = module.params.get('outpost_arn')
-    tags = module.params.get('tags')
+    tags = module.params.get('tags') or {}
     name = module.params.get('name')
 
     volume = get_volume(module, ec2_conn)
@@ -715,11 +708,11 @@ def main():
         zone=dict(aliases=['availability_zone', 'aws_zone', 'ec2_zone']),
         snapshot=dict(),
         state=dict(default='present', choices=['absent', 'present']),
-        tags=dict(default={}, type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
         modify_volume=dict(default=False, type='bool'),
         throughput=dict(type='int'),
         outpost_arn=dict(type='str'),
-        purge_tags=dict(type='bool', default=False),
+        purge_tags=dict(type='bool'),
         multi_attach=dict(type='bool'),
     )
 
@@ -745,6 +738,14 @@ def main():
     volume_type = module.params.get('volume_type')
     throughput = module.params.get('throughput')
     multi_attach = module.params.get('multi_attach')
+
+    if module.params.get('purge_tags') is None:
+        module.deprecate(
+            'The purge_tags parameter currently defaults to False.'
+            ' For consistency across the collection, this default value'
+            ' will change to True in release 5.0.0.',
+            version='5.0.0', collection_name='amazon.aws')
+        module.params['purge_tags'] = False
 
     # Ensure we have the zone or can get the zone
     if instance is None and zone is None and state == 'present':

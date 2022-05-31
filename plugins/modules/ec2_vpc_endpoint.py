@@ -81,19 +81,6 @@ options:
     default: present
     choices: [ "present", "absent" ]
     type: str
-  tags:
-    description:
-      - A dict of tags to apply to the internet gateway.
-      - To remove all tags set I(tags={}) and I(purge_tags=true).
-    type: dict
-    version_added: 1.5.0
-  purge_tags:
-    description:
-      - Delete any tags not specified in the task that are on the instance.
-        This means you have to specify all the desired tags on each task affecting an instance.
-    default: false
-    type: bool
-    version_added: 1.5.0
   wait:
     description:
       - When specified, will wait for either available status for state present.
@@ -130,9 +117,12 @@ options:
     required: false
     type: str
 author: Karen Cheng (@Etherdaemon)
+notes:
+- Support for I(tags) and I(purge_tags) was added in release 1.5.0.
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
+- amazon.aws.tags.deprecated_purge
 
 '''
 
@@ -435,8 +425,8 @@ def main():
         route_table_ids=dict(type='list', elements='str'),
         vpc_endpoint_id=dict(),
         client_token=dict(no_log=False),
-        tags=dict(type='dict'),
-        purge_tags=dict(type='bool', default=False),
+        tags=dict(type='dict', aliases=['resource_tags']),
+        purge_tags=dict(type='bool'),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
@@ -450,6 +440,14 @@ def main():
 
     # Validate Requirements
     state = module.params.get('state')
+
+    if module.params.get('purge_tags') is None:
+        module.deprecate(
+            'The purge_tags parameter currently defaults to False.'
+            ' For consistency across the collection, this default value'
+            ' will change to True in release 5.0.0.',
+            version='5.0.0', collection_name='amazon.aws')
+        module.params['purge_tags'] = False
 
     if module.params.get('policy_file'):
         module.deprecate('The policy_file option has been deprecated and'
