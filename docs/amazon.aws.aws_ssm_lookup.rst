@@ -28,7 +28,7 @@ Requirements
 The below requirements are needed on the local Ansible controller node that executes this lookup.
 
 - python >= 3.6
-- boto3
+- boto3 >= 1.16.0
 - botocore >= 1.19.0
 
 
@@ -78,6 +78,24 @@ Parameters
                     </td>
                 <td>
                         <div>A boolean to indicate whether to decrypt the parameter.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>endpoint</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 3.3.0</div>
+                </td>
+                <td>
+                </td>
+                    <td>
+                    </td>
+                <td>
+                        <div>Use a custom endpoint when connecting to SSM service.</div>
                 </td>
             </tr>
             <tr>
@@ -242,9 +260,9 @@ Status
 Authors
 ~~~~~~~
 
-- Bill Wang <ozbillwang(at)gmail.com>
-- Marat Bakeev <hawara(at)gmail.com>
-- Michael De La Rue <siblemitcom.mddlr@spamgourmet.com>
+- Bill Wang (!UNKNOWN) <ozbillwang(at)gmail.com>
+- Marat Bakeev (!UNKNOWN) <hawara(at)gmail.com>
+- Michael De La Rue (!UNKNOWN) <siblemitcom.mddlr@spamgourmet.com>
 
 
 .. hint::
