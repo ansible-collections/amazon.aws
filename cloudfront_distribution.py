@@ -12,19 +12,19 @@ DOCUMENTATION = r'''
 version_added: 1.0.0
 module: cloudfront_distribution
 
-short_description: Create, update and delete AWS CloudFront distributions.
+short_description: Create, update and delete AWS CloudFront distributions
 
 description:
-    - Allows for easy creation, updating and deletion of CloudFront distributions.
+  - Allows for easy creation, updating and deletion of CloudFront distributions.
 
 author:
   - Willem van Ketwich (@wilvk)
   - Will Thames (@willthames)
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags.deprecated_purge
 
 options:
 
@@ -57,21 +57,6 @@ options:
           to reference an existing distribution. If not specified, this defaults to a datetime stamp of the format
           C(YYYY-MM-DDTHH:MM:SS.ffffff).
       type: str
-
-    tags:
-      description:
-        - Should be input as a dict of key-value pairs.
-        - "Note that numeric keys or values must be wrapped in quotes. e.g. C(Priority: '1')"
-      type: dict
-
-    purge_tags:
-      description:
-        - Specifies whether existing tags will be removed before adding new tags.
-        - When I(purge_tags=yes), existing tags are removed and I(tags) are added, if specified.
-          If no tags are specified, it removes all existing tags for the distribution.
-        - When I(purge_tags=no), existing tags are kept and I(tags) are added, if specified.
-      default: false
-      type: bool
 
     alias:
       description:
@@ -1492,6 +1477,8 @@ def list_tags_for_resource(client, module, arn):
 
 
 def update_tags(client, module, existing_tags, valid_tags, purge_tags, arn):
+    if valid_tags is None:
+        return False
     changed = False
     to_add, to_remove = compare_aws_tags(existing_tags, valid_tags, purge_tags)
     if to_remove:
@@ -2121,8 +2108,8 @@ def main():
         comment=dict(),
         distribution_id=dict(),
         e_tag=dict(),
-        tags=dict(type='dict', default={}),
-        purge_tags=dict(type='bool', default=False),
+        tags=dict(type='dict', aliases=['resource_tags']),
+        purge_tags=dict(type='bool'),
         alias=dict(),
         aliases=dict(type='list', default=[], elements='str'),
         purge_aliases=dict(type='bool', default=False),
@@ -2160,6 +2147,14 @@ def main():
             ['default_origin_domain_name', 'alias'],
         ]
     )
+
+    if module.params.get('purge_tags') is None:
+        module.deprecate(
+            'The purge_tags parameter currently defaults to False.'
+            ' For consistency across the collection, this default value'
+            ' will change to True in release 5.0.0.',
+            version='5.0.0', collection_name='community.aws')
+        module.params['purge_tags'] = False
 
     client = module.client('cloudfront', retry_decorator=AWSRetry.jittered_backoff())
 
@@ -2239,7 +2234,7 @@ def main():
 
     if create:
         config['CallerReference'] = validation_mgr.validate_caller_reference(caller_reference)
-        result = create_distribution(client, module, config, ansible_dict_to_boto3_tag_list(tags))
+        result = create_distribution(client, module, config, ansible_dict_to_boto3_tag_list(tags or {}))
         result = camel_dict_to_snake_dict(result)
         result['tags'] = list_tags_for_resource(client, module, result['arn'])
 

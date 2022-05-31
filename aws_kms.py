@@ -12,7 +12,7 @@ module: aws_kms
 version_added: 1.0.0
 short_description: Perform various KMS management tasks
 description:
-     - Manage role/user access to a KMS key. Not designed for encrypting/decrypting.
+  - Manage role/user access to a KMS key. Not designed for encrypting/decrypting.
 options:
   alias:
     description: An alias for a key. For safety, even though KMS does not require keys
@@ -114,9 +114,6 @@ options:
       A description of the CMK. Use a description that helps you decide
       whether the CMK is appropriate for a task.
     type: str
-  tags:
-    description: A dictionary of tags to apply to a key.
-    type: dict
   pending_window:
     description:
     - The number of days between requesting deletion of the CMK and when it will actually be deleted.
@@ -126,11 +123,6 @@ options:
     type: int
     aliases: ['deletion_delay']
     version_added: 1.4.0
-  purge_tags:
-    description: Whether the I(tags) argument should cause tags not in the list to
-      be removed.
-    default: False
-    type: bool
   purge_grants:
     description: Whether the I(grants) argument should cause grants not in the list to
       be removed.
@@ -196,8 +188,9 @@ author:
   - Will Thames (@willthames)
   - Mark Chappell (@tremble)
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags.deprecated_purge
 
 
 notes:
@@ -809,6 +802,9 @@ def update_description(connection, module, key, description):
 
 
 def update_tags(connection, module, key, desired_tags, purge_tags):
+    if desired_tags is None:
+        return False
+
     # purge_tags needs to be explicitly set, so an empty tags list means remove
     # all tags
 
@@ -933,8 +929,13 @@ def update_key(connection, module, key):
 def create_key(connection, module):
     key_usage = module.params.get('key_usage')
     key_spec = module.params.get('key_spec')
+    tags_list = ansible_dict_to_boto3_tag_list(
+        module.params['tags'] or {},
+        # KMS doesn't use "Key" and "Value" as other APIs do.
+        tag_name_key_name='TagKey', tag_value_key_name='TagValue'
+    )
     params = dict(BypassPolicyLockoutSafetyCheck=False,
-                  Tags=ansible_dict_to_boto3_tag_list(module.params['tags'], tag_name_key_name='TagKey', tag_value_key_name='TagValue'),
+                  Tags=tags_list,
                   KeyUsage=key_usage,
                   CustomerMasterKeySpec=key_spec,
                   Origin='AWS_KMS')
@@ -1148,8 +1149,8 @@ def main():
         key_id=dict(aliases=['key_arn']),
         description=dict(),
         enabled=dict(type='bool', default=True),
-        tags=dict(type='dict', default={}),
-        purge_tags=dict(type='bool', default=False),
+        tags=dict(type='dict', aliases=['resource_tags']),
+        purge_tags=dict(type='bool'),
         grants=dict(type='list', default=[], elements='dict'),
         policy=dict(type='json'),
         purge_grants=dict(type='bool', default=False),
@@ -1169,6 +1170,14 @@ def main():
     mode = module.params['policy_mode']
 
     kms = module.client('kms')
+
+    if module.params.get('purge_tags') is None:
+        module.deprecate(
+            'The purge_tags parameter currently defaults to False.'
+            ' For consistency across the collection, this default value'
+            ' will change to True in release 5.0.0.',
+            version='5.0.0', collection_name='community.aws')
+        module.params['purge_tags'] = False
 
     module.deprecate("The 'policies' return key is deprecated and will be replaced by 'key_policies'. Both values are returned for now.",
                      date='2024-05-01', collection_name='community.aws')

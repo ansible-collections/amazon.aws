@@ -12,7 +12,7 @@ module: rds_param_group
 version_added: 1.0.0
 short_description: manage RDS parameter groups
 description:
-     - Creates, modifies, and deletes RDS parameter groups.
+  - Creates, modifies, and deletes RDS parameter groups.
 options:
   state:
     description:
@@ -48,21 +48,13 @@ options:
         or T for tera (1024^4), and these values will be expanded into the appropriate number before being set in the parameter group.
     aliases: [parameters]
     type: dict
-  tags:
-    description:
-      - Dictionary of tags to attach to the parameter group.
-    type: dict
-  purge_tags:
-    description:
-      - Whether or not to remove tags that do not appear in the C(tags) list.
-    type: bool
-    default: False
 author:
-    - "Scott Anderson (@tastychutney)"
-    - "Will Thames (@willthames)"
+  - "Scott Anderson (@tastychutney)"
+  - "Will Thames (@willthames)"
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags.deprecated_purge
 
 '''
 
@@ -216,7 +208,10 @@ def update_parameters(module, connection):
 
 
 def update_tags(module, connection, group, tags):
+    if tags is None:
+        return False
     changed = False
+
     existing_tags = connection.list_tags_for_resource(aws_retry=True, ResourceName=group['DBParameterGroupArn'])['TagList']
     to_update, to_delete = compare_aws_tags(boto3_tag_list_to_ansible_dict(existing_tags),
                                             tags, module.params['purge_tags'])
@@ -319,14 +314,22 @@ def main():
         description=dict(),
         params=dict(aliases=['parameters'], type='dict'),
         immediate=dict(type='bool', aliases=['apply_immediately']),
-        tags=dict(type='dict', default={}),
-        purge_tags=dict(type='bool', default=False),
+        tags=dict(type='dict', aliases=['resource_tags']),
+        purge_tags=dict(type='bool'),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         required_if=[['state', 'present', ['description', 'engine']]],
         supports_check_mode=True
     )
+
+    if module.params.get('purge_tags') is None:
+        module.deprecate(
+            'The purge_tags parameter currently defaults to False.'
+            ' For consistency across the collection, this default value'
+            ' will change to True in release 5.0.0.',
+            version='5.0.0', collection_name='community.aws')
+        module.params['purge_tags'] = False
 
     try:
         conn = module.client('rds', retry_decorator=AWSRetry.jittered_backoff())
