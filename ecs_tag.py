@@ -45,6 +45,7 @@ options:
       - A dictionary of tags to add or remove from the resource.
       - If the value provided for a tag is null and I(state=absent), the tag will be removed regardless of its current value.
     type: dict
+    aliases: ['resource_tags']
   purge_tags:
     description:
       - Whether unspecified tags should be removed from the resource.
@@ -155,7 +156,7 @@ def main():
     argument_spec = dict(
         cluster_name=dict(required=True),
         resource=dict(required=False),
-        tags=dict(type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=False),
         state=dict(default='present', choices=['present', 'absent']),
         resource_type=dict(default='cluster', choices=['cluster', 'task', 'service', 'task_definition', 'container'])

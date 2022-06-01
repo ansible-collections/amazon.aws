@@ -36,6 +36,7 @@ options:
       - If the value provided for a tag is null and I(state=absent), the tag will be removed regardless of its current value.
     type: dict
     required: True
+    aliases: ['resource_tags']
   purge_tags:
     description:
       - Whether unspecified tags should be removed from the resource.
@@ -124,7 +125,7 @@ def main():
     '''
     argument_spec = dict(
         resource=dict(required=True),
-        tags=dict(type='dict', required=True),
+        tags=dict(type='dict', required=True, aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=False),
         state=dict(default='present', choices=['present', 'absent'])
     )
