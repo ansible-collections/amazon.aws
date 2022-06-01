@@ -71,7 +71,7 @@ spot_request:
         create_time:
             description: The date and time when the Spot Instance request was created.
             returned: always
-            type: datetime
+            type: str
         instance_id:
             description: The instance ID, if an instance has been launched to fulfill the Spot Instance request.
             returned: when instance exists
@@ -175,7 +175,7 @@ spot_request:
                 update_time:
                     description: The date and time of the most recent status update in UTC format.
                     returned: always
-                    type: datetime
+                    type: str
         tags:
             description: List of tags associated with the resource.
             returned: always
@@ -189,7 +189,7 @@ spot_request:
                 value:
                     description: The value of the tag.
                     returned: always
-                    type:
+                    type: str
         type:
             description: The Spot Instance request type.
             returned: always
@@ -197,7 +197,7 @@ spot_request:
         valid_until:
             description: The end date of the request in UTC format.
             returned: always
-            type: datetime
+            type: str
     sample: {
         "create_time": "2021-09-01T21:05:57+00:00",
         "instance_id": "i-08877936b801ac475",
