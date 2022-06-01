@@ -206,7 +206,7 @@ options:
     description:
     - A list of block device mappings, by default this will always use the AMI root device so the volumes option is primarily for adding more storage.
     - A mapping contains the (optional) keys device_name, virtual_name, ebs.volume_type, ebs.volume_size, ebs.kms_key_id,
-      ebs.iops, and ebs.delete_on_termination.
+      ebs.snapshot_id, ebs.iops, and ebs.delete_on_termination.
     - For more information about each parameter, see U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_BlockDeviceMapping.html).
     type: list
     elements: dict
@@ -395,6 +395,17 @@ EXAMPLES = '''
         ebs:
           volume_size: 16
           delete_on_termination: true
+
+- name: start an instance and Add EBS volume from a snapshot
+  amazon.aws.ec2_instance:
+    name: "public-withebs-instance"
+    instance_type: t2.micro
+    image_id: ami-1234567890
+    vpc_subnet_id: subnet-5ca1ab1e
+    volumes:
+      - device_name: /dev/sda2
+        ebs:
+          snapshot_id: snap-1234567890
 
 - name: start an instance with a cpu_options
   amazon.aws.ec2_instance:
