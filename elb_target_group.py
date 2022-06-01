@@ -12,10 +12,11 @@ module: elb_target_group
 version_added: 1.0.0
 short_description: Manage a target group for an Application or Network load balancer
 description:
-    - Manage an AWS Elastic Load Balancer target group. See
-      U(https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html) or
-      U(https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html) for details.
-author: "Rob White (@wimnat)"
+  - Manage an AWS Elastic Load Balancer target group. See
+    U(https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html) or
+    U(https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html) for details.
+author:
+  - "Rob White (@wimnat)"
 options:
   deregistration_delay_timeout:
     description:
@@ -88,13 +89,6 @@ options:
     required: false
     choices: [ 'http', 'https', 'tcp', 'tls', 'udp', 'tcp_udp', 'HTTP', 'HTTPS', 'TCP', 'TLS', 'UDP', 'TCP_UDP']
     type: str
-  purge_tags:
-    description:
-      - If yes, existing tags will be purged from the resource to match exactly what is defined by I(tags) parameter. If the tag parameter is not set then
-        tags will not be modified.
-    required: false
-    default: yes
-    type: bool
   state:
     description:
       - Create or destroy the target group.
@@ -143,11 +137,6 @@ options:
       - Requires the I(health_check_protocol) parameter to be set.
     required: false
     type: str
-  tags:
-    description:
-      - A dictionary of one or more tags to assign to the target group.
-    required: false
-    type: dict
   target_type:
     description:
       - The type of target that you must specify when registering targets with this target group. The possible values are
@@ -208,8 +197,9 @@ options:
     default: 200
     type: int
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 
 notes:
   - Once a target group has been created, only its health check can then be modified using subsequent calls
@@ -857,7 +847,7 @@ def create_or_update_target_group(connection, module):
         changed = True
 
     # Tags - only need to play with tags if tags parameter has been set to something
-    if tags:
+    if tags is not None:
         # Get tags
         current_tags = get_target_group_tags(connection, module, target_group['TargetGroupArn'])
 
@@ -931,7 +921,7 @@ def main():
         load_balancing_algorithm_type=dict(type='str', choices=['round_robin', 'least_outstanding_requests']),
         state=dict(required=True, choices=['present', 'absent']),
         successful_response_codes=dict(),
-        tags=dict(default={}, type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
         target_type=dict(choices=['instance', 'ip', 'lambda', 'alb']),
         targets=dict(type='list', elements='dict'),
         unhealthy_threshold_count=dict(type='int'),

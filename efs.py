@@ -28,12 +28,6 @@ options:
               required if you want to use a non-default CMK. If this parameter is not specified, the default CMK for
               Amazon EFS is used. The key id can be Key ID, Key ID ARN, Key Alias or Key Alias ARN.
         type: str
-    purge_tags:
-        description:
-            - If yes, existing tags will be purged from the resource to match exactly what is defined by I(tags) parameter. If the I(tags) parameter
-              is not set then tags will not be modified.
-        type: bool
-        default: true
     state:
         description:
             - Allows to create, search and destroy Amazon EFS file system.
@@ -107,8 +101,9 @@ options:
         version_added: 2.1.0
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+    - amazon.aws.aws
+    - amazon.aws.ec2
+    - amazon.aws.tags
 
 '''
 
@@ -725,7 +720,7 @@ def main():
         purge_tags=dict(default=True, type='bool'),
         id=dict(required=False, type='str', default=None),
         name=dict(required=False, type='str', default=None),
-        tags=dict(required=False, type="dict", default={}),
+        tags=dict(required=False, type="dict", aliases=['resource_tags']),
         targets=dict(required=False, type="list", default=[], elements='dict'),
         performance_mode=dict(required=False, type='str', choices=["general_purpose", "max_io"], default="general_purpose"),
         transition_to_ia=dict(required=False, type='str', choices=["None", "7", "14", "30", "60", "90"], default=None),

@@ -12,8 +12,9 @@ module: eks_fargate_profile
 version_added: 4.0.0
 short_description: Manage EKS Fargate Profile
 description:
-    - Manage EKS Fargate Profile.
-author: Tiago Jarra (@tjarra)
+  - Manage EKS Fargate Profile.
+author:
+  - Tiago Jarra (@tjarra)
 options:
   name:
     description: Name of EKS Fargate Profile.
@@ -54,14 +55,6 @@ options:
       - present
     default: present
     type: str
-  tags:
-    description: A dictionary of resource tags.
-    type: dict
-  purge_tags:
-    description:
-      - Purge existing tags that are not found in the cluster.
-    type: bool
-    default: true
   wait:
     description: >-
       Specifies whether the module waits until the profile is created or deleted before moving on.
@@ -74,8 +67,9 @@ options:
     default: 1200
     type: int
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 
 '''
 
@@ -184,9 +178,13 @@ except ImportError:
 def validate_tags(client, module, fargate_profile):
     changed = False
 
+    desired_tags = module.params.get('tags')
+    if desired_tags is None:
+        return False
+
     try:
         existing_tags = client.list_tags_for_resource(resourceArn=fargate_profile['fargateProfileArn'])['tags']
-        tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, module.params.get('tags'), module.params.get('purge_tags'))
+        tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, desired_tags, module.params.get('purge_tags'))
     except(botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Unable to list or compare tags for Fargate Profile %s' % module.params.get('name'))
 
@@ -215,7 +213,7 @@ def create_or_update_fargate_profile(client, module):
     role_arn = module.params['role_arn']
     cluster_name = module.params['cluster_name']
     selectors = module.params['selectors']
-    tags = module.params['tags']
+    tags = module.params['tags'] or {}
     wait = module.params.get('wait')
     fargate_profile = get_fargate_profile(client, module, name, cluster_name)
 
@@ -325,7 +323,7 @@ def main():
             namespace=dict(type='str'),
             labels=dict(type='dict', default={})
         )),
-        tags=dict(type='dict', default={}),
+        tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=True),
         state=dict(choices=['absent', 'present'], default='present'),
         wait=dict(default=False, type='bool'),
