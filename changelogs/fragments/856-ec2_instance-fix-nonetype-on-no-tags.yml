@@ -1,2 +1,0 @@
-bugfixes:
-  - ec2_instance - fix NoneType error when no tags are input (https://github.com/ansible-collections/amazon.aws/pull/856).
