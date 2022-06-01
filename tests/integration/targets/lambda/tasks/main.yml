@@ -252,10 +252,9 @@
       - result.configuration.runtime == 'python3.6'
       - result.configuration.tracing_config.mode == 'PassThrough'
 
-  # Query the Lambda
-  - name: lambda_info | Gather all infos for given lambda function
+  # Test lambda_info
+  - name: lambda_info | Gather all infos for all lambda functions
     lambda_info:
-      name: '{{ lambda_function_name }}'
       query: all
     register: lambda_infos_all
     check_mode: yes
@@ -263,16 +262,53 @@
     assert:
       that:
       - lambda_infos_all is not failed
+      - lambda_infos_all.function | length > 0
       - lambda_infos_all.function[lambda_function_name].function_name == lambda_function_name
       - lambda_infos_all.function[lambda_function_name].runtime == "python3.6"
+      - lambda_infos_all.function[lambda_function_name].description == ""
+      - lambda_infos_all.function[lambda_function_name].function_arn is defined
+      - lambda_infos_all.function[lambda_function_name].handler == "mini_lambda.handler"
       - lambda_infos_all.function[lambda_function_name].versions is defined
       - lambda_infos_all.function[lambda_function_name].aliases is defined
       - lambda_infos_all.function[lambda_function_name].policy is defined
       - lambda_infos_all.function[lambda_function_name].mappings is defined
-      - lambda_infos_all.function[lambda_function_name].description == ""
-      - lambda_infos_all.function[lambda_function_name].function_arn is defined
-      - lambda_infos_all.function[lambda_function_name].handler == "mini_lambda.handler"
       - lambda_infos_all.function[lambda_function_name].tags is defined
+
+  - name: lambda_info | Ensure default query value is 'config' when function name omitted
+    lambda_info:
+    register: lambda_infos_query_config
+    check_mode: yes
+  - name: lambda_info | Assert successfull retrieval of all information
+    assert:
+      that:
+      - lambda_infos_query_config is not failed
+      - lambda_infos_query_config.function | length > 0
+      - lambda_infos_query_config.function[lambda_function_name].function_name == lambda_function_name
+      - lambda_infos_query_config.function[lambda_function_name].runtime == "python3.6"
+      - lambda_infos_query_config.function[lambda_function_name].description == ""
+      - lambda_infos_query_config.function[lambda_function_name].function_arn is defined
+      - lambda_infos_query_config.function[lambda_function_name].handler == "mini_lambda.handler"
+      - lambda_infos_query_config.function[lambda_function_name].versions is not defined
+      - lambda_infos_query_config.function[lambda_function_name].aliases is not defined
+      - lambda_infos_query_config.function[lambda_function_name].policy is not defined
+      - lambda_infos_query_config.function[lambda_function_name].mappings is not defined
+      - lambda_infos_query_config.function[lambda_function_name].tags is not defined
+
+  - name: lambda_info | Ensure default query value is 'all' when function name specified
+    lambda_info:
+      name: '{{ lambda_function_name }}'
+    register: lambda_infos_query_all
+  - name: lambda_info | Assert successfull retrieval of all information
+    assert:
+      that:
+      - lambda_infos_query_all is not failed
+      - lambda_infos_query_all.function | length == 1
+      - lambda_infos_query_all.function[lambda_function_name].versions|length > 0
+      - lambda_infos_query_all.function[lambda_function_name].function_name is defined
+      - lambda_infos_query_all.function[lambda_function_name].policy is defined
+      - lambda_infos_query_all.function[lambda_function_name].aliases is defined
+      - lambda_infos_query_all.function[lambda_function_name].mappings is defined
+      - lambda_infos_query_all.function[lambda_function_name].tags is defined
 
   - name: lambda_info | Gather version infos for given lambda function
     lambda_info:
@@ -283,8 +319,13 @@
     assert:
       that:
       - lambda_infos_versions is not failed
+      - lambda_infos_versions.function | length == 1
       - lambda_infos_versions.function[lambda_function_name].versions|length > 0
       - lambda_infos_versions.function[lambda_function_name].function_name is undefined
+      - lambda_infos_versions.function[lambda_function_name].policy is undefined
+      - lambda_infos_versions.function[lambda_function_name].aliases is undefined
+      - lambda_infos_versions.function[lambda_function_name].mappings is undefined
+      - lambda_infos_versions.function[lambda_function_name].tags is undefined
 
   - name: lambda_info | Gather config infos for given lambda function
     lambda_info:
@@ -295,9 +336,14 @@
     assert:
       that:
       - lambda_infos_config is not failed
+      - lambda_infos_config.function | length == 1
       - lambda_infos_config.function[lambda_function_name].function_name == lambda_function_name
       - lambda_infos_config.function[lambda_function_name].description is defined
       - lambda_infos_config.function[lambda_function_name].versions is undefined
+      - lambda_infos_config.function[lambda_function_name].policy is undefined
+      - lambda_infos_config.function[lambda_function_name].aliases is undefined
+      - lambda_infos_config.function[lambda_function_name].mappings is undefined
+      - lambda_infos_config.function[lambda_function_name].tags is undefined
 
   - name: lambda_info | Gather policy infos for given lambda function
     lambda_info:
@@ -308,8 +354,13 @@
     assert:
       that:
       - lambda_infos_policy is not failed
+      - lambda_infos_policy.function | length == 1
       - lambda_infos_policy.function[lambda_function_name].policy is defined
       - lambda_infos_policy.function[lambda_function_name].versions is undefined
+      - lambda_infos_policy.function[lambda_function_name].function_name is undefined
+      - lambda_infos_policy.function[lambda_function_name].aliases is undefined
+      - lambda_infos_policy.function[lambda_function_name].mappings is undefined
+      - lambda_infos_policy.function[lambda_function_name].tags is undefined
 
   - name: lambda_info | Gather aliases infos for given lambda function
     lambda_info:
@@ -320,7 +371,13 @@
     assert:
       that:
       - lambda_infos_aliases is not failed
+      - lambda_infos_aliases.function | length == 1
       - lambda_infos_aliases.function[lambda_function_name].aliases is defined
+      - lambda_infos_aliases.function[lambda_function_name].versions is undefined
+      - lambda_infos_aliases.function[lambda_function_name].function_name is undefined
+      - lambda_infos_aliases.function[lambda_function_name].policy is undefined
+      - lambda_infos_aliases.function[lambda_function_name].mappings is undefined
+      - lambda_infos_aliases.function[lambda_function_name].tags is undefined
 
   - name: lambda_info | Gather mappings infos for given lambda function
     lambda_info:
@@ -331,7 +388,13 @@
     assert:
       that:
       - lambda_infos_mappings is not failed
+      - lambda_infos_mappings.function | length == 1
       - lambda_infos_mappings.function[lambda_function_name].mappings is defined
+      - lambda_infos_mappings.function[lambda_function_name].versions is undefined
+      - lambda_infos_mappings.function[lambda_function_name].function_name is undefined
+      - lambda_infos_mappings.function[lambda_function_name].aliases is undefined
+      - lambda_infos_mappings.function[lambda_function_name].policy is undefined
+      - lambda_infos_mappings.function[lambda_function_name].tags is undefined
 
   # More Lambda update tests
   - name: test state=present with all nullable variables explicitly set to null
@@ -523,11 +586,19 @@
       - result is not failed
 
   always:
-  - name: ensure function is absent at end of test
+
+  - name: ensure functions are absent at end of test
     lambda:
-      name: '{{lambda_function_name}}'
+      name: "{{ item }}"
       state: absent
     ignore_errors: true
+    with_items:
+      - "{{ lambda_function_name }}"
+      - "{{ lambda_function_name }}_1"
+      - "{{ lambda_function_name }}_2"
+      - "{{ lambda_function_name }}_3"
+      - "{{ lambda_function_name }}_4"
+
   - name: ensure role has been removed at end of test
     iam_role:
       name: '{{ lambda_role_name }}'
