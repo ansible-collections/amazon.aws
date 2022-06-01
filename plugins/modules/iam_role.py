@@ -12,7 +12,8 @@ version_added: 1.0.0
 short_description: Manage AWS IAM roles
 description:
   - Manage AWS IAM roles.
-author: "Rob White (@wimnat)"
+author:
+  - "Rob White (@wimnat)"
 options:
   path:
     description:
@@ -78,15 +79,6 @@ options:
       - Only applies when I(state=absent).
     default: false
     type: bool
-  tags:
-    description:
-      - Tag dict to apply to the queue.
-    type: dict
-  purge_tags:
-    description:
-      - Remove tags not listed in I(tags) when tags is specified.
-    default: true
-    type: bool
   wait_timeout:
     description:
       - How long (in seconds) to wait for creation / update to complete.
@@ -99,9 +91,9 @@ options:
     default: True
     type: bool
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = r'''
@@ -673,7 +665,7 @@ def main():
         create_instance_profile=dict(type='bool', default=True),
         delete_instance_profile=dict(type='bool', default=False),
         purge_policies=dict(type='bool', aliases=['purge_policy', 'purge_managed_policies']),
-        tags=dict(type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=True),
         wait=dict(type='bool', default=True),
         wait_timeout=dict(default=120, type='int'),
