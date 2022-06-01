@@ -1780,7 +1780,7 @@ def determine_iam_role(name_or_arn):
 
 
 def handle_existing(existing_matches, state):
-    tags = dict(module.params.get('tags', None))
+    tags = dict(module.params.get('tags') or {})
     purge_tags = module.params.get('purge_tags')
     name = module.params.get('name')
 
@@ -1788,9 +1788,8 @@ def handle_existing(existing_matches, state):
     # into tags, but since tags isn't explicitly passed we'll treat it not being
     # set as purge_tags == False
     if name:
-        if purge_tags and tags is None:
+        if purge_tags and not tags:
             purge_tags = False
-            tags = {}
         tags.update({'Name': name})
 
     changed = False
