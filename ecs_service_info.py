@@ -40,6 +40,7 @@ options:
         required: false
         type: list
         elements: str
+        aliases: ['name']
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -214,7 +215,7 @@ def main():
         details=dict(type='bool', default=False),
         events=dict(type='bool', default=True),
         cluster=dict(),
-        service=dict(type='list', elements='str')
+        service=dict(type='list', elements='str', aliases=['name'])
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)

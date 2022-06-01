@@ -34,6 +34,7 @@ options:
           - The name of the service.
         required: true
         type: str
+        aliases: ['service']
     cluster:
         description:
           - The name of the cluster in which the service exists.
@@ -662,7 +663,7 @@ class EcsServiceManager:
 def main():
     argument_spec = dict(
         state=dict(required=True, choices=['present', 'absent', 'deleting']),
-        name=dict(required=True, type='str'),
+        name=dict(required=True, type='str', aliases=['service']),
         cluster=dict(required=False, type='str'),
         task_definition=dict(required=False, type='str'),
         load_balancers=dict(required=False, default=[], type='list', elements='dict'),
