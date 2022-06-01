@@ -10,7 +10,7 @@ DOCUMENTATION = '''
 ---
 module: aws_caller_info
 version_added: 1.0.0
-short_description: Get information about the user and account being used to make AWS calls.
+short_description: Get information about the user and account being used to make AWS calls
 description:
     - This module returns information about the account and user / role from which the AWS access tokens originate.
     - The primary use of this is to get the account id for templating into ARNs or similar to avoid needing to specify this information in inventory.

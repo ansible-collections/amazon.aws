@@ -71,19 +71,35 @@ EXAMPLES = '''
 
 RETURN = '''
 dhcp_options:
-    description: The DHCP options created, associated or found
+    description: The DHCP options created, associated or found.
     returned: always
     type: list
     elements: dict
     contains:
         dhcp_configurations:
-            description: The DHCP configuration for the option set
+            description: The DHCP configuration for the option set.
             type: list
+            elements: dict
+            contains:
+                key:
+                    description: The name of a DHCP option.
+                    returned: always
+                    type: str
+                values:
+                    description: List of values for the DHCP option.
+                    returned: always
+                    type: list
+                    elements: dict
+                    contains:
+                        value:
+                            description: The attribute value. This value is case-sensitive.
+                            returned: always
+                            type: str
             sample:
               - '{"key": "ntp-servers", "values": [{"value": "10.0.0.2" , "value": "10.0.1.2"}]}'
               - '{"key": "netbios-name-servers", "values": [{value": "10.0.0.1"}, {"value": "10.0.1.1" }]}'
         dhcp_options_id:
-            description: The aws resource id of the primary DCHP options set created or found
+            description: The aws resource id of the primary DCHP options set created or found.
             type: str
             sample: "dopt-0955331de6a20dd07"
         owner_id:
@@ -91,8 +107,9 @@ dhcp_options:
             type: str
             sample: 012345678912
         tags:
-            description: The tags to be applied to a DHCP options set
+            description: The tags to be applied to a DHCP options set.
             type: list
+            elements: dict
             sample:
               - '{"Key": "CreatedBy", "Value": "ansible-test"}'
               - '{"Key": "Collection", "Value": "amazon.aws"}'
@@ -100,6 +117,7 @@ dhcp_config:
     description: The boto2-style DHCP options created, associated or found. Provided for consistency with ec2_vpc_dhcp_option's C(dhcp_config).
     returned: always
     type: list
+    elements: dict
     contains:
       domain-name-servers:
         description: The IP addresses of up to four domain name servers, or AmazonProvidedDNS.
@@ -109,7 +127,7 @@ dhcp_config:
           - 10.0.0.1
           - 10.0.1.1
       domain-name:
-        description: The domain name for hosts in the DHCP option sets
+        description: The domain name for hosts in the DHCP option sets.
         returned: when available
         type: list
         sample:
@@ -134,7 +152,7 @@ dhcp_config:
         type: str
         sample: 2
 changed:
-    description: True if listing the dhcp options succeeds
+    description: True if listing the dhcp options succeeds.
     type: bool
     returned: always
 '''

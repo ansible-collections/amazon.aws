@@ -10,7 +10,7 @@ DOCUMENTATION = '''
 ---
 module: ec2_group_info
 version_added: 1.0.0
-short_description: Gather information about ec2 security groups in AWS.
+short_description: Gather information about ec2 security groups in AWS
 description:
     - Gather information about ec2 security groups in AWS.
 author:
@@ -86,7 +86,164 @@ security_groups:
     description: Security groups that match the provided filters. Each element consists of a dict with all the information related to that security group.
     type: list
     returned: always
-    sample:
+    elements: dict
+    contains:
+        description:
+            description: The description of the security group.
+            returned: always
+            type: str
+        group_id:
+            description: The ID of the security group.
+            returned: always
+            type: str
+        group_name:
+            description: The name of the security group.
+            returned: always
+            type: str
+        ip_permissions:
+            description: The inbound rules associated with the security group.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                ip_protocol:
+                    description: The IP protocol name or number.
+                    returned: always
+                    type: str
+                ip_ranges:
+                    description: The IPv4 ranges.
+                    returned: always
+                    type: list
+                    elements: dict
+                    contains:
+                        cidr_ip:
+                            description: The IPv4 CIDR range.
+                            returned: always
+                            type: str
+                ipv6_ranges:
+                    description: The IPv6 ranges.
+                    returned: always
+                    type: list
+                    elements: dict
+                    contains:
+                        cidr_ipv6:
+                            description: The IPv6 CIDR range.
+                            returned: always
+                            type: str
+                prefix_list_ids:
+                    description: The prefix list IDs.
+                    returned: always
+                    type: list
+                    elements: dict
+                    contains:
+                        prefix_list_id:
+                            description: The ID of the prefix.
+                            returned: always
+                            type: str
+                user_id_group_pairs:
+                    description: The security group and AWS account ID pairs.
+                    returned: always
+                    type: list
+                    elements: dict
+                    contains:
+                        group_id:
+                            description: The security group ID of the pair.
+                            returned: always
+                            type: str
+                        user_id:
+                            description: The user ID of the pair.
+                            returned: always
+                            type: str
+        ip_permissions_egress:
+            description: The outbound rules associated with the security group.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                ip_protocol:
+                    description: The IP protocol name or number.
+                    returned: always
+                    type: str
+                ip_ranges:
+                    description: The IPv4 ranges.
+                    returned: always
+                    type: list
+                    elements: dict
+                    contains:
+                        cidr_ip:
+                            description: The IPv4 CIDR range.
+                            returned: always
+                            type: str
+                ipv6_ranges:
+                    description: The IPv6 ranges.
+                    returned: always
+                    type: list
+                    elements: dict
+                    contains:
+                        cidr_ipv6:
+                            description: The IPv6 CIDR range.
+                            returned: always
+                            type: str
+                prefix_list_ids:
+                    description: The prefix list IDs.
+                    returned: always
+                    type: list
+                    elements: dict
+                    contains:
+                        prefix_list_id:
+                            description: The ID of the prefix.
+                            returned: always
+                            type: str
+                user_id_group_pairs:
+                    description: The security group and AWS account ID pairs.
+                    returned: always
+                    type: list
+                    elements: dict
+                    contains:
+                        group_id:
+                            description: The security group ID of the pair.
+                            returned: always
+                            type: str
+                        user_id:
+                            description: The user ID of the pair.
+                            returned: always
+                            type: str
+        owner_id:
+            description: The AWS account ID of the owner of the security group.
+            returned: always
+            type: str
+        tags:
+            description: The tags associated with the security group.
+            returned: always
+            type: dict
+        vpc_id:
+            description: The ID of the VPC for the security group.
+            returned: always
+            type: str
+    sample: [
+        {
+            "description": "created by rds_instance integration tests",
+            "group_id": "sg-036496a610b79da88",
+            "group_name": "ansible-test-89355088-unknown5c5f67f3ad09-sg-1",
+            "ip_permissions": [],
+            "ip_permissions_egress": [
+                {
+                    "ip_protocol": "-1",
+                    "ip_ranges": [
+                        {
+                            "cidr_ip": "0.0.0.0/0"
+                        }
+                    ],
+                    "ipv6_ranges": [],
+                    "prefix_list_ids": [],
+                    "user_id_group_pairs": []
+                }
+            ],
+            "owner_id": "721066863947",
+            "tags": {},
+            "vpc_id": "vpc-0bc3bb03f97405435"
+        }
+    ]
 '''
 
 try:

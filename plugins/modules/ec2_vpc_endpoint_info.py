@@ -7,7 +7,7 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 module: ec2_vpc_endpoint_info
-short_description: Retrieves AWS VPC endpoints details using AWS methods.
+short_description: Retrieves AWS VPC endpoints details using AWS methods
 version_added: 1.0.0
 description:
   - Gets various details related to AWS VPC endpoints.
@@ -81,9 +81,10 @@ EXAMPLES = r'''
 
 RETURN = r'''
 service_names:
-  description: AWS VPC endpoint service names
+  description: AWS VPC endpoint service names.
   returned: I(query) is C(services)
   type: list
+  elements: str
   sample:
     service_names:
     - com.amazonaws.ap-southeast-2.s3
@@ -93,6 +94,95 @@ vpc_endpoints:
       policy_document, route_table_ids, service_name, state, vpc_endpoint_id, vpc_id.
   returned: I(query) is C(endpoints)
   type: list
+  elements: dict
+  contains:
+    creation_timestamp:
+      description: The date and time that the endpoint was created.
+      returned: always
+      type: str
+    dns_entries:
+      description: List of DNS entires for the endpoint.
+      returned: always
+      type: list
+      elements: dict
+      contains:
+        dns_name:
+          description: The DNS name.
+          returned: always
+          type: str
+        hosted_zone_id:
+          description: The ID of the private hosted zone.
+          returned: always
+          type: str
+    groups:
+      description: List of security groups associated with the network interface.
+      returned: always
+      type: list
+      elements: dict
+      contains:
+        group_id:
+          description: The ID of the security group.
+          returned: always
+          type: str
+        group_name:
+          description: The name of the security group.
+          returned: always
+          type: str
+    network_interface_ids:
+      description: List of network interfaces for the endpoint.
+      returned: always
+      type: list
+      elements: str
+    owner_id:
+      description: The ID of the AWS account that owns the endpoint.
+      returned: always
+      type: str
+    policy_document:
+      description: The policy document associated with the endpoint.
+      returned: always
+      type: str
+    private_dns_enabled:
+      description: Indicates whether the VPC is associated with a private hosted zone.
+      returned: always
+      type: bool
+    requester_managed:
+      description: Indicated whether the endpoint is being managed by its service.
+      returned: always
+      type: bool
+    route_table_ids:
+      description: List of route table IDs associated with the endpoint.
+      returned: always
+      type: list
+      elements: str
+    service_name:
+      description: The name of the service to which the endpoint is associated.
+      returned: always
+      type: str
+    state:
+      description: The state of the endpoint.
+      returned: always
+      type: str
+    subnet_ids:
+      description: List of subnets associated with the endpoint.
+      returned: always
+      type: str
+    tags:
+      description: List of tags associated with the endpoint.
+      returned: always
+      type: list
+      elements: dict
+    vpc_endpoint_id:
+      description: The ID of the endpoint.
+      returned: always
+      type: str
+    vpc_endpoint_type:
+      description: The type of endpoint.
+      returned: always
+      type: str
+    vpc_id:
+      description: The ID of the VPC.
+      returned: always
+      type: str
   sample:
     vpc_endpoints:
     - creation_timestamp: "2017-02-16T11:06:48+00:00"

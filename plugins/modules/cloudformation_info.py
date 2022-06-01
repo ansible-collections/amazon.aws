@@ -60,6 +60,10 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
+- name: Get information on all stacks
+  amazon.aws.cloudformation_info:
+  register: all_stacks_output
+
 - name: Get summary information about a stack
   amazon.aws.cloudformation_info:
     stack_name: my-cloudformation-stack
@@ -99,55 +103,190 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
-stack_description:
-    description: Summary facts about the stack
-    returned: if the stack exists
+cloudformation:
+    description:
+        - Dictionary of dictionaries containing info of stack(s).
+        - Keys are I(stack_name)s.
+    returned: always
     type: dict
-stack_outputs:
-    description: Dictionary of stack outputs keyed by the value of each output 'OutputKey' parameter and corresponding value of each
-                 output 'OutputValue' parameter
-    returned: if the stack exists
-    type: dict
-    sample:
-      ApplicationDatabaseName: dazvlpr01xj55a.ap-southeast-2.rds.amazonaws.com
-stack_parameters:
-    description: Dictionary of stack parameters keyed by the value of each parameter 'ParameterKey' parameter and corresponding value of
-                 each parameter 'ParameterValue' parameter
-    returned: if the stack exists
-    type: dict
-    sample:
-      DatabaseEngine: mysql
-      DatabasePassword: "***"
-stack_events:
-    description: All stack events for the stack
-    returned: only if all_facts or stack_events is true and the stack exists
-    type: list
-stack_policy:
-    description: Describes the stack policy for the stack
-    returned: only if all_facts or stack_policy is true and the stack exists
-    type: dict
-stack_template:
-    description: Describes the stack template for the stack
-    returned: only if all_facts or stack_template is true and the stack exists
-    type: dict
-stack_resource_list:
-    description: Describes stack resources for the stack
-    returned: only if all_facts or stack_resources is true and the stack exists
-    type: list
-stack_resources:
-    description: Dictionary of stack resources keyed by the value of each resource 'LogicalResourceId' parameter and corresponding value of each
-                 resource 'PhysicalResourceId' parameter
-    returned: only if all_facts or stack_resources is true and the stack exists
-    type: dict
-    sample:
-      AutoScalingGroup: "dev-someapp-AutoscalingGroup-1SKEXXBCAN0S7"
-      AutoScalingSecurityGroup: "sg-abcd1234"
-      ApplicationDatabase: "dazvlpr01xj55a"
-stack_change_sets:
-    description: A list of stack change sets.  Each item in the list represents the details of a specific changeset
-
-    returned: only if all_facts or stack_change_sets is true and the stack exists
-    type: list
+    contains:
+        stack_description:
+            description: Summary facts about the stack.
+            returned: if the stack exists
+            type: dict
+            contains:
+                capabilities:
+                    description: The capabilities allowed in the stack.
+                    returned: always
+                    type: list
+                    elements: str
+                creation_time:
+                    description: The time at which the stack was created.
+                    returned: if stack exists
+                    type: str
+                deletion_time:
+                    description: The time at which the stack was deleted.
+                    returned: if stack was deleted
+                    type: str
+                description:
+                    description: The user-defined description associated with the stack.
+                    returned: always
+                    type: str
+                disable_rollback:
+                    description: Whether or not rollback on stack creation failures is enabled.
+                    returned: always
+                    type: bool
+                drift_information:
+                    description: Information about whether a stack's actual configuration differs, or has drifted, from it's expected configuration,
+                        as defined in the stack template and any values specified as template parameters.
+                    returned: always
+                    type: dict
+                    contains:
+                        stack_drift_status:
+                            description: Status of the stack's actual configuration compared to its expected template configuration.
+                            returned: always
+                            type: str
+                        last_check_timestamp:
+                            description: Most recent time when a drift detection operation was initiated on the stack,
+                                or any of its individual resources that support drift detection.
+                            returned: if a drift was detected
+                            type: str
+                enable_termination_protection:
+                    description: Whether termination protection is enabled for the stack.
+                    returned: always
+                    type: bool
+                notification_arns:
+                    description: Amazon SNS topic ARNs to which stack related events are published.
+                    returned: always
+                    type: list
+                    elements: str
+                outputs:
+                    description: A list of output dicts.
+                    returned: always
+                    type: list
+                    elements: dict
+                    contains:
+                        output_key:
+                            description: The key associated with the output.
+                            returned: always
+                            type: str
+                        output_value:
+                            description: The value associated with the output.
+                            returned: always
+                            type: str
+                parameters:
+                    description: A list of parameter dicts.
+                    returned: always
+                    type: list
+                    elements: dict
+                    contains:
+                        parameter_key:
+                            description: The key associated with the parameter.
+                            returned: always
+                            type: str
+                        parameter_value:
+                            description: The value associated with the parameter.
+                            returned: always
+                            type: str
+                rollback_configuration:
+                    description: The rollback triggers for CloudFormation to monitor during stack creation and updating operations.
+                    returned: always
+                    type: dict
+                    contains:
+                        rollback_triggers:
+                            description: The triggers to monitor during stack creation or update actions.
+                            returned: when rollback triggers exist
+                            type: list
+                            elements: dict
+                            contains:
+                                arn:
+                                    description: The ARN of the rollback trigger.
+                                    returned: always
+                                    type: str
+                                type:
+                                    description: The resource type of the rollback trigger.
+                                    returned: always
+                                    type: str
+                stack_id:
+                    description: The unique ID of the stack.
+                    returned: always
+                    type: str
+                stack_name:
+                    description: The name of the stack.
+                    returned: always
+                    type: str
+                stack_status:
+                    description: The status of the stack.
+                    returned: always
+                    type: str
+                tags:
+                    description: A list of tags associated with the stack.
+                    returned: always
+                    type: list
+                    elements: dict
+                    contains:
+                        key:
+                            description: Key of tag.
+                            returned: always
+                            type: str
+                        value:
+                            description: Value of tag.
+                            returned: always
+                            type: str
+        stack_outputs:
+            description: Dictionary of stack outputs keyed by the value of each output 'OutputKey' parameter and corresponding value of each
+                        output 'OutputValue' parameter.
+            returned: if the stack exists
+            type: dict
+            sample: { ApplicationDatabaseName: dazvlpr01xj55a.ap-southeast-2.rds.amazonaws.com }
+        stack_parameters:
+            description: Dictionary of stack parameters keyed by the value of each parameter 'ParameterKey' parameter and corresponding value of
+                        each parameter 'ParameterValue' parameter.
+            returned: if the stack exists
+            type: dict
+            sample:
+                {
+                    DatabaseEngine: mysql,
+                    DatabasePassword: "***"
+                }
+        stack_events:
+            description: All stack events for the stack.
+            returned: only if all_facts or stack_events is true and the stack exists
+            type: list
+        stack_policy:
+            description: Describes the stack policy for the stack.
+            returned: only if all_facts or stack_policy is true and the stack exists
+            type: dict
+        stack_template:
+            description: Describes the stack template for the stack.
+            returned: only if all_facts or stack_template is true and the stack exists
+            type: dict
+        stack_resource_list:
+            description: Describes stack resources for the stack.
+            returned: only if all_facts or stack_resources is true and the stack exists
+            type: list
+        stack_resources:
+            description: Dictionary of stack resources keyed by the value of each resource 'LogicalResourceId' parameter and corresponding value of each
+                        resource 'PhysicalResourceId' parameter.
+            returned: only if all_facts or stack_resources is true and the stack exists
+            type: dict
+            sample: {
+                "AutoScalingGroup": "dev-someapp-AutoscalingGroup-1SKEXXBCAN0S7",
+                "AutoScalingSecurityGroup": "sg-abcd1234",
+                "ApplicationDatabase": "dazvlpr01xj55a"
+            }
+        stack_change_sets:
+            description: A list of stack change sets.  Each item in the list represents the details of a specific changeset.
+            returned: only if all_facts or stack_change_sets is true and the stack exists
+            type: list
+        stack_tags:
+            description: Dictionary of key value pairs of tags.
+            returned: only if all_facts or stack_resources is true and the stack exists
+            type: dict
+            sample: {
+                'TagOne': 'ValueOne',
+                'TagTwo': 'ValueTwo'
+            }
 '''
 
 import json

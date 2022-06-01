@@ -11,7 +11,7 @@ DOCUMENTATION = '''
 ---
 module: ec2_key
 version_added: 1.0.0
-short_description: create or delete an ec2 key pair
+short_description: Create or delete an ec2 key pair
 description:
     - create or delete an ec2 key pair.
 options:

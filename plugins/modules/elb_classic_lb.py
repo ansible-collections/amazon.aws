@@ -14,7 +14,7 @@ description:
   - Creates, updates or destroys an Amazon Elastic Load Balancer (ELB).
   - This module was renamed from C(amazon.aws.ec2_elb_lb) to M(amazon.aws.elb_classic_lb) in version
     2.1.0 of the amazon.aws collection.
-short_description: creates, updates or destroys an Amazon ELB.
+short_description: Creates, updates or destroys an Amazon ELB
 author:
   - "Jim Dalton (@jsdalton)"
   - "Mark Chappell (@tremble)"

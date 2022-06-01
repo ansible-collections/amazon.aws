@@ -75,12 +75,12 @@ internet_gateways:
     type: complex
     contains:
         attachments:
-            description: Any VPCs attached to the internet gateway
+            description: Any VPCs attached to the internet gateway.
             returned: I(state=present)
             type: complex
             contains:
                 state:
-                    description: The current state of the attachment
+                    description: The current state of the attachment.
                     returned: I(state=present)
                     type: str
                     sample: available
@@ -90,12 +90,12 @@ internet_gateways:
                     type: str
                     sample: vpc-02123b67
         internet_gateway_id:
-            description: The ID of the internet gateway
+            description: The ID of the internet gateway.
             returned: I(state=present)
             type: str
             sample: igw-2123634d
         tags:
-            description: Any tags assigned to the internet gateway
+            description: Any tags assigned to the internet gateway.
             returned: I(state=present)
             type: dict
             sample:
