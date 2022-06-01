@@ -39,17 +39,6 @@ options:
       - The AWS account number for cross account peering.
     required: false
     type: str
-  tags:
-    description:
-      - Dictionary of tags to look for and apply when creating a Peering Connection.
-    required: false
-    type: dict
-  purge_tags:
-    description:
-      - Remove tags not listed in I(tags).
-    type: bool
-    default: true
-    version_added: 2.0.0
   state:
     description:
       - Create, delete, accept, reject a peering connection.
@@ -63,10 +52,14 @@ options:
     required: false
     default: false
     type: bool
-author: Mike Mochan (@mmochan)
+notes:
+  - Support for I(purge_tags) was added in release 2.0.0.
+author:
+  - Mike Mochan (@mmochan)
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = '''
@@ -547,7 +540,7 @@ def main():
         peer_region=dict(),
         peering_id=dict(),
         peer_owner_id=dict(),
-        tags=dict(required=False, type='dict'),
+        tags=dict(required=False, type='dict', aliases=['resource_tags']),
         purge_tags=dict(default=True, type='bool'),
         state=dict(default='present', choices=['present', 'absent', 'accept', 'reject']),
         wait=dict(default=False, type='bool'),
