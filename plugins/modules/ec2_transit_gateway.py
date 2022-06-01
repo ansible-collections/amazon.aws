@@ -44,11 +44,6 @@ options:
       - Whether to enable AWS DNS support.
     default: true
     type: bool
-  purge_tags:
-    description:
-      - Whether to purge existing tags not included with tags argument.
-    default: true
-    type: bool
   state:
     description:
       - C(present) to ensure resource is created.
@@ -56,10 +51,6 @@ options:
     default: present
     choices: [ "present", "absent"]
     type: str
-  tags:
-    description:
-      - A dictionary of resource tags
-    type: dict
   transit_gateway_id:
     description:
       - The ID of the transit gateway.
@@ -80,11 +71,12 @@ options:
     default: 300
     type: int
 
-author: "Bob Boldin (@BobBoldin)"
+author:
+  - "Bob Boldin (@BobBoldin)"
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = '''
@@ -226,15 +218,11 @@ except ImportError:
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from time import sleep, time
-from ansible.module_utils._text import to_text
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (
-    ansible_dict_to_boto3_tag_list,
-    ansible_dict_to_boto3_filter_list,
-    AWSRetry,
-    boto3_tag_list_to_ansible_dict,
-    camel_dict_to_snake_dict,
-    compare_aws_tags
-)
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 
 
 class AnsibleEc2Tgw(object):
@@ -412,57 +400,6 @@ class AnsibleEc2Tgw(object):
 
         return result
 
-    def ensure_tags(self, tgw_id, tags, purge_tags):
-        """
-        Ensures tags are applied to the transit gateway.  Optionally will remove any
-        existing tags not in the tags argument if purge_tags is set to true
-
-        :param tgw_id:  The AWS id of the transit gateway
-        :param tags:  list of tags to  apply to the  transit gateway.
-        :param purge_tags:  when true existing tags not in tags parms are removed
-        :return:  true if tags were updated
-        """
-        tags_changed = False
-        filters = ansible_dict_to_boto3_filter_list({'resource-id': tgw_id})
-        try:
-            cur_tags = self._connection.describe_tags(Filters=filters)
-        except (ClientError, BotoCoreError) as e:
-            self._module.fail_json_aws(e, msg="Couldn't describe tags")
-
-        to_update, to_delete = compare_aws_tags(boto3_tag_list_to_ansible_dict(cur_tags.get('Tags')), tags, purge_tags)
-
-        if to_update:
-            try:
-                if not self._check_mode:
-                    AWSRetry.exponential_backoff()(self._connection.create_tags)(
-                        Resources=[tgw_id],
-                        Tags=ansible_dict_to_boto3_tag_list(to_update)
-                    )
-                self._results['changed'] = True
-                tags_changed = True
-            except (ClientError, BotoCoreError) as e:
-                self._module.fail_json_aws(e, msg="Couldn't create tags {0} for resource {1}".format(
-                    ansible_dict_to_boto3_tag_list(to_update), tgw_id))
-
-        if to_delete:
-            try:
-                if not self._check_mode:
-                    tags_list = []
-                    for key in to_delete:
-                        tags_list.append({'Key': key})
-
-                    AWSRetry.exponential_backoff()(self._connection.delete_tags)(
-                        Resources=[tgw_id],
-                        Tags=tags_list
-                    )
-                self._results['changed'] = True
-                tags_changed = True
-            except (ClientError, BotoCoreError) as e:
-                self._module.fail_json_aws(e, msg="Couldn't delete tags {0} for resource {1}".format(
-                    ansible_dict_to_boto3_tag_list(to_delete), tgw_id))
-
-        return tags_changed
-
     def ensure_tgw_present(self, tgw_id=None, description=None):
         """
         Will create a tgw if no match to the tgw_id or description are found
@@ -488,10 +425,11 @@ class AnsibleEc2Tgw(object):
             except (BotoCoreError, ClientError) as e:
                 self._module.fail_json_aws(e, msg='Unable to create Transit Gateway')
 
-        if self._module.params.get('tags') != tgw.get('tags'):
-            stringed_tags_dict = dict((to_text(k), to_text(v)) for k, v in self._module.params.get('tags').items())
-            if self.ensure_tags(tgw['transit_gateway_id'], stringed_tags_dict, self._module.params.get('purge_tags')):
-                self._results['changed'] = True
+        self._results['changed'] |= ensure_ec2_tags(
+            self._connection, self._module, tgw['transit_gateway_id'],
+            tags=self._module.params.get('tags'),
+            purge_tags=self._module.params.get('purge_tags'),
+        )
 
         self._results['transit_gateway'] = self.get_matching_tgw(tgw_id=tgw['transit_gateway_id'])
 
@@ -539,7 +477,7 @@ def setup_module_object():
         dns_support=dict(type='bool', default='yes'),
         purge_tags=dict(type='bool', default='yes'),
         state=dict(default='present', choices=['present', 'absent']),
-        tags=dict(default=dict(), type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
         transit_gateway_id=dict(type='str'),
         vpn_ecmp_support=dict(type='bool', default='yes'),
         wait=dict(type='bool', default='yes'),
