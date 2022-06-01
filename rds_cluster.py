@@ -15,8 +15,9 @@ short_description: rds_cluster module
 description:
     - Create, modify, and delete RDS clusters.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+    - amazon.aws.aws
+    - amazon.aws.ec2
+    - amazon.aws.tags
 author:
     - Sloane Hertel (@s-hertel)
     - Alina Buzachis (@alinabuzachis)
@@ -45,12 +46,6 @@ options:
         description:
           - Whether or not to disable Cloudwatch logs enabled for the DB cluster that are not provided in I(enable_cloudwatch_logs_exports).
             Set I(enable_cloudwatch_logs_exports) to an empty list to disable all.
-        type: bool
-        default: true
-    purge_tags:
-        description:
-          - Whether or not to remove tags assigned to the DB cluster if not specified in the playbook. To remove all tags
-            set I(tags) to an empty dictionary in conjunction with this.
         type: bool
         default: true
     purge_security_groups:
@@ -322,10 +317,6 @@ options:
         description:
           - Whether the DB cluster is encrypted.
         type: bool
-    tags:
-        description:
-          - A dictionary of key value pairs to assign the DB cluster.
-        type: dict
     use_earliest_time_on_point_in_time_unavailable:
         description:
           - If I(backtrack_to) is set to a timestamp earlier than the earliest backtrack time, this value backtracks the DB cluster to
@@ -951,7 +942,7 @@ def main():
         source_engine_version=dict(),
         source_region=dict(),
         storage_encrypted=dict(type='bool'),
-        tags=dict(type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
         use_earliest_time_on_point_in_time_unavailable=dict(type='bool'),
         use_latest_restorable_time=dict(type='bool'),
         vpc_security_group_ids=dict(type='list', elements='str'),

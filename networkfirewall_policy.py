@@ -124,22 +124,6 @@ options:
     required: false
     default: True
     aliases: ['purge_custom_stateless_actions']
-  tags:
-    description:
-      - A dictionary representing the tags associated with the policy.
-      - 'For example C({"Example Tag": "some example value"})'
-      - Unless I(purge_tags=False) all other tags will be removed from the
-        policy.
-    type: dict
-    required: false
-  purge_tags:
-    description:
-      - If I(purge_tags=true) and I(tags) is defined existing tags will be
-        purged from the resource to match exactly what is defined by the
-        I(tags) parameter.
-    type: bool
-    required: false
-    default: True
   wait:
     description:
       - Whether to wait for the firewall policy to reach the
@@ -156,10 +140,12 @@ options:
     required: false
 
 
-author: Mark Chappell (@tremble)
+author:
+  - Mark Chappell (@tremble)
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = '''
@@ -371,7 +357,7 @@ def main():
         arn=dict(type='str', required=False),
         state=dict(type='str', required=False, default='present', choices=['present', 'absent']),
         description=dict(type='str', required=False),
-        tags=dict(type='dict', required=False),
+        tags=dict(type='dict', required=False, aliases=['resource_tags']),
         purge_tags=dict(type='bool', required=False, default=True),
         stateful_rule_groups=dict(type='list', elements='str', required=False, aliases=['stateful_groups']),
         stateless_rule_groups=dict(type='list', elements='str', required=False, aliases=['stateless_groups']),

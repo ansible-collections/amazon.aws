@@ -81,22 +81,6 @@ options:
         for the life of a flow to send traffic to.
     type: bool
     required: false
-  tags:
-    description:
-      - A dictionary representing the tags associated with the Transit Gateway
-        attachment.
-      - 'For example C({"Example Tag": "some example value"})'
-      - Unless I(purge_tags=False) all other tags will be removed from the
-        attachment.
-    type: dict
-    required: false
-  purge_tags:
-    description:
-      - If I(purge_tags=true), existing tags will be purged from the resource
-        to match exactly what is defined by I(tags) parameter.
-    type: bool
-    required: false
-    default: true
   wait:
     description:
       - Whether to wait for the Transit Gateway attachment to reach the
@@ -111,10 +95,12 @@ options:
       - Defaults to 600 seconds.
     type: int
     required: false
-author: "Mark Chappell (@tremble)"
+author:
+  - "Mark Chappell (@tremble)"
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = '''
@@ -246,7 +232,7 @@ def main():
         name=dict(type='str', required=False),
         subnets=dict(type='list', elements='str', required=False),
         purge_subnets=dict(type='bool', required=False, default=True),
-        tags=dict(type='dict', required=False),
+        tags=dict(type='dict', required=False, aliases=['resource_tags']),
         purge_tags=dict(type='bool', required=False, default=True),
         appliance_mode_support=dict(type='bool', required=False),
         dns_support=dict(type='bool', required=False),

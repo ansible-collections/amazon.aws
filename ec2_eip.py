@@ -14,8 +14,8 @@ module: ec2_eip
 version_added: 1.0.0
 short_description: manages EC2 elastic IP (EIP) addresses.
 description:
-    - This module can allocate or release an EIP.
-    - This module can associate/disassociate an EIP with instances or network interfaces.
+  - This module can allocate or release an EIP.
+  - This module can associate/disassociate an EIP with instances or network interfaces.
 options:
   device_id:
     description:
@@ -64,16 +64,6 @@ options:
          network interface or instance to be re-associated with the specified instance or interface.
     default: false
     type: bool
-  tags:
-    description: A dictionary of tags to apply to the EIP.
-    type: dict
-    version_added: 2.1.0
-  purge_tags:
-    description: Whether the I(tags) argument should cause tags not in the
-      dictionary to be removed.
-    default: True
-    type: bool
-    version_added: 2.1.0
   tag_name:
     description:
       - When I(reuse_existing_ip_allowed=true), supplement with this option to only reuse
@@ -89,18 +79,21 @@ options:
         only applies to newly allocated Elastic IPs, isn't validated when I(reuse_existing_ip_allowed=true).
     type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 
-author: "Rick Mendes (@rickmendes) <rmendes@illumina.com>"
+author:
+  - "Rick Mendes (@rickmendes) <rmendes@illumina.com>"
 notes:
-   - There may be a delay between the time the EIP is assigned and when
-     the cloud instance is reachable via the new address. Use wait_for and
-     pause to delay further playbook execution until the instance is reachable,
-     if necessary.
-   - This module returns multiple changed statuses on disassociation or release.
-     It returns an overall status based on any changes occurring. It also returns
-     individual changed statuses for disassociation and release.
+  - There may be a delay between the time the EIP is assigned and when
+    the cloud instance is reachable via the new address. Use wait_for and
+    pause to delay further playbook execution until the instance is reachable,
+    if necessary.
+  - This module returns multiple changed statuses on disassociation or release.
+    It returns an overall status based on any changes occurring. It also returns
+    individual changed statuses for disassociation and release.
+  - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
 '''
 
 EXAMPLES = '''
@@ -543,7 +536,7 @@ def main():
         release_on_disassociation=dict(required=False, type='bool', default=False),
         allow_reassociation=dict(type='bool', default=False),
         private_ip_address=dict(),
-        tags=dict(required=False, type='dict'),
+        tags=dict(required=False, type='dict', aliases=['resource_tags']),
         purge_tags=dict(required=False, type='bool', default=True),
         tag_name=dict(),
         tag_value=dict(),

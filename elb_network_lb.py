@@ -13,9 +13,10 @@ module: elb_network_lb
 version_added: 1.0.0
 short_description: Manage a Network Load Balancer
 description:
-    - Manage an AWS Network Elastic Load Balancer. See
-      U(https://aws.amazon.com/blogs/aws/new-network-load-balancer-effortless-scaling-to-millions-of-requests-per-second/) for details.
-author: "Rob White (@wimnat)"
+  - Manage an AWS Network Elastic Load Balancer. See
+    U(https://aws.amazon.com/blogs/aws/new-network-load-balancer-effortless-scaling-to-millions-of-requests-per-second/) for details.
+author:
+  - "Rob White (@wimnat)"
 options:
   cross_zone_load_balancing:
     description:
@@ -77,12 +78,6 @@ options:
       - If the I(listeners) parameter is not set then listeners will not be modified.
     default: true
     type: bool
-  purge_tags:
-    description:
-      - If I(purge_tags=true), existing tags will be purged from the resource to match exactly what is defined by I(tags) parameter.
-      - If the I(tags) parameter is not set then tags will not be modified.
-    default: true
-    type: bool
   subnet_mappings:
     description:
       - A list of dicts containing the IDs of the subnets to attach to the load balancer. You can also specify the allocation ID of an Elastic IP
@@ -112,10 +107,6 @@ options:
     choices: [ 'present', 'absent' ]
     type: str
     default: 'present'
-  tags:
-    description:
-      - A dictionary of one or more tags to assign to the load balancer.
-    type: dict
   wait:
     description:
       - Whether or not to wait for the network load balancer to reach the desired state.
@@ -130,9 +121,9 @@ options:
     choices: [ 'ipv4', 'dualstack' ]
     type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 notes:
   - Listeners are matched based on port. If a listener's port is changed then a new listener will be created.
   - Listener rules are matched based on priority. If a rule's priority is changed then a new rule will be created.
@@ -448,7 +439,7 @@ def main():
             subnet_mappings=dict(type='list', elements='dict'),
             scheme=dict(default='internet-facing', choices=['internet-facing', 'internal']),
             state=dict(choices=['present', 'absent'], type='str', default='present'),
-            tags=dict(type='dict'),
+            tags=dict(type='dict', aliases=['resource_tags']),
             wait_timeout=dict(type='int'),
             wait=dict(type='bool'),
             ip_address_type=dict(type='str', choices=['ipv4', 'dualstack'])

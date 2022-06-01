@@ -11,14 +11,11 @@ DOCUMENTATION = '''
 ---
 module: aws_step_functions_state_machine
 version_added: 1.0.0
-
 short_description: Manage AWS Step Functions state machines
-
-
 description:
-    - Create, update and delete state machines in AWS Step Functions.
-    - Calling the module in C(state=present) for an existing AWS Step Functions state machine
-      will attempt to update the state machine definition, IAM Role, or tags with the provided data.
+  - Create, update and delete state machines in AWS Step Functions.
+  - Calling the module in C(state=present) for an existing AWS Step Functions state machine
+    will attempt to update the state machine definition, IAM Role, or tags with the provided data.
 
 options:
     name:
@@ -44,24 +41,13 @@ options:
         default: present
         choices: [ present, absent ]
         type: str
-    tags:
-        description:
-            - A hash/dictionary of tags to add to the new state machine or to add/remove from an existing one.
-        type: dict
-    purge_tags:
-        description:
-            - If yes, existing tags will be purged from the resource to match exactly what is defined by I(tags) parameter.
-              If the I(tags) parameter is not set then tags will not be modified.
-        default: yes
-        type: bool
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 author:
-    - Tom De Keyser (@tdekeyser)
+  - Tom De Keyser (@tdekeyser)
 '''
 
 EXAMPLES = '''
@@ -210,7 +196,7 @@ def main():
         definition=dict(type='json'),
         role_arn=dict(type='str'),
         state=dict(choices=['present', 'absent'], default='present'),
-        tags=dict(default=None, type='dict'),
+        tags=dict(default=None, type='dict', aliases=['resource_tags']),
         purge_tags=dict(default=True, type='bool'),
     )
     module = AnsibleAWSModule(

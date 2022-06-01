@@ -8,7 +8,7 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 module: rds_option_group
-short_description: rds_option_group module
+short_description: Manages the creation, modification, deletion of RDS option groups
 version_added: 2.1.0
 description:
   - Manages the creation, modification, deletion of RDS option groups.
@@ -118,23 +118,14 @@ options:
             required: false
             type: list
             elements: str
-  tags:
-    description:
-      - A dictionary of key value pairs to assign the option group.
-      - To remove all tags set I(tags={}) and I(purge_tags=true).
-    type: dict
-  purge_tags:
-    description:
-      - Remove tags not listed in I(tags).
-    type: bool
-    default: true
   wait:
     description: Whether to wait for the cluster to be available or deleted.
     type: bool
     default: True
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = r'''
@@ -644,7 +635,7 @@ def main():
         options=dict(required=False, type='list', elements='dict'),
         apply_immediately=dict(type='bool', default=False),
         state=dict(required=True, choices=['present', 'absent']),
-        tags=dict(required=False, type='dict'),
+        tags=dict(required=False, type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=True),
         wait=dict(type='bool', default=True),
     )

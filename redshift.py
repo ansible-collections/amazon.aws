@@ -167,21 +167,12 @@ options:
       - Whether the cluster should have enhanced VPC routing enabled.
     default: false
     type: bool
-  tags:
-    description:
-      - A dictionary of resource tags.
-    type: dict
-    aliases: ['resource_tags']
-    version_added: "1.3.0"
-  purge_tags:
-    description:
-      - Purge existing tags that are not found in the cluster
-    type: bool
-    default: 'yes'
-    version_added: "1.3.0"
+notes:
+  - Support for I(tags) and I(purge_tags) was added in release 1.3.0.
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = r'''

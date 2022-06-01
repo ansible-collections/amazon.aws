@@ -70,18 +70,6 @@ options:
     default: false
     type: bool
     aliases: ['purge_policy', 'purge_managed_policies']
-  tags:
-    description:
-      - Tag dict to apply to the user.
-    required: false
-    type: dict
-    version_added: 2.1.0
-  purge_tags:
-    description:
-      - Remove tags not listed in I(tags) when tags is specified.
-    default: true
-    type: bool
-    version_added: 2.1.0
   wait:
     description:
       - When I(wait=True) the module will wait for up to I(wait_timeout) seconds
@@ -95,10 +83,12 @@ options:
     default: 120
     type: int
     version_added: 2.2.0
+notes:
+  - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = r'''
@@ -552,7 +542,7 @@ def main():
         managed_policies=dict(default=[], type='list', aliases=['managed_policy'], elements='str'),
         state=dict(choices=['present', 'absent'], required=True),
         purge_policies=dict(default=False, type='bool', aliases=['purge_policy', 'purge_managed_policies']),
-        tags=dict(type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=True),
         wait=dict(type='bool', default=True),
         wait_timeout=dict(default=120, type='int'),

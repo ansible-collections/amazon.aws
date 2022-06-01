@@ -248,20 +248,6 @@ options:
             U(https://suricata.readthedocs.io/en/suricata-6.0.0/rules/intro.html).
         type: dict
         required: false
-  tags:
-    description:
-      - A dictionary representing the tags associated with the rule group.
-      - 'For example C({"Example Tag": "some example value"})'
-      - Unless I(purge_tags=False) all other tags will be removed from the rule
-        group.
-    type: dict
-    required: false
-  purge_tags:
-    description:
-      - If I(purge_tags=true), existing tags will be purged from the resource to match exactly what is defined by I(tags) parameter.
-    type: bool
-    required: false
-    default: True
   wait:
     description:
       - Whether to wait for the firewall rule group to reach the
@@ -278,10 +264,12 @@ options:
     required: false
 
 
-author: Mark Chappell (@tremble)
+author:
+  - Mark Chappell (@tremble)
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = '''
@@ -764,7 +752,7 @@ def main():
         rule_strings=dict(type='list', elements='str', required=False),
         domain_list=dict(type='dict', options=domain_list_spec, required=False),
         rule_list=dict(type='list', elements='dict', aliases=['stateful_rule_list'], options=rule_list_spec, required=False),
-        tags=dict(type='dict', required=False),
+        tags=dict(type='dict', required=False, aliases=['resource_tags']),
         purge_tags=dict(type='bool', required=False, default=True),
         wait=dict(type='bool', required=False, default=True),
         wait_timeout=dict(type='int', required=False),

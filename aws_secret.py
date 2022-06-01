@@ -10,10 +10,11 @@ DOCUMENTATION = r'''
 ---
 module: aws_secret
 version_added: 1.0.0
-short_description: Manage secrets stored in AWS Secrets Manager.
+short_description: Manage secrets stored in AWS Secrets Manager
 description:
-    - Create, update, and delete secrets stored in AWS Secrets Manager.
-author: "REY Remi (@rrey)"
+  - Create, update, and delete secrets stored in AWS Secrets Manager.
+author:
+  - "REY Remi (@rrey)"
 options:
   name:
     description:
@@ -60,19 +61,6 @@ options:
     required: false
     type: json
     version_added: 3.1.0
-  tags:
-    description:
-    - Specifies a dictionary of user-defined tags that are attached to the secret.
-    - To remove all tags set I(tags={}) and I(purge_tags=true).
-    type: dict
-  purge_tags:
-    description:
-    - If I(purge_tags=true) and I(tags) is set, existing tags will be purged from the resource
-      to match exactly what is defined by I(tags) parameter.
-    type: bool
-    required: false
-    default: true
-    version_added: 4.0.0
   rotation_lambda:
     description:
     - Specifies the ARN of the Lambda function that can rotate the secret.
@@ -83,9 +71,11 @@ options:
     default: 30
     type: int
 extends_documentation_fragment:
-- amazon.aws.ec2
-- amazon.aws.aws
-
+  - amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.tags
+notes:
+  - Support for I(purge_tags) was added in release 4.0.0.
 '''
 
 EXAMPLES = r'''
@@ -432,7 +422,7 @@ def main():
             'secret_type': dict(choices=['binary', 'string'], default="string"),
             'secret': dict(default="", no_log=True),
             'resource_policy': dict(type='json', default=None),
-            'tags': dict(type='dict', default=None),
+            'tags': dict(type='dict', default=None, aliases=['resource_tags']),
             'purge_tags': dict(type='bool', default=True),
             'rotation_lambda': dict(),
             'rotation_interval': dict(type='int', default=30),

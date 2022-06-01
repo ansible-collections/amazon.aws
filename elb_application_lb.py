@@ -24,8 +24,9 @@ module: elb_application_lb
 version_added: 1.0.0
 short_description: Manage an Application Load Balancer
 description:
-    - Manage an AWS Application Elastic Load Balancer. See U(https://aws.amazon.com/blogs/aws/new-aws-application-load-balancer/) for details.
-author: "Rob White (@wimnat)"
+  - Manage an AWS Application Elastic Load Balancer. See U(https://aws.amazon.com/blogs/aws/new-aws-application-load-balancer/) for details.
+author:
+  - "Rob White (@wimnat)"
 options:
   access_logs_enabled:
     description:
@@ -154,12 +155,6 @@ options:
       - If the I(listeners) parameter is not set then listeners will not be modified.
     default: yes
     type: bool
-  purge_tags:
-    description:
-      - If yes, existing tags will be purged from the resource to match exactly what is defined by I(tags) parameter.
-      - If the I(tags) parameter is not set then tags will not be modified.
-    default: yes
-    type: bool
   subnets:
     description:
       - A list of the IDs of the subnets to attach to the load balancer. You can specify only one subnet per Availability Zone. You must specify subnets from
@@ -186,10 +181,6 @@ options:
     default: present
     choices: [ 'present', 'absent' ]
     type: str
-  tags:
-    description:
-      - A dictionary of one or more tags to assign to the load balancer.
-    type: dict
   wait:
     description:
       - Wait for the load balancer to have a state of 'active' before completing. A status check is
@@ -217,8 +208,9 @@ options:
     type: bool
     version_added: 3.2.0
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 
 notes:
   - Listeners are matched based on port. If a listener's port is changed then a new listener will be created.
@@ -771,7 +763,7 @@ def main():
         security_groups=dict(type='list', elements='str'),
         scheme=dict(default='internet-facing', choices=['internet-facing', 'internal']),
         state=dict(choices=['present', 'absent'], default='present'),
-        tags=dict(type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
         waf_fail_open=dict(type='bool'),
         wait_timeout=dict(type='int'),
         wait=dict(default=False, type='bool'),

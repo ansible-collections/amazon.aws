@@ -14,9 +14,9 @@ short_description: Manage RDS instances
 description:
     - Create, modify, and delete RDS instances.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+    - amazon.aws.aws
+    - amazon.aws.ec2
+    - amazon.aws.tags
 author:
     - Sloane Hertel (@s-hertel)
 
@@ -44,10 +44,6 @@ options:
         default: False
     purge_cloudwatch_logs_exports:
         description: Set to False to retain any enabled cloudwatch logs that aren't specified in the task and are associated with the instance.
-        type: bool
-        default: True
-    purge_tags:
-        description: Set to False to retain any tags that aren't specified in task and are associated with the instance.
         type: bool
         default: True
     read_replica:
@@ -407,10 +403,6 @@ options:
           - gp2
           - io1
         type: str
-    tags:
-        description:
-          - A dictionary of key value pairs to assign the DB instance.
-        type: dict
     tde_credential_arn:
         description:
           - The ARN from the key store with which to associate the instance for Transparent Data Encryption. This is
@@ -1321,7 +1313,7 @@ def main():
         source_region=dict(),
         storage_encrypted=dict(type='bool'),
         storage_type=dict(choices=['standard', 'gp2', 'io1']),
-        tags=dict(type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
         tde_credential_arn=dict(aliases=['transparent_data_encryption_arn']),
         tde_credential_password=dict(no_log=True, aliases=['transparent_data_encryption_password']),
         timezone=dict(),

@@ -12,7 +12,7 @@ module: aws_glue_job
 version_added: 1.0.0
 short_description: Manage an AWS Glue job
 description:
-    - Manage an AWS Glue job. See U(https://aws.amazon.com/glue/) for details.
+  - Manage an AWS Glue job. See U(https://aws.amazon.com/glue/) for details.
 author:
   - "Rob White (@wimnat)"
   - "Vijayanand Sharma (@vijayanandsharma)"
@@ -77,13 +77,6 @@ options:
       - The number of workers of a defined workerType that are allocated when a job runs.
     type: int
     version_added: 1.5.0
-  purge_tags:
-    description:
-      - If C(true), existing tags will be purged from the resource to match exactly what is defined by I(tags) parameter.
-      - If the I(tags) parameter is not set then tags will not be modified.
-    default: true
-    type: bool
-    version_added: 2.2.0
   role:
     description:
       - The name or ARN of the IAM role associated with this job.
@@ -95,12 +88,6 @@ options:
     required: true
     choices: [ 'present', 'absent' ]
     type: str
-  tags:
-    description:
-      - A hash/dictionary of tags to be applied to the job.
-      - Remove completely or specify an empty dictionary to remove all tags.
-    type: dict
-    version_added: 2.2.0
   timeout:
     description:
       - The job timeout in minutes.
@@ -111,10 +98,12 @@ options:
     choices: [ 'Standard', 'G.1X', 'G.2X' ]
     type: str
     version_added: 1.5.0
+notes:
+  - Support for I(tags) and I(purge_tags) was added in release 2.2.0.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = r'''
@@ -463,7 +452,7 @@ def main():
             purge_tags=dict(type='bool', default=True),
             role=dict(type='str'),
             state=dict(required=True, choices=['present', 'absent'], type='str'),
-            tags=dict(type='dict'),
+            tags=dict(type='dict', aliases=['resource_tags']),
             timeout=dict(type='int'),
             worker_type=dict(choices=['Standard', 'G.1X', 'G.2X'], type='str'),
         )

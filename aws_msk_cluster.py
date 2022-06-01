@@ -10,7 +10,7 @@ __metaclass__ = type
 DOCUMENTATION = r"""
 ---
 module: aws_msk_cluster
-short_description: Manage Amazon MSK clusters.
+short_description: Manage Amazon MSK clusters
 version_added: "2.0.0"
 description:
     - Create, delete and modify Amazon MSK (Managed Streaming for Apache Kafka) clusters.
@@ -198,16 +198,10 @@ options:
         description: How many seconds to wait. Cluster creation can take up to 20-30 minutes.
         type: int
         default: 3600
-    tags:
-        description: Tag dictionary to apply to the cluster.
-        type: dict
-    purge_tags:
-        description: Remove tags not listed in I(tags) when tags is specified.
-        default: true
-        type: bool
 extends_documentation_fragment:
     - amazon.aws.aws
     - amazon.aws.ec2
+    - amazon.aws.tags
 notes:
     - All operations are time consuming, for example create takes 20-30 minutes,
       update kafka version -- more than one hour, update configuration -- 10-15 minutes;
@@ -769,7 +763,7 @@ def main():
         ),
         wait=dict(type="bool", default=False),
         wait_timeout=dict(type="int", default=3600),
-        tags=dict(type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=True),
     )
 
