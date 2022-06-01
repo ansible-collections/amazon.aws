@@ -15,7 +15,7 @@ module: rds_subnet_group
 version_added: 1.0.0
 short_description: manage RDS database subnet groups
 description:
-     - Creates, modifies, and deletes RDS database subnet groups.
+  - Creates, modifies, and deletes RDS database subnet groups.
 options:
   state:
     description:
@@ -39,24 +39,15 @@ options:
       - Required when I(state=present).
     type: list
     elements: str
-  tags:
-    description:
-      - A hash/dictionary of tags to add to the new RDS subnet group or to add/remove from an existing one.
-    type: dict
-    version_added: 3.2.0
-  purge_tags:
-    description:
-       - Whether or not to remove tags assigned to the RDS subnet group if not specified in the playbook.
-       - To remove all tags set I(tags) to an empty dictionary in conjunction with this.
-    default: True
-    type: bool
-    version_added: 3.2.0
+notes:
+  - Support for I(tags) and I(purge_tags) was added in release 3.2.0.
 author:
-    - "Scott Anderson (@tastychutney)"
-    - "Alina Buzachis (@alinabuzachis)"
+  - "Scott Anderson (@tastychutney)"
+  - "Alina Buzachis (@alinabuzachis)"
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 
 '''
 
@@ -265,7 +256,7 @@ def main():
         name=dict(required=True),
         description=dict(required=False),
         subnets=dict(required=False, type='list', elements='str'),
-        tags=dict(required=False, type='dict'),
+        tags=dict(required=False, type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=True),
     )
     required_if = [('state', 'present', ['description', 'subnets'])]
