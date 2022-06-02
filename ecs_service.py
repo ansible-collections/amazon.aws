@@ -160,6 +160,26 @@ options:
         required: false
         choices: ["EC2", "FARGATE"]
         type: str
+    capacity_provider_strategy:
+        version_added: 4.0.0
+        description:
+          - The capacity provider strategy to use with your service. You can specify a maximum of 6 providers per strategy.
+        required: false
+        type: list
+        elements: dict
+        suboptions:
+            capacity_provider:
+                description:
+                  - Name of capacity provider.
+                type: str
+            weight:
+                description:
+                  - The relative percentage of the total number of launched tasks that should use the specified provider.
+                type: int
+            base:
+                description:
+                  - How many tasks, at a minimum, should use the specified provider.
+                type: int
     platform_version:
         type: str
         description:
@@ -251,6 +271,18 @@ EXAMPLES = r'''
     placement_strategy:
       - type: binpack
         field: memory
+
+# With capacity_provider_strategy (added in version 4.0)
+- community.aws.ecs_service:
+    state: present
+    name: test-service
+    cluster: test-cluster
+    task_definition: test-task-definition
+    desired_count: 1
+    capacity_provider_strategy:
+      - capacity_provider: test-capacity-provider-1
+        weight: 1
+        base: 0
 '''
 
 RETURN = r'''
@@ -259,6 +291,24 @@ service:
     returned: when creating a service
     type: complex
     contains:
+        capacityProviderStrategy:
+            version_added: 4.0.0
+            description: The capacity provider strategy to use with your service.
+            returned: always
+            type: complex
+            contains:
+                base:
+                    description: How many tasks, at a minimum, should use the specified provider.
+                    returned: always
+                    type: int
+                capacityProvider:
+                    description: Name of capacity provider.
+                    returned: always
+                    type: str
+                weight:
+                    description: The relative percentage of the total number of launched tasks that should use the specified provider.
+                    returned: always
+                    type: int
         clusterArn:
             description: The Amazon Resource Name (ARN) of the of the cluster that hosts the service.
             returned: always
@@ -576,7 +626,7 @@ class EcsServiceManager:
                        desired_count, client_token, role, deployment_configuration,
                        placement_constraints, placement_strategy, health_check_grace_period_seconds,
                        network_configuration, service_registries, launch_type, platform_version,
-                       scheduling_strategy):
+                       scheduling_strategy, capacity_provider_strategy):
 
         params = dict(
             cluster=cluster_name,
@@ -608,7 +658,8 @@ class EcsServiceManager:
         # desired count is not required if scheduling strategy is daemon
         if desired_count is not None:
             params['desiredCount'] = desired_count
-
+        if capacity_provider_strategy:
+            params['capacityProviderStrategy'] = capacity_provider_strategy
         if scheduling_strategy:
             params['schedulingStrategy'] = scheduling_strategy
         response = self.ecs.create_service(**params)
@@ -616,7 +667,7 @@ class EcsServiceManager:
 
     def update_service(self, service_name, cluster_name, task_definition,
                        desired_count, deployment_configuration, network_configuration,
-                       health_check_grace_period_seconds, force_new_deployment):
+                       health_check_grace_period_seconds, force_new_deployment, capacity_provider_strategy):
         params = dict(
             cluster=cluster_name,
             service=service_name,
@@ -626,6 +677,8 @@ class EcsServiceManager:
             params['networkConfiguration'] = network_configuration
         if force_new_deployment:
             params['forceNewDeployment'] = force_new_deployment
+        if capacity_provider_strategy:
+            params['capacityProviderStrategy'] = capacity_provider_strategy
         if health_check_grace_period_seconds is not None:
             params['healthCheckGracePeriodSeconds'] = health_check_grace_period_seconds
         # desired count is not required if scheduling strategy is daemon
@@ -704,18 +757,33 @@ def main():
         launch_type=dict(required=False, choices=['EC2', 'FARGATE']),
         platform_version=dict(required=False, type='str'),
         service_registries=dict(required=False, type='list', default=[], elements='dict'),
-        scheduling_strategy=dict(required=False, choices=['DAEMON', 'REPLICA'])
+        scheduling_strategy=dict(required=False, choices=['DAEMON', 'REPLICA']),
+        capacity_provider_strategy=dict(
+            required=False,
+            type='list',
+            default=[],
+            elements='dict',
+            options=dict(
+                capacity_provider=dict(type='str'),
+                weight=dict(type='int'),
+                base=dict(type='int')
+            )
+        )
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               supports_check_mode=True,
                               required_if=[('state', 'present', ['task_definition']),
                                            ('launch_type', 'FARGATE', ['network_configuration'])],
-                              required_together=[['load_balancers', 'role']])
+                              required_together=[['load_balancers', 'role']],
+                              mutually_exclusive=[['launch_type', 'capacity_provider_strategy']])
 
     if module.params['state'] == 'present' and module.params['scheduling_strategy'] == 'REPLICA':
         if module.params['desired_count'] is None:
             module.fail_json(msg='state is present, scheduling_strategy is REPLICA; missing desired_count')
+
+    if len(module.params['capacity_provider_strategy']) > 6:
+        module.fail_json(msg='AWS allows a maximum of six capacity providers in the strategy.')
 
     service_mgr = EcsServiceManager(module)
     if module.params['network_configuration']:
@@ -728,6 +796,7 @@ def main():
 
     deploymentConfiguration = snake_dict_to_camel_dict(deployment_configuration)
     serviceRegistries = list(map(snake_dict_to_camel_dict, module.params['service_registries']))
+    capacityProviders = list(map(snake_dict_to_camel_dict, module.params['capacity_provider_strategy']))
 
     try:
         existing = service_mgr.describe_service(module.params['cluster'], module.params['name'])
@@ -776,7 +845,12 @@ def main():
                     if module.params['service_registries']:
                         if (existing['serviceRegistries'] or []) != serviceRegistries:
                             module.fail_json(msg="It is not possible to update the service registries of an existing service")
-
+                    if module.params['capacity_provider_strategy']:
+                        if 'launchType' in existing.keys():
+                            module.fail_json(msg="It is not possible to change an existing service from launch_type to capacity_provider_strategy.")
+                    if module.params['launch_type']:
+                        if 'capacityProviderStrategy' in existing.keys():
+                            module.fail_json(msg="It is not possible to change an existing service from capacity_provider_strategy to launch_type.")
                     if (existing['loadBalancers'] or []) != loadBalancers:
                         module.fail_json(msg="It is not possible to update the load balancers of an existing service")
 
@@ -788,7 +862,9 @@ def main():
                                                           deploymentConfiguration,
                                                           network_configuration,
                                                           module.params['health_check_grace_period_seconds'],
-                                                          module.params['force_new_deployment'])
+                                                          module.params['force_new_deployment'],
+                                                          capacityProviders
+                                                          )
 
                 else:
                     try:
@@ -807,7 +883,8 @@ def main():
                                                               serviceRegistries,
                                                               module.params['launch_type'],
                                                               module.params['platform_version'],
-                                                              module.params['scheduling_strategy']
+                                                              module.params['scheduling_strategy'],
+                                                              capacityProviders
                                                               )
                     except botocore.exceptions.ClientError as e:
                         module.fail_json_aws(e, msg="Couldn't create service")
