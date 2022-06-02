@@ -15,7 +15,8 @@ description:
   - Create or delete AWS Dynamo DB tables.
   - Can update the provisioned throughput on existing tables.
   - Returns the status of the specified table.
-author: Alan Loi (@loia)
+author:
+  - Alan Loi (@loia)
 options:
   state:
     description:
@@ -128,16 +129,6 @@ options:
     choices: ['STANDARD', 'STANDARD_INFREQUENT_ACCESS']
     type: str
     version_added: 3.1.0
-  tags:
-    description:
-      - A hash/dictionary of tags to add to the new instance or for starting/stopping instance by tag.
-      - 'For example: C({"key":"value"}) or C({"key":"value","key2":"value2"})'
-    type: dict
-  purge_tags:
-    description:
-      - Remove tags not listed in I(tags).
-    default: True
-    type: bool
   wait_timeout:
     description:
       - How long (in seconds) to wait for creation / update / deletion to complete.
@@ -151,9 +142,9 @@ options:
     default: True
     type: bool
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = r'''
@@ -1042,7 +1033,7 @@ def main():
         write_capacity=dict(type='int'),
         indexes=dict(default=[], type='list', elements='dict', options=index_options),
         table_class=dict(type='str', choices=['STANDARD', 'STANDARD_INFREQUENT_ACCESS']),
-        tags=dict(type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=True),
         wait=dict(type='bool', default=True),
         wait_timeout=dict(default=300, type='int', aliases=['wait_for_active_timeout']),
