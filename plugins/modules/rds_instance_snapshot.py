@@ -14,7 +14,7 @@ module: rds_instance_snapshot
 version_added: 1.0.0
 short_description: Manage Amazon RDS instance snapshots
 description:
-     - Creates or deletes RDS snapshots.
+  - Creates or deletes RDS snapshots.
 options:
   state:
     description:
@@ -68,24 +68,15 @@ options:
       - how long before wait gives up, in seconds.
     default: 300
     type: int
-  tags:
-    description:
-      - tags dict to apply to a snapshot.
-    type: dict
-  purge_tags:
-    description:
-      - whether to remove tags not present in the I(tags) parameter.
-    default: True
-    type: bool
 author:
-    - "Will Thames (@willthames)"
-    - "Michael De La Rue (@mikedlr)"
-    - "Alina Buzachis (@alinabuzachis)"
-    - "Joseph Torcasso (@jatorcasso)"
+  - "Will Thames (@willthames)"
+  - "Michael De La Rue (@mikedlr)"
+  - "Alina Buzachis (@alinabuzachis)"
+  - "Joseph Torcasso (@jatorcasso)"
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = r'''
@@ -359,7 +350,7 @@ def main():
         source_db_snapshot_identifier=dict(aliases=['source_id', 'source_snapshot_id']),
         wait=dict(type='bool', default=False),
         wait_timeout=dict(type='int', default=300),
-        tags=dict(type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=True),
         copy_tags=dict(type='bool', default=False),
         source_region=dict(type='str'),
