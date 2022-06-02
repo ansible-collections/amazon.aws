@@ -8,7 +8,7 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 module: ec2_vpc_nacl
-short_description: create and delete Network ACLs.
+short_description: create and delete Network ACLs
 version_added: 1.0.0
 description:
   - Read the AWS documentation for Network ACLS
@@ -64,11 +64,6 @@ options:
     required: false
     type: list
     elements: list
-  tags:
-    description:
-      - Dictionary of tags to look for and apply when creating a network ACL.
-    required: false
-    type: dict
   state:
     description:
       - Creates or modifies an existing NACL
@@ -79,8 +74,11 @@ options:
     default: present
 author: Mike Mochan (@mmochan)
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
+notes:
+  - Support for I(purge_tags) was added in release 4.0.0.
 '''
 
 EXAMPLES = r'''
@@ -161,6 +159,8 @@ except ImportError:
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 
 # VPC-supported IANA protocol numbers
 # http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
@@ -171,17 +171,6 @@ PROTOCOL_NUMBERS = {'all': -1, 'icmp': 1, 'tcp': 6, 'udp': 17, 'ipv6-icmp': 58}
 def icmp_present(entry):
     if len(entry) == 6 and entry[1] in ['icmp', 'ipv6-icmp'] or entry[1] in [1, 58]:
         return True
-
-
-def load_tags(module):
-    tags = []
-    if module.params.get('tags'):
-        for name, value in module.params.get('tags').items():
-            tags.append({'Key': name, 'Value': str(value)})
-        tags.append({'Key': "Name", 'Value': module.params.get('name')})
-    else:
-        tags.append({'Key': "Name", 'Value': module.params.get('name')})
-    return tags
 
 
 def subnets_removed(nacl_id, subnets, client, module):
@@ -243,27 +232,25 @@ def nacls_changed(nacl, client, module):
 
 
 def tags_changed(nacl_id, client, module):
+    tags = module.params.get('tags')
+    name = module.params.get('name')
+    purge_tags = module.params.get('purge_tags')
     changed = False
-    tags = dict()
-    if module.params.get('tags'):
-        tags = module.params.get('tags')
-    if module.params.get('name') and not tags.get('Name'):
-        tags['Name'] = module.params['name']
-    nacl = find_acl_by_id(nacl_id, client, module)
-    if nacl['NetworkAcls']:
-        nacl_values = [t.values() for t in nacl['NetworkAcls'][0]['Tags']]
-        nacl_tags = [item for sublist in nacl_values for item in sublist]
-        tag_values = [[key, str(value)] for key, value in tags.items()]
-        tags = [item for sublist in tag_values for item in sublist]
-        if sorted(nacl_tags) == sorted(tags):
-            changed = False
-            return changed
-        else:
-            delete_tags(nacl_id, client, module)
-            create_tags(nacl_id, client, module)
-            changed = True
-            return changed
-    return changed
+
+    if name is None and tags is None:
+        return False
+
+    if module.params.get('tags') is None:
+        # Only purge tags if tags is explicitly set to {} and purge_tags is True
+        purge_tags = False
+
+    new_tags = dict()
+    if module.params.get('name') is not None:
+        new_tags['Name'] = module.params.get('name')
+    new_tags.update(module.params.get('tags') or {})
+
+    return ensure_ec2_tags(client, module, nacl_id, tags=new_tags,
+                           purge_tags=purge_tags, retry_codes=['InvalidNetworkAclID.NotFound'])
 
 
 def rules_changed(aws_rules, param_rules, Egress, nacl_id, client, module):
@@ -340,9 +327,12 @@ def setup_network_acl(client, module):
     changed = False
     nacl = describe_network_acl(client, module)
     if not nacl['NetworkAcls']:
-        nacl = create_network_acl(module.params.get('vpc_id'), client, module)
+        tags = {}
+        if module.params.get('name'):
+            tags['Name'] = module.params.get('name')
+        tags.update(module.params.get('tags') or {})
+        nacl = create_network_acl(module.params.get('vpc_id'), client, module, tags)
         nacl_id = nacl['NetworkAcl']['NetworkAclId']
-        create_tags(nacl_id, client, module)
         subnets = subnets_to_associate(nacl, client, module)
         replace_network_acl_association(nacl_id, subnets, client, module)
         construct_acl_entries(nacl, client, module)
@@ -389,12 +379,15 @@ def _create_network_acl(client, *args, **kwargs):
     return client.create_network_acl(*args, **kwargs)
 
 
-def create_network_acl(vpc_id, client, module):
+def create_network_acl(vpc_id, client, module, tags):
+    params = dict(VpcId=vpc_id)
+    if tags:
+        params['TagSpecifications'] = boto3_tag_specifications(tags, ['network-acl'])
     try:
         if module.check_mode:
             nacl = dict(NetworkAcl=dict(NetworkAclId="nacl-00000000"))
         else:
-            nacl = _create_network_acl(client, VpcId=vpc_id)
+            nacl = _create_network_acl(client, **params)
     except botocore.exceptions.ClientError as e:
         module.fail_json_aws(e)
     return nacl
@@ -409,20 +402,6 @@ def create_network_acl_entry(params, client, module):
     try:
         if not module.check_mode:
             _create_network_acl_entry(client, **params)
-    except botocore.exceptions.ClientError as e:
-        module.fail_json_aws(e)
-
-
-@AWSRetry.jittered_backoff(catch_extra_error_codes=['InvalidNetworkAclID.NotFound'])
-def _create_tags(client, *args, **kwargs):
-    return client.create_tags(*args, **kwargs)
-
-
-def create_tags(nacl_id, client, module):
-    try:
-        delete_tags(nacl_id, client, module)
-        if not module.check_mode:
-            _create_tags(client, Resources=[nacl_id], Tags=load_tags(module))
     except botocore.exceptions.ClientError as e:
         module.fail_json_aws(e)
 
@@ -449,19 +428,6 @@ def delete_network_acl_entry(params, client, module):
     try:
         if not module.check_mode:
             _delete_network_acl_entry(client, **params)
-    except botocore.exceptions.ClientError as e:
-        module.fail_json_aws(e)
-
-
-@AWSRetry.jittered_backoff(catch_extra_error_codes=['InvalidNetworkAclID.NotFound'])
-def _delete_tags(client, *args, **kwargs):
-    return client.delete_tags(*args, **kwargs)
-
-
-def delete_tags(nacl_id, client, module):
-    try:
-        if not module.check_mode:
-            _delete_tags(client, Resources=[nacl_id])
     except botocore.exceptions.ClientError as e:
         module.fail_json_aws(e)
 
@@ -614,7 +580,8 @@ def main():
         name=dict(),
         nacl_id=dict(),
         subnets=dict(required=False, type='list', default=list(), elements='str'),
-        tags=dict(required=False, type='dict'),
+        tags=dict(required=False, type='dict', aliases=['resource_tags']),
+        purge_tags=dict(required=False, type='bool', default=True),
         ingress=dict(required=False, type='list', default=list(), elements='list'),
         egress=dict(required=False, type='list', default=list(), elements='list'),
         state=dict(default='present', choices=['present', 'absent']),

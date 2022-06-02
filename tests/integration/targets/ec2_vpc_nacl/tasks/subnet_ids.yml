@@ -3,7 +3,7 @@
 - name: create ingress and egress rules using subnet IDs
   ec2_vpc_nacl:
     vpc_id: "{{ vpc_id }}"
-    name: "{{ resource_prefix }}-acl"
+    name: "{{ nacl_name }}"
     subnets: "{{ subnet_ids }}"
     tags:
       Created_by: "Ansible test {{ resource_prefix }}"
@@ -40,14 +40,14 @@
       - nacl_facts.nacls[0].subnets | sort == subnet_ids | sort
       - nacl_facts.nacls[0].ingress | length == 3
       - nacl_facts.nacls[0].egress | length == 1
-      - "'{{ nacl_facts.nacls[0].tags.Name }}' == '{{ resource_prefix }}-acl'"
+      - nacl_facts.nacls[0].tags.Name == nacl_name
 
 # ============================================================
 
 - name: test idempotence
   ec2_vpc_nacl:
     vpc_id: "{{ vpc_id }}"
-    name: "{{ resource_prefix }}-acl"
+    name: "{{ nacl_name }}"
     subnets: "{{ subnet_ids }}"
     tags:
       Created_by: "Ansible test {{ resource_prefix }}"
@@ -83,7 +83,7 @@
 - name: remove a subnet from the network ACL
   ec2_vpc_nacl:
     vpc_id: "{{ vpc_id }}"
-    name: "{{ resource_prefix }}-acl"
+    name: "{{ nacl_name }}"
     subnets:
       - "{{ subnet_ids[0] }}"
       - "{{ subnet_ids[1] }}"
@@ -121,20 +121,16 @@
       - subnet_ids[3] not in nacl_facts.nacls[0].subnets
       - nacl_facts.nacls[0].ingress | length == 3
       - nacl_facts.nacls[0].egress | length == 1
-      - "'{{ nacl_facts.nacls[0].tags.Name }}' == '{{ resource_prefix }}-acl'"
+      - nacl_facts.nacls[0].tags.Name == nacl_name
 
 # ============================================================
 
 - name: remove the network ACL
   ec2_vpc_nacl:
     vpc_id: "{{ vpc_id }}"
-    name: "{{ resource_prefix }}-acl"
+    name: "{{ nacl_name }}"
     state: absent
   register: nacl
-  until: nacl is success
-  ignore_errors: yes
-  retries: 5
-  delay: 5
 
 - name: assert nacl was removed
   assert:
@@ -144,14 +140,9 @@
 - name: re-remove the network ACL by name (test idempotency)
   ec2_vpc_nacl:
     vpc_id: "{{ vpc_id }}"
-    name: "{{ resource_prefix }}-acl"
+    name: "{{ nacl_name }}"
     state: absent
   register: nacl
-  until: nacl is success
-  ignore_errors: yes
-  retries: 5
-  delay: 5
-
 - name: assert nacl was removed
   assert:
     that:
@@ -163,10 +154,6 @@
     nacl_id: "{{ nacl_id }}"
     state: absent
   register: nacl
-  until: nacl is success
-  ignore_errors: yes
-  retries: 5
-  delay: 5
 
 - name: assert nacl was removed
   assert:

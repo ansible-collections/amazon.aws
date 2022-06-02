@@ -1,117 +1,445 @@
-# ============================================================
+- vars:
+    first_tags:
+      'Key with Spaces': Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+    second_tags:
+      'New Key with Spaces': Value with spaces
+      NewCamelCaseKey: CamelCaseValue
+      newPascalCaseKey: pascalCaseValue
+      new_snake_case_key: snake_case_value
+    third_tags:
+      'Key with Spaces': Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+      'New Key with Spaces': Updated Value with spaces
+    final_tags:
+      'Key with Spaces': Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+      'New Key with Spaces': Updated Value with spaces
+      NewCamelCaseKey: CamelCaseValue
+      newPascalCaseKey: pascalCaseValue
+      new_snake_case_key: snake_case_value
+    name_tags:
+      Name: '{{ nacl_name }}'
+  block:
 
-- name: create a network ACL using subnet IDs
-  ec2_vpc_nacl:
-    vpc_id: "{{ vpc_id }}"
-    name: "{{ resource_prefix }}-acl"
-    subnets: "{{ subnet_ids }}"
-    state: 'present'
-  register: nacl
+  # ============================================================
 
-- name: assert the network acl was created
-  assert:
-    that:
-      - nacl.changed
-      - nacl.nacl_id.startswith('acl-')
+  - name: create a network ACL using subnet IDs
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      state: 'present'
+    register: nacl
 
-- name: get network ACL facts
-  ec2_vpc_nacl_info:
-    nacl_ids:
-      - "{{ nacl.nacl_id }}"
-  register: nacl_facts
+  - name: assert the network acl was created
+    assert:
+      that:
+        - nacl.changed
+        - nacl.nacl_id.startswith('acl-')
 
-- name: assert the nacl has the correct attributes
-  assert:
-    that:
-      - nacl_facts.nacls[0].tags | length == 1
-      - "'{{ nacl_facts.nacls[0].tags.Name }}' == '{{ resource_prefix }}-acl'"
+  - name: Store NACL ID
+    set_fact:
+      nacl_id: '{{ nacl.nacl_id }}'
 
-# ============================================================
+  - name: get network ACL facts
+    ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl_id }}"
+    register: nacl_info
 
-- name: add a tag
-  ec2_vpc_nacl:
-    vpc_id: "{{ vpc_id }}"
-    name: "{{ resource_prefix }}-acl"
-    subnets: "{{ subnet_ids }}"
-    tags:
-      Created_by: "Ansible test {{ resource_prefix }}"
-    state: 'present'
-  register: nacl
+  - name: assert the nacl has the correct attributes
+    assert:
+      that:
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == name_tags
 
-- name: assert the network acl changed
-  assert:
-    that:
-      - nacl.changed
+  # ============================================================
 
-- name: get network ACL facts
-  ec2_vpc_nacl_info:
-    nacl_ids:
-      - "{{ nacl.nacl_id }}"
-  register: nacl_facts
+  - name: (check) add tags
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ first_tags }}"
+      state: 'present'
+    register: nacl
+    check_mode: True
 
-- name: assert the facts are the same as before
-  assert:
-    that:
-      - nacl_facts.nacls[0].tags | length == 2
-      - "'{{ nacl_facts.nacls[0].tags.Name }}' == '{{ resource_prefix }}-acl'"
-      - "'{{ nacl_facts.nacls[0].tags.Created_by }}' == 'Ansible test {{ resource_prefix }}'"
+  - name: assert would change
+    assert:
+      that:
+        - nacl is changed
+        - nacl.nacl_id == nacl_id
 
-- name: get network ACL facts by filter
-  ec2_vpc_nacl_info:
-    filters:
-      "tag:Created_by": "Ansible test {{ resource_prefix }}"
-  register: nacl_facts
+  - name: add tags
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ first_tags }}"
+      state: 'present'
+    register: nacl
+  - name: get network ACL facts
+    ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl.nacl_id }}"
+    register: nacl_info
 
-- name: assert the facts are the same as before
-  assert:
-    that:
-      - nacl_facts.nacls | length == 1
-      - nacl_facts.nacls[0].tags | length == 2
-      - "'{{ nacl_facts.nacls[0].tags.Name }}' == '{{ resource_prefix }}-acl'"
-      - "'{{ nacl_facts.nacls[0].tags.Created_by }}' == 'Ansible test {{ resource_prefix }}'"
+  - name: verify the tags were added
+    assert:
+      that:
+        - nacl is changed
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == ( first_tags | combine(name_tags) )
 
-# ============================================================
+  - name: (check) add tags - IDEMPOTENCY
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ first_tags }}"
+      state: 'present'
+    register: nacl
+    check_mode: True
 
-- name: remove a tag
-  ec2_vpc_nacl:
-    vpc_id: "{{ vpc_id }}"
-    name: "{{ resource_prefix }}-acl"
-    subnets: "{{ subnet_ids }}"
-    state: 'present'
-  register: nacl
+  - name: assert would not change
+    assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
 
-- name: assert the network acl was created
-  assert:
-    that:
-      - nacl.changed
-      - nacl.nacl_id.startswith('acl-')
+  - name: add tags - IDEMPOTENCY
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ first_tags }}"
+      state: 'present'
+    register: nacl
+  - name: get network ACL facts
+    ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl.nacl_id }}"
+    register: nacl_info
 
-- name: get network ACL facts
-  ec2_vpc_nacl_info:
-    nacl_ids:
-      - "{{ nacl.nacl_id }}"
-  register: nacl_facts
+  - name: verify no change
+    assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == ( first_tags | combine(name_tags) )
 
-- name: assert the nacl has the correct attributes
-  assert:
-    that:
-      - nacl_facts.nacls[0].tags | length == 1
-      - "'{{ nacl_facts.nacls[0].tags.Name }}' == '{{ resource_prefix }}-acl'"
+  # ============================================================
 
-# ============================================================
+  - name: get network ACL facts by filter
+    ec2_vpc_nacl_info:
+      filters:
+        "tag:Name": "{{ nacl_name }}"
+    register: nacl_info
 
-- name: remove the network ACL
-  ec2_vpc_nacl:
-    vpc_id: "{{ vpc_id }}"
-    name: "{{ resource_prefix }}-acl"
-    state: absent
-  register: nacl
-  until: nacl is success
-  ignore_errors: yes
-  retries: 5
-  delay: 5
+  - name: assert the facts are the same as before
+    assert:
+      that:
+        - nacl_info.nacls | length == 1
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
 
-- name: assert nacl was removed
-  assert:
-    that:
-      - nacl.changed
+  # ============================================================
+
+  - name: (check) modify tags with purge
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ second_tags }}"
+      state: 'present'
+    register: nacl
+    check_mode: True
+
+  - name: assert would change
+    assert:
+      that:
+        - nacl is changed
+        - nacl.nacl_id == nacl_id
+
+  - name: modify tags with purge
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ second_tags }}"
+      state: 'present'
+    register: nacl
+  - name: get network ACL facts
+    ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl.nacl_id }}"
+    register: nacl_info
+
+  - name: verify the tags were added
+    assert:
+      that:
+        - nacl is changed
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == ( second_tags | combine(name_tags) )
+
+  - name: (check) modify tags with purge - IDEMPOTENCY
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ second_tags }}"
+      state: 'present'
+    register: nacl
+    check_mode: True
+
+  - name: assert would not change
+    assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
+
+  - name: modify tags with purge - IDEMPOTENCY
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ second_tags }}"
+      state: 'present'
+    register: nacl
+  - name: get network ACL facts
+    ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl.nacl_id }}"
+    register: nacl_info
+
+  - name: verify no change
+    assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == ( second_tags | combine(name_tags) )
+
+  # ============================================================
+
+  - name: (check) modify tags without purge
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ third_tags }}"
+      state: 'present'
+      purge_tags: False
+    register: nacl
+    check_mode: True
+
+  - name: assert would change
+    assert:
+      that:
+        - nacl is changed
+        - nacl.nacl_id == nacl_id
+
+  - name: modify tags without purge
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ third_tags }}"
+      state: 'present'
+      purge_tags: False
+    register: nacl
+  - name: get network ACL facts
+    ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl.nacl_id }}"
+    register: nacl_info
+
+  - name: verify the tags were added
+    assert:
+      that:
+        - nacl is changed
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == ( final_tags | combine(name_tags) )
+
+  - name: (check) modify tags without purge - IDEMPOTENCY
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ third_tags }}"
+      state: 'present'
+      purge_tags: False
+    register: nacl
+    check_mode: True
+
+  - name: assert would not change
+    assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
+
+  - name: modify tags without purge - IDEMPOTENCY
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: "{{ third_tags }}"
+      state: 'present'
+      purge_tags: False
+    register: nacl
+  - name: get network ACL facts
+    ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl.nacl_id }}"
+    register: nacl_info
+
+  - name: verify no change
+    assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == ( final_tags | combine(name_tags) )
+
+  # ============================================================
+
+  - name: (check) No change to tags without setting tags
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      state: 'present'
+    register: nacl
+    check_mode: True
+
+  - name: assert would change
+    assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
+
+  - name: No change to tags without setting tags
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      state: 'present'
+    register: nacl
+  - name: get network ACL facts
+    ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl.nacl_id }}"
+    register: nacl_info
+
+  - name: verify the tags were added
+    assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == ( final_tags | combine(name_tags) )
+
+  # ============================================================
+
+  - name: (check) remove non name tags
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: {}
+      state: 'present'
+    register: nacl
+    check_mode: True
+
+  - name: assert would change
+    assert:
+      that:
+        - nacl is changed
+        - nacl.nacl_id == nacl_id
+
+  - name: remove non name tags
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: {}
+      state: 'present'
+    register: nacl
+  - name: get network ACL facts
+    ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl.nacl_id }}"
+    register: nacl_info
+
+  - name: verify the tags were added
+    assert:
+      that:
+        - nacl is changed
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == name_tags
+
+  - name: (check) remove non name tags - IDEMPOTENCY
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: {}
+      state: 'present'
+    register: nacl
+    check_mode: True
+
+  - name: assert would not change
+    assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
+
+  - name: remove non name tags - IDEMPOTENCY
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      subnets: "{{ subnet_ids }}"
+      tags: {}
+      state: 'present'
+    register: nacl
+  - name: get network ACL facts
+    ec2_vpc_nacl_info:
+      nacl_ids:
+        - "{{ nacl.nacl_id }}"
+    register: nacl_info
+
+  - name: verify no change
+    assert:
+      that:
+        - nacl is not changed
+        - nacl.nacl_id == nacl_id
+        - nacl_info.nacls[0].nacl_id == nacl_id
+        - nacl_info.nacls[0].tags == name_tags
+
+  # ============================================================
+
+  always:
+  - name: remove the network ACL
+    ec2_vpc_nacl:
+      vpc_id: "{{ vpc_id }}"
+      name: "{{ nacl_name }}"
+      state: absent
+    register: nacl
+
+  - name: assert nacl was removed
+    assert:
+      that:
+        - nacl.changed

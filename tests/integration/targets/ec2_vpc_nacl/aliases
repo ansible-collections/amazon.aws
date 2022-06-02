@@ -1,6 +1,3 @@
-# https://github.com/ansible-collections/community.aws/issues/153
-unstable
-
 cloud/aws
 
 ec2_vpc_nacl_info
