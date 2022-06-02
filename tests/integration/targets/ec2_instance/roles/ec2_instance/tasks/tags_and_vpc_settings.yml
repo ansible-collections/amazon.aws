@@ -138,11 +138,45 @@
         - check_tags.instances[0].tags.Name.startswith(resource_prefix)
         - "'{{ check_tags.instances[0].state.name }}' in  ['pending', 'running']"
 
+  - name: "Try setting purge_tags to True without specifiying tags (should NOT purge tags)"
+    ec2_instance:
+      state: present
+      name: "{{ resource_prefix }}-test-basic-vpc-create"
+      image_id: "{{ ec2_ami_id }}"
+      purge_tags: true
+      security_groups: "{{ sg.group_id }}"
+      vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+      instance_type: "{{ ec2_instance_type }}"
+    register: _purge_tags_without_tags
+
+  - name: Assert tags were not purged
+    assert:
+      that:
+        - _purge_tags_without_tags.instances[0].tags | length > 1
+
+  - name: "Purge all tags (aside from Name)"
+    ec2_instance:
+      state: present
+      name: "{{ resource_prefix }}-test-basic-vpc-create"
+      image_id: "{{ ec2_ami_id }}"
+      purge_tags: true
+      tags: {}
+      security_groups: "{{ sg.group_id }}"
+      vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
+      instance_type: "{{ ec2_instance_type }}"
+    register: _purge_tags
+
+  - name: Assert tags were purged
+    assert:
+      that:
+        - _purge_tags.instances[0].tags | length == 1
+        - _purge_tags.instances[0].tags.Name.startswith(resource_prefix)
+
   - name: "Terminate instance"
     ec2_instance:
       state: absent
       filters:
-        "tag:TestId": "{{ ec2_instance_tag_TestId }}"
+        "tag:Name": "{{ resource_prefix }}-test-basic-vpc-create"
       wait: false
     register: result
   - assert:
