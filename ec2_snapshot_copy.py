@@ -11,9 +11,9 @@ DOCUMENTATION = '''
 ---
 module: ec2_snapshot_copy
 version_added: 1.0.0
-short_description: Copies an EC2 snapshot and returns the new Snapshot ID.
+short_description: Copies an EC2 snapshot and returns the new Snapshot ID
 description:
-    - Copies an EC2 Snapshot from a source region to a destination region.
+  - Copies an EC2 Snapshot from a source region to a destination region.
 options:
   source_region:
     description:
@@ -40,7 +40,7 @@ options:
     type: str
   wait:
     description:
-      - Wait for the copied Snapshot to be in 'Available' state before returning.
+      - Wait for the copied Snapshot to be in the C(Available) state before returning.
     type: bool
     default: 'no'
   wait_timeout:
@@ -50,12 +50,14 @@ options:
     type: int
   tags:
     description:
-      - A hash/dictionary of tags to add to the new Snapshot; '{"key":"value"}' and '{"key":"value","key":"value"}'
+      - A dictionary representing the tags to be applied to the newly created resource.
     type: dict
-author: Deepak Kothandan (@Deepakkothandan) <deepak.kdy@gmail.com>
+    aliases: ['resource_tags']
+author:
+  - Deepak Kothandan (@Deepakkothandan) <deepak.kdy@gmail.com>
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
@@ -112,6 +114,7 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 
 
 def copy_snapshot(module, ec2):
@@ -134,6 +137,9 @@ def copy_snapshot(module, ec2):
     if module.params.get('kms_key_id'):
         params['KmsKeyId'] = module.params.get('kms_key_id')
 
+    if module.params.get('tags'):
+        params['TagSpecifications'] = boto3_tag_specifications(module.params.get('tags'))
+
     try:
         snapshot_id = ec2.copy_snapshot(**params)['SnapshotId']
         if module.params.get('wait'):
@@ -144,11 +150,6 @@ def copy_snapshot(module, ec2):
             ec2.get_waiter('snapshot_completed').wait(
                 SnapshotIds=[snapshot_id],
                 WaiterConfig=dict(Delay=delay, MaxAttempts=max_attempts)
-            )
-        if module.params.get('tags'):
-            ec2.create_tags(
-                Resources=[snapshot_id],
-                Tags=[{'Key': k, 'Value': v} for k, v in module.params.get('tags').items()]
             )
 
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -166,7 +167,7 @@ def main():
         kms_key_id=dict(type='str', required=False),
         wait=dict(type='bool', default=False),
         wait_timeout=dict(type='int', default=600),
-        tags=dict(type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec)
