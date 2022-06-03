@@ -103,10 +103,6 @@ options:
       - Set mode to 'Active' to sample and trace incoming requests with AWS X-Ray. Turned off (set to 'PassThrough') by default.
     choices: ['Active', 'PassThrough']
     type: str
-  tags:
-    description:
-      - Tag dict to apply to the function.
-    type: dict
   kms_key_arn:
     description:
       - The KMS key ARN used to encrypt the function's environment variables.
@@ -117,6 +113,7 @@ author:
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
+- amazon.aws.tags
 
 '''
 
@@ -391,7 +388,10 @@ def sha256sum(filename):
     return hex_digest
 
 
-def set_tag(client, module, tags, function):
+def set_tag(client, module, tags, function, purge_tags):
+
+    if tags is None:
+        return False
 
     changed = False
     arn = function['Configuration']['FunctionArn']
@@ -401,7 +401,13 @@ def set_tag(client, module, tags, function):
     except (BotoCoreError, ClientError) as e:
         module.fail_json_aws(e, msg="Unable to list tags")
 
-    tags_to_add, tags_to_remove = compare_aws_tags(current_tags, tags, purge_tags=True)
+    tags_to_add, tags_to_remove = compare_aws_tags(current_tags, tags, purge_tags=purge_tags)
+
+    if not tags_to_remove and not tags_to_add:
+        return False
+
+    if module.check_mode:
+        return True
 
     try:
         if tags_to_remove:
@@ -438,6 +444,14 @@ def wait_for_lambda(client, module, name):
         module.fail_json_aws(e, msg='Failed while waiting on lambda to finish updating')
 
 
+def format_response(response):
+    tags = response.get("Tags", {})
+    result = camel_dict_to_snake_dict(response)
+    # Lambda returns a dict rather than the usual boto3 list of dicts
+    result["tags"] = tags
+    return result
+
+
 def main():
     argument_spec = dict(
         name=dict(required=True),
@@ -458,7 +472,8 @@ def main():
         dead_letter_arn=dict(),
         kms_key_arn=dict(type='str', no_log=False),
         tracing_mode=dict(choices=['Active', 'PassThrough']),
-        tags=dict(type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
+        purge_tags=dict(type='bool', default=True),
     )
 
     mutually_exclusive = [['zip_file', 's3_key'],
@@ -494,6 +509,7 @@ def main():
     dead_letter_arn = module.params.get('dead_letter_arn')
     tracing_mode = module.params.get('tracing_mode')
     tags = module.params.get('tags')
+    purge_tags = module.params.get('purge_tags')
     kms_key_arn = module.params.get('kms_key_arn')
 
     check_mode = module.check_mode
@@ -614,7 +630,7 @@ def main():
 
         # Tag Function
         if tags is not None:
-            if set_tag(client, module, tags, current_function):
+            if set_tag(client, module, tags, current_function, purge_tags):
                 changed = True
 
         # Upload new code if needed (e.g. code checksum has changed)
@@ -634,9 +650,9 @@ def main():
         response = get_current_function(client, name, qualifier=current_version)
         if not response:
             module.fail_json(msg='Unable to get function information after updating')
-
+        response = format_response(response)
         # We're done
-        module.exit_json(changed=changed, **camel_dict_to_snake_dict(response))
+        module.exit_json(changed=changed, **response)
 
     # Function doesn't exists, create new Lambda function
     elif state == 'present':
@@ -691,6 +707,10 @@ def main():
             func_kwargs.update({'VpcConfig': {'SubnetIds': vpc_subnet_ids,
                                               'SecurityGroupIds': vpc_security_group_ids}})
 
+        # Tag Function
+        if tags:
+            func_kwargs.update({'Tags': tags})
+
         # Function would have been created if not check mode
         if check_mode:
             module.exit_json(changed=True)
@@ -704,15 +724,11 @@ def main():
         except (BotoCoreError, ClientError) as e:
             module.fail_json_aws(e, msg="Trying to create function")
 
-        # Tag Function
-        if tags is not None:
-            if set_tag(client, module, tags, get_current_function(client, name)):
-                changed = True
-
         response = get_current_function(client, name, qualifier=current_version)
         if not response:
             module.fail_json(msg='Unable to get function information after creating')
-        module.exit_json(changed=changed, **camel_dict_to_snake_dict(response))
+        response = format_response(response)
+        module.exit_json(changed=changed, **response)
 
     # Delete existing Lambda function
     if state == 'absent' and current_function:

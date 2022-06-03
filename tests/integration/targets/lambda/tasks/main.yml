@@ -59,7 +59,7 @@
   - name: test with no role or handler
     lambda:
       name: ansible-testing-fake-should-not-be-created
-      runtime: python3.6
+      runtime: '{{ lambda_python_runtime }}'
     register: result
     ignore_errors: true
   - name: assert failure when called with no parameters
@@ -83,7 +83,7 @@
   - name: test state=present with security group but no vpc
     lambda:
       name: '{{ lambda_function_name }}'
-      runtime: 'python3.6'
+      runtime: '{{ lambda_python_runtime }}'
       role: '{{ lambda_role_name }}'
       zip_file: '{{ zip_res.dest }}'
       handler: '{{ omit }}'
@@ -106,8 +106,8 @@
   - name: test state=present - upload the lambda (check mode)
     lambda:
       name: '{{ lambda_function_name }}'
-      runtime: python3.6
-      handler: mini_lambda.handler
+      runtime: '{{ lambda_python_runtime }}'
+      handler: '{{ lambda_python_handler }}'
       role: '{{ lambda_role_name }}'
       zip_file: '{{ zip_res.dest }}'
     register: result
@@ -120,8 +120,8 @@
   - name: test state=present - upload the lambda
     lambda:
       name: '{{ lambda_function_name }}'
-      runtime: python3.6
-      handler: mini_lambda.handler
+      runtime: '{{ lambda_python_runtime }}'
+      handler: '{{ lambda_python_handler }}'
       role: '{{ lambda_role_name }}'
       zip_file: '{{ zip_res.dest }}'
     register: result
@@ -130,6 +130,8 @@
       that:
       - result.changed
       - result.configuration.tracing_config.mode == "PassThrough"
+
+  - include_tasks: 'tagging.yml'
 
   # Test basic operation of Uploaded lambda
   - name: test lambda works (check mode)
@@ -163,7 +165,7 @@
       name: '{{lambda_function_name}}'
       runtime: nodejs14.x
       tracing_mode: Active
-      handler: mini_lambda.handler
+      handler: '{{ lambda_python_handler }}'
       role: '{{ lambda_role_name }}'
       tags:
         CamelCase: 'ACamelCaseValue'
@@ -182,7 +184,7 @@
       name: '{{lambda_function_name}}'
       runtime: nodejs14.x
       tracing_mode: Active
-      handler: mini_lambda.handler
+      handler: '{{ lambda_python_handler }}'
       role: '{{ lambda_role_name }}'
       tags:
         CamelCase: 'ACamelCaseValue'
@@ -202,7 +204,7 @@
       name: '{{lambda_function_name}}'
       runtime: nodejs14.x
       tracing_mode: Active
-      handler: mini_lambda.handler
+      handler: '{{ lambda_python_handler }}'
       role: '{{ lambda_role_name }}'
       tags:
         CamelCase: 'ACamelCaseValue'
@@ -221,7 +223,7 @@
       name: '{{lambda_function_name}}'
       runtime: nodejs14.x
       tracing_mode: Active
-      handler: mini_lambda.handler
+      handler: '{{ lambda_python_handler }}'
       role: '{{ lambda_role_name }}'
       tags:
         CamelCase: 'ACamelCaseValue'
@@ -239,9 +241,9 @@
   - name: reset config updates for the following tests
     lambda:
       name: '{{lambda_function_name}}'
-      runtime: python3.6
+      runtime: '{{ lambda_python_runtime }}'
       tracing_mode: PassThrough
-      handler: mini_lambda.handler
+      handler: '{{ lambda_python_handler }}'
       role: '{{ lambda_role_name }}'
     register: result
   - name: assert that reset succeeded
@@ -249,7 +251,7 @@
       that:
       - result is not failed
       - result.changed == True
-      - result.configuration.runtime == 'python3.6'
+      - result.configuration.runtime == lambda_python_runtime
       - result.configuration.tracing_config.mode == 'PassThrough'
 
   # Test lambda_info
@@ -264,10 +266,10 @@
       - lambda_infos_all is not failed
       - lambda_infos_all.function | length > 0
       - lambda_infos_all.function[lambda_function_name].function_name == lambda_function_name
-      - lambda_infos_all.function[lambda_function_name].runtime == "python3.6"
+      - lambda_infos_all.function[lambda_function_name].runtime == lambda_python_runtime
       - lambda_infos_all.function[lambda_function_name].description == ""
       - lambda_infos_all.function[lambda_function_name].function_arn is defined
-      - lambda_infos_all.function[lambda_function_name].handler == "mini_lambda.handler"
+      - lambda_infos_all.function[lambda_function_name].handler == lambda_python_handler
       - lambda_infos_all.function[lambda_function_name].versions is defined
       - lambda_infos_all.function[lambda_function_name].aliases is defined
       - lambda_infos_all.function[lambda_function_name].policy is defined
@@ -284,10 +286,10 @@
       - lambda_infos_query_config is not failed
       - lambda_infos_query_config.function | length > 0
       - lambda_infos_query_config.function[lambda_function_name].function_name == lambda_function_name
-      - lambda_infos_query_config.function[lambda_function_name].runtime == "python3.6"
+      - lambda_infos_query_config.function[lambda_function_name].runtime == lambda_python_runtime
       - lambda_infos_query_config.function[lambda_function_name].description == ""
       - lambda_infos_query_config.function[lambda_function_name].function_arn is defined
-      - lambda_infos_query_config.function[lambda_function_name].handler == "mini_lambda.handler"
+      - lambda_infos_query_config.function[lambda_function_name].handler == lambda_python_handler
       - lambda_infos_query_config.function[lambda_function_name].versions is not defined
       - lambda_infos_query_config.function[lambda_function_name].aliases is not defined
       - lambda_infos_query_config.function[lambda_function_name].policy is not defined
@@ -400,10 +402,10 @@
   - name: test state=present with all nullable variables explicitly set to null
     lambda:
       name: '{{lambda_function_name}}'
-      runtime: python3.6
+      runtime: '{{ lambda_python_runtime }}'
       role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'
-      handler: mini_lambda.handler
+      handler: '{{ lambda_python_handler }}'
       description: null
       vpc_subnet_ids: null
       vpc_security_group_ids: null
@@ -419,8 +421,8 @@
   - name: test putting an environment variable changes lambda (check mode)
     lambda:
       name: '{{lambda_function_name}}'
-      runtime: python3.6
-      handler: mini_lambda.handler
+      runtime: '{{ lambda_python_runtime }}'
+      handler: '{{ lambda_python_handler }}'
       role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'
       environment_variables:
@@ -436,8 +438,8 @@
   - name: test putting an environment variable changes lambda
     lambda:
       name: '{{lambda_function_name}}'
-      runtime: python3.6
-      handler: mini_lambda.handler
+      runtime: '{{ lambda_python_runtime }}'
+      handler: '{{ lambda_python_handler }}'
       role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'
       environment_variables:
@@ -517,8 +519,8 @@
   - name: parallel lambda creation 1/4
     lambda:
       name: '{{lambda_function_name}}_1'
-      runtime: python3.6
-      handler: mini_lambda.handler
+      runtime: '{{ lambda_python_runtime }}'
+      handler: '{{ lambda_python_handler }}'
       role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'
     async: 1000
@@ -526,8 +528,8 @@
   - name: parallel lambda creation 2/4
     lambda:
       name: '{{lambda_function_name}}_2'
-      runtime: python3.6
-      handler: mini_lambda.handler
+      runtime: '{{ lambda_python_runtime }}'
+      handler: '{{ lambda_python_handler }}'
       role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'
     async: 1000
@@ -535,8 +537,8 @@
   - name: parallel lambda creation 3/4
     lambda:
       name: '{{lambda_function_name}}_3'
-      runtime: python3.6
-      handler: mini_lambda.handler
+      runtime: '{{ lambda_python_runtime }}'
+      handler: '{{ lambda_python_handler }}'
       role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'
     async: 1000
@@ -544,8 +546,8 @@
   - name: parallel lambda creation 4/4
     lambda:
       name: '{{lambda_function_name}}_4'
-      runtime: python3.6
-      handler: mini_lambda.handler
+      runtime: '{{ lambda_python_runtime }}'
+      handler: '{{ lambda_python_handler }}'
       role: '{{ lambda_role_name }}'
       zip_file: '{{zip_res.dest}}'
     register: result
