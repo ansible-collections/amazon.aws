@@ -23,7 +23,8 @@ notes:
 options:
   bgp_asn:
     description:
-      - Border Gateway Protocol (BGP) Autonomous System Number (ASN), required when I(state=present).
+      - Border Gateway Protocol (BGP) Autonomous System Number (ASN).
+      - Defaults to C(65000) if not specified when I(state=present).
     type: int
   ip_address:
     description:
