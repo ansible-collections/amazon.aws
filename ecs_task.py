@@ -10,10 +10,11 @@ DOCUMENTATION = r'''
 ---
 module: ecs_task
 version_added: 1.0.0
-short_description: Run, start or stop a task in ecs
+short_description: Run, start or stop a task in ECS
 description:
     - Creates or deletes instances of task definitions.
-author: Mark Chance (@Java1Guy)
+author:
+    - Mark Chance (@Java1Guy)
 options:
     operation:
         description:
@@ -88,9 +89,10 @@ options:
         description:
           - Tags that will be added to ecs tasks on start and run
         required: false
+        aliases: ['resource_tags']
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+    - amazon.aws.aws
+    - amazon.aws.ec2
 
 '''
 
@@ -349,7 +351,7 @@ def main():
         started_by=dict(required=False, type='str'),  # R S
         network_configuration=dict(required=False, type='dict'),
         launch_type=dict(required=False, choices=['EC2', 'FARGATE']),
-        tags=dict(required=False, type='dict')
+        tags=dict(required=False, type='dict', aliases=['resource_tags'])
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True,

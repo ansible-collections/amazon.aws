@@ -11,17 +11,16 @@ module: ec2_launch_template
 version_added: 1.0.0
 short_description: Manage EC2 launch templates
 description:
-  - Create, modify, and delete EC2 Launch Templates, which can be used to
-    create individual instances or with Autoscaling Groups.
-  - The M(amazon.aws.ec2_instance) and M(community.aws.ec2_asg) modules can, instead of specifying all
-    parameters on those tasks, be passed a Launch Template which contains
-    settings like instance size, disk type, subnet, and more.
+- Create, modify, and delete EC2 Launch Templates, which can be used to
+  create individual instances or with Autoscaling Groups.
+- The M(amazon.aws.ec2_instance) and M(community.aws.ec2_asg) modules can, instead of specifying all
+  parameters on those tasks, be passed a Launch Template which contains
+  settings like instance size, disk type, subnet, and more.
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
-
 author:
-  - Ryan Scott Brown (@ryansb)
+- Ryan Scott Brown (@ryansb)
 options:
   template_id:
     description:
@@ -320,6 +319,7 @@ options:
     - A set of key-value pairs to be applied to resources when this Launch Template is used.
     - "Tag key constraints: Tag keys are case-sensitive and accept a maximum of 127 Unicode characters. May not begin with I(aws:)"
     - "Tag value constraints: Tag values are case-sensitive and accept a maximum of 255 Unicode characters."
+    aliases: ['resource_tags']
   user_data:
     description: >
       The Base64-encoded user data to make available to the instance. For more information, see the Linux
@@ -739,7 +739,7 @@ def main():
         ram_disk_id=dict(),
         security_group_ids=dict(type='list', elements='str'),
         security_groups=dict(type='list', elements='str'),
-        tags=dict(type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
         user_data=dict(),
     )
 

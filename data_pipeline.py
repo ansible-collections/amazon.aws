@@ -16,15 +16,14 @@ author:
   - Sloane Hertel (@s-hertel) <shertel@redhat.com>
 short_description: Create and manage AWS Datapipelines
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 description:
-    - Create and manage AWS Datapipelines. Creation is not idempotent in AWS, so the C(uniqueId) is created by hashing the options (minus objects)
-      given to the datapipeline.
-    - The pipeline definition must be in the format given here
-      U(https://docs.aws.amazon.com/datapipeline/latest/APIReference/API_PutPipelineDefinition.html#API_PutPipelineDefinition_RequestSyntax).
-    - Operations will wait for a configurable amount of time to ensure the pipeline is in the requested state.
+  - Create and manage AWS Datapipelines. Creation is not idempotent in AWS, so the C(uniqueId) is created by hashing the options (minus objects)
+    given to the datapipeline.
+  - The pipeline definition must be in the format given here
+    U(https://docs.aws.amazon.com/datapipeline/latest/APIReference/API_PutPipelineDefinition.html#API_PutPipelineDefinition_RequestSyntax).
+  - Operations will wait for a configurable amount of time to ensure the pipeline is in the requested state.
 options:
   name:
     description:
@@ -121,6 +120,7 @@ options:
     description:
       - A dict of key:value pair(s) to add to the pipeline.
     type: dict
+    aliases: ['resource_tags']
 '''
 
 EXAMPLES = r'''
@@ -602,7 +602,7 @@ def main():
         timeout=dict(required=False, type='int', default=300),
         state=dict(default='present', choices=['present', 'absent',
                                                'active', 'inactive']),
-        tags=dict(required=False, type='dict', default={}),
+        tags=dict(required=False, type='dict', default={}, aliases=['resource_tags']),
         values=dict(required=False, type='list', default=[], elements='dict'),
     )
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=False)
