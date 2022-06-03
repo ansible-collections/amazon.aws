@@ -77,6 +77,7 @@ except ImportError:
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.community.aws.plugins.module_utils.wafv2 import describe_wafv2_tags
 
 
 def list_ip_sets(wafv2, scope, fail_json_aws, Nextmarker=None):
@@ -93,7 +94,7 @@ def list_ip_sets(wafv2, scope, fail_json_aws, Nextmarker=None):
         if response.get('NextMarker'):
             response['IPSets'] += list_ip_sets(wafv2, scope, fail_json_aws, Nextmarker=response.get('NextMarker')).get('IPSets')
     except (BotoCoreError, ClientError) as e:
-        fail_json_aws(e, msg="Failed to list wafv2 ip set.")
+        fail_json_aws(e, msg="Failed to list wafv2 ip set")
     return response
 
 
@@ -105,7 +106,7 @@ def get_ip_set(wafv2, name, scope, id, fail_json_aws):
             Id=id
         )
     except (BotoCoreError, ClientError) as e:
-        fail_json_aws(e, msg="Failed to get wafv2 ip set.")
+        fail_json_aws(e, msg="Failed to get wafv2 ip set")
     return response
 
 
@@ -134,13 +135,14 @@ def main():
     for item in response.get('IPSets'):
         if item.get('Name') == name:
             id = item.get('Id')
+            arn = item.get('ARN')
 
     retval = {}
     existing_set = None
     if id:
         existing_set = get_ip_set(wafv2, name, scope, id, module.fail_json_aws)
         retval = camel_dict_to_snake_dict(existing_set.get('IPSet'))
-
+        retval['tags'] = describe_wafv2_tags(wafv2, arn, module.fail_json_aws) or {}
     module.exit_json(**retval)
 
 

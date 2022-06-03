@@ -53,21 +53,19 @@ options:
           from the IP set. The entire IP set itself will stay present.
       type: list
       elements: str
-    tags:
-      description:
-        - Key value pairs to associate with the resource.
-        - Currently tags are not visible. Nor in the web ui, nor via cli and nor in boto3.
-      required: false
-      type: dict
     purge_addresses:
       description:
         - When set to C(no), keep the existing addresses in place. Will modify and add, but will not delete.
       default: yes
       type: bool
 
+notes:
+  - Support for I(purge_tags) was added in release 4.0.0.
+
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 
 '''
 
@@ -125,6 +123,8 @@ except ImportError:
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.community.aws.plugins.module_utils.wafv2 import describe_wafv2_tags
+from ansible_collections.community.aws.plugins.module_utils.wafv2 import ensure_wafv2_tags
 
 
 class IpSet:
@@ -133,15 +133,18 @@ class IpSet:
         self.name = name
         self.scope = scope
         self.fail_json_aws = fail_json_aws
-        self.existing_set, self.id, self.locktoken = self.get_set()
+        self.existing_set, self.id, self.locktoken, self.arn = self.get_set()
 
     def description(self):
         return self.existing_set.get('Description')
 
+    def _format_set(self, ip_set):
+        if ip_set is None:
+            return None
+        return camel_dict_to_snake_dict(self.existing_set, ignore_list=['tags'])
+
     def get(self):
-        if self.existing_set:
-            return camel_dict_to_snake_dict(self.existing_set)
-        return None
+        return self._format_set(self.existing_set)
 
     def remove(self):
         try:
@@ -174,8 +177,8 @@ class IpSet:
         except (BotoCoreError, ClientError) as e:
             self.fail_json_aws(e, msg="Failed to create wafv2 ip set.")
 
-        self.existing_set, self.id, self.locktoken = self.get_set()
-        return camel_dict_to_snake_dict(self.existing_set)
+        self.existing_set, self.id, self.locktoken, self.arn = self.get_set()
+        return self._format_set(self.existing_set)
 
     def update(self, description, addresses):
         req_obj = {
@@ -194,13 +197,14 @@ class IpSet:
         except (BotoCoreError, ClientError) as e:
             self.fail_json_aws(e, msg="Failed to update wafv2 ip set.")
 
-        self.existing_set, self.id, self.locktoken = self.get_set()
-        return camel_dict_to_snake_dict(self.existing_set)
+        self.existing_set, self.id, self.locktoken, self.arn = self.get_set()
+        return self._format_set(self.existing_set)
 
     def get_set(self):
         response = self.list()
         existing_set = None
         id = None
+        arn = None
         locktoken = None
         for item in response.get('IPSets'):
             if item.get('Name') == self.name:
@@ -216,8 +220,10 @@ class IpSet:
                 ).get('IPSet')
             except (BotoCoreError, ClientError) as e:
                 self.fail_json_aws(e, msg="Failed to get wafv2 ip set.")
+            tags = describe_wafv2_tags(self.wafv2, arn, self.fail_json_aws)
+            existing_set['tags'] = tags
 
-        return existing_set, id, locktoken
+        return existing_set, id, locktoken, arn
 
     def list(self, Nextmarker=None):
         # there is currently no paginator for wafv2
@@ -275,8 +281,9 @@ def main():
         description=dict(type='str'),
         ip_address_version=dict(type='str', choices=['IPV4', 'IPV6']),
         addresses=dict(type='list', elements='str'),
-        tags=dict(type='dict'),
-        purge_addresses=dict(type='bool', default=True)
+        tags=dict(type='dict', aliases=['resource_tags']),
+        purge_tags=dict(type='bool', default=True),
+        purge_addresses=dict(type='bool', default=True),
     )
 
     module = AnsibleAWSModule(
@@ -292,6 +299,7 @@ def main():
     ip_address_version = module.params.get("ip_address_version")
     addresses = module.params.get("addresses")
     tags = module.params.get("tags")
+    purge_tags = module.params.get("purge_tags")
     purge_addresses = module.params.get("purge_addresses")
     check_mode = module.check_mode
 
@@ -303,7 +311,9 @@ def main():
     ip_set = IpSet(wafv2, name, scope, module.fail_json_aws)
 
     if state == 'present':
+
         if ip_set.get():
+            tags_updated = ensure_wafv2_tags(wafv2, ip_set.arn, tags, purge_tags, module.fail_json_aws, module.check_mode)
             change, addresses = compare(ip_set.get(), addresses, purge_addresses, state)
             if (change or ip_set.description() != description) and not check_mode:
                 retval = ip_set.update(
@@ -312,6 +322,7 @@ def main():
                 )
             else:
                 retval = ip_set.get()
+            change |= tags_updated
         else:
             if not check_mode:
                 retval = ip_set.create(
