@@ -145,19 +145,19 @@ def test_boto3_conn(inventory):
 
 def test_get_hostname_default(inventory):
     instance = instances['Instances'][0]
-    assert inventory._get_hostname(instance, hostnames=None) == "ec2-12-345-67-890.compute-1.amazonaws.com"
+    assert inventory._get_hostname(instance, hostnames=None)[0] == "ec2-12-345-67-890.compute-1.amazonaws.com"
 
 
 def test_get_hostname(inventory):
     hostnames = ['ip-address', 'dns-name']
     instance = instances['Instances'][0]
-    assert inventory._get_hostname(instance, hostnames) == "12.345.67.890"
+    assert inventory._get_hostname(instance, hostnames)[0] == "12.345.67.890"
 
 
 def test_get_hostname_dict(inventory):
     hostnames = [{'name': 'private-ip-address', 'separator': '_', 'prefix': 'tag:Name'}]
     instance = instances['Instances'][0]
-    assert inventory._get_hostname(instance, hostnames) == "aws_ec2_098.76.54.321"
+    assert inventory._get_hostname(instance, hostnames)[0] == "aws_ec2_098.76.54.321"
 
 
 def test_set_credentials(inventory):

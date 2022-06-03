@@ -270,16 +270,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_t
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
-import logging
-logging.basicConfig(filename='/Users/alinabuzachis/dev/example.log', level=logging.DEBUG)
-logger = logging.getLogger("test")
-logger.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - " "%(message)s")
-ch.setFormatter(formatter)
-logger.addHandler(ch)
-
-
 # The mappings give an array of keys to get from the filter name to the value
 # returned by boto3's EC2 describe_instances method.
 
@@ -608,28 +598,30 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         return host_vars
 
     def _get_tag_hostname(self, preference, instance):
-        logger.debug("preference.split('tag:', 1)")
-        logger.debug(preference.split('tag:', 1)[1])
         tag_hostnames = preference.split('tag:', 1)[1]
         if ',' in tag_hostnames:
             tag_hostnames = tag_hostnames.split(',')
         else:
             tag_hostnames = [tag_hostnames]
-        logger.debug("tag_hostnames")
-        logger.debug(tag_hostnames)
+
         tags = boto3_tag_list_to_ansible_dict(instance.get('Tags', []))
-        logger.debug("tags")
-        logger.debug(tags)
+        tag_values = []
         for v in tag_hostnames:
             if '=' in v:
                 tag_name, tag_value = v.split('=')
                 if tags.get(tag_name) == tag_value:
-                    return to_text(tag_name) + "_" + to_text(tag_value)
+                    tag_values.append(to_text(tag_name) + "_" + to_text(tag_value))
             else:
                 tag_value = tags.get(v)
                 if tag_value:
-                    return to_text(tag_value)
-        return None
+                    tag_values.append(to_text(tag_value))
+        return tag_values
+
+    def _sanitize_hostname(self, hostname):
+        if ':' in to_text(hostname):
+            return self._sanitize_group_name(to_text(hostname))
+        else:
+            return to_text(hostname)
 
     def _get_hostname(self, instance, hostnames):
         '''
@@ -641,10 +633,8 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             hostnames = ['dns-name', 'private-dns-name']
 
         hostname = None
-        sanitized_hosts = []
+        hostname_list = []
         for preference in hostnames:
-            logger.debug("PREFERENCE")
-            logger.debug(preference)
             if isinstance(preference, dict):
                 if 'name' not in preference:
                     raise AnsibleError("A 'name' key must be defined in a hostnames dictionary.")
@@ -652,42 +642,20 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 hostname_from_prefix = self._get_hostname(instance, [preference["prefix"]])
                 separator = preference.get("separator", "_")
                 if hostname and hostname_from_prefix and 'prefix' in preference:
-                    hostname = hostname_from_prefix + separator + hostname
+                    hostname = hostname_from_prefix[0] + separator + hostname[0]
             elif preference.startswith('tag:'):
                 hostname = self._get_tag_hostname(preference, instance)
-                logger.debug("HOSTNAMEHEREEEE")
-                logger.debug(hostname)
             else:
                 hostname = self._get_boto_attr_chain(preference, instance)
-            #if hostname:
-            #    break
+
             if hostname:
-                logger.debug("hostnamehere")
-                logger.debug(hostname)
-                if ':' in to_text(hostname):
-                    sanitized_hosts.append(self._sanitize_group_name(to_text(hostname)))
-                else:
-                    sanitized_hosts.append(hostname)
-        logger.debug("sanitized_hosts")
-        logger.debug(sanitized_hosts)
-        return sanitized_hosts
-            # for host in hostname:
-            #     logger.debug(host)
-            #     if ':' in to_text(host):
-            #         sanitizied_hostnames += self._sanitize_group_name(to_text(host))
-            #     else:
-            #         logger.debug("host inside")
-            #         logger.debug(host)
-            #         sanitizied_hostnames += to_text(host)
-            #     sanitizied_hostnames += ','
-            # logger.debug("sanitizied_hostnames")
-            # logger.debug(sanitizied_hostnames)
-            # return sanitizied_hostnames
-                # else:
-                #     logger.debug("to_text(hostname)")
-                #     logger.debug(to_text(hostname))
-                #     return to_text(hostname)
-            
+                if isinstance(hostname, list):
+                    for host in hostname:
+                        hostname_list.append(self._sanitize_hostname(host))
+                elif isinstance(hostname, str):
+                    hostname_list.append(self._sanitize_hostname(hostname))
+
+        return hostname_list
 
     def _query(self, regions, include_filters, exclude_filters, strict_permissions):
         '''
@@ -720,10 +688,6 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
     def _populate(self, groups, hostnames):
         for group in groups:
-            logger.debug("GROUP")
-            logger.debug(group)
-            logger.debug("hostnames")
-            logger.debug(hostnames)
             group = self.inventory.add_group(group)
             self._add_hosts(hosts=groups[group], group=group, hostnames=hostnames)
             self.inventory.add_child('all', group)
@@ -735,33 +699,22 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             :param hostnames: a list of hostname destination variables in order of preference
         '''
         for host in hosts:
-            hostname = self._get_hostname(host, hostnames)
-            logger.debug("hostnamefine")
-            logger.debug(hostname)
+            hostname_list = self._get_hostname(host, hostnames)
 
             host = camel_dict_to_snake_dict(host, ignore_list=['Tags'])
             host['tags'] = boto3_tag_list_to_ansible_dict(host.get('tags', []))
 
-            logger.debug("self.get_option('use_contrib_script_compatible_ec2_tag_keys')")
-            logger.debug(self.get_option('use_contrib_script_compatible_ec2_tag_keys'))
-
             if self.get_option('use_contrib_script_compatible_ec2_tag_keys'):
                 for k, v in host['tags'].items():
-                    logger.debug("k, v")
-                    logger.debug(k)
-                    logger.debug(v)
                     host["ec2_tag_%s" % k] = v
-                logger.debug("host tags")
-                logger.debug(host)
+
             # Allow easier grouping by region
             host['placement']['region'] = host['placement']['availability_zone'][:-1]
 
-            if not hostname:
+            if not hostname_list:
                 continue
-            for h in hostname:
-                self.inventory.add_host(to_text(h), group=group)
-            logger.debug("\nself.inventory")
-            logger.debug(self.inventory.hosts)
+            for hostname in hostname_list:
+                self.inventory.add_host(to_text(hostname), group=group)
             hostvars_prefix = self.get_option("hostvars_prefix")
             hostvars_suffix = self.get_option("hostvars_suffix")
             new_vars = dict()
@@ -771,8 +724,8 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 if hostvars_suffix:
                     hostvar = hostvar + hostvars_suffix
                 new_vars[hostvar] = hostval
-                for h in hostname:
-                    self.inventory.set_variable(to_text(h), hostvar, hostval)
+                for hostname in hostname_list:
+                    self.inventory.set_variable(to_text(hostname), hostvar, hostval)
             host.update(new_vars)
 
             # Use constructed if applicable
@@ -780,14 +733,14 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             strict = self.get_option('strict')
 
             # Composed variables
-            for h in hostname:
-                self._set_composite_vars(self.get_option('compose'), host, to_text(h), strict=strict)
+            for hostname in hostname_list:
+                self._set_composite_vars(self.get_option('compose'), host, to_text(hostname), strict=strict)
 
                 # Complex groups based on jinja2 conditionals, hosts that meet the conditional are added to group
-                self._add_host_to_composed_groups(self.get_option('groups'), host, to_text(h), strict=strict)
+                self._add_host_to_composed_groups(self.get_option('groups'), host, to_text(hostname), strict=strict)
 
                 # Create groups based on variable values and add the corresponding hosts to it
-                self._add_host_to_keyed_groups(self.get_option('keyed_groups'), host, to_text(h), strict=strict)
+                self._add_host_to_keyed_groups(self.get_option('keyed_groups'), host, to_text(hostname), strict=strict)
 
     def _set_credentials(self, loader):
         '''
