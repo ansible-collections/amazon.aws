@@ -13,7 +13,7 @@ module: ec2_ami_copy
 version_added: 1.0.0
 short_description: copies AMI between AWS regions, return new image id
 description:
-    - Copies AMI from a source region to a destination region. B(Since version 2.3 this module depends on boto3.)
+  - Copies AMI from a source region to a destination region. B(Since version 2.3 this module depends on boto3.)
 options:
   source_region:
     description:
@@ -60,6 +60,7 @@ options:
     description:
       - 'A hash/dictionary of tags to add to the new copied AMI: C({"key":"value"}) and C({"key":"value","key":"value"})'
     type: dict
+    aliases: ['resource_tags']
   tag_equality:
     description:
       - Whether to use tags if the source AMI already exists in the target region. If this is set, and all tags match
@@ -67,11 +68,11 @@ options:
     default: false
     type: bool
 author:
-- Amir Moulavi (@amir343) <amir.moulavi@gmail.com>
-- Tim C (@defunctio) <defunct@defunct.io>
+  - Amir Moulavi (@amir343) <amir.moulavi@gmail.com>
+  - Tim C (@defunctio) <defunct@defunct.io>
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
@@ -208,7 +209,7 @@ def main():
         kms_key_id=dict(type='str', required=False),
         wait=dict(type='bool', default=False),
         wait_timeout=dict(type='int', default=600),
-        tags=dict(type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
         tag_equality=dict(type='bool', default=False))
 
     module = AnsibleAWSModule(argument_spec=argument_spec)
