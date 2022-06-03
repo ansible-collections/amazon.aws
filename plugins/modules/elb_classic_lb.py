@@ -890,7 +890,7 @@ class ElbManager(object):
         if ssl_id:
             formatted_listener['SSLCertificateId'] = ssl_id
 
-        return snake_dict_to_camel_dict(listener, True)
+        return formatted_listener
 
     def _format_healthcheck_target(self):
         """Compose target string from healthcheck parameters"""
