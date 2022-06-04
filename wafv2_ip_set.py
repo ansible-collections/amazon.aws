@@ -314,15 +314,19 @@ def main():
 
         if ip_set.get():
             tags_updated = ensure_wafv2_tags(wafv2, ip_set.arn, tags, purge_tags, module.fail_json_aws, module.check_mode)
-            change, addresses = compare(ip_set.get(), addresses, purge_addresses, state)
-            if (change or ip_set.description() != description) and not check_mode:
+            ips_updated, addresses = compare(ip_set.get(), addresses, purge_addresses, state)
+            description_updated = bool(description) and ip_set.description() != description
+            change = ips_updated or description_updated or tags_updated
+            retval = ip_set.get()
+            if module.check_mode:
+                pass
+            elif ips_updated or description_updated:
                 retval = ip_set.update(
                     description=description,
                     addresses=addresses
                 )
-            else:
-                retval = ip_set.get()
-            change |= tags_updated
+            elif tags_updated:
+                retval, id, locktoken, arn = ip_set.get_set()
         else:
             if not check_mode:
                 retval = ip_set.create(
