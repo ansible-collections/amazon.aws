@@ -40,14 +40,6 @@ options:
       - A description for the firewall.
     required: false
     type: str
-  tags:
-    description:
-      - A dictionary representing the tags associated with the firewall.
-      - 'For example C({"Example Tag": "some example value"})'
-      - Unless I(purge_tags=False) all other tags will be removed from the
-        firewall.
-    type: dict
-    required: false
   delete_protection:
     description:
       - When I(delete_protection=True), the firewall is protected from deletion.
@@ -69,14 +61,6 @@ options:
       - Defaults to C(false) when not provided on creation.
     type: bool
     required: false
-  purge_tags:
-    description:
-      - If I(purge_tags=true) and I(tags) is defined existing tags will be
-        purged from the resource to match exactly what is defined by the
-        I(tags) parameter.
-    type: bool
-    required: false
-    default: True
   wait:
     description:
       - On creation, whether to wait for the firewall to reach the C(READY)
@@ -117,10 +101,12 @@ options:
     required: false
     aliases: ['firewall_policy_arn']
 
-author: Mark Chappell (@tremble)
+author:
+  - Mark Chappell (@tremble)
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = '''
@@ -296,7 +282,7 @@ def main():
         arn=dict(type='str', required=False, aliases=['firewall_arn']),
         state=dict(type='str', required=False, default='present', choices=['present', 'absent']),
         description=dict(type='str', required=False),
-        tags=dict(type='dict', required=False),
+        tags=dict(type='dict', required=False, aliases=['resource_tags']),
         purge_tags=dict(type='bool', required=False, default=True),
         wait=dict(type='bool', required=False, default=True),
         wait_timeout=dict(type='int', required=False),
