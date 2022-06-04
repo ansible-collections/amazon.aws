@@ -167,11 +167,16 @@ created:
 name:
     type: str
     description: The name of the repository
-    returned: "when state == 'absent'"
+    returned: I(state=absent)
+policy:
+    type: dict
+    description: The existing, created or updated repository policy.
+    returned: I(state=present)
+    version_added: 4.0.0
 repository:
     type: dict
     description: The created or updated repository
-    returned: "when state == 'present'"
+    returned: I(state=present)
     sample:
         createdAt: '2017-01-17T08:41:32-06:00'
         registryId: '999999999999'
@@ -493,6 +498,11 @@ def run(ecr, params):
                     # policy is.
                     result['policy'] = policy_text
                     raise
+
+            else:
+                original_policy = ecr.get_repository_policy(registry_id, name)
+                if original_policy:
+                    result['policy'] = original_policy
 
             original_scan_on_push = ecr.get_repository(registry_id, name)
             if original_scan_on_push is not None:
