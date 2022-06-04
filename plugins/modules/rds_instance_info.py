@@ -365,6 +365,17 @@ except ImportError:
     pass  # handled by AnsibleAWSModule
 
 
+@AWSRetry.jittered_backoff()
+def _describe_db_instances(conn, **params):
+    paginator = conn.get_paginator('describe_db_instances')
+    try:
+        results = paginator.paginate(**params).build_full_result()['DBInstances']
+    except is_boto3_error_code('DBInstanceNotFound'):
+        results = []
+
+    return results
+
+
 def instance_info(module, conn):
     instance_name = module.params.get('db_instance_identifier')
     filters = module.params.get('filters')
@@ -375,12 +386,9 @@ def instance_info(module, conn):
     if filters:
         params['Filters'] = ansible_dict_to_boto3_filter_list(filters)
 
-    paginator = conn.get_paginator('describe_db_instances')
     try:
-        results = paginator.paginate(**params).build_full_result()['DBInstances']
-    except is_boto3_error_code('DBInstanceNotFound'):
-        results = []
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+        results = _describe_db_instances(conn, **params)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, "Couldn't get instance information")
 
     for instance in results:
