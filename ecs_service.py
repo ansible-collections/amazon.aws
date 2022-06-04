@@ -101,6 +101,16 @@ options:
           minimum_healthy_percent:
             type: int
             description: A lower limit on the number of tasks in a service that must remain in the RUNNING state during a deployment.
+          deployment_circuit_breaker:
+            type: dict
+            description: The deployment circuit breaker determines whether a service deployment will fail if the service can't reach a steady state.
+            suboptions:
+              enable:
+                type: bool
+                description: If enabled, a service deployment will transition to a failed state and stop launching new tasks.
+              rollback:
+                type: bool
+                description: If enabled, ECS will roll back your service to the last completed deployment after a failure.
     placement_constraints:
         description:
           - The placement constraints for the tasks in the service.
@@ -272,6 +282,18 @@ EXAMPLES = r'''
       - type: binpack
         field: memory
 
+# With deployment circuit breaker (added in version 4.0)
+- community.aws.ecs_service:
+    state: present
+    name: test-service
+    cluster: test-cluster
+    task_definition: test-task-definition
+    desired_count: 3
+    deployment_configuration:
+      deployment_circuit_breaker:
+        enable: True
+        rollback: True
+
 # With capacity_provider_strategy (added in version 4.0)
 - community.aws.ecs_service:
     state: present
@@ -378,6 +400,19 @@ service:
                     description: minimumHealthyPercent param
                     returned: always
                     type: int
+                deploymentCircuitBreaker:
+                    description: dictionary of deploymentCircuitBreaker
+                    returned: always
+                    type: complex
+                    contains:
+                        enable:
+                            description: The state of the circuit breaker feature.
+                            returned: always
+                            type: bool
+                        rollback:
+                            description: The state of the rollback feature of the circuit breaker.
+                            returned: always
+                            type: bool
         events:
             description: list of service events
             returned: always
@@ -494,6 +529,19 @@ ansible_facts:
                             description: minimumHealthyPercent param
                             returned: always
                             type: int
+                        deploymentCircuitBreaker:
+                            description: dictionary of deploymentCircuitBreaker
+                            returned: always
+                            type: complex
+                            contains:
+                                enable:
+                                    description: The state of the circuit breaker feature.
+                                    returned: always
+                                    type: bool
+                                rollback:
+                                    description: The state of the rollback feature of the circuit breaker.
+                                    returned: always
+                                    type: bool
                 events:
                     description: list of service events
                     returned: always
@@ -535,7 +583,8 @@ import time
 
 DEPLOYMENT_CONFIGURATION_TYPE_MAP = {
     'maximum_percent': 'int',
-    'minimum_healthy_percent': 'int'
+    'minimum_healthy_percent': 'int',
+    'deployment_circuit_breaker': 'dict',
 }
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
