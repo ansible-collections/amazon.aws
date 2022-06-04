@@ -22,6 +22,7 @@
   collections:
     - amazon.aws
     - community.aws
+    - community.crypto
   block:
 
     - include_tasks: missing_params.yml
@@ -34,6 +35,8 @@
     - include_tasks: basic_public.yml
     - include_tasks: basic_internal.yml
     - include_tasks: schema_change.yml
+
+    - include_tasks: https_listeners.yml
 
     - include_tasks: simple_changes.yml
 
