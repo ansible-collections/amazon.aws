@@ -79,6 +79,7 @@ DOCUMENTATION = '''
           type: list
           elements: dict
           default: []
+          version_added: 1.5.0
         exclude_filters:
           description:
               - A list of filters. Any instances matching one of the filters are excluded from the result.
@@ -89,6 +90,7 @@ DOCUMENTATION = '''
           type: list
           elements: dict
           default: []
+          version_added: 1.5.0
         include_extra_api_calls:
           description:
               - Add two additional API calls for every instance to include 'persistent' and 'events' host variables.
@@ -120,6 +122,7 @@ DOCUMENTATION = '''
             - The use of this feature is discouraged and we advise to migrate to the new ``tags`` structure.
           type: bool
           default: False
+          version_added: 1.5.0
         hostvars_prefix:
           description:
             - The prefix for host variables names coming from AWS.
