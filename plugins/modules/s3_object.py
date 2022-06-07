@@ -936,6 +936,10 @@ def ensure_tags(client, module, bucket, obj):
 
 
 def main():
+    # Beware: this module uses an action plugin (plugins/action/s3_object.py)
+    # so that src parameter can be either in 'files/' lookup path on the
+    # controller, *or* on the remote host that the task is executed on.
+
     argument_spec = dict(
         bucket=dict(required=True),
         dest=dict(default=None, type='path'),

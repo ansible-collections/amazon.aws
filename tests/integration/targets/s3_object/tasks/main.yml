@@ -143,6 +143,25 @@
           - result is changed
           - result.msg == "PUT operation complete"
 
+    # s3_object (and its old alias) use an action plugin to support using the
+    # 'file' lookup path or a remote path.  Keeping this working is dependent on
+    # having a redirect for both the module and the action plugin
+    - name: check that roles file lookups work as expected when using old name
+      aws_s3:
+        bucket: "{{ bucket_name }}"
+        mode: put
+        src: hello.txt
+        object: delete.txt
+        overwrite: always
+      retries: 3
+      delay: 3
+      register: result
+
+    - assert:
+        that:
+          - result is changed
+          - result.msg == "PUT operation complete"
+
     - name: test put with overwrite=never
       s3_object:
         bucket: "{{ bucket_name }}"
