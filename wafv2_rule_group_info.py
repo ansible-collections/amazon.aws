@@ -17,9 +17,8 @@ description:
 options:
     state:
       description:
-        - Whether the rule is present or absent.
-      choices: ["present", "absent"]
-      required: true
+        - This option does nothing, has been deprecated, and will be removed in a release after 2022-12-01.
+      required: false
       type: str
     name:
       description:
@@ -34,8 +33,8 @@ options:
       type: str
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 
 '''
 
@@ -102,6 +101,7 @@ except ImportError:
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_list_rule_groups
+from ansible_collections.community.aws.plugins.module_utils.wafv2 import describe_wafv2_tags
 
 
 def get_rule_group(wafv2, name, scope, id, fail_json_aws):
@@ -118,7 +118,7 @@ def get_rule_group(wafv2, name, scope, id, fail_json_aws):
 
 def main():
     arg_spec = dict(
-        state=dict(type='str', required=True, choices=['present', 'absent']),
+        state=dict(type='str', required=False),
         name=dict(type='str', required=True),
         scope=dict(type='str', required=True, choices=['CLOUDFRONT', 'REGIONAL'])
     )
@@ -134,6 +134,11 @@ def main():
 
     wafv2 = module.client('wafv2')
 
+    if state:
+        module.deprecate(
+            'The state parameter does nothing, has been deprecated, and will be removed in a future release.',
+            version='6.0.0', collection_name='community.aws')
+
     # check if rule group exists
     response = wafv2_list_rule_groups(wafv2, scope, module.fail_json_aws)
     id = None
@@ -142,11 +147,14 @@ def main():
     for item in response.get('RuleGroups'):
         if item.get('Name') == name:
             id = item.get('Id')
+            arn = item.get('ARN')
 
     existing_group = None
     if id:
         existing_group = get_rule_group(wafv2, name, scope, id, module.fail_json_aws)
         retval = camel_dict_to_snake_dict(existing_group.get('RuleGroup'))
+        tags = describe_wafv2_tags(wafv2, arn, module.fail_json_aws)
+        retval['tags'] = tags or {}
 
     module.exit_json(**retval)
 
