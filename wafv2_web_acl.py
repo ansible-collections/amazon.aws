@@ -93,7 +93,7 @@ options:
         - A map of custom response keys and content bodies. Define response bodies here and reference them in the rules by providing
         - the key of the body dictionary element.
         - Each element must have a unique dict key and in the dict two keys for I(content_type) and I(content).
-        - Requires botocore >= 1.21.0
+        - Requires botocore >= 1.20.40
       type: dict
       version_added: 3.1.0
     purge_rules:
@@ -341,7 +341,6 @@ class WebACL:
             'Scope': self.scope,
             'Id': self.id,
             'DefaultAction': default_action,
-            'Description': description,
             'Rules': rules,
             'VisibilityConfig': {
                 'SampledRequestsEnabled': sampled_requests,
@@ -351,6 +350,9 @@ class WebACL:
             'LockToken': self.locktoken
         }
 
+        if description:
+            req_obj['Description'] = description
+
         if custom_response_bodies:
             req_obj['CustomResponseBodies'] = custom_response_bodies
 
@@ -358,7 +360,9 @@ class WebACL:
             response = self.wafv2.update_web_acl(**req_obj)
         except (BotoCoreError, ClientError) as e:
             self.fail_json_aws(e, msg="Failed to update wafv2 web acl.")
-        return response
+
+        self.existing_acl, self.id, self.locktoken = self.get_web_acl()
+        return self.existing_acl
 
     def remove(self):
         try:
@@ -433,6 +437,18 @@ class WebACL:
         return self.existing_acl
 
 
+def format_result(result):
+
+    # We were returning details of the Web ACL inside a "web_acl"  parameter on
+    # creation, keep returning it to avoid breaking existing playbooks, but also
+    # return what the docs said we return (and returned when no change happened)
+    retval = dict(result)
+    if "WebACL" in retval:
+        retval.update(retval["WebACL"])
+
+    return camel_dict_to_snake_dict(retval, ignore_list=['tags'])
+
+
 def main():
 
     arg_spec = dict(
@@ -471,7 +487,7 @@ def main():
 
     custom_response_bodies = module.params.get("custom_response_bodies")
     if custom_response_bodies:
-        module.require_botocore_at_least('1.21.0', reason='to set custom response bodies')
+        module.require_botocore_at_least('1.20.40', reason='to set custom response bodies')
         custom_response_bodies = {}
 
         for custom_name, body in module.params.get("custom_response_bodies").items():
@@ -497,8 +513,8 @@ def main():
     if state == 'present':
         if web_acl.get():
             change, rules = compare_priority_rules(web_acl.get().get('WebACL').get('Rules'), rules, purge_rules, state)
-            change = change or web_acl.get().get('WebACL').get('Description') != description
-            change = change or web_acl.get().get('WebACL').get('DefaultAction') != default_action
+            change = change or (description and web_acl.get().get('WebACL').get('Description') != description)
+            change = change or (default_action and web_acl.get().get('WebACL').get('DefaultAction') != default_action)
 
             if change and not check_mode:
                 retval = web_acl.update(
@@ -548,7 +564,7 @@ def main():
                 if not check_mode:
                     retval = web_acl.remove()
 
-    module.exit_json(changed=change, **camel_dict_to_snake_dict(retval))
+    module.exit_json(changed=change, **format_result(retval))
 
 
 if __name__ == '__main__':
