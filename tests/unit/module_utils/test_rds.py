@@ -477,6 +477,22 @@ def test__get_rds_method_attribute_instance(method_name, params, expected, error
             ),
         ),
         (
+            "copy_db_cluster_snapshot",
+            {
+                "source_db_cluster_snapshot_identifier": "test",
+                "db_cluster_snapshot_identifier": "test-copy"
+            },
+            *expected(
+                rds.Boto3ClientMethod(
+                    name="copy_db_cluster_snapshot",
+                    waiter="db_cluster_snapshot_available",
+                    operation_description="copy DB cluster snapshot",
+                    resource='cluster_snapshot',
+                    retry_codes=['InvalidDBClusterSnapshotState']
+                )
+            ),
+        ),
+        (
             "list_tags_for_resource",
             {
                 "db_cluster_snapshot_identifier": "test",

@@ -38,7 +38,7 @@ instance_method_names = [
 
 cluster_snapshot_method_names = [
     'create_db_cluster_snapshot', 'delete_db_cluster_snapshot', 'add_tags_to_resource', 'remove_tags_from_resource',
-    'list_tags_for_resource'
+    'list_tags_for_resource', 'copy_db_cluster_snapshot'
 ]
 
 instance_snapshot_method_names = [
