@@ -9,7 +9,7 @@ __metaclass__ = type
 
 class ModuleDocFragment(object):
 
-    # Minimum requirements for the collection
+    # Standard Tagging related parameters
     DOCUMENTATION = r'''
 options:
   tags:
@@ -34,7 +34,8 @@ options:
     required: false
 '''
 
-    # Minimum requirements for the collection
+    # Some modules had a default of purge_tags=False, this was generally
+    # deprecated in release 4.0.0
     DEPRECATED_PURGE = r'''
 options:
   tags:
