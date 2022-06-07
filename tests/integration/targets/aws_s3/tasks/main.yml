@@ -885,6 +885,13 @@
           purge_tags: no
         register: result
 
+      - name:  Enable bucket key for a S3 bucket
+        aws_s3:
+          encryption_bucket_key:
+            bucket: "{{ bucket_name }}"
+            state: present
+        register: result
+
       - assert:
           that:
             - result is not changed

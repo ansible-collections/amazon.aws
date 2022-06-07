@@ -373,6 +373,7 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_conn
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_aws_connection_info
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
+from ansible.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import HAS_MD5
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import calculate_etag
 from ansible_collections.amazon.aws.plugins.module_utils.s3 import calculate_etag_content
@@ -578,6 +579,129 @@ def create_dirkey(module, s3, bucket, obj, encrypt, expiry):
 
     module.exit_json(msg="Virtual directory %s created in bucket %s" % (obj, bucket), url=url, tags=tags, changed=True)
 
+def _get_encryption(s3, module, bucket):
+    """
+    Get an AWS S3 bucket encryption status. If not found, return None.
+
+    :param connection: AWS boto3 glue connection
+    :param module: Ansible module
+    :param bucket: Name of S3 bucket
+    :return: boto3 s3 bucket encryption dict or None if not found
+    """
+    bucket = module.params.get("bucket")
+    try:
+        encyption_status = s3.get_bucket_encryption(
+            Bucket=bucket)
+        return encyption_status['ServerSideEncryptionConfiguration']['Rules'][0]['ApplyServerSideEncryptionByDefault']['SSEAlgorithm']
+
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        if e.response['Error']['Code'] == 'EntityNotFoundException':
+            module.fail_json(msg='EntityNotFoundException')
+            return None
+        if e.response['Error']['Code'] == 'ServerSideEncryptionConfigurationNotFoundError':
+            module.fail_json(
+                msg='ServerSideEncryptionConfigurationNotFoundError')
+            return None
+        else:
+            module.fail_json_aws(e)
+
+
+def _get_bucket_key(s3, module, bucket):
+    """
+    Get an AWS S3 bucket encryption status. If not found, return None.
+
+    :param connection: AWS boto3 glue connection
+    :param module: Ansible module
+    :param bucket: Name of S3 bucket
+    :return: boto3 s3 bucket encryption dict or None if not found
+    """
+    bucket = module.params.get("bucket")
+    try:
+        encyption_status = s3.get_bucket_encryption(
+            Bucket=bucket)
+        return encyption_status['ServerSideEncryptionConfiguration']['Rules'][0]['BucketKeyEnabled']
+
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+        if e.response['Error']['Code'] == 'EntityNotFoundException':
+            return None
+        else:
+            module.fail_json_aws(e)
+
+
+def _enable_bucket_key(s3, module, bucket):
+    """
+    This function enables the bucket keys for S3 if current supported mechanism is KMS
+    :return:  boto3 s3 bucket encryption dict or None if not found
+    """
+    changed = False
+    bucket = module.params.get("bucket")
+
+    try:
+        if(_get_encryption(s3, module, bucket) == "aws:kms"):
+            if (_get_bucket_key(s3, module, bucket) is False):
+                encryption_status = s3.get_bucket_encryption(
+                    Bucket=bucket)
+                encryption_status['ServerSideEncryptionConfiguration']['Rules'][0]['BucketKeyEnabled'] = True
+                s3.put_bucket_encryption(
+                    Bucket=bucket, ServerSideEncryptionConfiguration=encryption_status['ServerSideEncryptionConfiguration'])
+                changed = True
+            if changed:
+                current_encryption = s3.get_bucket_encryption(
+                    Bucket=bucket)
+                module.exit_json(
+                    changed=True, **camel_dict_to_snake_dict(current_encryption))
+            else:
+                current_encryption = s3.get_bucket_encryption(
+                    Bucket=bucket)
+                module.exit_json(
+                    changed=False, **camel_dict_to_snake_dict(current_encryption))
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code'] == 'ServerSideEncryptionConfigurationNotFoundError':
+            current_encryption = _get_encryption(
+                s3, module, bucket)
+            module.exit_json(
+                changed=True, **camel_dict_to_snake_dict(current_encryption))
+            return None
+
+
+def _disable_bucket_key(s3, module, bucket):
+    """
+    This function enables the bucket keys for S3 if current supported mechanism is KMS
+    :return:  boto3 s3 bucket encryption dict or None if not found
+    """
+    changed = False
+    params = dict()
+    bucket = module.params.get("bucket")
+
+    try:
+        if(_get_encryption(s3, module, bucket) == "aws:kms"):
+            if (_get_bucket_key(s3, module, bucket) is True):
+                encryption_status = s3.get_bucket_encryption(
+                    Bucket=bucket)
+                encryption_status['ServerSideEncryptionConfiguration']['Rules'][0]['BucketKeyEnabled'] = False
+                s3.put_bucket_encryption(
+                    Bucket=bucket,
+                    ServerSideEncryptionConfiguration=encryption_status[
+                        'ServerSideEncryptionConfiguration']
+                )
+                changed = True
+            if changed:
+                current_encryption = s3.get_bucket_encryption(
+                    Bucket=bucket)
+                module.exit_json(
+                    changed=True, **camel_dict_to_snake_dict(current_encryption))
+            else:
+                current_encryption = s3.get_bucket_encryption(
+                    Bucket=bucket)
+                module.exit_json(
+                    changed=False, **camel_dict_to_snake_dict(current_encryption))
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code'] == 'ServerSideEncryptionConfigurationNotFoundError':
+            current_encryption = _get_encryption(
+                s3, module, bucket)
+            module.exit_json(
+                changed=True, **camel_dict_to_snake_dict(current_encryption))
+            return None
 
 def path_check(path):
     if os.path.exists(path):
@@ -816,6 +940,8 @@ def get_s3_connection(module, aws_connect_kwargs, location, rgw, s3_url, sig_4=F
             params['config'] = botocore.client.Config(signature_version='s3v4')
         elif module.params['mode'] in ('get', 'getstr') and sig_4:
             params['config'] = botocore.client.Config(signature_version='s3v4')
+        else:
+            params['config'] = botocore.client.Config(signature_version='s3v4')
         if module.params['dualstack']:
             dualconf = botocore.client.Config(s3={'use_dualstack_endpoint': True})
             if 'config' in params:
@@ -928,6 +1054,7 @@ def main():
         tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=True),
         copy_src=dict(type='dict', options=dict(bucket=dict(required=True), object=dict(required=True), version_id=dict())),
+        encryption_bucket_key=dict(type='dict', options=dict(bucket=dict(required=True), state=dict(required=True, default='present', choices=['present', 'absent', 'enabled', 'disabled']))),
         validate_bucket_name=dict(type='bool', default=True),
     )
     module = AnsibleAWSModule(
@@ -1016,6 +1143,12 @@ def main():
         for key in ['validate_certs', 'security_token', 'profile_name']:
             aws_connect_kwargs.pop(key, None)
     s3 = get_s3_connection(module, aws_connect_kwargs, location, rgw, s3_url)
+
+    if module.pramas.get('encryption_bucket_key'):
+        if state == 'present' or state == 'enabled':
+            _enable_bucket_key(s3, module, bucket)
+        if state == 'absent' or state == 'disabled':
+            _disable_bucket_key(s3, module, bucket)
 
     validate = not ignore_nonexistent_bucket
 
