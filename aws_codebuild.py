@@ -31,7 +31,7 @@ options:
     source:
         description:
             - Configure service and location for the build input source.
-        required: true
+            - I(source) is required when creating a new project.
         suboptions:
             type:
                 description:
@@ -58,7 +58,7 @@ options:
     artifacts:
         description:
             - Information about the build output artifacts for the build project.
-        required: true
+            - I(artifacts) is required when creating a new project.
         suboptions:
             type:
                 description:
@@ -137,6 +137,11 @@ options:
     tags:
         description:
             - A set of tags for the build project.
+            - Mutually exclusive with the I(resource_tags) parameter.
+            - In release 6.0.0 this parameter will accept a simple dictionary
+              instead of the list of dictionaries format.  To use the simple
+              dictionary format prior to release 6.0.0 the I(resource_tags) can
+              be used instead of I(tags).
         type: list
         elements: dict
         suboptions:
@@ -156,9 +161,30 @@ options:
         default: 'present'
         choices: ['present', 'absent']
         type: str
+    resource_tags:
+        description:
+            - A dictionary representing the tags to be applied to the build project.
+            - If the I(resource_tags) parameter is not set then tags will not be modified.
+            - Mutually exclusive with the I(tags) parameter.
+        type: dict
+        required: false
+    purge_tags:
+        description:
+            - If I(purge_tags=true) and I(tags) is set, existing tags will be purged
+              from the resource to match exactly what is defined by I(tags) parameter.
+            - If the I(resource_tags) parameter is not set then tags will not be modified, even
+              if I(purge_tags=True).
+            - Tag keys beginning with C(aws:) are reserved by Amazon and can not be
+              modified.  As such they will be ignored for the purposes of the
+              I(purge_tags) parameter.  See the Amazon documentation for more information
+              U(https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions).
+        type: bool
+        default: true
+        required: false
+
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+    - amazon.aws.aws
+    - amazon.aws.ec2
 
 '''
 
@@ -275,9 +301,20 @@ project:
       type: int
       sample: 60
     tags:
-      description: Tags added to the project
+      description:
+        - Tags added to the project in the boto3 list of dictionaries format.
+        - I(tags) and I(reource_tags) represent the same information in
+          different formats.
       returned: when configured
       type: list
+    reource_tags:
+      description:
+        - A simple dictionary representing the tags added to the project.
+        - I(tags) and I(reource_tags) represent the same information in
+          different formats.
+      returned: when configured
+      type: dict
+      version_added: 4.0.0
     created:
       description: Timestamp of the create time of the project
       returned: always
@@ -285,8 +322,13 @@ project:
       sample: "2018-04-17T16:56:03.245000+02:00"
 '''
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule, get_boto3_client_method_parameters
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict, snake_dict_to_camel_dict
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import get_boto3_client_method_parameters
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
 try:
@@ -312,20 +354,36 @@ def create_or_update_project(client, params, module):
 
     if 'name' in found:
         found_project = found
+        found_tags = found_project.pop('tags', [])
+        # Support tagging using a dict instead of the list of dicts
+        if params['resource_tags'] is not None:
+            if params['purge_tags']:
+                tags = dict()
+            else:
+                tags = boto3_tag_list_to_ansible_dict(found_tags)
+            tags.update(params['resource_tags'])
+            formatted_update_params['tags'] = ansible_dict_to_boto3_tag_list(tags, tag_name_key_name='key', tag_value_key_name='value')
+
         resp = update_project(client=client, params=formatted_update_params, module=module)
         updated_project = resp['project']
 
         # Prep both dicts for sensible change comparison:
         found_project.pop('lastModified')
         updated_project.pop('lastModified')
-        if 'tags' not in updated_project:
-            updated_project['tags'] = []
+        updated_tags = updated_project.pop('tags', [])
+        found_project['ResourceTags'] = boto3_tag_list_to_ansible_dict(found_tags)
+        updated_project['ResourceTags'] = boto3_tag_list_to_ansible_dict(updated_tags)
 
         if updated_project != found_project:
             changed = True
+        updated_project['tags'] = updated_tags
         return resp, changed
     # Or create new project:
     try:
+        if params['source'] is None or params['artifacts'] is None:
+            module.fail_json(
+                "The source and artifacts parameters must be provided when "
+                "creating a new project.  No existing project was found.")
         resp = client.create_project(**formatted_create_params)
         changed = True
         return resp, changed
@@ -367,18 +425,30 @@ def describe_project(client, name, module):
         module.fail_json_aws(e, msg="Unable to describe CodeBuild projects")
 
 
+def format_project_result(project_result):
+    formated_result = camel_dict_to_snake_dict(project_result)
+    project = project_result.get('project', {})
+    if project:
+        tags = project.get('tags', [])
+        formated_result['project']['resource_tags'] = boto3_tag_list_to_ansible_dict(tags)
+    formated_result['ORIGINAL'] = project_result
+    return formated_result
+
+
 def main():
     argument_spec = dict(
         name=dict(required=True),
         description=dict(),
-        source=dict(required=True, type='dict'),
-        artifacts=dict(required=True, type='dict'),
+        source=dict(type='dict'),
+        artifacts=dict(type='dict'),
         cache=dict(type='dict'),
         environment=dict(type='dict'),
         service_role=dict(),
         timeout_in_minutes=dict(type='int', default=60),
         encryption_key=dict(no_log=False),
         tags=dict(type='list', elements='dict'),
+        resource_tags=dict(type='dict'),
+        purge_tags=dict(type='bool', default=True),
         vpc_config=dict(type='dict'),
         state=dict(choices=['present', 'absent'], default='present')
     )
@@ -389,6 +459,15 @@ def main():
     state = module.params.get('state')
     changed = False
 
+    if module.params['tags']:
+        module.deprecate(
+            'The tags parameter currently uses a non-standard format and has '
+            'been deprecated.  In release 6.0.0 this paramater will accept '
+            'a simple key/value pair dictionary instead of the current list '
+            'of dictionaries.  It is recommended to migrate to using the '
+            'resource_tags parameter which already accepts the simple dictionary '
+            'format.', version='6.0.0', collection_name='community.aws')
+
     if state == 'present':
         project_result, changed = create_or_update_project(
             client=client_conn,
@@ -397,7 +476,8 @@ def main():
     elif state == 'absent':
         project_result, changed = delete_project(client=client_conn, name=module.params['name'], module=module)
 
-    module.exit_json(changed=changed, **camel_dict_to_snake_dict(project_result))
+    formatted_result = format_project_result(project_result)
+    module.exit_json(changed=changed, **formatted_result)
 
 
 if __name__ == '__main__':
