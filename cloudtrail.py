@@ -14,9 +14,9 @@ short_description: manage CloudTrail create, delete, update
 description:
   - Creates, deletes, or updates CloudTrail configuration. Ensures logging is also enabled.
 author:
-    - Ansible Core Team
-    - Ted Timmons (@tedder)
-    - Daniel Shepherd (@shepdelacreme)
+  - Ansible Core Team
+  - Ted Timmons (@tedder)
+  - Daniel Shepherd (@shepdelacreme)
 options:
   state:
     description:
@@ -88,16 +88,13 @@ options:
       - The value can be an alias name prefixed by "alias/", a fully specified ARN to an alias, a fully specified ARN to a key, or a globally unique identifier.
       - See U(https://docs.aws.amazon.com/awscloudtrail/latest/userguide/encrypting-cloudtrail-log-files-with-aws-kms.html).
     type: str
-  tags:
-    description:
-      - A hash/dictionary of tags to be applied to the CloudTrail resource.
-      - Remove completely or specify an empty dictionary to remove all tags.
-    default: {}
-    type: dict
+notes:
+  - The I(purge_tags) option was added in release 4.0.0
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 
 '''
 
@@ -251,11 +248,12 @@ try:
 except ImportError:
     pass  # Handled by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import (camel_dict_to_snake_dict,
-                                                                     ansible_dict_to_boto3_tag_list,
-                                                                     boto3_tag_list_to_ansible_dict,
-                                                                     )
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 
 def get_kms_key_aliases(module, client, keyId):
@@ -293,7 +291,7 @@ def create_trail(module, client, ct_params):
     return resp
 
 
-def tag_trail(module, client, tags, trail_arn, curr_tags=None, dry_run=False):
+def tag_trail(module, client, tags, trail_arn, curr_tags=None, purge_tags=True):
     """
     Creates, updates, removes tags on a CloudTrail resource
 
@@ -304,45 +302,35 @@ def tag_trail(module, client, tags, trail_arn, curr_tags=None, dry_run=False):
     curr_tags : Dict of the current tags on resource, if any
     dry_run : true/false to determine if changes will be made if needed
     """
-    adds = []
-    removes = []
-    updates = []
-    changed = False
 
-    if curr_tags is None:
-        # No current tags so just convert all to a tag list
-        adds = ansible_dict_to_boto3_tag_list(tags)
-    else:
-        curr_keys = set(curr_tags.keys())
-        new_keys = set(tags.keys())
-        add_keys = new_keys - curr_keys
-        remove_keys = curr_keys - new_keys
-        update_keys = dict()
-        for k in curr_keys.intersection(new_keys):
-            if curr_tags[k] != tags[k]:
-                update_keys.update({k: tags[k]})
+    if tags is None:
+        return False
 
-        adds = get_tag_list(add_keys, tags)
-        removes = get_tag_list(remove_keys, curr_tags)
-        updates = get_tag_list(update_keys, tags)
+    curr_tags = curr_tags or {}
 
-    if removes or updates:
-        changed = True
-        if not dry_run:
-            try:
-                client.remove_tags(ResourceId=trail_arn, TagsList=removes + updates)
-            except (BotoCoreError, ClientError) as err:
-                module.fail_json_aws(err, msg="Failed to remove tags from Trail")
+    tags_to_add, tags_to_remove = compare_aws_tags(curr_tags, tags, purge_tags=purge_tags)
+    if not tags_to_add and not tags_to_remove:
+        return False
 
-    if updates or adds:
-        changed = True
-        if not dry_run:
-            try:
-                client.add_tags(ResourceId=trail_arn, TagsList=updates + adds)
-            except (BotoCoreError, ClientError) as err:
-                module.fail_json_aws(err, msg="Failed to add tags to Trail")
+    if module.check_mode:
+        return True
 
-    return changed
+    if tags_to_remove:
+        remove = {k: curr_tags[k] for k in tags_to_remove}
+        tags_to_remove = ansible_dict_to_boto3_tag_list(remove)
+        try:
+            client.remove_tags(ResourceId=trail_arn, TagsList=tags_to_remove)
+        except (BotoCoreError, ClientError) as err:
+            module.fail_json_aws(err, msg="Failed to remove tags from Trail")
+
+    if tags_to_add:
+        tags_to_add = ansible_dict_to_boto3_tag_list(tags_to_add)
+        try:
+            client.add_tags(ResourceId=trail_arn, TagsList=tags_to_add)
+        except (BotoCoreError, ClientError) as err:
+            module.fail_json_aws(err, msg="Failed to add tags to Trail")
+
+    return True
 
 
 def get_tag_list(keys, tags):
@@ -461,7 +449,8 @@ def main():
         cloudwatch_logs_role_arn=dict(),
         cloudwatch_logs_log_group_arn=dict(),
         kms_key_id=dict(),
-        tags=dict(default={}, type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
+        purge_tags=dict(default=True, type='bool')
     )
 
     required_if = [('state', 'present', ['s3_bucket_name']), ('state', 'enabled', ['s3_bucket_name'])]
@@ -475,6 +464,7 @@ def main():
     elif module.params['state'] in ('absent', 'disabled'):
         state = 'absent'
     tags = module.params['tags']
+    purge_tags = module.params['purge_tags']
     enable_logging = module.params['enable_logging']
     ct_params = dict(
         Name=module.params['name'],
@@ -586,13 +576,16 @@ def main():
                 set_logging(module, client, name=ct_params['Name'], action='stop')
 
         # Check if we need to update tags on resource
-        tag_dry_run = False
-        if module.check_mode:
-            tag_dry_run = True
-        tags_changed = tag_trail(module, client, tags=tags, trail_arn=trail['TrailARN'], curr_tags=trail['tags'], dry_run=tag_dry_run)
+        tags_changed = tag_trail(module, client, tags=tags, trail_arn=trail['TrailARN'], curr_tags=trail['tags'],
+                                 purge_tags=purge_tags)
         if tags_changed:
+            updated_tags = dict()
+            if not purge_tags:
+                updated_tags = trail['tags']
+            updated_tags.update(tags)
             results['changed'] = True
-            trail['tags'] = tags
+            trail['tags'] = updated_tags
+
         # Populate trail facts in output
         results['trail'] = camel_dict_to_snake_dict(trail, ignore_list=['tags'])
 
@@ -601,10 +594,10 @@ def main():
         results['changed'] = True
         results['exists'] = True
         if not module.check_mode:
+            if tags:
+                ct_params['TagList'] = ansible_dict_to_boto3_tag_list(tags)
             # If we aren't in check_mode then actually create it
             created_trail = create_trail(module, client, ct_params)
-            # Apply tags
-            tag_trail(module, client, tags=tags, trail_arn=created_trail['TrailARN'])
             # Get the trail status
             try:
                 status_resp = client.get_trail_status(Name=created_trail['Name'])
