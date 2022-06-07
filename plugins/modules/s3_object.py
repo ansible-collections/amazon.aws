@@ -8,13 +8,16 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: aws_s3
+module: s3_object
 version_added: 1.0.0
-short_description: manage objects in S3.
+short_description: Manage objects in S3
 description:
-    - This module allows the user to manage S3 buckets and the objects within them. Includes support for creating and
-      deleting both objects and buckets, retrieving objects as files or strings, generating download links and
-      copy of an object that is already stored in Amazon S3.
+  - This module allows the user to manage the objects and directories within S3 buckets. Includes
+    support for creating and deleting objects and directories, retrieving objects as files or
+    strings, generating download links and copying objects that are already stored in Amazon S3.
+  - Support for creating or deleting S3 buckets with this module has been deprecated and will be
+    removed in release 6.0.0.
+  - S3 buckets can be created or deleted using the M(amazon.aws.s3_bucket) module.
 options:
   bucket:
     description:
@@ -23,16 +26,18 @@ options:
     type: str
   dest:
     description:
-      - The destination file path when downloading an object/key with a C(GET) operation.
+      - The destination file path when downloading an object/key when I(mode=get).
+      - Ignored when I(mode) is not C(get).
     type: path
   encrypt:
     description:
-      - When set for PUT/COPY mode, asks for server-side encryption.
+      - Asks for server-side encryption of the objects when I(mode=put) or I(mode=copy).
+      - Ignored when I(mode) is neither C(put) nor C(copy).
     default: true
     type: bool
   encryption_mode:
     description:
-      - What encryption mode to use if I(encrypt=true).
+      - The encryption mode to use if I(encrypt=true).
     default: AES256
     choices:
       - AES256
@@ -40,53 +45,66 @@ options:
     type: str
   expiry:
     description:
-      - Time limit (in seconds) for the URL generated and returned by S3/Walrus when performing a I(mode=put) or I(mode=geturl) operation.
+      - Time limit (in seconds) for the URL generated and returned by S3/Walrus when performing a
+        I(mode=put) or I(mode=geturl) operation.
+      - Ignored when I(mode) is neither C(put) nor C(geturl).
     default: 600
     aliases: ['expiration']
     type: int
   headers:
     description:
-      - Custom headers for C(PUT) operation, as a dictionary of C(key=value) and C(key=value,key=value).
+      - Custom headers to use when I(mode=put) as a dictionary of key value pairs.
+      - Ignored when I(mode) is not C(put).
     type: dict
   marker:
     description:
-      - Specifies the key to start with when using list mode. Object keys are returned in alphabetical order, starting with key after the marker in order.
+      - Specifies the key to start with when using list mode. Object keys are returned in
+        alphabetical order, starting with key after the marker in order.
     type: str
   max_keys:
     description:
-      - Max number of results to return in list mode, set this if you want to retrieve fewer than the default 1000 keys.
+      - Max number of results to return when I(mode=list), set this if you want to retrieve fewer
+        than the default 1000 keys.
+      - Ignored when I(mode) is not C(list).
     default: 1000
     type: int
   metadata:
     description:
-      - Metadata for PUT/COPY operation, as a dictionary of C(key=value) and C(key=value,key=value).
+      - Metadata to use when I(mode=put) or I(mode=copy) as a dictionary of key value pairs.
     type: dict
   mode:
     description:
       - Switches the module behaviour between
-      - 'C(PUT): upload'
-      - 'C(GET): download'
+      - 'C(put): upload'
+      - 'C(get): download'
       - 'C(geturl): return download URL'
       - 'C(getstr): download object as string'
       - 'C(list): list keys'
-      - 'C(create): create bucket'
-      - 'C(delete): delete bucket'
+      - 'C(create): create bucket directories'
+      - 'C(delete): delete bucket directories'
       - 'C(delobj): delete object'
       - 'C(copy): copy object that is already stored in another bucket'
+      - Support for creating and deleting buckets has been deprecated and will
+        be removed in release 6.0.0.  To create and manage the bucket itself
+        please use the M(amazon.aws.s3_bucket) module.
     required: true
     choices: ['get', 'put', 'delete', 'create', 'geturl', 'getstr', 'delobj', 'list', 'copy']
     type: str
   object:
     description:
-      - Keyname of the object inside the bucket. Can be used to create "virtual directories", see examples.
+      - Keyname of the object inside the bucket.
+      - Can be used to create "virtual directories", see examples.
     type: str
   permission:
     description:
       - This option lets the user set the canned permissions on the object/bucket that are created.
-        The permissions that can be set are C(private), C(public-read), C(public-read-write), C(authenticated-read) for a bucket or
-        C(private), C(public-read), C(public-read-write), C(aws-exec-read), C(authenticated-read), C(bucket-owner-read),
-        C(bucket-owner-full-control) for an object. Multiple permissions can be specified as a list; although only the first one
-        will be used during the initial upload of the file
+        The permissions that can be set are C(private), C(public-read), C(public-read-write),
+        C(authenticated-read) for a bucket or C(private), C(public-read), C(public-read-write),
+        C(aws-exec-read), C(authenticated-read), C(bucket-owner-read), C(bucket-owner-full-control)
+        for an object. Multiple permissions can be specified as a list; although only the first one
+        will be used during the initial upload of the file.
+      - For a full list of permissions see the AWS documentation
+        U(https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl).
     default: ['private']
     type: list
     elements: str
@@ -97,18 +115,23 @@ options:
     type: str
   version:
     description:
-      - Version ID of the object inside the bucket. Can be used to get a specific version of a file if versioning is enabled in the target bucket.
+      - Version ID of the object inside the bucket. Can be used to get a specific version of a file
+        if versioning is enabled in the target bucket.
     type: str
   overwrite:
     description:
-      - Force overwrite either locally on the filesystem or remotely with the object/key. Used with C(PUT) and C(GET) operations.
+      - Force overwrite either locally on the filesystem or remotely with the object/key.
+      - Used when I(mode=put) or I(mode=get).
+      - Ignored when when I(mode) is neither C(put) nor C(get).
       - Must be a Boolean, C(always), C(never), C(different) or C(latest).
       - C(true) is the same as C(always).
       - C(false) is equal to C(never).
-      - When this is set to C(different) the MD5 sum of the local file is compared with the 'ETag' of the object/key in S3.
-        The ETag may or may not be an MD5 digest of the object data. See the ETag response header here
+      - When this is set to C(different) the MD5 sum of the local file is compared with the 'ETag'
+        of the object/key in S3.  The ETag may or may not be an MD5 digest of the object data. See
+        the ETag response header here
         U(https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html).
-      - (C(GET) mode only) When this is set to C(latest) the last modified timestamp of local file is compared with the 'LastModified' of the object/key in S3.
+      - When I(mode=get) and I(overwrite=latest) the last modified timestamp of local file
+        is compared with the 'LastModified' of the object/key in S3.
     default: 'always'
     aliases: ['force']
     type: str
@@ -137,39 +160,45 @@ options:
     type: bool
   src:
     description:
-      - The source file path when performing a C(PUT) operation.
-      - Either I(content), I(content_base64) or I(src) must be specified for a C(PUT) operation. Ignored otherwise.
+      - The source file path when performing a C(put) operation.
+      - One of I(content), I(content_base64) or I(src) must be specified when I(mode=put)
+        otherwise ignored.
     type: path
   content:
     description:
-      - The content to C(PUT) into an object.
-      - The parameter value will be treated as a string and converted to UTF-8 before sending it to S3.
-        To send binary data, use the I(content_base64) parameter instead.
-      - Either I(content), I(content_base64) or I(src) must be specified for a C(PUT) operation. Ignored otherwise.
+      - The content to C(put) into an object.
+      - The parameter value will be treated as a string and converted to UTF-8 before sending it to
+        S3.
+      - To send binary data, use the I(content_base64) parameter instead.
+      - One of I(content), I(content_base64) or I(src) must be specified when I(mode=put)
+        otherwise ignored.
     version_added: "1.3.0"
     type: str
   content_base64:
     description:
-      - The base64-encoded binary data to C(PUT) into an object.
+      - The base64-encoded binary data to C(put) into an object.
       - Use this if you need to put raw binary data, and don't forget to encode in base64.
-      - Either I(content), I(content_base64) or I(src) must be specified for a C(PUT) operation. Ignored otherwise.
+      - One of I(content), I(content_base64) or I(src) must be specified when I(mode=put)
+        otherwise ignored.
     version_added: "1.3.0"
     type: str
   ignore_nonexistent_bucket:
     description:
-      - "Overrides initial bucket lookups in case bucket or iam policies are restrictive. Example: a user may have the
-        C(GetObject) permission but no other permissions. In this case using the option mode: get will fail without specifying
-        I(ignore_nonexistent_bucket=true)."
+      - Overrides initial bucket lookups in case bucket or IAM policies are restrictive.
+      - This can be useful when a user may have the C(GetObject) permission but no other
+        permissions.  In which case using I(mode=get) will fail unless
+        I(ignore_nonexistent_bucket=true) is specified.
     type: bool
     default: false
   encryption_kms_key_id:
     description:
-      - KMS key id to use when encrypting objects using I(encrypting=aws:kms). Ignored if I(encryption) is not C(aws:kms).
+      - KMS key id to use when encrypting objects using I(encrypting=aws:kms).
+      - Ignored if I(encryption) is not C(aws:kms).
     type: str
   copy_src:
     description:
     - The source details of the object to copy.
-    - Required if I(mode) is C(copy).
+    - Required if I(mode=copy).
     type: dict
     version_added: 2.0.0
     suboptions:
@@ -191,39 +220,40 @@ options:
     description:
       - Whether the bucket name should be validated to conform to AWS S3 naming rules.
       - On by default, this may be disabled for S3 backends that do not enforce these rules.
-      - See https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
+      - See the Amazon documentation for more information about bucket naming rules
+        U(https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html).
     type: bool
     version_added: 3.1.0
     default: True
 author:
-    - "Lester Wade (@lwade)"
-    - "Sloane Hertel (@s-hertel)"
-    - "Alina Buzachis (@linabuzachis)"
+  - "Lester Wade (@lwade)"
+  - "Sloane Hertel (@s-hertel)"
+  - "Alina Buzachis (@linabuzachis)"
 notes:
-- Support for I(tags) and I(purge_tags) was added in release 2.0.0.
+  - Support for I(tags) and I(purge_tags) was added in release 2.0.0.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.tags
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = '''
 - name: Simple PUT operation
-  amazon.aws.aws_s3:
+  amazon.aws.s3_object:
     bucket: mybucket
     object: /my/desired/key.txt
     src: /usr/local/myfile.txt
     mode: put
 
 - name: PUT operation from a rendered template
-  amazon.aws.aws_s3:
+  amazon.aws.s3_object:
     bucket: mybucket
     object: /object.yaml
     content: "{{ lookup('template', 'templates/object.yaml.j2') }}"
     mode: put
 
 - name: Simple PUT operation in Ceph RGW S3
-  amazon.aws.aws_s3:
+  amazon.aws.s3_object:
     bucket: mybucket
     object: /my/desired/key.txt
     src: /usr/local/myfile.txt
@@ -232,14 +262,14 @@ EXAMPLES = '''
     s3_url: "http://localhost:8000"
 
 - name: Simple GET operation
-  amazon.aws.aws_s3:
+  amazon.aws.s3_object:
     bucket: mybucket
     object: /my/desired/key.txt
     dest: /usr/local/myfile.txt
     mode: get
 
 - name: Get a specific version of an object.
-  amazon.aws.aws_s3:
+  amazon.aws.s3_object:
     bucket: mybucket
     object: /my/desired/key.txt
     version: 48c9ee5131af7a716edc22df9772aa6f
@@ -247,7 +277,7 @@ EXAMPLES = '''
     mode: get
 
 - name: PUT/upload with metadata
-  amazon.aws.aws_s3:
+  amazon.aws.s3_object:
     bucket: mybucket
     object: /my/desired/key.txt
     src: /usr/local/myfile.txt
@@ -255,7 +285,7 @@ EXAMPLES = '''
     metadata: 'Content-Encoding=gzip,Cache-Control=no-cache'
 
 - name: PUT/upload with custom headers
-  amazon.aws.aws_s3:
+  amazon.aws.s3_object:
     bucket: mybucket
     object: /my/desired/key.txt
     src: /usr/local/myfile.txt
@@ -263,12 +293,12 @@ EXAMPLES = '''
     headers: 'x-amz-grant-full-control=emailAddress=owner@example.com'
 
 - name: List keys simple
-  amazon.aws.aws_s3:
+  amazon.aws.s3_object:
     bucket: mybucket
     mode: list
 
 - name: List keys all options
-  amazon.aws.aws_s3:
+  amazon.aws.s3_object:
     bucket: mybucket
     mode: list
     prefix: /my/desired/
@@ -276,25 +306,25 @@ EXAMPLES = '''
     max_keys: 472
 
 - name: Create an empty bucket
-  amazon.aws.aws_s3:
+  amazon.aws.s3_object:
     bucket: mybucket
     mode: create
     permission: public-read
 
 - name: Create a bucket with key as directory, in the EU region
-  amazon.aws.aws_s3:
+  amazon.aws.s3_object:
     bucket: mybucket
     object: /my/directory/path
     mode: create
     region: eu-west-1
 
 - name: Delete a bucket and all contents
-  amazon.aws.aws_s3:
+  amazon.aws.s3_object:
     bucket: mybucket
     mode: delete
 
 - name: GET an object but don't download if the file checksums match. New in 2.0
-  amazon.aws.aws_s3:
+  amazon.aws.s3_object:
     bucket: mybucket
     object: /my/desired/key.txt
     dest: /usr/local/myfile.txt
@@ -302,13 +332,13 @@ EXAMPLES = '''
     overwrite: different
 
 - name: Delete an object from a bucket
-  amazon.aws.aws_s3:
+  amazon.aws.s3_object:
     bucket: mybucket
     object: /my/desired/key.txt
     mode: delobj
 
 - name: Copy an object already stored in another bucket
-  amazon.aws.aws_s3:
+  amazon.aws.s3_object:
     bucket: mybucket
     object: /my/desired/key.txt
     mode: copy
@@ -462,6 +492,9 @@ def bucket_check(module, s3, bucket, validate=True):
 
 
 def create_bucket(module, s3, bucket, location=None):
+    module.deprecate('Support for creating S3 buckets using the s3_object module'
+                     ' has been deprecated.  Please use the ``s3_bucket`` module'
+                     ' instead.', version='6.0.0', collection_name='amazon.aws')
     if module.check_mode:
         module.exit_json(msg="CREATE operation skipped - running in check mode", changed=True)
     configuration = {}
@@ -518,6 +551,9 @@ def list_keys(module, s3, bucket, prefix, marker, max_keys):
 
 
 def delete_bucket(module, s3, bucket):
+    module.deprecate('Support for deleting S3 buckets using the s3_object module'
+                     ' has been deprecated.  Please use the ``s3_bucket`` module'
+                     ' instead.', version='6.0.0', collection_name='amazon.aws')
     if module.check_mode:
         module.exit_json(msg="DELETE operation skipped - running in check mode", changed=True)
     try:
