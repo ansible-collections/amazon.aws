@@ -556,6 +556,79 @@ E.g. if boto3 returns a value called 'SecretAccessKey' do not change it to 'Acce
 
 .. _ansible_collections.amazon.aws.docsite.dev_policies:
 
+Info modules
+------------
+
+Info modules that can return information on multiple resources should return a singular value representing a list of dictionaries,
+with each dictionary containing information about that particular resource (i.e. ``security_groups`` in ``ec2_group_info``).
+In cases where the _info module only returns information on a singular resource (i.e. ``ec2_tag_info``),
+a singular dictionary should be returned as opposed to a list of dictionaries.
+In cases where the _info module returns no instances, and empty list '[]' should be returned.
+Keys in the returned dictionaries should follow the guidelines above and use snake_case.
+If a return value can be used as a parameter for its corresponding main module, the key should match either
+the parameter name itself, or an alias of that parameter. The following is an example of improper usage of an info module with its respective main module:
+
+.. code-block:: yaml
+
+    "security_groups": [
+        {
+            "description": "Created by ansible integration tests",
+            "group_id": "sg-050dba5c3520cba71",
+            "group_name": "ansible-test-87988625-unknown5c5f67f3ad09-icmp-1",
+            "ip_permissions": [
+                {
+                    "from_port": 3,
+                    "ip_protocol": "icmp",
+                    "ip_ranges": [
+                        {
+                            "cidr_ip": "172.16.40.10/32"
+                        },
+                        {
+                            "cidr_ip": "10.0.0.0/8"
+                        }
+                    ],
+                    "ipv6_ranges": [],
+                    "prefix_list_ids": [],
+                    "to_port": 8,
+                    "user_id_group_pairs": []
+                }
+            ],
+            "ip_permissions_egress": [
+                {
+                    "ip_protocol": "-1",
+                    "ip_ranges": [
+                        {
+                            "cidr_ip": "0.0.0.0/0"
+                        }
+                    ],
+                    "ipv6_ranges": [],
+                    "prefix_list_ids": [],
+                    "user_id_group_pairs": []
+                }
+            ],
+            "owner_id": "721066863947",
+            "tags": {},
+            "vpc_id": "vpc-0cbc2380a326b8a0d"
+        }
+    ]
+
+The output above is what was returned by the ``ec2_group_info`` module. It correctly returns a list of dictionaries called ``security_groups``; however,
+the parameter names do not match those of the ``ec2_group`` module. ``ec2_group`` requires ``name``, meanwhile this returns ``group_name``.
+
+Deprecating return values
+-------------------------
+
+If changes need to be made to current return values, the new/"correct" keys should be returned **in addition to** the existing keys to preserve
+compability with existing playbooks. A deprecation should be added to the return values being replaced, initially placed 2 years out.
+For example:
+
+.. code-block:: python
+
+    # Deprecate old `iam_user` return key to be replaced by `user` introduced on 2022-05-01
+    module.deprecate("The 'iam_user' return key is deprecated and will be replaced by 'user'. Both values are returned for now.",
+                     date='2024-05-01', collection_name='community.aws')
+
+
 Dealing with IAM JSON policy
 ============================
 
