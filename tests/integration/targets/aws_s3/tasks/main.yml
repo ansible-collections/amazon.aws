@@ -885,6 +885,15 @@
           purge_tags: no
         register: result
 
+      - assert:
+          that:
+            - result is not changed
+            - "'tags' in result"
+            - (result.tags | length) == 3
+            - result.tags["tag_one"] == '{{ resource_prefix }} One'
+            - result.tags["tag_three"] == '{{ resource_prefix }} Three'
+            - result.tags["TagFour"] == '{{ resource_prefix }} tag_four'
+
       - name:  Enable bucket key for a S3 bucket
         aws_s3:
           encryption_bucket_key:
@@ -895,11 +904,6 @@
       - assert:
           that:
             - result is not changed
-            - "'tags' in result"
-            - (result.tags | length) == 3
-            - result.tags["tag_one"] == '{{ resource_prefix }} One'
-            - result.tags["tag_three"] == '{{ resource_prefix }} Three'
-            - result.tags["TagFour"] == '{{ resource_prefix }} tag_four'
       
       - name: Specify empty tags for an S3 object with purge_tags False
         aws_s3:
