@@ -161,3 +161,10 @@ default_logging_prefix: 'logs'
 updated_logging_prefix: 'mylogs'
 default_logging_interval: 5
 updated_logging_interval: 60
+
+local_certs:
+  - priv_key: "{{ remote_tmp_dir }}/private-1.pem"
+    cert: "{{ remote_tmp_dir }}/public-1.pem"
+    csr: "{{ remote_tmp_dir }}/csr-1.csr"
+    domain: "elb-classic.{{ tiny_prefix }}.ansible.test"
+    name: "{{ resource_prefix }}_{{ resource_prefix }}_1"

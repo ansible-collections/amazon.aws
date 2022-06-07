@@ -1,0 +1,126 @@
+# Create a SSL Certificate to use in test
+
+- name: Generate private key for local certs
+  with_items: '{{ local_certs }}'
+  community.crypto.openssl_privatekey:
+    path: '{{ item.priv_key }}'
+    type: RSA
+    size: 2048
+
+- name: Generate an OpenSSL Certificate Signing Request for own certs
+  with_items: '{{ local_certs }}'
+  community.crypto.openssl_csr:
+    path: '{{ item.csr }}'
+    privatekey_path: '{{ item.priv_key }}'
+    common_name: '{{ item.domain }}'
+
+- name: Generate a Self Signed OpenSSL certificate for own certs
+  with_items: '{{ local_certs }}'
+  community.crypto.x509_certificate:
+    provider: selfsigned
+    path: '{{ item.cert }}'
+    csr_path: '{{ item.csr }}'
+    privatekey_path: '{{ item.priv_key }}'
+    selfsigned_digest: sha256
+  register: cert_create_result
+
+- name: upload certificates first time
+  aws_acm:
+    name_tag: '{{ item.name }}'
+    certificate: '{{ lookup(''file'', item.cert ) }}'
+    private_key: '{{ lookup(''file'', item.priv_key ) }}'
+    state: present
+    tags:
+      Application: search
+      Environment: development
+    purge_tags: false
+  register: upload
+  with_items: '{{ local_certs }}'
+  until: upload is succeeded
+  retries: 5
+  delay: 10
+
+- set_fact:
+    cert_arn: '{{ upload.results[0].certificate.arn }}'
+
+# Create ELB definition
+
+- name: Create elb definition
+  set_fact:
+    elb_definition:
+      connection_draining_timeout: 5
+      listeners:
+        - instance_port: 8080
+          instance_protocol: http
+          load_balancer_port: 443
+          protocol: https
+          ssl_certificate_id: "{{ cert_arn }}"
+      zones: ['{{ availability_zone_a }}']
+      name: "{{ tiny_prefix }}-integration-test-lb"
+      region: "{{ aws_region }}"
+      state: present
+      tags:
+        TestId: "{{ tiny_prefix }}"
+
+# Test creating ELB
+
+- name: Create a classic ELB with https method listeners - check_mode
+  amazon.aws.elb_classic_lb: "{{ elb_definition }}"
+  register: elb_create_result
+  check_mode: true
+- assert:
+    that:
+      - elb_create_result is changed
+      - elb_create_result.elb.status == "created"
+      - elb_create_result.load_balancer | length == 0
+      - "'elasticloadbalancing:CreateLoadBalancer' not in {{ elb_create_result.resource_actions }}"
+
+- name: Create a classic ELB with https method listeners
+  amazon.aws.elb_classic_lb: "{{ elb_definition }}"
+  register: elb_create_result
+- assert:
+    that:
+      - elb_create_result is changed
+      - elb_create_result.elb.status == "created"
+      - elb_create_result.load_balancer | length != 0
+      - "'elasticloadbalancing:CreateLoadBalancer' in {{ elb_create_result.resource_actions }}"
+
+- name: Create a classic ELB with https method listeners - idempotency - check_mode
+  amazon.aws.elb_classic_lb: "{{ elb_definition }}"
+  register: elb_create_result
+  check_mode: true
+- assert:
+    that:
+      - elb_create_result is not changed
+      - elb_create_result.elb.status != "created"
+      - elb_create_result.elb.status == "exists"
+      - elb_create_result.load_balancer | length != 0
+      - "'elasticloadbalancing:CreateLoadBalancer' not in {{ elb_create_result.resource_actions }}"
+
+- name: Create a classic ELB with https method listeners - idempotency
+  amazon.aws.elb_classic_lb: "{{ elb_definition }}"
+  register: elb_create_result
+- assert:
+    that:
+      - elb_create_result is not changed
+      - elb_create_result.elb.status != "created"
+      - elb_create_result.elb.status == "exists"
+      - elb_create_result.load_balancer | length != 0
+      - "'elasticloadbalancing:CreateLoadBalancer' not in {{ elb_create_result.resource_actions }}"
+
+# Remove ELB and certificate created during this test
+
+- name: Delete the ELB created during the test
+  amazon.aws.elb_classic_lb:
+    name: "{{ tiny_prefix }}-integration-test-lb"
+    state: absent
+
+- name: Delete the certificate created in this test
+  community.aws.aws_acm:
+    certificate_arn: '{{ cert_arn }}'
+    state: absent
+  register: delete_result
+- assert:
+    that:
+      - delete_result is changed
+      - delete_result is not failed
