@@ -99,7 +99,7 @@ dhcp_options:
               - '{"key": "ntp-servers", "values": [{"value": "10.0.0.2" , "value": "10.0.1.2"}]}'
               - '{"key": "netbios-name-servers", "values": [{value": "10.0.0.1"}, {"value": "10.0.1.1" }]}'
         dhcp_options_id:
-            description: The aws resource id of the primary DCHP options set created or found.
+            description: The aws resource id of the primary DHCP options set created or found.
             type: str
             sample: "dopt-0955331de6a20dd07"
         owner_id:
