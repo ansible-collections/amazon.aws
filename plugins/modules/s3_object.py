@@ -1011,8 +1011,7 @@ def main():
 
     if overwrite not in ['always', 'never', 'different', 'latest']:
         if module.boolean(overwrite):
-            # Fall to default configuration
-            overwrite = 'different'
+            overwrite = 'always'
         else:
             overwrite = 'never'
 
