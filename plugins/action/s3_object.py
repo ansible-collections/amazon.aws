@@ -31,7 +31,11 @@ class ActionModule(ActionBase):
     TRANSFERS_FILES = True
 
     def run(self, tmp=None, task_vars=None):
-        ''' handler for aws_s3 operations '''
+        ''' handler for s3_object operations
+
+        This adds the magic that means 'src' can point to both a 'remote' file
+        on the 'host' or in the 'files/' lookup path on the controller.
+        '''
         self._supports_async = True
 
         if task_vars is None:
@@ -59,7 +63,7 @@ class ActionModule(ActionBase):
                         raise AnsibleActionFail(to_text(e))
 
             wrap_async = self._task.async_val and not self._connection.has_native_async
-            # execute the aws_s3 module with the updated args
+            # execute the s3_object module with the updated args
             result = merge_hash(result, self._execute_module(module_args=new_module_args, task_vars=task_vars, wrap_async=wrap_async))
 
             if not wrap_async:
