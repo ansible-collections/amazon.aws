@@ -38,8 +38,10 @@ options:
     cluster:
         description:
           - The name of the cluster in which the service exists.
+          - If not specified, the cluster name will be C(default).
         required: false
         type: str
+        default: 'default'
     task_definition:
         description:
           - The task definition the service will run.
@@ -657,8 +659,9 @@ class EcsServiceManager:
         if expected['task_definition'] != existing['taskDefinition'].split('/')[-1]:
             return False
 
-        if expected.get('health_check_grace_period_seconds') != existing.get('healthCheckGracePeriodSeconds'):
-            return False
+        if expected.get('health_check_grace_period_seconds'):
+            if expected.get('health_check_grace_period_seconds') != existing.get('healthCheckGracePeriodSeconds'):
+                return False
 
         if (expected['load_balancers'] or []) != existing['loadBalancers']:
             return False
@@ -766,7 +769,7 @@ def main():
     argument_spec = dict(
         state=dict(required=True, choices=['present', 'absent', 'deleting']),
         name=dict(required=True, type='str', aliases=['service']),
-        cluster=dict(required=False, type='str'),
+        cluster=dict(required=False, type='str', default='default'),
         task_definition=dict(required=False, type='str'),
         load_balancers=dict(required=False, default=[], type='list', elements='dict'),
         desired_count=dict(required=False, type='int'),

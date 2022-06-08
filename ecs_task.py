@@ -28,8 +28,10 @@ options:
     cluster:
         description:
             - The name of the cluster to run the task on.
-        required: True
+            - If not specified, the cluster name will be C(default).
+        required: False
         type: str
+        default: 'default'
     task_definition:
         description:
             - The task definition to start, run or stop.
@@ -342,7 +344,7 @@ class EcsExecManager:
 def main():
     argument_spec = dict(
         operation=dict(required=True, choices=['run', 'start', 'stop']),
-        cluster=dict(required=True, type='str'),  # R S P
+        cluster=dict(required=False, type='str', default='default'),  # R S P
         task_definition=dict(required=False, type='str'),  # R* S*
         overrides=dict(required=False, type='dict'),  # R S
         count=dict(required=False, type='int'),  # R
