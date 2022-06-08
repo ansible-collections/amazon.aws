@@ -57,10 +57,6 @@ options:
         - Name of cloudwatch metrics.
         - If not given and cloudwatch_metrics is enabled, the name of the web acl itself will be taken.
       type: str
-    tags:
-      description:
-        - tags for wafv2 web acl.
-      type: dict
     rules:
       description:
         - The Rule statements used to identify the web requests that you want to allow, block, or count.
@@ -102,9 +98,13 @@ options:
       default: yes
       type: bool
 
+notes:
+  - Support for the I(purge_tags) parameter was added in release 4.0.0.
+
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 
 '''
 
@@ -323,6 +323,8 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict
 from ansible_collections.community.aws.plugins.module_utils.wafv2 import compare_priority_rules
+from ansible_collections.community.aws.plugins.module_utils.wafv2 import describe_wafv2_tags
+from ansible_collections.community.aws.plugins.module_utils.wafv2 import ensure_wafv2_tags
 from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_list_web_acls
 from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_snake_dict_to_camel_dict
 
@@ -403,6 +405,8 @@ class WebACL:
                 )
             except (BotoCoreError, ClientError) as e:
                 self.fail_json_aws(e, msg="Failed to get wafv2 web acl.")
+            tags = describe_wafv2_tags(self.wafv2, arn, self.fail_json_aws)
+            existing_acl['tags'] = tags
         return existing_acl, id, locktoken
 
     def list(self):
@@ -461,9 +465,10 @@ def main():
         sampled_requests=dict(type='bool', default=False),
         cloudwatch_metrics=dict(type='bool', default=True),
         metric_name=dict(type='str'),
-        tags=dict(type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
+        purge_tags=dict(default=True, type='bool'),
         custom_response_bodies=dict(type='dict'),
-        purge_rules=dict(default=True, type='bool')
+        purge_rules=dict(default=True, type='bool'),
     )
 
     module = AnsibleAWSModule(
@@ -482,6 +487,7 @@ def main():
     cloudwatch_metrics = module.params.get("cloudwatch_metrics")
     metric_name = module.params.get("metric_name")
     tags = module.params.get("tags")
+    purge_tags = module.params.get("purge_tags")
     purge_rules = module.params.get("purge_rules")
     check_mode = module.check_mode
 
@@ -506,12 +512,14 @@ def main():
     if not metric_name:
         metric_name = name
 
-    web_acl = WebACL(module.client('wafv2'), name, scope, module.fail_json_aws)
+    wafv2 = module.client('wafv2')
+    web_acl = WebACL(wafv2, name, scope, module.fail_json_aws)
     change = False
     retval = {}
 
     if state == 'present':
         if web_acl.get():
+            tags_changed = ensure_wafv2_tags(wafv2, web_acl.get().get('WebACL').get('ARN'), tags, purge_tags, module.fail_json_aws, module.check_mode)
             change, rules = compare_priority_rules(web_acl.get().get('WebACL').get('Rules'), rules, purge_rules, state)
             change = change or (description and web_acl.get().get('WebACL').get('Description') != description)
             change = change or (default_action and web_acl.get().get('WebACL').get('DefaultAction') != default_action)
@@ -526,9 +534,12 @@ def main():
                     metric_name,
                     custom_response_bodies
                 )
-
+            elif tags_changed:
+                retval, id, locktoken = web_acl.get_web_acl()
             else:
-                retval = web_acl.get().get('WebACL')
+                retval = web_acl.get()
+
+            change |= tags_changed
 
         else:
             change = True

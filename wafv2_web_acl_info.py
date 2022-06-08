@@ -96,6 +96,7 @@ except ImportError:
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
+from ansible_collections.community.aws.plugins.module_utils.wafv2 import describe_wafv2_tags
 from ansible_collections.community.aws.plugins.module_utils.wafv2 import wafv2_list_web_acls
 
 
@@ -132,15 +133,19 @@ def main():
     response = wafv2_list_web_acls(wafv2, scope, module.fail_json_aws)
 
     id = None
+    arn = None
     retval = {}
 
     for item in response.get('WebACLs'):
         if item.get('Name') == name:
             id = item.get('Id')
+            arn = item.get('ARN')
 
     if id:
         existing_acl = get_web_acl(wafv2, name, scope, id, module.fail_json_aws)
         retval = camel_dict_to_snake_dict(existing_acl.get('WebACL'))
+        tags = describe_wafv2_tags(wafv2, arn, module.fail_json_aws)
+        retval['tags'] = tags
 
     module.exit_json(**retval)
 
