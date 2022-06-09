@@ -10,7 +10,7 @@ DOCUMENTATION = '''
 ---
 module: ec2_tag
 version_added: 1.0.0
-short_description: create and remove tags on ec2 resources
+short_description: Create and remove tags on ec2 resources
 description:
     - Creates, modifies and removes tags for any EC2 resource.
     - Resources are referenced by their resource id (for example, an instance being i-XXXXXXX, a VPC being vpc-XXXXXXX).

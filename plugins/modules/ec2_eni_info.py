@@ -48,12 +48,12 @@ EXAMPLES = '''
 
 RETURN = '''
 network_interfaces:
-  description: List of matching elastic network interfaces
+  description: List of matching elastic network interfaces.
   returned: always
   type: complex
   contains:
     association:
-      description: Info of associated elastic IP (EIP)
+      description: Info of associated elastic IP (EIP).
       returned: When an ENI is associated with an EIP
       type: dict
       sample: {
@@ -64,7 +64,7 @@ network_interfaces:
           public_ip: "52.1.0.63"
         }
     attachment:
-      description: Info about attached ec2 instance
+      description: Info about attached ec2 instance.
       returned: When an ENI is attached to an ec2 instance
       type: dict
       sample: {
@@ -77,17 +77,17 @@ network_interfaces:
         status: "attached"
       }
     availability_zone:
-      description: Availability zone of ENI
+      description: Availability zone of ENI.
       returned: always
       type: str
       sample: "us-east-1b"
     description:
-      description: Description text for ENI
+      description: Description text for ENI.
       returned: always
       type: str
       sample: "My favourite network interface"
     groups:
-      description: List of attached security groups
+      description: List of attached security groups.
       returned: always
       type: list
       sample: [
@@ -97,57 +97,57 @@ network_interfaces:
         }
       ]
     id:
-      description: The id of the ENI (alias for network_interface_id)
+      description: The id of the ENI (alias for network_interface_id).
       returned: always
       type: str
       sample: "eni-392fsdf"
     interface_type:
-      description: Type of the network interface
+      description: Type of the network interface.
       returned: always
       type: str
       sample: "interface"
     ipv6_addresses:
-      description: List of IPv6 addresses for this interface
+      description: List of IPv6 addresses for this interface.
       returned: always
       type: list
       sample: []
     mac_address:
-      description: MAC address of the network interface
+      description: MAC address of the network interface.
       returned: always
       type: str
       sample: "0a:f8:10:2f:ab:a1"
     name:
-      description: The Name tag of the ENI, often displayed in the AWS UIs as Name
+      description: The Name tag of the ENI, often displayed in the AWS UIs as Name.
       returned: When a Name tag has been set
       type: str
       version_added: 1.3.0
     network_interface_id:
-      description: The id of the ENI
+      description: The id of the ENI.
       returned: always
       type: str
       sample: "eni-392fsdf"
     owner_id:
-      description: AWS account id of the owner of the ENI
+      description: AWS account id of the owner of the ENI.
       returned: always
       type: str
       sample: "4415120123456"
     private_dns_name:
-      description: Private DNS name for the ENI
+      description: Private DNS name for the ENI.
       returned: always
       type: str
       sample: "ip-172-16-1-180.ec2.internal"
     private_ip_address:
-      description: Private IP address for the ENI
+      description: Private IP address for the ENI.
       returned: always
       type: str
       sample: "172.16.1.180"
     private_ip_addresses:
-      description: List of private IP addresses attached to the ENI
+      description: List of private IP addresses attached to the ENI.
       returned: always
       type: list
       sample: []
     requester_id:
-      description: The ID of the entity that launched the ENI
+      description: The ID of the entity that launched the ENI.
       returned: always
       type: str
       sample: "AIDAIONYVJQNIAZFT3ABC"
@@ -162,28 +162,28 @@ network_interfaces:
       type: bool
       sample: false
     status:
-      description: Indicates if the network interface is attached to an instance or not
+      description: Indicates if the network interface is attached to an instance or not.
       returned: always
       type: str
       sample: "in-use"
     subnet_id:
-      description: Subnet ID the ENI is in
+      description: Subnet ID the ENI is in.
       returned: always
       type: str
       sample: "subnet-7bbf01234"
     tags:
-      description: Dictionary of tags added to the ENI
+      description: Dictionary of tags added to the ENI.
       returned: always
       type: dict
       sample: {}
       version_added: 1.3.0
     tag_set:
-      description: Dictionary of tags added to the ENI
+      description: Dictionary of tags added to the ENI.
       returned: always
       type: dict
       sample: {}
     vpc_id:
-      description: ID of the VPC the network interface it part of
+      description: ID of the VPC the network interface it part of.
       returned: always
       type: str
       sample: "vpc-b3f1f123"

@@ -10,7 +10,7 @@ DOCUMENTATION = '''
 ---
 module: ec2_spot_instance
 version_added: 2.0.0
-short_description: request, stop, reboot or cancel spot instance
+short_description: Request, stop, reboot or cancel spot instance
 description:
     - Creates or cancels spot instance requests.
 author:

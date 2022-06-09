@@ -14,7 +14,7 @@ version_added: 1.0.0
 author:
   - "Andrew de Quincey (@adq)"
   - "Razique Mahroua (@Razique)"
-short_description: maintain an ec2 VPC security group.
+short_description: Maintain an ec2 VPC security group
 description:
     - Maintains ec2 security groups.
 options:

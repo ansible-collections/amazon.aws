@@ -8,7 +8,7 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 module: ec2_vpc_nat_gateway_info
-short_description: Retrieves AWS VPC Managed Nat Gateway details using AWS methods.
+short_description: Retrieves AWS VPC Managed Nat Gateway details using AWS methods
 version_added: 1.0.0
 description:
   - Gets various details related to AWS VPC Managed Nat Gateways
@@ -67,74 +67,74 @@ EXAMPLES = r'''
 
 RETURN = r'''
 changed:
-  description: True if listing the internet gateways succeeds
+  description: True if listing the internet gateways succeeds.
   type: bool
   returned: always
   sample: false
 result:
   description:
     - The result of the describe, converted to ansible snake case style.
-    - See also U(http://boto3.readthedocs.io/en/latest/reference/services/ec2.html#EC2.Client.describe_nat_gateways)
+    - See also U(http://boto3.readthedocs.io/en/latest/reference/services/ec2.html#EC2.Client.describe_nat_gateways).
   returned: suceess
   type: list
   contains:
     create_time:
-        description: The date and time the NAT gateway was created
+        description: The date and time the NAT gateway was created.
         returned: always
         type: str
         sample: "2021-03-11T22:43:25+00:00"
     delete_time:
-        description: The date and time the NAT gateway was deleted
+        description: The date and time the NAT gateway was deleted.
         returned: when the NAT gateway has been deleted
         type: str
         sample: "2021-03-11T22:43:25+00:00"
     nat_gateway_addresses:
-        description: List containing a dictionary with the IP addresses and network interface associated with the NAT gateway
+        description: List containing a dictionary with the IP addresses and network interface associated with the NAT gateway.
         returned: always
         type: dict
         contains:
             allocation_id:
-                description: The allocation ID of the Elastic IP address that's associated with the NAT gateway
+                description: The allocation ID of the Elastic IP address that's associated with the NAT gateway.
                 returned: always
                 type: str
                 sample: eipalloc-0853e66a40803da76
             network_interface_id:
-                description: The ID of the network interface associated with the NAT gateway
+                description: The ID of the network interface associated with the NAT gateway.
                 returned: always
                 type: str
                 sample: eni-0a37acdbe306c661c
             private_ip:
-                description: The private IP address associated with the Elastic IP address
+                description: The private IP address associated with the Elastic IP address.
                 returned: always
                 type: str
                 sample: 10.0.238.227
             public_ip:
-                description: The Elastic IP address associated with the NAT gateway
+                description: The Elastic IP address associated with the NAT gateway.
                 returned: always
                 type: str
                 sample: 34.204.123.52
     nat_gateway_id:
-        description: The ID of the NAT gateway
+        description: The ID of the NAT gateway.
         returned: always
         type: str
         sample: nat-0c242a2397acf6173
     state:
-        description: state of the NAT gateway
+        description: state of the NAT gateway.
         returned: always
         type: str
         sample: available
     subnet_id:
-        description: The ID of the subnet in which the NAT gateway is located
+        description: The ID of the subnet in which the NAT gateway is located.
         returned: always
         type: str
         sample: subnet-098c447465d4344f9
     vpc_id:
-        description: The ID of the VPC in which the NAT gateway is located
+        description: The ID of the VPC in which the NAT gateway is located.
         returned: always
         type: str
         sample: vpc-02f37f48438ab7d4c
     tags:
-        description: Tags applied to the NAT gateway
+        description: Tags applied to the NAT gateway.
         returned: always
         type: dict
         sample:

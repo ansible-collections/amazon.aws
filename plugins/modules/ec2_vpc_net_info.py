@@ -59,7 +59,7 @@ vpcs:
             returned: always
             type: str
         vpc_id:
-            description: The ID of the VPC .
+            description: The ID of the VPC.
             returned: always
             type: str
         state:
@@ -104,7 +104,7 @@ vpcs:
             type: complex
             contains:
                 association_id:
-                    description: The association ID
+                    description: The association ID.
                     returned: always
                     type: str
                 cidr_block:
@@ -126,7 +126,7 @@ vpcs:
             type: complex
             contains:
                 association_id:
-                    description: The association ID
+                    description: The association ID.
                     returned: always
                     type: str
                 ipv6_cidr_block:

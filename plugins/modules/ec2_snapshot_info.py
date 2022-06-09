@@ -114,7 +114,7 @@ EXAMPLES = r'''
 
 RETURN = r'''
 snapshots:
-    description: snapshots retrieved
+    description: List of snapshots retrieved with their respective info.
     type: list
     returned: success
     elements: dict

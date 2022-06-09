@@ -65,7 +65,139 @@ RETURN = '''
 spot_request:
     description:  The gathered information about specified spot instance requests.
     returned: when success
-    type: dict
+    type: list
+    elements: dict
+    contains:
+        create_time:
+            description: The date and time when the Spot Instance request was created.
+            returned: always
+            type: str
+        instance_id:
+            description: The instance ID, if an instance has been launched to fulfill the Spot Instance request.
+            returned: when instance exists
+            type: str
+        instance_interruption_behavior:
+            description: The behavior when a Spot Instance is interruped.
+            returned: always
+            type: str
+        launch_specification:
+            description: Additional information for launching instances.
+            returned: always
+            type: dict
+            contains:
+                ebs_optimized:
+                    description: Indicates whether the instance is optimized for EBS I/O.
+                    returned: always
+                    type: bool
+                image_id:
+                    description: The ID of the AMI.
+                    returned: always
+                    type: str
+                instance_type:
+                    description: The instance type.
+                    returned: always
+                    type: str
+                key_name:
+                    description: The name of the key pair.
+                    returned: always
+                    type: str
+                monitoring:
+                    description: Described the monitoring of an instance.
+                    returned: always
+                    type: dict
+                    contains:
+                        enabled:
+                            description: Indicated whether detailed monitoring is enabled.
+                            returned: always
+                            type: bool
+                placement:
+                    description: The placement information for the instance.
+                    returned: always
+                    type: dict
+                    contains:
+                        availability_zone:
+                            description: The name of the availability zone.
+                            returned: always
+                            type: str
+                security_groups:
+                    description: List of security groups.
+                    returned: always
+                    type: list
+                    elements: dict
+                    contains:
+                        group_id:
+                            description: The ID of the security group.
+                            returned: always
+                            type: str
+                        group_name:
+                            description: The name of the security group.
+                            returned: always
+                            type: str
+                subnet_id:
+                    description: The ID of the subnet.
+                    returned: when creating a network interface when launching an instance
+                    type: str
+        launched_availability_zone:
+            description: The availability zone in which the request is launched.
+            returned: always
+            type: str
+        product_description:
+            description: The product description associated with the Spot Instance.
+            returned: always
+            type: str
+        spot_instance_request_id:
+            description: The ID of the Spot Instance request.
+            returned: always
+            type: str
+        spot_price:
+            description: The maximum price per hour that you are willing to pay for a Spot Instance.
+            returned: always
+            type: str
+        state:
+            description: The state of the Spot Instance request.
+            returned: always
+            type: str
+        status:
+            description: Extra information about the status of the Spot Instance request.
+            returned: always
+            type: dict
+            contains:
+                code:
+                    description:
+                        - The status code.
+                        - See https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-request-status.html#spot-instance-request-status-understand for codes.
+                    returned: always
+                    type: str
+                message:
+                    description: The description of the status code.
+                    returned: always
+                    type: str
+                update_time:
+                    description: The date and time of the most recent status update in UTC format.
+                    returned: always
+                    type: str
+        tags:
+            description: List of tags associated with the resource.
+            returned: always
+            type: list
+            elements: dict
+            contains:
+                key:
+                    description: The key of the tag.
+                    returned: always
+                    type: str
+                value:
+                    description: The value of the tag.
+                    returned: always
+                    type: str
+        type:
+            description: The Spot Instance request type.
+            returned: always
+            type: str
+        valid_until:
+            description: The end date of the request in UTC format.
+            returned: always
+            type: str
     sample: {
         "create_time": "2021-09-01T21:05:57+00:00",
         "instance_id": "i-08877936b801ac475",

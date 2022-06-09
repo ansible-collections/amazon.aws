@@ -84,7 +84,7 @@ EXAMPLES = r'''
 
 RETURN = r'''
 instances:
-    description: a list of ec2 instances
+    description: A list of ec2 instances.
     returned: always
     type: complex
     contains:
@@ -94,7 +94,7 @@ instances:
             type: int
             sample: 0
         architecture:
-            description: The architecture of the image
+            description: The architecture of the image.
             returned: always
             type: str
             sample: x86_64
@@ -129,7 +129,7 @@ instances:
                             type: str
                             sample: attached
                         volume_id:
-                            description: The ID of the EBS volume
+                            description: The ID of the EBS volume.
                             returned: always
                             type: str
                             sample: vol-12345678
@@ -174,7 +174,7 @@ instances:
                     type: str
                     sample: "arn:aws:iam::000012345678:instance-profile/myprofile"
                 id:
-                    description: The ID of the instance profile
+                    description: The ID of the instance profile.
                     returned: always
                     type: str
                     sample: JFJ397FDG400FG9FD1N
@@ -428,12 +428,12 @@ instances:
             type: str
             sample:
         public_ip_address:
-            description: The public IPv4 address assigned to the instance
+            description: The public IPv4 address assigned to the instance.
             returned: always
             type: str
             sample: 52.0.0.1
         root_device_name:
-            description: The device name of the root device
+            description: The device name of the root device.
             returned: always
             type: str
             sample: /dev/sda1

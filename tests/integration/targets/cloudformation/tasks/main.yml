@@ -123,6 +123,15 @@
           - "'stack_outputs' in cf_stack and 'InstanceId' in cf_stack.stack_outputs"
           - "'stack_resources' in cf_stack"
 
+    - name: get all stacks details
+      cloudformation_info:
+      register: all_stacks_info
+
+    - name: assert all stacks info
+      assert:
+        that:
+          - all_stacks_info | length > 0
+
     - name: get stack details
       cloudformation_info:
         stack_name: "{{ stack_name }}"
