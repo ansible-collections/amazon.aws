@@ -8,7 +8,7 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 module: ec2_vpc_vgw
-short_description: Create and delete AWS VPN Virtual Gateways.
+short_description: Create and delete AWS VPN Virtual Gateways
 version_added: 1.0.0
 description:
   - Creates AWS VPN Virtual Gateways
@@ -18,52 +18,50 @@ description:
 options:
   state:
     description:
-        - present to ensure resource is created.
-        - absent to remove resource
+      - C(present) to ensure resource is created.
+      - C(absent) to remove resource.
     default: present
     choices: [ "present", "absent"]
     type: str
   name:
     description:
-        - name of the vgw to be created or deleted
+      - Name of the VGW to be created or deleted.
     type: str
   type:
     description:
-        - type of the virtual gateway to be created
+      - Type of the virtual gateway to be created.
     choices: [ "ipsec.1" ]
     default: "ipsec.1"
     type: str
   vpn_gateway_id:
     description:
-        - vpn gateway id of an existing virtual gateway
+      - VPN gateway ID of an existing virtual gateway.
     type: str
   vpc_id:
     description:
-        - the vpc-id of a vpc to attach or detach
+      - The ID of a VPC to attach or detach to the VGW.
     type: str
   asn:
     description:
-        - the BGP ASN of the amazon side
+      - The BGP ASN on the Amazon side.
     type: int
   wait_timeout:
     description:
-        - number of seconds to wait for status during vpc attach and detach
+      - Number of seconds to wait for status during VPC attach and detach.
     default: 320
     type: int
-  tags:
-    description:
-        - dictionary of resource tags
-    aliases: [ "resource_tags" ]
-    type: dict
-author: Nick Aslanidis (@naslanidis)
+notes:
+  - Support for I(purge_tags) was added in release 4.0.0.
+author:
+  - Nick Aslanidis (@naslanidis)
 extends_documentation_fragment:
-- amazon.aws.ec2
-- amazon.aws.aws
-
+  - amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.tags
 '''
 
 EXAMPLES = '''
-- name: Create a new vgw attached to a specific VPC
+- name: Create a new VGW attached to a specific VPC
   community.aws.ec2_vpc_vgw:
     state: present
     region: ap-southeast-2
@@ -73,7 +71,7 @@ EXAMPLES = '''
     type: ipsec.1
   register: created_vgw
 
-- name: Create a new unattached vgw
+- name: Create a new unattached VGW
   community.aws.ec2_vpc_vgw:
     state: present
     region: ap-southeast-2
@@ -85,7 +83,7 @@ EXAMPLES = '''
       owner: ABC
   register: created_vgw
 
-- name: Remove a new vgw using the name
+- name: Remove a new VGW using the name
   community.aws.ec2_vpc_vgw:
     state: absent
     region: ap-southeast-2
@@ -94,7 +92,7 @@ EXAMPLES = '''
     type: ipsec.1
   register: deleted_vgw
 
-- name: Remove a new vgw using the vpn_gateway_id
+- name: Remove a new VGW using the vpn_gateway_id
   community.aws.ec2_vpc_vgw:
     state: absent
     region: ap-southeast-2
@@ -104,10 +102,36 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
-result:
-  description: The result of the create, or delete action.
+vgw:
+  description: A description of the VGW
   returned: success
   type: dict
+  contains:
+    id:
+      description: The ID of the VGW.
+      type: str
+      returned: success
+      example: "vgw-0123456789abcdef0"
+    state:
+      description: The state of the VGW.
+      type: str
+      returned: success
+      example: "available"
+    tags:
+      description: A dictionary representing the tags attached to the VGW
+      type: dict
+      returned: success
+      example: { "Name": "ansible-test-ec2-vpc-vgw" }
+    type:
+      description: The type of VPN connection the virtual private gateway supports.
+      type: str
+      returned: success
+      example: "ipsec.1"
+    vpc_id:
+      description: The ID of the VPC to which the VGW is attached.
+      type: str
+      returned: success
+      example: vpc-123456789abcdef01
 '''
 
 import time
@@ -120,7 +144,10 @@ except ImportError:
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ensure_ec2_tags
 from ansible_collections.amazon.aws.plugins.module_utils.waiters import get_waiter
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 
 
 # AWS uses VpnGatewayLimitExceeded for both 'Too many VGWs' and 'Too many concurrent changes'
@@ -159,8 +186,8 @@ def get_vgw_info(vgws):
             'tags': dict()
         }
 
-        for tag in vgw['Tags']:
-            vgw_info['tags'][tag['Key']] = tag['Value']
+        if vgw['Tags']:
+            vgw_info['tags'] = boto3_tag_list_to_ansible_dict(vgw['Tags'])
 
         if len(vgw['VpcAttachments']) != 0 and vgw['VpcAttachments'][0]['State'] == 'attached':
             vgw_info['vpc_id'] = vgw['VpcAttachments'][0]['VpcId']
@@ -234,6 +261,9 @@ def detach_vgw(client, module, vpn_gateway_id, vpc_id=None):
 def create_vgw(client, module):
     params = dict()
     params['Type'] = module.params.get('type')
+    tags = module.params.get('tags') or {}
+    tags['Name'] = module.params.get('name')
+    params['TagSpecifications'] = boto3_tag_specifications(tags, ['vpn-gateway'])
     if module.params.get('asn'):
         params['AmazonSideAsn'] = module.params.get('asn')
 
@@ -265,92 +295,6 @@ def delete_vgw(client, module, vpn_gateway_id):
     # return the deleted VpnGatewayId as this is not included in the above response
     result = vpn_gateway_id
     return result
-
-
-def create_tags(client, module, vpn_gateway_id):
-    params = dict()
-
-    try:
-        response = client.create_tags(Resources=[vpn_gateway_id], Tags=load_tags(module), aws_retry=True)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to add tags")
-
-    result = response
-    return result
-
-
-def delete_tags(client, module, vpn_gateway_id, tags_to_delete=None):
-    params = dict()
-
-    try:
-        if tags_to_delete:
-            response = client.delete_tags(Resources=[vpn_gateway_id], Tags=tags_to_delete, aws_retry=True)
-        else:
-            response = client.delete_tags(Resources=[vpn_gateway_id], aws_retry=True)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Unable to remove tags from gateway')
-
-    result = response
-    return result
-
-
-def load_tags(module):
-    tags = []
-
-    if module.params.get('tags'):
-        for name, value in module.params.get('tags').items():
-            tags.append({'Key': name, 'Value': str(value)})
-        tags.append({'Key': "Name", 'Value': module.params.get('name')})
-    else:
-        tags.append({'Key': "Name", 'Value': module.params.get('name')})
-    return tags
-
-
-def find_tags(client, module, resource_id=None):
-
-    if resource_id:
-        try:
-            response = client.describe_tags(aws_retry=True, Filters=[
-                {'Name': 'resource-id', 'Values': [resource_id]},
-            ])
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg='Failed to describe tags searching by resource')
-
-    result = response
-    return result
-
-
-def check_tags(client, module, existing_vgw, vpn_gateway_id):
-    params = dict()
-    params['Tags'] = module.params.get('tags')
-    vgw = existing_vgw
-    changed = False
-    tags_list = {}
-
-    # format tags for comparison
-    for tags in existing_vgw[0]['Tags']:
-        if tags['Key'] != 'Name':
-            tags_list[tags['Key']] = tags['Value']
-
-    # if existing tags don't match the tags arg, delete existing and recreate with new list
-    if params['Tags'] is not None and tags_list != params['Tags']:
-        delete_tags(client, module, vpn_gateway_id)
-        create_tags(client, module, vpn_gateway_id)
-        vgw = find_vgw(client, module)
-        changed = True
-
-    # if no tag args are supplied, delete any existing tags with the exception of the name tag
-    if params['Tags'] is None and tags_list != {}:
-        tags_to_delete = []
-        for tags in existing_vgw[0]['Tags']:
-            if tags['Key'] != 'Name':
-                tags_to_delete.append(tags)
-
-        delete_tags(client, module, vpn_gateway_id, tags_to_delete)
-        vgw = find_vgw(client, module)
-        changed = True
-
-    return vgw, changed
 
 
 def find_vpc(client, module):
@@ -409,7 +353,15 @@ def ensure_vgw_present(client, module):
 
     if existing_vgw != []:
         vpn_gateway_id = existing_vgw[0]['VpnGatewayId']
-        vgw, changed = check_tags(client, module, existing_vgw, vpn_gateway_id)
+        desired_tags = module.params.get('tags')
+        purge_tags = module.params.get('purge_tags')
+        if desired_tags is None:
+            desired_tags = dict()
+            purge_tags = False
+        tags = dict(Name=module.params.get('name'))
+        tags.update(desired_tags)
+        changed = ensure_ec2_tags(client, module, vpn_gateway_id, resource_type='vpn-gateway',
+                                  tags=tags, purge_tags=purge_tags)
 
         # if a vpc_id was provided, check if it exists and if it's attached
         if params['VpcId']:
@@ -445,9 +397,6 @@ def ensure_vgw_present(client, module):
         new_vgw = create_vgw(client, module)
         changed = True
         vpn_gateway_id = new_vgw['VpnGateway']['VpnGatewayId']
-
-        # tag the new virtual gateway
-        create_tags(client, module, vpn_gateway_id)
 
         # if a vpc-id was supplied, attempt to attach it to the vgw
         if params['VpcId']:
@@ -559,6 +508,7 @@ def main():
         wait_timeout=dict(type='int', default=320),
         type=dict(default='ipsec.1', choices=['ipsec.1']),
         tags=dict(default=None, required=False, type='dict', aliases=['resource_tags']),
+        purge_tags=dict(default=True, type='bool'),
     )
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               required_if=[['state', 'present', ['name']]])

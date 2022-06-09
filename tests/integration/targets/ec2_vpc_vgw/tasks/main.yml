@@ -15,12 +15,11 @@
 
     - name: create a VPC
       ec2_vpc_net:
-        name: "{{ resource_prefix }}-vpc-{{ item }}"
+        name: "{{ vpc_name }}-{{ item }}"
         state: present
-        cidr_block: "10.0.0.0/26"
+        cidr_block: "{{ vpc_cidr }}"
         tags:
-          Name: "{{ resource_prefix }}-vpc-{{ item }}"
-          Description: "Created by ansible-test"
+          Description: "Created by ansible-test for IGW tests"
       register: vpc_result
       loop: [1, 2]
 
@@ -36,87 +35,51 @@
       ec2_vpc_vgw:
         state: present
         vpc_id: '{{ vpc_id_1 }}'
-        name: "{{ resource_prefix }}-vgw"
+        name: "{{ vgw_name }}"
       register: vgw
+
+    - name: use set fact for vgw ids
+      set_fact:
+        vgw_id: '{{ vgw.vgw.id }}'
 
     - assert:
         that:
           - vgw.changed
-          - "{{ vgw.vgw.vpc_id == vpc_id_1 }}"
-          - '"{{ vgw.vgw.tags.Name }}" == "{{ resource_prefix }}-vgw"'
+          - vgw.vgw.vpc_id == vpc_id_1
+          - vgw.vgw.tags.Name == vgw_name
 
     - name: test idempotence
       ec2_vpc_vgw:
         state: present
         vpc_id: '{{ vpc_id_1 }}'
-        name: "{{ resource_prefix }}-vgw"
+        name: "{{ vgw_name }}"
       register: vgw
 
     - assert:
         that:
           - not vgw.changed
+          - vgw.vgw.id == vgw_id
 
     # ============================================================
     - name: attach vpn gateway to the other VPC
       ec2_vpc_vgw:
         state: present
         vpc_id: '{{ vpc_id_2 }}'
-        name: "{{ resource_prefix }}-vgw"
+        name: "{{ vgw_name }}"
       register: vgw
 
     - assert:
         that:
           - vgw.changed
-          - "{{ vgw.vgw.vpc_id == vpc_id_2 }}"
+          - vgw.vgw.id == vgw_id
+          - vgw.vgw.vpc_id == vpc_id_2
 
     # ============================================================
-    - name: add tags to the VGW
-      ec2_vpc_vgw:
-        state: present
-        vpc_id: '{{ vpc_id_2 }}'
-        name: "{{ resource_prefix }}-vgw"
-        tags:
-          created_by: ec2_vpc_vgw integration tests
-      register: vgw
 
-    - assert:
-        that:
-          - vgw.changed
-          - vgw.vgw.tags | length == 2
-          - "'created_by' in vgw.vgw.tags"
-
-    - name: test idempotence
-      ec2_vpc_vgw:
-        state: present
-        vpc_id: '{{ vpc_id_2 }}'
-        name: "{{ resource_prefix }}-vgw"
-        tags:
-          created_by: ec2_vpc_vgw integration tests
-      register: vgw
-
-    - assert:
-        that:
-          - not vgw.changed
-
-    # ============================================================
-    - name: remove tags from the VGW
-      ec2_vpc_vgw:
-        state: present
-        vpc_id: '{{ vpc_id_2 }}'
-        name: "{{ resource_prefix }}-vgw"
-      register: vgw
-
-    - assert:
-        that:
-          - vgw.changed
-          - vgw.vgw.tags | length == 1
-          - '"{{ vgw.vgw.tags.Name }}" == "{{ resource_prefix }}-vgw"'
-
-    # ============================================================
     - name: detach vpn gateway
       ec2_vpc_vgw:
         state: present
-        name: "{{ resource_prefix }}-vgw"
+        name: "{{ vgw_name }}"
       register: vgw
 
     - assert:
@@ -127,7 +90,7 @@
     - name: test idempotence
       ec2_vpc_vgw:
         state: present
-        name: "{{ resource_prefix }}-vgw"
+        name: "{{ vgw_name }}"
       register: vgw
 
     - assert:
@@ -135,6 +98,30 @@
           - not vgw.changed
 
     # ============================================================
+
+    - include_tasks: 'tags.yml'
+
+    # ============================================================
+
+    - name: delete vpn gateway
+      ec2_vpc_vgw:
+        state: absent
+        name: "{{ vgw_name }}"
+      register: vgw
+
+    - assert:
+        that:
+          - vgw.changed
+
+    - name: test idempotence
+      ec2_vpc_vgw:
+        state: absent
+        name: "{{ vgw_name }}"
+      register: vgw
+
+    - assert:
+        that:
+          - not vgw.changed
 
   always:
 
@@ -148,9 +135,9 @@
 
     - name: delete vpc
       ec2_vpc_net:
-        name: "{{ resource_prefix }}-vpc-{{ item }}"
+        name: "{{ vpc_name }}-{{ item }}"
         state: absent
-        cidr_block: "10.0.0.0/26"
+        cidr_block: "{{ vpc_cidr }}"
       loop: [1, 2]
       register: result
       retries: 10
