@@ -12,7 +12,7 @@ module: ec2_vpc_vgw_info
 version_added: 1.0.0
 short_description: Gather information about virtual gateways in AWS
 description:
-    - Gather information about virtual gateways in AWS.
+  - Gather information about virtual gateways in AWS.
 options:
   filters:
     description:
@@ -24,11 +24,11 @@ options:
       - Get details of a specific Virtual Gateway ID. This value should be provided as a list.
     type: list
     elements: str
-author: "Nick Aslanidis (@naslanidis)"
+author:
+  - "Nick Aslanidis (@naslanidis)"
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = r'''
@@ -61,31 +61,64 @@ virtual_gateways:
     description: The virtual gateways for the account.
     returned: always
     type: list
-    sample: [
-        {
-            "state": "available",
-            "tags": [
-                {
-                    "key": "Name",
-                    "value": "TEST-VGW"
-                }
-            ],
-            "type": "ipsec.1",
-            "vpc_attachments": [
-                {
-                    "state": "attached",
-                    "vpc_id": "vpc-22a93c74"
-                }
-            ],
-            "vpn_gateway_id": "vgw-23e3d64e"
-        }
-    ]
-
-changed:
-    description: True if listing the virtual gateways succeeds.
-    returned: always
-    type: bool
-    sample: "false"
+    elements: dict
+    contains:
+      vpn_gateway_id:
+        description: The ID of the VGW.
+        type: str
+        returned: success
+        example: "vgw-0123456789abcdef0"
+      state:
+        description: The current state of the VGW.
+        type: str
+        returned: success
+        example: "available"
+      type:
+        description: The type of VPN connection the VGW supports.
+        type: str
+        returned: success
+        example: "ipsec.1"
+      vpc_attachments:
+        description: A description of the attachment of VPCs to the VGW.
+        type: list
+        elements: dict
+        returned: success
+        contains:
+          state:
+            description: The current state of the attachment.
+            type: str
+            returned: success
+            example: available
+          vpc_id:
+            description: The ID of the VPC.
+            type: str
+            returned: success
+            example: vpc-12345678901234567
+      tags:
+        description:
+          - A list of dictionaries representing the tags attached to the VGW.
+          - Represents the same details as I(resource_tags).
+        type: list
+        elements: dict
+        returned: success
+        contains:
+          key:
+            description: The key of the tag.
+            type: str
+            returned: success
+            example: MyKey
+          value:
+            description: The value of the tag.
+            type: str
+            returned: success
+            example: MyValue
+      resource_tags:
+        description:
+          - A dictionary representing the tags attached to the VGW.
+          - Represents the same details as I(tags).
+        type: dict
+        returned: success
+        example: {"MyKey": "MyValue"}
 '''
 
 try:
@@ -97,14 +130,20 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 
 def get_virtual_gateway_info(virtual_gateway):
-    virtual_gateway_info = {'VpnGatewayId': virtual_gateway['VpnGatewayId'],
-                            'State': virtual_gateway['State'],
-                            'Type': virtual_gateway['Type'],
-                            'VpcAttachments': virtual_gateway['VpcAttachments'],
-                            'Tags': virtual_gateway.get('Tags', [])}
+    tags = virtual_gateway.get('Tags', [])
+    resource_tags = boto3_tag_list_to_ansible_dict(tags)
+    virtual_gateway_info = dict(
+        VpnGatewayId=virtual_gateway['VpnGatewayId'],
+        State=virtual_gateway['State'],
+        Type=virtual_gateway['Type'],
+        VpcAttachments=virtual_gateway['VpcAttachments'],
+        Tags=tags,
+        ResourceTags=resource_tags,
+    )
     return virtual_gateway_info
 
 
@@ -122,7 +161,7 @@ def list_virtual_gateways(client, module):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Failed to list gateways")
 
-    return [camel_dict_to_snake_dict(get_virtual_gateway_info(vgw))
+    return [camel_dict_to_snake_dict(get_virtual_gateway_info(vgw), ignore_list=['ResourceTags'])
             for vgw in all_virtual_gateways['VpnGateways']]
 
 

@@ -1,0 +1,12 @@
+---
+vpc_name: '{{ resource_prefix }}-ec2-vpc-vgw'
+vgw_name: '{{ resource_prefix }}-ec2-vpc-vgw'
+subnet_name: '{{ resource_prefix }}-ec2-vpc-vgw'
+vpc_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.0.0/16'
+subnet_1: '10.{{ 256 | random(seed=resource_prefix) }}.1.0/24'
+subnet_2: '10.{{ 256 | random(seed=resource_prefix) }}.2.0/24'
+subnet_3: '10.{{ 256 | random(seed=resource_prefix) }}.3.0/24'
+subnet_4: '10.{{ 256 | random(seed=resource_prefix) }}.4.0/24'
+
+vpc_ipv6_cidr: '10.{{ 256 | random(seed=resource_prefix) }}.5.0/25'
+vpc_ipv6_name: '{{ vpc_name }}-ipv6'
