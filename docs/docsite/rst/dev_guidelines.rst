@@ -540,33 +540,95 @@ should return in the module.  As well as information related to the call itself,
 some response metadata.  It is OK to return this to the user as well as they may find it useful.
 
 Boto3 returns all values CamelCased.  Ansible follows Python standards for variable names and uses
-snake_case. There is a helper function in module_utils/ec2.py called ``camel_dict_to_snake_dict``
+snake_case.  There is a helper function in module_utils/ec2.py called ``camel_dict_to_snake_dict``
 that allows you to easily convert the boto3 response to snake_case.
 
 You should use this helper function and avoid changing the names of values returned by Boto3.
 E.g. if boto3 returns a value called 'SecretAccessKey' do not change it to 'AccessKey'.
+
+There is an optional parameter, ``ignore_list``, which is used to avoid converting a sub-tree
+of a dict.  This is particularly important for tags, where keys are case-sensitive.  We
+convert the 'Tags' key but nothing below.
 
 .. code-block:: python
 
    # Make a call to AWS
    result = connection.aws_call()
 
-   # Return the result to the user
-   module.exit_json(changed=True, **camel_dict_to_snake_dict(result))
+   # Return the result to the user without modifying tags
+   module.exit_json(changed=True, **camel_dict_to_snake_dict(result, ignore_list=['Tags']))
 
-.. _ansible_collections.amazon.aws.docsite.dev_policies:
+Tags
+----
+
+Tags should be returned as a dictionary of key: value pairs, with each key being the tag's
+key and value being the tag's value.  It should be noted, however, that boto3 returns tags
+as a list of dictionaries.
+
+There is a helper function in module_utils/ec2.py called ``boto3_tag_list_to_ansible_dict``
+(discussed in detail below in the "Helper Functions" section) that allows for an easy conversion
+from boto3's returned tag list to the desired dictionary of tags to be returned by the module.
+
+Below is a full example of getting the result of an AWS call and returning the expected values:
+
+.. code-block:: python
+
+   # Make a call to AWS
+   result = connection.aws_call()
+
+   # Make result snake_case without modifying tags
+   snaked_result = camel_dict_to_snake_dict(result, ignore_list=['Tags'])
+
+   # Convert boto3 list of dict tags to just a dict of tags
+   snaked_result['tags'] = boto3_tag_list_to_ansible_dict(result.get('tags', []))
+
+   # Return the result to the user
+   module.exit_json(changed=True, **snaked_result)
 
 Info modules
 ------------
 
-Info modules that can return information on multiple resources should return a singular value representing a list of dictionaries,
-with each dictionary containing information about that particular resource (i.e. ``security_groups`` in ``ec2_group_info``).
-In cases where the _info module only returns information on a singular resource (i.e. ``ec2_tag_info``),
-a singular dictionary should be returned as opposed to a list of dictionaries.
+Info modules that can return information on multiple resources should return a list of
+dictionaries, with each dictionary containing information about that particular resource
+(i.e. ``security_groups`` in ``ec2_group_info``).
+
+In cases where the _info module only returns information on a singular resource
+(i.e. ``ec2_tag_info``), a singular dictionary should be returned as opposed to a list
+of dictionaries.
+
 In cases where the _info module returns no instances, and empty list '[]' should be returned.
+
 Keys in the returned dictionaries should follow the guidelines above and use snake_case.
-If a return value can be used as a parameter for its corresponding main module, the key should match either
-the parameter name itself, or an alias of that parameter. The following is an example of improper usage of an info module with its respective main module:
+If a return value can be used as a parameter for its corresponding main module, the key should
+match either the parameter name itself, or an alias of that parameter.
+
+The following is an example of improper usage of a sample info module with its respective main module:
+
+.. code-block:: yaml
+
+    "security_groups": {
+        {
+            "description": "Created by ansible integration tests",
+            "group_id": "sg-050dba5c3520cba71",
+            "group_name": "ansible-test-87988625-unknown5c5f67f3ad09-icmp-1",
+            "ip_permissions": [],
+            "ip_permissions_egress": [],
+            "owner_id": "721066863947",
+            "tags": [
+                {
+                    "Key": "Tag_One"
+                    "Value": "Tag_One_Value"
+                },
+            ],
+            "vpc_id": "vpc-0cbc2380a326b8a0d"
+        }
+    }
+
+The sample output above shows a few mistakes in the sample security group info module:
+* ``security_groups`` is a dict of dict, not a list of dicts.
+* ``tags`` appears to be directly returned from boto3, since they're a list of dicts.
+
+The following is what the sample output would look like, with the mistakes corrected.
 
 .. code-block:: yaml
 
@@ -575,59 +637,33 @@ the parameter name itself, or an alias of that parameter. The following is an ex
             "description": "Created by ansible integration tests",
             "group_id": "sg-050dba5c3520cba71",
             "group_name": "ansible-test-87988625-unknown5c5f67f3ad09-icmp-1",
-            "ip_permissions": [
-                {
-                    "from_port": 3,
-                    "ip_protocol": "icmp",
-                    "ip_ranges": [
-                        {
-                            "cidr_ip": "172.16.40.10/32"
-                        },
-                        {
-                            "cidr_ip": "10.0.0.0/8"
-                        }
-                    ],
-                    "ipv6_ranges": [],
-                    "prefix_list_ids": [],
-                    "to_port": 8,
-                    "user_id_group_pairs": []
-                }
-            ],
-            "ip_permissions_egress": [
-                {
-                    "ip_protocol": "-1",
-                    "ip_ranges": [
-                        {
-                            "cidr_ip": "0.0.0.0/0"
-                        }
-                    ],
-                    "ipv6_ranges": [],
-                    "prefix_list_ids": [],
-                    "user_id_group_pairs": []
-                }
-            ],
+            "ip_permissions": [],
+            "ip_permissions_egress": [],
             "owner_id": "721066863947",
-            "tags": {},
+            "tags": {
+                "Tag_One": "Tag_One_Value",
+            },
             "vpc_id": "vpc-0cbc2380a326b8a0d"
         }
     ]
 
-The output above is what was returned by the ``ec2_group_info`` module. It correctly returns a list of dictionaries called ``security_groups``; however,
-the parameter names do not match those of the ``ec2_group`` module. ``ec2_group`` requires ``name``, meanwhile this returns ``group_name``.
-
 Deprecating return values
 -------------------------
 
-If changes need to be made to current return values, the new/"correct" keys should be returned **in addition to** the existing keys to preserve
-compability with existing playbooks. A deprecation should be added to the return values being replaced, initially placed 2 years out.
+If changes need to be made to current return values, the new/"correct" keys should be
+returned **in addition to** the existing keys to preserve compability with existing
+playbooks. A deprecation should be added to the return values being replaced, initially
+placed at least 2 years out, on the 1st of a month.
+
 For example:
 
 .. code-block:: python
 
-    # Deprecate old `iam_user` return key to be replaced by `user` introduced on 2022-05-01
+    # Deprecate old `iam_user` return key to be replaced by `user` introduced on 2022-04-10
     module.deprecate("The 'iam_user' return key is deprecated and will be replaced by 'user'. Both values are returned for now.",
                      date='2024-05-01', collection_name='community.aws')
 
+.. _ansible_collections.amazon.aws.docsite.dev_policies:
 
 Dealing with IAM JSON policy
 ============================
