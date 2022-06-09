@@ -71,12 +71,18 @@ I can create two grops redhat and ubuntu. If you specify like this is Jinja2 syn
  
  
  compose 
+ https://fedorapeople.org/~toshio/ansible/latest/plugins/inventory.html
  # Set individual variables with compose
 compose:
   # Use the private IP address to connect to the host
   # (note: this does not modify inventory_hostname, which is set via I(hostnames))
   ansible_host: private_ip_address
-  
+ 
+ You can create dynamic groups using host variables with the constructed keyed_groups option. The option groups can also be used to create groups and compose creates and modifies host variables. Here is an aws_ec2 example utilizing constructed features:
+ 
+ If a host does not have the variables in the configuration above (i.e. tags.Name, tags, private_ip_address), the host will not be added to groups other than those that the inventory plugin creates and the ansible_host host variable will not be modified.
+
+
   
  
  Running a playbook against the inventory
