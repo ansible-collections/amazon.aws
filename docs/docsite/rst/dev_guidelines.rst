@@ -539,8 +539,8 @@ When you make a call using boto3, you will probably get back some useful informa
 should return in the module.  As well as information related to the call itself, you will also have
 some response metadata.  It is OK to return this to the user as well as they may find it useful.
 
-Boto3 returns all values CamelCased.  Ansible follows Python standards for variable names and uses
-snake_case.  There is a helper function in module_utils/ec2.py called ``camel_dict_to_snake_dict``
+Boto3 commonly returns all keys CamelCased.  Ansible follows Python standards for variable names and uses
+snake_case.  There is a commonly used helper function ``ansible.module_utils.common.dict_transformations.camel_dict_to_snake_dict``
 that allows you to easily convert the boto3 response to snake_case.
 
 You should use this helper function and avoid changing the names of values returned by Boto3.
@@ -562,7 +562,7 @@ Tags
 ----
 
 Tags should be returned as a dictionary of key: value pairs, with each key being the tag's
-key and value being the tag's value.  It should be noted, however, that boto3 returns tags
+key and value being the tag's value.  It should be noted, however, that boto3 often returns tags
 as a list of dictionaries.
 
 There is a helper function in module_utils/ec2.py called ``boto3_tag_list_to_ansible_dict``
@@ -596,7 +596,7 @@ In cases where the _info module only returns information on a singular resource
 (i.e. ``ec2_tag_info``), a singular dictionary should be returned as opposed to a list
 of dictionaries.
 
-In cases where the _info module returns no instances, and empty list '[]' should be returned.
+In cases where the _info module returns no instances, an empty list '[]' should be returned.
 
 Keys in the returned dictionaries should follow the guidelines above and use snake_case.
 If a return value can be used as a parameter for its corresponding main module, the key should
