@@ -1,0 +1,127 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  block:
+  - name: create cloudwatch log group for integration test
+    cloudwatchlogs_log_group:
+      state: present
+      log_group_name: '{{ log_group_name }}'
+      retention: 1
+      tags:
+        CamelCase: Value
+        snake_case: value
+    register: result
+
+  - assert:
+      that:
+      - result is changed
+      - '"log_groups" in result'
+      - result.log_groups | length == 1
+      - '"log_group_name" in log_group'
+      - '"creation_time" in log_group'
+      - '"retention_in_days" in log_group'
+      - '"metric_filter_count" in log_group'
+      - '"arn" in log_group'
+      - '"stored_bytes" in log_group'
+      # - '"kms_key_id" in log_group'
+      # pre-4.0.0 upgrade compatability
+      - '"log_group_name" in result'
+      - '"creation_time" in result'
+      - '"retention_in_days" in result'
+      - '"metric_filter_count" in result'
+      - '"arn" in result'
+      - '"stored_bytes" in result'
+      # - '"kms_key_id" in result'
+      - '"CamelCase" in log_group.tags'
+      - '"snake_case" in log_group.tags'
+    vars:
+      log_group: '{{ result.log_groups[0] }}'
+
+  - name: create cloudwatch log group for integration test (idempotent)
+    cloudwatchlogs_log_group:
+      state: present
+      log_group_name: '{{ log_group_name }}'
+      retention: 1
+    register: result
+
+  - assert:
+      that:
+      - result is not changed
+      - '"log_groups" in result'
+      - result.log_groups | length == 1
+    vars:
+      log_group: '{{ result.log_groups[0] }}'
+
+  - name: describe all log groups
+    cloudwatchlogs_log_group_info: {}
+    register: result
+
+  - assert:
+      that:
+      - '"log_groups" in result'
+      - result.log_groups | length >= 1
+
+  - name: describe log group
+    cloudwatchlogs_log_group_info:
+      log_group_name: '{{ log_group_name }}'
+    register: result
+
+  - assert:
+      that:
+      - '"log_groups" in result'
+      - result.log_groups | length == 1
+      - '"log_group_name" in log_group'
+      - '"creation_time" in log_group'
+      - '"retention_in_days" in log_group'
+      - '"metric_filter_count" in log_group'
+      - '"arn" in log_group'
+      - '"stored_bytes" in log_group'
+      # - '"kms_key_id" in log_group'
+      - '"tags" in log_group'
+    vars:
+      log_group: '{{ result.log_groups[0] }}'
+
+  - include_tasks: 'tags.yml'
+
+  - name: delete cloudwatch log group for integration test
+    cloudwatchlogs_log_group:
+      state: absent
+      log_group_name: '{{ log_group_name }}'
+    register: result
+
+  - assert:
+      that:
+      - result is changed
+
+  - name: delete cloudwatch log group for integration test (idempotent)
+    cloudwatchlogs_log_group:
+      state: absent
+      log_group_name: '{{ log_group_name }}'
+    register: result
+
+  - assert:
+      that:
+      - result is not changed
+
+  - name: describe missing log group
+    cloudwatchlogs_log_group_info:
+      log_group_name: '{{ log_group_name }}'
+    register: result
+
+  - assert:
+      that:
+      - '"log_groups" in result'
+      - result.log_groups | length == 0
+
+  always:
+
+  - name: delete cloudwatch log group for integration test
+    cloudwatchlogs_log_group:
+      state: absent
+      log_group_name: '{{ log_group_name }}'
+    ignore_errors: true
