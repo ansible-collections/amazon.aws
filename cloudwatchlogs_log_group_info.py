@@ -13,18 +13,17 @@ module: cloudwatchlogs_log_group_info
 version_added: 1.0.0
 short_description: Get information about log_group in CloudWatchLogs
 description:
-    - Lists the specified log groups. You can list all your log groups or filter the results by prefix.
+  - Lists the specified log groups. You can list all your log groups or filter the results by prefix.
 author:
-    - Willian Ricardo (@willricardo) <willricardo@gmail.com>
+  - Willian Ricardo (@willricardo) <willricardo@gmail.com>
 options:
-    log_group_name:
-      description:
-        - The name or prefix of the log group to filter by.
-      type: str
+  log_group_name:
+    description:
+      - The name or prefix of the log group to filter by.
+    type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
@@ -67,6 +66,11 @@ log_groups:
             description: The Amazon Resource Name (ARN) of the CMK to use when encrypting log data.
             returned: always
             type: str
+        tags:
+            description: A dictionary representing the tags on the log group.
+            returned: always
+            type: dict
+            version_added: 4.0.0
 '''
 
 try:
@@ -77,6 +81,7 @@ except ImportError:
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
 def describe_log_group(client, log_group_name, module):
@@ -86,9 +91,21 @@ def describe_log_group(client, log_group_name, module):
     try:
         paginator = client.get_paginator('describe_log_groups')
         desc_log_group = paginator.paginate(**params).build_full_result()
-        return desc_log_group
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to describe log group {0}".format(log_group_name))
+
+    for log_group in desc_log_group['logGroups']:
+        log_group_name = log_group['logGroupName']
+        try:
+            tags = client.list_tags_log_group(logGroupName=log_group_name)
+        except is_boto3_error_code('AccessDeniedException'):
+            tags = {}
+            module.warn('Permission denied listing tags for log group {0}'.format(log_group_name))
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
+            module.fail_json_aws(e, msg="Unable to describe tags for log group {0}".format(log_group_name))
+        log_group['tags'] = tags.get('tags', {})
+
+    return desc_log_group
 
 
 def main():
@@ -109,7 +126,7 @@ def main():
     final_log_group_snake = []
 
     for log_group in desc_log_group['logGroups']:
-        final_log_group_snake.append(camel_dict_to_snake_dict(log_group))
+        final_log_group_snake.append(camel_dict_to_snake_dict(log_group, ignore_list=['tags']))
 
     desc_log_group_result = dict(changed=False, log_groups=final_log_group_snake)
     module.exit_json(**desc_log_group_result)
