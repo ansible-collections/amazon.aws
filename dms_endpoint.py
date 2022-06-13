@@ -12,8 +12,8 @@ module: dms_endpoint
 version_added: 1.0.0
 short_description: Creates or destroys a data migration services endpoint
 description:
-    - Creates or destroys a data migration services endpoint,
-      that can be used to replicate data.
+  - Creates or destroys a data migration services endpoint,
+    that can be used to replicate data.
 options:
     state:
       description:
@@ -29,19 +29,19 @@ options:
     endpointtype:
       description:
         - Type of endpoint we want to manage.
+        - Required when I(state=present).
       choices: ['source', 'target']
       type: str
-      required: true
     enginename:
       description:
         - Database engine that we want to use, please refer to
           the AWS DMS for more information on the supported
           engines and their limitations.
+        - Required when I(state=present).
       choices: ['mysql', 'oracle', 'postgres', 'mariadb', 'aurora',
                          'redshift', 's3', 'db2', 'azuredb', 'sybase',
                          'dynamodb', 'mongodb', 'sqlserver']
       type: str
-      required: true
     username:
       description:
         - Username our endpoint will use to connect to the database.
@@ -141,11 +141,11 @@ options:
         - Required when I(wait=true).
       type: int
 author:
-   - "Rui Moreira (@ruimoreira)"
+  - "Rui Moreira (@ruimoreira)"
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = '''
@@ -165,28 +165,219 @@ EXAMPLES = '''
     wait: false
 '''
 
-RETURN = ''' # '''
+RETURN = '''
+endpoint:
+  description:
+    - A description of the DMS endpoint.
+  returned: success
+  type: dict
+  contains:
+    database_name:
+      description:
+        - The name of the database at the endpoint.
+      type: str
+      returned: success
+      example: "exampledb"
+    endpoint_arn:
+      description:
+        - The ARN that uniquely identifies the endpoint.
+      type: str
+      returned: success
+      example: "arn:aws:dms:us-east-1:012345678901:endpoint:1234556789ABCDEFGHIJKLMNOPQRSTUVWXYZ012"
+    endpoint_identifier:
+      description:
+        - The database endpoint identifier.
+      type: str
+      returned: success
+      example: "ansible-test-12345678-dms"
+    endpoint_type:
+      description:
+        - The type of endpoint. Valid values are C(SOURCE) and C(TARGET).
+      type: str
+      returned: success
+      example: "SOURCE"
+    engine_display_name:
+      description:
+        - The expanded name for the engine name.
+      type: str
+      returned: success
+      example: "Amazon Aurora MySQL"
+    engine_name:
+      description:
+        - The database engine name.
+      type: str
+      returned: success
+      example: "aurora"
+    kms_key_id:
+      description:
+        - An KMS key ID that is used to encrypt the connection parameters for the endpoint.
+      type: str
+      returned: success
+      example: "arn:aws:kms:us-east-1:012345678901:key/01234567-abcd-12ab-98fe-123456789abc"
+    port:
+      description:
+        - The port used to access the endpoint.
+      type: str
+      returned: success
+      example: 3306
+    server_name:
+      description:
+        - The name of the server at the endpoint.
+      type: str
+      returned: success
+      example: "ansible-test-123456789.example.com"
+    ssl_mode:
+      description:
+        - The SSL mode used to connect to the endpoint.
+      type: str
+      returned: success
+      example: "none"
+    tags:
+      description:
+        - A dictionary representing the tags attached to the endpoint.
+      type: dict
+      returned: success
+      example: {"MyTagKey": "MyTagValue"}
+    username:
+      description:
+        - The user name used to connect to the endpoint.
+      type: str
+      returned: success
+      example: "example-username"
+    dms_transfer_settings:
+      description:
+        - Additional transfer related settings.
+      type: dict
+      returned: when additional DMS Transfer settings have been configured.
+    s3_settings:
+      description:
+        - Additional settings for S3 endpoints.
+      type: dict
+      returned: when the I(endpoint_type) is C(s3)
+    mongo_db_settings:
+      description:
+        - Additional settings for MongoDB endpoints.
+      type: dict
+      returned: when the I(endpoint_type) is C(mongodb)
+    kinesis_settings:
+      description:
+        - Additional settings for Kinesis endpoints.
+      type: dict
+      returned: when the I(endpoint_type) is C(kinesis)
+    kafka_settings:
+      description:
+        - Additional settings for Kafka endpoints.
+      type: dict
+      returned: when the I(endpoint_type) is C(kafka)
+    elasticsearch_settings:
+      description:
+        - Additional settings for Elasticsearch endpoints.
+      type: dict
+      returned: when the I(endpoint_type) is C(elasticsearch)
+    neptune_settings:
+      description:
+        - Additional settings for Amazon Neptune endpoints.
+      type: dict
+      returned: when the I(endpoint_type) is C(neptune)
+    redshift_settings:
+      description:
+        - Additional settings for Redshift endpoints.
+      type: dict
+      returned: when the I(endpoint_type) is C(redshift)
+    postgre_sql_settings:
+      description:
+        - Additional settings for PostgrSQL endpoints.
+      type: dict
+      returned: when the I(endpoint_type) is C(postgres)
+    my_sql_settings:
+      description:
+        - Additional settings for MySQL endpoints.
+      type: dict
+      returned: when the I(endpoint_type) is C(mysql)
+    oracle_settings:
+      description:
+        - Additional settings for Oracle endpoints.
+      type: dict
+      returned: when the I(endpoint_type) is C(oracle)
+    sybase_settings:
+      description:
+        - Additional settings for Sybase endpoints.
+      type: dict
+      returned: when the I(endpoint_type) is C(sybase)
+    microsoft_sql_server_settings:
+      description:
+        - Additional settings for Microsoft SQL Server endpoints.
+      type: dict
+      returned: when the I(endpoint_type) is C(sqlserver)
+    i_b_m_db_settings:
+      description:
+        - Additional settings for IBM DB2 endpoints.
+      type: dict
+      returned: when the I(endpoint_type) is C(db2)
+    doc_db_settings:
+      description:
+        - Additional settings for DocumentDB endpoints.
+      type: dict
+      returned: when the I(endpoint_type) is C(documentdb)
+    redis_settings:
+      description:
+        - Additional settings for Redis endpoints.
+      type: dict
+      returned: when the I(endpoint_type) is C(redshift)
+'''
 
 try:
     import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
 
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
+from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 backoff_params = dict(retries=5, delay=1, backoff=1.5)
 
 
 @AWSRetry.jittered_backoff(**backoff_params)
-def describe_endpoints(connection, endpoint_identifier):
+def dms_describe_tags(connection, **params):
     """ checks if the endpoint exists """
+    tags = connection.list_tags_for_resource(**params).get('TagList', [])
+    return boto3_tag_list_to_ansible_dict(tags)
+
+
+@AWSRetry.jittered_backoff(**backoff_params)
+def dms_describe_endpoints(connection, **params):
     try:
-        endpoint_filter = dict(Name='endpoint-id',
-                               Values=[endpoint_identifier])
-        return connection.describe_endpoints(Filters=[endpoint_filter])
-    except botocore.exceptions.ClientError:
-        return {'Endpoints': []}
+        endpoints = connection.describe_endpoints(**params)
+    except is_boto3_error_code('ResourceNotFoundFault'):
+        return None
+    return endpoints.get('Endpoints', None)
+
+
+def describe_endpoint(connection, endpoint_identifier):
+    """ checks if the endpoint exists """
+    endpoint_filter = dict(Name='endpoint-id',
+                           Values=[endpoint_identifier])
+    try:
+        endpoints = dms_describe_endpoints(connection, Filters=[endpoint_filter])
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to describe the DMS endpoint.")
+
+    if not endpoints:
+        return None
+
+    endpoint = endpoints[0]
+    try:
+        tags = dms_describe_tags(connection, ResourceArn=endpoint['EndpointArn'])
+        endpoint['tags'] = tags
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to describe the DMS endpoint tags")
+    return endpoint
 
 
 @AWSRetry.jittered_backoff(**backoff_params)
@@ -215,6 +406,16 @@ def get_endpoint_deleted_waiter(client):
     return client.get_waiter('endpoint_deleted')
 
 
+@AWSRetry.jittered_backoff(**backoff_params)
+def dms_remove_tags(client, **params):
+    return client.remove_tags_from_resource(**params)
+
+
+@AWSRetry.jittered_backoff(**backoff_params)
+def dms_add_tags(client, **params):
+    return client.add_tags_to_resource(**params)
+
+
 def endpoint_exists(endpoint):
     """ Returns boolean based on the existence of the endpoint
     :param endpoint: dict containing the described endpoint
@@ -223,11 +424,8 @@ def endpoint_exists(endpoint):
     return bool(len(endpoint['Endpoints']))
 
 
-def delete_dms_endpoint(connection):
+def delete_dms_endpoint(connection, endpoint_arn):
     try:
-        endpoint = describe_endpoints(connection,
-                                      module.params.get('endpointidentifier'))
-        endpoint_arn = endpoint['Endpoints'][0].get('EndpointArn')
         delete_arn = dict(
             EndpointArn=endpoint_arn
         )
@@ -336,7 +534,11 @@ def compare_params(param_described):
     a DMS endpoint does not return the value for
     the password for security reasons ( I assume )
     """
+    param_described = dict(param_described)
     modparams = create_module_params()
+    # modify can't update tags
+    param_described.pop('Tags', None)
+    modparams.pop('Tags', None)
     changed = False
     for paramname in modparams:
         if paramname == 'Password' or paramname in param_described \
@@ -349,13 +551,45 @@ def compare_params(param_described):
     return changed
 
 
-def modify_dms_endpoint(connection):
-
+def modify_dms_endpoint(connection, endpoint):
+    arn = endpoint['EndpointArn']
     try:
         params = create_module_params()
-        return dms_modify_endpoint(connection, **params)
+        # modify can't update tags
+        params.pop('Tags', None)
+        return dms_modify_endpoint(connection, EndpointArn=arn, **params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to update DMS endpoint.")
+        module.fail_json_aws(e, msg="Failed to update DMS endpoint.", params=params)
+
+
+def ensure_tags(connection, endpoint):
+    desired_tags = module.params.get('tags', None)
+    if desired_tags is None:
+        return False
+
+    current_tags = endpoint.get('tags', {})
+
+    tags_to_add, tags_to_remove = compare_aws_tags(current_tags, desired_tags,
+                                                   module.params.get('purge_tags'))
+
+    if not tags_to_remove and not tags_to_add:
+        return False
+
+    if module.check_mode:
+        return True
+
+    arn = endpoint.get('EndpointArn')
+
+    try:
+        if tags_to_remove:
+            dms_remove_tags(connection, ResourceArn=arn, TagKeys=tags_to_remove)
+        if tags_to_add:
+            tag_list = ansible_dict_to_boto3_tag_list(tags_to_add)
+            dms_add_tags(connection, ResourceArn=arn, Tags=tag_list)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to update DMS endpoint tags.")
+
+    return True
 
 
 def create_dms_endpoint(connection):
@@ -376,11 +610,11 @@ def main():
     argument_spec = dict(
         state=dict(choices=['present', 'absent'], default='present'),
         endpointidentifier=dict(required=True),
-        endpointtype=dict(choices=['source', 'target'], required=True),
+        endpointtype=dict(choices=['source', 'target']),
         enginename=dict(choices=['mysql', 'oracle', 'postgres', 'mariadb',
                                  'aurora', 'redshift', 's3', 'db2', 'azuredb',
                                  'sybase', 'dynamodb', 'mongodb', 'sqlserver'],
-                        required=True),
+                        required=False),
         username=dict(),
         password=dict(no_log=True),
         servername=dict(),
@@ -388,7 +622,8 @@ def main():
         databasename=dict(),
         extraconnectionattributes=dict(),
         kmskeyid=dict(no_log=False),
-        tags=dict(type='dict'),
+        tags=dict(type='dict', aliases=['resource_tags']),
+        purge_tags=dict(type='bool', default=True),
         certificatearn=dict(),
         sslmode=dict(choices=['none', 'require', 'verify-ca', 'verify-full'],
                      default='none'),
@@ -408,6 +643,8 @@ def main():
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         required_if=[
+            ["state", "present", ["endpointtype"]],
+            ["state", "present", ["enginename"]],
             ["state", "absent", ["wait"]],
             ["wait", "True", ["timeout"]],
             ["wait", "True", ["retries"]],
@@ -420,33 +657,40 @@ def main():
     state = module.params.get('state')
 
     dmsclient = module.client('dms')
-    endpoint = describe_endpoints(dmsclient,
-                                  module.params.get('endpointidentifier'))
+    endpoint = describe_endpoint(dmsclient,
+                                 module.params.get('endpointidentifier'))
     if state == 'present':
-        if endpoint_exists(endpoint):
-            module.params['EndpointArn'] = \
-                endpoint['Endpoints'][0].get('EndpointArn')
-            params_changed = compare_params(endpoint["Endpoints"][0])
+        if endpoint:
+            changed |= ensure_tags(dmsclient, endpoint)
+            params_changed = compare_params(endpoint)
             if params_changed:
-                updated_dms = modify_dms_endpoint(dmsclient)
+                updated_dms = modify_dms_endpoint(dmsclient, endpoint)
                 exit_message = updated_dms
+                endpoint = exit_message.get('Endpoint')
                 changed = True
             else:
-                module.exit_json(changed=False, msg="Endpoint Already Exists")
+                exit_message = "Endpoint Already Exists"
         else:
-            dms_properties = create_dms_endpoint(dmsclient)
-            exit_message = dms_properties
+            exit_message = create_dms_endpoint(dmsclient)
+            endpoint = exit_message.get('Endpoint')
             changed = True
+
+        if changed:
+            # modify and create don't return tags
+            tags = dms_describe_tags(dmsclient, ResourceArn=endpoint['EndpointArn'])
+            endpoint['tags'] = tags
     elif state == 'absent':
-        if endpoint_exists(endpoint):
-            delete_results = delete_dms_endpoint(dmsclient)
+        if endpoint:
+            delete_results = delete_dms_endpoint(dmsclient, endpoint['EndpointArn'])
             exit_message = delete_results
+            endpoint = None
             changed = True
         else:
             changed = False
             exit_message = 'DMS Endpoint does not exist'
 
-    module.exit_json(changed=changed, msg=exit_message)
+    endpoint = camel_dict_to_snake_dict(endpoint or {}, ignore_list=['tags'])
+    module.exit_json(changed=changed, endpoint=endpoint, msg=exit_message)
 
 
 if __name__ == '__main__':
