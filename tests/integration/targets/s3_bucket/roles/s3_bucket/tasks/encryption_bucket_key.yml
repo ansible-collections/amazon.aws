@@ -1,0 +1,100 @@
+---
+- module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  block:
+    - name: Set facts for encryption_bucket_key test
+      set_fact:
+        local_bucket_name: "{{ bucket_name | hash('md5') }}-bucket-key"
+    # ============================================================
+
+    - name: "Create a simple bucket"
+      s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+      register: output
+
+    - name: "Enable aws:kms encryption with KMS master key"
+      s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        encryption: "aws:kms"
+      register: output
+
+    - name: "Enable bucket key for bucket with aws:kms encryption"
+      s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: present
+        encryption: "aws:kms"
+        bucket_key_enabled: true
+      register: output
+
+    - name: Assert for 'Enable bucket key for bucket with aws:kms encryption'
+      assert:
+        that:
+          - output.changed
+          - output.encryption
+
+    - name: "Re-enable bucket key for bucket with aws:kms encryption (idempotent)"
+      s3_bucket:
+        name: "{{ local_bucket_name }}"
+        encryption: "aws:kms"
+        bucket_key_enabled: true
+      register: output
+
+    - name: Assert for 'Re-enable bucket key for bucket with aws:kms encryption (idempotent)''
+      assert:
+        that:
+          - not output.changed
+          - output.encryption
+
+    # ============================================================
+
+    - name: Disable encryption from bucket
+      s3_bucket:
+        name: "{{ local_bucket_name }}"
+        encryption: none
+        bucket_key_enabled: false
+      register: output
+
+    - name: Assert for 'Disable encryption from bucket'
+      assert:
+        that:
+          - output.changed
+          - not output.encryption
+
+    - name: Disable encryption from bucket (idempotent)
+      s3_bucket:
+        name: "{{ local_bucket_name }}"
+        bucket_key_enabled: true
+      register: output
+
+    - name: Assert for 'Disable encryption from bucket (idempotent)'
+      assert:
+        that:
+          - output is not changed
+          - not output.encryption
+
+    # ============================================================
+
+    - name: Delete encryption test s3 bucket
+      s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: absent
+      register: output
+
+    - name: Assert for 'Delete encryption test s3 bucket'
+      assert:
+        that:
+          - output.changed
+
+  # ============================================================
+  always:
+    - name: Ensure all buckets are deleted
+      s3_bucket:
+        name: "{{ local_bucket_name }}"
+        state: absent
+      failed_when: false
