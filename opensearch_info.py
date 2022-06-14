@@ -10,10 +10,10 @@ __metaclass__ = type
 DOCUMENTATION = """
 ---
 module: opensearch_info
-short_description: obtain information about one or more OpenSearch or ElasticSearch domain.
+short_description: obtain information about one or more OpenSearch or ElasticSearch domain
 description:
-  - obtain information about one Amazon OpenSearch Service domain.
-version_added: 3.1.0
+  - Obtain information about one Amazon OpenSearch Service domain.
+version_added: 4.0.0
 author: "Sebastien Rosset (@sebastien-rosset)"
 options:
   domain_name:
@@ -29,10 +29,10 @@ options:
     required: false
     type: dict
 requirements:
-- botocore >= 1.21.38
+  - botocore >= 1.21.38
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 """
 
 EXAMPLES = '''

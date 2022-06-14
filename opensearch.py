@@ -10,10 +10,10 @@ __metaclass__ = type
 DOCUMENTATION = """
 ---
 module: opensearch
-short_description: Creates OpenSearch or ElasticSearch domain.
+short_description: Creates OpenSearch or ElasticSearch domain
 description:
   - Creates or modify a Amazon OpenSearch Service domain.
-version_added: 3.1.0
+version_added: 4.0.0
 author: "Sebastien Rosset (@sebastien-rosset)"
 options:
   state:
@@ -387,20 +387,12 @@ options:
       - how long before wait gives up, in seconds.
     default: 300
     type: int
-  tags:
-    description:
-      - tags dict to apply to an OpenSearch cluster.
-    type: dict
-  purge_tags:
-    description:
-      - whether to remove tags not present in the C(tags) parameter.
-    default: True
-    type: bool
 requirements:
-- botocore >= 1.21.38
+  - botocore >= 1.21.38
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 """
 
 EXAMPLES = """
@@ -1480,7 +1472,7 @@ def main():
                     ),
                 ),
             ),
-            tags=dict(type="dict"),
+            tags=dict(type="dict", aliases=["resource_tags"]),
             purge_tags=dict(type="bool", default=True),
             wait=dict(type="bool", default=False),
             wait_timeout=dict(type="int", default=300),
