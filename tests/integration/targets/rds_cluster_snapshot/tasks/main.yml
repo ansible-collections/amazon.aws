@@ -1,0 +1,481 @@
+---
+- module_defaults:
+    group/aws:
+      region: "{{ aws_region }}"
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+  collections:
+    - community.aws
+    - amazon.aws
+
+  block:
+  - name: Create a source DB cluster
+    rds_cluster:
+      id: "{{ cluster_id }}"
+      state: present
+      engine: "{{ engine}}"
+      backup_retention_period: 1
+      username: "{{ username }}"
+      password: "{{ password }}"
+      preferred_backup_window: "01:15-01:45"
+    register: _result_create_source_db_cluster
+
+  - assert:
+      that:
+      - _result_create_source_db_cluster.changed
+      - "'allocated_storage' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.allocated_storage == 1
+      - "'cluster_create_time' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.copy_tags_to_snapshot == false
+      - "'db_cluster_arn' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.db_cluster_identifier == "{{ cluster_id }}"
+      - "'db_cluster_parameter_group' in _result_create_source_db_cluster"
+      - "'db_cluster_resource_id' in _result_create_source_db_cluster"
+      - "'endpoint' in _result_create_source_db_cluster"
+      - "'engine' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.engine == "{{ engine }}"
+      - "'engine_mode' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.engine_mode == "provisioned"
+      - "'engine_version' in _result_create_source_db_cluster"
+      - "'master_username' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.master_username == "{{ username }}"
+      - "'port' in _result_create_source_db_cluster"
+      - "_result_create_source_db_cluster.port == {{ port }}"
+      - "'status' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.status == "available"
+      - "'tags' in _result_create_source_db_cluster"
+      - "'vpc_security_groups' in _result_create_source_db_cluster"
+
+  - name: Get all RDS snapshots for the existing DB cluster
+    rds_snapshot_info:
+      db_cluster_identifier: "{{ cluster_id }}"
+    register: _result_cluster_snapshot_info
+
+  - assert:
+      that:
+      - _result_cluster_snapshot_info is successful
+      - _result_cluster_snapshot_info.cluster_snapshots | length == 0
+
+  - name: Take a snapshot of the existing DB cluster (CHECK_MODE)
+    rds_cluster_snapshot:
+      state: present
+      db_cluster_identifier: "{{ cluster_id }}"
+      db_cluster_snapshot_identifier: "{{ snapshot_id }}"
+    check_mode: true
+    register: _result_cluster_snapshot
+
+  - assert:
+      that:
+      - _result_cluster_snapshot.changed
+
+  - name: Take a snapshot of the existing DB cluster
+    rds_cluster_snapshot:
+      state: present
+      db_cluster_identifier: "{{ cluster_id }}"
+      db_cluster_snapshot_identifier: "{{ snapshot_id }}"
+      wait: true
+    register: _result_cluster_snapshot
+
+  - assert:
+      that:
+      - _result_cluster_snapshot.changed
+      - "'allocated_storage' in _result_cluster_snapshot"
+      - "'cluster_create_time' in _result_cluster_snapshot"
+      - "'db_cluster_identifier' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.db_cluster_identifier == "{{ cluster_id }}"
+      - "'db_cluster_snapshot_identifier' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}"
+      - "'db_cluster_snapshot_arn' in _result_cluster_snapshot"
+      - "'engine' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.engine == "{{ engine }}"
+      # - "'engine_mode' in _result_cluster_snapshot"
+      # - _result_cluster_snapshot.engine_mode == "provisioned"
+      - "'engine_version' in _result_cluster_snapshot"
+      - "'iam_database_authentication_enabled' in _result_cluster_snapshot"
+      - "'license_model' in _result_cluster_snapshot"
+      - "'master_username' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.master_username == "{{ username }}"
+      - "'snapshot_create_time' in _result_cluster_snapshot"
+      - "'snapshot_type' in _result_cluster_snapshot"
+      - "'status' in _result_cluster_snapshot"
+      - _result_create_source_db_cluster.status == "available"
+      - "'storage_encrypted' in _result_cluster_snapshot"
+      - "'tags' in _result_cluster_snapshot"
+      - "'vpc_id' in _result_cluster_snapshot"
+
+  - name: Get information about the existing DB snapshot
+    rds_snapshot_info:
+      db_cluster_snapshot_identifier: "{{ snapshot_id }}"
+    register: _result_cluster_snapshot_info
+
+  - assert:
+      that:
+      - _result_cluster_snapshot_info is successful
+      - _result_cluster_snapshot_info.cluster_snapshots[0].db_cluster_identifier == "{{ cluster_id }}"
+      - _result_cluster_snapshot_info.cluster_snapshots[0].db_cluster_snapshot_identifier == "{{ snapshot_id }}"
+
+  - name: Get info of the existing DB cluster
+    rds_cluster_info:
+      cluster_id: "{{ cluster_id }}"
+    register: result_cluster_info
+
+  - assert:
+      that:
+      - result_cluster_info is successful
+
+  - name: Create another source DB cluster
+    rds_cluster:
+      id: "{{ cluster_id }}-b"
+      state: present
+      engine: "{{ engine}}"
+      backup_retention_period: 1
+      username: "{{ username }}"
+      password: "{{ password }}"
+      preferred_backup_window: "01:15-01:45"
+    register: _result_create_source_db_cluster
+
+  - assert:
+      that:
+      - _result_create_source_db_cluster.changed
+      - "'allocated_storage' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.allocated_storage == 1
+      - "'cluster_create_time' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.copy_tags_to_snapshot == false
+      - "'db_cluster_arn' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.db_cluster_identifier == "{{ cluster_id }}-b"
+      - "'db_cluster_parameter_group' in _result_create_source_db_cluster"
+      - "'db_cluster_resource_id' in _result_create_source_db_cluster"
+      - "'endpoint' in _result_create_source_db_cluster"
+      - "'engine' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.engine == "{{ engine }}"
+      - "'engine_mode' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.engine_mode == "provisioned"
+      - "'engine_version' in _result_create_source_db_cluster"
+      - "'master_username' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.master_username == "{{ username }}"
+      - "'port' in _result_create_source_db_cluster"
+      - "_result_create_source_db_cluster.port == {{ port }}"
+      - "'status' in _result_create_source_db_cluster"
+      - _result_create_source_db_cluster.status == "available"
+      - "'tags' in _result_create_source_db_cluster"
+      - "'vpc_security_groups' in _result_create_source_db_cluster"
+
+  - name: Take another snapshot of the existing DB cluster
+    rds_cluster_snapshot:
+      state: present
+      db_cluster_identifier: "{{ cluster_id }}-b"
+      db_cluster_snapshot_identifier: "{{ snapshot_id }}-b"
+      wait: true
+    register: _result_cluster_snapshot
+
+  - assert:
+      that:
+      - _result_cluster_snapshot.changed
+      - "'allocated_storage' in _result_cluster_snapshot"
+      - "'cluster_create_time' in _result_cluster_snapshot"
+      - "'db_cluster_identifier' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.db_cluster_identifier == "{{ cluster_id }}-b"
+      - "'db_cluster_snapshot_identifier' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}-b"
+      - "'db_cluster_snapshot_arn' in _result_cluster_snapshot"
+      - "'engine' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.engine == "{{ engine }}"
+      # - "'engine_mode' in _result_cluster_snapshot"
+      # - _result_cluster_snapshot.engine_mode == "provisioned"
+      - "'engine_version' in _result_cluster_snapshot"
+      - "'iam_database_authentication_enabled' in _result_cluster_snapshot"
+      - "'license_model' in _result_cluster_snapshot"
+      - "'master_username' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.master_username == "{{ username }}"
+      - "'snapshot_create_time' in _result_cluster_snapshot"
+      - "'snapshot_type' in _result_cluster_snapshot"
+      - "'status' in _result_cluster_snapshot"
+      - _result_create_source_db_cluster.status == "available"
+      - "'storage_encrypted' in _result_cluster_snapshot"
+      - "'tags' in _result_cluster_snapshot"
+      - "'vpc_id' in _result_cluster_snapshot"
+
+  - name: Get all RDS snapshots for the existing DB cluster
+    rds_snapshot_info:
+      db_cluster_identifier: "{{ cluster_id }}-b"
+    register: _result_cluster_snapshot_info
+
+  - assert:
+      that:
+      - _result_cluster_snapshot_info is successful
+      - _result_cluster_snapshot_info.cluster_snapshots | length == 1
+
+  - name: Delete existing DB cluster snapshot (CHECK_MODE)
+    rds_cluster_snapshot:
+      state: absent
+      db_cluster_snapshot_identifier: "{{ snapshot_id }}-b"
+    register: _result_delete_snapshot
+    check_mode: true
+
+  - assert:
+      that:
+      - _result_delete_snapshot.changed
+
+  - name: Delete the existing DB cluster snapshot
+    rds_cluster_snapshot:
+      state: absent
+      db_cluster_snapshot_identifier: "{{ snapshot_id }}-b"
+    register: _result_delete_snapshot
+
+  - assert:
+      that:
+      - _result_delete_snapshot.changed
+
+  - name: Get info of the existing DB cluster
+    rds_cluster_info:
+      cluster_id: "{{ cluster_id }}"
+    register: _result_cluster_info
+
+  - assert:
+      that:
+      - result_cluster_info is successful
+
+  - name: Take another snapshot of the existing DB cluster and assign tags
+    rds_cluster_snapshot:
+      state: present
+      db_cluster_identifier: "{{ cluster_id }}"
+      db_cluster_snapshot_identifier: "{{ snapshot_id }}-b"
+      wait: true
+      tags:
+        tag_one: '{{ snapshot_id }}-b One'
+        "Tag Two": 'two {{ snapshot_id }}-b'
+    register: _result_cluster_snapshot
+
+  - assert:
+      that:
+      - _result_cluster_snapshot.changed
+      - "'allocated_storage' in _result_cluster_snapshot"
+      - "'cluster_create_time' in _result_cluster_snapshot"
+      - "'db_cluster_identifier' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.db_cluster_identifier == "{{ cluster_id }}"
+      - "'db_cluster_snapshot_identifier' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}-b"
+      - "'db_cluster_snapshot_arn' in _result_cluster_snapshot"
+      - "'engine' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.engine == "{{ engine }}"
+      # - "'engine_mode' in _result_cluster_snapshot"
+      # - _result_cluster_snapshot.engine_mode == "provisioned"
+      - "'engine_version' in _result_cluster_snapshot"
+      - "'iam_database_authentication_enabled' in _result_cluster_snapshot"
+      - "'license_model' in _result_cluster_snapshot"
+      - "'master_username' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.master_username == "{{ username }}"
+      - "'snapshot_create_time' in _result_cluster_snapshot"
+      - "'snapshot_type' in _result_cluster_snapshot"
+      - "'status' in _result_cluster_snapshot"
+      - _result_create_source_db_cluster.status == "available"
+      - "'storage_encrypted' in _result_cluster_snapshot"
+      - "'tags' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.tags | length == 2
+      - _result_cluster_snapshot.tags["tag_one"] == "{{ snapshot_id }}-b One"
+      - _result_cluster_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
+      - "'vpc_id' in _result_cluster_snapshot"
+
+  - name: Attempt to take another snapshot of the existing DB cluster and assign tags (idempotence)
+    rds_cluster_snapshot:
+      state: present
+      db_cluster_identifier: "{{ cluster_id }}"
+      db_cluster_snapshot_identifier: "{{ snapshot_id }}-b"
+      wait: true
+      tags:
+        tag_one: '{{ snapshot_id }}-b One'
+        "Tag Two": 'two {{ snapshot_id }}-b'
+    register: _result_cluster_snapshot
+
+  - assert:
+      that:
+      - not _result_cluster_snapshot.changed
+
+  - name: Take another snapshot of the existing DB cluster and update tags
+    rds_cluster_snapshot:
+      state: present
+      db_cluster_identifier: "{{ cluster_id }}"
+      db_cluster_snapshot_identifier: "{{ snapshot_id }}-b"
+      tags:
+        tag_three: '{{ snapshot_id }}-b Three'
+        "Tag Two": 'two {{ snapshot_id }}-b'
+    register: _result_cluster_snapshot
+
+  - assert:
+      that:
+      - _result_cluster_snapshot.changed
+      - "'allocated_storage' in _result_cluster_snapshot"
+      - "'cluster_create_time' in _result_cluster_snapshot"
+      - "'db_cluster_identifier' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.db_cluster_identifier == "{{ cluster_id }}"
+      - "'db_cluster_snapshot_identifier' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}-b"
+      - "'db_cluster_snapshot_arn' in _result_cluster_snapshot"
+      - "'engine' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.engine == "{{ engine }}"
+      # - "'engine_mode' in _result_cluster_snapshot"
+      # - _result_cluster_snapshot.engine_mode == "provisioned"
+      - "'engine_version' in _result_cluster_snapshot"
+      - "'iam_database_authentication_enabled' in _result_cluster_snapshot"
+      - "'license_model' in _result_cluster_snapshot"
+      - "'master_username' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.master_username == "{{ username }}"
+      - "'snapshot_create_time' in _result_cluster_snapshot"
+      - "'snapshot_type' in _result_cluster_snapshot"
+      - "'status' in _result_cluster_snapshot"
+      - _result_create_source_db_cluster.status == "available"
+      - "'storage_encrypted' in _result_cluster_snapshot"
+      - "'tags' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.tags | length == 2
+      - _result_cluster_snapshot.tags["tag_three"] == "{{ snapshot_id }}-b Three"
+      - _result_cluster_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
+      - "'vpc_id' in _result_cluster_snapshot"
+
+  - name: Take another snapshot of the existing DB cluster and update tags without purge
+    rds_cluster_snapshot:
+      state: present
+      db_cluster_identifier: "{{ cluster_id }}"
+      db_cluster_snapshot_identifier: "{{ snapshot_id }}-b"
+      purge_tags: false
+      tags:
+        tag_one: '{{ snapshot_id }}-b One'
+    register: _result_cluster_snapshot
+
+  - assert:
+      that:
+      - _result_cluster_snapshot.changed
+      - "'allocated_storage' in _result_cluster_snapshot"
+      - "'cluster_create_time' in _result_cluster_snapshot"
+      - "'db_cluster_identifier' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.db_cluster_identifier == "{{ cluster_id }}"
+      - "'db_cluster_snapshot_identifier' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}-b"
+      - "'db_cluster_snapshot_arn' in _result_cluster_snapshot"
+      - "'engine' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.engine == "{{ engine }}"
+      # - "'engine_mode' in _result_cluster_snapshot"
+      # - _result_cluster_snapshot.engine_mode == "provisioned"
+      - "'engine_version' in _result_cluster_snapshot"
+      - "'iam_database_authentication_enabled' in _result_cluster_snapshot"
+      - "'license_model' in _result_cluster_snapshot"
+      - "'master_username' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.master_username == "{{ username }}"
+      - "'snapshot_create_time' in _result_cluster_snapshot"
+      - "'snapshot_type' in _result_cluster_snapshot"
+      - "'status' in _result_cluster_snapshot"
+      - _result_create_source_db_cluster.status == "available"
+      - "'storage_encrypted' in _result_cluster_snapshot"
+      - "'tags' in _result_cluster_snapshot"
+      - _result_cluster_snapshot.tags | length == 3
+      - _result_cluster_snapshot.tags["tag_one"] == "{{ snapshot_id }}-b One"
+      - _result_cluster_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
+      - _result_cluster_snapshot.tags["tag_three"] == "{{ snapshot_id }}-b Three"
+      - "'vpc_id' in _result_cluster_snapshot"
+
+  - name: Take another snapshot of the existing DB cluster and do not specify any tag to ensure previous tags are not removed
+    rds_cluster_snapshot:
+      state: present
+      db_cluster_identifier: "{{ cluster_id }}"
+      db_cluster_snapshot_identifier: "{{ snapshot_id }}-b"
+    register: _result_cluster_snapshot
+
+  - assert:
+      that:
+      - not _result_cluster_snapshot.changed
+  
+  # ------------------------------------------------------------------------------------------
+   # Test copying a snapshot
+   ### Copying a DB cluster snapshot from a different region is supported, but not in CI,
+   ### because the aws-terminator only terminates resources in one region.
+  - set_fact:
+      _snapshot_arn: "{{ _result_cluster_snapshot.db_cluster_snapshot_arn }}"
+
+  - name: Copy a DB cluster snapshot (check mode)
+    rds_cluster_snapshot:
+      id: "{{ snapshot_id }}-copy"
+      source_id: "{{ snapshot_id }}-b"
+      copy_tags: yes
+      wait: true
+    register: _result_cluster_copy_snapshot
+    check_mode: yes
+
+  - assert:
+      that:
+        - _result_cluster_copy_snapshot.changed
+
+  - name: Copy a DB cluster snapshot
+    rds_cluster_snapshot:
+      id: "{{ snapshot_id }}-copy"
+      source_id: "{{ snapshot_id }}-b"
+      copy_tags: yes
+      wait: true
+    register: _result_cluster_copy_snapshot
+
+  - assert:
+      that:
+        - _result_cluster_copy_snapshot.changed
+        - _result_cluster_copy_snapshot.db_cluster_identifier == "{{ cluster_id }}"
+        - _result_cluster_copy_snapshot.source_db_cluster_snapshot_arn == "{{ _snapshot_arn }}"
+        - _result_cluster_copy_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}-copy"
+        - "'tags' in _result_cluster_copy_snapshot"
+        - _result_cluster_copy_snapshot.tags | length == 3
+        - _result_cluster_copy_snapshot.tags["tag_one"] == "{{ snapshot_id }}-b One"
+        - _result_cluster_copy_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
+        - _result_cluster_copy_snapshot.tags["tag_three"] == "{{ snapshot_id }}-b Three"
+
+  - name: Copy a DB cluster snapshot (idempotence - check mode)
+    rds_cluster_snapshot:
+      id: "{{ snapshot_id }}-copy"
+      source_id: "{{ snapshot_id }}-b"
+      copy_tags: yes
+      wait: true
+    register: _result_cluster_copy_snapshot
+    check_mode: yes
+
+  - assert:
+      that:
+        - not _result_cluster_copy_snapshot.changed
+
+  - name: Copy a DB cluster snapshot (idempotence)
+    rds_cluster_snapshot:
+      id: "{{ snapshot_id }}-copy"
+      source_id: "{{ snapshot_id }}-b"
+      copy_tags: yes
+      wait: true
+    register: _result_cluster_copy_snapshot
+
+  - assert:
+      that:
+        - not _result_cluster_copy_snapshot.changed
+        - _result_cluster_copy_snapshot.db_cluster_identifier == "{{ cluster_id }}"
+        - _result_cluster_copy_snapshot.source_db_cluster_snapshot_arn == "{{ _snapshot_arn }}"
+        - _result_cluster_copy_snapshot.db_cluster_snapshot_identifier == "{{ snapshot_id }}-copy"
+        - "'tags' in _result_cluster_copy_snapshot"
+        - _result_cluster_copy_snapshot.tags | length == 3
+        - _result_cluster_copy_snapshot.tags["tag_one"] == "{{ snapshot_id }}-b One"
+        - _result_cluster_copy_snapshot.tags["Tag Two"] == "two {{ snapshot_id }}-b"
+        - _result_cluster_copy_snapshot.tags["tag_three"] == "{{ snapshot_id }}-b Three"
+
+  always:
+  - name: Delete the existing DB cluster snapshots
+    rds_cluster_snapshot:
+      state: absent
+      db_cluster_snapshot_identifier: "{{ item }}"
+    register: _result_delete_snapshot
+    ignore_errors: true
+    loop:
+    - "{{ snapshot_id }}"
+    - "{{ snapshot_id }}-b"
+    - "{{ snapshot_id }}-copy"
+
+  - name: Delete the existing DB cluster without creating a final snapshot
+    rds_cluster:
+      state: absent
+      cluster_id: "{{ item }}"
+      skip_final_snapshot: true
+    register: _result_delete_cluster
+    ignore_errors: true
+    loop:
+    - "{{ cluster_id }}"
+    - "{{ cluster_id }}-b"
