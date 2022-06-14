@@ -1,0 +1,13 @@
+---
+# defaults file for rds_cluster_snapshot
+_resource_prefix: 'ansible-test-{{ tiny_prefix }}'
+
+# Create RDS cluster
+cluster_id: '{{ _resource_prefix }}-rds-cluster'
+username: 'testrdsusername'
+password: "{{ lookup('password', 'dev/null length=12 chars=ascii_letters,digits') }}"
+engine: 'aurora'
+port: 3306
+
+# Create snapshot
+snapshot_id: '{{ _resource_prefix }}-rds-cluster-snapshot'
