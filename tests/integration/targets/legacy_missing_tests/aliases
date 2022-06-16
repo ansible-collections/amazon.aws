@@ -2,6 +2,3 @@ disabled
 
 # Lookup plugins
 aws_ssm
-
-# Callback plugin 
-aws_resource_actions 

@@ -1,0 +1,35 @@
+- hosts: localhost
+  gather_facts: no
+  collections:
+  - amazon.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  tasks:
+  - ec2_instance_info:
+    register: ec2_info
+
+  - assert:
+      that:
+      - '"resource_actions" in ec2_info'
+      - '"ec2:DescribeInstances" in ec2_info.resource_actions'
+
+  - aws_az_info:
+    register: az_info
+
+  - assert:
+      that:
+      - '"resource_actions" in az_info'
+      - '"ec2:DescribeAvailabilityZones" in az_info.resource_actions'
+
+  - aws_caller_info:
+    register: caller_info
+
+  - assert:
+      that:
+      - '"resource_actions" in caller_info'
+      - '"sts:GetCallerIdentity" in caller_info.resource_actions'
+      - '"iam:ListAccountAliases" in caller_info.resource_actions'
