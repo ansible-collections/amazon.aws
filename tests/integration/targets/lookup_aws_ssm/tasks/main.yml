@@ -1,0 +1,160 @@
+---
+- set_fact:
+    # As a lookup plugin we don't have access to module_defaults
+    connection_args:
+      region: "{{ aws_region }}"
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      aws_security_token: "{{ security_token | default(omit) }}"
+  no_log: True
+
+- name: 'aws_ssm lookup plugin integration tests'
+  collections:
+  - amazon.aws
+  module_defaults:
+    group/aws:
+      aws_access_key: '{{ aws_access_key }}'
+      aws_secret_key: '{{ aws_secret_key }}'
+      security_token: '{{ security_token | default(omit) }}'
+      region: '{{ aws_region }}'
+  vars:
+    skip: 'skip'
+    warn: 'warn'
+    simple_name: '/{{ ssm_key_prefix }}/Simple'
+    simple_description: 'This is a simple example'
+    simple_value: 'A simple VALue'
+    path_name: '/{{ ssm_key_prefix }}/path'
+    path_name_a: '{{ path_name }}/key_one'
+    path_name_b: '{{ path_name }}/keyTwo'
+    path_name_c: '{{ path_name }}/Nested/Key'
+    path_description: 'This is somewhere to store a set of keys'
+    path_value_a: 'value_one'
+    path_value_b: 'valueTwo'
+    path_value_c: 'Value Three'
+  block:
+
+  # ============================================================
+  # Simple key/value
+  - name: lookup a missing key (error)
+    set_fact:
+      lookup_value: "{{ lookup('amazon.aws.aws_ssm', simple_name, **connection_args) }}"
+    ignore_errors: true
+    register: lookup_missing
+  - assert:
+     that:
+      - lookup_missing is failed
+
+  - name: lookup a missing key (warn)
+    set_fact:
+      lookup_value: "{{ lookup('amazon.aws.aws_ssm', simple_name, on_missing=warn, **connection_args) }}"
+    register: lookup_missing
+  - assert:
+     that:
+      - lookup_value | list | length == 0
+
+  - name: lookup a single missing key (skip)
+    set_fact:
+      lookup_value: "{{ lookup('amazon.aws.aws_ssm', simple_name, on_missing=skip, **connection_args) }}"
+    register: lookup_missing
+  - assert:
+     that:
+      - lookup_value | list | length == 0
+
+  - name: Create key/value pair in aws parameter store
+    aws_ssm_parameter_store:
+      name: '{{ simple_name }}'
+      description: '{{ simple_description }}'
+      value: '{{ simple_value }}'
+
+  - name: Check that parameter was stored correctly
+    set_fact:
+      lookup_value: "{{ lookup('amazon.aws.aws_ssm', simple_name, **connection_args) }}"
+  - name: Check that parameter was stored correctly
+    assert:
+     that:
+      - lookup_value == simple_value
+
+  # ============================================================
+
+  - name: Create nested key/value pair in aws parameter store (1)
+    aws_ssm_parameter_store:
+      name: '{{ path_name_a }}'
+      description: '{{ path_description }}'
+      value: '{{ path_value_a }}'
+
+  - name: Create nested key/value pair in aws parameter store (2)
+    aws_ssm_parameter_store:
+      name: '{{ path_name_b }}'
+      description: '{{ path_description }}'
+      value: '{{ path_value_b }}'
+
+  - name: Create nested key/value pair in aws parameter store (3)
+    aws_ssm_parameter_store:
+      name: '{{ path_name_c }}'
+      description: '{{ path_description }}'
+      value: '{{ path_value_c }}'
+
+  # ============================================================
+  - name: debug the lookup
+    debug:
+     msg: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, **connection_args )}}'"
+
+  # - name: Check that parameter path is stored and retrieved
+  #   assert:
+  #    that:
+  #     - "'{{lookup('amazon.aws.aws_ssm', '/' ~ ssm_key_prefix ~ '/path', region=ec2_region, aws_access_key=ec2_access_key, aws_secret_key=ec2_secret_key, aws_security_token=security_token, bypath=True, shortnames=true ) | to_json }}' == '{\"toovar\": \"too value\", \"wonvar\": \"won value\"}'"
+
+  # # ============================================================
+  # - name: Returns empty value in case we don't find a named parameter and default filter works
+  #   assert:
+  #    that:
+  #     - "'{{lookup('amazon.aws.aws_ssm', '/' ~ ssm_key_prefix ~ '/Goodbye', region=ec2_region, aws_access_key=ec2_access_key, aws_secret_key=ec2_secret_key, aws_security_token=security_token )}}' == ''"
+  #     - "'{{lookup('amazon.aws.aws_ssm', '/' ~ ssm_key_prefix ~ '/Goodbye', region=ec2_region, aws_access_key=ec2_access_key, aws_secret_key=ec2_secret_key, aws_security_token=security_token ) | default('I_can_has_default', true)}}' == 'I_can_has_default'"
+
+  # # ============================================================
+  # - name: Handle multiple paths with one that doesn't exist - default to full names.
+  #   assert:
+  #    that:
+  #     - "'{{lookup('amazon.aws.aws_ssm', '/' ~ ssm_key_prefix ~ '/path', '/' ~ ssm_key_prefix ~ '/dont_create_this_path_you_will_break_the_ansible_tests', region=ec2_region, aws_access_key=ec2_access_key, aws_secret_key=ec2_secret_key, aws_security_token=security_token, bypath=True ) | to_json }}' in ( '[{\"/' ~ ssm_key_prefix ~ '/path/toovar\": \"too value\", \"/' ~ ssm_key_prefix ~ '/path/wonvar\": \"won value\"}, {}]',  '[{\"/' ~ ssm_key_prefix ~ '/path/wonvar\": \"won value\", \"/' ~ ssm_key_prefix ~ '/path/toovar\": \"too value\"}, {}]' )"
+
+
+  # # ============================================================
+  # # this may be a bit of a nasty test case;  we should perhaps accept _either_ value that was stored
+  # # in the two variables named 'samevar'
+
+  # - name: Handle multiple paths with one that doesn't exist - shortnames - including overlap.
+  #   assert:
+  #    that:
+  #     - "'{{lookup('amazon.aws.aws_ssm', '/' ~ ssm_key_prefix ~ '/path', '/' ~ ssm_key_prefix ~ '/dont_create_this_path_you_will_break_the_ansible_tests', '/' ~ ssm_key_prefix ~ '/deeppath', region=ec2_region, aws_access_key=ec2_access_key, aws_secret_key=ec2_secret_key, aws_security_token=security_token, bypath=True, shortnames=true, recursive=true ) | to_json }}' == '[{\"toovar\": \"too value\", \"treevar\": \"tree value\", \"wonvar\": \"won value\"}, {}, {\"samevar\": \"won value\"}]'"
+
+
+  # # ============================================================
+  # - name: Delete key/value pair in aws parameter store
+  #   aws_ssm_parameter_store:
+  #     name: "/{{ssm_key_prefix}}/Hello"
+  #     state: absent
+
+  # # ============================================================
+  # - name: Attempt delete key/value pair in aws parameter store again
+  #   aws_ssm_parameter_store:
+  #     name: "/{{ssm_key_prefix}}/Hello"
+  #     state: absent
+  #   register: result
+
+  # - name: assert that changed is False since parameter should be deleted
+  #   assert:
+  #     that:
+  #       - result.changed == False
+  always:
+  # ============================================================
+  - name: Delete remaining key/value pairs in aws parameter store
+    aws_ssm_parameter_store:
+      name: "{{item}}"
+      state: absent
+    ignore_errors: True
+    with_items:
+      - '{{ path_name_c }}'
+      - '{{ path_name_b }}'
+      - '{{ path_name_c }}'
+      - '{{ path_name }}'
+      - '{{ simple_name }}'
