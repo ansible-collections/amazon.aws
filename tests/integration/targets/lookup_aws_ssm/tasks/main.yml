@@ -25,12 +25,16 @@
     simple_value: 'A simple VALue'
     path_name: '/{{ ssm_key_prefix }}/path'
     path_name_a: '{{ path_name }}/key_one'
+    path_shortname_a: 'key_one'
     path_name_b: '{{ path_name }}/keyTwo'
+    path_shortname_b: 'keyTwo'
     path_name_c: '{{ path_name }}/Nested/Key'
+    path_shortname_c: 'Key'
     path_description: 'This is somewhere to store a set of keys'
     path_value_a: 'value_one'
     path_value_b: 'valueTwo'
     path_value_c: 'Value Three'
+    missing_name: '{{ path_name }}/IDoNotExist'
   block:
 
   # ============================================================
@@ -66,11 +70,10 @@
       description: '{{ simple_description }}'
       value: '{{ simple_value }}'
 
-  - name: Check that parameter was stored correctly
+  - name: Lookup a single key
     set_fact:
       lookup_value: "{{ lookup('amazon.aws.aws_ssm', simple_name, **connection_args) }}"
-  - name: Check that parameter was stored correctly
-    assert:
+  - assert:
      that:
       - lookup_value == simple_value
 
@@ -95,56 +98,135 @@
       value: '{{ path_value_c }}'
 
   # ============================================================
-  - name: debug the lookup
-    debug:
-     msg: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, **connection_args )}}'"
+  - name: Lookup a keys using bypath
+    set_fact:
+      lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, wantlist=True, **connection_args ) | first }}"
+  - assert:
+      that:
+      - path_name_a in lookup_value
+      - lookup_value[path_name_a] == path_value_a
+      - path_name_b in lookup_value
+      - lookup_value[path_name_b] == path_value_b
+      - lookup_value | length == 2
 
-  # - name: Check that parameter path is stored and retrieved
-  #   assert:
-  #    that:
-  #     - "'{{lookup('amazon.aws.aws_ssm', '/' ~ ssm_key_prefix ~ '/path', region=ec2_region, aws_access_key=ec2_access_key, aws_secret_key=ec2_secret_key, aws_security_token=security_token, bypath=True, shortnames=true ) | to_json }}' == '{\"toovar\": \"too value\", \"wonvar\": \"won value\"}'"
+  - name: Lookup a keys using bypath and recursive
+    set_fact:
+      lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, recursive=True, wantlist=True, **connection_args ) | first }}"
+  - assert:
+      that:
+      - path_name_a in lookup_value
+      - lookup_value[path_name_a] == path_value_a
+      - path_name_b in lookup_value
+      - lookup_value[path_name_b] == path_value_b
+      - path_name_c in lookup_value
+      - lookup_value[path_name_c] == path_value_c
+      - lookup_value | length == 3
 
-  # # ============================================================
-  # - name: Returns empty value in case we don't find a named parameter and default filter works
-  #   assert:
-  #    that:
-  #     - "'{{lookup('amazon.aws.aws_ssm', '/' ~ ssm_key_prefix ~ '/Goodbye', region=ec2_region, aws_access_key=ec2_access_key, aws_secret_key=ec2_secret_key, aws_security_token=security_token )}}' == ''"
-  #     - "'{{lookup('amazon.aws.aws_ssm', '/' ~ ssm_key_prefix ~ '/Goodbye', region=ec2_region, aws_access_key=ec2_access_key, aws_secret_key=ec2_secret_key, aws_security_token=security_token ) | default('I_can_has_default', true)}}' == 'I_can_has_default'"
+  - name: Lookup a keys using bypath and shortname
+    set_fact:
+      lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, shortnames=True, wantlist=True, **connection_args ) | first }}"
+  - assert:
+      that:
+      - path_shortname_a in lookup_value
+      - lookup_value[path_shortname_a] == path_value_a
+      - path_shortname_b in lookup_value
+      - lookup_value[path_shortname_b] == path_value_b
+      - lookup_value | length == 2
 
-  # # ============================================================
-  # - name: Handle multiple paths with one that doesn't exist - default to full names.
-  #   assert:
-  #    that:
-  #     - "'{{lookup('amazon.aws.aws_ssm', '/' ~ ssm_key_prefix ~ '/path', '/' ~ ssm_key_prefix ~ '/dont_create_this_path_you_will_break_the_ansible_tests', region=ec2_region, aws_access_key=ec2_access_key, aws_secret_key=ec2_secret_key, aws_security_token=security_token, bypath=True ) | to_json }}' in ( '[{\"/' ~ ssm_key_prefix ~ '/path/toovar\": \"too value\", \"/' ~ ssm_key_prefix ~ '/path/wonvar\": \"won value\"}, {}]',  '[{\"/' ~ ssm_key_prefix ~ '/path/wonvar\": \"won value\", \"/' ~ ssm_key_prefix ~ '/path/toovar\": \"too value\"}, {}]' )"
+  - name: Lookup a keys using bypath and recursive and shortname
+    set_fact:
+      lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, bypath=True, recursive=True, shortnames=True, wantlist=True, **connection_args ) | first }}"
+  - assert:
+      that:
+      - path_shortname_a in lookup_value
+      - lookup_value[path_shortname_a] == path_value_a
+      - path_shortname_b in lookup_value
+      - lookup_value[path_shortname_b] == path_value_b
+      - path_shortname_c in lookup_value
+      - lookup_value[path_shortname_c] == path_value_c
+      - lookup_value | length == 3
 
+  # ============================================================
 
-  # # ============================================================
-  # # this may be a bit of a nasty test case;  we should perhaps accept _either_ value that was stored
-  # # in the two variables named 'samevar'
+  - name: Explicitly lookup two keys
+    set_fact:
+      lookup_value: "{{ lookup('amazon.aws.aws_ssm', simple_name, path_name_a, wantlist=True, **connection_args) }}"
+  - assert:
+     that:
+      - lookup_value | list | length == 2
+      - lookup_value[0] == simple_value
+      - lookup_value[1] == path_value_a
 
-  # - name: Handle multiple paths with one that doesn't exist - shortnames - including overlap.
-  #   assert:
-  #    that:
-  #     - "'{{lookup('amazon.aws.aws_ssm', '/' ~ ssm_key_prefix ~ '/path', '/' ~ ssm_key_prefix ~ '/dont_create_this_path_you_will_break_the_ansible_tests', '/' ~ ssm_key_prefix ~ '/deeppath', region=ec2_region, aws_access_key=ec2_access_key, aws_secret_key=ec2_secret_key, aws_security_token=security_token, bypath=True, shortnames=true, recursive=true ) | to_json }}' == '[{\"toovar\": \"too value\", \"treevar\": \"tree value\", \"wonvar\": \"won value\"}, {}, {\"samevar\": \"won value\"}]'"
+  ###
 
+  - name: Explicitly lookup two keys - one missing
+    set_fact:
+      lookup_value: "{{ lookup('amazon.aws.aws_ssm', simple_name, missing_name, wantlist=True, **connection_args) }}"
+    ignore_errors: True
+    register: lookup_missing
+  - assert:
+     that:
+      - lookup_missing is failed
 
-  # # ============================================================
-  # - name: Delete key/value pair in aws parameter store
-  #   aws_ssm_parameter_store:
-  #     name: "/{{ssm_key_prefix}}/Hello"
-  #     state: absent
+  - name: Explicitly lookup two keys - one missing (skip)
+    set_fact:
+      lookup_value: "{{ lookup('amazon.aws.aws_ssm', simple_name, missing_name, on_missing=skip, wantlist=True, **connection_args) }}"
+  - assert:
+     that:
+      - lookup_value | list | length == 2
+      - lookup_value[0] == simple_value
+      - lookup_value | bool == False
 
-  # # ============================================================
-  # - name: Attempt delete key/value pair in aws parameter store again
-  #   aws_ssm_parameter_store:
-  #     name: "/{{ssm_key_prefix}}/Hello"
-  #     state: absent
-  #   register: result
+  ###
 
-  # - name: assert that changed is False since parameter should be deleted
-  #   assert:
-  #     that:
-  #       - result.changed == False
+  - name: Explicitly lookup two paths - one missing
+    set_fact:
+      lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, missing_name, bypath=True, wantlist=True, **connection_args) }}"
+    ignore_errors: True
+    register: lookup_missing
+  - assert:
+     that:
+      - lookup_missing is failed
+
+  - name: Explicitly lookup two paths - one missing (skip)
+    set_fact:
+      lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, missing_name, on_missing=skip, bypath=True, wantlist=True, **connection_args) }}"
+  - assert:
+     that:
+      - lookup_value | list | length == 2
+      - lookup_value[1] | bool == False
+      - path_name_a in lookup_value[0]
+      - lookup_value[0][path_name_a] == path_value_a
+      - path_name_b in lookup_value[0]
+      - lookup_value[0][path_name_b] == path_value_b
+      - lookup_value[0] | length == 2
+
+  ###
+
+  - name: Explicitly lookup two paths with recurse - one missing
+    set_fact:
+      lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, missing_name, bypath=True, recursive=True, wantlist=True, **connection_args) }}"
+    ignore_errors: True
+    register: lookup_missing
+  - assert:
+     that:
+      - lookup_missing is failed
+
+  - name: Explicitly lookup two paths with recurse - one missing (skip)
+    set_fact:
+      lookup_value: "{{ lookup('amazon.aws.aws_ssm', path_name, missing_name, on_missing=skip, bypath=True, recursive=True, wantlist=True, **connection_args) }}"
+  - assert:
+     that:
+      - lookup_value | list | length == 2
+      - lookup_value[1] | bool == False
+      - path_name_a in lookup_value[0]
+      - lookup_value[0][path_name_a] == path_value_a
+      - path_name_b in lookup_value[0]
+      - lookup_value[0][path_name_b] == path_value_b
+      - path_name_c in lookup_value[0]
+      - lookup_value[0][path_name_c] == path_value_c
+      - lookup_value[0] | length == 3
+
   always:
   # ============================================================
   - name: Delete remaining key/value pairs in aws parameter store
