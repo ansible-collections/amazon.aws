@@ -51,62 +51,28 @@ _raw:
 """
 
 try:
-    import boto3
     import botocore
 except ImportError:
     pass  # will be captured by imported HAS_BOTO3
 
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_native
-from ansible.plugins.lookup import LookupBase
 
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
+from ansible_collections.amazon.aws.plugins.plugin_utils.modules import AWSLookupModule
 
 
-def _boto3_conn(region, credentials):
-    boto_profile = credentials.pop('aws_profile', None)
+class LookupModule(AWSLookupModule):
+    name = 'aws_account_attribute'
 
-    try:
-        connection = boto3.session.Session(profile_name=boto_profile).client('ec2', region, **credentials)
-    except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
-        if boto_profile:
-            try:
-                connection = boto3.session.Session(profile_name=boto_profile).client('ec2', region)
-            except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
-                raise AnsibleError("Insufficient credentials found.")
-        else:
-            raise AnsibleError("Insufficient credentials found.")
-    return connection
+    @AWSLookupModule.aws_error_handler('describe account attributes')
+    @AWSRetry.jittered_backoff(retries=10)
+    def _describe_account_attributes(self, client, **params):
+        return client.describe_account_attributes(**params)
 
-
-def _get_credentials(options):
-    credentials = {}
-    credentials['aws_profile'] = options['aws_profile']
-    credentials['aws_secret_access_key'] = options['aws_secret_key']
-    credentials['aws_access_key_id'] = options['aws_access_key']
-    if options['aws_security_token']:
-        credentials['aws_session_token'] = options['aws_security_token']
-
-    return credentials
-
-
-@AWSRetry.jittered_backoff(retries=10)
-def _describe_account_attributes(client, **params):
-    return client.describe_account_attributes(**params)
-
-
-class LookupModule(LookupBase):
     def run(self, terms, variables, **kwargs):
-
-        if not HAS_BOTO3:
-            raise AnsibleError("The lookup aws_account_attribute requires boto3 and botocore.")
-
-        self.set_options(var_options=variables, direct=kwargs)
-        boto_credentials = _get_credentials(self._options)
-
-        region = self._options['region']
-        client = _boto3_conn(region, boto_credentials)
+        super(LookupModule, self).run(terms, variables, **kwargs)
+        client = self.client('ec2')
 
         attribute = kwargs.get('attribute')
         params = {'AttributeNames': []}
@@ -117,10 +83,7 @@ class LookupModule(LookupBase):
         elif attribute:
             params['AttributeNames'] = [attribute]
 
-        try:
-            response = _describe_account_attributes(client, **params)['AccountAttributes']
-        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            raise AnsibleError("Failed to describe account attributes: %s" % to_native(e))
+        response = self._describe_account_attributes(client, **params)['AccountAttributes']
 
         if check_ec2_classic:
             attr = response[0]

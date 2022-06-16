@@ -71,6 +71,7 @@ from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
 from ansible.module_utils._text import to_native
 
+from .botocore import BotocoreBaseMixin
 from .botocore import HAS_BOTO3
 from .botocore import boto3_conn
 from .botocore import get_aws_connection_info
@@ -79,11 +80,64 @@ from .botocore import gather_sdk_versions
 
 from .version import LooseVersion
 
-# Currently only AnsibleAWSModule.  However we have a lot of Copy and Paste code
-# for Inventory and Lookup modules which we should refactor
+
+class BotocoreModuleMixin(BotocoreBaseMixin):
+    def require_boto3_at_least(self, desired, **kwargs):
+        """Check if the available boto3 version is greater than or equal to a desired version.
+
+        calls fail_json() when the boto3 version is less than the desired
+        version
+
+        Usage:
+            module.require_boto3_at_least("1.2.3", reason="to update tags")
+            module.require_boto3_at_least("1.1.1")
+
+        :param desired the minimum desired version
+        :param reason why the version is required (optional)
+        """
+        if not self.boto3_at_least(desired):
+            self._module.fail_json(
+                msg=missing_required_lib('boto3>={0}'.format(desired), **kwargs),
+                **self._gather_versions()
+            )
+
+    def require_botocore_at_least(self, desired, **kwargs):
+        """Check if the available botocore version is greater than or equal to a desired version.
+
+        calls fail_json() when the botocore version is less than the desired
+        version
+
+        Usage:
+            module.require_botocore_at_least("1.2.3", reason="to update tags")
+            module.require_botocore_at_least("1.1.1")
+
+        :param desired the minimum desired version
+        :param reason why the version is required (optional)
+        """
+        if not self.botocore_at_least(desired):
+            self._module.fail_json(
+                msg=missing_required_lib('botocore>={0}'.format(desired), **kwargs),
+                **self._gather_versions()
+            )
+
+    def client(self, service, retry_decorator=None):
+        region, ec2_url, aws_connect_kwargs = get_aws_connection_info(self, boto3=True)
+        conn = boto3_conn(self, conn_type='client', resource=service,
+                          region=region, endpoint=ec2_url, **aws_connect_kwargs)
+        return conn if retry_decorator is None else _RetryingBotoClientWrapper(conn, retry_decorator)
+
+    def resource(self, service):
+        region, ec2_url, aws_connect_kwargs = get_aws_connection_info(self, boto3=True)
+        return boto3_conn(self, conn_type='resource', resource=service,
+                          region=region, endpoint=ec2_url, **aws_connect_kwargs)
+
+    def check_required_libraries(self):
+        msg = self._test_required_libraries()
+        if msg:
+            self.module.fail_json(msg, **self._gather_versions())
 
 
-class AnsibleAWSModule(object):
+class AnsibleAWSModule(BotocoreModuleMixin, object):
     """An ansible module class for AWS modules
 
     AnsibleAWSModule provides an a class for building modules which
@@ -121,16 +175,8 @@ class AnsibleAWSModule(object):
         self._module = AnsibleAWSModule.default_settings["module_class"](**kwargs)
 
         if local_settings["check_boto3"]:
-            if not HAS_BOTO3:
-                self._module.fail_json(
-                    msg=missing_required_lib('botocore or boto3'))
-            current_versions = self._gather_versions()
-            if not self.botocore_at_least('1.20.0'):
-                self.warn('botocore < 1.20.0 is not supported or tested.'
-                          '  Some features may not work.')
-            if not self.boto3_at_least("1.17.0"):
-                self.warn('boto3 < 1.17.0 is not supported or tested.'
-                          '  Some features may not work.')
+            self.check_required_libraries()
+            self.check_supported_libraries()
 
         self.check_mode = self._module.check_mode
         self._diff = self._module._diff
@@ -185,17 +231,6 @@ class AnsibleAWSModule(object):
     def md5(self, *args, **kwargs):
         return self._module.md5(*args, **kwargs)
 
-    def client(self, service, retry_decorator=None):
-        region, ec2_url, aws_connect_kwargs = get_aws_connection_info(self, boto3=True)
-        conn = boto3_conn(self, conn_type='client', resource=service,
-                          region=region, endpoint=ec2_url, **aws_connect_kwargs)
-        return conn if retry_decorator is None else _RetryingBotoClientWrapper(conn, retry_decorator)
-
-    def resource(self, service):
-        region, ec2_url, aws_connect_kwargs = get_aws_connection_info(self, boto3=True)
-        return boto3_conn(self, conn_type='resource', resource=service,
-                          region=region, endpoint=ec2_url, **aws_connect_kwargs)
-
     @property
     def region(self):
         return get_aws_region(self, True)
@@ -237,76 +272,6 @@ class AnsibleAWSModule(object):
             failure.update(**camel_dict_to_snake_dict(response))
 
         self.fail_json(**failure)
-
-    def _gather_versions(self):
-        """Gather AWS SDK (boto3 and botocore) dependency versions
-
-        Returns {'boto3_version': str, 'botocore_version': str}
-        Returns {} if either is not installed
-        """
-        return gather_sdk_versions()
-
-    def require_boto3_at_least(self, desired, **kwargs):
-        """Check if the available boto3 version is greater than or equal to a desired version.
-
-        calls fail_json() when the boto3 version is less than the desired
-        version
-
-        Usage:
-            module.require_boto3_at_least("1.2.3", reason="to update tags")
-            module.require_boto3_at_least("1.1.1")
-
-        :param desired the minimum desired version
-        :param reason why the version is required (optional)
-        """
-        if not self.boto3_at_least(desired):
-            self._module.fail_json(
-                msg=missing_required_lib('boto3>={0}'.format(desired), **kwargs),
-                **self._gather_versions()
-            )
-
-    def boto3_at_least(self, desired):
-        """Check if the available boto3 version is greater than or equal to a desired version.
-
-        Usage:
-            if module.params.get('assign_ipv6_address') and not module.boto3_at_least('1.4.4'):
-                # conditionally fail on old boto3 versions if a specific feature is not supported
-                module.fail_json(msg="Boto3 can't deal with EC2 IPv6 addresses before version 1.4.4.")
-        """
-        existing = self._gather_versions()
-        return LooseVersion(existing['boto3_version']) >= LooseVersion(desired)
-
-    def require_botocore_at_least(self, desired, **kwargs):
-        """Check if the available botocore version is greater than or equal to a desired version.
-
-        calls fail_json() when the botocore version is less than the desired
-        version
-
-        Usage:
-            module.require_botocore_at_least("1.2.3", reason="to update tags")
-            module.require_botocore_at_least("1.1.1")
-
-        :param desired the minimum desired version
-        :param reason why the version is required (optional)
-        """
-        if not self.botocore_at_least(desired):
-            self._module.fail_json(
-                msg=missing_required_lib('botocore>={0}'.format(desired), **kwargs),
-                **self._gather_versions()
-            )
-
-    def botocore_at_least(self, desired):
-        """Check if the available botocore version is greater than or equal to a desired version.
-
-        Usage:
-            if not module.botocore_at_least('1.2.3'):
-                module.fail_json(msg='The Serverless Elastic Load Compute Service is not in botocore before v1.2.3')
-            if not module.botocore_at_least('1.5.3'):
-                module.warn('Botocore did not include waiters for Service X before 1.5.3. '
-                            'To wait until Service X resources are fully available, update botocore.')
-        """
-        existing = self._gather_versions()
-        return LooseVersion(existing['botocore_version']) >= LooseVersion(desired)
 
 
 class _RetryingBotoClientWrapper(object):

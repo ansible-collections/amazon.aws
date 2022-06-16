@@ -54,6 +54,86 @@ from ansible.module_utils.six import binary_type
 from ansible.module_utils.six import text_type
 
 from .retries import AWSRetry
+from .version import LooseVersion
+
+
+class BotocoreBaseMixin(object):
+    _botocore_versions = None
+    # These can be overwritten by plugins which can not function without a
+    # specific version of Boto3 / Botocore (for example very new APIs)
+    _REQUIRED_BOTO3 = None
+    _REQUIRED_BOTOCORE = None
+
+    # These are the collection supported versions of boto3/botocore and should
+    # not be modified by a subclass
+    __SUPPORTED_BOTO3 = '1.17.0'
+    __SUPPORTED_BOTOCORE = '1.20.0'
+
+    @property
+    def minimum_supported_boto3(self):
+        return self.__SUPPORTED_BOTO3
+
+    @property
+    def minimum_supported_botocore(self):
+        return self.__SUPPORTED_BOTOCORE
+
+    @property
+    def minimum_required_boto3(self):
+        return self._REQUIRED_BOTO3
+
+    @property
+    def minimum_required_botocore(self):
+        return self._REQUIRED_BOTOCORE
+
+    def _gather_versions(self):
+        if not self._botocore_versions:
+            self._botocore_versions = gather_sdk_versions()
+        return dict(self._botocore_versions)
+
+    def _library_version(self, library):
+        versions = self._gather_versions()
+        return versions["{0}_version".format(library)]
+
+    def botocore_at_least(self, minimum_version=None):
+        """Checks if the botocore version available is at least a specific version.
+
+        Defaults to the minimum version of botocore supported by the collection.
+        """
+        available_version = self._library_version('botocore')
+        if minimum_version is None:
+            minimum_version = self.minimum_supported_botocore
+        return LooseVersion(available_version) >= LooseVersion(minimum_version)
+
+    def boto3_at_least(self, minimum_version=None):
+        """Checks if the botocore version available is at least a specific version.
+
+        Defaults to the minimum version of botocore supported by the collection.
+        """
+        available_version = self._library_version('boto3')
+        if minimum_version is None:
+            minimum_version = self.minimum_supported_boto3
+        return LooseVersion(available_version) >= LooseVersion(minimum_version)
+
+    def check_supported_libraries(self):
+        if not HAS_BOTO3:
+            return missing_required_lib('botocore and boto3')
+        if not self.botocore_at_least():
+            self.warn('botocore < {0} is not supported or tested.'
+                      '  Some features may not work.'
+                      ''.format(self.minimum_supported_botocore))
+        if not self.boto3_at_least():
+            self.warn('boto3 < {0} is not supported or tested.'
+                      '  Some features may not work.'
+                      ''.format(self.minimum_supported_boto3))
+
+    def _test_required_libraries(self):
+        if not HAS_BOTO3:
+            return missing_required_lib('botocore and boto3')
+        if self._REQUIRED_BOTO3 and not self.boto3_at_least(self._REQUIRED_BOTO3):
+            return missing_required_lib('boto3>={0}'.format(self._REQUIRED_BOTO3))
+        if self._REQUIRED_BOTOCORE and not self.botocore_at_least(self._REQUIRED_BOTOCORE):
+            return missing_required_lib('botocore>={0}'.format(self._REQUIRED_BOTOCORE))
+        return None
 
 
 def boto3_conn(module, conn_type=None, resource=None, region=None, endpoint=None, **params):
@@ -183,7 +263,7 @@ def get_aws_connection_info(module, boto3=None):
             profile_name = os.environ.get('AWS_DEFAULT_PROFILE')
 
     if profile_name and (access_key or secret_key or security_token):
-        module.fail("Passing both a profile and access tokens is not supported.")
+        module.fail_json("Passing both a profile and access tokens is not supported.")
 
     if not ec2_url:
         if 'AWS_URL' in os.environ:
