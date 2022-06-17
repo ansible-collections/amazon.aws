@@ -21,12 +21,22 @@
     set_fact:
       secret_name: "ansible-test-{{ tiny_prefix }}-secret"
       secret_value: "{{ lookup('password', '/dev/null chars=ascii_lowercase,digits,punctuation length=16') }}"
-      on_missing_secret: "skip"
-      on_deleted_secret: "skip"
+      skip: "skip"
+      warn: "warn"
 
   - name: lookup missing secret (skip)
     set_fact:
-      missing_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, on_missing=on_missing_secret, on_deleted=on_deleted_secret, **connection_args) }}"
+      missing_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, on_missing=skip, **connection_args) }}"
+
+  - name: assert that missing_secret is defined
+    assert:
+      that:
+        - missing_secret is defined
+        - missing_secret | list | length == 0
+
+  - name: lookup missing secret (warn)
+    set_fact:
+      missing_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, on_missing=warn, **connection_args) }}"
 
   - name: assert that missing_secret is defined
     assert:
@@ -70,7 +80,17 @@
 
   - name: lookup deleted secret (skip)
     set_fact:
-      deleted_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, on_missing=on_missing_secret, on_deleted=on_deleted_secret, **connection_args) }}"
+      deleted_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, on_deleted=skip, **connection_args) }}"
+
+  - name: assert that deleted_secret is defined
+    assert:
+      that:
+        - deleted_secret is defined
+        - deleted_secret | list | length == 0
+
+  - name: lookup deleted secret (warn)
+    set_fact:
+      deleted_secret: "{{ lookup('amazon.aws.aws_secret', secret_name, on_deleted=warn, **connection_args) }}"
 
   - name: assert that deleted_secret is defined
     assert:
