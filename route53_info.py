@@ -204,6 +204,185 @@ EXAMPLES = r'''
       register: RECORDS
 '''
 
+RETURN = r'''
+resource_record_sets:
+    description: A list of resource record sets returned by list_resource_record_sets in boto3.
+    returned: when I(query=record_sets)
+    type: list
+    elements: dict
+    contains:
+        name:
+            description: The name of a record in the specified hosted zone.
+            type: str
+            sample: 'www.example.com'
+        type:
+            description: The DNS record type.
+            type: str
+            sample: 'A'
+        ttl:
+            description: The resource record cache time to live (TTL), in seconds.
+            type: int
+            sample: 60
+        set_identifier:
+            description: An identifier that differentiates among multiple resource record sets that have the same combination of name and type.
+            type: str
+            sample: 'abcd'
+        resource_records:
+            description: Information about the resource records.
+            type: list
+            elements: dict
+            contains:
+                value:
+                    description: The current or new DNS record value.
+                    type: str
+                    sample: 'ns-12.awsdns-34.com.'
+        geo_location:
+            description: The specified geographic location for which the Route53 responds to based on location.
+            type: dict
+            elements: str
+            contains:
+                continent_code:
+                    description: The two-letter code for the continent.
+                    type: str
+                    sample: 'NA'
+                country_code:
+                    description: The two-letter code for a country.
+                    type: str
+                    sample: 'US'
+                subdivision_code:
+                    description: The two-letter code for a state of the United States
+                    type: str
+                    sample: 'NY'
+    version_added: 4.0.0
+hosted_zones:
+    description: A list of hosted zones returned by list_hosted_zones in boto3.
+    returned: when I(query=hosted_zone)
+    type: list
+    elements: dict
+    contains:
+        id:
+            description: The ID of the hosted zone assigned by Amazon Route53 to the hosted zone at the creation time.
+            type: str
+            sample: '/hostedzone/Z01234567AB1234567890'
+        name:
+            description: The name of the domain.
+            type: str
+            sample: 'example.io'
+        resource_record_set_count:
+            description: The number of resource record sets in the hosted zone.
+            type: int
+            sample: 3
+        caller_reference:
+            description: The value specified for CallerReference at the time of hosted zone creation.
+            type: str
+            sample: '01d0db12-x0x9-12a3-1234-0z000z00zz0z'
+        config:
+            description: A dict that contains Comment and PrivateZone elements.
+            type: dict
+            contains:
+                comment:
+                    description: Any comments that included about in the hosted zone.
+                    type: str
+                    sample: 'HostedZone created by Route53 Registrar'
+                private_zone:
+                    description: A value that indicates whether this is a private hosted zone or not.
+                    type: bool
+                    sample: false
+    version_added: 4.0.0
+health_checks:
+    description: A list of Route53 health checks returned by list_health_checks in boto3.
+    type: list
+    elements: dict
+    returned: when I(query=health_check)
+    contains:
+        id:
+            description: The identifier that Amazon Route53 assigned to the health check at the time of creation.
+            type: str
+            sample: '12345cdc-2cc4-1234-bed2-123456abc1a2'
+        health_check_version:
+            description: The version of the health check.
+            type: str
+            sample: 1
+        caller_reference:
+            description: A unique string that you specified when you created the health check.
+            type: str
+            sample: '01d0db12-x0x9-12a3-1234-0z000z00zz0z'
+        health_check_config:
+            description: A dict that contains detailed information about one health check.
+            type: dict
+            contains:
+                disabled:
+                    description: Whether Route53 should stop performing health checks on a endpoint.
+                    type: bool
+                    sample: false
+                enable_sni:
+                    description: Whether Route53 should send value of FullyQualifiedDomainName to endpoint in client_hello message during TLS negotiation.
+                    type: bool
+                    sample: true
+                failure_threshold:
+                    description: The number of consecutive health checks that an endpoint must pass/fail for Route53 to change current status of endpoint.
+                    type: int
+                    sample: 3
+                fully_qualified_domain_name:
+                    description: The fully qualified DNS name of the endpoint on which Route53 performs health checks.
+                    type: str
+                    sample: 'hello'
+                inverted:
+                    description: Whether Route53 should invert the status of a health check.
+                    type: bool
+                    sample: false
+                ip_address:
+                    description: The IPv4/IPv6 IP address of the endpoint that Route53 should perform health checks on.
+                    type: str
+                    sample: 192.0.2.44
+                measure_latency:
+                    description: Whether Route53 should measure latency between health checkers in multiple AWS regions and the endpoint.
+                    type: bool
+                    sample: false
+                port:
+                    description: The port of the endpoint that Route53 should perform health checks on.
+                    type: int
+                    sample: 80
+                request_interval:
+                    description: The number of seconds between the time that Route53 gets a response from endpoint and the next health check request.
+                    type: int
+                    sample: 30
+                resource_path:
+                    description: The path that Route53 requests when performing health checks.
+                    type: str
+                    sample: '/welcome.html'
+                search_string:
+                    description: The string that Route53 uses to search for in the response body from specified resource.
+                    type: str
+                    sample: 'test-string-to-match'
+                type:
+                    description: The type of the health check.
+                    type: str
+                    sample: HTTPS
+    version_added: 4.0.0
+ResourceRecordSets:
+    description: A deprecated CamelCased list of resource record sets returned by list_resource_record_sets in boto3. \
+                 This list contains same elements/parameters as it's snake_cased version mentioned above. \
+                 This field is deprecated and will be removed in 6.0.0 version release.
+    returned: when I(query=record_sets)
+    type: list
+    elements: dict
+HostedZones:
+    description: A deprecated CamelCased list of hosted zones returned by list_hosted_zones in boto3. \
+                 This list contains same elements/parameters as it's snake_cased version mentioned above. \
+                 This field is deprecated and will be removed in 6.0.0 version release.
+    returned: when I(query=hosted_zone)
+    type: list
+    elements: dict
+HealthChecks:
+    description: A deprecated CamelCased list of Route53 health checks returned by list_health_checks in boto3. \
+                 This list contains same elements/parameters as it's snake_cased version mentioned above. \
+                 This field is deprecated and will be removed in 6.0.0 version release.
+    type: list
+    elements: dict
+    returned: when I(query=health_check)
+'''
+
 try:
     import botocore
 except ImportError:
