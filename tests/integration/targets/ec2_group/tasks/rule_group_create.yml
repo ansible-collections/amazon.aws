@@ -110,11 +110,12 @@
           - result.warning is not defined
 
   always:
-    - name: tidy up egress rule test security group
+    - name: tidy up egress rule test security group rules
       ec2_group:
         name: '{{ec2_group_name}}-auto-create-{{ item }}'
-        state: absent
-        vpc_id: '{{ vpc_result.vpc.id }}'
+        description: '{{ec2_group_description}}'
+        rules: []
+        rules_egress: []
       ignore_errors: yes
       with_items: [5, 4, 3, 2, 1]
     - name: tidy up egress rule test security group

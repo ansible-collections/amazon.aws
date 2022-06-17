@@ -137,6 +137,7 @@ options:
     required: false
     type: list
     elements: dict
+    aliases: ['egress_rules']
     suboptions:
         cidr_ip:
             type: str
@@ -232,7 +233,7 @@ options:
       - Purge existing rules_egress on security group that are not found in rules_egress.
     required: false
     default: 'true'
-    aliases: []
+    aliases: ['purge_egress_rules']
     type: bool
 
 extends_documentation_fragment:
@@ -1254,10 +1255,10 @@ def main():
         description=dict(),
         vpc_id=dict(),
         rules=dict(type='list', elements='dict'),
-        rules_egress=dict(type='list', elements='dict'),
+        rules_egress=dict(type='list', elements='dict', aliases=['egress_rules']),
         state=dict(default='present', type='str', choices=['present', 'absent']),
         purge_rules=dict(default=True, required=False, type='bool'),
-        purge_rules_egress=dict(default=True, required=False, type='bool'),
+        purge_rules_egress=dict(default=True, required=False, type='bool', aliases=['purge_egress_rules']),
         tags=dict(required=False, type='dict', aliases=['resource_tags']),
         purge_tags=dict(default=True, required=False, type='bool')
     )
