@@ -42,6 +42,10 @@
       state: present
     register: vpn
 
+  - name: Store ID of VPN
+    set_fact:
+      vpn_id: '{{ vpn.vpn_connection_id }}'
+
   # ============================================================
   - name: test success with no parameters
     ec2_vpc_vpn_info:
@@ -65,6 +69,54 @@
       that:
         - 'result.changed == false'
         - 'result.vpn_connections != []'
+
+  # ============================================================
+
+  - include_tasks: 'tags.yml'
+
+  # ============================================================
+
+  - name: delete vpn connection (check)
+    ec2_vpc_vpn:
+      state: absent
+      vpn_connection_id: '{{ vpn_id }}'
+    register: result
+    check_mode: True
+
+  - assert:
+      that:
+        - result is changed
+
+  - name: delete vpn connection
+    ec2_vpc_vpn:
+      state: absent
+      vpn_connection_id: '{{ vpn_id }}'
+    register: result
+
+  - assert:
+      that:
+        - result is changed
+
+  - name: delete vpn connection - idempotency (check)
+    ec2_vpc_vpn:
+      state: absent
+      vpn_connection_id: '{{ vpn_id }}'
+    register: result
+    check_mode: True
+
+  - assert:
+      that:
+        - result is not changed
+
+  - name: delete vpn connection - idempotency
+    ec2_vpc_vpn:
+      state: absent
+      vpn_connection_id: '{{ vpn_id }}'
+    register: result
+
+  - assert:
+      that:
+        - result is not changed
 
   # ============================================================
   always:
