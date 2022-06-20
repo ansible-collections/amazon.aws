@@ -652,18 +652,16 @@ def get_check_mode_results(connection, module_params, vpn_connection_id=None, cu
 
     # get combined current tags and tags to set
     present_tags = module_params.get('tags')
-    if current_state and 'Tags' in current_state:
+    if present_tags is None:
+        pass
+    elif current_state and 'Tags' in current_state:
         current_tags = boto3_tag_list_to_ansible_dict(current_state['Tags'])
+        tags_to_add, tags_to_remove = compare_aws_tags(current_tags, present_tags, module_params.get('purge_tags'))
+        changed |= bool(tags_to_remove) or bool(tags_to_add)
         if module_params.get('purge_tags'):
-            if current_tags != present_tags:
-                changed = True
-        elif current_tags != present_tags:
-            if not set(present_tags.keys()) < set(current_tags.keys()):
-                changed = True
-            # add preexisting tags that new tags didn't overwrite
-            present_tags.update((tag, current_tags[tag]) for tag in current_tags if tag not in present_tags)
-        elif current_tags.keys() == present_tags.keys() and set(present_tags.values()) != set(current_tags.values()):
-            changed = True
+            current_tags = {}
+        current_tags.update(present_tags)
+        results['tags'] = current_tags
     elif module_params.get('tags'):
         changed = True
     if present_tags:
