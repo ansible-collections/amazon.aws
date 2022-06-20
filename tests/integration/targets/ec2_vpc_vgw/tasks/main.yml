@@ -76,6 +76,86 @@
 
     # ============================================================
 
+    - name: get VPC VGW facts by ID
+      ec2_vpc_vgw_info:
+        vpn_gateway_ids: ['{{ vgw_id }}']
+      register: vgw_info
+
+    - name: verify expected facts
+      vars:
+        vgw_details: '{{ vgw_info.virtual_gateways[0] }}'
+        attach_1_description:
+            state: 'detached'
+            vpc_id: '{{ vpc_id_1 }}'
+        attach_2_description:
+            state: 'attached'
+            vpc_id: '{{ vpc_id_2 }}'
+      assert:
+        that:
+          - vgw_info.virtual_gateways | length == 1
+          - '"resource_tags" in vgw_details'
+          - '"state" in vgw_details'
+          - '"tags" in vgw_details'
+          - '"type" in vgw_details'
+          - '"vpc_attachments" in vgw_details'
+          - '"vpn_gateway_id" in vgw_details'
+          - vgw_details.vpn_gateway_id == vgw_id
+          - vgw_details.type == 'ipsec.1'
+          - vgw_details.state == 'available'
+          - '"Name" in vgw_details.resource_tags'
+          - vgw_details.resource_tags.Name == vgw_name
+          - vgw_details.vpc_attachments | length == 2
+          - attach_1_description in vgw_details.vpc_attachments
+          - attach_2_description in vgw_details.vpc_attachments
+
+    - name: get VPC VGW facts by Tag
+      ec2_vpc_vgw_info:
+        filters:
+          "tag:Name": "{{ vgw_name }}"
+      register: vgw_info
+
+    - name: verify expected facts
+      vars:
+        vgw_details: '{{ vgw_info.virtual_gateways[0] }}'
+        attach_1_description:
+            state: 'detached'
+            vpc_id: '{{ vpc_id_1 }}'
+        attach_2_description:
+            state: 'attached'
+            vpc_id: '{{ vpc_id_2 }}'
+      assert:
+        that:
+          - vgw_info.virtual_gateways | length == 1
+          - '"resource_tags" in vgw_details'
+          - '"state" in vgw_details'
+          - '"tags" in vgw_details'
+          - '"type" in vgw_details'
+          - '"vpc_attachments" in vgw_details'
+          - '"vpn_gateway_id" in vgw_details'
+          - vgw_details.vpn_gateway_id == vgw_id
+          - vgw_details.type == 'ipsec.1'
+          - vgw_details.state == 'available'
+          - '"Name" in vgw_details.resource_tags'
+          - vgw_details.resource_tags.Name == vgw_name
+          - vgw_details.vpc_attachments | length == 2
+          - attach_1_description in vgw_details.vpc_attachments
+          - attach_2_description in vgw_details.vpc_attachments
+
+    # ============================================================
+
+    - name: get all VGWs
+      ec2_vpc_vgw_info:
+      register: vgw_info
+
+    - name: verify test VGW is in the results
+      vars:
+        vgw_id_list: '{{ vgw_info.virtual_gateways | map(attribute="vpn_gateway_id") | list }}'
+      assert:
+        that:
+          - vgw_id in vgw_id_list
+
+    # ============================================================
+
     - name: detach vpn gateway
       ec2_vpc_vgw:
         state: present

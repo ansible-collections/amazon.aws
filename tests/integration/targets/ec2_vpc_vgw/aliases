@@ -1,4 +1,3 @@
-# https://github.com/ansible-collections/community.aws/issues/154
-unstable
-
 cloud/aws
+
+ec2_vpc_vgw_info
