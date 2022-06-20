@@ -1,0 +1,338 @@
+- vars:
+    first_tags:
+      'Key with Spaces': Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+    second_tags:
+      'New Key with Spaces': Value with spaces
+      NewCamelCaseKey: CamelCaseValue
+      newPascalCaseKey: pascalCaseValue
+      new_snake_case_key: snake_case_value
+    third_tags:
+      'Key with Spaces': Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+      'New Key with Spaces': Updated Value with spaces
+    final_tags:
+      'Key with Spaces': Value with spaces
+      CamelCaseKey: CamelCaseValue
+      pascalCaseKey: pascalCaseValue
+      snake_case_key: snake_case_value
+      'New Key with Spaces': Updated Value with spaces
+      NewCamelCaseKey: CamelCaseValue
+      newPascalCaseKey: pascalCaseValue
+      new_snake_case_key: snake_case_value
+  module_defaults:
+    ec2_vpc_vpn:
+      vpn_connection_id: '{{ vpn_id }}'
+    ec2_vpc_vpn_info:
+      filters:
+        vpn-connection-id: '{{ vpn_id }}'
+  block:
+
+  # ============================================================
+
+  - name: (check) add tags
+    ec2_vpc_vpn:
+      tags: '{{ first_tags }}'
+      state: 'present'
+    register: tag_vpn
+    check_mode: True
+
+  - name: assert would change
+    assert:
+      that:
+        - tag_vpn is changed
+        - tag_vpn.vpn_connection_id == vpn_id
+
+  - name: add tags
+    ec2_vpc_vpn:
+      tags: '{{ first_tags }}'
+      state: 'present'
+    register: tag_vpn
+
+  - name: get VPC VPN facts
+    ec2_vpc_vpn_info: {}
+    register: tag_vpn_info
+
+  - name: verify the tags were added
+    assert:
+      that:
+        - tag_vpn is changed
+        - tag_vpn.vpn_connection_id == vpn_id
+        - tag_vpn_info.vpn_connections[0].vpn_connection_id == vpn_id
+        - tag_vpn_info.vpn_connections[0].tags == first_tags
+
+  - name: (check) add tags - IDEMPOTENCY
+    ec2_vpc_vpn:
+      tags: '{{ first_tags }}'
+      state: 'present'
+    register: tag_vpn
+    check_mode: True
+
+  - name: assert would not change
+    assert:
+      that:
+        - tag_vpn is not changed
+        - tag_vpn.vpn_connection_id == vpn_id
+
+  - name: add tags - IDEMPOTENCY
+    ec2_vpc_vpn:
+      tags: '{{ first_tags }}'
+      state: 'present'
+    register: tag_vpn
+  - name: get VPC VPN facts
+    ec2_vpc_vpn_info: {}
+    register: tag_vpn_info
+
+  - name: verify no change
+    assert:
+      that:
+        - tag_vpn is not changed
+        - tag_vpn.vpn_connection_id == vpn_id
+        - tag_vpn_info.vpn_connections[0].vpn_connection_id == vpn_id
+        - tag_vpn_info.vpn_connections[0].tags == first_tags
+
+  # ============================================================
+
+#  - name: get VPC VPN facts by filter
+#    ec2_vpc_vpn_info:
+#      filters:
+#        'tag:Name': '{{ vgw_name }}'
+#      vpn_connection_ids: '{{ omit }}'
+#    register: tag_vpn_info
+#
+#  - name: assert the facts are the same as before
+#    assert:
+#      that:
+#        - tag_vpn_info.vpn_connections | length == 1
+#        - tag_vpn.vpn_connection_id == vpn_id
+#        - tag_vpn_info.vpn_connections[0].vpn_connection_id == vpn_id
+
+  # ============================================================
+
+  - name: (check) modify tags with purge
+    ec2_vpc_vpn:
+      tags: '{{ second_tags }}'
+      state: 'present'
+      purge_tags: true
+    register: tag_vpn
+    check_mode: True
+
+  - name: assert would change
+    assert:
+      that:
+        - tag_vpn is changed
+        - tag_vpn.vpn_connection_id == vpn_id
+
+  - name: modify tags with purge
+    ec2_vpc_vpn:
+      tags: '{{ second_tags }}'
+      state: 'present'
+      purge_tags: true
+    register: tag_vpn
+  - name: get VPC VPN facts
+    ec2_vpc_vpn_info:
+    register: tag_vpn_info
+
+  - name: verify the tags were added
+    assert:
+      that:
+        - tag_vpn is changed
+        - tag_vpn.vpn_connection_id == vpn_id
+        - tag_vpn_info.vpn_connections[0].vpn_connection_id == vpn_id
+        - tag_vpn_info.vpn_connections[0].tags == second_tags
+
+  - name: (check) modify tags with purge - IDEMPOTENCY
+    ec2_vpc_vpn:
+      tags: '{{ second_tags }}'
+      state: 'present'
+      purge_tags: true
+    register: tag_vpn
+    check_mode: True
+
+  - name: assert would not change
+    assert:
+      that:
+        - tag_vpn is not changed
+        - tag_vpn.vpn_connection_id == vpn_id
+
+  - name: modify tags with purge - IDEMPOTENCY
+    ec2_vpc_vpn:
+      tags: '{{ second_tags }}'
+      state: 'present'
+      purge_tags: true
+    register: tag_vpn
+  - name: get VPC VPN facts
+    ec2_vpc_vpn_info:
+    register: tag_vpn_info
+
+  - name: verify no change
+    assert:
+      that:
+        - tag_vpn is not changed
+        - tag_vpn.vpn_connection_id == vpn_id
+        - tag_vpn_info.vpn_connections[0].vpn_connection_id == vpn_id
+        - tag_vpn_info.vpn_connections[0].tags == second_tags
+
+  # ============================================================
+
+  - name: (check) modify tags without purge
+    ec2_vpc_vpn:
+      tags: '{{ third_tags }}'
+      state: 'present'
+      purge_tags: False
+    register: tag_vpn
+    check_mode: True
+
+  - name: assert would change
+    assert:
+      that:
+        - tag_vpn is changed
+        - tag_vpn.vpn_connection_id == vpn_id
+
+  - name: modify tags without purge
+    ec2_vpc_vpn:
+      tags: '{{ third_tags }}'
+      state: 'present'
+      purge_tags: False
+    register: tag_vpn
+  - name: get VPC VPN facts
+    ec2_vpc_vpn_info:
+    register: tag_vpn_info
+
+  - name: verify the tags were added
+    assert:
+      that:
+        - tag_vpn is changed
+        - tag_vpn.vpn_connection_id == vpn_id
+        - tag_vpn_info.vpn_connections[0].vpn_connection_id == vpn_id
+        - tag_vpn_info.vpn_connections[0].tags == final_tags
+
+  - name: (check) modify tags without purge - IDEMPOTENCY
+    ec2_vpc_vpn:
+      tags: '{{ third_tags }}'
+      state: 'present'
+      purge_tags: False
+    register: tag_vpn
+    check_mode: True
+
+  - name: assert would not change
+    assert:
+      that:
+        - tag_vpn is not changed
+        - tag_vpn.vpn_connection_id == vpn_id
+
+  - name: modify tags without purge - IDEMPOTENCY
+    ec2_vpc_vpn:
+      tags: '{{ third_tags }}'
+      state: 'present'
+      purge_tags: False
+    register: tag_vpn
+  - name: get VPC VPN facts
+    ec2_vpc_vpn_info:
+    register: tag_vpn_info
+
+  - name: verify no change
+    assert:
+      that:
+        - tag_vpn is not changed
+        - tag_vpn.vpn_connection_id == vpn_id
+        - tag_vpn_info.vpn_connections[0].vpn_connection_id == vpn_id
+        - tag_vpn_info.vpn_connections[0].tags == final_tags
+
+  # ============================================================
+
+  - name: (check) No change to tags without setting tags
+    ec2_vpc_vpn:
+      state: 'present'
+    register: tag_vpn
+    check_mode: True
+
+  - name: assert would change
+    assert:
+      that:
+        - tag_vpn is not changed
+        - tag_vpn.vpn_connection_id == vpn_id
+
+  - name: No change to tags without setting tags
+    ec2_vpc_vpn:
+      state: 'present'
+    register: tag_vpn
+  - name: get VPC VPN facts
+    ec2_vpc_vpn_info:
+    register: tag_vpn_info
+
+  - name: verify no tags were added
+    assert:
+      that:
+        - tag_vpn is not changed
+        - tag_vpn.vpn_connection_id == vpn_id
+        - tag_vpn_info.vpn_connections[0].vpn_connection_id == vpn_id
+        - tag_vpn_info.vpn_connections[0].tags == final_tags
+
+  # ============================================================
+
+  - name: (check) remove tags
+    ec2_vpc_vpn:
+      tags: {}
+      state: 'present'
+      purge_tags: True
+    register: tag_vpn
+    check_mode: True
+
+  - name: assert would change
+    assert:
+      that:
+        - tag_vpn is changed
+        - tag_vpn.vpn_connection_id == vpn_id
+
+  - name: remove tags
+    ec2_vpc_vpn:
+      tags: {}
+      state: 'present'
+      purge_tags: True
+    register: tag_vpn
+  - name: get VPC VPN facts
+    ec2_vpc_vpn_info:
+    register: tag_vpn_info
+
+  - name: verify the tags were removed
+    assert:
+      that:
+        - tag_vpn is changed
+        - tag_vpn.vpn_connection_id == vpn_id
+        - tag_vpn_info.vpn_connections[0].vpn_connection_id == vpn_id
+
+  - name: (check) remove tags - IDEMPOTENCY
+    ec2_vpc_vpn:
+      tags: {}
+      state: 'present'
+      purge_tags: True
+    register: tag_vpn
+    check_mode: True
+
+  - name: assert would not change
+    assert:
+      that:
+        - tag_vpn is not changed
+        - tag_vpn.vpn_connection_id == vpn_id
+
+  - name: remove tags - IDEMPOTENCY
+    ec2_vpc_vpn:
+      tags: {}
+      state: 'present'
+      purge_tags: True
+    register: tag_vpn
+  - name: get VPC VPN facts
+    ec2_vpc_vpn_info:
+    register: tag_vpn_info
+
+  - name: verify no change
+    assert:
+      that:
+        - tag_vpn is not changed
+        - tag_vpn.vpn_connection_id == vpn_id
+        - tag_vpn_info.vpn_connections[0].vpn_connection_id == vpn_id
