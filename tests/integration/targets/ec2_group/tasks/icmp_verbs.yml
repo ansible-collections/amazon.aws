@@ -178,9 +178,39 @@
           - result is failed
 
   always:
+    - name: tidy up egress rule test security group rules
+      ec2_group:
+        name: '{{ec2_group_name}}-auto-create-2'
+        description: 'sg-group-referencing'
+        vpc_id: '{{ vpc_result.vpc.id }}'
+        rules: []
+        rules_egress: []
+      ignore_errors: yes
+
+    - name: tidy up egress rule test security group rules
+      ec2_group:
+        name: '{{ec2_group_name}}-icmp-{{ item }}'
+        description: '{{ec2_group_description}}'
+        vpc_id: '{{ vpc_result.vpc.id }}'
+        rules: []
+        rules_egress: []
+      ignore_errors: yes
+      with_items:
+        - 1
+        - 2
+        - 3
+        - 4
+
+    - name: tidy up egress rule test security group rules
+      ec2_group:
+        name: '{{ec2_group_name}}-auto-create-2'
+        state: absent
+        vpc_id: '{{ vpc_result.vpc.id }}'
+      ignore_errors: yes
+
     - name: tidy up egress rule test security group
       ec2_group:
-        name: '{{ec2_group_name}}-auto-create-{{ item }}'
+        name: '{{ec2_group_name}}-icmp-{{ item }}'
         state: absent
         vpc_id: '{{ vpc_result.vpc.id }}'
       ignore_errors: yes

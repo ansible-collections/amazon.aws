@@ -137,6 +137,7 @@ options:
     required: false
     type: list
     elements: dict
+    aliases: ['egress_rules']
     suboptions:
         cidr_ip:
             type: str
@@ -232,7 +233,7 @@ options:
       - Purge existing rules_egress on security group that are not found in rules_egress.
     required: false
     default: 'true'
-    aliases: []
+    aliases: ['purge_egress_rules']
     type: bool
 
 extends_documentation_fragment:
@@ -1163,16 +1164,28 @@ def get_diff_final_resource(client, module, security_group):
                             rule[source_type] = [rule[source_type]]
                         format_rule[rule_key] = [{source_type: target} for target in rule[source_type]]
             if rule.get('group_id') or rule.get('group_name'):
-                rule_sg = camel_dict_to_snake_dict(group_exists(client, module, module.params['vpc_id'], rule.get('group_id'), rule.get('group_name'))[0])
-                format_rule['user_id_group_pairs'] = [{
-                    'description': rule_sg.get('description', rule_sg.get('group_desc')),
-                    'group_id': rule_sg.get('group_id', rule.get('group_id')),
-                    'group_name': rule_sg.get('group_name', rule.get('group_name')),
-                    'peering_status': rule_sg.get('peering_status'),
-                    'user_id': rule_sg.get('user_id', get_account_id(security_group, module)),
-                    'vpc_id': rule_sg.get('vpc_id', module.params['vpc_id']),
-                    'vpc_peering_connection_id': rule_sg.get('vpc_peering_connection_id')
-                }]
+                rule_sg = group_exists(client, module, module.params['vpc_id'], rule.get('group_id'), rule.get('group_name'))[0]
+                if rule_sg is None:
+                    # --diff during --check
+                    format_rule['user_id_group_pairs'] = [{
+                        'group_id': rule.get('group_id'),
+                        'group_name': rule.get('group_name'),
+                        'peering_status': None,
+                        'user_id': get_account_id(security_group, module),
+                        'vpc_id': module.params['vpc_id'],
+                        'vpc_peering_connection_id': None
+                    }]
+                else:
+                    rule_sg = camel_dict_to_snake_dict(rule_sg)
+                    format_rule['user_id_group_pairs'] = [{
+                        'description': rule_sg.get('description', rule_sg.get('group_desc')),
+                        'group_id': rule_sg.get('group_id', rule.get('group_id')),
+                        'group_name': rule_sg.get('group_name', rule.get('group_name')),
+                        'peering_status': rule_sg.get('peering_status'),
+                        'user_id': rule_sg.get('user_id', get_account_id(security_group, module)),
+                        'vpc_id': rule_sg.get('vpc_id', module.params['vpc_id']),
+                        'vpc_peering_connection_id': rule_sg.get('vpc_peering_connection_id')
+                    }]
                 for k, v in list(format_rule['user_id_group_pairs'][0].items()):
                     if v is None:
                         format_rule['user_id_group_pairs'][0].pop(k)
@@ -1243,7 +1256,7 @@ def get_ip_permissions_sort_key(rule):
         return rule.get('prefix_list_ids')[0]['prefix_list_id']
     elif rule.get('user_id_group_pairs'):
         rule.get('user_id_group_pairs').sort(key=get_rule_sort_key)
-        return rule.get('user_id_group_pairs')[0]['group_id']
+        return rule.get('user_id_group_pairs')[0].get('group_id', '')
     return None
 
 
@@ -1254,10 +1267,10 @@ def main():
         description=dict(),
         vpc_id=dict(),
         rules=dict(type='list', elements='dict'),
-        rules_egress=dict(type='list', elements='dict'),
+        rules_egress=dict(type='list', elements='dict', aliases=['egress_rules']),
         state=dict(default='present', type='str', choices=['present', 'absent']),
         purge_rules=dict(default=True, required=False, type='bool'),
-        purge_rules_egress=dict(default=True, required=False, type='bool'),
+        purge_rules_egress=dict(default=True, required=False, type='bool', aliases=['purge_egress_rules']),
         tags=dict(required=False, type='dict', aliases=['resource_tags']),
         purge_tags=dict(default=True, required=False, type='bool')
     )

@@ -1,35 +1,15 @@
 ---
 - set_fact:
-    aws_security_token: '{{ security_token | default("") }}'
+    # lookup plugins don't have access to module_defaults
+    connection_args:
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        aws_security_token: "{{ security_token | default(omit) }}"
   no_log: True
 
 # ============================================================
-# EC2 Classic tests can only be run on a pre-2013 AWS account with supported-platforms=EC2
-# Ansible CI does NOT have classic EC2 support; these tests are provided as-is for the
-# community and can be run if you have access to a classic account.  To check if your account
-# has support for EC2 Classic you can use the `amazon.aws.aws_account_attribute` plugin.
-
-- name: determine if this is an EC2 Classic account
-  set_fact:
-    has_ec2_classic: "{{ lookup('amazon.aws.aws_account_attribute',
-                                attribute='has-ec2-classic',
-                                region=aws_region,
-                                aws_access_key=aws_access_key,
-                                aws_secret_key=aws_secret_key,
-                                aws_security_token=aws_security_token,
-                                wantlist=True) }}"
-
-# ============================================================
-- name: Run EC2 Classic accounts if account type is EC2
-  include: ./ec2_classic.yml
-  when: has_ec2_classic
-
-# ============================================================
-# Other tests depend on attribute='default-vpc', ie no vpc_id is set. This is
-# incompatible with EC2 classic accounts, so these tests can only be run in a
-# VPC-type account. See "Q. I really want a default VPC for my existing EC2
-# account. Is that possible?" in https://aws.amazon.com/vpc/faqs/#Default_VPCs
-- name: Run all other tests if account type is VPC
+- name: Run all tests
   module_defaults:
       group/aws:
         aws_access_key: "{{ aws_access_key }}"
@@ -39,12 +19,7 @@
   block:
     - name: determine if there is a default VPC
       set_fact:
-        defaultvpc: "{{ lookup('amazon.aws.aws_account_attribute',
-                              attribute='default-vpc',
-                              region=aws_region,
-                              aws_access_key=aws_access_key,
-                              aws_secret_key=aws_secret_key,
-                              aws_security_token=aws_security_token) }}"
+        defaultvpc: "{{ lookup('amazon.aws.aws_account_attribute', attribute='default-vpc', **connection_args) }}"
       register: default_vpc
 
     - name: create a VPC
@@ -1340,33 +1315,50 @@
         that:
            - 'result.changed'
            - 'not result.group_id'
-  when: not has_ec2_classic
-
   always:
+
     # ============================================================
-    - name: tidy up security group
+    # Describe state of remaining resources
+
+    - name: Retrieve security group info based on SG VPC
+      ec2_group_info:
+        filters:
+          vpc-id: '{{ vpc_result.vpc.id }}'
+      register: remaining_groups
+
+    - name: Retrieve subnet info based on SG VPC
+      ec2_vpc_subnet_info:
+        filters:
+          vpc-id: '{{ vpc_result.vpc.id }}'
+      register: remaining_subnets
+
+    - name: Retrieve VPC info based on SG VPC
+      ec2_vpc_net_info:
+        vpc_ids:
+          - '{{ vpc_result.vpc.id }}'
+      register: remaining_vpc
+
+    # ============================================================
+    # Delete all remaining SGs
+
+    - name: Delete rules from remaining SGs
       ec2_group:
-        name: '{{ec2_group_name}}'
-        state: absent
+        name: '{{ item.group_name }}'
+        group_id: '{{ item.group_id }}'
+        description: '{{ item.description }}'
+        rules: []
+        rules_egress: []
+      loop: '{{ remaining_groups.security_groups }}'
       ignore_errors: yes
 
-    - name: tidy up security group for IPv6 EC2-Classic tests
+    - name: Delete remaining SGs
       ec2_group:
-        name: '{{ ec2_group_name }}-2'
         state: absent
+        group_id: '{{ item.group_id }}'
+      loop: '{{ remaining_groups.security_groups }}'
       ignore_errors: yes
 
-    - name: tidy up default VPC security group
-      ec2_group:
-        name: '{{ec2_group_name}}-default-vpc'
-        state: absent
-      ignore_errors: yes
-
-    - name: tidy up automatically created SG
-      ec2_group:
-        name: "{{ resource_prefix }} - Another security group"
-        state: absent
-      ignore_errors: yes
+    # ============================================================
 
     - name: tidy up VPC
       ec2_vpc_net:
