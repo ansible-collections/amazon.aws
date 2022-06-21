@@ -102,6 +102,28 @@ used by boto3)
     if module.params.get('scope') == 'managed':
         module.require_botocore_at_least('1.23.23', reason='to list managed rules')
 
+.. _ansible_collections.amazon.aws.docsite.dev_backports:
+
+Release policy and backporting merged PRs
+-----------------------------------------
+
+All ansible.aws and community.aws PRs must be merged to the ``main`` branch first.  After a PR has
+been accepted and merged to the ``main`` branch they can be backported to the stable branches.
+
+The ``main`` branch is a staging location for the next major version (X+1) of the collections and
+may include breaking changes.
+
+General backport policy:
+
+- New features, deprecations and minor changes can be backported to the latest stable release.
+- Bugfixes can be backported to the 2 latest stable releases.
+- Security fixes should be backported to at least the 2 latest stable releases.
+
+Where necessary, additional CI related changes may be introduced to older stable branches to
+ensure CI continues to function.
+
+The simplest mechanism for backporting PRs is by adding the ``backport-Y`` label to a PR.  Once the
+PR has been merged the patchback bot will attempt to automatically create a backport PR.
 
 .. _ansible_collections.amazon.aws.docsite.dev_module_create:
 
