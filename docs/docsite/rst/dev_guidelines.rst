@@ -86,21 +86,22 @@ Breaking changes include:
 Adding new features
 -------------------
 
-Try to keep backward compatibility with relatively recent versions of boto3. That means that if you
-want to implement some functionality that uses a new feature of boto3, it should only fail if that
-feature actually needs to be run, with a message stating the missing feature and minimum required
-version of boto3.
-
-Use feature testing (for example, ``hasattr('boto3.module', 'shiny_new_method')``) to check whether boto3
-supports a feature rather than version checking. For example, from the ``ec2`` module:
+Try to keep backward compatibility with versions of boto3/botocore that are at least a year old.
+This means that if you want to implement functionality that uses a new feature of boto3/botocore,
+it should only fail if that feature is explicitly used, with a message stating the missing feature
+and minimum required version of botocore. (Feature support is usually defined in botocore and then
+used by boto3)
 
 .. code-block:: python
 
-   if boto_supports_profile_name_arg(ec2):
-       params['instance_profile_name'] = instance_profile_name
-   else:
-       if instance_profile_name is not None:
-           module.fail_json(msg="instance_profile_name parameter requires boto version 2.5.0 or higher")
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        ...
+    )
+
+    if module.params.get('scope') == 'managed':
+        module.require_botocore_at_least('1.23.23', reason='to list managed rules')
+
 
 .. _ansible_collections.amazon.aws.docsite.dev_module_create:
 
@@ -169,8 +170,10 @@ authentication parameters.  To do the same for your new module, add an entry for
 
 .. code-block:: yaml
 
-  aws_module_name:
-  - aws
+  action_groups:
+    aws:
+       ...
+       aws_example_module
 
 Module behavior
 ---------------
@@ -199,7 +202,7 @@ These handle some of the more esoteric connection options, such as security toke
 If using the basic AnsibleModule then you should use ``get_aws_connection_info`` and then ``boto3_conn``
 to connect to AWS as these handle the same range of connection options.
 
-These helpers also for missing profiles or a region not set when it needs to be, so you don't have to.
+These helpers also check for missing profiles or a region not set when it needs to be, so you don't have to.
 
 An example of connecting to ec2 is shown below. Note that unlike boto there is no ``NoAuthHandlerFound``
 exception handling like in boto. Instead, an ``AuthFailure`` exception will be thrown when you use the
@@ -237,8 +240,9 @@ Common Documentation Fragments for Connection Parameters
 There are two :ref:`common documentation fragments <module_docs_fragments>`
 that should be included into almost all AWS modules:
 
-* ``aws`` - contains the common boto connection parameters
+* ``aws`` - contains the common boto3 connection parameters
 * ``ec2`` - contains the common region parameter required for many AWS modules
+* ``tags`` - contains the common tagging parameters used by many AWS modules
 
 These fragments should be used rather than re-documenting these properties to ensure consistency
 and that the more esoteric connection options are documented. For example:
@@ -275,7 +279,7 @@ Using is_boto3_error_code
 
 To use ``ansible_collections.amazon.aws.plugins.module_utils.core.is_boto3_error_code`` to catch a single
 AWS error code, call it in place of ``ClientError`` in your except clauses. In
-this case, *only* the ``InvalidGroup.NotFound`` error code will be caught here,
+this example, *only* the ``InvalidGroup.NotFound`` error code will be caught here,
 and any other error will be raised for handling elsewhere in the program.
 
 .. code-block:: python
@@ -293,9 +297,7 @@ In the AnsibleAWSModule there is a special method, ``module.fail_json_aws()`` fo
 exceptions.  Call this on your exception and it will report the error together with a traceback for
 use in Ansible verbose mode.
 
-You should use the AnsibleAWSModule for all new modules, unless not possible. If adding significant
-amounts of exception handling to existing modules, we recommend migrating the module to use AnsibleAWSModule
-(there are very few changes required to do this)
+You should use the AnsibleAWSModule for all new modules, unless not possible.
 
 .. code-block:: python
 
