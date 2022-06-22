@@ -1,2 +1,0 @@
-minor_changes:
-- ec2_eni - Change parameter ``device_index`` data type to string when passing to `describe_network_inter` api call (https://github.com/ansible-collections/amazon.aws/pull/877).

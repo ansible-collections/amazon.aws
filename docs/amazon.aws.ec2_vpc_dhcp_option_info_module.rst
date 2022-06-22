@@ -26,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.16.0
-- botocore >= 1.19.0
+- boto3 >= 1.17.0
+- botocore >= 1.20.0
 
 
 Parameters
@@ -54,8 +54,7 @@ Parameters
                 </td>
                 <td>
                         <div><code>AWS access key</code>. If not set then the value of the <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_ACCESS_KEY</code> or <code>EC2_ACCESS_KEY</code> environment variable is used.</div>
-                        <div>If <em>profile</em> is set this parameter is ignored.</div>
-                        <div>Passing the <em>aws_access_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
+                        <div>The <em>aws_access_key</em> and <em>profile</em> options are mutually exclusive.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                 </td>
             </tr>
@@ -72,7 +71,6 @@ Parameters
                 </td>
                 <td>
                         <div>The location of a CA Bundle to use when validating SSL certificates.</div>
-                        <div>Not used by boto 2 based modules.</div>
                         <div>Note: The CA Bundle is read &#x27;module&#x27; side and may need to be explicitly copied from the controller if not run locally.</div>
                 </td>
             </tr>
@@ -90,7 +88,6 @@ Parameters
                 <td>
                         <div>A dictionary to modify the botocore configuration.</div>
                         <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
-                        <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
                 </td>
             </tr>
             <tr>
@@ -106,8 +103,7 @@ Parameters
                 </td>
                 <td>
                         <div><code>AWS secret key</code>. If not set then the value of the <code>AWS_SECRET_ACCESS_KEY</code>, <code>AWS_SECRET_KEY</code>, or <code>EC2_SECRET_KEY</code> environment variable is used.</div>
-                        <div>If <em>profile</em> is set this parameter is ignored.</div>
-                        <div>Passing the <em>aws_secret_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
+                        <div>The <em>aws_secret_key</em> and <em>profile</em> options are mutually exclusive.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                 </td>
             </tr>
@@ -144,6 +140,7 @@ Parameters
                 </td>
                 <td>
                         <div>Get details of specific DHCP Option IDs.</div>
+                        <div>The <code>DhcpOptionIds</code> alias has been deprecated and will be removed in release 5.0.0.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: DhcpOptionIds</div>
                 </td>
             </tr>
@@ -164,6 +161,7 @@ Parameters
                 </td>
                 <td>
                         <div>Checks whether you have the required permissions to view the DHCP Options.</div>
+                        <div>The <code>DryRun</code> alias has been deprecated and will be removed in release 5.0.0.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: DryRun</div>
                 </td>
             </tr>
@@ -210,8 +208,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Using <em>profile</em> will override <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> and support for passing them at the same time as <em>profile</em> has been deprecated.</div>
-                        <div><em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> will be made mutually exclusive with <em>profile</em> after 2022-06-01.</div>
+                        <div>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_profile</div>
                 </td>
             </tr>
@@ -244,8 +241,7 @@ Parameters
                 </td>
                 <td>
                         <div><code>AWS STS security token</code>. If not set then the value of the <code>AWS_SECURITY_TOKEN</code> or <code>EC2_SECURITY_TOKEN</code> environment variable is used.</div>
-                        <div>If <em>profile</em> is set this parameter is ignored.</div>
-                        <div>Passing the <em>security_token</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
+                        <div>The <em>security_token</em> and <em>profile</em> options are mutually exclusive.</div>
                         <div>Aliases <em>aws_session_token</em> and <em>session_token</em> have been added in version 3.2.0.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_session_token, session_token, aws_security_token, access_token</div>
                 </td>
@@ -279,7 +275,6 @@ Notes
 .. note::
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
    - When no credentials are explicitly provided the AWS SDK (boto3) that Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``). See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html for more information.
-   - Modules based on the original AWS SDK (boto) may read their default configuration from different files. See https://boto.readthedocs.io/en/latest/boto_config_tut.html for more information.
    - ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be defined in the configuration files.
 
 
@@ -322,12 +317,12 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
 
     <table border=0 cellpadding=0 class="documentation-table">
         <tr>
-            <th colspan="2">Key</th>
+            <th colspan="4">Key</th>
             <th>Returned</th>
             <th width="100%">Description</th>
         </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="4">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>changed</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
@@ -337,17 +332,18 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>True if listing the dhcp options succeeds</div>
+                            <div>True if listing the dhcp options succeeds.</div>
                     <br/>
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="4">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>dhcp_config</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">list</span>
+                       / <span style="color: purple">elements=dictionary</span>
                     </div>
                 </td>
                 <td>always</td>
@@ -358,7 +354,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             </tr>
                                 <tr>
                     <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>domain-name</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
@@ -368,7 +364,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>when available</td>
                 <td>
-                            <div>The domain name for hosts in the DHCP option sets</div>
+                            <div>The domain name for hosts in the DHCP option sets.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[&#x27;my.example.com&#x27;]</div>
@@ -376,7 +372,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             </tr>
             <tr>
                     <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>domain-name-servers</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
@@ -394,7 +390,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             </tr>
             <tr>
                     <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>netbios-name-servers</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
@@ -412,7 +408,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             </tr>
             <tr>
                     <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>netbios-node-type</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
@@ -430,7 +426,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             </tr>
             <tr>
                     <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>ntp-servers</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
@@ -448,7 +444,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             </tr>
 
             <tr>
-                <td colspan="2">
+                <td colspan="4">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>dhcp_options</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
@@ -459,31 +455,87 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>The DHCP options created, associated or found</div>
+                            <div>The DHCP options created, associated or found.</div>
                     <br/>
                 </td>
             </tr>
                                 <tr>
                     <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>dhcp_configurations</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">list</span>
+                       / <span style="color: purple">elements=dictionary</span>
                     </div>
                 </td>
                 <td></td>
                 <td>
-                            <div>The DHCP configuration for the option set</div>
+                            <div>The DHCP configuration for the option set.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[&#x27;{&quot;key&quot;: &quot;ntp-servers&quot;, &quot;values&quot;: [{&quot;value&quot;: &quot;10.0.0.2&quot; , &quot;value&quot;: &quot;10.0.1.2&quot;}]}&#x27;, &#x27;{&quot;key&quot;: &quot;netbios-name-servers&quot;, &quot;values&quot;: [{value&quot;: &quot;10.0.0.1&quot;}, {&quot;value&quot;: &quot;10.0.1.1&quot; }]}&#x27;]</div>
                 </td>
             </tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>key</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>The name of a DHCP option.</div>
+                    <br/>
+                </td>
+            </tr>
             <tr>
                     <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>values</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                       / <span style="color: purple">elements=dictionary</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>List of values for the DHCP option.</div>
+                    <br/>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                    <td class="elbow-placeholder">&nbsp;</td>
                 <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>value</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>The attribute value. This value is case-sensitive.</div>
+                    <br/>
+                </td>
+            </tr>
+
+
+            <tr>
+                    <td class="elbow-placeholder">&nbsp;</td>
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>dhcp_options_id</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
@@ -493,7 +545,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td></td>
                 <td>
-                            <div>The aws resource id of the primary DCHP options set created or found</div>
+                            <div>The aws resource id of the primary DHCP options set created or found.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">dopt-0955331de6a20dd07</div>
@@ -501,7 +553,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             </tr>
             <tr>
                     <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>owner_id</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
@@ -519,17 +571,18 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
             </tr>
             <tr>
                     <td class="elbow-placeholder">&nbsp;</td>
-                <td colspan="1">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="return-"></div>
                     <b>tags</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
                       <span style="color: purple">list</span>
+                       / <span style="color: purple">elements=dictionary</span>
                     </div>
                 </td>
                 <td></td>
                 <td>
-                            <div>The tags to be applied to a DHCP options set</div>
+                            <div>The tags to be applied to a DHCP options set.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[&#x27;{&quot;Key&quot;: &quot;CreatedBy&quot;, &quot;Value&quot;: &quot;ansible-test&quot;}&#x27;, &#x27;{&quot;Key&quot;: &quot;Collection&quot;, &quot;Value&quot;: &quot;amazon.aws&quot;}&#x27;]</div>

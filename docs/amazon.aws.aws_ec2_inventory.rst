@@ -26,8 +26,8 @@ Requirements
 The below requirements are needed on the local Ansible controller node that executes this inventory.
 
 - python >= 3.6
-- boto3 >= 1.16.0
-- botocore >= 1.19.0
+- boto3 >= 1.17.0
+- botocore >= 1.20.0
 
 
 Parameters
@@ -272,6 +272,7 @@ Parameters
                         <span style="color: purple">list</span>
                          / <span style="color: purple">elements=dictionary</span>
                     </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.5.0</div>
                 </td>
                 <td>
                         <b>Default:</b><br/><div style="color: blue">[]</div>
@@ -487,6 +488,7 @@ Parameters
                         <span style="color: purple">list</span>
                          / <span style="color: purple">elements=dictionary</span>
                     </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.5.0</div>
                 </td>
                 <td>
                         <b>Default:</b><br/><div style="color: blue">[]</div>
@@ -755,6 +757,7 @@ Parameters
                     <div style="font-size: small">
                         <span style="color: purple">boolean</span>
                     </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.5.0</div>
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
