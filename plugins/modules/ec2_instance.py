@@ -341,7 +341,7 @@ options:
         choices: [enabled, disabled]
         default: 'disabled'
       instance_metadata_tags:
-        version_added: 3.4.0
+        version_added: 4.0.0
         type: str
         description:
           - Wether the instance tags are availble (C(enabled)) via metadata endpoint or not (C(disabled)).
