@@ -1,2 +1,0 @@
-bugfixes:
-  - ec2_instance - raise an error when missing permission to stop instance when ``state`` is set to ``rebooted``` (https://github.com/ansible-collections/amazon.aws/pull/671).

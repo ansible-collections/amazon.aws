@@ -1,3 +1,0 @@
-breaking_changes:
-- amazon.aws collection - the ``profile`` parameter is now mutually exclusive with the ``aws_access_key``,
-  ``aws_secret_key`` and ``security_token`` parameters (https://github.com/ansible-collections/amazon.aws/pull/834).

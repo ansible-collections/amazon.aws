@@ -27,8 +27,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.16.0
-- botocore >= 1.19.0
+- boto3 >= 1.17.0
+- botocore >= 1.20.0
 
 
 Parameters
@@ -55,8 +55,7 @@ Parameters
                 </td>
                 <td>
                         <div><code>AWS access key</code>. If not set then the value of the <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_ACCESS_KEY</code> or <code>EC2_ACCESS_KEY</code> environment variable is used.</div>
-                        <div>If <em>profile</em> is set this parameter is ignored.</div>
-                        <div>Passing the <em>aws_access_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
+                        <div>The <em>aws_access_key</em> and <em>profile</em> options are mutually exclusive.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                 </td>
             </tr>
@@ -73,7 +72,6 @@ Parameters
                 </td>
                 <td>
                         <div>The location of a CA Bundle to use when validating SSL certificates.</div>
-                        <div>Not used by boto 2 based modules.</div>
                         <div>Note: The CA Bundle is read &#x27;module&#x27; side and may need to be explicitly copied from the controller if not run locally.</div>
                 </td>
             </tr>
@@ -91,7 +89,6 @@ Parameters
                 <td>
                         <div>A dictionary to modify the botocore configuration.</div>
                         <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
-                        <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
                 </td>
             </tr>
             <tr>
@@ -107,8 +104,7 @@ Parameters
                 </td>
                 <td>
                         <div><code>AWS secret key</code>. If not set then the value of the <code>AWS_SECRET_ACCESS_KEY</code>, <code>AWS_SECRET_KEY</code>, or <code>EC2_SECRET_KEY</code> environment variable is used.</div>
-                        <div>If <em>profile</em> is set this parameter is ignored.</div>
-                        <div>Passing the <em>aws_secret_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
+                        <div>The <em>aws_secret_key</em> and <em>profile</em> options are mutually exclusive.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                 </td>
             </tr>
@@ -346,8 +342,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Using <em>profile</em> will override <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> and support for passing them at the same time as <em>profile</em> has been deprecated.</div>
-                        <div><em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> will be made mutually exclusive with <em>profile</em> after 2022-06-01.</div>
+                        <div>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_profile</div>
                 </td>
             </tr>
@@ -359,16 +354,18 @@ Parameters
                     <div style="font-size: small">
                         <span style="color: purple">boolean</span>
                     </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 1.5.0</div>
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>no</li>
                                     <li>yes</li>
                         </ul>
                 </td>
                 <td>
-                        <div>Whether to remove existing tags that aren&#x27;t passed in the <em>tags</em> parameter</div>
+                        <div>If <em>purge_tags=true</em> and <em>tags</em> is set, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter.</div>
+                        <div>If the <em>tags</em> parameter is not set then tags will not be modified, even if <em>purge_tags=True</em>.</div>
+                        <div>Tag keys beginning with <code>aws:</code> are reserved by Amazon and can not be modified.  As such they will be ignored for the purposes of the <em>purge_tags</em> parameter.  See the Amazon documentation for more information <a href='https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions'>https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions</a>.</div>
+                        <div>The current default value of <code>False</code> has been deprecated.  The default value will change to <code>True</code> in release 5.0.0.</div>
                 </td>
             </tr>
             <tr>
@@ -400,8 +397,7 @@ Parameters
                 </td>
                 <td>
                         <div><code>AWS STS security token</code>. If not set then the value of the <code>AWS_SECURITY_TOKEN</code> or <code>EC2_SECURITY_TOKEN</code> environment variable is used.</div>
-                        <div>If <em>profile</em> is set this parameter is ignored.</div>
-                        <div>Passing the <em>security_token</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
+                        <div>The <em>security_token</em> and <em>profile</em> options are mutually exclusive.</div>
                         <div>Aliases <em>aws_session_token</em> and <em>session_token</em> have been added in version 3.2.0.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_session_token, session_token, aws_security_token, access_token</div>
                 </td>
@@ -434,12 +430,11 @@ Parameters
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
                                     <li>absent</li>
                                     <li><div style="color: blue"><b>present</b>&nbsp;&larr;</div></li>
-                                    <li>list</li>
                         </ul>
                 </td>
                 <td>
                         <div>Whether to ensure the volume is present or absent.</div>
-                        <div>The use of <em>state=list</em> to interrogate the volume has been deprecated and will be removed after 2022-06-01.  The &#x27;list&#x27; functionality has been moved to a dedicated module <span class='module'>amazon.aws.ec2_vol_info</span>.</div>
+                        <div><em>state=list</em> was deprecated in release 1.1.0 and is no longer available with release 4.0.0.  The &#x27;list&#x27; functionality has been moved to a dedicated module <span class='module'>amazon.aws.ec2_vol_info</span>.</div>
                 </td>
             </tr>
             <tr>
@@ -452,10 +447,11 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <b>Default:</b><br/><div style="color: blue">{}</div>
                 </td>
                 <td>
-                        <div>tag:value pairs to add to the volume after creation.</div>
+                        <div>A dictionary representing the tags to be applied to the resource.</div>
+                        <div>If the <em>tags</em> parameter is not set then tags will not be modified.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: resource_tags</div>
                 </td>
             </tr>
             <tr>
@@ -474,7 +470,6 @@ Parameters
                         <div>Volume throughput in MB/s.</div>
                         <div>This parameter is only valid for gp3 volumes.</div>
                         <div>Valid range is from 125 to 1000.</div>
-                        <div>Requires at least botocore version 1.19.27.</div>
                 </td>
             </tr>
             <tr>
@@ -559,9 +554,9 @@ Notes
 -----
 
 .. note::
+   - Support for *purge_tags* was added in release 1.5.0.
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
    - When no credentials are explicitly provided the AWS SDK (boto3) that Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``). See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html for more information.
-   - Modules based on the original AWS SDK (boto) may read their default configuration from different files. See https://boto.readthedocs.io/en/latest/boto_config_tut.html for more information.
    - ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be defined in the configuration files.
 
 
@@ -633,12 +628,6 @@ Examples
     - amazon.aws.ec2_vol:
         id: vol-XXXXXXXX
         instance: None
-        region: us-west-2
-
-    # List volumes for an instance
-    - amazon.aws.ec2_vol:
-        instance: i-XXXXXX
-        state: list
         region: us-west-2
 
     # Create new volume using SSD storage

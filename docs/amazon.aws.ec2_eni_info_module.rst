@@ -26,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.16.0
-- botocore >= 1.19.0
+- boto3 >= 1.17.0
+- botocore >= 1.20.0
 
 
 Parameters
@@ -54,8 +54,7 @@ Parameters
                 </td>
                 <td>
                         <div><code>AWS access key</code>. If not set then the value of the <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_ACCESS_KEY</code> or <code>EC2_ACCESS_KEY</code> environment variable is used.</div>
-                        <div>If <em>profile</em> is set this parameter is ignored.</div>
-                        <div>Passing the <em>aws_access_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
+                        <div>The <em>aws_access_key</em> and <em>profile</em> options are mutually exclusive.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                 </td>
             </tr>
@@ -72,7 +71,6 @@ Parameters
                 </td>
                 <td>
                         <div>The location of a CA Bundle to use when validating SSL certificates.</div>
-                        <div>Not used by boto 2 based modules.</div>
                         <div>Note: The CA Bundle is read &#x27;module&#x27; side and may need to be explicitly copied from the controller if not run locally.</div>
                 </td>
             </tr>
@@ -90,7 +88,6 @@ Parameters
                 <td>
                         <div>A dictionary to modify the botocore configuration.</div>
                         <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
-                        <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
                 </td>
             </tr>
             <tr>
@@ -106,8 +103,7 @@ Parameters
                 </td>
                 <td>
                         <div><code>AWS secret key</code>. If not set then the value of the <code>AWS_SECRET_ACCESS_KEY</code>, <code>AWS_SECRET_KEY</code>, or <code>EC2_SECRET_KEY</code> environment variable is used.</div>
-                        <div>If <em>profile</em> is set this parameter is ignored.</div>
-                        <div>Passing the <em>aws_secret_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
+                        <div>The <em>aws_secret_key</em> and <em>profile</em> options are mutually exclusive.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                 </td>
             </tr>
@@ -191,8 +187,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Using <em>profile</em> will override <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> and support for passing them at the same time as <em>profile</em> has been deprecated.</div>
-                        <div><em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> will be made mutually exclusive with <em>profile</em> after 2022-06-01.</div>
+                        <div>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_profile</div>
                 </td>
             </tr>
@@ -225,8 +220,7 @@ Parameters
                 </td>
                 <td>
                         <div><code>AWS STS security token</code>. If not set then the value of the <code>AWS_SECURITY_TOKEN</code> or <code>EC2_SECURITY_TOKEN</code> environment variable is used.</div>
-                        <div>If <em>profile</em> is set this parameter is ignored.</div>
-                        <div>Passing the <em>security_token</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
+                        <div>The <em>security_token</em> and <em>profile</em> options are mutually exclusive.</div>
                         <div>Aliases <em>aws_session_token</em> and <em>session_token</em> have been added in version 3.2.0.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_session_token, session_token, aws_security_token, access_token</div>
                 </td>
@@ -260,7 +254,6 @@ Notes
 .. note::
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
    - When no credentials are explicitly provided the AWS SDK (boto3) that Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``). See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html for more information.
-   - Modules based on the original AWS SDK (boto) may read their default configuration from different files. See https://boto.readthedocs.io/en/latest/boto_config_tut.html for more information.
    - ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be defined in the configuration files.
 
 
@@ -305,7 +298,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>List of matching elastic network interfaces</div>
+                            <div>List of matching elastic network interfaces.</div>
                     <br/>
                 </td>
             </tr>
@@ -321,7 +314,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>When an ENI is associated with an EIP</td>
                 <td>
-                            <div>Info of associated elastic IP (EIP)</div>
+                            <div>Info of associated elastic IP (EIP).</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;allocation_id&#x27;: &#x27;eipalloc-5sdf123&#x27;, &#x27;association_id&#x27;: &#x27;eipassoc-8sdf123&#x27;, &#x27;ip_owner_id&#x27;: &#x27;4415120123456&#x27;, &#x27;public_dns_name&#x27;: &#x27;ec2-52-1-0-63.compute-1.amazonaws.com&#x27;, &#x27;public_ip&#x27;: &#x27;52.1.0.63&#x27;}</div>
@@ -339,7 +332,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>When an ENI is attached to an ec2 instance</td>
                 <td>
-                            <div>Info about attached ec2 instance</div>
+                            <div>Info about attached ec2 instance.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">{&#x27;attach_time&#x27;: &#x27;2017-08-05T15:25:47+00:00&#x27;, &#x27;attachment_id&#x27;: &#x27;eni-attach-149d21234&#x27;, &#x27;delete_on_termination&#x27;: False, &#x27;device_index&#x27;: 1, &#x27;instance_id&#x27;: &#x27;i-15b8d3cadbafa1234&#x27;, &#x27;instance_owner_id&#x27;: &#x27;4415120123456&#x27;, &#x27;status&#x27;: &#x27;attached&#x27;}</div>
@@ -357,7 +350,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>Availability zone of ENI</div>
+                            <div>Availability zone of ENI.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">us-east-1b</div>
@@ -375,7 +368,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>Description text for ENI</div>
+                            <div>Description text for ENI.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">My favourite network interface</div>
@@ -393,7 +386,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>List of attached security groups</div>
+                            <div>List of attached security groups.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">[{&#x27;group_id&#x27;: &#x27;sg-26d0f1234&#x27;, &#x27;group_name&#x27;: &#x27;my_ec2_security_group&#x27;}]</div>
@@ -411,7 +404,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>The id of the ENI (alias for network_interface_id)</div>
+                            <div>The id of the ENI (alias for network_interface_id).</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">eni-392fsdf</div>
@@ -429,7 +422,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>Type of the network interface</div>
+                            <div>Type of the network interface.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">interface</div>
@@ -447,7 +440,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>List of IPv6 addresses for this interface</div>
+                            <div>List of IPv6 addresses for this interface.</div>
                     <br/>
                 </td>
             </tr>
@@ -463,7 +456,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>MAC address of the network interface</div>
+                            <div>MAC address of the network interface.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">0a:f8:10:2f:ab:a1</div>
@@ -482,7 +475,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>When a Name tag has been set</td>
                 <td>
-                            <div>The Name tag of the ENI, often displayed in the AWS UIs as Name</div>
+                            <div>The Name tag of the ENI, often displayed in the AWS UIs as Name.</div>
                     <br/>
                 </td>
             </tr>
@@ -498,7 +491,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>The id of the ENI</div>
+                            <div>The id of the ENI.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">eni-392fsdf</div>
@@ -516,7 +509,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>AWS account id of the owner of the ENI</div>
+                            <div>AWS account id of the owner of the ENI.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">4415120123456</div>
@@ -534,7 +527,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>Private DNS name for the ENI</div>
+                            <div>Private DNS name for the ENI.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">ip-172-16-1-180.ec2.internal</div>
@@ -552,7 +545,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>Private IP address for the ENI</div>
+                            <div>Private IP address for the ENI.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">172.16.1.180</div>
@@ -570,7 +563,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>List of private IP addresses attached to the ENI</div>
+                            <div>List of private IP addresses attached to the ENI.</div>
                     <br/>
                 </td>
             </tr>
@@ -586,7 +579,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>The ID of the entity that launched the ENI</div>
+                            <div>The ID of the entity that launched the ENI.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">AIDAIONYVJQNIAZFT3ABC</div>
@@ -636,7 +629,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>Indicates if the network interface is attached to an instance or not</div>
+                            <div>Indicates if the network interface is attached to an instance or not.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">in-use</div>
@@ -654,7 +647,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>Subnet ID the ENI is in</div>
+                            <div>Subnet ID the ENI is in.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">subnet-7bbf01234</div>
@@ -672,7 +665,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>Dictionary of tags added to the ENI</div>
+                            <div>Dictionary of tags added to the ENI.</div>
                     <br/>
                 </td>
             </tr>
@@ -689,7 +682,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>Dictionary of tags added to the ENI</div>
+                            <div>Dictionary of tags added to the ENI.</div>
                     <br/>
                 </td>
             </tr>
@@ -705,7 +698,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>ID of the VPC the network interface it part of</div>
+                            <div>ID of the VPC the network interface it part of.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">vpc-b3f1f123</div>

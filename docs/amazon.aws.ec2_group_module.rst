@@ -5,7 +5,7 @@
 amazon.aws.ec2_group
 ********************
 
-**maintain an ec2 VPC security group.**
+**Maintain an ec2 VPC security group**
 
 
 Version added: 1.0.0
@@ -26,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.16.0
-- botocore >= 1.19.0
+- boto3 >= 1.17.0
+- botocore >= 1.20.0
 
 
 Parameters
@@ -54,8 +54,7 @@ Parameters
                 </td>
                 <td>
                         <div><code>AWS access key</code>. If not set then the value of the <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_ACCESS_KEY</code> or <code>EC2_ACCESS_KEY</code> environment variable is used.</div>
-                        <div>If <em>profile</em> is set this parameter is ignored.</div>
-                        <div>Passing the <em>aws_access_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
+                        <div>The <em>aws_access_key</em> and <em>profile</em> options are mutually exclusive.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                 </td>
             </tr>
@@ -72,7 +71,6 @@ Parameters
                 </td>
                 <td>
                         <div>The location of a CA Bundle to use when validating SSL certificates.</div>
-                        <div>Not used by boto 2 based modules.</div>
                         <div>Note: The CA Bundle is read &#x27;module&#x27; side and may need to be explicitly copied from the controller if not run locally.</div>
                 </td>
             </tr>
@@ -90,7 +88,6 @@ Parameters
                 <td>
                         <div>A dictionary to modify the botocore configuration.</div>
                         <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
-                        <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
                 </td>
             </tr>
             <tr>
@@ -106,8 +103,7 @@ Parameters
                 </td>
                 <td>
                         <div><code>AWS secret key</code>. If not set then the value of the <code>AWS_SECRET_ACCESS_KEY</code>, <code>AWS_SECRET_KEY</code>, or <code>EC2_SECRET_KEY</code> environment variable is used.</div>
-                        <div>If <em>profile</em> is set this parameter is ignored.</div>
-                        <div>Passing the <em>aws_secret_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
+                        <div>The <em>aws_secret_key</em> and <em>profile</em> options are mutually exclusive.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                 </td>
             </tr>
@@ -206,8 +202,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Using <em>profile</em> will override <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> and support for passing them at the same time as <em>profile</em> has been deprecated.</div>
-                        <div><em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> will be made mutually exclusive with <em>profile</em> after 2022-06-01.</div>
+                        <div>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_profile</div>
                 </td>
             </tr>
@@ -249,6 +244,7 @@ Parameters
                 </td>
                 <td>
                         <div>Purge existing rules_egress on security group that are not found in rules_egress.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: purge_egress_rules</div>
                 </td>
             </tr>
             <tr>
@@ -267,7 +263,9 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>If yes, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter. If the <em>tags</em> parameter is not set then tags will not be modified.</div>
+                        <div>If <em>purge_tags=true</em> and <em>tags</em> is set, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter.</div>
+                        <div>If the <em>tags</em> parameter is not set then tags will not be modified, even if <em>purge_tags=True</em>.</div>
+                        <div>Tag keys beginning with <code>aws:</code> are reserved by Amazon and can not be modified.  As such they will be ignored for the purposes of the <em>purge_tags</em> parameter.  See the Amazon documentation for more information <a href='https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions'>https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions</a>.</div>
                 </td>
             </tr>
             <tr>
@@ -409,6 +407,44 @@ Parameters
                     <td class="elbow-placeholder"></td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>icmp_code</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 3.3.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>When using <code>icmp</code> or <code>icmpv6</code> as the protocol, allows you to specify</div>
+                        <div>the ICMP code to use. The option is mutually exclusive with <code>to_port</code>.</div>
+                        <div>A value of <code>-1</code> indicates all ICMP codes.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>icmp_type</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 3.3.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>When using <code>icmp</code> or <code>icmpv6</code> as the protocol, allows you to</div>
+                        <div>specify the ICMP type to use. The option is mutually exclusive with <code>from_port</code>.</div>
+                        <div>A value of <code>-1</code> indicates all ICMP types.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>ip_prefix</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -435,7 +471,11 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The IP protocol name (<code>tcp</code>, <code>udp</code>, <code>icmp</code>, <code>icmpv6</code>) or number (<a href='https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers'>https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers</a>)</div>
+                        <div>The IP protocol name (<code>tcp</code>, <code>udp</code>, <code>icmp</code>, <code>icmpv6</code>) or</div>
+                        <div>number (<a href='https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers'>https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers</a>)</div>
+                        <div>When using <code>icmp</code> or <code>icmpv6</code> as the protocol, you can pass</div>
+                        <div>the <code>icmp_type</code> and <code>icmp_code</code> parameters instead of</div>
+                        <div><code>from_port</code> and <code>to_port</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -487,6 +527,7 @@ Parameters
                 </td>
                 <td>
                         <div>List of firewall outbound rules to enforce in this group (see example). If none are supplied, a default all-out rule is assumed. If an empty list is supplied, no outbound rules will be enabled. Rule Egress sources list support was added in version 2.4. In version 2.5 support for rule descriptions was added.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: egress_rules</div>
                 </td>
             </tr>
                                 <tr>
@@ -596,6 +637,44 @@ Parameters
                     <td class="elbow-placeholder"></td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>icmp_code</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 3.3.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>When using <code>icmp</code> or <code>icmpv6</code> as the protocol, allows you to specify</div>
+                        <div>the ICMP code to use. The option is mutually exclusive with <code>to_port</code>.</div>
+                        <div>A value of <code>-1</code> indicates all ICMP codes.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>icmp_type</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 3.3.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>When using <code>icmp</code> or <code>icmpv6</code> as the protocol, allows you to specify</div>
+                        <div>the ICMP type to use. The option is mutually exclusive with <code>from_port</code>.</div>
+                        <div>A value of <code>-1</code> indicates all ICMP types.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>ip_prefix</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -622,7 +701,10 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The IP protocol name (<code>tcp</code>, <code>udp</code>, <code>icmp</code>, <code>icmpv6</code>) or number (<a href='https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers'>https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers</a>)</div>
+                        <div>The IP protocol name (<code>tcp</code>, <code>udp</code>, <code>icmp</code>, <code>icmpv6</code>) or</div>
+                        <div>number (<a href='https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers'>https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers</a>)</div>
+                        <div>When using <code>icmp</code> or <code>icmpv6</code> as the protocol, you can pass the</div>
+                        <div><code>icmp_type</code> and <code>icmp_code</code> parameters instead of <code>from_port</code> and <code>to_port</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -673,8 +755,7 @@ Parameters
                 </td>
                 <td>
                         <div><code>AWS STS security token</code>. If not set then the value of the <code>AWS_SECURITY_TOKEN</code> or <code>EC2_SECURITY_TOKEN</code> environment variable is used.</div>
-                        <div>If <em>profile</em> is set this parameter is ignored.</div>
-                        <div>Passing the <em>security_token</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
+                        <div>The <em>security_token</em> and <em>profile</em> options are mutually exclusive.</div>
                         <div>Aliases <em>aws_session_token</em> and <em>session_token</em> have been added in version 3.2.0.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_session_token, session_token, aws_security_token, access_token</div>
                 </td>
@@ -710,7 +791,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A dictionary of one or more tags to assign to the security group.</div>
+                        <div>A dictionary representing the tags to be applied to the resource.</div>
+                        <div>If the <em>tags</em> parameter is not set then tags will not be modified.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: resource_tags</div>
                 </td>
             </tr>
@@ -760,7 +842,6 @@ Notes
    - Preview diff mode support is added in version 2.7.
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
    - When no credentials are explicitly provided the AWS SDK (boto3) that Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``). See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html for more information.
-   - Modules based on the original AWS SDK (boto) may read their default configuration from different files. See https://boto.readthedocs.io/en/latest/boto_config_tut.html for more information.
    - ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be defined in the configuration files.
 
 
@@ -783,6 +864,19 @@ Examples
             - 80
             cidr_ip: 0.0.0.0/0
             rule_desc: allow all on port 80
+
+    - name: example using ICMP types and codes
+      amazon.aws.ec2_group:
+        name: "{{ name }}"
+        description: sg for ICMP
+        vpc_id: vpc-xxxxxxxx
+        profile: "{{ aws_profile }}"
+        region: us-east-1
+        rules:
+          - proto: icmp
+            icmp_type: 3
+            icmp_code: 1
+            cidr_ip: 0.0.0.0/0
 
     - name: example ec2 group
       amazon.aws.ec2_group:
@@ -827,10 +921,11 @@ Examples
             # the containing group name may be specified here
             group_name: example
           - proto: all
-            # in the 'proto' attribute, if you specify -1 (only supported when I(proto=icmp)), all, or a protocol number other than tcp, udp, icmp, or 58 (ICMPv6),
-            # traffic on all ports is allowed, regardless of any ports you specify
+            # in the 'proto' attribute, if you specify -1 (only supported when I(proto=icmp)), all, or a protocol number
+            # other than tcp, udp, icmp, or 58 (ICMPv6), traffic on all ports is allowed, regardless of any ports that
+            # you specify.
             from_port: 10050 # this value is ignored
-            to_port: 10050 # this value is ignored
+            to_port: 10050   # this value is ignored
             cidr_ip: 10.0.0.0/8
 
         rules_egress:
@@ -850,7 +945,8 @@ Examples
         vpc_id: 12345
         region: eu-west-1
         rules:
-          # 'ports' rule keyword was introduced in version 2.4. It accepts a single port value or a list of values including ranges (from_port-to_port).
+          # 'ports' rule keyword was introduced in version 2.4. It accepts a single
+          # port value or a list of values including ranges (from_port-to_port).
           - proto: tcp
             ports: 22
             group_name: example-vpn
@@ -860,7 +956,8 @@ Examples
               - 443
               - 8080-8099
             cidr_ip: 0.0.0.0/0
-          # Rule sources list support was added in version 2.4. This allows to define multiple sources per source type as well as multiple source types per rule.
+          # Rule sources list support was added in version 2.4. This allows to
+          # define multiple sources per source type as well as multiple source types per rule.
           - proto: tcp
             ports:
               - 6379
@@ -1049,3 +1146,4 @@ Authors
 ~~~~~~~
 
 - Andrew de Quincey (@adq)
+- Razique Mahroua (@Razique)

@@ -1,7 +1,0 @@
-minor_changes:
-- aws_s3 - The ``aws_s3`` module has been renamed to ``s3_object``
-  (https://github.com/ansible-collections/amazon.aws/pull/869).
-deprecated_features:
-- s3_object - Support for creation and deletion of S3 buckets has been deprecated.  Please use the
-  ``amazon.aws.s3_bucket`` module to create and delete buckets
-  (https://github.com/ansible-collections/amazon.aws/pull/869).

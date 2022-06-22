@@ -5,7 +5,7 @@
 amazon.aws.ec2_metadata_facts
 *****************************
 
-**gathers facts (instance metadata) about remote hosts within EC2**
+**Gathers facts (instance metadata) about remote hosts within EC2**
 
 
 Version added: 1.0.0

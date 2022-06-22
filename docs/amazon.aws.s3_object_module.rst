@@ -1,11 +1,11 @@
-.. _amazon.aws.aws_s3_module:
+.. _amazon.aws.s3_object_module:
 
 
-*****************
-amazon.aws.aws_s3
-*****************
+********************
+amazon.aws.s3_object
+********************
 
-**manage objects in S3.**
+**Manage objects in S3**
 
 
 Version added: 1.0.0
@@ -17,7 +17,9 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- This module allows the user to manage S3 buckets and the objects within them. Includes support for creating and deleting both objects and buckets, retrieving objects as files or strings, generating download links and copy of an object that is already stored in Amazon S3.
+- This module allows the user to manage the objects and directories within S3 buckets. Includes support for creating and deleting objects and directories, retrieving objects as files or strings, generating download links and copying objects that are already stored in Amazon S3.
+- Support for creating or deleting S3 buckets with this module has been deprecated and will be removed in release 6.0.0.
+- S3 buckets can be created or deleted using the :ref:`amazon.aws.s3_bucket <amazon.aws.s3_bucket_module>` module.
 
 
 
@@ -26,8 +28,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.16.0
-- botocore >= 1.19.0
+- boto3 >= 1.17.0
+- botocore >= 1.20.0
 
 
 Parameters
@@ -54,8 +56,7 @@ Parameters
                 </td>
                 <td>
                         <div><code>AWS access key</code>. If not set then the value of the <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_ACCESS_KEY</code> or <code>EC2_ACCESS_KEY</code> environment variable is used.</div>
-                        <div>If <em>profile</em> is set this parameter is ignored.</div>
-                        <div>Passing the <em>aws_access_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
+                        <div>The <em>aws_access_key</em> and <em>profile</em> options are mutually exclusive.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                 </td>
             </tr>
@@ -72,7 +73,6 @@ Parameters
                 </td>
                 <td>
                         <div>The location of a CA Bundle to use when validating SSL certificates.</div>
-                        <div>Not used by boto 2 based modules.</div>
                         <div>Note: The CA Bundle is read &#x27;module&#x27; side and may need to be explicitly copied from the controller if not run locally.</div>
                 </td>
             </tr>
@@ -90,7 +90,6 @@ Parameters
                 <td>
                         <div>A dictionary to modify the botocore configuration.</div>
                         <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
-                        <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
                 </td>
             </tr>
             <tr>
@@ -106,8 +105,7 @@ Parameters
                 </td>
                 <td>
                         <div><code>AWS secret key</code>. If not set then the value of the <code>AWS_SECRET_ACCESS_KEY</code>, <code>AWS_SECRET_KEY</code>, or <code>EC2_SECRET_KEY</code> environment variable is used.</div>
-                        <div>If <em>profile</em> is set this parameter is ignored.</div>
-                        <div>Passing the <em>aws_secret_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
+                        <div>The <em>aws_secret_key</em> and <em>profile</em> options are mutually exclusive.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                 </td>
             </tr>
@@ -140,9 +138,10 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The content to <code>PUT</code> into an object.</div>
-                        <div>The parameter value will be treated as a string and converted to UTF-8 before sending it to S3. To send binary data, use the <em>content_base64</em> parameter instead.</div>
-                        <div>Either <em>content</em>, <em>content_base64</em> or <em>src</em> must be specified for a <code>PUT</code> operation. Ignored otherwise.</div>
+                        <div>The content to <code>put</code> into an object.</div>
+                        <div>The parameter value will be treated as a string and converted to UTF-8 before sending it to S3.</div>
+                        <div>To send binary data, use the <em>content_base64</em> parameter instead.</div>
+                        <div>One of <em>content</em>, <em>content_base64</em> or <em>src</em> must be specified when <em>mode=put</em> otherwise ignored.</div>
                 </td>
             </tr>
             <tr>
@@ -158,9 +157,9 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The base64-encoded binary data to <code>PUT</code> into an object.</div>
+                        <div>The base64-encoded binary data to <code>put</code> into an object.</div>
                         <div>Use this if you need to put raw binary data, and don&#x27;t forget to encode in base64.</div>
-                        <div>Either <em>content</em>, <em>content_base64</em> or <em>src</em> must be specified for a <code>PUT</code> operation. Ignored otherwise.</div>
+                        <div>One of <em>content</em>, <em>content_base64</em> or <em>src</em> must be specified when <em>mode=put</em> otherwise ignored.</div>
                 </td>
             </tr>
             <tr>
@@ -177,7 +176,7 @@ Parameters
                 </td>
                 <td>
                         <div>The source details of the object to copy.</div>
-                        <div>Required if <em>mode</em> is <code>copy</code>.</div>
+                        <div>Required if <em>mode=copy</em>.</div>
                 </td>
             </tr>
                                 <tr>
@@ -262,7 +261,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The destination file path when downloading an object/key with a <code>GET</code> operation.</div>
+                        <div>The destination file path when downloading an object/key when <em>mode=get</em>.</div>
+                        <div>Ignored when <em>mode</em> is not <code>get</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -316,7 +316,8 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>When set for PUT/COPY mode, asks for server-side encryption.</div>
+                        <div>Asks for server-side encryption of the objects when <em>mode=put</em> or <em>mode=copy</em>.</div>
+                        <div>Ignored when <em>mode</em> is neither <code>put</code> nor <code>copy</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -331,7 +332,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>KMS key id to use when encrypting objects using <em>encrypting=aws:kms</em>. Ignored if <em>encryption</em> is not <code>aws:kms</code>.</div>
+                        <div>KMS key id to use when encrypting objects using <em>encrypting=aws:kms</em>.</div>
+                        <div>Ignored if <em>encryption</em> is not <code>aws:kms</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -350,7 +352,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>What encryption mode to use if <em>encrypt=true</em>.</div>
+                        <div>The encryption mode to use if <em>encrypt=true</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -367,6 +369,7 @@ Parameters
                 </td>
                 <td>
                         <div>Time limit (in seconds) for the URL generated and returned by S3/Walrus when performing a <em>mode=put</em> or <em>mode=geturl</em> operation.</div>
+                        <div>Ignored when <em>mode</em> is neither <code>put</code> nor <code>geturl</code>.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: expiration</div>
                 </td>
             </tr>
@@ -382,7 +385,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Custom headers for <code>PUT</code> operation, as a dictionary of <code>key=value</code> and <code>key=value,key=value</code>.</div>
+                        <div>Custom headers to use when <em>mode=put</em> as a dictionary of key value pairs.</div>
+                        <div>Ignored when <em>mode</em> is not <code>put</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -401,7 +405,8 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Overrides initial bucket lookups in case bucket or iam policies are restrictive. Example: a user may have the <code>GetObject</code> permission but no other permissions. In this case using the option mode: get will fail without specifying <em>ignore_nonexistent_bucket=true</em>.</div>
+                        <div>Overrides initial bucket lookups in case bucket or IAM policies are restrictive.</div>
+                        <div>This can be useful when a user may have the <code>GetObject</code> permission but no other permissions.  In which case using <em>mode=get</em> will fail unless <em>ignore_nonexistent_bucket=true</em> is specified.</div>
                 </td>
             </tr>
             <tr>
@@ -432,7 +437,8 @@ Parameters
                         <b>Default:</b><br/><div style="color: blue">1000</div>
                 </td>
                 <td>
-                        <div>Max number of results to return in list mode, set this if you want to retrieve fewer than the default 1000 keys.</div>
+                        <div>Max number of results to return when <em>mode=list</em>, set this if you want to retrieve fewer than the default 1000 keys.</div>
+                        <div>Ignored when <em>mode</em> is not <code>list</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -447,7 +453,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Metadata for PUT/COPY operation, as a dictionary of <code>key=value</code> and <code>key=value,key=value</code>.</div>
+                        <div>Metadata to use when <em>mode=put</em> or <em>mode=copy</em> as a dictionary of key value pairs.</div>
                 </td>
             </tr>
             <tr>
@@ -475,15 +481,16 @@ Parameters
                 </td>
                 <td>
                         <div>Switches the module behaviour between</div>
-                        <div><code>PUT</code>: upload</div>
-                        <div><code>GET</code>: download</div>
+                        <div><code>put</code>: upload</div>
+                        <div><code>get</code>: download</div>
                         <div><code>geturl</code>: return download URL</div>
                         <div><code>getstr</code>: download object as string</div>
                         <div><code>list</code>: list keys</div>
-                        <div><code>create</code>: create bucket</div>
-                        <div><code>delete</code>: delete bucket</div>
+                        <div><code>create</code>: create bucket directories</div>
+                        <div><code>delete</code>: delete bucket directories</div>
                         <div><code>delobj</code>: delete object</div>
                         <div><code>copy</code>: copy object that is already stored in another bucket</div>
+                        <div>Support for creating and deleting buckets has been deprecated and will be removed in release 6.0.0.  To create and manage the bucket itself please use the <span class='module'>amazon.aws.s3_bucket</span> module.</div>
                 </td>
             </tr>
             <tr>
@@ -498,7 +505,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Keyname of the object inside the bucket. Can be used to create &quot;virtual directories&quot;, see examples.</div>
+                        <div>Keyname of the object inside the bucket.</div>
+                        <div>Can be used to create &quot;virtual directories&quot;, see examples.</div>
                 </td>
             </tr>
             <tr>
@@ -511,15 +519,17 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <b>Default:</b><br/><div style="color: blue">"always"</div>
+                        <b>Default:</b><br/><div style="color: blue">"different"</div>
                 </td>
                 <td>
-                        <div>Force overwrite either locally on the filesystem or remotely with the object/key. Used with <code>PUT</code> and <code>GET</code> operations.</div>
+                        <div>Force overwrite either locally on the filesystem or remotely with the object/key.</div>
+                        <div>Used when <em>mode=put</em> or <em>mode=get</em>.</div>
+                        <div>Ignored when when <em>mode</em> is neither <code>put</code> nor <code>get</code>.</div>
                         <div>Must be a Boolean, <code>always</code>, <code>never</code>, <code>different</code> or <code>latest</code>.</div>
                         <div><code>true</code> is the same as <code>always</code>.</div>
                         <div><code>false</code> is equal to <code>never</code>.</div>
-                        <div>When this is set to <code>different</code> the MD5 sum of the local file is compared with the &#x27;ETag&#x27; of the object/key in S3. The ETag may or may not be an MD5 digest of the object data. See the ETag response header here <a href='https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html'>https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html</a>.</div>
-                        <div>(<code>GET</code> mode only) When this is set to <code>latest</code> the last modified timestamp of local file is compared with the &#x27;LastModified&#x27; of the object/key in S3.</div>
+                        <div>When this is set to <code>different</code> the MD5 sum of the local file is compared with the &#x27;ETag&#x27; of the object/key in S3.  The ETag may or may not be an MD5 digest of the object data. See the ETag response header here <a href='https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html'>https://docs.aws.amazon.com/AmazonS3/latest/API/RESTCommonResponseHeaders.html</a>.</div>
+                        <div>When <em>mode=get</em> and <em>overwrite=latest</em> the last modified timestamp of local file is compared with the &#x27;LastModified&#x27; of the object/key in S3.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: force</div>
                 </td>
             </tr>
@@ -537,7 +547,8 @@ Parameters
                         <b>Default:</b><br/><div style="color: blue">["private"]</div>
                 </td>
                 <td>
-                        <div>This option lets the user set the canned permissions on the object/bucket that are created. The permissions that can be set are <code>private</code>, <code>public-read</code>, <code>public-read-write</code>, <code>authenticated-read</code> for a bucket or <code>private</code>, <code>public-read</code>, <code>public-read-write</code>, <code>aws-exec-read</code>, <code>authenticated-read</code>, <code>bucket-owner-read</code>, <code>bucket-owner-full-control</code> for an object. Multiple permissions can be specified as a list; although only the first one will be used during the initial upload of the file</div>
+                        <div>This option lets the user set the canned permissions on the object/bucket that are created. The permissions that can be set are <code>private</code>, <code>public-read</code>, <code>public-read-write</code>, <code>authenticated-read</code> for a bucket or <code>private</code>, <code>public-read</code>, <code>public-read-write</code>, <code>aws-exec-read</code>, <code>authenticated-read</code>, <code>bucket-owner-read</code>, <code>bucket-owner-full-control</code> for an object. Multiple permissions can be specified as a list; although only the first one will be used during the initial upload of the file.</div>
+                        <div>For a full list of permissions see the AWS documentation <a href='https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl'>https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl</a>.</div>
                 </td>
             </tr>
             <tr>
@@ -568,8 +579,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Using <em>profile</em> will override <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> and support for passing them at the same time as <em>profile</em> has been deprecated.</div>
-                        <div><em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> will be made mutually exclusive with <em>profile</em> after 2022-06-01.</div>
+                        <div>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_profile</div>
                 </td>
             </tr>
@@ -581,7 +591,6 @@ Parameters
                     <div style="font-size: small">
                         <span style="color: purple">boolean</span>
                     </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.0.0</div>
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
@@ -590,8 +599,9 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Whether or not to remove tags assigned to the S3 object if not specified in the playbook.</div>
-                        <div>To remove all tags set <em>tags</em> to an empty dictionary in conjunction with this.</div>
+                        <div>If <em>purge_tags=true</em> and <em>tags</em> is set, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter.</div>
+                        <div>If the <em>tags</em> parameter is not set then tags will not be modified, even if <em>purge_tags=True</em>.</div>
+                        <div>Tag keys beginning with <code>aws:</code> are reserved by Amazon and can not be modified.  As such they will be ignored for the purposes of the <em>purge_tags</em> parameter.  See the Amazon documentation for more information <a href='https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions'>https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions</a>.</div>
                 </td>
             </tr>
             <tr>
@@ -659,6 +669,7 @@ Parameters
                 </td>
                 <td>
                         <div>S3 URL endpoint for usage with Ceph, Eucalyptus and fakes3 etc. Otherwise assumes AWS.</div>
+                        <div>The S3_URL alias for this option has been deprecated and will be removed in release 5.0.0.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: S3_URL</div>
                 </td>
             </tr>
@@ -675,8 +686,7 @@ Parameters
                 </td>
                 <td>
                         <div><code>AWS STS security token</code>. If not set then the value of the <code>AWS_SECURITY_TOKEN</code> or <code>EC2_SECURITY_TOKEN</code> environment variable is used.</div>
-                        <div>If <em>profile</em> is set this parameter is ignored.</div>
-                        <div>Passing the <em>security_token</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
+                        <div>The <em>security_token</em> and <em>profile</em> options are mutually exclusive.</div>
                         <div>Aliases <em>aws_session_token</em> and <em>session_token</em> have been added in version 3.2.0.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_session_token, session_token, aws_security_token, access_token</div>
                 </td>
@@ -693,8 +703,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The source file path when performing a <code>PUT</code> operation.</div>
-                        <div>Either <em>content</em>, <em>content_base64</em> or <em>src</em> must be specified for a <code>PUT</code> operation. Ignored otherwise.</div>
+                        <div>The source file path when performing a <code>put</code> operation.</div>
+                        <div>One of <em>content</em>, <em>content_base64</em> or <em>src</em> must be specified when <em>mode=put</em> otherwise ignored.</div>
                 </td>
             </tr>
             <tr>
@@ -705,12 +715,13 @@ Parameters
                     <div style="font-size: small">
                         <span style="color: purple">dictionary</span>
                     </div>
-                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 2.0.0</div>
                 </td>
                 <td>
                 </td>
                 <td>
-                        <div>Tags dict to apply to the S3 object.</div>
+                        <div>A dictionary representing the tags to be applied to the resource.</div>
+                        <div>If the <em>tags</em> parameter is not set then tags will not be modified.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: resource_tags</div>
                 </td>
             </tr>
             <tr>
@@ -732,7 +743,7 @@ Parameters
                 <td>
                         <div>Whether the bucket name should be validated to conform to AWS S3 naming rules.</div>
                         <div>On by default, this may be disabled for S3 backends that do not enforce these rules.</div>
-                        <div>See https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html</div>
+                        <div>See the Amazon documentation for more information about bucket naming rules <a href='https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html'>https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html</a>.</div>
                 </td>
             </tr>
             <tr>
@@ -777,9 +788,9 @@ Notes
 -----
 
 .. note::
+   - Support for *tags* and *purge_tags* was added in release 2.0.0.
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
    - When no credentials are explicitly provided the AWS SDK (boto3) that Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``). See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html for more information.
-   - Modules based on the original AWS SDK (boto) may read their default configuration from different files. See https://boto.readthedocs.io/en/latest/boto_config_tut.html for more information.
    - ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be defined in the configuration files.
 
 
@@ -790,21 +801,21 @@ Examples
 .. code-block:: yaml
 
     - name: Simple PUT operation
-      amazon.aws.aws_s3:
+      amazon.aws.s3_object:
         bucket: mybucket
         object: /my/desired/key.txt
         src: /usr/local/myfile.txt
         mode: put
 
     - name: PUT operation from a rendered template
-      amazon.aws.aws_s3:
+      amazon.aws.s3_object:
         bucket: mybucket
         object: /object.yaml
         content: "{{ lookup('template', 'templates/object.yaml.j2') }}"
         mode: put
 
     - name: Simple PUT operation in Ceph RGW S3
-      amazon.aws.aws_s3:
+      amazon.aws.s3_object:
         bucket: mybucket
         object: /my/desired/key.txt
         src: /usr/local/myfile.txt
@@ -813,14 +824,14 @@ Examples
         s3_url: "http://localhost:8000"
 
     - name: Simple GET operation
-      amazon.aws.aws_s3:
+      amazon.aws.s3_object:
         bucket: mybucket
         object: /my/desired/key.txt
         dest: /usr/local/myfile.txt
         mode: get
 
     - name: Get a specific version of an object.
-      amazon.aws.aws_s3:
+      amazon.aws.s3_object:
         bucket: mybucket
         object: /my/desired/key.txt
         version: 48c9ee5131af7a716edc22df9772aa6f
@@ -828,7 +839,7 @@ Examples
         mode: get
 
     - name: PUT/upload with metadata
-      amazon.aws.aws_s3:
+      amazon.aws.s3_object:
         bucket: mybucket
         object: /my/desired/key.txt
         src: /usr/local/myfile.txt
@@ -836,7 +847,7 @@ Examples
         metadata: 'Content-Encoding=gzip,Cache-Control=no-cache'
 
     - name: PUT/upload with custom headers
-      amazon.aws.aws_s3:
+      amazon.aws.s3_object:
         bucket: mybucket
         object: /my/desired/key.txt
         src: /usr/local/myfile.txt
@@ -844,12 +855,12 @@ Examples
         headers: 'x-amz-grant-full-control=emailAddress=owner@example.com'
 
     - name: List keys simple
-      amazon.aws.aws_s3:
+      amazon.aws.s3_object:
         bucket: mybucket
         mode: list
 
     - name: List keys all options
-      amazon.aws.aws_s3:
+      amazon.aws.s3_object:
         bucket: mybucket
         mode: list
         prefix: /my/desired/
@@ -857,25 +868,25 @@ Examples
         max_keys: 472
 
     - name: Create an empty bucket
-      amazon.aws.aws_s3:
+      amazon.aws.s3_object:
         bucket: mybucket
         mode: create
         permission: public-read
 
     - name: Create a bucket with key as directory, in the EU region
-      amazon.aws.aws_s3:
+      amazon.aws.s3_object:
         bucket: mybucket
         object: /my/directory/path
         mode: create
         region: eu-west-1
 
     - name: Delete a bucket and all contents
-      amazon.aws.aws_s3:
+      amazon.aws.s3_object:
         bucket: mybucket
         mode: delete
 
     - name: GET an object but don't download if the file checksums match. New in 2.0
-      amazon.aws.aws_s3:
+      amazon.aws.s3_object:
         bucket: mybucket
         object: /my/desired/key.txt
         dest: /usr/local/myfile.txt
@@ -883,13 +894,13 @@ Examples
         overwrite: different
 
     - name: Delete an object from a bucket
-      amazon.aws.aws_s3:
+      amazon.aws.s3_object:
         bucket: mybucket
         object: /my/desired/key.txt
         mode: delobj
 
     - name: Copy an object already stored in another bucket
-      amazon.aws.aws_s3:
+      amazon.aws.s3_object:
         bucket: mybucket
         object: /my/desired/key.txt
         mode: copy
@@ -1010,4 +1021,4 @@ Authors
 
 - Lester Wade (@lwade)
 - Sloane Hertel (@s-hertel)
-- Alina Buzachis (@linabuzachis)
+- Alina Buzachis (@alinabuzachis)
