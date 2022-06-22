@@ -326,7 +326,7 @@ options:
         default: optional
         type: str
       http_put_response_hop_limit:
-        version_added: 3.4.0
+        version_added: 4.0.0
         type: int
         description: >
           The desired HTTP PUT response hop limit for instance metadata requests.
