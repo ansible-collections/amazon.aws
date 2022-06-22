@@ -5,6 +5,9 @@ community.aws Release Notes
 .. contents:: Topics
 
 
+v3.3.1
+======
+
 v3.3.0
 ======
 
