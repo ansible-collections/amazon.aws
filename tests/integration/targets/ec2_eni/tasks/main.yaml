@@ -83,6 +83,9 @@
   - name: test attaching and detaching network interfaces
     include_tasks: ./test_attachment.yaml
 
+  - name: test attaching and detaching multiple network interfaces
+    include_tasks: ./test_create_attached_multiple.yml
+
   - name: test modifying source_dest_check
     include_tasks: ./test_modifying_source_dest_check.yaml
 

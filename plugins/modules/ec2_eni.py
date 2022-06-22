@@ -761,7 +761,7 @@ def uniquely_find_eni(connection, module, eni=None):
         filters.append({'Name': 'attachment.instance-id',
                         'Values': [instance_id]})
         filters.append({'Name': 'attachment.device-index',
-                        'Values': [device_index]})
+                        'Values': [str(device_index)]})
 
     if name and subnet_id and not filters:
         filters.append({'Name': 'tag:Name',

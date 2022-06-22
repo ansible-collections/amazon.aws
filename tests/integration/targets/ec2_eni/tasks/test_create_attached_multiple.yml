@@ -1,0 +1,121 @@
+---
+  - name: Create instance to test attaching and detaching network interfaces for this test
+    ec2_instance:
+      name: "{{ resource_prefix }}-instance"
+      image_id: "{{ ec2_ami_id }}"
+      vpc_subnet_id: "{{ vpc_subnet_id }}"
+      instance_type: t2.micro
+    register: ec2_instances
+
+  - name: set variable for the instance ID
+    set_fact:
+      instance_id_3: "{{ ec2_instances.instances[0].instance_id }}"
+
+#=================================================================
+
+  - name: Create and attach another interface to above instance - check_mode
+    amazon.aws.ec2_eni:
+      name: "{{ resource_prefix }}-eni"
+      instance_id: "{{ instance_id_3 }}"
+      device_index: 1
+      subnet_id: "{{ vpc_subnet_id }}"
+      state: present
+      attached: true
+      delete_on_termination: true
+    check_mode: true
+    register: result
+
+  # Get the instance info and ENI info to verify attachment of second eni
+  - ec2_instance_info:
+      instance_ids:
+        - "{{ instance_id_3 }}"
+    register: instance_info_result
+
+  - assert:
+      that:
+        - result is changed
+        - result is not failed
+        - instance_info_result.instances[0].network_interfaces | length == 1
+        - '"Would have created ENI if not in check mode." in result.msg'
+        - "'ec2:CreateNetworkInterface' not in {{ result.resource_actions }}"
+
+  - name: Create and attach another interface to above instance
+    amazon.aws.ec2_eni:
+      name: "{{ resource_prefix }}-eni"
+      instance_id: "{{ instance_id_3 }}"
+      device_index: 1
+      subnet_id: "{{ vpc_subnet_id }}"
+      state: present
+      attached: true
+      delete_on_termination: true
+    register: result
+
+  - name: Set variable for the ENI ID
+    set_fact:
+      eni_id_attached_multiple: "{{ result.interface.id }}"
+
+  # Get the instance info and ENI info to verify attachment of second eni
+  - ec2_instance_info:
+      instance_ids:
+        - "{{ instance_id_3 }}"
+    register: instance_info_result
+  - ec2_eni_info:
+      eni_id: "{{ eni_id_attached_multiple }}"
+    register: eni_info
+
+  - name: Assert that the interface attachment was successful
+    assert:
+      that:
+        - result is changed
+        - result is not failed
+        - instance_info_result.instances[0].network_interfaces | length == 2
+        - eni_info.network_interfaces[0].attachment.instance_id == instance_id_3
+        - eni_info.network_interfaces[0].attachment.device_index == 1
+
+  - name: Create and attach another interface to above instance - check_mode - idempotent
+    amazon.aws.ec2_eni:
+      name: "{{ resource_prefix }}-eni"
+      instance_id: "{{ instance_id_3 }}"
+      device_index: 1
+      subnet_id: "{{ vpc_subnet_id }}"
+      state: present
+      attached: true
+      delete_on_termination: true
+    check_mode: true
+    register: result
+
+  # Get the instance info and ENI info to verify attachment of second eni
+  - ec2_instance_info:
+      instance_ids:
+        - "{{ instance_id_3 }}"
+    register: instance_info_result
+
+  - name: Assert that the interface would have been modified if not in check_mode
+    assert:
+      that:
+        - result is changed
+        - result is not failed
+        - instance_info_result.instances[0].network_interfaces | length == 2
+        - '"Would have modified ENI: {{ eni_id_attached_multiple }} if not in check mode" in result.msg'
+        - "'ec2:CreateNetworkInterface' not in {{ result.resource_actions }}"
+        - "'ec2:ModifyNetworkInterfaceAttribute' not in {{ result.resource_actions }}"
+
+#=================================================================
+
+  - name: remove the network interface created in this test
+    ec2_eni:
+      eni_id: "{{ eni_id_attached_multiple }}"
+      force_detach: True
+      state: absent
+    ignore_errors: true
+    retries: 5
+
+  - name: terminate the instance created in this test
+    ec2_instance:
+      state: absent
+      instance_ids:
+        - "{{ instance_id_3 }}"
+      wait: True
+    ignore_errors: true
+    retries: 5
+    when: instance_id_3 is defined
