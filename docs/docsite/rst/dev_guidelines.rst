@@ -107,7 +107,7 @@ used by boto3)
 Release policy and backporting merged PRs
 -----------------------------------------
 
-All ansible.aws and community.aws PRs must be merged to the ``main`` branch first.  After a PR has
+All amazon.aws and community.aws PRs must be merged to the ``main`` branch first.  After a PR has
 been accepted and merged to the ``main`` branch they can be backported to the stable branches.
 
 The ``main`` branch is a staging location for the next major version (X+1) of the collections and
