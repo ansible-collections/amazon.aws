@@ -33,15 +33,18 @@
         # refresh inventory
         - meta: refresh_inventory
 
+        - debug:
+            var: groups
+
         - name: assert groups and hostvars were populated with inventory
           assert:
             that:
               - "'aws_ec2' in groups"
               - groups['aws_ec2'] | length == 2
-              - "'Test1' in groups['aws_ec2']"
-              - "'Test2' in groups['aws_ec2']"
-              - "'Test1' in hostvars"
-              - "'Test2' in hostvars"
+              - "'Tag1_Test1' in groups['aws_ec2']"
+              - "'Tag2_Test2' in groups['aws_ec2']"
+              - "'Tag1_Test1' in hostvars"
+              - "'Tag2_Test2' in hostvars"
 
       always:
 

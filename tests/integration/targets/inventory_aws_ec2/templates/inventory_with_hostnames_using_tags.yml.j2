@@ -13,9 +13,9 @@ hostnames:
 # can also be specified using
 # - tag:Tag1,Tag2
 # or
-# - tag:Tag1=Test1,Tag2=Test2
+# - tag:Tag1
+# - tag:Tag2
 # or
-- tag:Tag1
-- tag:Tag2
+- tag:Tag1=Test1,Tag2=Test2
 compose:
-   ansible_host: private_ip_address
+  ansible_host: private_ip_address
