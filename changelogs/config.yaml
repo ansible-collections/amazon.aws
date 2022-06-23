@@ -25,5 +25,5 @@ sections:
   - Bugfixes
 - - known_issues
   - Known Issues
-title: community.aws
+title: amazon.aws
 trivial_section_name: trivial
