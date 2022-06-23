@@ -127,7 +127,7 @@ Naming your module
 ------------------
 
 Module names should include the name of the resource being managed and be prefixed with the AWS API
-that the modue is based on.  Where examples of a prefix don't already exist a good rule of thumb is
+that the module is based on.  Where examples of a prefix don't already exist a good rule of thumb is
 to use whatever client name you use with boto3 as a starting point.
 
 Unless something is a well known abbreviation of a major component of AWS (for example, VPC or ELB)
@@ -158,7 +158,7 @@ Use boto3 and AnsibleAWSModule
 All new AWS modules must use boto3/botocore and ``AnsibleAWSModule``.
 
 ``AnsibleAWSModule`` greatly simplifies exception handling and library
-management, reducing the amount of boilerplate code. If you cannot
+management, reducing the amount of boilerplate code.  If you cannot
 use ``AnsibleAWSModule`` as a base, you must document the reason and request an exception to this rule.
 
 Importing botocore and boto3
