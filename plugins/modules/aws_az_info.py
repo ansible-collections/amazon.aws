@@ -12,7 +12,6 @@ short_description: Gather information about availability zones in AWS
 version_added: 1.0.0
 description:
     - Gather information about availability zones in AWS.
-    - This module was called M(amazon.aws.aws_az_facts) before Ansible 2.9. The usage did not change.
 author: 'Henrique Rodrigues (@Sodki)'
 options:
   filters:
