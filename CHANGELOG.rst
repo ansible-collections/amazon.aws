@@ -1,5 +1,5 @@
 ===========================
-community.aws Release Notes
+amazon.aws Release Notes
 ===========================
 
 .. contents:: Topics
