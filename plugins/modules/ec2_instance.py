@@ -15,8 +15,8 @@ description:
   - Create and manage AWS EC2 instances.
   - >
     Note: This module does not support creating
-    L(EC2 Spot instances,https://aws.amazon.com/ec2/spot/). The M(amazon.aws.ec2) module
-    can create and manage spot instances.
+    L(EC2 Spot instances,https://aws.amazon.com/ec2/spot/).
+  - The M(amazon.aws.ec2_spot_instance) module can create and manage spot instances.
 author:
   - Ryan Scott Brown (@ryansb)
 options:
