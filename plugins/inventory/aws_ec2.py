@@ -606,17 +606,25 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             tag_hostnames = tag_hostnames.split(',')
         else:
             tag_hostnames = [tag_hostnames]
+
         tags = boto3_tag_list_to_ansible_dict(instance.get('Tags', []))
+        tag_values = []
         for v in tag_hostnames:
             if '=' in v:
                 tag_name, tag_value = v.split('=')
                 if tags.get(tag_name) == tag_value:
-                    return to_text(tag_name) + "_" + to_text(tag_value)
+                    tag_values.append(to_text(tag_name) + "_" + to_text(tag_value))
             else:
                 tag_value = tags.get(v)
                 if tag_value:
-                    return to_text(tag_value)
-        return None
+                    tag_values.append(to_text(tag_value))
+        return tag_values
+
+    def _sanitize_hostname(self, hostname):
+        if ':' in to_text(hostname):
+            return self._sanitize_group_name(to_text(hostname))
+        else:
+            return to_text(hostname)
 
     def _get_hostname(self, instance, hostnames):
         '''
@@ -628,6 +636,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             hostnames = ['dns-name', 'private-dns-name']
 
         hostname = None
+        hostname_list = []
         for preference in hostnames:
             if isinstance(preference, dict):
                 if 'name' not in preference:
@@ -636,18 +645,20 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 hostname_from_prefix = self._get_hostname(instance, [preference["prefix"]])
                 separator = preference.get("separator", "_")
                 if hostname and hostname_from_prefix and 'prefix' in preference:
-                    hostname = hostname_from_prefix + separator + hostname
+                    hostname = hostname_from_prefix[0] + separator + hostname[0]
             elif preference.startswith('tag:'):
                 hostname = self._get_tag_hostname(preference, instance)
             else:
                 hostname = self._get_boto_attr_chain(preference, instance)
+
             if hostname:
-                break
-        if hostname:
-            if ':' in to_text(hostname):
-                return self._sanitize_group_name((to_text(hostname)))
-            else:
-                return to_text(hostname)
+                if isinstance(hostname, list):
+                    for host in hostname:
+                        hostname_list.append(self._sanitize_hostname(host))
+                elif isinstance(hostname, str):
+                    hostname_list.append(self._sanitize_hostname(hostname))
+
+        return hostname_list
 
     def _query(self, regions, include_filters, exclude_filters, strict_permissions):
         '''
@@ -691,7 +702,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             :param hostnames: a list of hostname destination variables in order of preference
         '''
         for host in hosts:
-            hostname = self._get_hostname(host, hostnames)
+            hostname_list = self._get_hostname(host, hostnames)
 
             host = camel_dict_to_snake_dict(host, ignore_list=['Tags'])
             host['tags'] = boto3_tag_list_to_ansible_dict(host.get('tags', []))
@@ -703,9 +714,10 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             # Allow easier grouping by region
             host['placement']['region'] = host['placement']['availability_zone'][:-1]
 
-            if not hostname:
+            if not hostname_list:
                 continue
-            self.inventory.add_host(hostname, group=group)
+            for hostname in hostname_list:
+                self.inventory.add_host(to_text(hostname), group=group)
             hostvars_prefix = self.get_option("hostvars_prefix")
             hostvars_suffix = self.get_option("hostvars_suffix")
             new_vars = dict()
@@ -715,7 +727,8 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
                 if hostvars_suffix:
                     hostvar = hostvar + hostvars_suffix
                 new_vars[hostvar] = hostval
-                self.inventory.set_variable(hostname, hostvar, hostval)
+                for hostname in hostname_list:
+                    self.inventory.set_variable(to_text(hostname), hostvar, hostval)
             host.update(new_vars)
 
             # Use constructed if applicable
@@ -723,13 +736,14 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             strict = self.get_option('strict')
 
             # Composed variables
-            self._set_composite_vars(self.get_option('compose'), host, hostname, strict=strict)
+            for hostname in hostname_list:
+                self._set_composite_vars(self.get_option('compose'), host, to_text(hostname), strict=strict)
 
-            # Complex groups based on jinja2 conditionals, hosts that meet the conditional are added to group
-            self._add_host_to_composed_groups(self.get_option('groups'), host, hostname, strict=strict)
+                # Complex groups based on jinja2 conditionals, hosts that meet the conditional are added to group
+                self._add_host_to_composed_groups(self.get_option('groups'), host, to_text(hostname), strict=strict)
 
-            # Create groups based on variable values and add the corresponding hosts to it
-            self._add_host_to_keyed_groups(self.get_option('keyed_groups'), host, hostname, strict=strict)
+                # Create groups based on variable values and add the corresponding hosts to it
+                self._add_host_to_keyed_groups(self.get_option('keyed_groups'), host, to_text(hostname), strict=strict)
 
     def _set_credentials(self, loader):
         '''

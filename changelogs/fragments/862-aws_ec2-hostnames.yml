@@ -1,0 +1,2 @@
+bugfixes:
+- aws_ec2 - ensure the correct number of hosts are returned when tags as hostnames are used (https://github.com/ansible-collections/amazon.aws/pull/862).
