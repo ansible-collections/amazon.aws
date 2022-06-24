@@ -85,6 +85,9 @@ Bugfixes
 - ec2_vpc_net - fix a bug where the module would get stuck if DNS options were updated in check mode (https://github.com/ansible/ansible/issues/62677).
 - elb_classic_lb - modify the return value of _format_listeners method to resolve a failure creating https listeners (https://github.com/ansible-collections/amazon.aws/pull/860).
 
+v3.3.1
+======
+
 v3.3.0
 ======
 
