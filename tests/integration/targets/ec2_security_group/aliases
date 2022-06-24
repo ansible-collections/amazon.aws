@@ -3,4 +3,4 @@ slow
 
 cloud/aws
 
-ec2_group_info
+ec2_security_group_info
