@@ -108,24 +108,59 @@ used by boto3)
 Creating new AWS modules
 ========================
 
-Use boto3 and AnsibleAWSModule
--------------------------------
+When writing a new module it is important to think about the scope of the module.  In general, try
+to do one thing and do it well.
 
-All new AWS modules must use boto3 and ``AnsibleAWSModule``.
+Where the Amazon APIs provide a distinction between dependent resources, such as S3 buckets and S3
+objects, this is often a good divider between modules.  Additionally, resources which have a
+many-to-many relationship with another resource, such as IAM managed policies and IAM roles, are
+often best managed by two separate modules.
 
-``AnsibleAWSModule`` greatly simplifies exception handling and library
-management, reducing the amount of boilerplate code. If you cannot
-use ``AnsibleAWSModule`` as a base, you must document the reason and request an exception to this rule.
+While it's possible to write an ``s3`` module which manages all things related to S3, thoroughly
+testing and maintaining such a module is difficult.  Similarly, while it would be possible to
+write a module that manages the base EC2 security group resource, and a second module to manage the
+rules on the security group, this would be contrary to what users of the module might anticipate.
+
+There is no hard and fast right answer, but it's important to think about it, and Amazon have often
+done this work for you when designing their APIs.
 
 Naming your module
 ------------------
 
-Base the name of the module on the part of AWS that you actually use. (A good rule of thumb is to
-take whatever module you use with boto as a starting point).  Don't further abbreviate names - if
-something is a well known abbreviation of a major component of AWS (for example, VPC or ELB), that's fine, but
-don't create new ones independently.
+Module names should include the name of the resource being managed and be prefixed with the AWS API
+that the module is based on.  Where examples of a prefix don't already exist a good rule of thumb is
+to use whatever client name you use with boto3 as a starting point.
 
-Unless the name of your service is quite unique, please consider using ``aws_`` as a prefix. For example ``aws_lambda``.
+Unless something is a well known abbreviation of a major component of AWS (for example, VPC or ELB)
+avoid further abbreviating names and don't create new abbreviations independently.
+
+Where an AWS API primarily manages a single resource, the module managing this resource can be
+named as just the name of the API.  However, consider using ``instance`` or ``cluster`` for clarity
+if Amazon refers to them using these names.
+
+Examples:
+
+- ``ec2_instance``
+- ``s3_object`` (previously named ``aws_s3``, but is primarily for manipulating S3 objects)
+- ``elb_classic_lb`` (previously ``ec2_elb_lb``, but is part of the ELB API, not EC2)
+- ``networkfirewall_rule_group``
+- ``networkfirewall`` (while this could be called ``networkfirewall_firewall`` the second firewall is redundant and the API is focused around creating these firewall resources)
+
+Note: Prior to the collections being split from Ansible Core, it was common to use ``aws_`` as a
+prefix to disambiguate services with a generic name, such as ``aws_secret``.  This is no longer
+necessary, and the ``aws_`` prefix is reserved for services with a very broad effect where
+referencing the AWS API might cause confusion.  For example, ``aws_region_info``, which
+connects to EC2 but provides global information about the regions enabled in an account for all
+services.
+
+Use boto3 and AnsibleAWSModule
+-------------------------------
+
+All new AWS modules must use boto3/botocore and ``AnsibleAWSModule``.
+
+``AnsibleAWSModule`` greatly simplifies exception handling and library
+management, reducing the amount of boilerplate code.  If you cannot
+use ``AnsibleAWSModule`` as a base, you must document the reason and request an exception to this rule.
 
 Importing botocore and boto3
 ----------------------------
