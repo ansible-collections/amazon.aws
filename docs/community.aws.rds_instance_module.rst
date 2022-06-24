@@ -26,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.16.0
-- botocore >= 1.19.0
+- boto3 >= 1.17.0
+- botocore >= 1.20.0
 
 
 Parameters
@@ -91,7 +91,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>A value that specifies whether modifying a cluster with <em>new_db_instance_identifier</em> and <em>master_user_password</em> should be applied as soon as possible, regardless of the <em>preferred_maintenance_window</em> setting. If false, changes are applied during the next maintenance window.</div>
+                        <div>A value that specifies whether modifying an instance with <em>new_db_instance_identifier</em> and <em>master_user_password</em> should be applied as soon as possible, regardless of the <em>preferred_maintenance_window</em> setting. If false, changes are applied during the next maintenance window.</div>
                 </td>
             </tr>
             <tr>
@@ -125,7 +125,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A list of EC2 Availability Zones that instances in the DB cluster can be created in. May be used when creating a cluster or when restoring from S3 or a snapshot. Mutually exclusive with <em>multi_az</em>.</div>
+                        <div>A list of EC2 Availability Zones that the DB instance can be created in. May be used when creating an instance or when restoring from S3 or a snapshot. Mutually exclusive with <em>multi_az</em>.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: az, zone</div>
                 </td>
             </tr>
@@ -142,8 +142,7 @@ Parameters
                 </td>
                 <td>
                         <div><code>AWS access key</code>. If not set then the value of the <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_ACCESS_KEY</code> or <code>EC2_ACCESS_KEY</code> environment variable is used.</div>
-                        <div>If <em>profile</em> is set this parameter is ignored.</div>
-                        <div>Passing the <em>aws_access_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
+                        <div>The <em>aws_access_key</em> and <em>profile</em> options are mutually exclusive.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_access_key, access_key</div>
                 </td>
             </tr>
@@ -160,7 +159,6 @@ Parameters
                 </td>
                 <td>
                         <div>The location of a CA Bundle to use when validating SSL certificates.</div>
-                        <div>Not used by boto 2 based modules.</div>
                         <div>Note: The CA Bundle is read &#x27;module&#x27; side and may need to be explicitly copied from the controller if not run locally.</div>
                 </td>
             </tr>
@@ -178,7 +176,6 @@ Parameters
                 <td>
                         <div>A dictionary to modify the botocore configuration.</div>
                         <div>Parameters can be found at <a href='https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config'>https://botocore.amazonaws.com/v1/documentation/api/latest/reference/config.html#botocore.config.Config</a>.</div>
-                        <div>Only the &#x27;user_agent&#x27; key is used for boto modules. See <a href='http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto'>http://boto.cloudhackers.com/en/latest/boto_config_tut.html#boto</a> for more boto configuration.</div>
                 </td>
             </tr>
             <tr>
@@ -194,8 +191,7 @@ Parameters
                 </td>
                 <td>
                         <div><code>AWS secret key</code>. If not set then the value of the <code>AWS_SECRET_ACCESS_KEY</code>, <code>AWS_SECRET_KEY</code>, or <code>EC2_SECRET_KEY</code> environment variable is used.</div>
-                        <div>If <em>profile</em> is set this parameter is ignored.</div>
-                        <div>Passing the <em>aws_secret_key</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
+                        <div>The <em>aws_secret_key</em> and <em>profile</em> options are mutually exclusive.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
                 </td>
             </tr>
@@ -213,7 +209,7 @@ Parameters
                 <td>
                         <div>The number of days for which automated backups are retained.</div>
                         <div>When set to <code>0</code>, automated backups will be disabled. (Not applicable if the DB instance is a source to read replicas)</div>
-                        <div>May be used when creating a new cluster, when restoring from S3, or when modifying a cluster.</div>
+                        <div>May be used when creating a new instance, when restoring from S3, or when modifying an instance.</div>
                 </td>
             </tr>
             <tr>
@@ -243,7 +239,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The character set to associate with the DB cluster.</div>
+                        <div>The character set to associate with the DB instance.</div>
                 </td>
             </tr>
             <tr>
@@ -392,7 +388,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The identifier for the DB snapshot to restore from if using <em>creation_source=snapshot</em>.</div>
+                        <div>The identifier or ARN of the DB snapshot to restore from when using <em>creation_source=snapshot</em>.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: snapshot_identifier, snapshot_id</div>
                 </td>
             </tr>
             <tr>
@@ -428,6 +425,26 @@ Parameters
                 </td>
                 <td>
                         <div>Use a botocore.endpoint logger to parse the unique (rather than total) &quot;resource:action&quot; API calls made during a task, outputing the set to the resource_actions key in the task results. Use the aws_resource_action callback to output to total list made during a playbook. The ANSIBLE_DEBUG_BOTOCORE_LOGS environment variable may also be used.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>deletion_protection</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 3.3.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>A value that indicates whether the DB instance has deletion protection enabled. The database can&#x27;t be deleted when deletion protection is enabled. By default, deletion protection is disabled.</div>
                 </td>
             </tr>
             <tr>
@@ -509,7 +526,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Enable mapping of AWS Identity and Access Management (IAM) accounts to database accounts. If this option is omitted when creating the cluster, Amazon RDS sets this to False.</div>
+                        <div>Enable mapping of AWS Identity and Access Management (IAM) accounts to database accounts. If this option is omitted when creating the instance, Amazon RDS sets this to False.</div>
                 </td>
             </tr>
             <tr>
@@ -541,9 +558,25 @@ Parameters
                     </div>
                 </td>
                 <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>aurora</li>
+                                    <li>aurora-mysql</li>
+                                    <li>aurora-postgresql</li>
+                                    <li>mariadb</li>
+                                    <li>mysql</li>
+                                    <li>oracle-ee</li>
+                                    <li>oracle-ee-cdb</li>
+                                    <li>oracle-se2</li>
+                                    <li>oracle-se2-cdb</li>
+                                    <li>postgres</li>
+                                    <li>sqlserver-ee</li>
+                                    <li>sqlserver-se</li>
+                                    <li>sqlserver-ex</li>
+                                    <li>sqlserver-web</li>
+                        </ul>
                 </td>
                 <td>
-                        <div>The name of the database engine to be used for this DB instance. This is required to create an instance. Valid choices are aurora | aurora-mysql | aurora-postgresql | mariadb | mysql | oracle-ee | oracle-se | oracle-se1 | oracle-se2 | postgres | sqlserver-ee | sqlserver-ex | sqlserver-se | sqlserver-web</div>
+                        <div>The name of the database engine to be used for this DB instance. This is required to create an instance.</div>
                 </td>
             </tr>
             <tr>
@@ -612,9 +645,61 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Set to True to update your cluster password with <em>master_user_password</em>. Since comparing passwords to determine if it needs to be updated is not possible this is set to False by default to allow idempotence.</div>
+                        <div>Set to <code>True</code> to update your instance password with <em>master_user_password</em>. Since comparing passwords to determine if it needs to be updated is not possible this is set to False by default to allow idempotence.</div>
                 </td>
             </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>iam_roles</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">list</span>
+                         / <span style="color: purple">elements=dictionary</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 3.3.0</div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>List of Amazon Web Services Identity and Access Management (IAM) roles to associate with DB instance.</div>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>feature_name</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The name of the feature associated with the IAM role.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>role_arn</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The ARN of the IAM role to associate with the DB instance.</div>
+                </td>
+            </tr>
+
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
@@ -675,7 +760,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>An 8-41 character password for the master database user. The password can contain any printable ASCII character except &quot;/&quot;, &quot;&quot;&quot;, or &quot;@&quot;. To modify the password use <em>force_password_update</em>. Use <em>apply immediately</em> to change the password immediately, otherwise it is updated during the next maintenance window.</div>
+                        <div>An 8-41 character password for the master database user. The password can contain any printable ASCII character except &quot;/&quot;, &quot;&quot;&quot;, or &quot;@&quot;. To modify the password use <em>force_update_password</em>. Use <em>apply immediately</em> to change the password immediately, otherwise it is updated during the next maintenance window.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: password</div>
                 </td>
             </tr>
@@ -691,7 +776,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The name of the master user for the DB cluster. Must be 1-16 letters or numbers and begin with a letter.</div>
+                        <div>The name of the master user for the DB instance. Must be 1-16 letters or numbers and begin with a letter.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: username</div>
                 </td>
             </tr>
@@ -771,7 +856,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The new DB cluster (lowercase) identifier for the DB cluster when renaming a DB instance. The identifier must contain from 1 to 63 letters, numbers, or hyphens and the first character must be a letter and may not end in a hyphen or contain consecutive hyphens. Use <em>apply_immediately</em> to rename immediately, otherwise it is updated during the next maintenance window.</div>
+                        <div>The new DB instance (lowercase) identifier for the DB instance when renaming a DB instance. The identifier must contain from 1 to 63 letters, numbers, or hyphens and the first character must be a letter and may not end in a hyphen or contain consecutive hyphens. Use <em>apply_immediately</em> to rename immediately, otherwise it is updated during the next maintenance window.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: new_instance_id, new_id</div>
                 </td>
             </tr>
@@ -927,8 +1012,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Using <em>profile</em> will override <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> and support for passing them at the same time as <em>profile</em> has been deprecated.</div>
-                        <div><em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> will be made mutually exclusive with <em>profile</em> after 2022-06-01.</div>
+                        <div>The <em>profile</em> option is mutually exclusive with the <em>aws_access_key</em>, <em>aws_secret_key</em> and <em>security_token</em> options.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: aws_profile</div>
                 </td>
             </tr>
@@ -988,6 +1072,26 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>purge_iam_roles</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 3.3.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>no</b>&nbsp;&larr;</div></li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Set to <code>True</code> to remove any IAM roles that aren&#x27;t specified in the task and are associated with the instance.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>purge_security_groups</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -1022,7 +1126,9 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Set to False to retain any tags that aren&#x27;t specified in task and are associated with the instance.</div>
+                        <div>If <em>purge_tags=true</em> and <em>tags</em> is set, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter.</div>
+                        <div>If the <em>tags</em> parameter is not set then tags will not be modified, even if <em>purge_tags=True</em>.</div>
+                        <div>Tag keys beginning with <code>aws:</code> are reserved by Amazon and can not be modified.  As such they will be ignored for the purposes of the <em>purge_tags</em> parameter.  See the Amazon documentation for more information <a href='https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions'>https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions</a>.</div>
                 </td>
             </tr>
             <tr>
@@ -1041,7 +1147,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Set to False to promote a read replica cluster or true to create one. When creating a read replica <code>creation_source</code> should be set to &#x27;instance&#x27; or not provided. <code>source_db_instance_identifier</code> must be provided with this option.</div>
+                        <div>Set to <code>False</code> to promote a read replica instance or true to create one. When creating a read replica <code>creation_source</code> should be set to &#x27;instance&#x27; or not provided. <code>source_db_instance_identifier</code> must be provided with this option.</div>
                 </td>
             </tr>
             <tr>
@@ -1135,9 +1241,9 @@ Parameters
                 </td>
                 <td>
                         <div><code>AWS STS security token</code>. If not set then the value of the <code>AWS_SECURITY_TOKEN</code> or <code>EC2_SECURITY_TOKEN</code> environment variable is used.</div>
-                        <div>If <em>profile</em> is set this parameter is ignored.</div>
-                        <div>Passing the <em>security_token</em> and <em>profile</em> options at the same time has been deprecated and the options will be made mutually exclusive after 2022-06-01.</div>
-                        <div style="font-size: small; color: darkgreen"><br/>aliases: aws_security_token, access_token</div>
+                        <div>The <em>security_token</em> and <em>profile</em> options are mutually exclusive.</div>
+                        <div>Aliases <em>aws_session_token</em> and <em>session_token</em> have been added in version 3.2.0.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: aws_session_token, session_token, aws_security_token, access_token</div>
                 </td>
             </tr>
             <tr>
@@ -1156,22 +1262,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Whether a final DB cluster snapshot is created before the DB cluster is deleted. If this is false <em>final_db_snapshot_identifier</em> must be provided.</div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>snapshot_identifier</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">string</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>The ARN of the DB snapshot to restore from when using <em>creation_source=snapshot</em>.</div>
+                        <div>Whether a final DB instance snapshot is created before the DB instance is deleted. If this is false <em>final_db_snapshot_identifier</em> must be provided.</div>
                 </td>
             </tr>
             <tr>
@@ -1314,7 +1405,9 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A dictionary of key value pairs to assign the DB cluster.</div>
+                        <div>A dictionary representing the tags to be applied to the resource.</div>
+                        <div>If the <em>tags</em> parameter is not set then tags will not be modified.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: resource_tags</div>
                 </td>
             </tr>
             <tr>
@@ -1417,7 +1510,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A list of EC2 VPC security groups to associate with the DB cluster.</div>
+                        <div>A list of EC2 VPC security groups to associate with the DB instance.</div>
                 </td>
             </tr>
             <tr>
@@ -1436,7 +1529,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Whether to wait for the cluster to be available, stopped, or deleted. At a later time a wait_timeout option may be added. Following each API call to create/modify/delete the instance a waiter is used with a 60 second delay 30 times until the instance reaches the expected state (available/stopped/deleted). The total task time may also be influenced by AWSRetry which helps stabilize if the instance is in an invalid state to operate on to begin with (such as if you try to stop it when it is in the process of rebooting). If setting this to False task retries and delays may make your playbook execution better handle timeouts for major modifications.</div>
+                        <div>Whether to wait for the instance to be available, stopped, or deleted. At a later time a <em>wait_timeout</em> option may be added. Following each API call to create/modify/delete the instance a waiter is used with a 60 second delay 30 times until the instance reaches the expected state (available/stopped/deleted). The total task time may also be influenced by AWSRetry which helps stabilize if the instance is in an invalid state to operate on to begin with (such as if you try to stop it when it is in the process of rebooting). If setting this to False task retries and delays may make your playbook execution better handle timeouts for major modifications.</div>
                 </td>
             </tr>
     </table>
@@ -1449,7 +1542,6 @@ Notes
 .. note::
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
    - When no credentials are explicitly provided the AWS SDK (boto3) that Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``). See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html for more information.
-   - Modules based on the original AWS SDK (boto) may read their default configuration from different files. See https://boto.readthedocs.io/en/latest/boto_config_tut.html for more information.
    - ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be defined in the configuration files.
 
 
@@ -1499,7 +1591,61 @@ Examples
         vpc_security_group_ids:
           - sg-0be17ba10c9286b0b
         purge_security_groups: false
-        register: result
+      register: result
+
+    # Add IAM role to db instance
+    - name: Create IAM policy
+      community.aws.iam_managed_policy:
+        policy_name: "my-policy"
+        policy: "{{ lookup('file','files/policy.json') }}"
+        state: present
+      register: iam_policy
+
+    - name: Create IAM role
+      community.aws.iam_role:
+        assume_role_policy_document: "{{ lookup('file','files/assume_policy.json') }}"
+        name: "my-role"
+        state: present
+        managed_policy: "{{ iam_policy.policy.arn }}"
+      register: iam_role
+
+    - name: Create DB instance with added IAM role
+      community.aws.rds_instance:
+        id: "my-instance-id"
+        state: present
+        engine: postgres
+        engine_version: 14.2
+        username: "{{ username }}"
+        password: "{{ password }}"
+        db_instance_class: db.m6g.large
+        allocated_storage: "{{ allocated_storage }}"
+        iam_roles:
+          - role_arn: "{{ iam_role.arn }}"
+            feature_name: 's3Export'
+
+    - name: Remove IAM role from DB instance
+      community.aws.rds_instance:
+        id: "my-instance-id"
+        state: present
+        purge_iam_roles: yes
+
+    # Restore DB instance from snapshot
+    - name: Create a snapshot and wait until completion
+      community.aws.rds_instance_snapshot:
+        instance_id: 'my-instance-id'
+        snapshot_id: 'my-new-snapshot'
+        state: present
+        wait: yes
+      register: snapshot
+
+    - name: Restore DB from snapshot
+      community.aws.rds_instance:
+        id: 'my-restored-db'
+        creation_source: snapshot
+        snapshot_identifier: 'my-new-snapshot'
+        engine: mariadb
+        state: present
+      register: restored_db
 
 
 
@@ -1526,10 +1672,25 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                 </td>
                 <td>always</td>
                 <td>
-                            <div>The allocated storage size in gibibytes. This is always 1 for aurora database engines.</div>
+                            <div>The allocated storage size in gigabytes. This is always 1 for aurora database engines.</div>
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">20</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>associated_roles</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">list</span>
+                    </div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div>The list of currently associated roles.</div>
+                    <br/>
                 </td>
             </tr>
             <tr>
@@ -1961,6 +2122,22 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <br/>
                         <div style="font-size: smaller"><b>Sample:</b></div>
                         <div style="font-size: smaller; color: blue; word-wrap: break-word; word-break: break-all;">db-UHV3QRNWX4KB6GALCIGRML6QFA</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <div class="ansibleOptionAnchor" id="return-"></div>
+                    <b>deletion_protection</b>
+                    <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
+                    <div style="font-size: small">
+                      <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 3.3.0</div>
+                </td>
+                <td>always</td>
+                <td>
+                            <div><code>True</code> if the DB instance has deletion protection enabled, <code>False</code> if not.</div>
+                    <br/>
                 </td>
             </tr>
             <tr>
