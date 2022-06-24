@@ -9,14 +9,14 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: ec2_group
+module: ec2_security_group
 version_added: 1.0.0
 author:
   - "Andrew de Quincey (@adq)"
   - "Razique Mahroua (@Razique)"
-short_description: Maintain an ec2 VPC security group
+short_description: Maintain an EC2 security group
 description:
-    - Maintains ec2 security groups.
+    - Maintains EC2 security groups.
 options:
   name:
     description:
@@ -246,12 +246,13 @@ notes:
   - If a rule declares a group_name and that group doesn't exist, it will be
     automatically created. In that case, group_desc should be provided as well.
     The module will refuse to create a depended-on group without a description.
-  - Preview diff mode support is added in version 2.7.
+  - Prior to release 5.0.0 this module was called C(amazon.aws.ec2_group_info).  The usage did not
+    change.
 '''
 
 EXAMPLES = '''
 - name: example using security group rule descriptions
-  amazon.aws.ec2_group:
+  amazon.aws.ec2_security_group:
     name: "{{ name }}"
     description: sg with rule descriptions
     vpc_id: vpc-xxxxxxxx
@@ -265,7 +266,7 @@ EXAMPLES = '''
         rule_desc: allow all on port 80
 
 - name: example using ICMP types and codes
-  amazon.aws.ec2_group:
+  amazon.aws.ec2_security_group:
     name: "{{ name }}"
     description: sg for ICMP
     vpc_id: vpc-xxxxxxxx
@@ -278,7 +279,7 @@ EXAMPLES = '''
         cidr_ip: 0.0.0.0/0
 
 - name: example ec2 group
-  amazon.aws.ec2_group:
+  amazon.aws.ec2_security_group:
     name: example
     description: an example EC2 group
     vpc_id: 12345
@@ -338,7 +339,7 @@ EXAMPLES = '''
         group_desc: other example EC2 group
 
 - name: example2 ec2 group
-  amazon.aws.ec2_group:
+  amazon.aws.ec2_security_group:
     name: example2
     description: an example2 EC2 group
     vpc_id: 12345
@@ -378,7 +379,7 @@ EXAMPLES = '''
   diff: True
 
 - name: "Delete group by its id"
-  amazon.aws.ec2_group:
+  amazon.aws.ec2_security_group:
     region: eu-west-1
     group_id: sg-33b4ee5b
     state: absent

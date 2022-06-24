@@ -8,11 +8,11 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: ec2_group_info
+module: ec2_security_group_info
 version_added: 1.0.0
-short_description: Gather information about ec2 security groups in AWS
+short_description: Gather information about EC2 security groups in AWS
 description:
-    - Gather information about ec2 security groups in AWS.
+    - Gather information about EC2 security groups in AWS.
 author:
 - Henrique Rodrigues (@Sodki)
 options:
@@ -26,7 +26,10 @@ options:
     default: {}
     type: dict
 notes:
-  - By default, the module will return all security groups. To limit results use the appropriate filters.
+  - By default, the module will return all security groups in a region.  To limit results use the
+    appropriate filters.
+  - Prior to release 5.0.0 this module was called C(amazon.aws.ec2_group_info).  The usage did not
+    change.
 
 extends_documentation_fragment:
 - amazon.aws.aws
@@ -38,36 +41,36 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all security groups
-- amazon.aws.ec2_group_info:
+- amazon.aws.ec2_security_group_info:
 
 # Gather information about all security groups in a specific VPC
-- amazon.aws.ec2_group_info:
+- amazon.aws.ec2_security_group_info:
     filters:
       vpc-id: vpc-12345678
 
 # Gather information about all security groups in a specific VPC
-- amazon.aws.ec2_group_info:
+- amazon.aws.ec2_security_group_info:
     filters:
       vpc-id: vpc-12345678
 
 # Gather information about a security group
-- amazon.aws.ec2_group_info:
+- amazon.aws.ec2_security_group_info:
     filters:
       group-name: example-1
 
 # Gather information about a security group by id
-- amazon.aws.ec2_group_info:
+- amazon.aws.ec2_security_group_info:
     filters:
       group-id: sg-12345678
 
 # Gather information about a security group with multiple filters, also mixing the use of underscores as filter keys
-- amazon.aws.ec2_group_info:
+- amazon.aws.ec2_security_group_info:
     filters:
       group_id: sg-12345678
       vpc-id: vpc-12345678
 
 # Gather information about various security groups
-- amazon.aws.ec2_group_info:
+- amazon.aws.ec2_security_group_info:
     filters:
       group-name:
         - example-1
@@ -76,7 +79,7 @@ EXAMPLES = '''
 
 # Gather information about any security group with a tag key Name and value Example.
 # The quotes around 'tag:name' are important because of the colon in the value
-- amazon.aws.ec2_group_info:
+- amazon.aws.ec2_security_group_info:
     filters:
       "tag:Name": Example
 '''

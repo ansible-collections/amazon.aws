@@ -17,6 +17,8 @@ action_groups:
   - ec2_instance
   - ec2_instance_info
   - ec2_key
+  - ec2_security_group
+  - ec2_security_group_info
   - ec2_snapshot
   - ec2_snapshot_info
   - ec2_spot_instance
@@ -60,6 +62,12 @@ plugin_routing:
       redirect: amazon.aws.s3_object
     ec2_elb_lb:
       redirect: amazon.aws.elb_classic_lb
+    ec2_group:
+      # Deprecation for this alias should not *start* prior to 2024-09-01
+      redirect: amazon.aws.ec2_security_group
+    ec2_group_info:
+      # Deprecation for this alias should not *start* prior to 2024-09-01
+      redirect: amazon.aws.ec2_security_group_info
     ec2_eni_facts:
       deprecation:
         removal_date: 2021-12-01
