@@ -58,28 +58,28 @@ options:
       - The path to, or content of, the CA certificate chain in PEM encoded format.
       - If the parameter is not a file, it is assumed to be content.
       - Passing a file name is deprecated, and support will be dropped in
-        version 4.0.0 of this collection.
+        version 5.0.0 of this collection.
     type: str
   cert:
     description:
       - The path to, or content of the certificate body in PEM encoded format.
       - If the parameter is not a file, it is assumed to be content.
       - Passing a file name is deprecated, and support will be dropped in
-        version 4.0.0 of this collection.
+        version 5.0.0 of this collection.
     type: str
   key:
     description:
       - The path to, or content of the private key in PEM encoded format.
         If the parameter is not a file, it is assumed to be content.
       - Passing a file name is deprecated, and support will be dropped in
-        version 4.0.0 of this collection.
+        version 5.0.0 of this collection.
     type: str
   dup_ok:
     description:
       - By default the module will not upload a certificate that is already uploaded into AWS.
       - If I(dup_ok=True), it will upload the certificate as long as the name is unique.
       - Currently defaults to C(false), this will default to C(true) in release
-        4.0.0.
+        5.0.0.
     type: bool
 
 author: Jonathan I. Davila (@defionscode)
@@ -321,21 +321,21 @@ def load_data():
         module.deprecate(
             'Passing a file name as the cert argument has been deprecated.  '
             'Please use a lookup instead, see the documentation for examples.',
-            version='4.0.0', collection_name='community.aws')
+            version='5.0.0', collection_name='community.aws')
     if key and os.path.isfile(key):
         with open(key, 'r') as key_fh:
             key = key_fh.read().rstrip()
         module.deprecate(
             'Passing a file name as the key argument has been deprecated.  '
             'Please use a lookup instead, see the documentation for examples.',
-            version='4.0.0', collection_name='community.aws')
+            version='5.0.0', collection_name='community.aws')
     if cert_chain and os.path.isfile(cert_chain):
         with open(cert_chain, 'r') as cert_chain_fh:
             cert_chain = cert_chain_fh.read()
         module.deprecate(
             'Passing a file name as the cert_chain argument has been deprecated.  '
             'Please use a lookup instead, see the documentation for examples.',
-            version='4.0.0', collection_name='community.aws')
+            version='5.0.0', collection_name='community.aws')
     return cert, key, cert_chain
 
 
@@ -407,7 +407,7 @@ def main():
     if dup_ok is None:
         module.deprecate(
             'The dup_ok module currently defaults to false, this will change in '
-            'release 4.0.0 to true.', version='4.0.0', collection_name='community.aws')
+            'release 5.0.0 to true.', version='5.0.0', collection_name='community.aws')
 
     current_cert = get_server_certificate(name)
 
