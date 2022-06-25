@@ -1,0 +1,6 @@
+# https://github.com/ansible/ansible/issues/67788
+# unstable
+
+cloud/aws
+
+acm_certificate_info
