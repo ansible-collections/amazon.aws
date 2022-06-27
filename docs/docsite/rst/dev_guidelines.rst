@@ -547,8 +547,7 @@ You should use this helper function and avoid changing the names of values retur
 E.g. if boto3 returns a value called 'SecretAccessKey' do not change it to 'AccessKey'.
 
 There is an optional parameter, ``ignore_list``, which is used to avoid converting a sub-tree
-of a dict.  This is particularly important for tags, where keys are case-sensitive.  We
-convert the 'Tags' key but nothing below.
+of a dict.  This is particularly useful for tags, where keys are case-sensitive.
 
 .. code-block:: python
 
