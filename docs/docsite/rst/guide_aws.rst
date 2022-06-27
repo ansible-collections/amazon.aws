@@ -202,7 +202,7 @@ When using the inventory plugin, you can configure extra inventory structure bas
 
 For instance, you might use ``keyed_groups`` to create groups from instance tags::
 
-    plugin: aws_ec2
+    plugin: amazon.aws.aws_ec2
     keyed_groups:
       - prefix: tag
         key: tags
@@ -214,7 +214,7 @@ You can then target all instances with a "class" tag where the value is "webserv
      tasks:
        - ping
 
-You can also use these groups with 'group_vars' to set variables that are automatically applied to matching instances.  See :ref:`splitting_out_vars`.
+You can also use these groups with 'group_vars' to set variables that are automatically applied to matching instances.
 
 .. _ansible_collections.amazon.aws.docsite.aws_pull:
 
