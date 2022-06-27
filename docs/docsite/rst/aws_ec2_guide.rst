@@ -13,10 +13,10 @@ The plugin will also return instances that were created outside of Ansible and a
 
 .. _ansible_collections.amazon.aws.docsite.using_inventory_plugin:
 
-Minimal Examples
-================
+Minimal Example
+===============
 
-To start using the ``aws_ec2`` dynamic inventory plugin with a YAML configuration source, create a file with the accepted filename schema documented for the plugin in question, then add ``plugin: amazon.aws.aws_ec2``. Use the fully qualified name if the plugin is in a collection.
+To start using the ``aws_ec2`` dynamic inventory plugin with a YAML configuration source, create a file with the accepted filename schema documented for the plugin in question (a YAML configuration file that ends with aws_ec2.(yml|yaml), e.g., demo.aws_ec2.yml), then add ``plugin: amazon.aws.aws_ec2``. Use the fully qualified name if the plugin is in a collection.
 
 Fetch all hosts in us-east-1, the hostname is the public DNS if it exists, otherwise the private IP address.
 
@@ -26,7 +26,7 @@ Fetch all hosts in us-east-1, the hostname is the public DNS if it exists, other
     plugin: amazon.aws.aws_ec2
 
     # If your Ansible server is running inside the AWS environment, attach an EC2 instance role with the
-    # required AWS EC2 permissions. This way you don’t have to add the access and secret key in the
+    # required AWS EC2 permissions. This way you don't have to add the access and secret key in the
     # configuration. Ansible will automatically use the attached role to make the AWS API calls.
     iam_role_arn: arn:aws:iam::1234567890:role/assumed-ansible
 
@@ -41,7 +41,8 @@ Fetch all hosts in us-east-1, the hostname is the public DNS if it exists, other
     # Or you could use Jinja2 to attach the AWS profile from the environment variable.
     aws_profile: "{{ lookup('env', 'AWS_PROFILE') | default('dev-profile', true) }}"
 
-    # This sets the region.
+    # This sets the region. If empty (the default) default this will include all regions, except possibly
+    # restricted ones like us-gov-west-1 and cn-north-1.
     regions:
     - us-east-1
 
@@ -265,7 +266,7 @@ Some examples are shown below:
 
 By default the ``aws_ec2`` plugin is using a general group name sanitization to create safe and usable group names for use in Ansible.
 
-``use_contrib_script_compatible_ec2_tag_keys`` allows you to override that, in efforts to allow migration from the old inventory script and matches the sanitization of groups when the script’s replace_dash_in_groups option is set to False.
+``use_contrib_script_compatible_ec2_tag_keys`` allows you to override that, in efforts to allow migration from the old inventory script and matches the sanitization of groups when the script's replace_dash_in_groups option is set to False.
 To replicate behavior of replace_dash_in_groups = True with constructed groups, you will need to replace hyphens with underscores via the regex_replace filter for those entries.
 
 For this to work you should also turn off the TRANSFORM_INVALID_GROUP_CHARS setting, otherwise the core engine will just use the standard sanitization on top.
@@ -290,7 +291,7 @@ The use of this feature is discouraged and we advise to migrate to the new tags 
 
 After providing any required options, you can view the populated inventory with ``ansible-inventory -i demo.aws_ec2.yml --list``:
 
-.. code-block:: json
+.. code-block:: text
 
   {
     "_meta": {
@@ -361,7 +362,7 @@ After providing any required options, you can view the populated inventory with 
 
 Now the output of ``ansible-inventory -i demo.aws_ec2.yml --list``:
 
-.. code-block:: json
+.. code-block:: text
 
   {
     "_meta": {
@@ -383,10 +384,10 @@ Now the output of ``ansible-inventory -i demo.aws_ec2.yml --list``:
                 "aws_capacity_reservation_specification_ec2": {
                     "capacity_reservation_preference": "open"
                 }
-                ...
+                ...,
             },
             "instance-02": {
-              ...
+              ...,
             }
         }
     },
@@ -408,9 +409,9 @@ Now the output of ``ansible-inventory -i demo.aws_ec2.yml --list``:
 ``strict`` and ``strict_permissions``
 -------------------------------------
 
-`strict: False` will skip instead of producing an error if there are missing facts.
+``strict: False`` will skip instead of producing an error if there are missing facts.
 
-`strict_permissions: False` will ignore 403 errors rather than failing.
+``strict_permissions: False`` will ignore 403 errors rather than failing.
 
 
 ``cache``
