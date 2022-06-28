@@ -336,12 +336,13 @@
 
   ################################################
 
-  - name: Create Certificate with identical cert - check_mode
+  - name: Create Certificate with identical cert dup_ok=False - check_mode
     iam_server_certificate:
       name: '{{ cert_name }}-duplicate'
       state: present
       cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
+      dup_ok: false
     register: create_duplicate
     ignore_errors: true
 
@@ -350,12 +351,13 @@
       that:
       - create_duplicate is failed
 
-  - name: Create Certificate with identical cert
+  - name: Create Certificate with identical cert dup_ok=False
     iam_server_certificate:
       name: '{{ cert_name }}-duplicate'
       state: present
       cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
+      dup_ok: false
     register: create_duplicate
     ignore_errors: true
 
@@ -372,7 +374,6 @@
       state: present
       cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
-      dup_ok: true
     register: create_duplicate
     check_mode: true
 
@@ -388,7 +389,6 @@
       state: present
       cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
-      dup_ok: true
     register: create_duplicate
 
   - name: check result - Create Certificate with forced identical cert
@@ -414,7 +414,6 @@
       state: present
       cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
-      dup_ok: true
     register: create_duplicate
     check_mode: true
 
@@ -430,7 +429,6 @@
       state: present
       cert: '{{ cert_a_data }}'
       key: '{{ lookup("file", path_cert_key) }}'
-      dup_ok: true
     register: create_duplicate
 
   - name: check result - Create Certificate with forced identical cert - idempotency

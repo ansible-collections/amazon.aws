@@ -55,31 +55,22 @@ options:
     type: str
   cert_chain:
     description:
-      - The path to, or content of, the CA certificate chain in PEM encoded format.
-      - If the parameter is not a file, it is assumed to be content.
-      - Passing a file name is deprecated, and support will be dropped in
-        version 5.0.0 of this collection.
+      - The content of the CA certificate chain in PEM encoded format.
     type: str
   cert:
     description:
-      - The path to, or content of the certificate body in PEM encoded format.
-      - If the parameter is not a file, it is assumed to be content.
-      - Passing a file name is deprecated, and support will be dropped in
-        version 5.0.0 of this collection.
+      - The content of the certificate body in PEM encoded format.
     type: str
   key:
     description:
-      - The path to, or content of the private key in PEM encoded format.
-        If the parameter is not a file, it is assumed to be content.
-      - Passing a file name is deprecated, and support will be dropped in
-        version 5.0.0 of this collection.
+      - The content of the private key in PEM encoded format.
     type: str
   dup_ok:
     description:
       - By default the module will not upload a certificate that is already uploaded into AWS.
       - If I(dup_ok=True), it will upload the certificate as long as the name is unique.
-      - Currently defaults to C(false), this will default to C(true) in release
-        5.0.0.
+      - The default value for this value changed in release 5.0.0 to C(true).
+    default: true
     type: bool
 
 author: Jonathan I. Davila (@defionscode)
@@ -97,29 +88,20 @@ EXAMPLES = '''
     key: "{{ lookup('file', 'path/to/key') }}"
     cert_chain: "{{ lookup('file', 'path/to/certchain') }}"
 
-- name: Basic server certificate upload
-  community.aws.iam_server_certificate:
-    name: very_ssl
-    state: present
-    cert: path/to/cert
-    key: path/to/key
-    cert_chain: path/to/certchain
-
 - name: Server certificate upload using key string
   community.aws.iam_server_certificate:
     name: very_ssl
     state: present
     path: "/a/cert/path/"
-    cert: body_of_somecert
-    key: vault_body_of_privcertkey
-    cert_chain: body_of_myverytrustedchain
+    cert: "{{ lookup('file', 'path/to/cert') }}"
+    key: "{{ lookup('file', 'path/to/key') }}"
+    cert_chain: "{{ lookup('file', 'path/to/certchain') }}"
 
 - name: Basic rename of existing certificate
   community.aws.iam_server_certificate:
     name: very_ssl
     new_name: new_very_ssl
     state: present
-
 '''
 import os
 
@@ -177,8 +159,8 @@ def _compare_cert(cert_a, cert_b):
 
 def update_server_certificate(current_cert):
     changed = False
-
-    cert, key, cert_chain = load_data()
+    cert = module.params.get('cert')
+    cert_chain = module.params.get('cert_chain')
 
     if not _compare_cert(cert, current_cert.get('certificate_body', None)):
         module.fail_json(msg='Modifying the certificate body is not supported by AWS')
@@ -196,7 +178,9 @@ def update_server_certificate(current_cert):
 
 
 def create_server_certificate():
-    cert, key, cert_chain = load_data()
+    cert = module.params.get('cert')
+    key = module.params.get('key')
+    cert_chain = module.params.get('cert_chain')
 
     if not module.params.get('dup_ok'):
         check_duplicate_cert(cert)
@@ -309,36 +293,6 @@ def get_server_certificate(name):
     return cert
 
 
-def load_data():
-    cert = module.params.get('cert')
-    key = module.params.get('key')
-    cert_chain = module.params.get('cert_chain')
-
-    # if paths are provided rather than lookups read the files and return the contents
-    if cert and os.path.isfile(cert):
-        with open(cert, 'r') as cert_fh:
-            cert = cert_fh.read().rstrip()
-        module.deprecate(
-            'Passing a file name as the cert argument has been deprecated.  '
-            'Please use a lookup instead, see the documentation for examples.',
-            version='5.0.0', collection_name='community.aws')
-    if key and os.path.isfile(key):
-        with open(key, 'r') as key_fh:
-            key = key_fh.read().rstrip()
-        module.deprecate(
-            'Passing a file name as the key argument has been deprecated.  '
-            'Please use a lookup instead, see the documentation for examples.',
-            version='5.0.0', collection_name='community.aws')
-    if cert_chain and os.path.isfile(cert_chain):
-        with open(cert_chain, 'r') as cert_chain_fh:
-            cert_chain = cert_chain_fh.read()
-        module.deprecate(
-            'Passing a file name as the cert_chain argument has been deprecated.  '
-            'Please use a lookup instead, see the documentation for examples.',
-            version='5.0.0', collection_name='community.aws')
-    return cert, key, cert_chain
-
-
 def compatability_results(current_cert):
     compat_results = dict()
 
@@ -379,7 +333,7 @@ def main():
         new_name=dict(),
         path=dict(default='/'),
         new_path=dict(),
-        dup_ok=dict(type='bool'),
+        dup_ok=dict(type='bool', default=True),
     )
 
     module = AnsibleAWSModule(
@@ -403,11 +357,6 @@ def main():
     new_name = module.params.get('new_name')
     new_path = module.params.get('new_path')
     dup_ok = module.params.get('dup_ok')
-
-    if dup_ok is None:
-        module.deprecate(
-            'The dup_ok module currently defaults to false, this will change in '
-            'release 5.0.0 to true.', version='5.0.0', collection_name='community.aws')
 
     current_cert = get_server_certificate(name)
 
