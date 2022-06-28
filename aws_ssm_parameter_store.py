@@ -13,8 +13,6 @@ version_added: 1.0.0
 short_description: Manage key-value pairs in AWS SSM parameter store
 description:
   - Manage key-value pairs in AWS SSM parameter store.
-  - To retreive SSM parameters use the M(amazon.aws.aws_ssm_parameter) lookup
-    plugin.
 options:
   name:
     description:
@@ -76,6 +74,9 @@ options:
     default: Standard
     type: str
     version_added: 1.5.0
+seealso:
+  - ref: amazon.aws.aws_ssm lookup <ansible_collections.amazon.aws.aws_ssm_lookup>
+    description: The documentation for the C(amazon.aws.aws_ssm) lookup plugin.
 
 author:
   - "Davinder Pal (@116davinder) <dpsangwal@gmail.com>"
