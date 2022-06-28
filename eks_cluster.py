@@ -8,35 +8,38 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: aws_eks_cluster
+module: eks_cluster
 version_added: 1.0.0
-short_description: Manage Elastic Kubernetes Service Clusters
+short_description: Manage Elastic Kubernetes Service (EKS) Clusters
 description:
-    - Manage Elastic Kubernetes Service Clusters
-
-author: Will Thames (@willthames)
-
+  - Manage Elastic Kubernetes Service (EKS) Clusters.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_eks_cluster).
+    The usage did not change.
+author:
+  - Will Thames (@willthames)
 options:
   name:
-    description: Name of EKS cluster
+    description: Name of the EKS cluster.
     required: True
     type: str
   version:
-    description: Kubernetes version - defaults to latest
+    description:
+      - Kubernetes version.
+      - Defaults to C(latest).
     type: str
   role_arn:
-    description: ARN of IAM role used by the EKS cluster
+    description: ARN of IAM role used by the EKS cluster.
     type: str
   subnets:
-    description: list of subnet IDs for the Kubernetes cluster
+    description: List of subnet IDs for the Kubernetes cluster.
     type: list
     elements: str
   security_groups:
-    description: list of security group names or IDs
+    description: List of security group names or IDs.
     type: list
     elements: str
   state:
-    description: desired state of the EKS cluster
+    description: Desired state of the EKS cluster.
     choices:
       - absent
       - present
@@ -55,16 +58,15 @@ options:
     default: 1200
     type: int
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Create an EKS cluster
-  community.aws.aws_eks_cluster:
+  community.aws.eks_cluster:
     name: my_cluster
     version: 1.14
     role_arn: my_eks_role
@@ -76,7 +78,7 @@ EXAMPLES = r'''
   register: caller_facts
 
 - name: Remove an EKS cluster
-  community.aws.aws_eks_cluster:
+  community.aws.eks_cluster:
     name: my_cluster
     wait: yes
     state: absent
@@ -141,7 +143,7 @@ role_arn:
   description: ARN of the IAM role used by the cluster
   returned: when state is present
   type: str
-  sample: arn:aws:iam::111111111111:role/aws_eks_cluster_role
+  sample: arn:aws:iam::111111111111:role/eks_cluster_role
 status:
   description: status of the EKS cluster
   returned: when state is present
