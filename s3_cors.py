@@ -9,40 +9,42 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: aws_s3_cors
+module: s3_cors
 version_added: 1.0.0
 short_description: Manage CORS for S3 buckets in AWS
 description:
-    - Manage CORS for S3 buckets in AWS
-author: "Oyvind Saltvik (@fivethreeo)"
+  - Manage CORS for S3 buckets in AWS.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_s3_cors).
+    The usage did not change.
+author:
+  - "Oyvind Saltvik (@fivethreeo)"
 options:
   name:
     description:
-      - Name of the s3 bucket
+      - Name of the S3 bucket.
     required: true
     type: str
   rules:
     description:
-      - Cors rules to put on the s3 bucket
+      - Cors rules to put on the S3 bucket.
     type: list
     elements: dict
   state:
     description:
-      - Create or remove cors on the s3 bucket
+      - Create or remove cors on the S3 bucket.
     required: true
     choices: [ 'present', 'absent' ]
     type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create a simple cors for s3 bucket
-- community.aws.aws_s3_cors:
+- community.aws.s3_cors:
     name: mys3bucket
     state: present
     rules:
@@ -59,7 +61,7 @@ EXAMPLES = r'''
         max_age_seconds: 30000
 
 # Remove cors for s3 bucket
-- community.aws.aws_s3_cors:
+- community.aws.s3_cors:
     name: mys3bucket
     state: absent
 '''

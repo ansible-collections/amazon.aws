@@ -10,12 +10,15 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: aws_s3_bucket_info
+module: s3_bucket_info
 version_added: 1.0.0
-author: "Gerben Geijteman (@hyperized)"
-short_description: lists S3 buckets in AWS
+author:
+  - "Gerben Geijteman (@hyperized)"
+short_description: Lists S3 buckets in AWS
 description:
-    - Lists S3 buckets and details about those buckets.
+  - Lists S3 buckets and details about those buckets.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_s3_bucket_info).
+    The usage did not change.
 options:
   name:
     description:
@@ -31,7 +34,7 @@ options:
     version_added: 1.4.0
   bucket_facts:
     description:
-      - Retrieve requested S3 bucket detailed information
+      - Retrieve requested S3 bucket detailed information.
       - Each bucket_X option executes one API call, hence many options being set to C(true) will cause slower module execution.
       - You can limit buckets by using the I(name) or I(name_filter) option.
     suboptions:
@@ -111,8 +114,8 @@ options:
     default: False
     version_added: 1.4.0
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
@@ -120,12 +123,12 @@ EXAMPLES = '''
 
 # Note: Only AWS S3 is currently supported
 
-# Lists all s3 buckets
-- community.aws.aws_s3_bucket_info:
+# Lists all S3 buckets
+- community.aws.s3_bucket_info:
   register: result
 
 # Retrieve detailed bucket information
-- community.aws.aws_s3_bucket_info:
+- community.aws.s3_bucket_info:
     # Show only buckets with name matching
     name_filter: your.testing
     # Choose facts to retrieve
