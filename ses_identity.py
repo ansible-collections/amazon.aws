@@ -8,15 +8,17 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: aws_ses_identity
+module: ses_identity
 version_added: 1.0.0
 short_description: Manages SES email and domain identity
 description:
     - This module allows the user to manage verified email and domain identity for SES.
     - This covers verifying and removing identities as well as setting up complaint, bounce
       and delivery notification settings.
-author: Ed Costello    (@orthanc)
-
+    - Prior to release 5.0.0 this module was called C(community.aws.aws_ses_identity).
+      The usage did not change.
+author:
+    - Ed Costello (@orthanc)
 options:
     identity:
         description:
@@ -86,26 +88,25 @@ options:
         type: 'bool'
         default: True
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+    - amazon.aws.aws
+    - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Ensure example@example.com email identity exists
-  community.aws.aws_ses_identity:
+  community.aws.ses_identity:
     identity: example@example.com
     state: present
 
 - name: Delete example@example.com email identity
-  community.aws.aws_ses_identity:
+  community.aws.ses_identity:
     email: example@example.com
     state: absent
 
 - name: Ensure example.com domain identity exists
-  community.aws.aws_ses_identity:
+  community.aws.ses_identity:
     identity: example.com
     state: present
 
@@ -119,7 +120,7 @@ EXAMPLES = '''
   register: topic_info
 
 - name: Deliver feedback to topic instead of owner email
-  community.aws.aws_ses_identity:
+  community.aws.ses_identity:
     identity: example@example.com
     state: present
     complaint_notifications:
@@ -140,7 +141,7 @@ EXAMPLES = '''
   register: topic_info
 
 - name: Delivery notifications to topic
-  community.aws.aws_ses_identity:
+  community.aws.ses_identity:
     identity: example@example.com
     state: present
     delivery_notifications:

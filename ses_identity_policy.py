@@ -8,14 +8,18 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: aws_ses_identity_policy
+module: ses_identity_policy
 version_added: 1.0.0
 short_description: Manages SES sending authorization policies
 description:
-    - This module allows the user to manage sending authorization policies associated with an SES identity (email or domain).
+    - This module allows the user to manage sending authorization policies associated with an SES
+      identity (email or domain).
     - SES authorization sending policies can be used to control what actors are able to send email
       on behalf of the validated identity and what conditions must be met by the sent emails.
-author: Ed Costello    (@orthanc)
+    - Prior to release 5.0.0 this module was called C(community.aws.aws_ses_identity_policy).
+      The usage did not change.
+author:
+    - Ed Costello (@orthanc)
 
 options:
     identity:
@@ -37,37 +41,36 @@ options:
         choices: [ 'present', 'absent' ]
         type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+    - amazon.aws.aws
+    - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: add sending authorization policy to domain identity
-  community.aws.aws_ses_identity_policy:
+  community.aws.ses_identity_policy:
     identity: example.com
     policy_name: ExamplePolicy
     policy: "{{ lookup('template', 'policy.json.j2') }}"
     state: present
 
 - name: add sending authorization policy to email identity
-  community.aws.aws_ses_identity_policy:
+  community.aws.ses_identity_policy:
     identity: example@example.com
     policy_name: ExamplePolicy
     policy: "{{ lookup('template', 'policy.json.j2') }}"
     state: present
 
 - name: add sending authorization policy to identity using ARN
-  community.aws.aws_ses_identity_policy:
+  community.aws.ses_identity_policy:
     identity: "arn:aws:ses:us-east-1:12345678:identity/example.com"
     policy_name: ExamplePolicy
     policy: "{{ lookup('template', 'policy.json.j2') }}"
     state: present
 
 - name: remove sending authorization policy
-  community.aws.aws_ses_identity_policy:
+  community.aws.ses_identity_policy:
     identity: example.com
     policy_name: ExamplePolicy
     state: absent
