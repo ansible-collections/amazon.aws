@@ -8,15 +8,18 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: aws_batch_job_definition
+module: batch_job_definition
 version_added: 1.0.0
 short_description: Manage AWS Batch Job Definitions
 description:
-    - This module allows the management of AWS Batch Job Definitions.
-    - It is idempotent and supports "Check" mode.
-    - Use module M(community.aws.aws_batch_compute_environment) to manage the compute
-      environment, M(community.aws.aws_batch_job_queue) to manage job queues, M(community.aws.aws_batch_job_definition) to manage job definitions.
-author: Jon Meran (@jonmer85)
+  - This module allows the management of AWS Batch Job Definitions.
+  - It is idempotent and supports "Check" mode.
+  - Use module M(community.aws.batch_compute_environment) to manage the compute
+    environment, M(community.aws.batch_job_queue) to manage job queues, M(community.aws.batch_job_definition) to manage job definitions.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_batch_job_definition).
+    The usage did not change.
+author:
+  - Jon Meran (@jonmer85)
 options:
   job_definition_arn:
     description:
@@ -171,20 +174,14 @@ options:
         many times.
     type: int
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = r'''
 ---
-- hosts: localhost
-  gather_facts: no
-  vars:
-    state: present
-  tasks:
 - name: My Batch Job Definition
-  community.aws.aws_batch_job_definition:
+  community.aws.batch_job_definition:
     job_definition_name: My Batch Job Definition
     state: present
     type: container

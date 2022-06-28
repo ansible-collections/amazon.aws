@@ -8,17 +8,18 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: aws_batch_compute_environment
+module: batch_compute_environment
 version_added: 1.0.0
 short_description: Manage AWS Batch Compute Environments
 description:
-    - This module allows the management of AWS Batch Compute Environments.
-    - It is idempotent and supports "Check" mode.
-    - Use module M(community.aws.aws_batch_compute_environment) to manage the compute
-      environment, M(community.aws.aws_batch_job_queue) to manage job queues, M(community.aws.aws_batch_job_definition) to manage job definitions.
-
-
-author: Jon Meran (@jonmer85)
+  - This module allows the management of AWS Batch Compute Environments.
+  - It is idempotent and supports "Check" mode.
+  - Use module M(community.aws.batch_compute_environment) to manage the compute
+    environment, M(community.aws.batch_job_queue) to manage job queues, M(community.aws.batch_job_definition) to manage job definitions.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_batch_compute_environment).
+    The usage did not change.
+author:
+  - Jon Meran (@jonmer85)
 options:
   compute_environment_name:
     description:
@@ -119,14 +120,13 @@ options:
       - The Amazon Resource Name (ARN) of the Amazon EC2 Spot Fleet IAM role applied to a SPOT compute environment.
     type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = r'''
 - name: My Batch Compute Environment
-  community.aws.aws_batch_compute_environment:
+  community.aws.batch_compute_environment:
     compute_environment_name: computeEnvironmentName
     state: present
     region: us-east-1

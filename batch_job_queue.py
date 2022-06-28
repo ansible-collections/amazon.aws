@@ -8,19 +8,22 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: aws_batch_job_queue
+module: batch_job_queue
 version_added: 1.0.0
 short_description: Manage AWS Batch Job Queues
 description:
-    - This module allows the management of AWS Batch Job Queues.
-    - It is idempotent and supports "Check" mode.
-    - Use module M(community.aws.aws_batch_compute_environment) to manage the compute
-      environment, M(community.aws.aws_batch_job_queue) to manage job queues, M(community.aws.aws_batch_job_definition) to manage job definitions.
-author: Jon Meran (@jonmer85)
+  - This module allows the management of AWS Batch Job Queues.
+  - It is idempotent and supports "Check" mode.
+  - Use module M(community.aws.batch_compute_environment) to manage the compute
+    environment, M(community.aws.batch_job_queue) to manage job queues, M(community.aws.batch_job_definition) to manage job definitions.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_batch_job_queue).
+    The usage did not change.
+author:
+  - Jon Meran (@jonmer85)
 options:
   job_queue_name:
     description:
-      - The name for the job queue
+      - The name for the job queue.
     required: true
     type: str
   state:
@@ -53,21 +56,20 @@ options:
     type: list
     elements: dict
     suboptions:
-        order:
-            type: int
-            description: The relative priority of the environment.
-        compute_environment:
-            type: str
-            description: The name of the compute environment.
+      order:
+        type: int
+        description: The relative priority of the environment.
+      compute_environment:
+        type: str
+        description: The name of the compute environment.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
 - name: My Batch Job Queue
-  community.aws.aws_batch_job_queue:
+  community.aws.batch_job_queue:
     job_queue_name: jobQueueName
     state: present
     region: us-east-1
