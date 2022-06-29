@@ -1,4 +1,4 @@
 cloud/aws
 
-execute_lambda
+lambda_execute
 lambda_info
