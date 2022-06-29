@@ -230,6 +230,13 @@ options:
         required: false
         choices: ["DAEMON", "REPLICA"]
         type: str
+    wait:
+        description:
+          - Whether or not to wait for the service to be inactive.
+          - Waits only when I(state) is C(absent).
+        type: bool
+        default: false
+        version_added: 4.1.0
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.ec2
@@ -780,6 +787,7 @@ def main():
         force_new_deployment=dict(required=False, default=False, type='bool'),
         force_deletion=dict(required=False, default=False, type='bool'),
         deployment_configuration=dict(required=False, default={}, type='dict'),
+        wait=dict(required=False, default=False, type='bool'),
         placement_constraints=dict(
             required=False,
             default=[],
@@ -964,8 +972,24 @@ def main():
                             module.params['cluster'],
                             module.params['force_deletion'],
                         )
+
+                        # Wait for service to be INACTIVE prior to exiting
+                        if module.params['wait']:
+                            waiter = service_mgr.ecs.get_waiter('services_inactive')
+                            try:
+                                waiter.wait(
+                                    services=[module.params['name']],
+                                    cluster=module.params['cluster'],
+                                    WaiterConfig={
+                                        'Delay': module.params['delay'],
+                                        'MaxAttempts': module.params['repeat']
+                                    }
+                                )
+                            except botocore.exceptions.WaiterError as e:
+                                module.fail_json_aws(e, 'Timeout waiting for service removal')
                     except botocore.exceptions.ClientError as e:
                         module.fail_json_aws(e, msg="Couldn't delete service")
+
                 results['changed'] = True
 
     elif module.params['state'] == 'deleting':

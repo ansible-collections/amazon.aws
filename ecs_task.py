@@ -92,6 +92,12 @@ options:
           - Tags that will be added to ecs tasks on start and run
         required: false
         aliases: ['resource_tags']
+    wait:
+        description:
+          - Whether or not to wait for the desired state.
+        type: bool
+        default: false
+        version_added: 4.1.0
 extends_documentation_fragment:
     - amazon.aws.aws
     - amazon.aws.ec2
@@ -353,7 +359,8 @@ def main():
         started_by=dict(required=False, type='str'),  # R S
         network_configuration=dict(required=False, type='dict'),
         launch_type=dict(required=False, choices=['EC2', 'FARGATE']),
-        tags=dict(required=False, type='dict', aliases=['resource_tags'])
+        tags=dict(required=False, type='dict', aliases=['resource_tags']),
+        wait=dict(required=False, default=False, type='bool'),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True,
@@ -395,7 +402,9 @@ def main():
             results['task'] = existing
         else:
             if not module.check_mode:
-                results['task'] = service_mgr.run_task(
+
+                # run_task returns a list of tasks created
+                tasks = service_mgr.run_task(
                     module.params['cluster'],
                     module.params['task_definition'],
                     module.params['overrides'],
@@ -404,6 +413,21 @@ def main():
                     module.params['launch_type'],
                     module.params['tags'],
                 )
+
+                # Wait for task(s) to be running prior to exiting
+                if module.params['wait']:
+
+                    waiter = service_mgr.ecs.get_waiter('tasks_running')
+                    try:
+                        waiter.wait(
+                            tasks=[task['taskArn'] for task in tasks],
+                            cluster=module.params['cluster'],
+                        )
+                    except botocore.exceptions.WaiterError as e:
+                        module.fail_json_aws(e, 'Timeout waiting for tasks to run')
+
+                results['task'] = tasks
+
             results['changed'] = True
 
     elif module.params['operation'] == 'start':
@@ -420,6 +444,7 @@ def main():
                     module.params['started_by'],
                     module.params['tags'],
                 )
+
             results['changed'] = True
 
     elif module.params['operation'] == 'stop':
@@ -433,6 +458,19 @@ def main():
                     module.params['cluster'],
                     module.params['task']
                 )
+
+                # Wait for task to be stopped prior to exiting
+                if module.params['wait']:
+
+                    waiter = service_mgr.ecs.get_waiter('tasks_stopped')
+                    try:
+                        waiter.wait(
+                            tasks=[module.params['task']],
+                            cluster=module.params['cluster'],
+                        )
+                    except botocore.exceptions.WaiterError as e:
+                        module.fail_json_aws(e, 'Timeout waiting for task to stop')
+
             results['changed'] = True
 
     module.exit_json(**results)
