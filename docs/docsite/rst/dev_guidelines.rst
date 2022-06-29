@@ -551,11 +551,18 @@ of a dict.  This is particularly useful for tags, where keys are case-sensitive.
 
 .. code-block:: python
 
-   # Make a call to AWS
-   result = connection.aws_call()
+    # Make a call to AWS
+    resource = connection.aws_call()
 
-   # Return the result to the user without modifying tags
-   module.exit_json(changed=True, **camel_dict_to_snake_dict(result, ignore_list=['Tags']))
+    # Convert resource response to snake_case
+    snaked_resource = camel_dict_to_snake_dict(resource, ignore_list=['Tags'])
+
+    # Return the resource details to the user without modifying tags
+    module.exit_json(changed=True, some_resource=snaked_resource)
+
+Note: The returned key representing the details of the specific resource (``some_resource`` above)
+should be a sensible approximation of the resource name.  For example, ``volume`` for ``ec2_vol``,
+``volumes`` for ``ec2_vol_info``.
 
 Tags
 ----
