@@ -8,17 +8,19 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: execute_lambda
+module: lambda_execute
 version_added: 1.0.0
 short_description: Execute an AWS Lambda function
 description:
   - This module executes AWS Lambda functions, allowing synchronous and asynchronous
     invocation.
+  - Prior to release 5.0.0 this module was called C(community.aws.execute_lambda).
+    The usage did not change.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
-author: "Ryan Scott Brown (@ryansb) <ryansb@redhat.com>"
+  - amazon.aws.aws
+  - amazon.aws.ec2
+author:
+  - "Ryan Scott Brown (@ryansb) <ryansb@redhat.com>"
 notes:
   - Async invocation will always return an empty C(output) key.
   - Synchronous invocation may result in a function timeout, resulting in an
@@ -72,7 +74,7 @@ options:
 '''
 
 EXAMPLES = '''
-- community.aws.execute_lambda:
+- community.aws.lambda_execute:
     name: test-function
     # the payload is automatically serialized and sent to the function
     payload:
@@ -82,11 +84,11 @@ EXAMPLES = '''
 
 # Test that you have sufficient permissions to execute a Lambda function in
 # another account
-- community.aws.execute_lambda:
+- community.aws.lambda_execute:
     function_arn: arn:aws:lambda:us-east-1:123456789012:function/some-function
     dry_run: true
 
-- community.aws.execute_lambda:
+- community.aws.lambda_execute:
     name: test-function
     payload:
       foo: bar
@@ -97,12 +99,12 @@ EXAMPLES = '''
   # the response will have a `logs` key that will contain a log (up to 4KB) of the function execution in Lambda
 
 # Pass the Lambda event payload as a json file.
-- community.aws.execute_lambda:
+- community.aws.lambda_execute:
     name: test-function
     payload: "{{ lookup('file','lambda_event.json') }}"
   register: response
 
-- community.aws.execute_lambda:
+- community.aws.lambda_execute:
     name: test-function
     version_qualifier: PRODUCTION
 '''
