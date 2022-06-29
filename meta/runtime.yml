@@ -4,7 +4,6 @@ action_groups:
   - aws_az_info
   - aws_caller_info
   - aws_s3
-  - aws_secret
   - cloudformation
   - cloudformation_info
   - ec2_ami
@@ -43,8 +42,6 @@ action_groups:
   - ec2_vpc_subnet
   - ec2_vpc_subnet_info
   - elb_classic_lb
-  - iam
-  - rds
   - s3_bucket
   - s3_object
 plugin_routing:
