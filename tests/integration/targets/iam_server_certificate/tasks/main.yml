@@ -18,12 +18,6 @@
   block:
   ################################################
 
-  # Check that the alias works
-  - name: Test deprecated alias
-    iam_cert: {}
-    ignore_errors: true
-    register: iam_cert_alias
-
   - name: Test with no args
     iam_server_certificate: {}
     ignore_errors: true
@@ -31,9 +25,7 @@
 
   - assert:
       that:
-      - iam_cert_alias is failed
       - no_args is failed
-      - no_args.msg == iam_cert_alias.msg
       - no_args.msg.startswith('missing required arguments')
 
   ################################################
@@ -195,7 +187,7 @@
   ################################################
 
   - name: Delete certificate - check_mode
-    iam_cert:
+    iam_server_certificate:
       name: '{{ cert_name }}'
       state: absent
     register: delete_cert
@@ -208,7 +200,7 @@
       - delete_cert is changed
 
   - name: Delete certificate
-    iam_cert:
+    iam_server_certificate:
       name: '{{ cert_name }}'
       state: absent
     register: delete_cert
@@ -220,7 +212,7 @@
       - delete_cert is changed
 
   - name: Delete certificate - idempotency - check_mode
-    iam_cert:
+    iam_server_certificate:
       name: '{{ cert_name }}'
       state: absent
     register: delete_cert
@@ -233,7 +225,7 @@
       - delete_cert is not changed
 
   - name: Delete certificate - idempotency
-    iam_cert:
+    iam_server_certificate:
       name: '{{ cert_name }}'
       state: absent
     register: delete_cert
@@ -604,7 +596,7 @@
     ################################################
 
   - name: Delete certificate
-    iam_cert:
+    iam_server_certificate:
       name: '{{ item }}'
       state: absent
     ignore_errors: true

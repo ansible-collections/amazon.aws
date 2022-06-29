@@ -22,9 +22,9 @@ DOCUMENTATION = '''
 ---
 module: iam_server_certificate
 version_added: 1.0.0
-short_description: Manage server certificates for use on ELBs and CloudFront
+short_description: Manage IAM server certificates for use on ELBs and CloudFront
 description:
-     - Allows for the management of server certificates.
+  - Allows for the management of IAM server certificates.
 options:
   name:
     description:
@@ -73,10 +73,11 @@ options:
     default: true
     type: bool
 
-author: Jonathan I. Davila (@defionscode)
+author:
+  - Jonathan I. Davila (@defionscode)
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
@@ -103,7 +104,6 @@ EXAMPLES = '''
     new_name: new_very_ssl
     state: present
 '''
-import os
 
 try:
     import botocore
