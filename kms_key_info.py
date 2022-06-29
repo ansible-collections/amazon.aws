@@ -8,12 +8,15 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: aws_kms_info
+module: kms_key_info
 version_added: 1.0.0
 short_description: Gather information about AWS KMS keys
 description:
-    - Gather information about AWS KMS keys including tags and grants.
-author: "Will Thames (@willthames)"
+  - Gather information about AWS KMS keys including tags and grants.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_kms_info).
+    The usage did not change.
+author:
+  - "Will Thames (@willthames)"
 options:
   alias:
     description:
@@ -46,24 +49,23 @@ options:
     default: False
     type: bool
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Gather information about all KMS keys
-- community.aws.aws_kms_info:
+- community.aws.kms_key_info:
 
 # Gather information about all keys with a Name tag
-- community.aws.aws_kms_info:
+- community.aws.kms_key_info:
     filters:
       tag-key: Name
 
 # Gather information about all keys with a specific name
-- community.aws.aws_kms_info:
+- community.aws.kms_key_info:
     filters:
       "tag:Name": Example
 '''

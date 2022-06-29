@@ -8,97 +8,102 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: aws_kms
+module: kms_key
 version_added: 1.0.0
-short_description: Perform various KMS management tasks
+short_description: Perform various KMS key management tasks
 description:
-  - Manage role/user access to a KMS key. Not designed for encrypting/decrypting.
+  - Manage role/user access to a KMS key.
+  - Not designed for encrypting/decrypting.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_kms).
+    The usage did not change.
 options:
   alias:
-    description: An alias for a key. For safety, even though KMS does not require keys
-      to have an alias, this module expects all new keys to be given an alias
-      to make them easier to manage. Existing keys without an alias may be
-      referred to by I(key_id). Use M(community.aws.aws_kms_info) to find key ids. Required
-      if I(key_id) is not given. Note that passing a I(key_id) and I(alias)
-      will only cause a new alias to be added, an alias will never be renamed.
-      The 'alias/' prefix is optional.
+    description:
+      - An alias for a key.
+      - For safety, even though KMS does not require keys to have an alias, this module expects all
+        new keys to be given an alias to make them easier to manage. Existing keys without an alias
+        may be referred to by I(key_id). Use M(community.aws.kms_key_info) to find key ids.
+      - Note that passing a I(key_id) and I(alias) will only cause a new alias to be added, an alias will never be renamed.
+      - The C(alias/) prefix is optional.
+      - Required if I(key_id) is not given.
     required: false
     aliases:
       - key_alias
     type: str
   key_id:
     description:
-    - Key ID or ARN of the key.
-    - One of I(alias) or I(key_id) are required.
+      - Key ID or ARN of the key.
+      - One of I(alias) or I(key_id) are required.
     required: false
     aliases:
       - key_arn
     type: str
   enable_key_rotation:
     description:
-    - Whether the key should be automatically rotated every year.
+      - Whether the key should be automatically rotated every year.
     required: false
     type: bool
   policy_mode:
     description:
-    - (deprecated) Grant or deny access.
-    - Used for modifying the Key Policy rather than modifying a grant and only
-      works on the default policy created through the AWS Console.
-    - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
+      - (deprecated) Grant or deny access.
+      - Used for modifying the Key Policy rather than modifying a grant and only
+        works on the default policy created through the AWS Console.
+      - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
     default: grant
     choices: [ grant, deny ]
     aliases:
-    - mode
+      - mode
     type: str
   policy_role_name:
     description:
-    - (deprecated) Role to allow/deny access.
-    - One of I(policy_role_name) or I(policy_role_arn) are required.
-    - Used for modifying the Key Policy rather than modifying a grant and only
-      works on the default policy created through the AWS Console.
-    - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
+      - (deprecated) Role to allow/deny access.
+      - One of I(policy_role_name) or I(policy_role_arn) are required.
+      - Used for modifying the Key Policy rather than modifying a grant and only
+        works on the default policy created through the AWS Console.
+      - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
     required: false
     aliases:
-    - role_name
+      - role_name
     type: str
   policy_role_arn:
     description:
-    - (deprecated) ARN of role to allow/deny access.
-    - One of I(policy_role_name) or I(policy_role_arn) are required.
-    - Used for modifying the Key Policy rather than modifying a grant and only
-      works on the default policy created through the AWS Console.
-    - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
+      - (deprecated) ARN of role to allow/deny access.
+      - One of I(policy_role_name) or I(policy_role_arn) are required.
+      - Used for modifying the Key Policy rather than modifying a grant and only
+        works on the default policy created through the AWS Console.
+      - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
     type: str
     required: false
     aliases:
-    - role_arn
+      - role_arn
   policy_grant_types:
     description:
-    - (deprecated) List of grants to give to user/role. Likely "role,role grant" or "role,role grant,admin".
-    - Required when I(policy_mode=grant).
-    - Used for modifying the Key Policy rather than modifying a grant and only
-      works on the default policy created through the AWS Console.
-    - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
+      - (deprecated) List of grants to give to user/role. Likely "role,role grant" or "role,role grant,admin".
+      - Required when I(policy_mode=grant).
+      - Used for modifying the Key Policy rather than modifying a grant and only
+        works on the default policy created through the AWS Console.
+      - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
     required: false
     aliases:
-    - grant_types
+      - grant_types
     type: list
     elements: str
   policy_clean_invalid_entries:
     description:
-    - (deprecated) If adding/removing a role and invalid grantees are found, remove them. These entries will cause an update to fail in all known cases.
-    - Only cleans if changes are being made.
-    - Used for modifying the Key Policy rather than modifying a grant and only
-      works on the default policy created through the AWS Console.
-    - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
+      - (deprecated) If adding/removing a role and invalid grantees are found, remove them. These entries will cause an update to fail in all known cases.
+      - Only cleans if changes are being made.
+      - Used for modifying the Key Policy rather than modifying a grant and only
+        works on the default policy created through the AWS Console.
+      - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
     type: bool
     default: true
     aliases:
     - clean_invalid_entries
   state:
-    description: Whether a key should be present or absent. Note that making an
-      existing key absent only schedules a key for deletion.  Passing a key that
-      is scheduled for deletion with state present will cancel key deletion.
+    description:
+      - Whether a key should be present or absent.
+      - Note that making an existing key C(absent) only schedules a key for deletion.
+      - Passing a key that is scheduled for deletion with I(state=present) will cancel key deletion.
     required: False
     choices:
       - present
@@ -111,21 +116,21 @@ options:
     type: bool
   description:
     description:
-      A description of the CMK. Use a description that helps you decide
-      whether the CMK is appropriate for a task.
+      - A description of the CMK.
+      - Use a description that helps you decide whether the CMK is appropriate for a task.
     type: str
   pending_window:
     description:
-    - The number of days between requesting deletion of the CMK and when it will actually be deleted.
-    - Only used when I(state=absent) and the CMK has not yet been deleted.
-    - Valid values are between 7 and 30 (inclusive).
-    - 'See also: U(https://docs.aws.amazon.com/kms/latest/APIReference/API_ScheduleKeyDeletion.html#KMS-ScheduleKeyDeletion-request-PendingWindowInDays)'
+      - The number of days between requesting deletion of the CMK and when it will actually be deleted.
+      - Only used when I(state=absent) and the CMK has not yet been deleted.
+      - Valid values are between 7 and 30 (inclusive).
+      - 'See also: U(https://docs.aws.amazon.com/kms/latest/APIReference/API_ScheduleKeyDeletion.html#KMS-ScheduleKeyDeletion-request-PendingWindowInDays)'
     type: int
     aliases: ['deletion_delay']
     version_added: 1.4.0
   purge_grants:
-    description: Whether the I(grants) argument should cause grants not in the list to
-      be removed.
+    description:
+      - Whether the I(grants) argument should cause grants not in the list to be removed.
     default: False
     type: bool
   grants:
@@ -192,40 +197,39 @@ extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.tags.deprecated_purge
 
-
 notes:
   - There are known inconsistencies in the amount of time required for updates of KMS keys to be fully reflected on AWS.
-    This can cause issues when running duplicate tasks in succession or using the aws_kms_info module to fetch key metadata
+    This can cause issues when running duplicate tasks in succession or using the M(community.aws.kms_key_info) module to fetch key metadata
     shortly after modifying keys.
-    For this reason, it is recommended to use the return data from this module (aws_kms) to fetch a key's metadata.
+    For this reason, it is recommended to use the return data from this module (M(community.aws.kms_key)) to fetch a key's metadata.
 '''
 
 EXAMPLES = r'''
 # Managing the KMS IAM Policy via policy_mode and policy_grant_types is fragile
 # and has been deprecated in favour of the policy option.
 - name: grant user-style access to production secrets
-  community.aws.aws_kms:
+  community.aws.kms_key:
   args:
     alias: "alias/my_production_secrets"
     policy_mode: grant
     policy_role_name: "prod-appServerRole-1R5AQG2BSEL6L"
     policy_grant_types: "role,role grant"
 - name: remove access to production secrets from role
-  community.aws.aws_kms:
+  community.aws.kms_key:
   args:
     alias: "alias/my_production_secrets"
     policy_mode: deny
     policy_role_name: "prod-appServerRole-1R5AQG2BSEL6L"
 
 # Create a new KMS key
-- community.aws.aws_kms:
+- community.aws.kms_key:
     alias: mykey
     tags:
       Name: myKey
       Purpose: protect_stuff
 
 # Update previous key with more tags
-- community.aws.aws_kms:
+- community.aws.kms_key:
     alias: mykey
     tags:
       Name: myKey
@@ -235,7 +239,7 @@ EXAMPLES = r'''
 # Update a known key with grants allowing an instance with the billing-prod IAM profile
 # to decrypt data encrypted with the environment: production, application: billing
 # encryption context
-- community.aws.aws_kms:
+- community.aws.kms_key:
     key_id: abcd1234-abcd-1234-5678-ef1234567890
     grants:
       - name: billing_prod
@@ -249,13 +253,13 @@ EXAMPLES = r'''
           - RetireGrant
 
 - name: Update IAM policy on an existing KMS key
-  community.aws.aws_kms:
+  community.aws.kms_key:
     alias: my-kms-key
     policy: '{"Version": "2012-10-17", "Id": "my-kms-key-permissions", "Statement": [ { <SOME STATEMENT> } ]}'
     state: present
 
 - name: Example using lookup for policy json
-  community.aws.aws_kms:
+  community.aws.kms_key:
     alias: my-kms-key
     policy: "{{ lookup('template', 'kms_iam_policy_template.json.j2') }}"
     state: present
