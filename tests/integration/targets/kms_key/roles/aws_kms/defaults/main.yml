@@ -1,0 +1,2 @@
+---
+kms_key_alias: "ansible-test-{{ inventory_hostname | replace('_','-') }}{{ tiny_prefix }}"

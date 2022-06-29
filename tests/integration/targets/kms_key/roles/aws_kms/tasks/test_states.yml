@@ -1,0 +1,557 @@
+- block:
+    # ============================================================
+    #   PREPARATION
+    #
+    # Get some information about who we are before starting our tests
+    # we'll need this as soon as we start working on the policies
+    - name: get ARN of calling user
+      aws_caller_info:
+      register: aws_caller_info
+
+    # ============================================================
+    #   TESTS
+    # Note - there are waits placed after each action to account for inconsistencies in what
+    #        is being returned when fetching key metadata.
+    # Combinations of manual waiters, checking expecting key values to actual key value, and static sleeps
+    #        have all been tried, but none of those available options have solved the problem.
+
+    - name: See whether key exists and its current state
+      aws_kms_info:
+        alias: '{{ kms_key_alias }}'
+
+    - name: create a key - check mode
+      aws_kms:
+        alias: '{{ kms_key_alias }}-check'
+        tags:
+          Hello: World
+        state: present
+        enabled: yes
+      register: key_check
+      check_mode: yes
+
+    - name: find facts about the check mode key
+      aws_kms_info:
+        alias: '{{ kms_key_alias }}-check'
+      register: check_key
+
+    - name: ensure that check mode worked as expected
+      assert:
+        that:
+          - check_key.kms_keys | length == 0
+          - key_check is changed
+
+    - name: create a key
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        tags:
+          Hello: World
+        state: present
+        enabled: yes
+        enable_key_rotation: no
+      register: key
+
+    - name: assert that state is enabled
+      assert:
+        that:
+          - key is changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == false
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+
+    - name: Sleep to wait for updates to propagate
+      wait_for:
+        timeout: 45
+
+    - name: create a key (idempotence) - check mode
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        tags:
+          Hello: World
+        state: present
+        enabled: yes
+      register: key
+      check_mode: yes
+
+    - assert:
+        that:
+          - key is not changed
+
+    - name: create a key (idempotence)
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        tags:
+          Hello: World
+        state: present
+        enabled: yes
+      register: key
+      check_mode: yes
+
+    - assert:
+        that:
+          - key is not changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == false
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+
+    # ------------------------------------------------------------------------------------------
+
+    - name: Save IDs for later
+      set_fact:
+        kms_key_id: '{{ key.key_id }}'
+        kms_key_arn: '{{ key.key_arn }}'
+
+    - name: Enable key rotation - check mode
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        tags:
+          Hello: World
+        state: present
+        enabled: yes
+        enable_key_rotation: yes
+      register: key
+      check_mode: yes
+
+    - assert:
+        that:
+          - key.changed
+
+    - name: Enable key rotation
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        tags:
+          Hello: World
+        state: present
+        enabled: yes
+        enable_key_rotation: yes
+      register: key
+
+    - name: assert that key rotation is enabled
+      assert:
+        that:
+          - key is changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == True
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+
+    - name: Sleep to wait for updates to propagate
+      wait_for:
+        timeout: 45
+
+    - name: Enable key rotation (idempotence) - check mode
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        tags:
+          Hello: World
+        state: present
+        enabled: yes
+        enable_key_rotation: yes
+      register: key
+      check_mode: yes
+
+    - assert:
+        that:
+          - not key.changed
+
+    - name: Enable key rotation (idempotence)
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        tags:
+          Hello: World
+        state: present
+        enabled: yes
+        enable_key_rotation: yes
+      register: key
+
+    - assert:
+        that:
+          - not key is changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == True
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+
+    # ------------------------------------------------------------------------------------------
+
+    - name: Disable key - check mode
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        state: present
+        enabled: no
+      register: key
+      check_mode: yes
+
+    - assert:
+        that:
+          - key.changed
+
+    - name: Disable key
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        state: present
+        enabled: no
+      register: key
+
+    - name: assert that state is disabled
+      assert:
+        that:
+          - key is changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Disabled"
+          - key.enabled == False
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == True
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+
+    - name: Sleep to wait for updates to propagate
+      wait_for:
+        timeout: 45
+
+    - name: Disable key (idempotence) - check mode
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        state: present
+        enabled: no
+      register: key
+      check_mode: yes
+
+    - assert:
+        that:
+          - not key.changed
+
+    - name: Disable key (idempotence)
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        state: present
+        enabled: no
+      register: key
+
+    - assert:
+        that:
+          - not key.changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Disabled"
+          - key.enabled == False
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == True
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+
+    # ------------------------------------------------------------------------------------------
+
+    - name: Delete key - check mode
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        state: absent
+      register: key
+      check_mode: yes
+
+    - assert:
+        that:
+          - key is changed
+
+    - name: Delete key
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        state: absent
+      register: key
+
+    - name: Sleep to wait for updates to propagate
+      wait_for:
+        timeout: 45
+
+    - name: Assert that state is pending deletion
+      vars:
+        now_time: '{{ lookup("pipe", "date -u +%Y-%m-%d\ %H:%M:%S") }}'
+        deletion_time: '{{ key.deletion_date[:19] | to_datetime("%Y-%m-%dT%H:%M:%S") }}'
+      assert:
+        that:
+          - key.changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "PendingDeletion"
+          - key.enabled == False
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == False
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+          # Times won't be perfect, allow a 24 hour window
+          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days <= 30
+          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days >= 29
+
+    - name: Delete key (idempotence) - check mode
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        state: absent
+      register: key
+      check_mode: yes
+
+    - assert:
+        that:
+          - not key.changed
+
+    - name: Delete key (idempotence)
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        state: absent
+      register: key
+
+    - vars:
+        now_time: '{{ lookup("pipe", "date -u +%Y-%m-%d\ %H:%M:%S") }}'
+        deletion_time: '{{ key.deletion_date[:19] | to_datetime("%Y-%m-%dT%H:%M:%S") }}'
+      assert:
+        that:
+          - not key.changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "PendingDeletion"
+          - key.enabled == False
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == False
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+          # Times won't be perfect, allow a 24 hour window
+          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days <= 30
+          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days >= 29
+
+    # ------------------------------------------------------------------------------------------
+
+    - name: Cancel key deletion - check mode
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        state: present
+      register: key
+      check_mode: yes
+
+    - assert:
+        that:
+          - key.changed
+
+    - name: Cancel key deletion
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        state: present
+      register: key
+
+    - assert:
+        that:
+          - key.changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == True
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+          - "'deletion_date' not in key"
+
+    - name: Sleep to wait for updates to propagate
+      wait_for:
+        timeout: 45
+
+    - name: Cancel key deletion (idempotence) - check mode
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        state: present
+      register: key
+      check_mode: yes
+
+    - assert:
+        that:
+          - not key.changed
+
+    - name: Cancel key deletion (idempotence)
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        state: present
+      register: key
+
+    - assert:
+        that:
+          - not key.changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == True
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+          - "'deletion_date' not in key"
+
+    # ------------------------------------------------------------------------------------------
+
+    - name: delete the key with a specific deletion window
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        state: absent
+        pending_window: 7
+      register: delete_kms
+
+    - name: Sleep to wait for updates to propagate
+      wait_for:
+        timeout: 45
+
+    - name: assert that state is pending deletion
+      vars:
+        now_time: '{{ lookup("pipe", "date -u +%Y-%m-%d\ %H:%M:%S") }}'
+        deletion_time: '{{ delete_kms.deletion_date[:19] | to_datetime("%Y-%m-%dT%H:%M:%S") }}'
+      assert:
+        that:
+          - delete_kms.key_state == "PendingDeletion"
+          - delete_kms.changed
+          # Times won't be perfect, allow a 24 hour window
+          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days <= 7
+          - (( deletion_time | to_datetime ) - ( now_time | to_datetime )).days >= 6
+
+    # ============================================================
+    # test different key usage and specs
+    - name: create kms key with different specs
+      aws_kms:
+        alias: '{{ kms_key_alias }}-diff-spec-usage'
+        purge_grants: yes
+        key_spec: ECC_NIST_P256
+        key_usage: SIGN_VERIFY
+      register: create_diff_kms
+
+    - name: Sleep to wait for updates to propagate
+      wait_for:
+        timeout: 45
+
+    - name: verify different specs on kms key
+      assert:
+        that:
+          - '"key_id" in create_diff_kms'
+          - create_diff_kms.key_id | length >= 36
+          - not create_diff_kms.key_id.startswith("arn:aws")
+          - '"key_arn" in create_diff_kms'
+          - create_diff_kms.key_arn.endswith(create_diff_kms.key_id)
+          - create_diff_kms.key_arn.startswith("arn:aws")
+          - create_diff_kms.key_usage == 'SIGN_VERIFY'
+          - create_diff_kms.customer_master_key_spec == 'ECC_NIST_P256'
+
+  always:
+    # ============================================================
+    #   CLEAN-UP
+    - name: finish off by deleting keys
+      aws_kms:
+        state: absent
+        alias: "{{ item }}"
+        pending_window: 7
+      ignore_errors: True
+      loop:
+        - "{{ kms_key_alias }}"
+        - "{{ kms_key_alias }}-diff-spec-usage"
+        - "{{ kms_key_alias }}-check"

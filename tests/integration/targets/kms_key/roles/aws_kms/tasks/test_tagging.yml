@@ -1,0 +1,202 @@
+- block:
+    # ============================================================
+    #   PREPARATION
+    #
+    # Get some information about who we are before starting our tests
+    # we'll need this as soon as we start working on the policies
+    - name: get ARN of calling user
+      aws_caller_info:
+      register: aws_caller_info
+
+    # ============================================================
+    #   TESTS
+    # Note - there are waits placed after each action to account for inconsistencies in what
+    #        is being returned when fetching key metadata.
+    # Combinations of manual waiters, checking expecting key values to actual key value, and static sleeps
+    #        have all been tried, but none of those available options have solved the problem.
+
+    - name: create a key
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        tags:
+          Hello: World
+        state: present
+        enabled: yes
+        enable_key_rotation: no
+      register: key
+
+    - name: assert that state is enabled
+      assert:
+        that:
+          - key is changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 1
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == false
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+
+    # ------------------------------------------------------------------------------------------
+
+    - name: Tag encryption key
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        state: present
+        tags:
+          tag_one: tag_one
+          tag_two: tag_two
+      register: key
+
+    - name: Assert tags added
+      assert:
+        that:
+          - key.changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 3
+          - key.tags['Hello'] == 'World'
+          - key.enable_key_rotation == false
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+          - "'tag_one' in key.tags"
+          - "'tag_two' in key.tags"
+
+    - name: Sleep to wait for updates to propagate
+      wait_for:
+        timeout: 45
+
+    - name: Modify tags - check mode
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        state: present
+        purge_tags: yes
+        tags:
+          tag_two: tag_two_updated
+          Tag Three: '{{ resource_prefix }}'
+      register: key
+      check_mode: yes
+
+    - assert:
+        that:
+          - key.changed
+
+    - name: Modify tags
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        state: present
+        purge_tags: yes
+        tags:
+          tag_two: tag_two_updated
+          Tag Three: '{{ resource_prefix }}'
+      register: key
+
+    - name: Assert tags correctly changed
+      assert:
+        that:
+          - key.changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 2
+          - key.enable_key_rotation == false
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+          - "'tag_one' not in key.tags"
+          - "'tag_two' in key.tags"
+          - "key.tags.tag_two == 'tag_two_updated'"
+          - "'Tag Three' in key.tags"
+          - "key.tags['Tag Three'] == resource_prefix"
+
+    - name: Sleep to wait for updates to propagate
+      wait_for:
+        timeout: 45
+
+    - name: Modify tags (idempotence) - check mode
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        state: present
+        purge_tags: yes
+        tags:
+          tag_two: tag_two_updated
+          Tag Three: '{{ resource_prefix }}'
+      register: key
+      check_mode: yes
+
+    - assert:
+        that:
+          - not key.changed
+
+    - name: Modify tags (idempotence)
+      aws_kms:
+        alias: '{{ kms_key_alias }}'
+        state: present
+        purge_tags: yes
+        tags:
+          tag_two: tag_two_updated
+          Tag Three: '{{ resource_prefix }}'
+      register: key
+
+    - assert:
+        that:
+          - not key.changed
+          - '"key_id" in key'
+          - key.key_id | length >= 36
+          - not key.key_id.startswith("arn:aws")
+          - '"key_arn" in key'
+          - key.key_arn.endswith(key.key_id)
+          - key.key_arn.startswith("arn:aws")
+          - key.key_state == "Enabled"
+          - key.enabled == True
+          - key.tags | length == 2
+          - key.enable_key_rotation == false
+          - key.key_usage == 'ENCRYPT_DECRYPT'
+          - key.customer_master_key_spec == 'SYMMETRIC_DEFAULT'
+          - key.grants | length == 0
+          - key.key_policies | length == 1
+          - key.key_policies[0].Id == 'key-default-1'
+          - key.description == ''
+          - "'tag_one' not in key.tags"
+          - "'tag_two' in key.tags"
+          - "key.tags.tag_two == 'tag_two_updated'"
+          - "'Tag Three' in key.tags"
+          - "key.tags['Tag Three'] == resource_prefix"
+
+  always:
+    # ============================================================
+    #   CLEAN-UP
+    - name: finish off by deleting keys
+      aws_kms:
+        state: absent
+        alias: "{{ kms_key_alias }}"
+        pending_window: 7
+      ignore_errors: True

@@ -1,0 +1,8 @@
+# Various race conditions - likely needs waiters
+# https://github.com/ansible-collections/community.aws/issues/433
+# No KMS supported waiters, and manual waiting for updates didn't fix the issue either.
+# Issue likely from AWS side - added waits on updates in integration tests to workaround this.
+
+cloud/aws
+
+kms_key_info
