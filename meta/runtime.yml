@@ -4,7 +4,6 @@ action_groups:
   - aws_az_info
   - aws_caller_info
   - aws_s3
-  - aws_secret
   - cloudformation
   - cloudformation_info
   - ec2_ami
@@ -43,8 +42,6 @@ action_groups:
   - ec2_vpc_subnet
   - ec2_vpc_subnet_info
   - elb_classic_lb
-  - iam
-  - rds
   - s3_bucket
   - s3_object
 plugin_routing:
@@ -52,15 +49,11 @@ plugin_routing:
     aws_s3:
       redirect: amazon.aws.s3_object
   modules:
-    aws_az_facts:
-      deprecation:
-        removal_date: 2022-06-01
-        warning_text: >-
-          aws_az_facts was renamed in Ansible 2.9 to aws_az_info.
-          Please update your tasks.
     aws_s3:
+      # Deprecation for this alias should not *start* prior to 2024-09-01
       redirect: amazon.aws.s3_object
     ec2_elb_lb:
+      # Deprecation for this alias should not *start* prior to 2024-09-01
       redirect: amazon.aws.elb_classic_lb
     ec2_group:
       # Deprecation for this alias should not *start* prior to 2024-09-01
@@ -68,9 +61,3 @@ plugin_routing:
     ec2_group_info:
       # Deprecation for this alias should not *start* prior to 2024-09-01
       redirect: amazon.aws.ec2_security_group_info
-    ec2_eni_facts:
-      deprecation:
-        removal_date: 2021-12-01
-        warning_text: >-
-          ec2_eni_facts was renamed in Ansible 2.9 to ec2_eni_info.
-          Please update your tasks.
