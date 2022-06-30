@@ -773,7 +773,7 @@ def put_bucket_key_with_retry(module, s3_client, name, expected_encryption):
         current_encryption = wait_bucket_key_is_applied(module, s3_client, name, expected_encryption,
                                                         should_fail=(retries == max_retries), retries=5)
         if current_encryption == expected_encryption:
-            return result
+            return current_encryption
 
     # We shouldn't get here, the only time this should happen is if
     # current_encryption != expected_encryption and retries == max_retries
