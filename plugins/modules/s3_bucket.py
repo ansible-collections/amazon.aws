@@ -299,7 +299,6 @@ policy:
     type: dict
     returned: I(state=present)
     sample: {
-
         "Statement": [
             {
                 "Action": "s3:GetObject",
