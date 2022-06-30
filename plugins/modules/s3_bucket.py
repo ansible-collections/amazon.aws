@@ -227,6 +227,7 @@ EXAMPLES = r'''
 - amazon.aws.s3_bucket:
     name: mys3bucket
     bucket_key_enabled: true
+    encryption: "aws:kms"
 
 # Create a bucket with aws:kms encryption, default key
 - amazon.aws.s3_bucket:
