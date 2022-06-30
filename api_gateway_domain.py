@@ -8,15 +8,15 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: aws_api_gateway_domain
+module: api_gateway_domain
 short_description: Manage AWS API Gateway custom domains
 description:
-     - Manages API Gateway custom domains for API GW Rest APIs.
-     - AWS API Gateway custom domain setups use CloudFront behind the scenes.
-       So you will get a CloudFront distribution as a result, configured to be aliased with your domain.
+  - Manages API Gateway custom domains for API GW Rest APIs.
+  - AWS API Gateway custom domain setups use CloudFront behind the scenes.
+    So you will get a CloudFront distribution as a result, configured to be aliased with your domain.
 version_added: '3.3.0'
 author:
-    - 'Stefan Horning (@stefanhorning)'
+  - 'Stefan Horning (@stefanhorning)'
 options:
   domain_name:
     description:
@@ -56,17 +56,17 @@ options:
     choices: [ 'present', 'absent' ]
     type: str
 extends_documentation_fragment:
-    - amazon.aws.aws
-    - amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 notes:
-   - Does not create a DNS entry on Route53, for that use the route53 module.
-   - Only supports TLS certificates from AWS ACM that can just be referenced by the ARN, while the AWS API still offers (deprecated)
-     options to add own Certificates.
+  - Does not create a DNS entry on Route53, for that use the M(community.aws.route53) module.
+  - Only supports TLS certificates from AWS ACM that can just be referenced by the ARN, while the AWS API still offers (deprecated)
+    options to add own Certificates.
 '''
 
 EXAMPLES = '''
 - name: Setup endpoint for a custom domain for your API Gateway HTTP API
-  community.aws.aws_api_gateway_domain:
+  community.aws.api_gateway_domain:
     domain_name: myapi.foobar.com
     certificate_arn: 'arn:aws:acm:us-east-1:1231123123:certificate/8bd89412-abc123-xxxxx'
     security_policy: TLS_1_2

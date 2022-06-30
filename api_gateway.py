@@ -10,18 +10,18 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: aws_api_gateway
+module: api_gateway
 version_added: 1.0.0
 short_description: Manage AWS API Gateway APIs
 description:
-     - Allows for the management of API Gateway APIs.
-     - Normally you should give the api_id since there is no other
-       stable guaranteed unique identifier for the API.  If you do
-       not give api_id then a new API will be created each time
-       this is run.
-     - swagger_file and swagger_text are passed directly on to AWS
-       transparently whilst swagger_dict is an ansible dict which is
-       converted to JSON before the API definitions are uploaded.
+  - Allows for the management of API Gateway APIs.
+  - Normally you should give the api_id since there is no other
+    stable guaranteed unique identifier for the API.  If you do
+    not give api_id then a new API will be created each time
+    this is run.
+  - swagger_file and swagger_text are passed directly on to AWS
+    transparently whilst swagger_dict is an ansible dict which is
+    converted to JSON before the API definitions are uploaded.
 options:
   api_id:
     description:
@@ -99,21 +99,21 @@ options:
     type: str
     default: EDGE
 author:
-    - 'Michael De La Rue (@mikedlr)'
+  - 'Michael De La Rue (@mikedlr)'
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 
 notes:
-   - A future version of this module will probably use tags or another
-     ID so that an API can be created only once.
-   - As an early work around an intermediate version will probably do
-     the same using a tag embedded in the API name.
+  - A future version of this module will probably use tags or another
+    ID so that an API can be created only once.
+  - As an early work around an intermediate version will probably do
+    the same using a tag embedded in the API name.
 '''
 
 EXAMPLES = '''
 - name: Setup AWS API Gateway setup on AWS and deploy API definition
-  community.aws.aws_api_gateway:
+  community.aws.api_gateway:
     swagger_file: my_api.yml
     stage: production
     cache_enabled: true
@@ -123,7 +123,7 @@ EXAMPLES = '''
     state: present
 
 - name: Update API definition to deploy new version
-  community.aws.aws_api_gateway:
+  community.aws.api_gateway:
     api_id: 'abc123321cba'
     swagger_file: my_api.yml
     deploy_desc: Make auth fix available.
@@ -133,7 +133,7 @@ EXAMPLES = '''
     state: present
 
 - name: Update API definitions and settings and deploy as canary
-  community.aws.aws_api_gateway:
+  community.aws.api_gateway:
     api_id: 'abc123321cba'
     swagger_file: my_api.yml
     cache_enabled: true
@@ -264,7 +264,7 @@ def create_empty_api(module, client, endpoint_type):
     temporarily set to show the API as incomplete but should be
     updated when the API is configured.
     """
-    desc = "Incomplete API creation by ansible aws_api_gateway module"
+    desc = "Incomplete API creation by ansible api_gateway module"
     try:
         awsret = create_api(client, name="ansible-temp-api", description=desc, endpoint_type=endpoint_type)
     except (botocore.exceptions.ClientError, botocore.exceptions.EndpointConnectionError) as e:
