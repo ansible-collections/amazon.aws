@@ -92,7 +92,7 @@ options:
       - Bucket Key encryption is only supported if I(encryption=aws:kms).
     required: false
     type: bool
-
+    version_added: 4.1.0
   public_access:
     description:
       - Configure public access block for S3 bucket.
