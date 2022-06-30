@@ -1,0 +1,8 @@
+# reason: missing real ACM TLS cert ARN
+disabled
+# https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-custom-domains.html
+# To use an alternate domain name you need a *trusted* SSL cert *and* access to the DNS for a *real*
+# domain.
+
+cloud/aws
+aws_api_gateway_domain
