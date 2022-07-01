@@ -313,6 +313,14 @@ options:
       For any VPC other than Default, you must use I(security_group_ids).
     type: list
     elements: str
+  source_version:
+    description: >
+      The version number of the launch template version on which to base the new version.
+      The new version inherits the same launch parameters as the source version, except for parameters that you explicity specify.
+      Snapshots applied to the block device mapping are ignored when creating a new version unless they are explicitly included.
+    type: str
+    default: latest
+    version_added: 4.1.0
   tags:
     type: dict
     description:
@@ -569,12 +577,38 @@ def create_or_update(module, template_options):
             out['changed'] = False
             return out
         try:
-            resp = ec2.create_launch_template_version(
-                LaunchTemplateId=template['LaunchTemplateId'],
-                LaunchTemplateData=lt_data,
-                ClientToken=uuid4().hex,
-                aws_retry=True,
-            )
+            if module.params.get('source_version') in (None, ''):
+                resp = ec2.create_launch_template_version(
+                    LaunchTemplateId=template['LaunchTemplateId'],
+                    LaunchTemplateData=lt_data,
+                    ClientToken=uuid4().hex,
+                    aws_retry=True,
+                )
+            elif module.params.get('source_version') == 'latest':
+                resp = ec2.create_launch_template_version(
+                    LaunchTemplateId=template['LaunchTemplateId'],
+                    LaunchTemplateData=lt_data,
+                    ClientToken=uuid4().hex,
+                    SourceVersion=str(most_recent['VersionNumber']),
+                    aws_retry=True,
+                )
+            else:
+                try:
+                    int(module.params.get('source_version'))
+                except ValueError:
+                    module.fail_json(msg='source_version param was not a valid integer, got "{0}"'.format(module.params.get('source_version')))
+                # get source template version
+                source_version = next((v for v in template_versions if v['VersionNumber'] == int(module.params.get('source_version'))), None)
+                if source_version is None:
+                    module.fail_json(msg='source_version does not exist, got "{0}"'.format(module.params.get('source_version')))
+                resp = ec2.create_launch_template_version(
+                    LaunchTemplateId=template['LaunchTemplateId'],
+                    LaunchTemplateData=lt_data,
+                    ClientToken=uuid4().hex,
+                    SourceVersion=str(source_version['VersionNumber']),
+                    aws_retry=True,
+                )
+
             if module.params.get('default_version') in (None, ''):
                 # no need to do anything, leave the existing version as default
                 pass
@@ -748,6 +782,7 @@ def main():
         template_name=dict(aliases=['name']),
         template_id=dict(aliases=['id']),
         default_version=dict(default='latest'),
+        source_version=dict(default='latest')
     )
 
     arg_spec.update(template_options)
