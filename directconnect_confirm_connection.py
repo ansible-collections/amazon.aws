@@ -11,16 +11,17 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
-module: aws_direct_connect_confirm_connection
-short_description: Confirms the creation of a hosted DirectConnect connection.
+module: directconnect_confirm_connection
+short_description: Confirms the creation of a hosted DirectConnect connection
 description:
   - Confirms the creation of a hosted DirectConnect, which requires approval before it can be used.
-  - DirectConnect connections that require approval would be in the 'ordering'.
-  - After confirmation, they will move to the 'pending' state and finally the 'available' state.
-author: "Matt Traynham (@mtraynham)"
+  - DirectConnect connections that require approval would be in the C(ordering).
+  - After confirmation, they will move to the C(pending) state and finally the C(available) state.
+author:
+  - "Matt Traynham (@mtraynham)"
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 options:
   name:
     description:
@@ -38,12 +39,12 @@ EXAMPLES = '''
 
 # confirm a Direct Connect by name
 - name: confirm the connection id
-  aws_direct_connect_confirm_connection:
+  community.aws.directconnect_confirm_connection:
     name: my_host_direct_connect
 
 # confirm a Direct Connect by connection_id
 - name: confirm the connection id
-  aws_direct_connect_confirm_connection:
+  community.aws.directconnect_confirm_connection:
     connection_id: dxcon-xxxxxxxx
 '''
 

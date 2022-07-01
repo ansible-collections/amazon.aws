@@ -8,15 +8,16 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: aws_direct_connect_link_aggregation_group
+module: directconnect_link_aggregation_group
 version_added: 1.0.0
 short_description: Manage Direct Connect LAG bundles
 description:
   - Create, delete, or modify a Direct Connect link aggregation group.
-author: "Sloane Hertel (@s-hertel)"
+author:
+  - "Sloane Hertel (@s-hertel)"
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 options:
   state:
     description:
@@ -82,12 +83,11 @@ options:
 EXAMPLES = """
 
 # create a Direct Connect connection
-- community.aws.aws_direct_connect_link_aggregation_group:
+- community.aws.directconnect_link_aggregation_group:
   state: present
   location: EqDC2
   lag_id: dxlag-xxxxxxxx
   bandwidth: 1Gbps
-
 """
 
 RETURN = """

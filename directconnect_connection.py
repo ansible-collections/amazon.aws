@@ -8,17 +8,18 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: aws_direct_connect_connection
+module: directconnect_connection
 version_added: 1.0.0
 short_description: Creates, deletes, modifies a DirectConnect connection
 description:
   - Create, update, or delete a Direct Connect connection between a network and a specific AWS Direct Connect location.
-    Upon creation the connection may be added to a link aggregation group or established as a standalone connection.
-    The connection may later be associated or disassociated with a link aggregation group.
-author: "Sloane Hertel (@s-hertel)"
+  - Upon creation the connection may be added to a link aggregation group or established as a standalone connection.
+  - The connection may later be associated or disassociated with a link aggregation group.
+author:
+  - "Sloane Hertel (@s-hertel)"
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 options:
   state:
     description:
@@ -69,7 +70,7 @@ options:
 EXAMPLES = """
 
 # create a Direct Connect connection
-- community.aws.aws_direct_connect_connection:
+- community.aws.directconnect_connection:
     name: ansible-test-connection
     state: present
     location: EqDC2
@@ -78,14 +79,14 @@ EXAMPLES = """
   register: dc
 
 # disassociate the LAG from the connection
-- community.aws.aws_direct_connect_connection:
+- community.aws.directconnect_connection:
     state: present
     connection_id: dc.connection.connection_id
     location: EqDC2
     bandwidth: 1Gbps
 
 # replace the connection with one with more bandwidth
-- community.aws.aws_direct_connect_connection:
+- community.aws.directconnect_connection:
     state: present
     name: ansible-test-connection
     location: EqDC2
@@ -93,7 +94,7 @@ EXAMPLES = """
     forced_update: true
 
 # delete the connection
-- community.aws.aws_direct_connect_connection:
+- community.aws.directconnect_connection:
     state: absent
     name: ansible-test-connection
 """

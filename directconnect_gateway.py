@@ -7,8 +7,9 @@ __metaclass__ = type
 
 
 DOCUMENTATION = '''
-module: aws_direct_connect_gateway
-author: Gobin Sougrakpam (@gobins)
+module: directconnect_gateway
+author:
+  - Gobin Sougrakpam (@gobins)
 version_added: 1.0.0
 short_description: Manage AWS Direct Connect gateway
 description:
@@ -17,8 +18,8 @@ description:
   - Attaches Virtual Gateways to Direct Connect Gateway.
   - Detaches Virtual Gateways to Direct Connect Gateway.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 options:
   state:
     description:
@@ -54,7 +55,7 @@ options:
 
 EXAMPLES = '''
 - name: Create a new direct connect gateway attached to virtual private gateway
-  community.aws.aws_direct_connect_gateway:
+  community.aws.directconnect_gateway:
     state: present
     name: my-dx-gateway
     amazon_asn: 7224
@@ -62,12 +63,11 @@ EXAMPLES = '''
   register: created_dxgw
 
 - name: Create a new unattached dxgw
-  community.aws.aws_direct_connect_gateway:
+  community.aws.directconnect_gateway:
     state: present
     name: my-dx-gateway
     amazon_asn: 7224
   register: created_dxgw
-
 '''
 
 RETURN = '''

@@ -8,12 +8,13 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: aws_direct_connect_virtual_interface
+module: directconnect_virtual_interface
 version_added: 1.0.0
 short_description: Manage Direct Connect virtual interfaces
 description:
   - Create, delete, or modify a Direct Connect public or private virtual interface.
-author: "Sloane Hertel (@s-hertel)"
+author:
+  - "Sloane Hertel (@s-hertel)"
 options:
   state:
     description:
@@ -83,9 +84,8 @@ options:
       - The virtual interface ID.
     type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 RETURN = r'''
@@ -230,14 +230,14 @@ vlan:
 EXAMPLES = r'''
 ---
 - name: create an association between a LAG and connection
-  community.aws.aws_direct_connect_virtual_interface:
+  community.aws.directconnect_virtual_interface:
     state: present
     name: "{{ name }}"
     link_aggregation_group_id: LAG-XXXXXXXX
     connection_id: dxcon-XXXXXXXX
 
 - name: remove an association between a connection and virtual interface
-  community.aws.aws_direct_connect_virtual_interface:
+  community.aws.directconnect_virtual_interface:
     state: absent
     connection_id: dxcon-XXXXXXXX
     virtual_interface_id: dxv-XXXXXXXX
