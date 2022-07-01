@@ -6,6 +6,7 @@ complex
 dotted
 tags
 encryption_kms
+encryption_bucket_key
 encryption_sse
 public_access
 acl
