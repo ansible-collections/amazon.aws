@@ -51,6 +51,24 @@
         - lt.default_version == 3
         - lt.latest_version == 3
 
+  - name: create new template version based on an old version
+    ec2_launch_template:
+      name: "{{ resource_prefix }}-simple"
+      cpu_options:
+          core_count: 1
+          threads_per_core: 1
+      source_version: 1
+    register: lt
+
+  - name: instance with cpu_options created with the right options
+    assert:
+      that:
+        - lt is success
+        - lt is changed
+        - lt.default_version == 4
+        - lt.latest_version == 4
+        - lt.latest_template.launch_template_data.instance_type == "c4.large"
+
   always:
   - name: delete the template
     ec2_launch_template:
