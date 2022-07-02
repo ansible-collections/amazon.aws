@@ -126,22 +126,25 @@ def create_resource(client, module, params, result):
 
 
 def update_resource(client, module, params, result):
+    result['changed'] = False
+
     current_params = client.describe_configuration_aggregators(
         ConfigurationAggregatorNames=[params['ConfigurationAggregatorName']]
-    )
+    )['ConfigurationAggregators'][0]
 
-    del current_params['ConfigurationAggregatorArn']
-    del current_params['CreationTime']
-    del current_params['LastUpdatedTime']
+    if params['AccountAggregationSources'] != current_params.get('AccountAggregationSources', []):
+        result['changed'] = True
 
-    if params != current_params['ConfigurationAggregators'][0]:
+    if params['OrganizationAggregationSource'] != current_params.get('OrganizationAggregationSource', {}):
+        result['changed'] = True
+
+    if result['changed']:
         try:
             client.put_configuration_aggregator(
                 ConfigurationAggregatorName=params['ConfigurationAggregatorName'],
                 AccountAggregationSources=params['AccountAggregationSources'],
                 OrganizationAggregationSource=params['OrganizationAggregationSource']
             )
-            result['changed'] = True
             result['aggregator'] = camel_dict_to_snake_dict(resource_exists(client, module, params))
             return result
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
