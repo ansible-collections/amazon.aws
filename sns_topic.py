@@ -133,6 +133,10 @@ options:
       protocol:
         description: Protocol of subscription.
         required: true
+      attributes:
+        description: Attributes of subscription. Only supports RawMessageDelievery for SQS endpoints.
+        default: {}
+        version_added: "4.1.0"
     type: list
     elements: dict
     default: []
@@ -358,6 +362,8 @@ class SnsTopicManager(object):
         self.subscriptions_existing = []
         self.subscriptions_deleted = []
         self.subscriptions_added = []
+        self.subscriptions_attributes_set = []
+        self.desired_subscription_attributes = dict()
         self.purge_subscriptions = purge_subscriptions
         self.check_mode = check_mode
         self.topic_created = False
@@ -455,6 +461,45 @@ class SnsTopicManager(object):
                     self.module.fail_json_aws(e, msg="Couldn't subscribe to topic %s" % self.topic_arn)
         return changed
 
+    def _init_desired_subscription_attributes(self):
+        for sub in self.subscriptions:
+            sub_key = (sub['protocol'], canonicalize_endpoint(sub['protocol'], sub['endpoint']))
+            tmp_dict = sub.get('attributes', {})
+            # aws sdk expects values to be strings
+            # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sns.html#SNS.Client.set_subscription_attributes
+            for k, v in tmp_dict.items():
+                tmp_dict[k] = str(v)
+
+            self.desired_subscription_attributes[sub_key] = tmp_dict
+
+    def _set_topic_subs_attributes(self):
+        changed = False
+        for sub in list_topic_subscriptions(self.connection, self.module, self.topic_arn):
+            sub_key = (sub['Protocol'], sub['Endpoint'])
+            sub_arn = sub['SubscriptionArn']
+            if sub_key not in self.desired_subscription_attributes:
+                # subscription isn't defined in desired, skipping
+                continue
+
+            try:
+                sub_current_attributes = self.connection.get_subscription_attributes(SubscriptionArn=sub_arn)['Attributes']
+            except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                self.module.fail_json_aws(e, "Couldn't get subscription attributes for subscription %s" % sub_arn)
+
+            raw_message = self.desired_subscription_attributes[sub_key].get('RawMessageDelivery')
+            if raw_message is not None and 'RawMessageDelivery' in sub_current_attributes:
+                if sub_current_attributes['RawMessageDelivery'].lower() != raw_message.lower():
+                    changed = True
+                    if not self.check_mode:
+                        try:
+                            self.connection.set_subscription_attributes(SubscriptionArn=sub_arn,
+                                                                        AttributeName='RawMessageDelivery',
+                                                                        AttributeValue=raw_message)
+                        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+                            self.module.fail_json_aws(e, "Couldn't set RawMessageDelivery subscription attribute")
+
+        return changed
+
     def _delete_subscriptions(self):
         # NOTE: subscriptions in 'PendingConfirmation' timeout in 3 days
         #       https://forums.aws.amazon.com/thread.jspa?threadID=85993
@@ -496,6 +541,13 @@ class SnsTopicManager(object):
         elif self.display_name or self.policy or self.delivery_policy:
             self.module.fail_json(msg="Cannot set display name, policy or delivery policy for SNS topics not owned by this account")
         changed |= self._set_topic_subs()
+
+        self._init_desired_subscription_attributes()
+        if self.topic_arn in list_topics(self.connection, self.module):
+            changed |= self._set_topic_subs_attributes()
+        elif any(self.desired_subscription_attributes.values()):
+            self.module.fail_json(msg="Cannot set subscription attributes for SNS topics not owned by this account")
+
         return changed
 
     def ensure_gone(self):
