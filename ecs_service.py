@@ -12,16 +12,16 @@ module: ecs_service
 version_added: 1.0.0
 short_description: Create, terminate, start or stop a service in ECS
 description:
-  - Creates or terminates ECS. services.
+  - Creates or terminates ECS services.
 notes:
   - The service role specified must be assumable. (i.e. have a trust relationship for the ecs service, ecs.amazonaws.com)
   - For details of the parameters and returns see U(https://boto3.readthedocs.io/en/latest/reference/services/ecs.html).
   - An IAM role must have been previously created.
 author:
-    - "Mark Chance (@Java1Guy)"
-    - "Darek Kaczynski (@kaczynskid)"
-    - "Stephane Maarek (@simplesteph)"
-    - "Zac Blazic (@zacblazic)"
+  - "Mark Chance (@Java1Guy)"
+  - "Darek Kaczynski (@kaczynskid)"
+  - "Stephane Maarek (@simplesteph)"
+  - "Zac Blazic (@zacblazic)"
 options:
     state:
         description:
@@ -46,11 +46,15 @@ options:
         description:
           - The task definition the service will run.
           - This parameter is required when I(state=present).
+          - This parameter is ignored when updating a service with a C(CODE_DEPLOY) deployment controller in which case
+            the task definition is managed by Code Pipeline and cannot be updated.
         required: false
         type: str
     load_balancers:
         description:
           - The list of ELBs defined for this service.
+          - Load balancers for an existing service cannot be updated, and it is an error to do so.
+          - When the deployment controller is CODE_DEPLOY changes to this value are simply ignored, and do not cause an error.
         required: false
         type: list
         elements: dict
@@ -90,6 +94,17 @@ options:
         required: false
         type: bool
         default: false
+    deployment_controller:
+        description:
+          - The deployment controller to use for the service. If no deploymenet controller is specified, the ECS controller is used.
+        required: false
+        version_added: 4.1.0
+        type: dict
+        suboptions:
+          type:
+            type: str
+            choices: ["ECS", "CODE_DEPLOY", "EXTERNAL"]
+            description: The deployment controller type to use.
     deployment_configuration:
         description:
           - Optional parameters that control the deployment_configuration.
@@ -238,9 +253,8 @@ options:
         default: false
         version_added: 4.1.0
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = r'''
@@ -590,6 +604,10 @@ ansible_facts:
 '''
 import time
 
+DEPLOYMENT_CONTROLLER_TYPE_MAP = {
+    'type': 'str',
+}
+
 DEPLOYMENT_CONFIGURATION_TYPE_MAP = {
     'maximum_percent': 'int',
     'minimum_healthy_percent': 'int',
@@ -664,7 +682,8 @@ class EcsServiceManager:
         # but the user is just entering
         #   ansible-fargate-nginx:3
         if expected['task_definition'] != existing['taskDefinition'].split('/')[-1]:
-            return False
+            if existing['deploymentController']['type'] != 'CODE_DEPLOY':
+                return False
 
         if expected.get('health_check_grace_period_seconds'):
             if expected.get('health_check_grace_period_seconds') != existing.get('healthCheckGracePeriodSeconds'):
@@ -682,7 +701,7 @@ class EcsServiceManager:
         return True
 
     def create_service(self, service_name, cluster_name, task_definition, load_balancers,
-                       desired_count, client_token, role, deployment_configuration,
+                       desired_count, client_token, role, deployment_controller, deployment_configuration,
                        placement_constraints, placement_strategy, health_check_grace_period_seconds,
                        network_configuration, service_registries, launch_type, platform_version,
                        scheduling_strategy, capacity_provider_strategy):
@@ -699,6 +718,8 @@ class EcsServiceManager:
         )
         if network_configuration:
             params['networkConfiguration'] = network_configuration
+        if deployment_controller:
+            params['deploymentController'] = deployment_controller
         if launch_type:
             params['launchType'] = launch_type
         if platform_version:
@@ -786,6 +807,7 @@ def main():
         repeat=dict(required=False, type='int', default=10),
         force_new_deployment=dict(required=False, default=False, type='bool'),
         force_deletion=dict(required=False, default=False, type='bool'),
+        deployment_controller=dict(required=False, default={}, type='dict'),
         deployment_configuration=dict(required=False, default={}, type='dict'),
         wait=dict(required=False, default=False, type='bool'),
         placement_constraints=dict(
@@ -851,6 +873,11 @@ def main():
     else:
         network_configuration = None
 
+    deployment_controller = map_complex_type(module.params['deployment_controller'],
+                                             DEPLOYMENT_CONTROLLER_TYPE_MAP)
+
+    deploymentController = snake_dict_to_camel_dict(deployment_controller)
+
     deployment_configuration = map_complex_type(module.params['deployment_configuration'],
                                                 DEPLOYMENT_CONFIGURATION_TYPE_MAP)
 
@@ -912,12 +939,19 @@ def main():
                         if 'capacityProviderStrategy' in existing.keys():
                             module.fail_json(msg="It is not possible to change an existing service from capacity_provider_strategy to launch_type.")
                     if (existing['loadBalancers'] or []) != loadBalancers:
-                        module.fail_json(msg="It is not possible to update the load balancers of an existing service")
+                        if existing['deploymentController']['type'] != 'CODE_DEPLOY':
+                            module.fail_json(msg="It is not possible to update the load balancers of an existing service")
+
+                    if existing.get('deploymentController', {}).get('type', None) == 'CODE_DEPLOY':
+                        task_definition = ''
+                        network_configuration = []
+                    else:
+                        task_definition = module.params['task_definition']
 
                     # update required
                     response = service_mgr.update_service(module.params['name'],
                                                           module.params['cluster'],
-                                                          module.params['task_definition'],
+                                                          task_definition,
                                                           module.params['desired_count'],
                                                           deploymentConfiguration,
                                                           network_configuration,
@@ -935,6 +969,7 @@ def main():
                                                               module.params['desired_count'],
                                                               clientToken,
                                                               role,
+                                                              deploymentController,
                                                               deploymentConfiguration,
                                                               module.params['placement_constraints'],
                                                               module.params['placement_strategy'],
