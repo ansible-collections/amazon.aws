@@ -8,138 +8,139 @@ __metaclass__ = type
 
 
 DOCUMENTATION = r'''
-module: aws_waf_condition
+module: waf_condition
 short_description: Create and delete WAF Conditions
 version_added: 1.0.0
 description:
   - Read the AWS documentation for WAF
     U(https://aws.amazon.com/documentation/waf/)
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_waf_condition).
+    The usage did not change.
 
 author:
   - Will Thames (@willthames)
   - Mike Mochan (@mmochan)
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 
 options:
-    name:
-        description: Name of the Web Application Firewall condition to manage.
-        required: true
-        type: str
-    type:
-        description: The type of matching to perform.
-        choices:
-        - byte
-        - geo
-        - ip
-        - regex
-        - size
-        - sql
-        - xss
-        type: str
-        required: true
-    filters:
-        description:
-        - A list of the filters against which to match.
-        - For I(type=byte), valid keys are I(field_to_match), I(position), I(header), I(transformation) and I(target_string).
-        - For I(type=geo), the only valid key is I(country).
-        - For I(type=ip), the only valid key is I(ip_address).
-        - For I(type=regex), valid keys are I(field_to_match), I(transformation) and I(regex_pattern).
-        - For I(type=size), valid keys are I(field_to_match), I(transformation), I(comparison) and I(size).
-        - For I(type=sql), valid keys are I(field_to_match) and I(transformation).
-        - For I(type=xss), valid keys are I(field_to_match) and I(transformation).
-        - Required when I(state=present).
-        type: list
-        elements: dict
-        suboptions:
-            field_to_match:
-                description:
-                - The field upon which to perform the match.
-                - Valid when I(type=byte), I(type=regex), I(type=sql) or I(type=xss).
-                type: str
-                choices: ['uri', 'query_string', 'header', 'method', 'body']
-            position:
-                description:
-                - Where in the field the match needs to occur.
-                - Only valid when I(type=byte).
-                type: str
-                choices: ['exactly', 'starts_with', 'ends_with', 'contains', 'contains_word']
-            header:
-                description:
-                - Which specific header should be matched.
-                - Required when I(field_to_match=header).
-                - Valid when I(type=byte).
-                type: str
-            transformation:
-                description:
-                - A transform to apply on the field prior to performing the match.
-                - Valid when I(type=byte), I(type=regex), I(type=sql) or I(type=xss).
-                type: str
-                choices: ['none', 'compress_white_space', 'html_entity_decode', 'lowercase', 'cmd_line', 'url_decode']
-            country:
-                description:
-                - Value of geo constraint (typically a two letter country code).
-                - The only valid key when I(type=geo).
-                type: str
-            ip_address:
-                description:
-                - An IP Address or CIDR to match.
-                - The only valid key when I(type=ip).
-                type: str
-            regex_pattern:
-                description:
-                - A dict describing the regular expressions used to perform the match.
-                - Only valid when I(type=regex).
-                type: dict
-                suboptions:
-                    name:
-                        description: A name to describe the set of patterns.
-                        type: str
-                    regex_strings:
-                        description: A list of regular expressions to match.
-                        type: list
-                        elements: str
-            comparison:
-                description:
-                - What type of comparison to perform.
-                - Only valid key when I(type=size).
-                type: str
-                choices: ['EQ', 'NE', 'LE', 'LT', 'GE', 'GT']
-            size:
-                description:
-                - The size of the field (in bytes).
-                - Only valid key when I(type=size).
-                type: int
-            target_string:
-                description:
-                - The string to search for.
-                - May be up to 50 bytes.
-                - Valid when I(type=byte).
-                type: str
-    purge_filters:
-        description:
-        - Whether to remove existing filters from a condition if not passed in I(filters).
-        default: false
-        type: bool
-    waf_regional:
-        description: Whether to use waf-regional module.
-        default: false
-        required: no
-        type: bool
-    state:
-        description: Whether the condition should be C(present) or C(absent).
-        choices:
-        - present
-        - absent
-        default: present
-        type: str
-
+  name:
+    description: Name of the Web Application Firewall condition to manage.
+    required: true
+    type: str
+  type:
+    description: The type of matching to perform.
+    choices:
+      - byte
+      - geo
+      - ip
+      - regex
+      - size
+      - sql
+      - xss
+    type: str
+    required: true
+  filters:
+    description:
+      - A list of the filters against which to match.
+      - For I(type=byte), valid keys are I(field_to_match), I(position), I(header), I(transformation) and I(target_string).
+      - For I(type=geo), the only valid key is I(country).
+      - For I(type=ip), the only valid key is I(ip_address).
+      - For I(type=regex), valid keys are I(field_to_match), I(transformation) and I(regex_pattern).
+      - For I(type=size), valid keys are I(field_to_match), I(transformation), I(comparison) and I(size).
+      - For I(type=sql), valid keys are I(field_to_match) and I(transformation).
+      - For I(type=xss), valid keys are I(field_to_match) and I(transformation).
+      - Required when I(state=present).
+    type: list
+    elements: dict
+    suboptions:
+        field_to_match:
+          description:
+            - The field upon which to perform the match.
+            - Valid when I(type=byte), I(type=regex), I(type=sql) or I(type=xss).
+          type: str
+          choices: ['uri', 'query_string', 'header', 'method', 'body']
+        position:
+          description:
+            - Where in the field the match needs to occur.
+            - Only valid when I(type=byte).
+          type: str
+          choices: ['exactly', 'starts_with', 'ends_with', 'contains', 'contains_word']
+        header:
+          description:
+            - Which specific header should be matched.
+            - Required when I(field_to_match=header).
+            - Valid when I(type=byte).
+          type: str
+        transformation:
+          description:
+            - A transform to apply on the field prior to performing the match.
+            - Valid when I(type=byte), I(type=regex), I(type=sql) or I(type=xss).
+          type: str
+          choices: ['none', 'compress_white_space', 'html_entity_decode', 'lowercase', 'cmd_line', 'url_decode']
+        country:
+          description:
+            - Value of geo constraint (typically a two letter country code).
+            - The only valid key when I(type=geo).
+          type: str
+        ip_address:
+          description:
+            - An IP Address or CIDR to match.
+            - The only valid key when I(type=ip).
+          type: str
+        regex_pattern:
+          description:
+            - A dict describing the regular expressions used to perform the match.
+            - Only valid when I(type=regex).
+          type: dict
+          suboptions:
+            name:
+              description: A name to describe the set of patterns.
+              type: str
+            regex_strings:
+              description: A list of regular expressions to match.
+              type: list
+              elements: str
+        comparison:
+          description:
+            - What type of comparison to perform.
+            - Only valid key when I(type=size).
+          type: str
+          choices: ['EQ', 'NE', 'LE', 'LT', 'GE', 'GT']
+        size:
+          description:
+            - The size of the field (in bytes).
+            - Only valid key when I(type=size).
+          type: int
+        target_string:
+          description:
+            - The string to search for.
+            - May be up to 50 bytes.
+            - Valid when I(type=byte).
+          type: str
+  purge_filters:
+    description:
+      - Whether to remove existing filters from a condition if not passed in I(filters).
+    default: false
+    type: bool
+  waf_regional:
+    description: Whether to use C(waf-regional) module.
+    default: false
+    required: no
+    type: bool
+  state:
+    description: Whether the condition should be C(present) or C(absent).
+    choices:
+      - present
+      - absent
+    default: present
+    type: str
 '''
 
 EXAMPLES = r'''
   - name: create WAF byte condition
-    community.aws.aws_waf_condition:
+    community.aws.waf_condition:
       name: my_byte_condition
       filters:
       - field_to_match: header
@@ -149,7 +150,7 @@ EXAMPLES = r'''
       type: byte
 
   - name: create WAF geo condition
-    community.aws.aws_waf_condition:
+    community.aws.waf_condition:
       name: my_geo_condition
       filters:
         - country: US
@@ -158,7 +159,7 @@ EXAMPLES = r'''
       type: geo
 
   - name: create IP address condition
-    community.aws.aws_waf_condition:
+    community.aws.waf_condition:
       name: "{{ resource_prefix }}_ip_condition"
       filters:
         - ip_address: "10.0.0.0/8"
@@ -166,7 +167,7 @@ EXAMPLES = r'''
       type: ip
 
   - name: create WAF regex condition
-    community.aws.aws_waf_condition:
+    community.aws.waf_condition:
       name: my_regex_condition
       filters:
         - field_to_match: query_string
@@ -179,7 +180,7 @@ EXAMPLES = r'''
       type: regex
 
   - name: create WAF size condition
-    community.aws.aws_waf_condition:
+    community.aws.waf_condition:
       name: my_size_condition
       filters:
         - field_to_match: query_string
@@ -188,7 +189,7 @@ EXAMPLES = r'''
       type: size
 
   - name: create WAF sql injection condition
-    community.aws.aws_waf_condition:
+    community.aws.waf_condition:
       name: my_sql_condition
       filters:
         - field_to_match: query_string
@@ -196,7 +197,7 @@ EXAMPLES = r'''
       type: sql
 
   - name: create WAF xss condition
-    community.aws.aws_waf_condition:
+    community.aws.waf_condition:
       name: my_xss_condition
       filters:
         - field_to_match: query_string
@@ -728,7 +729,7 @@ def main():
 
     if state == 'present':
         (changed, results) = condition.ensure_condition_present()
-        # return a condition agnostic ID for use by aws_waf_rule
+        # return a condition agnostic ID for use by waf_rule
         results['ConditionId'] = results[condition.conditionsetid]
     else:
         (changed, results) = condition.ensure_condition_absent()

@@ -7,18 +7,20 @@ __metaclass__ = type
 
 
 DOCUMENTATION = '''
-module: aws_waf_info
-short_description: Retrieve information for WAF ACLs, Rule , Conditions and Filters.
+module: waf_info
+short_description: Retrieve information for WAF ACLs, Rules, Conditions and Filters
 version_added: 1.0.0
 description:
-  - Retrieve information for WAF ACLs, Rule , Conditions and Filters.
+  - Retrieve information for WAF ACLs, Rules, Conditions and Filters.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_waf_info).
+    The usage did not change.
 options:
   name:
     description:
       - The name of a Web Application Firewall.
     type: str
   waf_regional:
-    description: Whether to use the waf-regional module.
+    description: Whether to use the C(waf-regional) module.
     default: false
     required: no
     type: bool
@@ -27,21 +29,20 @@ author:
   - Mike Mochan (@mmochan)
   - Will Thames (@willthames)
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
 - name: obtain all WAF information
-  community.aws.aws_waf_info:
+  community.aws.waf_info:
 
 - name: obtain all information for a single WAF
-  community.aws.aws_waf_info:
+  community.aws.waf_info:
     name: test_waf
 
 - name: obtain all information for a single WAF Regional
-  community.aws.aws_waf_info:
+  community.aws.waf_info:
     name: test_waf
     waf_regional: true
 '''
