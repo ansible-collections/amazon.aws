@@ -10,12 +10,13 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: aws_sgw_info
+module: storagegateway_info
 version_added: 1.0.0
 short_description: Fetch AWS Storage Gateway information
 description:
-    - Fetch AWS Storage Gateway information
-author: Loic Blot (@nerzhul) <loic.blot@unix-experience.fr>
+  - Fetch AWS Storage Gateway information
+author:
+  - Loic Blot (@nerzhul) <loic.blot@unix-experience.fr>
 options:
   gather_local_disks:
     description:
@@ -42,9 +43,8 @@ options:
     required: false
     default: true
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 RETURN = '''
