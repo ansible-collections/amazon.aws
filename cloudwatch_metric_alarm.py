@@ -19,13 +19,16 @@ __metaclass__ = type
 
 
 DOCUMENTATION = r'''
-module: ec2_metric_alarm
-short_description: "Create/update or delete AWS Cloudwatch 'metric alarms'"
+module: cloudwatch_metric_alarm
+short_description: "Create/update or delete AWS CloudWatch 'metric alarms'"
 version_added: 1.0.0
 description:
- - Can create or delete AWS metric alarms.
+ - Can create or delete AWS CloudWatch metric alarms.
  - Metrics you wish to alarm on must already exist.
-author: "Zacharie Eakin (@Zeekin)"
+ - Prior to release 5.0.0 this module was called C(community.aws.ec2_metric_alarm).
+   The usage did not change.
+author:
+  - "Zacharie Eakin (@Zeekin)"
 options:
     state:
         description:
@@ -46,7 +49,7 @@ options:
         type: str
     namespace:
         description:
-          - Name of the appropriate namespace (C(AWS/EC2), C(System/Linux), etc.), which determines the category it will appear under in cloudwatch.
+          - Name of the appropriate namespace (C(AWS/EC2), C(System/Linux), etc.), which determines the category it will appear under in CloudWatch.
         required: false
         type: str
     statistic:
@@ -156,14 +159,13 @@ options:
           - 'missing'
         default: 'missing'
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = r'''
   - name: create alarm
-    community.aws.ec2_metric_alarm:
+    community.aws.cloudwatch_metric_alarm:
       state: present
       region: ap-southeast-2
       name: "cpu-low"
@@ -180,7 +182,7 @@ EXAMPLES = r'''
       alarm_actions: ["action1","action2"]
 
   - name: Create an alarm to recover a failed instance
-    community.aws.ec2_metric_alarm:
+    community.aws.cloudwatch_metric_alarm:
       state: present
       region: us-west-1
       name: "recover-instance"
@@ -195,7 +197,6 @@ EXAMPLES = r'''
       description: "This will recover an instance when it fails"
       dimensions: {"InstanceId":'i-XXX'}
       alarm_actions: ["arn:aws:automate:us-west-1:ec2:recover"]
-
 '''
 
 try:
