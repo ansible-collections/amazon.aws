@@ -1,0 +1,29 @@
+---
+
+- name: try to cancel pre-loop
+  ec2_asg_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "cancelled"
+  ignore_errors: yes
+
+- name: test starting a refresh with an ASG name
+  ec2_asg_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "started"
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ aws_region }}"
+  ignore_errors: no
+  retries: 10
+  delay: 5
+  register: refreshout
+  until: refreshout is not failed
+
+- name: test cancelling a refresh with an ASG name
+  ec2_asg_instance_refresh:
+    name: "{{ asg_name }}"
+    state: "cancelled"
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ aws_region }}"
+  ignore_errors: yes
