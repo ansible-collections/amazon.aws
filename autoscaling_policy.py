@@ -7,12 +7,14 @@ __metaclass__ = type
 
 
 DOCUMENTATION = r'''
-module: ec2_scaling_policy
+module: autoscaling_policy
 short_description: Create or delete AWS scaling policies for Autoscaling groups
 version_added: 1.0.0
 description:
   - Can create or delete scaling policies for autoscaling groups.
   - Referenced autoscaling groups must already exist.
+  - Prior to release 5.0.0 this module was called C(community.aws.ec2_scaling_policy).
+    The usage did not change.
 author:
   - Zacharie Eakin (@zeekin)
   - Will Thames (@willthames)
@@ -81,7 +83,7 @@ options:
   step_adjustments:
     type: list
     description:
-      - list of dicts containing I(lower_bound), I(upper_bound) and I(scaling_adjustment)
+      - List of dicts containing I(lower_bound), I(upper_bound) and I(scaling_adjustment).
       - Intervals must not overlap or have a gap between them.
       - At most, one item can have an undefined I(lower_bound).
         If any item has a negative lower_bound, then there must be a step adjustment with an undefined I(lower_bound).
@@ -112,13 +114,12 @@ options:
     description:
       - The estimated time, in seconds, until a newly launched instance can contribute to the CloudWatch metrics.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 EXAMPLES = '''
 - name: Simple Scale Down policy
-  community.aws.ec2_scaling_policy:
+  community.aws.autoscaling_policy:
     state: present
     region: US-XXX
     name: "scaledown-policy"
@@ -132,7 +133,7 @@ EXAMPLES = '''
 # following creates a stepped policy:
 # From 20-40 (0-20 above threshold), increase by 50% of existing capacity
 # From 41-infinity, increase by 100% of existing capacity
-- community.aws.ec2_scaling_policy:
+- community.aws.autoscaling_policy:
     state: present
     region: US-XXX
     name: "step-scale-up-policy"
@@ -149,47 +150,47 @@ EXAMPLES = '''
 
 RETURN = '''
 adjustment_type:
-  description: Scaling policy adjustment type
+  description: Scaling policy adjustment type.
   returned: always
   type: str
   sample: PercentChangeInCapacity
 alarms:
-  description: Cloudwatch alarms related to the policy
+  description: Cloudwatch alarms related to the policy.
   returned: always
   type: complex
   contains:
     alarm_name:
-      description: name of the Cloudwatch alarm
+      description: Name of the Cloudwatch alarm.
       returned: always
       type: str
       sample: cpu-very-high
     alarm_arn:
-      description: ARN of the Cloudwatch alarm
+      description: ARN of the Cloudwatch alarm.
       returned: always
       type: str
       sample: arn:aws:cloudwatch:us-east-2:1234567890:alarm:cpu-very-high
 arn:
-  description: ARN of the scaling policy. Provided for backward compatibility, value is the same as I(policy_arn)
+  description: ARN of the scaling policy. Provided for backward compatibility, value is the same as I(policy_arn).
   returned: always
   type: str
   sample: arn:aws:autoscaling:us-east-2:123456789012:scalingPolicy:59e37526-bd27-42cf-adca-5cd3d90bc3b9:autoScalingGroupName/app-asg:policyName/app-policy
 as_name:
-  description: Auto Scaling Group name. Provided for backward compatibility, value is the same as I(auto_scaling_group_name)
+  description: Auto Scaling Group name. Provided for backward compatibility, value is the same as I(auto_scaling_group_name).
   returned: always
   type: str
   sample: app-asg
 auto_scaling_group_name:
-  description: Name of Auto Scaling Group
+  description: Name of Auto Scaling Group.
   returned: always
   type: str
   sample: app-asg
 metric_aggregation_type:
-  description: Method used to aggregate metrics
+  description: Method used to aggregate metrics.
   returned: when I(policy_type) is C(StepScaling)
   type: str
   sample: Maximum
 name:
-  description: Name of the scaling policy. Provided for backward compatibility, value is the same as I(policy_name)
+  description: Name of the scaling policy. Provided for backward compatibility, value is the same as I(policy_name).
   returned: always
   type: str
   sample: app-policy
@@ -199,37 +200,37 @@ policy_arn:
   type: str
   sample: arn:aws:autoscaling:us-east-2:123456789012:scalingPolicy:59e37526-bd27-42cf-adca-5cd3d90bc3b9:autoScalingGroupName/app-asg:policyName/app-policy
 policy_name:
-  description: Name of scaling policy
+  description: Name of scaling policy.
   returned: always
   type: str
   sample: app-policy
 policy_type:
-  description: Type of auto scaling policy
+  description: Type of auto scaling policy.
   returned: always
   type: str
   sample: StepScaling
 scaling_adjustment:
-  description: Adjustment to make when alarm is triggered
+  description: Adjustment to make when alarm is triggered.
   returned: When I(policy_type) is C(SimpleScaling)
   type: int
   sample: 1
 step_adjustments:
-  description: List of step adjustments
+  description: List of step adjustments.
   returned: always
   type: complex
   contains:
     metric_interval_lower_bound:
-      description: Lower bound for metric interval
+      description: Lower bound for metric interval.
       returned: if step has a lower bound
       type: float
       sample: 20.0
     metric_interval_upper_bound:
-      description: Upper bound for metric interval
+      description: Upper bound for metric interval.
       returned: if step has an upper bound
       type: float
       sample: 40.0
     scaling_adjustment:
-      description: Adjustment to make if this step is reached
+      description: Adjustment to make if this step is reached.
       returned: always
       type: int
       sample: 50

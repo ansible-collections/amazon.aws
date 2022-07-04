@@ -8,12 +8,15 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: ec2_asg_info
+module: autoscaling_group_info
 version_added: 1.0.0
-short_description: Gather information about ec2 Auto Scaling Groups (ASGs) in AWS
+short_description: Gather information about EC2 Auto Scaling Groups (ASGs) in AWS
 description:
-  - Gather information about ec2 Auto Scaling Groups (ASGs) in AWS
-author: "Rob White (@wimnat)"
+  - Gather information about EC2 Auto Scaling Groups (ASGs) in AWS.
+  - Prior to release 5.0.0 this module was called C(community.aws.ec2_asg_info).
+    The usage did not change.
+author:
+  - "Rob White (@wimnat)"
 options:
   name:
     description:
@@ -29,45 +32,44 @@ options:
     required: false
     type: dict
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Find all groups
-  community.aws.ec2_asg_info:
+  community.aws.autoscaling_group_info:
   register: asgs
 
 - name: Find a group with matching name/prefix
-  community.aws.ec2_asg_info:
+  community.aws.autoscaling_group_info:
     name: public-webserver-asg
   register: asgs
 
 - name: Find a group with matching tags
-  community.aws.ec2_asg_info:
+  community.aws.autoscaling_group_info:
     tags:
       project: webapp
       env: production
   register: asgs
 
 - name: Find a group with matching name/prefix and tags
-  community.aws.ec2_asg_info:
+  community.aws.autoscaling_group_info:
     name: myproject
     tags:
       env: production
   register: asgs
 
 - name: Fail if no groups are found
-  community.aws.ec2_asg_info:
+  community.aws.autoscaling_group_info:
     name: public-webserver-asg
   register: asgs
   failed_when: "{{ asgs.results | length == 0 }}"
 
 - name: Fail if more than 1 group is found
-  community.aws.ec2_asg_info:
+  community.aws.autoscaling_group_info:
     name: public-webserver-asg
   register: asgs
   failed_when: "{{ asgs.results | length > 1 }}"
@@ -132,7 +134,7 @@ instances:
 launch_config_name:
     description: >
       Name of launch configuration associated with the ASG. Same as launch_configuration_name,
-      provided for compatibility with ec2_asg module.
+      provided for compatibility with M(community.aws.autoscaling_group) module.
     returned: success
     type: str
     sample: "public-webapp-production-1"
@@ -401,7 +403,7 @@ def find_asgs(conn, module, name=None, tags=None):
 
         if matched_name and matched_tags:
             asg = camel_dict_to_snake_dict(asg)
-            # compatibility with ec2_asg module
+            # compatibility with autoscaling_group module
             if 'launch_configuration_name' in asg:
                 asg['launch_config_name'] = asg['launch_configuration_name']
             # workaround for https://github.com/ansible/ansible/pull/25015

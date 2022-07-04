@@ -9,19 +9,20 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: ec2_lc
+module: autoscaling_launch_config
 version_added: 1.0.0
 
 short_description: Create or delete AWS Autoscaling Launch Configurations
 
 description:
   - Can create or delete AWS Autoscaling Configurations.
-  - Works with the ec2_asg module to manage Autoscaling Groups.
+  - Works with the M(community.aws.autoscaling_group) module to manage Autoscaling Groups.
+  - Prior to release 5.0.0 this module was called C(community.aws.ec2_lc).
+    The usage did not change.
 
 notes:
   - Amazon ASG Autoscaling Launch Configurations are immutable once created, so modifying the configuration after it is changed will not modify the
     launch configuration on AWS. You must create a new config and assign it to the ASG instead.
-
 
 author:
   - "Gareth Rushgrove (@garethr)"
@@ -54,14 +55,14 @@ options:
     type: str
   security_groups:
     description:
-      - A list of security groups to apply to the instances. Since version 2.4 you can specify either security group names or IDs or a mix.  Previous
-        to 2.4, for VPC instances, specify security group IDs and for EC2-Classic, specify either security group names or IDs.
+      - A list of security groups to apply to the instances.
+      - You can specify either security group names or IDs or a mix.
     type: list
     elements: str
   volumes:
     description:
       - A list dictionaries defining the volumes to create.
-      - For any volume, a volume size less than 1 will be interpreted as a request not to create the volume.
+      - For any volume, a volume size less than C(1) will be interpreted as a request not to create the volume.
     type: list
     elements: dict
     suboptions:
@@ -180,17 +181,15 @@ options:
       - When not set AWS will default to C(default).
     type: str
     choices: ['default', 'dedicated']
-
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = r'''
 
 - name: create a launch configuration with an encrypted volume
-  community.aws.ec2_lc:
+  community.aws.autoscaling_launch_config:
     name: special
     image_id: ami-XXX
     key_name: default
@@ -207,7 +206,7 @@ EXAMPLES = r'''
       ephemeral: ephemeral0
 
 - name: create a launch configuration using a running instance id as a basis
-  community.aws.ec2_lc:
+  community.aws.autoscaling_launch_config:
     name: special
     instance_id: i-00a48b207ec59e948
     key_name: default
@@ -220,7 +219,7 @@ EXAMPLES = r'''
       delete_on_termination: true
 
 - name: create a launch configuration to omit the /dev/sdf EBS device that is included in the AMI image
-  community.aws.ec2_lc:
+  community.aws.autoscaling_launch_config:
     name: special
     image_id: ami-XXX
     key_name: default
@@ -244,7 +243,7 @@ EXAMPLES = r'''
           encrypted: no
 
   - name: Create launch configuration
-    community.aws.ec2_lc:
+    community.aws.autoscaling_launch_config:
       name: lc1
       image_id: ami-xxxx
       assign_public_ip: yes
@@ -350,7 +349,7 @@ result:
       type: bool
       sample: true
     ebs_optimized:
-      description: Indicates whether the instance is optimized for EBS I/O (true) or not (false).
+      description: Indicates whether the instance is optimized for EBS I/O C(true) or not C(false).
       returned: when I(state=present)
       type: bool
       sample: false
@@ -360,7 +359,7 @@ result:
       type: str
       sample: ami-9be6f38c
     instance_monitoring:
-      description: Indicates whether instances in this group are launched with detailed (true) or basic (false) monitoring.
+      description: Indicates whether instances in this group are launched with detailed C(true) or basic C(false) monitoring.
       returned: when I(state=present)
       type: bool
       sample: true
@@ -439,7 +438,6 @@ security_groups:
   type: list
   sample:
   - sg-5e27db2f
-
 '''
 
 

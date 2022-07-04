@@ -8,13 +8,16 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: ec2_asg
+module: autoscaling_group
 version_added: 1.0.0
 short_description: Create or delete AWS AutoScaling Groups (ASGs)
 description:
   - Can create or delete AWS AutoScaling Groups.
-  - Can be used with the M(community.aws.ec2_lc) module to manage Launch Configurations.
-author: "Gareth Rushgrove (@garethr)"
+  - Can be used with the M(community.aws.autoscaling_launch_config) module to manage Launch Configurations.
+  - Prior to release 5.0.0 this module was called C(community.aws.ec2_asg).
+    The usage did not change.
+author:
+  - "Gareth Rushgrove (@garethr)"
 options:
   state:
     description:
@@ -45,7 +48,7 @@ options:
     elements: str
   launch_config_name:
     description:
-      - Name of the Launch configuration to use for the group. See the community.aws.ec2_lc) module for managing these.
+      - Name of the Launch configuration to use for the group. See the community.aws.autoscaling_launch_config) module for managing these.
       - If unspecified then the current group value will be used.  One of I(launch_config_name) or I(launch_template) must be provided.
     type: str
   launch_template:
@@ -318,15 +321,14 @@ options:
     type: list
     elements: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = r'''
 # Basic configuration with Launch Configuration
 
-- community.aws.ec2_asg:
+- community.aws.autoscaling_group:
     name: special
     load_balancers: [ 'lb1', 'lb2' ]
     availability_zones: [ 'eu-west-1a', 'eu-west-1b' ]
@@ -352,7 +354,7 @@ EXAMPLES = r'''
 # will have the current launch configuration.
 
 - name: create launch config
-  community.aws.ec2_lc:
+  community.aws.autoscaling_launch_config:
     name: my_new_lc
     image_id: ami-lkajsf
     key_name: mykey
@@ -361,7 +363,7 @@ EXAMPLES = r'''
     instance_type: m1.small
     assign_public_ip: yes
 
-- community.aws.ec2_asg:
+- community.aws.autoscaling_group:
     name: myasg
     launch_config_name: my_new_lc
     health_check_period: 60
@@ -375,7 +377,7 @@ EXAMPLES = r'''
 # To only replace a couple of instances instead of all of them, supply a list
 # to "replace_instances":
 
-- community.aws.ec2_asg:
+- community.aws.autoscaling_group:
     name: myasg
     launch_config_name: my_new_lc
     health_check_period: 60
@@ -390,7 +392,7 @@ EXAMPLES = r'''
 
 # Basic Configuration with Launch Template
 
-- community.aws.ec2_asg:
+- community.aws.autoscaling_group:
     name: special
     load_balancers: [ 'lb1', 'lb2' ]
     availability_zones: [ 'eu-west-1a', 'eu-west-1b' ]
@@ -408,7 +410,7 @@ EXAMPLES = r'''
 
 # Basic Configuration with Launch Template using mixed instance policy
 
-- community.aws.ec2_asg:
+- community.aws.autoscaling_group:
     name: special
     load_balancers: [ 'lb1', 'lb2' ]
     availability_zones: [ 'eu-west-1a', 'eu-west-1b' ]
@@ -508,7 +510,7 @@ instances:
 launch_config_name:
     description: >
       Name of launch configuration associated with the ASG. Same as launch_configuration_name,
-      provided for compatibility with ec2_asg module.
+      provided for compatibility with M(community.aws.autoscaling_group) module.
     returned: success
     type: str
     sample: "public-webapp-production-1"
@@ -652,7 +654,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.core import scrub_none_
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 
 ASG_ATTRIBUTES = ('AvailabilityZones', 'DefaultCooldown', 'DesiredCapacity',
                   'HealthCheckGracePeriod', 'HealthCheckType', 'LaunchConfigurationName',

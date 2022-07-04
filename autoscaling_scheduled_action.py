@@ -11,13 +11,15 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: ec2_asg_scheduled_action
+module: autoscaling_scheduled_action
 version_added: 2.2.0
-short_description: Create, modify and delete ASG scheduled scaling actions.
+short_description: Create, modify and delete ASG scheduled scaling actions
 description:
   - The module will create a new scheduled action when I(state=present) and no given action is found.
   - The module will update a new scheduled action when I(state=present) and the given action is found.
   - The module will delete a new scheduled action when I(state=absent) and the given action is found.
+  - Prior to release 5.0.0 this module was called C(community.aws.ec2_asg_scheduled_action).
+    The usage did not change.
 options:
   autoscaling_group_name:
     description:
@@ -74,7 +76,7 @@ extends_documentation_fragment:
 EXAMPLES = r'''
 # Create a scheduled action for a autoscaling group.
 - name: Create a minimal scheduled action for autoscaling group
-  community.aws.ec2_asg_scheduled_action:
+  community.aws.autoscaling_scheduled_action:
     region: eu-west-1
     autoscaling_group_name: test_asg
     scheduled_action_name: test_scheduled_action
@@ -85,7 +87,7 @@ EXAMPLES = r'''
   register: scheduled_action
 
 - name: Create a scheduled action for autoscaling group
-  community.aws.ec2_asg_scheduled_action:
+  community.aws.autoscaling_scheduled_action:
     region: eu-west-1
     autoscaling_group_name: test_asg
     scheduled_action_name: test_scheduled_action
@@ -100,12 +102,13 @@ EXAMPLES = r'''
   register: scheduled_action
 
 - name: Delete scheduled action
-  community.aws.ec2_asg_scheduled_action:
+  community.aws.autoscaling_scheduled_action:
     region: eu-west-1
     autoscaling_group_name: test_asg
     scheduled_action_name: test_scheduled_action
     state: absent
 '''
+
 RETURN = r'''
 scheduled_action_name:
   description: The name of the scheduled action.

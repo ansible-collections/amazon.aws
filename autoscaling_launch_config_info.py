@@ -9,12 +9,15 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: ec2_lc_info
+module: autoscaling_launch_config_info
 version_added: 1.0.0
-short_description: Gather information about AWS Autoscaling Launch Configurations.
+short_description: Gather information about AWS Autoscaling Launch Configurations
 description:
-    - Gather information about AWS Autoscaling Launch Configurations.
-author: "Loïc Latreille (@psykotox)"
+  - Gather information about AWS Autoscaling Launch Configurations.
+  - Prior to release 5.0.0 this module was called C(community.aws.ec2_lc_info).
+    The usage did not change.
+author:
+  - "Loïc Latreille (@psykotox)"
 options:
   name:
     description:
@@ -45,30 +48,29 @@ options:
       - Corresponds to Python slice notation.
     type: int
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Gather information about all launch configurations
-  community.aws.ec2_lc_info:
+  community.aws.autoscaling_launch_config_info:
 
 - name: Gather information about launch configuration with name "example"
-  community.aws.ec2_lc_info:
+  community.aws.autoscaling_launch_config_info:
     name: example
 
 - name: Gather information sorted by created_time from most recent to least recent
-  community.aws.ec2_lc_info:
+  community.aws.autoscaling_launch_config_info:
     sort: created_time
     sort_order: descending
 '''
 
 RETURN = r'''
 block_device_mapping:
-    description: Block device mapping for the instances of launch configuration
+    description: Block device mapping for the instances of launch configuration.
     type: list
     returned: always
     sample: "[{
@@ -79,74 +81,73 @@ block_device_mapping:
             'volume_type': 'gp2'
     }]"
 classic_link_vpc_security_groups:
-    description: IDs of one or more security groups for the VPC specified in classic_link_vpc_id
+    description: IDs of one or more security groups for the VPC specified in classic_link_vpc_id.
     type: str
     returned: always
     sample:
 created_time:
-    description: The creation date and time for the launch configuration
+    description: The creation date and time for the launch configuration.
     type: str
     returned: always
     sample: "2016-05-27T13:47:44.216000+00:00"
 ebs_optimized:
-    description: EBS I/O optimized (true ) or not (false )
+    description: EBS I/O optimized C(true) or not C(false).
     type: bool
     returned: always
     sample: true,
 image_id:
-    description: ID of the Amazon Machine Image (AMI)
+    description: ID of the Amazon Machine Image (AMI).
     type: str
     returned: always
     sample: "ami-12345678"
 instance_monitoring:
-    description: Launched with detailed monitoring or not
+    description: Launched with detailed monitoring or not.
     type: dict
     returned: always
     sample: "{
         'enabled': true
     }"
 instance_type:
-    description: Instance type
+    description: Instance type.
     type: str
     returned: always
     sample: "t2.micro"
 kernel_id:
-    description: ID of the kernel associated with the AMI
+    description: ID of the kernel associated with the AMI.
     type: str
     returned: always
     sample:
 key_name:
-    description: Name of the key pair
+    description: Name of the key pair.
     type: str
     returned: always
     sample: "user_app"
 launch_configuration_arn:
-    description: Amazon Resource Name (ARN) of the launch configuration
+    description: Amazon Resource Name (ARN) of the launch configuration.
     type: str
     returned: always
     sample: "arn:aws:autoscaling:us-east-1:666612345678:launchConfiguration:ba785e3a-dd42-6f02-4585-ea1a2b458b3d:launchConfigurationName/lc-app"
 launch_configuration_name:
-    description: Name of the launch configuration
+    description: Name of the launch configuration.
     type: str
     returned: always
     sample: "lc-app"
 ramdisk_id:
-    description: ID of the RAM disk associated with the AMI
+    description: ID of the RAM disk associated with the AMI.
     type: str
     returned: always
     sample:
 security_groups:
-    description: Security groups to associated
+    description: Security groups to associated.
     type: list
     returned: always
     sample: "[
         'web'
     ]"
 user_data:
-    description: User data available
+    description: User data available.
     type: str
     returned: always
-    sample:
 '''
 
 try:

@@ -10,15 +10,17 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: ec2_lc_find
+module: autoscaling_launch_config_find
 version_added: 1.0.0
 short_description: Find AWS Autoscaling Launch Configurations
 description:
   - Returns list of matching Launch Configurations for a given name, along with other useful information.
   - Results can be sorted and sliced.
-  - Based on the work by Tom Bamford U(https://github.com/tombamford)
-
-author: "Jose Armesto (@fiunchinho)"
+  - Based on the work by Tom Bamford U(https://github.com/tombamford).
+  - Prior to release 5.0.0 this module was called C(community.aws.ec2_lc_find).
+    The usage did not change.
+author:
+  - "Jose Armesto (@fiunchinho)"
 options:
   name_regex:
     description:
@@ -38,16 +40,15 @@ options:
       - Corresponds to Python slice notation like list[:limit].
     type: int
 extends_documentation_fragment:
-- amazon.aws.ec2
-- amazon.aws.aws
-
+  - amazon.aws.ec2
+  - amazon.aws.aws
 '''
 
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Search for the Launch Configurations that start with "app"
-  community.aws.ec2_lc_find:
+  community.aws.autoscaling_launch_config_find:
     name_regex: app.*
     sort_order: descending
     limit: 2

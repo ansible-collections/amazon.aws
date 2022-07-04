@@ -9,14 +9,17 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: ec2_asg_lifecycle_hook
+module: autoscaling_lifecycle_hook
 version_added: 1.0.0
-short_description: Create, delete or update AWS ASG Lifecycle Hooks.
+short_description: Create, delete or update AWS ASG Lifecycle Hooks
 description:
   - Will create a new hook when I(state=present) and no given Hook is found.
   - Will update an existing hook when I(state=present) and a Hook is found, but current and provided parameters differ.
   - Will delete the hook when I(state=absent) and a Hook is found.
-author: Igor 'Tsigankov' Eyrich (@tsiganenok) <tsiganenok@gmail.com>
+  - Prior to release 5.0.0 this module was called C(community.aws.ec2_asg_lifecycle_hook).
+    The usage did not change.
+author:
+  - Igor 'Tsigankov' Eyrich (@tsiganenok) <tsiganenok@gmail.com>
 options:
   state:
     description:
@@ -61,7 +64,7 @@ options:
       - The amount of time, in seconds, that can elapse before the lifecycle hook times out.
         When the lifecycle hook times out, Auto Scaling performs the default action.
         You can prevent the lifecycle hook from timing out by calling RecordLifecycleActionHeartbeat.
-      - By default Amazon AWS will use 3600 (1 hour)
+      - By default Amazon AWS will use C(3600) (1 hour).
     type: int
   default_result:
     description:
@@ -71,14 +74,13 @@ options:
     default: ABANDON
     type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
 - name: Create / Update lifecycle hook
-  community.aws.ec2_asg_lifecycle_hook:
+  community.aws.autoscaling_lifecycle_hook:
     region: eu-central-1
     state: present
     autoscaling_group_name: example
@@ -88,43 +90,42 @@ EXAMPLES = '''
     default_result: ABANDON
 
 - name: Delete lifecycle hook
-  community.aws.ec2_asg_lifecycle_hook:
+  community.aws.autoscaling_lifecycle_hook:
     region: eu-central-1
     state: absent
     autoscaling_group_name: example
     lifecycle_hook_name: example
-
 '''
 
 RETURN = '''
 ---
 auto_scaling_group_name:
-    description: The unique name of the auto scaling group
+    description: The unique name of the auto scaling group.
     returned: success
     type: str
     sample: "myasg"
 default_result:
-    description:  Defines the action the Auto Scaling group should take when the lifecycle hook timeout elapses or if an unexpected failure occurs
+    description:  Defines the action the Auto Scaling group should take when the lifecycle hook timeout elapses or if an unexpected failure occurs.
     returned: success
     type: str
     sample: CONTINUE
 global_timeout:
-    description: The maximum time, in seconds, that an instance can remain in a Pending:Wait or Terminating:Wait state
+    description: The maximum time, in seconds, that an instance can remain in a C(Pending:Wait) or C(Terminating:Wait) state.
     returned: success
     type: int
     sample: 172800
 heartbeat_timeout:
-    description: The maximum time, in seconds, that can elapse before the lifecycle hook times out
+    description: The maximum time, in seconds, that can elapse before the lifecycle hook times out.
     returned: success
     type: int
     sample: 3600
 lifecycle_hook_name:
-    description: The name of the lifecycle hook
+    description: The name of the lifecycle hook.
     returned: success
     type: str
     sample: "mylifecyclehook"
 lifecycle_transition:
-    description: The instance state to which lifecycle hook should be attached
+    description: The instance state to which lifecycle hook should be attached.
     returned: success
     type: str
     sample: "autoscaling:EC2_INSTANCE_LAUNCHING"
