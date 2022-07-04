@@ -1,0 +1,40 @@
+---
+# Beware: most of our tests here are run in parallel.
+# To add new tests you'll need to add a new host to the inventory and a matching
+# '{{ inventory_hostname }}'.yml file in roles/ec2_asg/tasks/
+
+- name: "Wrap up all tests and setup AWS credentials"
+  module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+      aws_config:
+        retries:
+          # Unfortunately AWSRetry doesn't support paginators and boto3's paginators
+          # don't support any configuration of the delay between retries.
+          max_attempts: 20
+  collections:
+    - community.aws
+  block:
+    - debug:
+        msg: "{{ inventory_hostname }} start: {{ lookup('pipe','date') }}"
+    - include_tasks: '{{ inventory_hostname }}.yml'
+    - debug:
+        msg: "{{ inventory_hostname }} finish: {{ lookup('pipe','date') }}"
+
+  always:
+    - set_fact:
+        _role_complete: True
+    - vars:
+        completed_hosts: '{{ ansible_play_hosts_all | map("extract", hostvars, "_role_complete") | list | select("defined") | list | length }}'
+        hosts_in_play: '{{ ansible_play_hosts_all | length }}'
+      debug:
+        msg: "{{ completed_hosts }} of {{ hosts_in_play }} complete"
+    - include_tasks: env_cleanup.yml
+      vars:
+        completed_hosts: '{{ ansible_play_hosts_all | map("extract", hostvars, "_role_complete") | list | select("defined") | list | length }}'
+        hosts_in_play: '{{ ansible_play_hosts_all | length }}'
+      when:
+      - completed_hosts == hosts_in_play

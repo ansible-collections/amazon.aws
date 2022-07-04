@@ -1,0 +1,645 @@
+---
+# tasks file for test_ec2_asg
+
+    # ============================================================
+
+- name: Test create/update/delete AutoScalingGroups with ec2_asg
+
+  block:
+
+    # ============================================================
+
+    - name: test without specifying required module options
+      ec2_asg:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        security_token: "{{ security_token | default(omit) }}"
+      ignore_errors: true
+      register: result
+
+    - name: assert name is a required module option
+      assert:
+        that:
+          - "result.msg == 'missing required arguments: name'"
+
+
+    - name: ensure launch configs exist
+      ec2_lc:
+        name: "{{ item }}"
+        assign_public_ip: true
+        image_id: "{{ ec2_ami_image }}"
+        user_data: |
+          #cloud-config
+          package_upgrade: true
+          package_update: true
+          packages:
+            - httpd
+          runcmd:
+            - "service httpd start"
+        security_groups: "{{ sg.group_id }}"
+        instance_type: t3.micro
+      loop:
+        - "{{ resource_prefix }}-lc"
+        - "{{ resource_prefix }}-lc-2"
+
+    # ============================================================
+
+    - name: launch asg and wait for instances to be deemed healthy (no ELB)
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_config_name: "{{ resource_prefix }}-lc"
+        desired_capacity: 1
+        min_size: 1
+        max_size: 1
+        vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
+        state: present
+        wait_for_instances: yes
+      register: output
+
+    - assert:
+        that:
+          - "output.viable_instances == 1"
+
+    - name: Enable metrics collection - check_mode
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        metrics_collection: yes
+      register: output
+      check_mode: true
+
+    - assert:
+        that:
+          - output is changed
+          - output is not failed
+          - '"autoscaling:UpdateAutoScalingGroup" not in output.resource_actions'
+
+    - name: Enable metrics collection
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        metrics_collection: yes
+      register: output
+
+    - assert:
+        that:
+          - output is changed
+
+    - name: Enable metrics collection (idempotency)
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        metrics_collection: yes
+      register: output
+
+    - assert:
+        that:
+          - output is not changed
+
+    - name: Disable metrics collection - check_mode
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        metrics_collection: no
+      register: output
+      check_mode: true
+
+    - assert:
+        that:
+          - output is changed
+          - output is not failed
+          - '"autoscaling:UpdateAutoScalingGroup" not in output.resource_actions'
+
+
+    - name: Disable metrics collection
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        metrics_collection: no
+      register: output
+
+    - assert:
+        that:
+          - output is changed
+
+    - name: Disable metrics collection (idempotency)
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        metrics_collection: no
+      register: output
+
+    - assert:
+        that:
+          - output is not changed
+
+    - name: kill asg
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        state: absent
+        wait_timeout: 800
+      async: 400
+
+    # ============================================================
+
+    - name: launch asg and do not wait for instances to be deemed healthy (no ELB)
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_config_name: "{{ resource_prefix }}-lc"
+        desired_capacity: 1
+        min_size: 1
+        max_size: 1
+        vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
+        wait_for_instances: no
+        state: present
+      register: output
+
+    - assert:
+        that:
+        - "output.viable_instances == 0"
+
+    - name: kill asg
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        state: absent
+        wait_timeout: 800
+      register: output
+      retries: 3
+      until: output is succeeded
+      delay: 10
+      async: 400
+
+    # ============================================================
+
+    - name: create asg with asg metrics enabled
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        metrics_collection: true
+        launch_config_name: "{{ resource_prefix }}-lc"
+        desired_capacity: 0
+        min_size: 0
+        max_size: 0
+        vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
+        state: present
+      register: output
+
+    - assert:
+        that:
+        - "'Group' in output.metrics_collection.0.Metric"
+
+    - name: kill asg
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        state: absent
+        wait_timeout: 800
+      async: 400
+
+    # ============================================================
+
+    - name: launch load balancer
+      ec2_elb_lb:
+        name: "{{ load_balancer_name }}"
+        state: present
+        security_group_ids:
+          - "{{ sg.group_id }}"
+        subnets: "{{ testing_subnet.subnet.id }}"
+        connection_draining_timeout: 60
+        listeners:
+          - protocol: http
+            load_balancer_port: 80
+            instance_port: 80
+        health_check:
+            ping_protocol: tcp
+            ping_port: 80
+            ping_path: "/"
+            response_timeout: 5
+            interval: 10
+            unhealthy_threshold: 4
+            healthy_threshold: 2
+      register: load_balancer
+
+    - name: launch asg and wait for instances to be deemed healthy (ELB)
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_config_name: "{{ resource_prefix }}-lc"
+        health_check_type: ELB
+        desired_capacity: 1
+        min_size: 1
+        max_size: 1
+        health_check_period: 300
+        vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
+        load_balancers: "{{ load_balancer_name }}"
+        wait_for_instances: yes
+        wait_timeout: 900
+        state: present
+      register: output
+
+    - assert:
+        that:
+        - "output.viable_instances == 1"
+
+    # ============================================================
+
+    # grow scaling group to 3
+    - name: add 2 more instances wait for instances to be deemed healthy (ELB)
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_config_name: "{{ resource_prefix }}-lc"
+        health_check_type: ELB
+        desired_capacity: 3
+        min_size: 3
+        max_size: 5
+        health_check_period: 600
+        vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
+        load_balancers: "{{ load_balancer_name }}"
+        wait_for_instances: yes
+        wait_timeout: 1200
+        state: present
+      register: output
+
+    - assert:
+        that:
+        - "output.viable_instances == 3"
+
+    # ============================================================
+
+    # Test max_instance_lifetime option
+    - name: enable asg max_instance_lifetime
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        max_instance_lifetime: 604801
+      register: output
+
+    - name: ensure max_instance_lifetime is set
+      assert:
+        that:
+        - output.max_instance_lifetime == 604801
+
+    - name: run without max_instance_lifetime
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_config_name: "{{ resource_prefix }}-lc"
+
+    - name: ensure max_instance_lifetime not affected by defaults
+      assert:
+        that:
+        - output.max_instance_lifetime == 604801
+
+    - name: disable asg max_instance_lifetime
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_config_name: "{{ resource_prefix }}-lc"
+        max_instance_lifetime: 0
+      register: output
+
+    - name: ensure max_instance_lifetime is not set
+      assert:
+        that:
+        - not output.max_instance_lifetime
+
+    # ============================================================
+
+    # perform rolling replace with different launch configuration
+    - name: perform rolling update to new AMI
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_config_name: "{{ resource_prefix }}-lc-2"
+        health_check_type: ELB
+        desired_capacity: 3
+        min_size: 1
+        max_size: 5
+        health_check_period: 900
+        load_balancers: "{{ load_balancer_name }}"
+        vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
+        wait_for_instances: yes
+        replace_all_instances: yes
+        wait_timeout: 1800
+        state: present
+      register: output
+
+    # ensure that all instances have new launch config
+    - assert:
+        that:
+        - "item.value.launch_config_name == '{{ resource_prefix }}-lc-2'"
+      loop: "{{ output.instance_facts | dict2items }}"
+
+    # assert they are all healthy and that the rolling update resulted in the appropriate number of instances
+    - assert:
+        that:
+          - "output.viable_instances == 3"
+
+    # ============================================================
+
+    # perform rolling replace with the original launch configuration
+    - name: perform rolling update to new AMI while removing the load balancer
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_config_name: "{{ resource_prefix }}-lc"
+        health_check_type: EC2
+        desired_capacity: 3
+        min_size: 1
+        max_size: 5
+        health_check_period: 900
+        load_balancers: []
+        vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
+        wait_for_instances: yes
+        replace_all_instances: yes
+        wait_timeout: 1800
+        state: present
+      register: output
+
+    # ensure that all instances have new launch config
+    - assert:
+        that:
+        - "item.value.launch_config_name == '{{ resource_prefix }}-lc'"
+      loop: "{{ output.instance_facts | dict2items }}"
+
+    # assert they are all healthy and that the rolling update resulted in the appropriate number of instances
+    # there should be the same number of instances as there were before the rolling update was performed
+    - assert:
+        that:
+          - "output.viable_instances == 3"
+
+    # ============================================================
+
+    # perform rolling replace with new launch configuration and lc_check:false
+    - name: "perform rolling update to new AMI with lc_check: false"
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_config_name: "{{ resource_prefix }}-lc-2"
+        health_check_type: EC2
+        desired_capacity: 3
+        min_size: 1
+        max_size: 5
+        health_check_period: 900
+        load_balancers: []
+        vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
+        wait_for_instances: yes
+        replace_all_instances: yes
+        replace_batch_size: 3
+        lc_check: false
+        wait_timeout: 1800
+        state: present
+
+    # Collect ec2_asg_info
+    - name: get ec2_asg info
+      ec2_asg_info:
+        name: "{{ resource_prefix }}-asg"
+      register: output
+
+    # Since we started with 3 instances and replace all of them.
+    # We should see only 3 instances total.
+    - assert:
+        that:
+          - output.results[0].instances | length == 3
+
+    # ============================================================
+
+    - name: kill asg
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        state: absent
+        wait_timeout: 800
+      async: 400
+
+    # Create new asg with replace_all_instances and lc_check:false
+    - name: "new asg with lc_check: false"
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_config_name: "{{ resource_prefix }}-lc"
+        health_check_type: EC2
+        desired_capacity: 3
+        min_size: 1
+        max_size: 5
+        health_check_period: 900
+        load_balancers: []
+        vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
+        wait_for_instances: yes
+        replace_all_instances: yes
+        replace_batch_size: 3
+        lc_check: false
+        wait_timeout: 1800
+        state: present
+
+    # Collect ec2_asg_info
+    - name: get ec2_asg information
+      ec2_asg_info:
+        name: "{{ resource_prefix }}-asg"
+      register: output
+
+    # Get all instance_ids we saw and assert we saw number expected
+    # Should only see 3 (don't replace instances we just created)
+    - assert:
+        that:
+          - output.results[0].instances | length == 3
+
+    # we need a launch template, otherwise we cannot test the mixed instance policy
+    - name: create launch template for autoscaling group to test its mixed instances policy
+      ec2_launch_template:
+        template_name: "{{ resource_prefix }}-lt"
+        image_id: "{{ ec2_ami_image }}"
+        instance_type: t3.micro
+        credit_specification:
+          cpu_credits: standard
+        network_interfaces:
+          - associate_public_ip_address: yes
+            delete_on_termination: yes
+            device_index: 0
+            groups:
+              - "{{ sg.group_id }}"
+
+    - name: update autoscaling group with mixed-instances policy with mixed instances types - check_mode
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_template:
+          launch_template_name: "{{ resource_prefix }}-lt"
+        desired_capacity: 1
+        min_size: 1
+        max_size: 1
+        vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
+        state: present
+        mixed_instances_policy:
+          instance_types:
+            - t3.micro
+            - t2.nano
+        wait_for_instances: yes
+      register: output
+      check_mode: true
+
+    - assert:
+        that:
+          - output is changed
+          - output is not failed
+          - '"autoscaling:CreateOrUpdateTags" not in output.resource_actions'
+
+    - name: update autoscaling group with mixed-instances policy with mixed instances types
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_template:
+          launch_template_name: "{{ resource_prefix }}-lt"
+        desired_capacity: 1
+        min_size: 1
+        max_size: 1
+        vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
+        state: present
+        mixed_instances_policy:
+          instance_types:
+            - t3.micro
+            - t2.nano
+        wait_for_instances: yes
+      register: output
+
+    - assert:
+        that:
+          - "output.mixed_instances_policy | length == 2"
+          - "output.mixed_instances_policy[0] == 't3.micro'"
+          - "output.mixed_instances_policy[1] == 't2.nano'"
+
+    - name: update autoscaling group with mixed-instances policy with instances_distribution
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_template:
+          launch_template_name: "{{ resource_prefix }}-lt"
+        desired_capacity: 1
+        min_size: 1
+        max_size: 1
+        vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
+        state: present
+        mixed_instances_policy:
+          instance_types:
+            - t3.micro
+            - t2.nano
+          instances_distribution:
+            on_demand_percentage_above_base_capacity: 0
+            spot_allocation_strategy: capacity-optimized
+        wait_for_instances: yes
+      register: output
+
+    - assert:
+        that:
+          - "output.mixed_instances_policy_full['launch_template']['overrides'][0]['instance_type'] == 't3.micro'"
+          - "output.mixed_instances_policy_full['launch_template']['overrides'][1]['instance_type'] == 't2.nano'"
+          - "output.mixed_instances_policy_full['instances_distribution']['on_demand_percentage_above_base_capacity'] == 0"
+          - "output.mixed_instances_policy_full['instances_distribution']['spot_allocation_strategy'] == 'capacity-optimized'"
+
+    # ============================================================
+
+    # Target group names have max length of 32 characters
+    - set_fact:
+        tg1_name: "{{ (resource_prefix + '-tg1' ) | regex_search('(.{1,32})$') }}"
+        tg2_name: "{{ (resource_prefix + '-tg2' ) | regex_search('(.{1,32})$') }}"
+
+    - name: create target group 1
+      elb_target_group:
+        name: "{{ tg1_name }}"
+        protocol: tcp
+        port: 80
+        health_check_protocol: tcp
+        health_check_port: 80
+        healthy_threshold_count: 2
+        unhealthy_threshold_count: 2
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        state: present
+      register: out_tg1
+
+    - name: create target group 2
+      elb_target_group:
+        name: "{{ tg2_name }}"
+        protocol: tcp
+        port: 80
+        health_check_protocol: tcp
+        health_check_port: 80
+        healthy_threshold_count: 2
+        unhealthy_threshold_count: 2
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        state: present
+      register: out_tg2
+
+    - name: update autoscaling group with tg1
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_template:
+          launch_template_name: "{{ resource_prefix }}-lt"
+        target_group_arns:
+          - "{{ out_tg1.target_group_arn }}"
+        desired_capacity: 1
+        min_size: 1
+        max_size: 1
+        state: present
+        wait_for_instances: yes
+      register: output
+
+    - assert:
+        that:
+          - output.target_group_arns[0] == out_tg1.target_group_arn
+
+    - name: update autoscaling group add tg2
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_template:
+          launch_template_name: "{{ resource_prefix }}-lt"
+        target_group_arns:
+          - "{{ out_tg1.target_group_arn }}"
+          - "{{ out_tg2.target_group_arn }}"
+        desired_capacity: 1
+        min_size: 1
+        max_size: 1
+        state: present
+        wait_for_instances: yes
+      register: output
+
+    - assert:
+        that:
+          - "output.target_group_arns | length == 2"
+
+    - name: update autoscaling group remove tg1
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_template:
+          launch_template_name: "{{ resource_prefix }}-lt"
+        target_group_arns:
+          - "{{ out_tg2.target_group_arn }}"
+        desired_capacity: 1
+        min_size: 1
+        max_size: 1
+        state: present
+        wait_for_instances: yes
+      register: output
+
+    - assert:
+        that:
+          - "output.target_group_arns | length == 1"
+          - "output.target_group_arns[0] == out_tg2.target_group_arn"
+
+    - name: update autoscaling group remove tg2 and add tg1
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_template:
+          launch_template_name: "{{ resource_prefix }}-lt"
+        target_group_arns:
+          - "{{ out_tg1.target_group_arn }}"
+        desired_capacity: 1
+        min_size: 1
+        max_size: 1
+        state: present
+        wait_for_instances: yes
+      register: output
+
+    - assert:
+        that:
+          - "output.target_group_arns | length == 1"
+          - "output.target_group_arns[0] == out_tg1.target_group_arn"
+
+    - name: target group no change
+      ec2_asg:
+        name: "{{ resource_prefix }}-asg"
+        launch_template:
+          launch_template_name: "{{ resource_prefix }}-lt"
+        target_group_arns:
+          - "{{ out_tg1.target_group_arn }}"
+        desired_capacity: 1
+        min_size: 1
+        max_size: 1
+        state: present
+        wait_for_instances: yes
+      register: output
+
+    - assert:
+        that:
+          - "output.target_group_arns | length == 1"
+          - "output.target_group_arns[0] == out_tg1.target_group_arn"
+          - "output.changed == false"

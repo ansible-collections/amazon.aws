@@ -1,0 +1,124 @@
+- name: kill asg
+  ec2_asg:
+    name: "{{ resource_prefix }}-asg"
+    state: absent
+  register: removed
+  until: removed is not failed
+  ignore_errors: true
+  retries: 10
+
+# Remove the testing dependencies
+- name: remove target group
+  elb_target_group:
+    name: "{{ item }}"
+    state: absent
+  register: removed
+  until: removed is not failed
+  ignore_errors: true
+  retries: 10
+  loop:
+    - "{{ tg1_name }}"
+    - "{{ tg2_name }}"
+
+- name: remove the load balancer
+  ec2_elb_lb:
+    name: "{{ load_balancer_name }}"
+    state: absent
+    security_group_ids:
+      - "{{ sg.group_id }}"
+    subnets: "{{ testing_subnet.subnet.id }}"
+    wait: true
+    connection_draining_timeout: 60
+    listeners:
+      - protocol: http
+        load_balancer_port: 80
+        instance_port: 80
+    health_check:
+        ping_protocol: tcp
+        ping_port: 80
+        ping_path: "/"
+        response_timeout: 5
+        interval: 10
+        unhealthy_threshold: 4
+        healthy_threshold: 2
+  register: removed
+  until: removed is not failed
+  ignore_errors: true
+  retries: 10
+
+- name: remove launch configs
+  ec2_lc:
+    name: "{{ item }}"
+    state: absent
+  register: removed
+  until: removed is not failed
+  ignore_errors: true
+  retries: 10
+  loop:
+    - "{{ resource_prefix }}-lc"
+    - "{{ resource_prefix }}-lc-2"
+
+- name: delete launch template
+  ec2_launch_template:
+    name: "{{ resource_prefix }}-lt"
+    state: absent
+  register: del_lt
+  retries: 10
+  until: del_lt is not failed
+  ignore_errors: true
+
+- name: remove the security group
+  ec2_group:
+    name: "{{ resource_prefix }}-sg"
+    description: a security group for ansible tests
+    vpc_id: "{{ testing_vpc.vpc.id }}"
+    state: absent
+  register: removed
+  until: removed is not failed
+  ignore_errors: true
+  retries: 10
+
+- name: remove routing rules
+  ec2_vpc_route_table:
+    state: absent
+    vpc_id: "{{ testing_vpc.vpc.id }}"
+    tags:
+      created: "{{ resource_prefix }}-route"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ igw.gateway_id }}"
+    subnets:
+      - "{{ testing_subnet.subnet.id }}"
+  register: removed
+  until: removed is not failed
+  ignore_errors: true
+  retries: 10
+
+- name: remove internet gateway
+  ec2_vpc_igw:
+    vpc_id: "{{ testing_vpc.vpc.id }}"
+    state: absent
+  register: removed
+  until: removed is not failed
+  ignore_errors: true
+  retries: 10
+
+- name: remove the subnet
+  ec2_vpc_subnet:
+    state: absent
+    vpc_id: "{{ testing_vpc.vpc.id }}"
+    cidr: 10.55.77.0/24
+  register: removed
+  until: removed is not failed
+  ignore_errors: true
+  retries: 10
+
+- name: remove the VPC
+  ec2_vpc_net:
+    name: "{{ resource_prefix }}-vpc"
+    cidr_block: 10.55.77.0/24
+    state: absent
+  register: removed
+  until: removed is not failed
+  ignore_errors: true
+  retries: 10
