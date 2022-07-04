@@ -9,41 +9,40 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: aws_config_aggregation_authorization
+module: config_aggregation_authorization
 version_added: 1.0.0
 short_description: Manage cross-account AWS Config authorizations
 description:
-    - Module manages AWS Config resources.
+  - Module manages AWS Config aggregation authorizations.
 author:
-    - "Aaron Smith (@slapula)"
+  - "Aaron Smith (@slapula)"
 options:
   state:
     description:
-    - Whether the Config rule should be present or absent.
+      - Whether the Config rule should be present or absent.
     default: present
     choices: ['present', 'absent']
     type: str
   authorized_account_id:
     description:
-    - The 12-digit account ID of the account authorized to aggregate data.
+      - The 12-digit account ID of the account authorized to aggregate data.
     type: str
     required: true
   authorized_aws_region:
     description:
-    - The region authorized to collect aggregated data.
+      - The region authorized to collect aggregated data.
     type: str
     required: true
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
 - name: Get current account ID
   community.aws.aws_caller_info:
   register: whoami
-- community.aws.aws_config_aggregation_authorization:
+- community.aws.config_aggregation_authorization:
     state: present
     authorized_account_id: '{{ whoami.account }}'
     authorized_aws_region: us-east-1

@@ -9,74 +9,73 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: aws_config_aggregator
+module: config_aggregator
 version_added: 1.0.0
 short_description: Manage AWS Config aggregations across multiple accounts
 description:
-    - Module manages AWS Config resources
+  - Module manages AWS Config aggregator resources.
 author:
-    - "Aaron Smith (@slapula)"
+  - "Aaron Smith (@slapula)"
 options:
   name:
     description:
-    - The name of the AWS Config resource.
+      - The name of the AWS Config resource.
     required: true
     type: str
   state:
     description:
-    - Whether the Config rule should be present or absent.
+      - Whether the Config rule should be present or absent.
     default: present
     choices: ['present', 'absent']
     type: str
   account_sources:
     description:
-    - Provides a list of source accounts and regions to be aggregated.
+      - Provides a list of source accounts and regions to be aggregated.
     suboptions:
       account_ids:
         description:
-        - A list of 12-digit account IDs of accounts being aggregated.
+          - A list of 12-digit account IDs of accounts being aggregated.
         type: list
         elements: str
       aws_regions:
         description:
-        - A list of source regions being aggregated.
+          - A list of source regions being aggregated.
         type: list
         elements: str
       all_aws_regions:
         description:
-        - If true, aggregate existing AWS Config regions and future regions.
+          - If true, aggregate existing AWS Config regions and future regions.
         type: bool
     type: list
     elements: dict
     required: true
   organization_source:
     description:
-    - The region authorized to collect aggregated data.
+      - The region authorized to collect aggregated data.
     suboptions:
       role_arn:
         description:
-        - ARN of the IAM role used to retrieve AWS Organization details associated with the aggregator account.
+          - ARN of the IAM role used to retrieve AWS Organization details associated with the aggregator account.
         type: str
       aws_regions:
         description:
-        - The source regions being aggregated.
+          - The source regions being aggregated.
         type: list
         elements: str
       all_aws_regions:
         description:
-        - If true, aggregate existing AWS Config regions and future regions.
+          - If true, aggregate existing AWS Config regions and future regions.
         type: bool
     type: dict
     required: true
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = r'''
 - name: Create cross-account aggregator
-  community.aws.aws_config_aggregator:
+  community.aws.config_aggregator:
     name: test_config_rule
     state: present
     account_sources:
