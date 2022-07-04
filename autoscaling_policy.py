@@ -69,6 +69,7 @@ options:
     choices:
       - StepScaling
       - SimpleScaling
+      - TargetTrackingScaling
     default: SimpleScaling
   metric_aggregation:
     type: str
@@ -109,6 +110,80 @@ options:
         description:
           - The amount by which to scale.
         required: true
+  target_tracking_config:
+    type: dict
+    description:
+      - Allows you to specify a I(target_tracking_config) for autoscaling policies in AWS.
+      - I(target_tracking_config) can accept nested dicts for I(customized_metric_spec) or I(predefined_metric_spec).
+        Each specification aligns with their boto3 equivalent.
+      - Required when I(TargetTrackingScaling) policy is specified.
+    version_added: 4.1.0
+    suboptions:
+      customized_metric_spec:
+        type: dict
+        description:
+          - Specify a dict will be passed in as a call for C(TargetTrackingConfiguration).
+        suboptions:
+            metric_name:
+              type: str
+              description:
+                - The name of the metric.
+              required: true
+            namespace:
+              type: str
+              description:
+                - The namespace of the metric.
+              required: true
+            statistic:
+              type: str
+              description:
+                - The statistic of the metric.
+              required: true
+              choices:
+                - Average
+                - Minimum
+                - Maximum
+                - SampleCount
+                - Sum
+            dimensions:
+              type: list
+              description:
+                - The dimensions of the metric. The element of the list should be a dict.
+              elements: dict
+            unit:
+              type: str
+              description:
+                - The unit of the metric. Reference AmazonCloudWatch API for valid Units.
+      predefined_metric_spec:
+        type: dict
+        description:
+          - Specify a dict will be passed in as a call for I(TargetTrackingConfiguration).
+        suboptions:
+          predefined_metric_type:
+            type: str
+            required: true
+            description:
+              - Required if C(predefined_metric_spec) is used.
+            choices:
+              - ASGAverageCPUUtilization
+              - ASGAverageNetworkIn
+              - ASGAverageNetworkOut
+              - ALBRequestCountPerTarget
+          resource_label:
+            type: str
+            description:
+              - Uniquely identifies a specific ALB target group from which to determine the average request count served by your Auto Scaling group.
+              - You can't specify a resource label unless the target group is attached to the Auto Scaling group.
+      target_value:
+        type: float
+        description:
+          - Specify a float number for target utilization.
+          - Required when I(target_tracking_config) is specified.
+        required: true
+      disable_scalein:
+        type: bool
+        description:
+          - Indicate whether scaling in by the target tracking scaling policy is disabled.
   estimated_instance_warmup:
     type: int
     description:
@@ -146,6 +221,45 @@ EXAMPLES = '''
         scaling_adjustment: 100
     adjustment_type: "PercentChangeInCapacity"
     asg_name: "application-asg"
+
+- name: create TargetTracking predefined policy
+  ec2_scaling_policy:
+    name: "predefined-policy-1"
+    policy_type: TargetTrackingScaling
+    target_tracking_config:
+      predefined_metric_spec:
+        predefined_metric_type: ASGAverageCPUUtilization
+      target_value: 98.0
+    asg_name: "asg-test-1"
+  register: result
+
+- name: create TargetTracking predefined policy with resource_label
+  ec2_scaling_policy:
+    name: "predefined-policy-1"
+    policy_type: TargetTrackingScaling
+    target_tracking_config:
+      predefined_metric_spec:
+        predefined_metric_type: ALBRequestCountPerTarget
+        resource_label: app/my-alb/778d41231d141a0f/targetgroup/my-alb-target-group/942f017f100becff
+      target_value: 98.0
+    asg_name: "asg-test-1"
+  register: result
+
+- name: create TargetTrackingScaling custom policy
+  ec2_scaling_policy:
+    name: "custom-policy-1"
+    policy_type: TargetTrackingScaling
+    target_tracking_config:
+      customized_metric_spec:
+        metric_name: metric_1
+        namespace: namespace_1
+        statistic: Minimum
+        unit: Gigabits
+        dimensions: [{'Name': 'dimension1', 'Value': 'value1'}]
+      disable_scalein: true
+      target_value: 98.0
+    asg_name: asg-test-1
+  register: result
 '''
 
 RETURN = '''
@@ -241,9 +355,61 @@ try:
 except ImportError:
     pass  # caught by imported AnsibleAWSModule
 
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+
+
+def build_target_specification(target_tracking_config):
+
+    # Initialize an empty dict() for building TargetTrackingConfiguration policies,
+    # which will be returned
+    targetTrackingConfig = dict()
+
+    if target_tracking_config.get('target_value'):
+        targetTrackingConfig['TargetValue'] = target_tracking_config['target_value']
+
+    if target_tracking_config.get('disable_scalein'):
+        targetTrackingConfig['DisableScaleIn'] = target_tracking_config['disable_scalein']
+    else:
+        # Accounting for boto3 response
+        targetTrackingConfig['DisableScaleIn'] = False
+
+    if target_tracking_config['predefined_metric_spec'] is not None:
+        # Build spec for predefined_metric_spec
+        targetTrackingConfig['PredefinedMetricSpecification'] = dict()
+        if target_tracking_config['predefined_metric_spec'].get('predefined_metric_type'):
+            targetTrackingConfig['PredefinedMetricSpecification']['PredefinedMetricType'] = \
+                target_tracking_config['predefined_metric_spec']['predefined_metric_type']
+
+        if target_tracking_config['predefined_metric_spec'].get('resource_label'):
+            targetTrackingConfig['PredefinedMetricSpecification']['ResourceLabel'] = \
+                target_tracking_config['predefined_metric_spec']['resource_label']
+
+    elif target_tracking_config['customized_metric_spec'] is not None:
+        # Build spec for customized_metric_spec
+        targetTrackingConfig['CustomizedMetricSpecification'] = dict()
+        if target_tracking_config['customized_metric_spec'].get('metric_name'):
+            targetTrackingConfig['CustomizedMetricSpecification']['MetricName'] = \
+                target_tracking_config['customized_metric_spec']['metric_name']
+
+        if target_tracking_config['customized_metric_spec'].get('namespace'):
+            targetTrackingConfig['CustomizedMetricSpecification']['Namespace'] = \
+                target_tracking_config['customized_metric_spec']['namespace']
+
+        if target_tracking_config['customized_metric_spec'].get('dimensions'):
+            targetTrackingConfig['CustomizedMetricSpecification']['Dimensions'] = \
+                target_tracking_config['customized_metric_spec']['dimensions']
+
+        if target_tracking_config['customized_metric_spec'].get('statistic'):
+            targetTrackingConfig['CustomizedMetricSpecification']['Statistic'] = \
+                target_tracking_config['customized_metric_spec']['statistic']
+
+        if target_tracking_config['customized_metric_spec'].get('unit'):
+            targetTrackingConfig['CustomizedMetricSpecification']['Unit'] = \
+                target_tracking_config['customized_metric_spec']['unit']
+
+    return targetTrackingConfig
 
 
 def create_scaling_policy(connection, module):
@@ -252,10 +418,15 @@ def create_scaling_policy(connection, module):
     policy_type = module.params['policy_type']
     policy_name = module.params['name']
 
-    params = dict(PolicyName=policy_name,
-                  PolicyType=policy_type,
-                  AutoScalingGroupName=asg_name,
-                  AdjustmentType=module.params['adjustment_type'])
+    if policy_type == 'TargetTrackingScaling':
+        params = dict(PolicyName=policy_name,
+                      PolicyType=policy_type,
+                      AutoScalingGroupName=asg_name)
+    else:
+        params = dict(PolicyName=policy_name,
+                      PolicyType=policy_type,
+                      AutoScalingGroupName=asg_name,
+                      AdjustmentType=module.params['adjustment_type'])
 
     # min_adjustment_step attribute is only relevant if the adjustment_type
     # is set to percentage change in capacity, so it is a special case
@@ -268,18 +439,19 @@ def create_scaling_policy(connection, module):
         # it's only required if policy is SimpleScaling and state is present
         if not module.params['scaling_adjustment']:
             module.fail_json(msg='scaling_adjustment is required when policy_type is SimpleScaling '
-                             'and state is present')
+                                 'and state is present')
         params['ScalingAdjustment'] = module.params['scaling_adjustment']
         if module.params['cooldown']:
             params['Cooldown'] = module.params['cooldown']
 
-    if policy_type == 'StepScaling':
+    elif policy_type == 'StepScaling':
         if not module.params['step_adjustments']:
-            module.fail_json(msg='step_adjustments is required when policy_type is StepScaling '
-                             'and state is present')
+            module.fail_json(msg='step_adjustments is required when policy_type is StepScaling'
+                                 'and state is present')
         params['StepAdjustments'] = []
         for step_adjustment in module.params['step_adjustments']:
-            step_adjust_params = dict(ScalingAdjustment=step_adjustment['scaling_adjustment'])
+            step_adjust_params = dict(
+                ScalingAdjustment=step_adjustment['scaling_adjustment'])
             if step_adjustment.get('lower_bound'):
                 step_adjust_params['MetricIntervalLowerBound'] = step_adjustment['lower_bound']
             if step_adjustment.get('upper_bound'):
@@ -290,12 +462,23 @@ def create_scaling_policy(connection, module):
         if module.params['estimated_instance_warmup']:
             params['EstimatedInstanceWarmup'] = module.params['estimated_instance_warmup']
 
+    elif policy_type == 'TargetTrackingScaling':
+        if not module.params['target_tracking_config']:
+            module.fail_json(msg='target_tracking_config is required when policy_type is '
+                                 'TargetTrackingScaling and state is present')
+        else:
+            params['TargetTrackingConfiguration'] = build_target_specification(module.params.get('target_tracking_config'))
+        if module.params['estimated_instance_warmup']:
+            params['EstimatedInstanceWarmup'] = module.params['estimated_instance_warmup']
+
+    # Ensure idempotency with policies
     try:
         policies = connection.describe_policies(aws_retry=True,
                                                 AutoScalingGroupName=asg_name,
                                                 PolicyNames=[policy_name])['ScalingPolicies']
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to obtain autoscaling policy %s" % policy_name)
+        module.fail_json_aws(
+            e, msg="Failed to obtain autoscaling policy %s" % policy_name)
 
     before = after = {}
     if not policies:
@@ -313,12 +496,14 @@ def create_scaling_policy(connection, module):
             connection.put_scaling_policy(aws_retry=True, **params)
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Failed to create autoscaling policy")
+
         try:
             policies = connection.describe_policies(aws_retry=True,
                                                     AutoScalingGroupName=asg_name,
                                                     PolicyNames=[policy_name])['ScalingPolicies']
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-            module.fail_json_aws(e, msg="Failed to obtain autoscaling policy %s" % policy_name)
+            module.fail_json_aws(
+                e, msg="Failed to obtain autoscaling policy %s" % policy_name)
 
     policy = camel_dict_to_snake_dict(policies[0])
     # Backward compatible return values
@@ -327,7 +512,8 @@ def create_scaling_policy(connection, module):
     policy['name'] = policy['policy_name']
 
     if before and after:
-        module.exit_json(changed=changed, diff=dict(before=before, after=after), **policy)
+        module.exit_json(changed=changed, diff=dict(
+            before=before, after=after), **policy)
     else:
         module.exit_json(changed=changed, **policy)
 
@@ -336,9 +522,11 @@ def delete_scaling_policy(connection, module):
     policy_name = module.params.get('name')
 
     try:
-        policy = connection.describe_policies(aws_retry=True, PolicyNames=[policy_name])
+        policy = connection.describe_policies(
+            aws_retry=True, PolicyNames=[policy_name])
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg="Failed to obtain autoscaling policy %s" % policy_name)
+        module.fail_json_aws(
+            e, msg="Failed to obtain autoscaling policy %s" % policy_name)
 
     if policy['ScalingPolicies']:
         try:
@@ -356,7 +544,32 @@ def main():
     step_adjustment_spec = dict(
         lower_bound=dict(type='int'),
         upper_bound=dict(type='int'),
-        scaling_adjustment=dict(type='int', required=True))
+        scaling_adjustment=dict(type='int', required=True)
+    )
+
+    predefined_metric_spec = dict(
+        predefined_metric_type=dict(type='str', choices=['ASGAverageCPUUtilization',
+                                                         'ASGAverageNetworkIn',
+                                                         'ASGAverageNetworkOut',
+                                                         'ALBRequestCountPerTarget'], required=True),
+        resource_label=dict(type='str')
+    )
+    customized_metric_spec = dict(
+        metric_name=dict(type='str', required=True),
+        namespace=dict(type='str', required=True),
+        statistic=dict(type='str', required=True, choices=['Average', 'Minimum', 'Maximum', 'SampleCount', 'Sum']),
+        dimensions=dict(type='list', elements='dict'),
+        unit=dict(type='str')
+    )
+
+    target_tracking_spec = dict(
+        disable_scalein=dict(type='bool'),
+        target_value=dict(type='float', required=True),
+        predefined_metric_spec=dict(type='dict',
+                                    options=predefined_metric_spec),
+        customized_metric_spec=dict(type='dict',
+                                    options=customized_metric_spec)
+    )
 
     argument_spec = dict(
         name=dict(required=True),
@@ -366,18 +579,23 @@ def main():
         min_adjustment_step=dict(type='int'),
         cooldown=dict(type='int'),
         state=dict(default='present', choices=['present', 'absent']),
-        metric_aggregation=dict(default='Average', choices=['Minimum', 'Maximum', 'Average']),
-        policy_type=dict(default='SimpleScaling', choices=['SimpleScaling', 'StepScaling']),
-        step_adjustments=dict(type='list', options=step_adjustment_spec, elements='dict'),
+        metric_aggregation=dict(default='Average', choices=[
+                                'Minimum', 'Maximum', 'Average']),
+        policy_type=dict(default='SimpleScaling', choices=[
+                         'SimpleScaling', 'StepScaling', 'TargetTrackingScaling']),
+        target_tracking_config=dict(type='dict', options=target_tracking_spec),
+        step_adjustments=dict(
+            type='list', options=step_adjustment_spec, elements='dict'),
         estimated_instance_warmup=dict(type='int')
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec,
-                              required_if=[['state', 'present', ['asg_name', 'adjustment_type']]])
+                              required_if=[['state', 'present', ['asg_name']]])
 
-    connection = module.client('autoscaling', retry_decorator=AWSRetry.jittered_backoff())
-
+    connection = module.client(
+        'autoscaling', retry_decorator=AWSRetry.jittered_backoff())
     state = module.params.get('state')
+
     if state == 'present':
         create_scaling_policy(connection, module)
     elif state == 'absent':
