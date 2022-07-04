@@ -1,0 +1,467 @@
+- name: run ec2_metric_alarm tests
+  module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+  collections:
+    - amazon.aws
+
+  block:
+    - set_fact:
+        alarm_full_name: "{{ alarm_prefix }}-{{ resource_prefix }}-cpu-low"
+
+    - name: set up environment for testing.
+      include_tasks: env_setup.yml
+
+    - name: get info on alarms
+      command: aws cloudwatch describe-alarms --alarm-names {{ alarm_full_name }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: alarm_info_query
+
+    - name: Make instance in a default subnet of the VPC
+      ec2_instance:
+        name: "{{ resource_prefix }}-test-default-vpc"
+        image_id: "{{ ec2_ami_id }}"
+        tags:
+          TestId: "{{ resource_prefix }}"
+        security_groups: "{{ sg.group_id }}"
+        vpc_subnet_id: "{{ testing_subnet_a.subnet.id }}"
+        instance_type: t2.micro
+        wait: true
+      register: ec2_instance_results
+
+    - name: ensure alarm doesn't exist for a clean test
+      ec2_metric_alarm:
+        state: absent
+        name: "{{ alarm_full_name }}"
+
+    - name: create ec2 metric alarm on ec2 instance (check mode)
+      ec2_metric_alarm:
+        dimensions:
+          InstanceId: "{{ ec2_instance_results.instances[0].instance_id }}"
+        state: present
+        name: "{{ alarm_full_name }}"
+        metric: "CPUUtilization"
+        namespace: "AWS/EC2"
+        treat_missing_data: missing
+        statistic: Average
+        comparison: "LessThanOrEqualToThreshold"
+        threshold: 5.0
+        period: 300
+        evaluation_periods: 3
+        unit: "Percent"
+        description: "This will alarm when an instance's cpu usage average is lower than 5% for 15 minutes"
+      check_mode: true
+      register: ec2_instance_metric_alarm_check
+
+    - name: get info on alarms
+      command: aws cloudwatch describe-alarms --alarm-names {{ alarm_full_name }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: alarm_info_query_check
+
+    - name: convert it to an object
+      set_fact:
+        alarm_info_check: "{{ alarm_info_query_check.stdout | from_json }}"
+
+    - name: "verify that an alarm was not created in check mode"
+      assert:
+        that:
+          - 'ec2_instance_metric_alarm_check.changed'
+          - 'not ec2_instance_metric_alarm_check.alarm_arn'
+          - 'alarm_info_check["MetricAlarms"] | length == 0'
+
+    - name: create ec2 metric alarm on ec2 instance
+      ec2_metric_alarm:
+        dimensions:
+          InstanceId: "{{ ec2_instance_results.instances[0].instance_id }}"
+        state: present
+        name: "{{ alarm_full_name }}"
+        metric: "CPUUtilization"
+        namespace: "AWS/EC2"
+        treat_missing_data: missing
+        statistic: Average
+        comparison: "LessThanOrEqualToThreshold"
+        threshold: 5.0
+        period: 300
+        evaluation_periods: 3
+        unit: "Percent"
+        description: "This will alarm when an instance's cpu usage average is lower than 5% for 15 minutes"
+      register: ec2_instance_metric_alarm
+
+    - name: get info on alarms
+      command: aws cloudwatch describe-alarms --alarm-names {{ alarm_full_name }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: alarm_info_query
+
+    - name: convert it to an object
+      set_fact:
+        alarm_info: "{{ alarm_info_query.stdout | from_json }}"
+
+    - name: "verify that an alarm was created"
+      assert:
+        that:
+          - 'ec2_instance_metric_alarm.changed'
+          - 'ec2_instance_metric_alarm.alarm_arn'
+          - 'ec2_instance_metric_alarm.statistic == alarm_info["MetricAlarms"][0].Statistic'
+          - 'ec2_instance_metric_alarm.name  == alarm_info["MetricAlarms"][0].AlarmName'
+          - 'ec2_instance_metric_alarm.metric == alarm_info["MetricAlarms"][0].MetricName'
+          - 'ec2_instance_metric_alarm.namespace == alarm_info["MetricAlarms"][0].Namespace'
+          - 'ec2_instance_metric_alarm.comparison == alarm_info["MetricAlarms"][0].ComparisonOperator'
+          - 'ec2_instance_metric_alarm.threshold == alarm_info["MetricAlarms"][0].Threshold'
+          - 'ec2_instance_metric_alarm.period == alarm_info["MetricAlarms"][0].Period'
+          - 'ec2_instance_metric_alarm.unit == alarm_info["MetricAlarms"][0].Unit'
+          - 'ec2_instance_metric_alarm.evaluation_periods == alarm_info["MetricAlarms"][0].EvaluationPeriods'
+          - 'ec2_instance_metric_alarm.description == alarm_info["MetricAlarms"][0].AlarmDescription'
+          - 'ec2_instance_metric_alarm.treat_missing_data == alarm_info["MetricAlarms"][0].TreatMissingData'
+
+    - name: create ec2 metric alarm on ec2 instance (idempotent) (check mode)
+      ec2_metric_alarm:
+        dimensions:
+          InstanceId: "{{ ec2_instance_results.instances[0].instance_id }}"
+        state: present
+        name: "{{ alarm_full_name }}"
+        metric: "CPUUtilization"
+        namespace: "AWS/EC2"
+        treat_missing_data: missing
+        statistic: Average
+        comparison: "LessThanOrEqualToThreshold"
+        threshold: 5.0
+        period: 300
+        evaluation_periods: 3
+        unit: "Percent"
+        description: "This will alarm when an instance's cpu usage average is lower than 5% for 15 minutes"
+      check_mode: true
+      register: ec2_instance_metric_alarm_idempotent_check
+
+    - name: get info on alarms
+      command: aws cloudwatch describe-alarms --alarm-names {{ alarm_full_name }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: alarm_info_query_idempotent_check
+
+    - name: convert it to an object
+      set_fact:
+        alarm_info_idempotent_check: "{{ alarm_info_query_idempotent_check.stdout | from_json }}"
+
+    - name: "Verify alarm does not register as changed after update in check mode"
+      assert:
+        that:
+          - not ec2_instance_metric_alarm_idempotent_check.changed
+
+    - name: "Verify alarm did not change after updating in check mode"
+      assert:
+        that:
+          - "alarm_info['MetricAlarms'][0]['{{item}}'] == alarm_info_idempotent_check['MetricAlarms'][0]['{{ item }}']"
+      with_items:
+        - AlarmArn
+        - Statistic
+        - AlarmName
+        - MetricName
+        - Namespace
+        - ComparisonOperator
+        - Threshold
+        - Period
+        - Unit
+        - EvaluationPeriods
+        - AlarmDescription
+        - TreatMissingData
+
+    - name: create ec2 metric alarm on ec2 instance (idempotent)
+      ec2_metric_alarm:
+        dimensions:
+          InstanceId: "{{ ec2_instance_results.instances[0].instance_id }}"
+        state: present
+        name: "{{ alarm_full_name }}"
+        metric: "CPUUtilization"
+        namespace: "AWS/EC2"
+        treat_missing_data: missing
+        statistic: Average
+        comparison: "LessThanOrEqualToThreshold"
+        threshold: 5.0
+        period: 300
+        evaluation_periods: 3
+        unit: "Percent"
+        description: "This will alarm when an instance's cpu usage average is lower than 5% for 15 minutes"
+      register: ec2_instance_metric_alarm_idempotent
+
+    - name: get info on alarms
+      command: aws cloudwatch describe-alarms --alarm-names {{ alarm_full_name }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: alarm_info_query_idempotent
+
+    - name: convert it to an object
+      set_fact:
+        alarm_info_idempotent: "{{ alarm_info_query_idempotent.stdout | from_json }}"
+
+    - name: "Verify alarm does not register as changed after update"
+      assert:
+        that:
+          - not ec2_instance_metric_alarm_idempotent.changed
+
+    - name: "Verify alarm did not change after updating"
+      assert:
+        that:
+          - "alarm_info['MetricAlarms'][0]['{{item}}'] == alarm_info_idempotent['MetricAlarms'][0]['{{ item }}']"
+      with_items:
+        - AlarmArn
+        - Statistic
+        - AlarmName
+        - MetricName
+        - Namespace
+        - ComparisonOperator
+        - Threshold
+        - Period
+        - Unit
+        - EvaluationPeriods
+        - AlarmDescription
+        - TreatMissingData
+
+    - name: update alarm (check mode)
+      ec2_metric_alarm:
+        dimensions:
+          InstanceId: "{{ ec2_instance_results.instances[0].instance_id }}"
+        state: present
+        name: "{{ alarm_full_name }}"
+        metric: "CPUUtilization"
+        namespace: "AWS/EC2"
+        statistic: Average
+        comparison: "LessThanOrEqualToThreshold"
+        threshold: 5.0
+        period: 60
+        evaluation_periods: 3
+        unit: "Percent"
+        description: "This will alarm when an instance's cpu usage average is lower than 5% for 3 minutes"
+      check_mode: true
+      register: ec2_instance_metric_alarm_update_check
+
+    - name: "verify that alarm registers as updated in check mode"
+      assert:
+        that:
+          - 'ec2_instance_metric_alarm_check.changed'
+
+    - name: "verify that properties were not changed in check mode"
+      assert:
+        that:
+          - 'ec2_instance_metric_alarm_update_check.changed'
+          - 'ec2_instance_metric_alarm_update_check.period == alarm_info["MetricAlarms"][0].Period'  # Period of actual alarm should not change
+          - 'ec2_instance_metric_alarm_update_check.alarm_arn == ec2_instance_metric_alarm.alarm_arn'
+          - 'ec2_instance_metric_alarm_update_check.statistic == alarm_info["MetricAlarms"][0].Statistic'
+          - 'ec2_instance_metric_alarm_update_check.name  == alarm_info["MetricAlarms"][0].AlarmName'
+          - 'ec2_instance_metric_alarm_update_check.metric == alarm_info["MetricAlarms"][0].MetricName'
+          - 'ec2_instance_metric_alarm_update_check.namespace == alarm_info["MetricAlarms"][0].Namespace'
+          - 'ec2_instance_metric_alarm_update_check.statistic == alarm_info["MetricAlarms"][0].Statistic'
+          - 'ec2_instance_metric_alarm_update_check.comparison == alarm_info["MetricAlarms"][0].ComparisonOperator'
+          - 'ec2_instance_metric_alarm_update_check.threshold == alarm_info["MetricAlarms"][0].Threshold'
+          - 'ec2_instance_metric_alarm_update_check.unit == alarm_info["MetricAlarms"][0].Unit'
+          - 'ec2_instance_metric_alarm_update_check.evaluation_periods == alarm_info["MetricAlarms"][0].EvaluationPeriods'
+          - 'ec2_instance_metric_alarm_update_check.treat_missing_data == alarm_info["MetricAlarms"][0].TreatMissingData'
+
+    - name: update alarm
+      ec2_metric_alarm:
+        dimensions:
+          InstanceId: "{{ ec2_instance_results.instances[0].instance_id }}"
+        state: present
+        name: "{{ alarm_full_name }}"
+        metric: "CPUUtilization"
+        namespace: "AWS/EC2"
+        statistic: Average
+        comparison: "LessThanOrEqualToThreshold"
+        threshold: 5.0
+        period: 60
+        evaluation_periods: 3
+        unit: "Percent"
+        description: "This will alarm when an instance's cpu usage average is lower than 5% for 3 minutes"
+      register: ec2_instance_metric_alarm_update
+
+    - name: "verify that alarm registers as updated"
+      assert:
+        that:
+          - 'ec2_instance_metric_alarm.changed'
+
+    - name: "verify that properties were changed"
+      assert:
+        that:
+          - 'ec2_instance_metric_alarm_update.changed'
+          - 'ec2_instance_metric_alarm_update.period == 60'  # Period should be 60, not matching old value
+          - 'ec2_instance_metric_alarm_update.alarm_arn == ec2_instance_metric_alarm.alarm_arn'
+          - 'ec2_instance_metric_alarm_update.statistic == alarm_info["MetricAlarms"][0].Statistic'
+          - 'ec2_instance_metric_alarm_update.name  == alarm_info["MetricAlarms"][0].AlarmName'
+          - 'ec2_instance_metric_alarm_update.metric == alarm_info["MetricAlarms"][0].MetricName'
+          - 'ec2_instance_metric_alarm_update.namespace == alarm_info["MetricAlarms"][0].Namespace'
+          - 'ec2_instance_metric_alarm_update.statistic == alarm_info["MetricAlarms"][0].Statistic'
+          - 'ec2_instance_metric_alarm_update.comparison == alarm_info["MetricAlarms"][0].ComparisonOperator'
+          - 'ec2_instance_metric_alarm_update.threshold == alarm_info["MetricAlarms"][0].Threshold'
+          - 'ec2_instance_metric_alarm_update.unit == alarm_info["MetricAlarms"][0].Unit'
+          - 'ec2_instance_metric_alarm_update.evaluation_periods == alarm_info["MetricAlarms"][0].EvaluationPeriods'
+          - 'ec2_instance_metric_alarm_update.treat_missing_data == alarm_info["MetricAlarms"][0].TreatMissingData'
+
+    - name: try to remove the alarm (check mode)
+      ec2_metric_alarm:
+        state: absent
+        name: "{{ alarm_full_name }}"
+      check_mode: true
+      register: ec2_instance_metric_alarm_deletion_check
+
+    - name: Verify that the alarm reports deleted/changed
+      assert:
+        that:
+          - 'ec2_instance_metric_alarm_deletion_check.changed'
+
+    - name: get info on alarms
+      command: aws cloudwatch describe-alarms --alarm-names {{ alarm_full_name }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: alarm_info_query_check
+
+    - name: convert it to an object
+      set_fact:
+        alarm_info: "{{ alarm_info_query_check.stdout | from_json }}"
+
+    - name: Verify that the alarm was not deleted in check mode using cli
+      assert:
+        that:
+          - 'alarm_info["MetricAlarms"] | length > 0'
+
+    - name: try to remove the alarm
+      ec2_metric_alarm:
+        state: absent
+        name: "{{ alarm_full_name }}"
+      register: ec2_instance_metric_alarm_deletion
+
+    - name: Verify that the alarm reports deleted/changed
+      assert:
+        that:
+          - 'ec2_instance_metric_alarm_deletion.changed'
+
+    - name: get info on alarms
+      command: aws cloudwatch describe-alarms --alarm-names {{ alarm_full_name }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: alarm_info_query
+
+    - name: convert it to an object
+      set_fact:
+        alarm_info: "{{ alarm_info_query.stdout | from_json }}"
+
+    - name: Verify that the alarm was deleted using cli
+      assert:
+        that:
+          - 'alarm_info["MetricAlarms"] | length == 0'
+
+    - name: create ec2 metric alarm with no unit on ec2 instance
+      ec2_metric_alarm:
+        dimensions:
+          InstanceId: "{{ ec2_instance_results.instances[0].instance_id }}"
+        state: present
+        name: "{{ alarm_full_name }}"
+        metric: "CPUUtilization"
+        namespace: "AWS/EC2"
+        treat_missing_data: missing
+        statistic: Average
+        comparison: "LessThanOrEqualToThreshold"
+        threshold: 5.0
+        period: 300
+        evaluation_periods: 3
+        description: "This will alarm when an instance's cpu usage average is lower than 5% for 15 minutes"
+      register: ec2_instance_metric_alarm_no_unit
+
+    - name: get info on alarms
+      command: aws cloudwatch describe-alarms --alarm-names {{ alarm_full_name }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: alarm_info_query_no_unit
+
+    - name: convert it to an object
+      set_fact:
+        alarm_info_no_unit: "{{ alarm_info_query_no_unit.stdout | from_json }}"
+
+    - name: "verify that an alarm was created"
+      assert:
+        that:
+          - 'ec2_instance_metric_alarm_no_unit.changed'
+          - 'ec2_instance_metric_alarm_no_unit.alarm_arn'
+          - 'ec2_instance_metric_alarm_no_unit.statistic == alarm_info_no_unit["MetricAlarms"][0].Statistic'
+          - 'ec2_instance_metric_alarm_no_unit.name  == alarm_info_no_unit["MetricAlarms"][0].AlarmName'
+          - 'ec2_instance_metric_alarm_no_unit.metric == alarm_info_no_unit["MetricAlarms"][0].MetricName'
+          - 'ec2_instance_metric_alarm_no_unit.namespace == alarm_info_no_unit["MetricAlarms"][0].Namespace'
+          - 'ec2_instance_metric_alarm_no_unit.comparison == alarm_info_no_unit["MetricAlarms"][0].ComparisonOperator'
+          - 'ec2_instance_metric_alarm_no_unit.threshold == alarm_info_no_unit["MetricAlarms"][0].Threshold'
+          - 'ec2_instance_metric_alarm_no_unit.period == alarm_info_no_unit["MetricAlarms"][0].Period'
+          - 'alarm_info_no_unit["MetricAlarms"][0].Unit is not defined'
+          - 'ec2_instance_metric_alarm_no_unit.evaluation_periods == alarm_info_no_unit["MetricAlarms"][0].EvaluationPeriods'
+          - 'ec2_instance_metric_alarm_no_unit.description == alarm_info_no_unit["MetricAlarms"][0].AlarmDescription'
+          - 'ec2_instance_metric_alarm_no_unit.treat_missing_data == alarm_info_no_unit["MetricAlarms"][0].TreatMissingData'
+
+    - name: try to remove the alarm
+      ec2_metric_alarm:
+        state: absent
+        name: "{{ alarm_full_name }}"
+      register: ec2_instance_metric_alarm_deletion_no_unit
+
+    - name: Verify that the alarm reports deleted/changed
+      assert:
+        that:
+          - 'ec2_instance_metric_alarm_deletion_no_unit.changed'
+
+    - name: get info on alarms
+      command: aws cloudwatch describe-alarms --alarm-names {{ alarm_full_name }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+        AWS_SESSION_TOKEN: "{{ security_token | default('') }}"
+        AWS_DEFAULT_REGION: "{{ aws_region }}"
+      register: alarm_info_query_no_unit
+
+    - name: convert it to an object
+      set_fact:
+        alarm_info_no_unit: "{{ alarm_info_query_no_unit.stdout | from_json }}"
+
+    - name: Verify that the alarm was deleted using cli
+      assert:
+        that:
+          - 'alarm_info_no_unit["MetricAlarms"] | length == 0'
+
+  always:
+    - name: try to delete the alarm
+      ec2_metric_alarm:
+        state: absent
+        name: "{{ alarm_full_name }}"
+      ignore_errors: true
+
+    - name: try to stop the ec2 instance
+      ec2_instance:
+        instance_ids: "{{ ec2_instance_results.instances[0].instance_id }}"
+        state: terminated
+      ignore_errors: true
+
+    - include_tasks: env_cleanup.yml
