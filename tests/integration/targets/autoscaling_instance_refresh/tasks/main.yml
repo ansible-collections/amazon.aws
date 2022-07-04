@@ -1,0 +1,517 @@
+---
+- name: setup credentials and region
+  module_defaults:
+    group/aws:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      security_token: "{{ security_token | default(omit) }}"
+      region: "{{ aws_region }}"
+
+  collections:
+    - amazon.aws
+
+  block:
+    # Set up the testing dependencies: VPC, subnet, security group, and two launch configurations
+    - name: Create VPC for use in testing
+      ec2_vpc_net:
+        name: "{{ vpc_name }}"
+        cidr_block: '{{ subnet_a_cidr }}'
+        tenancy: default
+      register: testing_vpc
+
+    - name: Create internet gateway for use in testing
+      ec2_vpc_igw:
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        state: present
+      register: igw
+
+    - name: Create subnet for use in testing
+      ec2_vpc_subnet:
+        state: present
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        cidr: '{{ subnet_a_cidr }}'
+        az: "{{ aws_region }}a"
+        resource_tags:
+          Name: "{{ subnet_name }}"
+      register: testing_subnet
+
+    - name: create routing rules
+      ec2_vpc_route_table:
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        tags:
+          created: "{{ route_name }}"
+        routes:
+          - dest: 0.0.0.0/0
+            gateway_id: "{{ igw.gateway_id }}"
+        subnets:
+          - "{{ testing_subnet.subnet.id }}"
+
+    - name: create a security group with the vpc created in the ec2_setup
+      ec2_group:
+        name: "{{ sg_name }}"
+        description: a security group for ansible tests
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        rules:
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            from_port: 80
+            to_port: 80
+            cidr_ip: 0.0.0.0/0
+      register: sg
+
+    - name: ensure launch configs exist
+      ec2_lc:
+        name: "{{ item }}"
+        assign_public_ip: true
+        image_id: "{{ ec2_ami_id }}"
+        user_data: |
+          package_upgrade: true
+          package_update: true
+          packages:
+            - httpd
+          runcmd:
+            - "service httpd start"
+        security_groups: "{{ sg.group_id }}"
+        instance_type: t3.micro
+      loop:
+        - "{{ lc_name_1 }}"
+        - "{{ lc_name_2 }}"
+
+    - name: launch asg and do not wait for instances to be deemed healthy (no ELB)
+      ec2_asg:
+        name: "{{ asg_name }}"
+        launch_config_name: "{{ lc_name_1 }}"
+        desired_capacity: 1
+        min_size: 1
+        max_size: 1
+        vpc_zone_identifier: "{{ testing_subnet.subnet.id }}"
+        wait_for_instances: no
+        state: present
+      register: output
+
+    - assert:
+        that:
+        - "output.viable_instances == 0"
+
+  # ============================================================
+
+    - name: test invalid cancelation - V1 - (pre-refresh)
+      ec2_asg_instance_refresh:
+        name: "{{ asg_name }}"
+        state: "cancelled"
+      ignore_errors: yes
+      register: result
+
+    - assert:
+        that:
+        - "'An error occurred (ActiveInstanceRefreshNotFound) when calling the CancelInstanceRefresh operation: No in progress or pending Instance Refresh found for Auto Scaling group {{ resource_prefix }}-asg' in result.msg"
+
+    - name: test starting a refresh with a valid ASG name - check_mode
+      ec2_asg_instance_refresh:
+        name: "{{ asg_name }}"
+        state: "started"
+      check_mode: true
+      register: output
+
+    - assert:
+        that:
+        - output is not failed
+        - output is changed
+        - '"autoscaling:StartInstanceRefresh" not in output.resource_actions'
+
+    - name: test starting a refresh with a valid ASG name
+      ec2_asg_instance_refresh:
+        name: "{{ asg_name }}"
+        state: "started"
+      register: output
+
+    - assert:
+        that:
+        - "'instance_refresh_id' in output.instance_refreshes"
+
+    - name: test starting a refresh with a valid ASG name - Idempotent
+      ec2_asg_instance_refresh:
+        name: "{{ asg_name }}"
+        state: "started"
+      ignore_errors: true
+      register: output
+
+    - assert:
+        that:
+          - output is not changed
+          - '"Failed to start InstanceRefresh: An error occurred (InstanceRefreshInProgress) when calling the StartInstanceRefresh operation: An Instance Refresh is already in progress and blocks the execution of this Instance Refresh." in output.msg'
+
+    - name: test starting a refresh with a valid ASG name - Idempotent (check_mode)
+      ec2_asg_instance_refresh:
+        name: "{{ asg_name }}"
+        state: "started"
+      ignore_errors: true
+      check_mode: true
+      register: output
+
+    - assert:
+        that:
+          - output is not changed
+          - output is not failed
+          - '"In check_mode - Instance Refresh is already in progress, can not start new instance refresh." in output.msg'
+
+    - name: test starting a refresh with a nonexistent ASG name
+      ec2_asg_instance_refresh:
+        name: "nonexistentname-asg"
+        state: "started"
+      ignore_errors: yes
+      register: result
+
+    - assert:
+        that:
+        - "'Failed to start InstanceRefresh: An error occurred (ValidationError) when calling the StartInstanceRefresh operation: AutoScalingGroup name not found' in result.msg"
+
+    - name: test canceling a refresh with an ASG name - check_mode
+      ec2_asg_instance_refresh:
+        name: "{{ asg_name }}"
+        state: "cancelled"
+      check_mode: true
+      register: output
+
+    - assert:
+        that:
+        - output is not failed
+        - output is changed
+        - '"autoscaling:CancelInstanceRefresh" not in output.resource_actions'
+
+    - name: test canceling a refresh with an ASG name
+      ec2_asg_instance_refresh:
+        name: "{{ asg_name }}"
+        state: "cancelled"
+      register: output
+
+    - assert:
+        that:
+        - "'instance_refresh_id' in output.instance_refreshes"
+
+    - name: test canceling a refresh with a ASG name - Idempotent
+      ec2_asg_instance_refresh:
+        name: "{{ asg_name }}"
+        state: "cancelled"
+      ignore_errors: yes
+      register: output
+
+    - assert:
+        that:
+        - output is not changed
+
+    - name: test cancelling a refresh with a valid ASG name - Idempotent (check_mode)
+      ec2_asg_instance_refresh:
+        name: "{{ asg_name }}"
+        state: "cancelled"
+      ignore_errors: true
+      check_mode: true
+      register: output
+
+    - assert:
+        that:
+          - output is not changed
+          - output is not failed
+
+    - name: test starting a refresh with an ASG name and preferences dict
+      ec2_asg_instance_refresh:
+        name: "{{ asg_name }}"
+        state: "started"
+        preferences:
+          min_healthy_percentage: 10
+          instance_warmup: 10
+      retries: 5
+      register: output
+      until: output is not failed
+
+    - assert:
+        that:
+        - "'instance_refresh_id' in output.instance_refreshes"
+
+    - name: re-test canceling a refresh with an ASG name
+      ec2_asg_instance_refresh:
+        name: "{{ asg_name }}"
+        state: "cancelled"
+      register: output
+
+    - assert:
+        that:
+        - "'instance_refresh_id' in output.instance_refreshes"
+
+    - name: test valid start - V1 - (with preferences missing instance_warmup)
+      ec2_asg_instance_refresh:
+        name: "{{ asg_name }}"
+        state: "started"
+        preferences:
+          min_healthy_percentage: 10
+      ignore_errors: yes
+      retries: 5
+      register: output
+      until: output is not failed
+
+    - assert:
+        that:
+        - "'instance_refresh_id' in output.instance_refreshes"
+
+    - name: re-test canceling a refresh with an ASG name
+      ec2_asg_instance_refresh:
+        name: "{{ asg_name }}"
+        state: "cancelled"
+      register: output
+
+    - assert:
+        that:
+        - "'instance_refresh_id' in output.instance_refreshes"
+
+    - name: test valid start - V2 - (with preferences missing min_healthy_percentage)
+      ec2_asg_instance_refresh:
+        name: "{{ asg_name }}"
+        state: "started"
+        preferences:
+          instance_warmup: 10
+      retries: 5
+      register: output
+      until: output is not failed
+      ignore_errors: yes
+
+    - assert:
+        that:
+        - "'instance_refresh_id' in output.instance_refreshes"
+
+    - name: test invalid cancelation - V2 - (with preferences)
+      ec2_asg_instance_refresh:
+        name: "{{ asg_name }}"
+        state: "cancelled"
+        preferences:
+          min_healthy_percentage: 10
+          instance_warmup: 10
+      ignore_errors: yes
+      register: result
+
+    - assert:
+        that:
+        - "'can not pass preferences dict when canceling a refresh' in result.msg"
+
+  # ============================================================
+
+    - name: run setup with refresh_and_cancel_three_times.yml
+      include_tasks: refresh_and_cancel_three_times.yml
+      loop: "{{ query('sequence', 'start=1 end=3') }}"
+
+    - name: test getting info for an ASG name
+      ec2_asg_instance_refresh_info:
+        name: "{{ asg_name }}"
+        region: "{{ aws_region }}"
+      ignore_errors: yes
+      register: output
+
+    - assert:
+        that:
+          - output | community.general.json_query(inst_refresh_id_json_query) | unique | length == 7
+      vars:
+        inst_refresh_id_json_query: instance_refreshes[].instance_refresh_id
+
+    - name: test using fake refresh ID
+      ec2_asg_instance_refresh_info:
+        name: "{{ asg_name }}"
+        ids: ['0e367f58-blabla-bla-bla-ca870dc5dbfe']
+      ignore_errors: yes
+      register: output
+
+    - assert:
+        that:
+          - "{{ output.instance_refreshes|length }} == 0"
+
+    - name: test using a real refresh ID
+      ec2_asg_instance_refresh_info:
+        name: "{{ asg_name }}"
+        ids: [ '{{ refreshout.instance_refreshes.instance_refresh_id }}' ]
+      ignore_errors: yes
+      register: output
+
+    - assert:
+        that:
+          - "{{ output.instance_refreshes |length }} == 1"
+
+    - name: test getting info for an ASG name which doesn't exist
+      ec2_asg_instance_refresh_info:
+        name: n0n3x1stentname27b
+      ignore_errors: yes
+      register: output
+
+    - assert:
+        that:
+          - "'Failed to describe InstanceRefreshes: An error occurred (ValidationError) when calling the DescribeInstanceRefreshes operation: AutoScalingGroup name not found - AutoScalingGroup n0n3x1stentname27b not found' == output.msg"
+
+    - name: assert that the correct number of records are returned
+      ec2_asg_instance_refresh_info:
+        name: "{{ asg_name }}"
+      ignore_errors: yes
+      register: output
+
+    - assert:
+        that:
+          - "{{ output.instance_refreshes|length }} == 7"
+
+    - name: assert that valid message with fake-token is returned
+      ec2_asg_instance_refresh_info:
+        name: "{{ asg_name }}"
+        next_token: "fake-token-123"
+      ignore_errors: yes
+      register: output
+
+    - assert:
+        that:
+          - '"Failed to describe InstanceRefreshes: An error occurred (InvalidNextToken) when calling the DescribeInstanceRefreshes operation: The token ''********'' is invalid." == output.msg'
+
+    - name: assert that max records=1 returns no more than one record
+      ec2_asg_instance_refresh_info:
+        name: "{{ asg_name }}"
+        max_records: 1
+      ignore_errors: yes
+      register: output
+
+    - assert:
+        that:
+          - "{{ output.instance_refreshes|length }} < 2"
+
+    - name: assert that valid message with real-token is returned
+      ec2_asg_instance_refresh_info:
+        name: "{{ asg_name }}"
+        next_token: "{{ output.next_token }}"
+      ignore_errors: yes
+      register: output
+
+    - assert:
+        that:
+          - "{{ output.instance_refreshes|length }} == 7"
+
+    - name: test using both real nextToken and max_records=1
+      ec2_asg_instance_refresh_info:
+        name: "{{ asg_name }}"
+        max_records: 1
+        next_token: "{{ output.next_token }}"
+      ignore_errors: yes
+      register: output
+
+    - assert:
+        that:
+          - "{{ output.instance_refreshes|length }} == 1"
+
+  always:
+
+    - name: kill asg
+      ec2_asg:
+        name: "{{ asg_name }}"
+        state: absent
+      register: removed
+      until: removed is not failed
+      ignore_errors: yes
+      retries: 10
+    # Remove the testing dependencies
+
+    - name: remove the load balancer
+      ec2_elb_lb:
+        name: "{{ load_balancer_name }}"
+        state: absent
+        security_group_ids:
+          - "{{ sg.group_id }}"
+        subnets: "{{ testing_subnet.subnet.id }}"
+        wait: yes
+        connection_draining_timeout: 60
+        listeners:
+          - protocol: http
+            load_balancer_port: 80
+            instance_port: 80
+        health_check:
+            ping_protocol: tcp
+            ping_port: 80
+            ping_path: "/"
+            response_timeout: 5
+            interval: 10
+            unhealthy_threshold: 4
+            healthy_threshold: 2
+      register: removed
+      until: removed is not failed
+      ignore_errors: yes
+      retries: 10
+
+    - name: remove launch configs
+      ec2_lc:
+        name: "{{ item }}"
+        state: absent
+      register: removed
+      until: removed is not failed
+      ignore_errors: yes
+      retries: 10
+      loop:
+        - "{{ lc_name_1 }}"
+        - "{{ lc_name_2 }}"
+
+    - name: delete launch template
+      ec2_launch_template:
+        name: "{{ resource_prefix }}-lt"
+        state: absent
+      register: del_lt
+      retries: 10
+      until: del_lt is not failed
+      ignore_errors: true
+
+    - name: remove the security group
+      ec2_group:
+        name: "{{ sg_name }}"
+        description: a security group for ansible tests
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        state: absent
+      register: removed
+      until: removed is not failed
+      ignore_errors: yes
+      retries: 10
+
+    - name: remove routing rules
+      ec2_vpc_route_table:
+        state: absent
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        tags:
+          created: "{{ route_name }}"
+        routes:
+          - dest: 0.0.0.0/0
+            gateway_id: "{{ igw.gateway_id }}"
+        subnets:
+          - "{{ testing_subnet.subnet.id }}"
+      register: removed
+      until: removed is not failed
+      ignore_errors: yes
+      retries: 10
+
+    - name: remove internet gateway
+      ec2_vpc_igw:
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        state: absent
+      register: removed
+      until: removed is not failed
+      ignore_errors: yes
+      retries: 10
+
+    - name: remove the subnet
+      ec2_vpc_subnet:
+        state: absent
+        vpc_id: "{{ testing_vpc.vpc.id }}"
+        cidr: '{{ subnet_a_cidr }}'
+      register: removed
+      until: removed is not failed
+      ignore_errors: yes
+      retries: 10
+
+    - name: remove the VPC
+      ec2_vpc_net:
+        name: "{{ vpc_name }}"
+        cidr_block: '{{ subnet_a_cidr }}'
+        state: absent
+      register: removed
+      until: removed is not failed
+      ignore_errors: yes
+      retries: 10
