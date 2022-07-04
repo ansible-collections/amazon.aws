@@ -8,11 +8,13 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: aws_glue_job
+module: glue_job
 version_added: 1.0.0
 short_description: Manage an AWS Glue job
 description:
   - Manage an AWS Glue job. See U(https://aws.amazon.com/glue/) for details.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_glue_job).
+    The usage did not change.
 author:
   - "Rob White (@wimnat)"
   - "Vijayanand Sharma (@vijayanandsharma)"
@@ -110,7 +112,7 @@ EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create an AWS Glue job
-- community.aws.aws_glue_job:
+- community.aws.glue_job:
     command_script_location: "s3://s3bucket/script.py"
     default_arguments:
       "--extra-py-files": s3://s3bucket/script-package.zip
@@ -120,10 +122,9 @@ EXAMPLES = r'''
     state: present
 
 # Delete an AWS Glue job
-- community.aws.aws_glue_job:
+- community.aws.glue_job:
     name: my-glue-job
     state: absent
-
 '''
 
 RETURN = r'''

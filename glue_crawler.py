@@ -8,11 +8,13 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: aws_glue_crawler
+module: glue_crawler
 version_added: 4.1.0
 short_description: Manage an AWS Glue crawler
 description:
-    - Manage an AWS Glue crawler. See U(https://aws.amazon.com/glue/) for details.
+  - Manage an AWS Glue crawler. See U(https://aws.amazon.com/glue/) for details.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_glue_crawler).
+    The usage did not change.
 author:
   - 'Ivan Chekaldin (@ichekaldin)'
 options:
@@ -75,16 +77,16 @@ options:
       - Required when I(state=present).
     type: dict
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.tags
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create an AWS Glue crawler
-- community.aws.aws_glue_crawler:
+- community.aws.glue_crawler:
     name: my-glue-crawler
     database_name: my_database
     role: my-iam-role
@@ -103,10 +105,9 @@ EXAMPLES = r'''
     state: present
 
 # Delete an AWS Glue crawler
-- community.aws.aws_glue_crawler:
+- community.aws.glue_crawler:
     name: my-glue-crawler
     state: absent
-
 '''
 
 RETURN = r'''
@@ -198,8 +199,6 @@ targets:
             type: list
 '''
 
-# Non-ansible imports
-import copy
 try:
     import botocore
 except ImportError:
@@ -210,9 +209,7 @@ from ansible.module_utils.common.dict_transformations import snake_dict_to_camel
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_aws_tags
 from ansible_collections.amazon.aws.plugins.module_utils.iam import get_aws_account_info
 

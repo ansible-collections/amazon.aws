@@ -8,12 +8,15 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: aws_glue_connection
+module: glue_connection
 version_added: 1.0.0
 short_description: Manage an AWS Glue connection
 description:
-    - Manage an AWS Glue connection. See U(https://aws.amazon.com/glue/) for details.
-author: "Rob White (@wimnat)"
+  - Manage an AWS Glue connection. See U(https://aws.amazon.com/glue/) for details.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_glue_connection).
+    The usage did not change.
+author:
+  - "Rob White (@wimnat)"
 options:
   availability_zone:
     description:
@@ -69,16 +72,15 @@ options:
       - Required when I(connection_type=NETWORK).
     type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 # Create an AWS Glue connection
-- community.aws.aws_glue_connection:
+- community.aws.glue_connection:
     name: my-glue-connection
     connection_properties:
       JDBC_CONNECTION_URL: jdbc:mysql://mydb:3306/databasename
@@ -87,7 +89,7 @@ EXAMPLES = r'''
     state: present
 
 # Create an AWS Glue network connection
-- community.aws.aws_glue_connection:
+- community.aws.glue_connection:
     name: my-glue-network-connection
     availability_zone: us-east-1a
     connection_properties:
@@ -100,10 +102,9 @@ EXAMPLES = r'''
     state: present
 
 # Delete an AWS Glue connection
-- community.aws.aws_glue_connection:
+- community.aws.glue_connection:
     name: my-glue-connection
     state: absent
-
 '''
 
 RETURN = r'''
