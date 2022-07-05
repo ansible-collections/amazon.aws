@@ -8,14 +8,16 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: aws_application_scaling_policy
+module: application_autoscaling_policy
 version_added: 1.0.0
 short_description: Manage Application Auto Scaling Scaling Policies
 notes:
-    - for details of the parameters and returns see
+    - For more details of the parameters and returns see
       U(http://boto3.readthedocs.io/en/latest/reference/services/application-autoscaling.html#ApplicationAutoScaling.Client.put_scaling_policy)
 description:
     - Creates, updates or removes a Scaling Policy.
+    - Prior to release 5.0.0 this module was called C(community.aws.aws_application_scaling_policy).
+      The usage did not change.
 author:
     - Gustavo Maia (@gurumaia)
     - Chen Leibovich (@chenl87)
@@ -97,13 +99,13 @@ options:
         type: int
     override_task_capacity:
         description:
-        - Whether or not to override values of minimum and/or maximum tasks if it's already set.
-        - Defaults to C(false).
+            - Whether or not to override values of minimum and/or maximum tasks if it's already set.
+            - Defaults to C(false).
         required: no
         type: bool
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+    - amazon.aws.aws
+    - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
@@ -111,7 +113,7 @@ EXAMPLES = '''
 
 # Create step scaling policy for ECS Service
 - name: scaling_policy
-  community.aws.aws_application_scaling_policy:
+  community.aws.application_autoscaling_policy:
     state: present
     policy_name: test_policy
     service_namespace: ecs
@@ -132,7 +134,7 @@ EXAMPLES = '''
 
 # Create target tracking scaling policy for ECS Service
 - name: scaling_policy
-  community.aws.aws_application_scaling_policy:
+  community.aws.application_autoscaling_policy:
     state: present
     policy_name: test_policy
     service_namespace: ecs
@@ -150,7 +152,7 @@ EXAMPLES = '''
 
 # Remove scalable target for ECS Service
 - name: scaling_policy
-  community.aws.aws_application_scaling_policy:
+  community.aws.application_autoscaling_policy:
     state: absent
     policy_name: test_policy
     policy_type: StepScaling
