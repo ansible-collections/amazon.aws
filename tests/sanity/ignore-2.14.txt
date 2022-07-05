@@ -1,9 +1,7 @@
 plugins/modules/ec2_ami.py pylint:collection-deprecated-version # Deprecation planned for 5.0.0
-plugins/modules/ec2_ami.py validate-modules:collection-deprecated-version # Deprecation planned for 5.0.0
 plugins/modules/ec2_instance.py pylint:collection-deprecated-version # Deprecation planned for 5.0.0
 plugins/modules/ec2_key.py pylint:collection-deprecated-version # Deprecation planned for 5.0.0
 plugins/modules/ec2_vol.py pylint:collection-deprecated-version # Deprecation planned for 5.0.0
-plugins/modules/ec2_vpc_dhcp_option_info.py validate-modules:collection-deprecated-version # Deprecation planned for 5.0.0
 plugins/modules/ec2_vpc_endpoint.py pylint:collection-deprecated-version # Deprecation planned for 5.0.0
 plugins/modules/ec2_vpc_net.py pylint:collection-deprecated-version # Deprecation planned for 5.0.0
 plugins/modules/ec2_vpc_route_table.py pylint:collection-deprecated-version # Deprecation planned for 5.0.0
