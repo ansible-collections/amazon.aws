@@ -8,11 +8,13 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: aws_ssm_parameter_store
+module: ssm_parameter
 version_added: 1.0.0
-short_description: Manage key-value pairs in AWS SSM parameter store
+short_description: Manage key-value pairs in AWS Systems Manager Parameter Store
 description:
-  - Manage key-value pairs in AWS SSM parameter store.
+  - Manage key-value pairs in AWS Systems Manager (SSM) Parameter Store.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_ssm_parameter_store).
+    The usage did not change.
 options:
   name:
     description:
@@ -85,31 +87,31 @@ author:
   - "Michael De La Rue (@mikedlr)"
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
 - name: Create or update key/value pair in AWS SSM parameter store
-  community.aws.aws_ssm_parameter_store:
+  community.aws.ssm_paramater:
     name: "Hello"
     description: "This is your first key"
     value: "World"
 
 - name: Delete the key
-  community.aws.aws_ssm_parameter_store:
+  community.aws.ssm_paramater:
     name: "Hello"
     state: absent
 
-- name: Create or update secure key/value pair with default kms key (aws/ssm)
-  community.aws.aws_ssm_parameter_store:
+- name: Create or update secure key/value pair with default KMS key (aws/ssm)
+  community.aws.ssm_paramater:
     name: "Hello"
     description: "This is your first key"
     string_type: "SecureString"
     value: "World"
 
-- name: Create or update secure key/value pair with nominated kms key
-  community.aws.aws_ssm_parameter_store:
+- name: Create or update secure key/value pair with nominated KMS key
+  community.aws.ssm_paramater:
     name: "Hello"
     description: "This is your first key"
     string_type: "SecureString"
@@ -117,7 +119,7 @@ EXAMPLES = '''
     value: "World"
 
 - name: Always update a parameter store value and create a new version
-  community.aws.aws_ssm_parameter_store:
+  community.aws.ssm_paramater:
     name: "overwrite_example"
     description: "This example will always overwrite the value"
     string_type: "String"
@@ -125,7 +127,7 @@ EXAMPLES = '''
     overwrite_value: "always"
 
 - name: Create or update key/value pair in AWS SSM parameter store with tier
-  community.aws.aws_ssm_parameter_store:
+  community.aws.ssm_paramater:
     name: "Hello"
     description: "This is your first key"
     value: "World"
