@@ -3,8 +3,8 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
-__metaclass__ = type
 
+__metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
@@ -22,8 +22,8 @@ notes:
   - A rule must contain at least an I(event_pattern) or I(schedule_expression). A
     rule can have both an I(event_pattern) and a I(schedule_expression), in which
     case the rule will trigger on matching events as well as on a schedule.
-  - When specifying targets, I(input) and I(input_path) are mutually-exclusive
-    and optional parameters.
+  - When specifying targets, I(input), I(input_path), I(input_paths_map) and I(input_template)
+    are mutually-exclusive and optional parameters.
 options:
   name:
     description:
@@ -81,15 +81,31 @@ options:
         type: str
         description:
           - A JSON object that will override the event data when passed to the target.
-          - If neither I(input) nor I(input_path) is specified, then the entire
-            event is passed to the target in JSON form.
+          - If neither I(input) nor I(input_path) nor I(input_paths_map) nor I(input_template)
+            is specified, then the entire event is passed to the target in JSON form.
       input_path:
         type: str
         description:
           - A JSONPath string (e.g. C($.detail)) that specifies the part of the event data to be
             passed to the target.
-          - If neither I(input) nor I(input_path) is specified, then the entire
-            event is passed to the target in JSON form.
+          - If neither I(input) nor I(input_path) nor I(input_paths_map) nor I(input_template)
+            is specified, then the entire event is passed to the target in JSON form.
+      input_paths_map:
+        type: dict
+        version_added: 4.1.0
+        description:
+          - A dict that specifies the transformation of the event data to
+            custom input parameters.
+          - If neither I(input) nor I(input_path) nor I(input_paths_map) nor I(input_template)
+            is specified, then the entire event is passed to the target in JSON form.
+      input_template:
+        type: str
+        version_added: 4.1.0
+        description:
+          - A string that templates the values input_paths_map extracted from the event data.
+            It is used to produce the output you want to be sent to the target.
+          - If neither I(input) nor I(input_path) nor I(input_paths_map) nor I(input_template)
+            is specified, then the entire event is passed to the target in JSON form.
       ecs_parameters:
         type: dict
         description:
@@ -122,6 +138,19 @@ EXAMPLES = r'''
       - id: MyOtherTargetId
         arn: arn:aws:lambda:us-east-1:123456789012:function:MyFunction
         input: '{"foo": "bar"}'
+
+- community.aws.cloudwatchevent_rule:
+    name: MyInstanceLaunchEvent
+    description: "Rule for EC2 instance launch"
+    state: present
+    event_pattern: '{"source":["aws.ec2"],"detail-type":["EC2 Instance State-change Notification"],"detail":{"state":["pending"]}}'
+    targets:
+      - id: MyTargetSnsTopic
+        arn: arn:aws:sns:us-east-1:123456789012:MySNSTopic
+        input_paths_map:
+          instance: "$.detail.instance-id"
+          state: "$.detail.state"
+        input_template: "<instance> is in state <state>"
 
 - community.aws.cloudwatchevent_rule:
     name: MyCronTask
@@ -286,6 +315,12 @@ class CloudWatchEventRule(object):
                 target_request['Input'] = target['input']
             if 'input_path' in target:
                 target_request['InputPath'] = target['input_path']
+            if 'input_paths_map' in target or 'input_template' in target:
+                target_request['InputTransformer'] = {}
+                target_request['InputTransformer']['InputPathsMap'] = target['input_paths_map']
+                target_request['InputTransformer']['InputTemplate'] = '"{0}"'.format(
+                    target['input_template']
+                )
             if 'role_arn' in target:
                 target_request['RoleArn'] = target['role_arn']
             if 'ecs_parameters' in target:

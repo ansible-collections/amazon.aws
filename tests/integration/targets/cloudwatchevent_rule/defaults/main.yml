@@ -1,0 +1,9 @@
+---
+name_pattern: "cloudwatch_event_rule"
+unique_id: "{{ tiny_prefix  }}"
+
+test_event_names:
+  - "{{ name_pattern }}-{{ unique_id }}-1"
+  - "{{ name_pattern }}-{{ unique_id }}-2"
+
+input_transformer_event_name: "{{ name_pattern }}-{{ unique_id }}-3"
