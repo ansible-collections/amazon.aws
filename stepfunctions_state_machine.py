@@ -9,18 +9,20 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: aws_step_functions_state_machine
+module: stepfunctions_state_machine
 version_added: 1.0.0
 short_description: Manage AWS Step Functions state machines
 description:
-  - Create, update and delete state machines in AWS Step Functions.
-  - Calling the module in C(state=present) for an existing AWS Step Functions state machine
-    will attempt to update the state machine definition, IAM Role, or tags with the provided data.
+    - Create, update and delete state machines in AWS Step Functions.
+    - Calling the module in C(state=present) for an existing AWS Step Functions state machine
+      will attempt to update the state machine definition, IAM Role, or tags with the provided data.
+    - Prior to release 5.0.0 this module was called C(community.aws.aws_step_functions_state_machine).
+      The usage did not change.
 
 options:
     name:
         description:
-            - Name of the state machine
+            - Name of the state machine.
         required: true
         type: str
     definition:
@@ -28,32 +30,32 @@ options:
             - The Amazon States Language definition of the state machine. See
               U(https://docs.aws.amazon.com/step-functions/latest/dg/concepts-amazon-states-language.html) for more
               information on the Amazon States Language.
-            - "This parameter is required when C(state=present)."
+            - Required when I(state=present).
         type: json
     role_arn:
         description:
             - The ARN of the IAM Role that will be used by the state machine for its executions.
-            - "This parameter is required when C(state=present)."
+            - Required when I(state=present).
         type: str
     state:
         description:
-            - Desired state for the state machine
+            - Desired state for the state machine.
         default: present
         choices: [ present, absent ]
         type: str
 
 extends_documentation_fragment:
-  - amazon.aws.aws
-  - amazon.aws.ec2
-  - amazon.aws.tags
+    - amazon.aws.aws
+    - amazon.aws.ec2
+    - amazon.aws.tags
 author:
-  - Tom De Keyser (@tdekeyser)
+    - Tom De Keyser (@tdekeyser)
 '''
 
 EXAMPLES = '''
 # Create a new AWS Step Functions state machine
 - name: Setup HelloWorld state machine
-  community.aws.aws_step_functions_state_machine:
+  community.aws.stepfunctions_state_machine:
     name: "HelloWorldStateMachine"
     definition: "{{ lookup('file','state_machine.json') }}"
     role_arn: arn:aws:iam::987654321012:role/service-role/invokeLambdaStepFunctionsRole
@@ -62,7 +64,7 @@ EXAMPLES = '''
 
 # Update an existing state machine
 - name: Change IAM Role and tags of HelloWorld state machine
-  community.aws.aws_step_functions_state_machine:
+  community.aws.stepfunctions_state_machine:
     name: HelloWorldStateMachine
     definition: "{{ lookup('file','state_machine.json') }}"
     role_arn: arn:aws:iam::987654321012:role/service-role/anotherStepFunctionsRole
@@ -71,7 +73,7 @@ EXAMPLES = '''
 
 # Remove the AWS Step Functions state machine
 - name: Delete HelloWorld state machine
-  community.aws.aws_step_functions_state_machine:
+  community.aws.stepfunctions_state_machine:
     name: HelloWorldStateMachine
     state: absent
 '''
