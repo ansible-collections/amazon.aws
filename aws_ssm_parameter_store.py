@@ -207,6 +207,8 @@ parameter_metadata:
       returned: success
 '''
 
+import time
+
 try:
     import botocore
 except ImportError:
@@ -216,14 +218,94 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
+from ansible_collections.community.aws.plugins.module_utils.base import BaseWaiterFactory
+
+
+class ParameterWaiterFactory(BaseWaiterFactory):
+    def __init__(self, module):
+        client = module.client('ssm')
+        super(ParameterWaiterFactory, self).__init__(module, client)
+
+    @property
+    def _waiter_model_data(self):
+        data = super(ParameterWaiterFactory, self)._waiter_model_data
+        ssm_data = dict(
+            parameter_exists=dict(
+                operation='DescribeParameters',
+                delay=1, maxAttempts=20,
+                acceptors=[
+                    dict(state='retry', matcher='error', expected='ParameterNotFound'),
+                    dict(state='retry', matcher='path', expected=True, argument='length(Parameters[].Name) == `0`'),
+                    dict(state='success', matcher='path', expected=True, argument='length(Parameters[].Name) > `0`'),
+                ]
+            ),
+            parameter_deleted=dict(
+                operation='DescribeParameters',
+                delay=1, maxAttempts=20,
+                acceptors=[
+                    dict(state='retry', matcher='path', expected=True, argument='length(Parameters[].Name) > `0`'),
+                    dict(state='success', matcher='path', expected=True, argument='length(Parameters[]) == `0`'),
+                    dict(state='success', matcher='error', expected='ParameterNotFound'),
+                ]
+            ),
+        )
+        data.update(ssm_data)
+        return data
+
+
+def _wait_exists(client, module, name):
+    if module.check_mode:
+        return
+    wf = ParameterWaiterFactory(module)
+    waiter = wf.get_waiter('parameter_exists')
+    try:
+        waiter.wait(
+            ParameterFilters=[{'Key': 'Name', "Values": [name]}],
+        )
+    except botocore.exceptions.WaiterError:
+        module.warn("Timeout waiting for parameter to exist")
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to describe parameter while waiting for creation")
+
+
+def _wait_updated(client, module, name, version):
+    # Unfortunately we can't filter on the Version, as such we need something custom.
+    if module.check_mode:
+        return
+    for x in range(1, 10):
+        try:
+            parameter = describe_parameter(client, module, ParameterFilters=[{"Key": "Name", "Values": [name]}])
+            if parameter.get('Version', 0) > version:
+                return
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+            module.fail_json_aws(e, msg="Failed to describe parameter while waiting for update")
+        time.sleep(1)
+
+
+def _wait_deleted(client, module, name):
+    if module.check_mode:
+        return
+    wf = ParameterWaiterFactory(module)
+    waiter = wf.get_waiter('parameter_deleted')
+    try:
+        waiter.wait(
+            ParameterFilters=[{'Key': 'Name', "Values": [name]}],
+        )
+    except botocore.exceptions.WaiterError:
+        module.warn("Timeout waiting for parameter to exist")
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="Failed to describe parameter while waiting for deletion")
 
 
 def update_parameter(client, module, **args):
     changed = False
     response = {}
+    if module.check_mode:
+        return True, response
 
     try:
-        response = client.put_parameter(**args)
+        response = client.put_parameter(aws_retry=True, **args)
         changed = True
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="setting parameter")
@@ -231,6 +313,7 @@ def update_parameter(client, module, **args):
     return changed, response
 
 
+@AWSRetry.jittered_backoff()
 def describe_parameter(client, module, **args):
     paginator = client.get_paginator('describe_parameters')
     existing_parameter = paginator.paginate(**args).build_full_result()
@@ -267,11 +350,14 @@ def create_update_parameter(client, module):
         args.update(KeyId=module.params.get('key_id'))
 
     try:
-        existing_parameter = client.get_parameter(Name=args['Name'], WithDecryption=True)
-    except Exception:
+        existing_parameter = client.get_parameter(aws_retry=True, Name=args['Name'], WithDecryption=True)
+    except botocore.exceptions.ClientError:
         pass
+    except botocore.exceptions.BotoCoreError as e:
+        module.fail_json_aws(e, msg="fetching parameter")
 
     if existing_parameter:
+        original_version = existing_parameter['Parameter']['Version']
         if 'Value' not in args:
             args['Value'] = existing_parameter['Parameter']['Value']
 
@@ -290,14 +376,17 @@ def create_update_parameter(client, module):
                 try:
                     describe_existing_parameter = describe_parameter(
                         client, module,
-                        Filters=[{"Key": "Name", "Values": [args['Name']]}])
+                        ParameterFilters=[{"Key": "Name", "Values": [args['Name']]}])
                 except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
                     module.fail_json_aws(e, msg="getting description value")
 
                 if describe_existing_parameter['Description'] != args['Description']:
                     (changed, response) = update_parameter(client, module, **args)
+        if changed:
+            _wait_updated(client, module, module.params.get('name'), original_version)
     else:
         (changed, response) = update_parameter(client, module, **args)
+        _wait_exists(client, module, module.params.get('name'))
 
     return changed, response
 
@@ -306,7 +395,23 @@ def delete_parameter(client, module):
     response = {}
 
     try:
+        existing_parameter = client.get_parameter(aws_retry=True, Name=module.params.get('name'), WithDecryption=True)
+    except is_boto3_error_code('ParameterNotFound'):
+        return False, {}
+    except botocore.exceptions.ClientError:
+        # If we can't describe the parameter we may still be able to delete it
+        existing_parameter = True
+    except botocore.exceptions.BotoCoreError as e:
+        module.fail_json_aws(e, msg="setting parameter")
+
+    if not existing_parameter:
+        return False, {}
+    if module.check_mode:
+        return True, {}
+
+    try:
         response = client.delete_parameter(
+            aws_retry=True,
             Name=module.params.get('name')
         )
     except is_boto3_error_code('ParameterNotFound'):
@@ -314,11 +419,14 @@ def delete_parameter(client, module):
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="deleting parameter")
 
+    _wait_deleted(client, module, module.params.get('name'))
+
     return True, response
 
 
 def setup_client(module):
-    connection = module.client('ssm')
+    retry_decorator = AWSRetry.jittered_backoff()
+    connection = module.client('ssm', retry_decorator=retry_decorator)
     return connection
 
 
@@ -337,6 +445,7 @@ def setup_module_object():
 
     return AnsibleAWSModule(
         argument_spec=argument_spec,
+        supports_check_mode=True,
     )
 
 
@@ -353,9 +462,14 @@ def main():
 
     result = {"response": response}
 
-    parameter_metadata = describe_parameter(
-        client, module,
-        Filters=[{"Key": "Name", "Values": [module.params.get('name')]}])
+    try:
+        parameter_metadata = describe_parameter(
+            client, module,
+            ParameterFilters=[{"Key": "Name", "Values": [module.params.get('name')]}])
+    except is_boto3_error_code('ParameterNotFound'):
+        return False, {}
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg="to describe parameter")
     if parameter_metadata:
         result['parameter_metadata'] = camel_dict_to_snake_dict(parameter_metadata)
 
