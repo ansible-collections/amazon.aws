@@ -10,9 +10,9 @@ DOCUMENTATION = '''
 ---
 module: ec2_ami
 version_added: 1.0.0
-short_description: Create or destroy an image (AMI) in ec2
+short_description: Create or destroy an image (AMI) in EC2
 description:
-     - Registers or deregisters ec2 images.
+   - Registers or deregisters EC2 images.
 options:
   instance_id:
     description:
@@ -80,25 +80,16 @@ options:
           type: str
           description:
           - The device name. For example C(/dev/sda).
-          - The C(DeviceName) alias had been deprecated and will be removed in
-            release 5.0.0.
           required: yes
-          aliases: ['DeviceName']
         virtual_name:
           type: str
           description:
           - The virtual name for the device.
           - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_BlockDeviceMapping.html).
-          - The C(VirtualName) alias has been deprecated and will be removed in
-            release 5.0.0.
-          aliases: ['VirtualName']
         no_device:
           type: bool
           description:
           - Suppresses the specified device included in the block device mapping of the AMI.
-          - The C(NoDevice) alias has been deprecated and will be removed in
-            release 5.0.0.
-          aliases: ['NoDevice']
         volume_type:
           type: str
           description: The volume type.  Defaults to C(gp2) when not set.
@@ -151,14 +142,14 @@ options:
       - Set to simple to enable enhanced networking with the Intel 82599 Virtual Function interface for the AMI and any instances that you launch from the AMI.
     type: str
 author:
-    - "Evan Duffield (@scicoin-project) <eduffield@iacquire.com>"
-    - "Constantin Bugneac (@Constantin07) <constantin.bugneac@endava.com>"
-    - "Ross Williams (@gunzy83) <gunzy83au@gmail.com>"
-    - "Willem van Ketwich (@wilvk) <willvk@gmail.com>"
+  - "Evan Duffield (@scicoin-project) <eduffield@iacquire.com>"
+  - "Constantin Bugneac (@Constantin07) <constantin.bugneac@endava.com>"
+  - "Ross Williams (@gunzy83) <gunzy83au@gmail.com>"
+  - "Willem van Ketwich (@wilvk) <willvk@gmail.com>"
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.tags.deprecated_purge
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags.deprecated_purge
 '''
 
 # Thank you to iAcquire for sponsoring development of this module.
@@ -703,15 +694,9 @@ def rename_item_if_exists(dict_object, attribute, new_attribute, child_node=None
 
 def main():
     mapping_options = dict(
-        device_name=dict(
-            type='str', aliases=['DeviceName'], required=True,
-            deprecated_aliases=[dict(name='DeviceName', version='5.0.0', collection_name='amazon.aws')]),
-        virtual_name=dict(
-            type='str', aliases=['VirtualName'],
-            deprecated_aliases=[dict(name='VirtualName', version='5.0.0', collection_name='amazon.aws')]),
-        no_device=dict(
-            type='bool', aliases=['NoDevice'],
-            deprecated_aliases=[dict(name='NoDevice', version='5.0.0', collection_name='amazon.aws')]),
+        device_name=dict(type='str', required=True),
+        virtual_name=dict(type='str'),
+        no_device=dict(type='bool'),
         volume_type=dict(type='str'),
         delete_on_termination=dict(type='bool'),
         snapshot_id=dict(type='str'),

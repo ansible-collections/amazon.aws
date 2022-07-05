@@ -10,9 +10,9 @@ DOCUMENTATION = '''
 ---
 module: ec2_vpc_dhcp_option_info
 version_added: 1.0.0
-short_description: Gather information about dhcp options sets in AWS
+short_description: Gather information about DHCP options sets in AWS
 description:
-    - Gather information about dhcp options sets in AWS.
+  - Gather information about DHCP options sets in AWS.
 author: "Nick Aslanidis (@naslanidis)"
 options:
   filters:
@@ -22,25 +22,18 @@ options:
     type: dict
   dhcp_options_ids:
     description:
-      - Get details of specific DHCP Option IDs.
-      - The C(DhcpOptionIds) alias has been deprecated and will be removed in
-        release 5.0.0.
-    aliases: ['DhcpOptionIds']
+      - Get details of specific DHCP option IDs.
     type: list
     elements: str
   dry_run:
     description:
       - Checks whether you have the required permissions to view the DHCP
-        Options.
-      - The C(DryRun) alias has been deprecated and will be removed in
-        release 5.0.0.
-    aliases: ['DryRun']
+        options.
     type: bool
     default: false
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
@@ -200,12 +193,8 @@ def list_dhcp_options(client, module):
 def main():
     argument_spec = dict(
         filters=dict(type='dict', default={}),
-        dry_run=dict(
-            type='bool', default=False, aliases=['DryRun'],
-            deprecated_aliases=[dict(name='DryRun', version='5.0.0', collection_name='amazon.aws')]),
-        dhcp_options_ids=dict(
-            type='list', elements='str', aliases=['DhcpOptionIds'],
-            deprecated_aliases=[dict(name='DhcpOptionIds', version='5.0.0', collection_name='amazon.aws')]),
+        dry_run=dict(type='bool', default=False),
+        dhcp_options_ids=dict(type='list', elements='str'),
     )
 
     module = AnsibleAWSModule(
