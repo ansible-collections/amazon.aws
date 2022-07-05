@@ -9,11 +9,13 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: aws_msk_cluster
+module: msk_cluster
 short_description: Manage Amazon MSK clusters
 version_added: "2.0.0"
 description:
     - Create, delete and modify Amazon MSK (Managed Streaming for Apache Kafka) clusters.
+    - Prior to release 5.0.0 this module was called C(community.aws.aws_msk_cluster).
+      The usage did not change.
 author:
     - Daniil Kupchenko (@oukooveu)
 options:
@@ -31,7 +33,6 @@ options:
             - The version of Apache Kafka.
             - This version should exist in given configuration.
             - This parameter is required when I(state=present).
-            - Update operation requires botocore version >= 1.16.19.
         type: str
     configuration_arn:
         description:
@@ -212,7 +213,7 @@ notes:
 EXAMPLES = r"""
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-- aws_msk_cluster:
+- community.aws.msk_cluster:
     name: kafka-cluster
     state: present
     version: 2.6.1
@@ -227,7 +228,7 @@ EXAMPLES = r"""
     configuration_arn: arn:aws:kafka:us-east-1:000000000001:configuration/kafka-cluster-configuration/aaaaaaaa-bbbb-4444-3333-ccccccccc-1
     configuration_revision: 1
 
-- aws_msk_cluster:
+- community.aws.msk_cluster:
     name: kafka-cluster
     state: absent
 """
