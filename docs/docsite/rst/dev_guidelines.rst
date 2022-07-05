@@ -539,9 +539,9 @@ When you make a call using boto3, you will probably get back some useful informa
 should return in the module.  As well as information related to the call itself, you will also have
 some response metadata.  It is OK to return this to the user as well as they may find it useful.
 
-Boto3 commonly returns all keys CamelCased.  Ansible follows Python standards for variable names and uses
-snake_case.  There is a commonly used helper function ``ansible.module_utils.common.dict_transformations.camel_dict_to_snake_dict``
-that allows you to easily convert the boto3 response to snake_case.
+Boto3 returns most keys in CamelCase.  Ansible adopts python standards for naming variables and usage.
+There is a useful helper function called ``camel_dict_to_snake_dict`` that allows for an easy conversion
+of the boto3 response to snake_case.  It resides in ``module_utils/common/dict_transformations``.
 
 You should use this helper function and avoid changing the names of values returned by Boto3.
 E.g. if boto3 returns a value called 'SecretAccessKey' do not change it to 'AccessKey'.
