@@ -9,24 +9,26 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: aws_codepipeline
+module: codepipeline
 version_added: 1.0.0
 short_description: Create or delete AWS CodePipelines
 notes:
-    - for details of the parameters and returns see U(http://boto3.readthedocs.io/en/latest/reference/services/codepipeline.html)
+    - For details of the parameters and returns see U(http://boto3.readthedocs.io/en/latest/reference/services/codepipeline.html).
 description:
     - Create or delete a CodePipeline on AWS.
+    - Prior to release 5.0.0 this module was called C(community.aws.aws_codepipeline).
+      The usage did not change.
 author:
     - Stefan Horning (@stefanhorning) <horning@mediapeers.com>
 options:
     name:
         description:
-            - Name of the pipeline
+            - Name of the CodePipeline.
         required: true
         type: str
     role_arn:
         description:
-            - ARN of the IAM role to use when executing the pipeline
+            - ARN of the IAM role to use when executing the CodePipeline.
         required: true
         type: str
     artifact_store:
@@ -50,7 +52,7 @@ options:
         suboptions:
             name:
                 description:
-                    - Name of the stage (step) in the codepipeline
+                    - Name of the stage (step) in the CodePipeline.
                 type: str
             actions:
                 description:
@@ -63,19 +65,18 @@ options:
         type: list
     version:
         description:
-            - Version number of the pipeline. This number is automatically incremented when a pipeline is updated.
+            - Version number of the CodePipeline. This number is automatically incremented when a CodePipeline is updated.
         required: false
         type: int
     state:
         description:
-            - Create or remove code pipeline
+            - Create or remove CodePipeline.
         default: 'present'
         choices: ['present', 'absent']
         type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+    - amazon.aws.aws
+    - amazon.aws.ec2
 '''
 
 EXAMPLES = r'''
@@ -149,7 +150,7 @@ EXAMPLES = r'''
 
 RETURN = r'''
 pipeline:
-  description: Returns the dictionary describing the code pipeline configuration.
+  description: Returns the dictionary describing the CodePipeline configuration.
   returned: success
   type: complex
   contains:
@@ -159,7 +160,7 @@ pipeline:
       type: str
       sample: my_deploy_pipeline
     role_arn:
-      description: ARN of the IAM role attached to the code pipeline
+      description: ARN of the IAM role attached to the CodePipeline
       returned: always
       type: str
       sample: arn:aws:iam::123123123:role/codepipeline-service-role
@@ -183,11 +184,13 @@ pipeline:
           returned: when configured
           type: str
     stages:
-      description: List of stages configured for this pipeline
+      description: List of stages configured for this CodePipeline
       returned: always
       type: list
     version:
-      description: The version number of the pipeline. This number is auto incremented when pipeline params are changed.
+      description:
+        - The version number of the CodePipeline.
+        - This number is auto incremented when CodePipeline params are changed.
       returned: always
       type: int
 '''

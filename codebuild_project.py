@@ -9,13 +9,15 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: aws_codebuild
+module: codebuild_project
 version_added: 1.0.0
 short_description: Create or delete an AWS CodeBuild project
 notes:
     - For details of the parameters and returns see U(http://boto3.readthedocs.io/en/latest/reference/services/codebuild.html).
 description:
     - Create or delete a CodeBuild projects on AWS, used for building code artifacts from source code.
+    - Prior to release 5.0.0 this module was called C(community.aws.aws_codebuild).
+      The usage did not change.
 author:
     - Stefan Horning (@stefanhorning) <horning@mediapeers.com>
 options:
@@ -40,7 +42,7 @@ options:
                 type: str
             location:
                 description:
-                    - Information about the location of the source code to be built. For type CODEPIPELINE location should not be specified.
+                    - Information about the location of the source code to be built. For I(type) C(CODEPIPELINE) location should not be specified.
                 type: str
             git_clone_depth:
                 description:
@@ -48,7 +50,7 @@ options:
                 type: int
             buildspec:
                 description:
-                    - The build spec declaration to use for the builds in this build project. Leave empty if part of the code project.
+                    - The build spec declaration to use for the builds in this build project. Leave empty if part of the CodeBuild project.
                 type: str
             insecure_ssl:
                 description:
@@ -66,7 +68,7 @@ options:
                 required: true
             location:
                 description:
-                    - Information about the build output artifact location. When choosing type S3, set the bucket name here.
+                    - Information about the build output artifact location. When choosing I(type) C(S3), set the bucket name here.
             path:
                 description:
                     - Along with namespace_type and name, the pattern that AWS CodeBuild will use to name and store the output artifacts.
@@ -119,7 +121,8 @@ options:
                     - "Example: { name: 'MY_ENV_VARIABLE', value: 'test' }"
             privileged_mode:
                 description:
-                    - Enables running the Docker daemon inside a Docker container. Set to true only if the build project is be used to build Docker images.
+                    - Enables running the Docker daemon inside a Docker container.
+                    - Set to C(true) only if the build project is be used to build Docker images.
         type: dict
     service_role:
         description:
@@ -157,7 +160,7 @@ options:
         type: dict
     state:
         description:
-            - Create or remove code build project.
+            - Create or remove CodeBuild project.
         default: 'present'
         choices: ['present', 'absent']
         type: str
@@ -191,7 +194,7 @@ extends_documentation_fragment:
 EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-- community.aws.aws_codebuild:
+- community.aws.codebuild_project:
     name: my_project
     description: My nice little project
     service_role: "arn:aws:iam::123123:role/service-role/code-build-service-role"
@@ -223,17 +226,17 @@ project:
   type: complex
   contains:
     name:
-      description: Name of the CodeBuild project
+      description: Name of the CodeBuild project.
       returned: always
       type: str
       sample: my_project
     arn:
-      description: ARN of the CodeBuild project
+      description: ARN of the CodeBuild project.
       returned: always
       type: str
       sample: arn:aws:codebuild:us-east-1:123123123:project/vod-api-app-builder
     description:
-      description: A description of the build project
+      description: A description of the CodeBuild project.
       returned: always
       type: str
       sample: My nice little project
@@ -243,7 +246,7 @@ project:
       type: complex
       contains:
         type:
-          description: The type of the repository
+          description: The type of the repository.
           returned: always
           type: str
           sample: CODEPIPELINE
@@ -252,7 +255,7 @@ project:
           returned: when configured
           type: str
         git_clone_depth:
-          description: The git clone depth
+          description: The git clone depth.
           returned: when configured
           type: int
         build_spec:
@@ -278,7 +281,7 @@ project:
           type: str
           sample: CODEPIPELINE
         location:
-          description: Output location for build artifacts
+          description: Output location for build artifacts.
           returned: when configured
           type: str
         # and more... see http://boto3.readthedocs.io/en/latest/reference/services/codebuild.html#CodeBuild.Client.create_project
@@ -287,7 +290,7 @@ project:
       returned: when configured
       type: dict
     environment:
-      description: Environment settings for the build
+      description: Environment settings for the build.
       returned: always
       type: dict
     service_role:
@@ -296,7 +299,7 @@ project:
       type: str
       sample: arn:aws:iam::123123123:role/codebuild-service-role
     timeout_in_minutes:
-      description: The timeout of a build in minutes
+      description: The timeout of a build in minutes.
       returned: always
       type: int
       sample: 60
@@ -316,7 +319,7 @@ project:
       type: dict
       version_added: 4.0.0
     created:
-      description: Timestamp of the create time of the project
+      description: Timestamp of the create time of the project.
       returned: always
       type: str
       sample: "2018-04-17T16:56:03.245000+02:00"

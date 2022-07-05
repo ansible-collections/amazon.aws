@@ -9,22 +9,24 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: aws_codecommit
+module: codecommit_repository
 version_added: 1.0.0
 short_description: Manage repositories in AWS CodeCommit
 description:
   - Supports creation and deletion of CodeCommit repositories.
   - See U(https://aws.amazon.com/codecommit/) for more information about CodeCommit.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_codecommit).
+    The usage did not change.
 author: Shuang Wang (@ptux)
 options:
   name:
     description:
-      - name of repository.
+      - Name of repository.
     required: true
     type: str
   description:
     description:
-      - description or comment of repository.
+      - Description or comment of repository.
     required: false
     aliases:
       - comment
@@ -36,9 +38,8 @@ options:
     choices: [ 'present', 'absent' ]
     type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 RETURN = '''
@@ -121,12 +122,12 @@ response_metadata:
 
 EXAMPLES = '''
 # Create a new repository
-- community.aws.aws_codecommit:
+- community.aws.codecommit_repository:
     name: repo
     state: present
 
 # Delete a repository
-- community.aws.aws_codecommit:
+- community.aws.codecommit_repository:
     name: repo
     state: absent
 '''
