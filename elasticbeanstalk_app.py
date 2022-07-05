@@ -8,19 +8,18 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: aws_elasticbeanstalk_app
+module: elasticbeanstalk_app
 version_added: 1.0.0
 
-short_description: Create, update, and delete an elastic beanstalk application
-
+short_description: Create, update, and delete an Elastic Beanstalk application
 
 description:
-    - Creates, updates, deletes beanstalk applications if app_name is provided.
+  - Creates, updates, deletes Elastic Beanstalk applications if I(app_name) is provided.
 
 options:
   app_name:
     description:
-      - Name of the beanstalk application you wish to manage.
+      - Name of the Beanstalk application you wish to manage.
     aliases: [ 'name' ]
     type: str
   description:
@@ -39,23 +38,22 @@ options:
     default: false
     type: bool
 author:
-    - Harpreet Singh (@hsingh)
-    - Stephen Granger (@viper233)
+  - Harpreet Singh (@hsingh)
+  - Stephen Granger (@viper233)
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
 # Create or update an application
-- community.aws.aws_elasticbeanstalk_app:
+- community.aws.elasticbeanstalk_app:
     app_name: Sample_App
     description: "Hello World App"
     state: present
 
 # Delete application
-- community.aws.aws_elasticbeanstalk_app:
+- community.aws.elasticbeanstalk_app:
     app_name: Sample_App
     state: absent
 
