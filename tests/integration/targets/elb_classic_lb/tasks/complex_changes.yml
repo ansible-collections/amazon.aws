@@ -1,0 +1,330 @@
+---
+- block:
+    - name: Create ELB for testing complex updates (CHECK)
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
+        listeners: '{{ default_listeners }}'
+        health_check: '{{ default_health_check }}'
+        wait: true
+        scheme: 'internal'
+        subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
+        security_group_names: ['{{ resource_prefix }}-a', '{{ resource_prefix }}-b']
+        tags: '{{ default_tags }}'
+        cross_az_load_balancing: True
+        idle_timeout: '{{ default_idle_timeout }}'
+        connection_draining_timeout: '{{ default_drain_timeout }}'
+        access_logs:
+          interval: '{{ default_logging_interval }}'
+          s3_location: '{{ s3_logging_bucket_a }}'
+          s3_prefix: '{{ default_logging_prefix }}'
+          enabled: true
+      register: result
+      check_mode: True
+
+    - name: Verify that we expect to change
+      assert:
+        that:
+          - result is changed
+
+    - name: Create ELB for testing complex updates
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
+        listeners: '{{ default_listeners }}'
+        health_check: '{{ default_health_check }}'
+        wait: true
+        scheme: 'internal'
+        subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
+        security_group_names: ['{{ resource_prefix }}-a', '{{ resource_prefix }}-b']
+        tags: '{{ default_tags }}'
+        cross_az_load_balancing: True
+        idle_timeout: '{{ default_idle_timeout }}'
+        connection_draining_timeout: '{{ default_drain_timeout }}'
+        access_logs:
+          interval: '{{ default_logging_interval }}'
+          s3_location: '{{ s3_logging_bucket_a }}'
+          s3_prefix: '{{ default_logging_prefix }}'
+          enabled: true
+      register: result
+
+    - name: Verify that simple parameters were set
+      assert:
+        that:
+          - result is changed
+          - result.elb.status == "created"
+          - availability_zone_a in result.elb.zones
+          - availability_zone_b in result.elb.zones
+          - subnet_a in result.elb.subnets
+          - subnet_b in result.elb.subnets
+          - default_listener_tuples[0] in result.elb.listeners
+          - default_listener_tuples[1] in result.elb.listeners
+          - sg_a in result.elb.security_group_ids
+          - sg_b in result.elb.security_group_ids
+          - sg_c not in result.elb.security_group_ids
+          - result.elb.health_check.healthy_threshold == default_health_check['healthy_threshold']
+          - result.elb.health_check.interval == default_health_check['interval']
+          - result.elb.health_check.target == default_health_check_target
+          - result.elb.health_check.timeout == default_health_check['response_timeout']
+          - result.elb.health_check.unhealthy_threshold == default_health_check['unhealthy_threshold']
+          - result.elb.tags == default_tags
+          - result.elb.cross_az_load_balancing == 'yes'
+          - result.elb.idle_timeout == default_idle_timeout
+          - result.elb.connection_draining_timeout == default_drain_timeout
+          - result.elb.proxy_policy == None
+          - result.load_balancer.load_balancer_attributes.access_log.emit_interval == default_logging_interval
+          - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_name == s3_logging_bucket_a
+          - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_prefix == default_logging_prefix
+          - result.load_balancer.load_balancer_attributes.access_log.enabled == True
+
+    - name: Create ELB for testing complex updates - idempotency (CHECK)
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
+        listeners: '{{ default_listeners }}'
+        health_check: '{{ default_health_check }}'
+        wait: true
+        scheme: 'internal'
+        subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
+        security_group_names: ['{{ resource_prefix }}-a', '{{ resource_prefix }}-b']
+        tags: '{{ default_tags }}'
+        cross_az_load_balancing: True
+        idle_timeout: '{{ default_idle_timeout }}'
+        connection_draining_timeout: '{{ default_drain_timeout }}'
+        access_logs:
+          interval: '{{ default_logging_interval }}'
+          s3_location: '{{ s3_logging_bucket_a }}'
+          s3_prefix: '{{ default_logging_prefix }}'
+          enabled: true
+      register: result
+      check_mode: True
+
+    - name: Verify that we expect to not change
+      assert:
+        that:
+          - result is not changed
+
+    - name: Create ELB for testing complex updates - idempotency
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
+        listeners: '{{ default_listeners }}'
+        health_check: '{{ default_health_check }}'
+        wait: true
+        scheme: 'internal'
+        subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
+        security_group_names: ['{{ resource_prefix }}-a', '{{ resource_prefix }}-b']
+        tags: '{{ default_tags }}'
+        cross_az_load_balancing: True
+        idle_timeout: '{{ default_idle_timeout }}'
+        connection_draining_timeout: '{{ default_drain_timeout }}'
+        access_logs:
+          interval: '{{ default_logging_interval }}'
+          s3_location: '{{ s3_logging_bucket_a }}'
+          s3_prefix: '{{ default_logging_prefix }}'
+          enabled: true
+      register: result
+
+    - name: Verify that simple parameters were set
+      assert:
+        that:
+          - result is not changed
+          - result.elb.status == "exists"
+          - availability_zone_a in result.elb.zones
+          - availability_zone_b in result.elb.zones
+          - subnet_a in result.elb.subnets
+          - subnet_b in result.elb.subnets
+          - default_listener_tuples[0] in result.elb.listeners
+          - default_listener_tuples[1] in result.elb.listeners
+          - sg_a in result.elb.security_group_ids
+          - sg_b in result.elb.security_group_ids
+          - sg_c not in result.elb.security_group_ids
+          - result.elb.health_check.healthy_threshold == default_health_check['healthy_threshold']
+          - result.elb.health_check.interval == default_health_check['interval']
+          - result.elb.health_check.target == default_health_check_target
+          - result.elb.health_check.timeout == default_health_check['response_timeout']
+          - result.elb.health_check.unhealthy_threshold == default_health_check['unhealthy_threshold']
+          - result.elb.tags == default_tags
+          - result.elb.cross_az_load_balancing == 'yes'
+          - result.elb.idle_timeout == default_idle_timeout
+          - result.elb.connection_draining_timeout == default_drain_timeout
+          - result.elb.proxy_policy == None
+          - result.load_balancer.load_balancer_attributes.access_log.emit_interval == default_logging_interval
+          - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_name == s3_logging_bucket_a
+          - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_prefix == default_logging_prefix
+          - result.load_balancer.load_balancer_attributes.access_log.enabled == True
+
+    ###
+
+    - name: Perform complex update (CHECK)
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
+        listeners: '{{ updated_listeners }}'
+        health_check: '{{ updated_health_check }}'
+        wait: true
+        scheme: 'internal'
+        subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
+        security_group_names: ['{{ resource_prefix }}-c', '{{ resource_prefix }}-b']
+        tags: '{{ updated_tags }}'
+        cross_az_load_balancing: False
+        idle_timeout: '{{ updated_idle_timeout }}'
+        connection_draining_timeout: '{{ default_drain_timeout }}'
+        access_logs:
+          interval: '{{ updated_logging_interval }}'
+          s3_location: '{{ s3_logging_bucket_a }}'
+          s3_prefix: '{{ default_logging_prefix }}'
+          enabled: true
+      register: result
+      check_mode: True
+
+    - name: Verify that we expect to change
+      assert:
+        that:
+          - result is changed
+
+    - name: Perform complex update
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
+        listeners: '{{ updated_listeners }}'
+        health_check: '{{ updated_health_check }}'
+        wait: true
+        scheme: 'internal'
+        subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
+        security_group_names: ['{{ resource_prefix }}-c', '{{ resource_prefix }}-b']
+        tags: '{{ updated_tags }}'
+        cross_az_load_balancing: False
+        idle_timeout: '{{ updated_idle_timeout }}'
+        connection_draining_timeout: '{{ default_drain_timeout }}'
+        access_logs:
+          interval: '{{ updated_logging_interval }}'
+          s3_location: '{{ s3_logging_bucket_a }}'
+          s3_prefix: '{{ default_logging_prefix }}'
+          enabled: true
+      register: result
+
+    - name: Verify that simple parameters were set
+      assert:
+        that:
+          - result is changed
+          - result.elb.status == "exists"
+          - availability_zone_a in result.elb.zones
+          - availability_zone_b in result.elb.zones
+          - subnet_a in result.elb.subnets
+          - subnet_b in result.elb.subnets
+          - updated_listener_tuples[0] in result.elb.listeners
+          - updated_listener_tuples[1] in result.elb.listeners
+          - sg_a not in result.elb.security_group_ids
+          - sg_b in result.elb.security_group_ids
+          - sg_c in result.elb.security_group_ids
+          - result.elb.health_check.healthy_threshold == updated_health_check['healthy_threshold']
+          - result.elb.health_check.interval == updated_health_check['interval']
+          - result.elb.health_check.target == updated_health_check_target
+          - result.elb.health_check.timeout == updated_health_check['response_timeout']
+          - result.elb.health_check.unhealthy_threshold == updated_health_check['unhealthy_threshold']
+          - result.elb.tags == updated_tags
+          - result.elb.cross_az_load_balancing == 'no'
+          - result.elb.idle_timeout == updated_idle_timeout
+          - result.elb.connection_draining_timeout == default_drain_timeout
+          - result.elb.proxy_policy == None
+          - result.load_balancer.load_balancer_attributes.access_log.emit_interval == updated_logging_interval
+          - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_name == s3_logging_bucket_a
+          - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_prefix == default_logging_prefix
+          - result.load_balancer.load_balancer_attributes.access_log.enabled == True
+
+    - name: Perform complex update idempotency (CHECK)
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
+        listeners: '{{ updated_listeners }}'
+        health_check: '{{ updated_health_check }}'
+        wait: true
+        scheme: 'internal'
+        subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
+        security_group_names: ['{{ resource_prefix }}-c', '{{ resource_prefix }}-b']
+        tags: '{{ updated_tags }}'
+        cross_az_load_balancing: False
+        idle_timeout: '{{ updated_idle_timeout }}'
+        connection_draining_timeout: '{{ default_drain_timeout }}'
+        access_logs:
+          interval: '{{ updated_logging_interval }}'
+          s3_location: '{{ s3_logging_bucket_a }}'
+          s3_prefix: '{{ default_logging_prefix }}'
+          enabled: true
+      register: result
+      check_mode: True
+
+    - name: Verify we expect to not change
+      assert:
+        that:
+          - result is not changed
+
+    - name: Perform complex update - idempotency
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: present
+        # zones: ['{{ availability_zone_a }}', '{{ availability_zone_b }}']
+        listeners: '{{ updated_listeners }}'
+        health_check: '{{ updated_health_check }}'
+        wait: true
+        scheme: 'internal'
+        subnets: ['{{ subnet_a }}', '{{ subnet_b }}']
+        security_group_names: ['{{ resource_prefix }}-c', '{{ resource_prefix }}-b']
+        tags: '{{ updated_tags }}'
+        cross_az_load_balancing: False
+        idle_timeout: '{{ updated_idle_timeout }}'
+        connection_draining_timeout: '{{ default_drain_timeout }}'
+        access_logs:
+          interval: '{{ updated_logging_interval }}'
+          s3_location: '{{ s3_logging_bucket_a }}'
+          s3_prefix: '{{ default_logging_prefix }}'
+          enabled: true
+      register: result
+
+    - name: Verify that simple parameters were set
+      assert:
+        that:
+          - result is not changed
+          - result.elb.status == "exists"
+          - availability_zone_a in result.elb.zones
+          - availability_zone_b in result.elb.zones
+          - subnet_a in result.elb.subnets
+          - subnet_b in result.elb.subnets
+          - updated_listener_tuples[0] in result.elb.listeners
+          - updated_listener_tuples[1] in result.elb.listeners
+          - sg_a not in result.elb.security_group_ids
+          - sg_b in result.elb.security_group_ids
+          - sg_c in result.elb.security_group_ids
+          - result.elb.health_check.healthy_threshold == updated_health_check['healthy_threshold']
+          - result.elb.health_check.interval == updated_health_check['interval']
+          - result.elb.health_check.target == updated_health_check_target
+          - result.elb.health_check.timeout == updated_health_check['response_timeout']
+          - result.elb.health_check.unhealthy_threshold == updated_health_check['unhealthy_threshold']
+          - result.elb.tags == updated_tags
+          - result.elb.cross_az_load_balancing == 'no'
+          - result.elb.idle_timeout == updated_idle_timeout
+          - result.elb.connection_draining_timeout == default_drain_timeout
+          - result.elb.proxy_policy == None
+          - result.load_balancer.load_balancer_attributes.access_log.emit_interval == updated_logging_interval
+          - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_name == s3_logging_bucket_a
+          - result.load_balancer.load_balancer_attributes.access_log.s3_bucket_prefix == default_logging_prefix
+          - result.load_balancer.load_balancer_attributes.access_log.enabled == True
+
+  always:
+
+    # ============================================================
+    - name: remove the test load balancer
+      elb_classic_lb:
+        name: "{{ elb_name }}"
+        state: absent
+        wait: true
+      register: result
+      ignore_errors: true
