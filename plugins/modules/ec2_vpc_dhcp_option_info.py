@@ -57,7 +57,7 @@ EXAMPLES = '''
   amazon.aws.ec2_vpc_dhcp_option_info:
     region: ap-southeast-2
     profile: production
-    DhcpOptionsIds: dopt-123fece2
+    dhcp_options_ids: dopt-123fece2
   register: dhcp_info
 
 '''
