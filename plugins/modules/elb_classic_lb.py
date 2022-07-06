@@ -734,7 +734,7 @@ class ElbManager(object):
         if security_group_names:
             # Use the subnets attached to the VPC to find which VPC we're in and
             # limit the search
-            if self.elb.get('Subnets', None):
+            if self.elb and self.elb.get('Subnets', None):
                 subnets = set(self.elb.get('Subnets') + list(self.subnets or []))
             else:
                 subnets = set(self.subnets)
