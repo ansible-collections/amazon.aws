@@ -5,7 +5,6 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-
 DOCUMENTATION = r'''
 ---
 module: ecs_service
@@ -252,6 +251,19 @@ options:
         type: bool
         default: false
         version_added: 4.1.0
+    propagate_tags:
+        description:
+          - Propagate tags from ECS task defintition or ECS service to ECS task.
+        required: false
+        choices: ["TASK_DEFINITION", "SERVICE"]
+        type: str
+        version_added: 4.1.0
+    tags:
+        description:
+          - A dictionary of tags to add or remove from the resource.
+        type: dict
+        required: false
+        version_added: 4.1.0
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
@@ -259,7 +271,6 @@ extends_documentation_fragment:
 
 EXAMPLES = r'''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
-
 # Basic provisioning example
 - community.aws.ecs_service:
     state: present
@@ -328,6 +339,18 @@ EXAMPLES = r'''
       - capacity_provider: test-capacity-provider-1
         weight: 1
         base: 0
+
+# With tags and tag propagation
+- community.aws.ecs_service:
+    state: present
+    name: tags-test-service
+    cluster: new_cluster
+    task_definition: 'new_cluster-task:1'
+    desired_count: 1
+    tags:
+      Firstname: jane
+      lastName: doe
+    propagate_tags: SERVICE
 '''
 
 RETURN = r'''
@@ -401,6 +424,10 @@ service:
             description: The valid values are ACTIVE, DRAINING, or INACTIVE.
             returned: always
             type: str
+        tags:
+            description: The tags applied to this resource.
+            returned: success
+            type: dict
         taskDefinition:
             description: The ARN of a task definition to use for tasks in the service.
             returned: always
@@ -472,7 +499,10 @@ service:
                                  such as attribute:ecs.availability-zone. For the binpack placement strategy, valid values are CPU and MEMORY.
                     returned: always
                     type: str
-
+        propagateTags:
+            description: The type of tag propagation applied to the resource.
+            returned: always
+            type: str
 ansible_facts:
     description: Facts about deleted service.
     returned: when deleting a service
@@ -530,6 +560,11 @@ ansible_facts:
                     description: The valid values are ACTIVE, DRAINING, or INACTIVE.
                     returned: always
                     type: str
+                tags:
+                    description: The tags applied to this resource.
+                    returned: when tags found
+                    type: list
+                    elements: dict
                 taskDefinition:
                     description: The ARN of a task definition to use for tasks in the service.
                     returned: always
@@ -601,6 +636,11 @@ ansible_facts:
                                          such as attribute:ecs.availability-zone. For the binpack placement strategy, valid values are CPU and MEMORY.
                             returned: always
                             type: str
+                propagateTags:
+                    description: The type of tag propagation applied to the resource
+                    returned: always
+                    type: str
+
 '''
 import time
 
@@ -614,8 +654,13 @@ DEPLOYMENT_CONFIGURATION_TYPE_MAP = {
     'deployment_circuit_breaker': 'dict',
 }
 
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
+
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import snake_dict_to_camel_dict, map_complex_type, get_ec2_security_group_ids_from_names
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import map_complex_type
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import get_ec2_security_group_ids_from_names
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_tag_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_list_to_ansible_dict
 
 try:
     import botocore
@@ -662,8 +707,11 @@ class EcsServiceManager:
     def describe_service(self, cluster_name, service_name):
         response = self.ecs.describe_services(
             cluster=cluster_name,
-            services=[service_name])
+            services=[service_name],
+            include=['TAGS'],
+        )
         msg = ''
+
         if len(response['failures']) > 0:
             c = self.find_in_array(response['failures'], service_name, 'arn')
             msg += ", failure reason is " + c['reason']
@@ -692,6 +740,12 @@ class EcsServiceManager:
         if (expected['load_balancers'] or []) != existing['loadBalancers']:
             return False
 
+        if expected['propagate_tags'] != existing['propagateTags']:
+            return False
+
+        if boto3_tag_list_to_ansible_dict(existing['tags']) != expected['tags']:
+            return False
+
         # expected is params. DAEMON scheduling strategy returns desired count equal to
         # number of instances running; don't check desired count if scheduling strat is daemon
         if (expected['scheduling_strategy'] != 'DAEMON'):
@@ -704,7 +758,7 @@ class EcsServiceManager:
                        desired_count, client_token, role, deployment_controller, deployment_configuration,
                        placement_constraints, placement_strategy, health_check_grace_period_seconds,
                        network_configuration, service_registries, launch_type, platform_version,
-                       scheduling_strategy, capacity_provider_strategy):
+                       scheduling_strategy, capacity_provider_strategy, tags, propagate_tags):
 
         params = dict(
             cluster=cluster_name,
@@ -740,6 +794,14 @@ class EcsServiceManager:
             params['desiredCount'] = desired_count
         if capacity_provider_strategy:
             params['capacityProviderStrategy'] = capacity_provider_strategy
+        if propagate_tags:
+            params['propagateTags'] = propagate_tags
+        # desired count is not required if scheduling strategy is daemon
+        if desired_count is not None:
+            params['desiredCount'] = desired_count
+        if tags:
+            params['tags'] = ansible_dict_to_boto3_tag_list(tags, 'key', 'value')
+
         if scheduling_strategy:
             params['schedulingStrategy'] = scheduling_strategy
         response = self.ecs.create_service(**params)
@@ -850,7 +912,9 @@ def main():
                 weight=dict(type='int'),
                 base=dict(type='int')
             )
-        )
+        ),
+        propagate_tags=dict(required=False, choices=['TASK_DEFINITION', 'SERVICE']),
+        tags=dict(required=False, type='dict'),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec,
@@ -888,7 +952,9 @@ def main():
     try:
         existing = service_mgr.describe_service(module.params['cluster'], module.params['name'])
     except Exception as e:
-        module.fail_json(msg="Exception describing service '" + module.params['name'] + "' in cluster '" + module.params['cluster'] + "': " + str(e))
+        module.fail_json_aws(e,
+                             msg="Exception describing service '{0}' in cluster '{1}'"
+                             .format(module.params['name'], module.params['cluster']))
 
     results = dict(changed=False)
 
@@ -948,6 +1014,12 @@ def main():
                     else:
                         task_definition = module.params['task_definition']
 
+                    if module.params['propagate_tags'] and module.params['propagate_tags'] != existing['propagateTags']:
+                        module.fail_json(msg="It is not currently supported to enable propagation tags of an existing service")
+
+                    if module.params['tags'] and boto3_tag_list_to_ansible_dict(existing['tags']) != module.params['tags']:
+                        module.fail_json(msg="It is not currently supported to change tags of an existing service")
+
                     # update required
                     response = service_mgr.update_service(module.params['name'],
                                                           module.params['cluster'],
@@ -957,7 +1029,7 @@ def main():
                                                           network_configuration,
                                                           module.params['health_check_grace_period_seconds'],
                                                           module.params['force_new_deployment'],
-                                                          capacityProviders
+                                                          capacityProviders,
                                                           )
 
                 else:
@@ -977,13 +1049,18 @@ def main():
                                                               network_configuration,
                                                               serviceRegistries,
                                                               module.params['launch_type'],
+                                                              module.params['scheduling_strategy'],
                                                               module.params['platform_version'],
                                                               module.params['scheduling_strategy'],
-                                                              capacityProviders
+                                                              capacityProviders,
+                                                              module.params['tags'],
+                                                              module.params['propagate_tags'],
                                                               )
                     except botocore.exceptions.ClientError as e:
                         module.fail_json_aws(e, msg="Couldn't create service")
 
+                if response.get('tags', None):
+                    response['tags'] = boto3_tag_list_to_ansible_dict(response['tags'])
                 results['service'] = response
 
             results['changed'] = True
@@ -1044,7 +1121,10 @@ def main():
                 break
             time.sleep(delay)
         if i is repeat - 1:
-            module.fail_json(msg="Service still not deleted after " + str(repeat) + " tries of " + str(delay) + " seconds each.")
+            module.fail_json(
+                msg="Service still not deleted after {0} tries of {1} seconds each."
+                .format(repeat, delay)
+            )
             return
 
     module.exit_json(**results)
