@@ -90,6 +90,7 @@
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
         Another: thing
+      purge_tags: false
       security_groups: "{{ sg.group_id }}"
       vpc_subnet_id: "{{ testing_subnet_b.subnet.id }}"
       instance_type: "{{ ec2_instance_type }}"
@@ -109,7 +110,6 @@
       state: present
       name: "{{ resource_prefix }}-test-basic-vpc-create"
       image_id: "{{ ec2_ami_id }}"
-      purge_tags: true
       tags:
         TestId: "{{ ec2_instance_tag_TestId }}"
         Another: thing
