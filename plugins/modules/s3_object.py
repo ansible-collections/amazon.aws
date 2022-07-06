@@ -105,6 +105,7 @@ options:
         will be used during the initial upload of the file.
       - For a full list of permissions see the AWS documentation
         U(https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl).
+      - If ``acl_disabled`` is set to true, then no default value is set for permission.
     default: ['private']
     type: list
     elements: str
@@ -222,6 +223,12 @@ options:
     type: bool
     version_added: 3.1.0
     default: True
+  acl_disabled:
+    description:
+      - When set to I(acl_disabled=true), the default value of ``permission`` will not be set.
+    type: bool
+    version_added: 4.1.0
+    default: false
 author:
   - "Lester Wade (@lwade)"
   - "Sloane Hertel (@s-hertel)"
@@ -677,13 +684,14 @@ def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, s
             s3.upload_fileobj(Fileobj=f, Bucket=bucket, Key=obj, ExtraArgs=extra)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to complete PUT operation.")
-    try:
-        for acl in module.params.get('permission'):
-            s3.put_object_acl(ACL=acl, Bucket=bucket, Key=obj)
-    except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
-        module.warn("PutObjectAcl is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning")
-    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
-        module.fail_json_aws(e, msg="Unable to set object ACL")
+    if not module.params.get('acl_disabled'):
+        try:
+            for acl in module.params.get('permission'):
+                s3.put_object_acl(ACL=acl, Bucket=bucket, Key=obj)
+        except is_boto3_error_code(IGNORE_S3_DROP_IN_EXCEPTIONS):
+            module.warn("PutObjectAcl is not implemented by your storage provider. Set the permission parameters to the empty list to avoid this warning")
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
+            module.fail_json_aws(e, msg="Unable to set object ACL")
 
     # Tags
     tags, changed = ensure_tags(s3, module, bucket, obj)
@@ -966,6 +974,7 @@ def main():
         purge_tags=dict(type='bool', default=True),
         copy_src=dict(type='dict', options=dict(bucket=dict(required=True), object=dict(required=True), version_id=dict())),
         validate_bucket_name=dict(type='bool', default=True),
+        acl_disabled=dict(type='bool', default=False, required=False),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
@@ -1057,11 +1066,12 @@ def main():
     validate = not ignore_nonexistent_bucket
 
     # separate types of ACLs
-    bucket_acl = [acl for acl in module.params.get('permission') if acl in bucket_canned_acl]
-    object_acl = [acl for acl in module.params.get('permission') if acl in object_canned_acl]
-    error_acl = [acl for acl in module.params.get('permission') if acl not in bucket_canned_acl and acl not in object_canned_acl]
-    if error_acl:
-        module.fail_json(msg='Unknown permission specified: %s' % error_acl)
+    if not module.params.get('acl_disabled'):
+        bucket_acl = [acl for acl in module.params.get('permission') if acl in bucket_canned_acl]
+        object_acl = [acl for acl in module.params.get('permission') if acl in object_canned_acl]
+        error_acl = [acl for acl in module.params.get('permission') if acl not in bucket_canned_acl and acl not in object_canned_acl]
+        if error_acl:
+            module.fail_json(msg='Unknown permission specified: %s' % error_acl)
 
     # First, we check to see if the bucket exists, we get "bucket" returned.
     bucketrtn = bucket_check(module, s3, bucket, validate=validate)
@@ -1124,7 +1134,8 @@ def main():
                 get_download_url(module, s3, bucket, obj, expiry, tags, changed=tags_update)
 
         # only use valid object acls for the upload_s3file function
-        module.params['permission'] = object_acl
+        if not module.params.get('acl_disabled'):
+            module.params['permission'] = object_acl
         upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, src=src, content=bincontent)
 
     # Delete an object from a bucket, not the entire bucket
