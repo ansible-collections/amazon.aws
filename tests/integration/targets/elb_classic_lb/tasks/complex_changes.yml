@@ -133,7 +133,7 @@
       assert:
         that:
           - result is not changed
-          - result.elb.status == "created"
+          - result.elb.status == "exists"
           - availability_zone_a in result.elb.zones
           - availability_zone_b in result.elb.zones
           - subnet_a in result.elb.subnets
@@ -214,7 +214,7 @@
       assert:
         that:
           - result is changed
-          - result.elb.status == "created"
+          - result.elb.status == "exists"
           - availability_zone_a in result.elb.zones
           - availability_zone_b in result.elb.zones
           - subnet_a in result.elb.subnets
@@ -293,7 +293,7 @@
       assert:
         that:
           - result is not changed
-          - result.elb.status == "created"
+          - result.elb.status == "exists"
           - availability_zone_a in result.elb.zones
           - availability_zone_b in result.elb.zones
           - subnet_a in result.elb.subnets

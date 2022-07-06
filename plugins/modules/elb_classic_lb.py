@@ -1430,7 +1430,7 @@ class ElbManager(object):
         """Set health check values on ELB as needed"""
         health_check_config = self._format_healthcheck()
 
-        if health_check_config == self.elb['HealthCheck']:
+        if self.elb and health_check_config == self.elb['HealthCheck']:
             return False
 
         self.changed = True
