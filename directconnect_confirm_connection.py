@@ -17,6 +17,8 @@ description:
   - Confirms the creation of a hosted DirectConnect, which requires approval before it can be used.
   - DirectConnect connections that require approval would be in the C(ordering).
   - After confirmation, they will move to the C(pending) state and finally the C(available) state.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_direct_connect_confirm_connection).
+    The usage did not change.
 author:
   - "Matt Traynham (@mtraynham)"
 extends_documentation_fragment:

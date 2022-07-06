@@ -17,6 +17,8 @@ description:
   - Deletes AWS Direct Connect Gateway.
   - Attaches Virtual Gateways to Direct Connect Gateway.
   - Detaches Virtual Gateways to Direct Connect Gateway.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_direct_connect_gateway).
+    The usage did not change.
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2

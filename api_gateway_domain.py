@@ -14,6 +14,8 @@ description:
   - Manages API Gateway custom domains for API GW Rest APIs.
   - AWS API Gateway custom domain setups use CloudFront behind the scenes.
     So you will get a CloudFront distribution as a result, configured to be aliased with your domain.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_api_gateway_domain).
+    The usage did not change.
 version_added: '3.3.0'
 author:
   - 'Stefan Horning (@stefanhorning)'

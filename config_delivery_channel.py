@@ -14,6 +14,8 @@ version_added: 1.0.0
 short_description: Manage AWS Config delivery channels
 description:
   - This module manages AWS Config delivery locations for rule checks and configuration info.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_config_delivery_channel).
+    The usage did not change.
 author:
   - "Aaron Smith (@slapula)"
 options:

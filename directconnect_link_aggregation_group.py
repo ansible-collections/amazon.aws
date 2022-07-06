@@ -13,6 +13,8 @@ version_added: 1.0.0
 short_description: Manage Direct Connect LAG bundles
 description:
   - Create, delete, or modify a Direct Connect link aggregation group.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_direct_connect_link_aggregation_group).
+    The usage did not change.
 author:
   - "Sloane Hertel (@s-hertel)"
 extends_documentation_fragment:

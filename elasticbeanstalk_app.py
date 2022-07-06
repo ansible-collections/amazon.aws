@@ -15,6 +15,8 @@ short_description: Create, update, and delete an Elastic Beanstalk application
 
 description:
   - Creates, updates, deletes Elastic Beanstalk applications if I(app_name) is provided.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_elasticbeanstalk_app).
+    The usage did not change.
 
 options:
   app_name:

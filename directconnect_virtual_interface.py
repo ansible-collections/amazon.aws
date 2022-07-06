@@ -13,6 +13,8 @@ version_added: 1.0.0
 short_description: Manage Direct Connect virtual interfaces
 description:
   - Create, delete, or modify a Direct Connect public or private virtual interface.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_direct_connect_virtual_interface).
+    The usage did not change.
 author:
   - "Sloane Hertel (@s-hertel)"
 options:
