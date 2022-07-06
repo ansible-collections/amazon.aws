@@ -8,11 +8,13 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: aws_secret
+module: secretsmanager_secret
 version_added: 1.0.0
 short_description: Manage secrets stored in AWS Secrets Manager
 description:
   - Create, update, and delete secrets stored in AWS Secrets Manager.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_secret).
+    The usage did not change.
 author:
   - "REY Remi (@rrey)"
 options:
@@ -80,14 +82,14 @@ notes:
 
 EXAMPLES = r'''
 - name: Add string to AWS Secrets Manager
-  community.aws.aws_secret:
+  community.aws.secretsmanager_secret:
     name: 'test_secret_string'
     state: present
     secret_type: 'string'
     secret: "{{ super_secret_string }}"
 
 - name: Add a secret with resource policy attached
-  community.aws.aws_secret:
+  community.aws.secretsmanager_secret:
     name: 'test_secret_string'
     state: present
     secret_type: 'string'
@@ -95,7 +97,7 @@ EXAMPLES = r'''
     resource_policy: "{{ lookup('template', 'templates/resource_policy.json.j2', convert_data=False) | string }}"
 
 - name: remove string from AWS Secrets Manager
-  community.aws.aws_secret:
+  community.aws.secretsmanager_secret:
     name: 'test_secret_string'
     state: absent
     secret_type: 'string'
