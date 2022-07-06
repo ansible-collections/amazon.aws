@@ -8,18 +8,21 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: aws_inspector_target
+module: inspector_target
 version_added: 1.0.0
-short_description: Create, Update and Delete Amazon Inspector Assessment
-                   Targets
-description: Creates, updates, or deletes Amazon Inspector Assessment Targets
-             and manages the required Resource Groups.
-author: "Dennis Conrad (@dennisconrad)"
+short_description: Create, Update and Delete Amazon Inspector Assessment Targets
+description:
+  - Creates, updates, or deletes Amazon Inspector Assessment Targets and manages
+    the required Resource Groups.
+  - Prior to release 5.0.0 this module was called C(community.aws.aws_inspector_target).
+    The usage did not change.
+author:
+  - "Dennis Conrad (@dennisconrad)"
 options:
   name:
     description:
-      - The user-defined name that identifies the assessment target.  The name
-        must be unique within the AWS account.
+      - The user-defined name that identifies the assessment target.
+      - The name must be unique within the AWS account.
     required: true
     type: str
   state:
@@ -33,29 +36,29 @@ options:
   tags:
     description:
       - Tags of the EC2 instances to be added to the assessment target.
-      - Required if C(state=present).
+      - Required if I(state=present).
     type: dict
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
 - name: Create my_target Assessment Target
-  community.aws.aws_inspector_target:
+  community.aws.inspector_target:
     name: my_target
     tags:
       role: scan_target
 
 - name: Update Existing my_target Assessment Target with Additional Tags
-  community.aws.aws_inspector_target:
+  community.aws.inspector_target:
     name: my_target
     tags:
       env: dev
       role: scan_target
 
 - name: Delete my_target Assessment Target
-  community.aws.aws_inspector_target:
+  community.aws.inspector_target:
     name: my_target
     state: absent
 '''
