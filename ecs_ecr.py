@@ -33,6 +33,13 @@ options:
             - JSON or dict that represents the new policy.
         required: false
         type: json
+    force_absent:
+        description:
+            - If I(force_absent=true), the repository will be removed, even if images are present.
+        required: false
+        default: false
+        type: bool
+        version_added: 4.1.0
     force_set_policy:
         description:
             - If I(force_set_policy=false), it prevents setting a policy that would prevent you from
@@ -277,10 +284,10 @@ class EcsEcr:
                     'could not find repository {0}'.format(printable))
             return
 
-    def delete_repository(self, registry_id, name):
+    def delete_repository(self, registry_id, name, force):
         if not self.check_mode:
             repo = self.ecr.delete_repository(
-                repositoryName=name, **build_kwargs(registry_id))
+                repositoryName=name, force=force, **build_kwargs(registry_id))
             self.changed = True
             return repo
         else:
@@ -397,6 +404,7 @@ def run(ecr, params):
         state = params['state']
         policy_text = params['policy']
         purge_policy = params['purge_policy']
+        force_absent = params['force_absent']
         registry_id = params['registry_id']
         force_set_policy = params['force_set_policy']
         image_tag_mutability = params['image_tag_mutability'].upper()
@@ -514,7 +522,7 @@ def run(ecr, params):
         elif state == 'absent':
             result['name'] = name
             if repo:
-                ecr.delete_repository(registry_id, name)
+                ecr.delete_repository(registry_id, name, force_absent)
                 result['changed'] = True
 
     except Exception as err:
@@ -540,6 +548,7 @@ def main():
         registry_id=dict(required=False),
         state=dict(required=False, choices=['present', 'absent'],
                    default='present'),
+        force_absent=dict(required=False, type='bool', default=False),
         force_set_policy=dict(required=False, type='bool', default=False),
         policy=dict(required=False, type='json'),
         image_tag_mutability=dict(required=False, choices=['mutable', 'immutable'],
