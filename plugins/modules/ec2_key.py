@@ -11,9 +11,9 @@ DOCUMENTATION = '''
 ---
 module: ec2_key
 version_added: 1.0.0
-short_description: Create or delete an ec2 key pair
+short_description: Create or delete an EC2 key pair
 description:
-    - create or delete an ec2 key pair.
+  - Create or delete an EC2 key pair.
 options:
   name:
     description:
@@ -33,7 +33,7 @@ options:
     type: bool
   state:
     description:
-      - create or delete keypair
+      - Create or delete keypair.
     required: false
     choices: [ present, absent ]
     default: 'present'
@@ -52,11 +52,11 @@ options:
       - ed25519
     version_added: 3.1.0
 notes:
-- Support for I(tags) and I(purge_tags) was added in release 2.1.0.
+  - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.tags.deprecated_purge
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 
 author:
   - "Vincent Viallet (@zbal)"
@@ -66,7 +66,7 @@ author:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-- name: create a new ec2 key pair, returns generated private key
+- name: create a new EC2 key pair, returns generated private key
   amazon.aws.ec2_key:
     name: my_keypair
 
@@ -305,7 +305,7 @@ def main():
         force=dict(type='bool', default=True),
         state=dict(default='present', choices=['present', 'absent']),
         tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool'),
+        purge_tags=dict(type='bool', default=True),
         key_type=dict(type='str', choices=['rsa', 'ed25519']),
     )
 
@@ -316,14 +316,6 @@ def main():
         ],
         supports_check_mode=True
     )
-
-    if module.params.get('purge_tags') is None:
-        module.deprecate(
-            'The purge_tags parameter currently defaults to False.'
-            ' For consistency across the collection, this default value'
-            ' will change to True in release 5.0.0.',
-            version='5.0.0', collection_name='amazon.aws')
-        module.params['purge_tags'] = False
 
     ec2_client = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 

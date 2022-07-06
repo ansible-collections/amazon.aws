@@ -10,18 +10,18 @@ DOCUMENTATION = r'''
 ---
 module: ec2_vpc_route_table
 version_added: 1.0.0
-short_description: Manage route tables for AWS virtual private clouds
+short_description: Manage route tables for AWS Virtual Private Clouds
 description:
-    - Manage route tables for AWS virtual private clouds
+  - Manage route tables for AWS Virtual Private Clouds (VPCs).
 author:
-- Robert Estelle (@erydo)
-- Rob White (@wimnat)
-- Will Thames (@willthames)
+  - Robert Estelle (@erydo)
+  - Rob White (@wimnat)
+  - Will Thames (@willthames)
 options:
   gateway_id:
     description:
-    - The ID of the gateway to associate with the route table.
-    - If I(gateway_id) is C('None') or C(''), gateway will be disassociated with the route table.
+      - The ID of the gateway to associate with the route table.
+      - If I(gateway_id) is C('None') or C(''), gateway will be disassociated with the route table.
     type: str
     version_added: 3.2.0
   lookup:
@@ -45,23 +45,25 @@ options:
     type: bool
     default: True
   purge_subnets:
-    description: Purge existing subnets that are not found in subnets. Ignored unless the subnets option is supplied.
+    description:
+      - Purge existing subnets that are not found in subnets.
+      - Ignored unless the subnets option is supplied.
     default: True
     type: bool
   route_table_id:
     description:
-    - The ID of the route table to update or delete.
-    - Required when I(lookup=id).
+      - The ID of the route table to update or delete.
+      - Required when I(lookup=id).
     type: str
   routes:
     description:
-        - List of routes in the route table.
-        - Routes are specified as dicts containing the keys C(dest) and one of C(gateway_id),
-          C(instance_id), C(network_interface_id), or C(vpc_peering_connection_id).
-        - The value of C(dest) is used for the destination match. It may be a IPv4 CIDR block
-          or a IPv6 CIDR block.
-        - If I(gateway_id) is specified, you can refer to the VPC's IGW by using the value C(igw).
-        - Routes are required for present states.
+      - List of routes in the route table.
+      - Routes are specified as dicts containing the keys C(dest) and one of C(gateway_id),
+        C(instance_id), C(network_interface_id), or C(vpc_peering_connection_id).
+      - The value of C(dest) is used for the destination match. It may be a IPv4 CIDR block
+        or a IPv6 CIDR block.
+      - If I(gateway_id) is specified, you can refer to the VPC's IGW by using the value C(igw).
+      - Routes are required for present states.
     type: list
     elements: dict
   state:
@@ -76,15 +78,15 @@ options:
     elements: str
   vpc_id:
     description:
-    - VPC ID of the VPC in which to create the route table.
-    - Required when I(state=present) or I(lookup=tag).
+      - VPC ID of the VPC in which to create the route table.
+      - Required when I(state=present) or I(lookup=tag).
     type: str
 notes:
-- Tags are used to uniquely identify route tables within a VPC when the I(route_table_id) is not supplied.
+  - Tags are used to uniquely identify route tables within a VPC when the I(route_table_id) is not supplied.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.tags.deprecated_purge
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = r'''
@@ -108,7 +110,7 @@ EXAMPLES = r'''
         gateway_id: "{{ igw.gateway_id }}"
   register: public_route_table
 
-- name: Create vpc gateway
+- name: Create VPC gateway
   amazon.aws.ec2_vpc_igw:
     vpc_id: vpc-1245678
   register: vpc_igw
@@ -805,7 +807,7 @@ def main():
         propagating_vgw_ids=dict(type='list', elements='str'),
         purge_routes=dict(default=True, type='bool'),
         purge_subnets=dict(default=True, type='bool'),
-        purge_tags=dict(type='bool'),
+        purge_tags=dict(type='bool', default=True),
         route_table_id=dict(),
         routes=dict(default=[], type='list', elements='dict'),
         state=dict(default='present', choices=['present', 'absent']),
@@ -819,14 +821,6 @@ def main():
                                            ['lookup', 'tag', ['vpc_id']],
                                            ['state', 'present', ['vpc_id']]],
                               supports_check_mode=True)
-
-    if module.params.get('purge_tags') is None:
-        module.deprecate(
-            'The purge_tags parameter currently defaults to False.'
-            ' For consistency across the collection, this default value'
-            ' will change to True in release 5.0.0.',
-            version='5.0.0', collection_name='amazon.aws')
-        module.params['purge_tags'] = False
 
     # The tests for RouteTable existing uses its own decorator, we can safely
     # retry on InvalidRouteTableID.NotFound

@@ -10,9 +10,9 @@ DOCUMENTATION = '''
 ---
 module: ec2_vpc_net
 version_added: 1.0.0
-short_description: Configure AWS virtual private clouds
+short_description: Configure AWS Virtual Private Clouds
 description:
-    - Create, modify, and terminate AWS virtual private clouds.
+  - Create, modify, and terminate AWS Virtual Private Clouds (VPCs).
 author:
   - Jonathan Davila (@defionscode)
   - Sloane Hertel (@s-hertel)
@@ -81,15 +81,14 @@ options:
     type: str
   multi_ok:
     description:
-      - By default the module will not create another VPC if there is another VPC with the same name and CIDR block. Specify this as true if you want
-        duplicate VPCs created.
+      - By default the module will not create another VPC if there is another VPC with the same name and CIDR block.
+        Specify I(multi_ok=true) if you want duplicate VPCs created.
     type: bool
     default: false
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.tags.deprecated_purge
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = '''
@@ -620,7 +619,7 @@ def main():
         dns_hostnames=dict(type='bool'),
         dhcp_opts_id=dict(),
         tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool', default=None),
+        purge_tags=dict(type='bool', default=True),
         state=dict(choices=['present', 'absent'], default='present'),
         multi_ok=dict(type='bool', default=False),
         purge_cidrs=dict(type='bool', default=False),
@@ -635,14 +634,6 @@ def main():
         required_one_of=required_one_of,
         supports_check_mode=True
     )
-
-    if module.params.get('purge_tags') is None:
-        module.deprecate(
-            'The purge_tags parameter currently defaults to False.'
-            ' For consistency across the collection, this default value'
-            ' will change to True in release 5.0.0.',
-            version='5.0.0', collection_name='amazon.aws')
-        module.params['purge_tags'] = False
 
     name = module.params.get('name')
     vpc_id = module.params.get('vpc_id')
