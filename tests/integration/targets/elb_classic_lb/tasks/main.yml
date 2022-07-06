@@ -36,6 +36,7 @@
     - include_tasks: schema_change.yml
 
     - include_tasks: simple_changes.yml
+    - include_tasks: complex_changes.yml
 
   always:
 
