@@ -44,7 +44,7 @@ options:
     description:
       - The type of health check that you want to create, which indicates how
         Amazon Route 53 determines whether an endpoint is healthy.
-    required: true
+      - Once health_check is created, type can not be changed.
     choices: [ 'HTTP', 'HTTPS', 'HTTP_STR_MATCH', 'HTTPS_STR_MATCH', 'TCP' ]
     type: str
   resource_path:
@@ -86,6 +86,28 @@ options:
       - Will default to C(3) if not specified on creation.
     choices: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
     type: int
+  health_check_name:
+    description:
+      - Name of the Health Check.
+      - Used together with I(use_unique_names) to set/make use of I(health_check_name) as a unique identifier.
+    type: str
+    required: False
+    aliases: ['name']
+    version_added: 4.1.0
+  use_unique_names:
+    description:
+      - Used together with I(health_check_name) to set/make use of I(health_check_name) as a unique identifier.
+    type: bool
+    required: False
+    version_added: 4.1.0
+  health_check_id:
+    description:
+      - ID of the health check to be update or deleted.
+      - If provided, a health check can be updated or deleted based on the ID as unique identifier.
+    type: str
+    required: False
+    aliases: ['id']
+    version_added: 4.1.0
 author:
   - "zimbatm (@zimbatm)"
 notes:
@@ -120,10 +142,35 @@ EXAMPLES = '''
     weight: 100
     health_check: "{{ my_health_check.health_check.id }}"
 
+- name: create a simple health check with health_check_name as unique identifier
+  community.aws.route53_health_check:
+    state: present
+    health_check_name: ansible
+    fqdn: ansible.com
+    port: 443
+    type: HTTPS
+    use_unique_names: true
+
 - name: Delete health-check
   community.aws.route53_health_check:
     state: absent
     fqdn: host1.example.com
+
+- name: Update Health check by ID - update ip_address
+  community.aws.route53_health_check:
+    id: 12345678-abcd-abcd-abcd-0fxxxxxxxxxx
+    ip_address: 1.2.3.4
+
+- name: Update Health check by ID - update port
+  community.aws.route53_health_check:
+    id: 12345678-abcd-abcd-abcd-0fxxxxxxxxxx
+    ip_address: 8080
+
+- name: Delete Health check by ID
+  community.aws.route53_health_check:
+    state: absent
+    id: 12345678-abcd-abcd-abcd-0fxxxxxxxxxx
+
 '''
 
 RETURN = r'''
@@ -249,7 +296,6 @@ def find_health_check(ip_addr, fqdn, hc_type, request_interval, port):
     # Additionally, we can't properly wrap the paginator, so retrying means
     # starting from scratch with a paginator
     results = _list_health_checks()
-
     while True:
         for check in results.get('HealthChecks'):
             config = check.get('HealthCheckConfig')
@@ -266,6 +312,20 @@ def find_health_check(ip_addr, fqdn, hc_type, request_interval, port):
             results = _list_health_checks(Marker=results.get('NextMarker'))
         else:
             return None
+
+
+def get_existing_checks_with_name():
+    results = _list_health_checks()
+    health_checks_with_name = {}
+    while True:
+        for check in results.get('HealthChecks'):
+            if 'Name' in describe_health_check(check['Id'])['tags']:
+                check_name = describe_health_check(check['Id'])['tags']['Name']
+                health_checks_with_name[check_name] = check
+        if results.get('IsTruncated', False):
+            results = _list_health_checks(Marker=results.get('NextMarker'))
+        else:
+            return health_checks_with_name
 
 
 def delete_health_check(check_id):
@@ -348,10 +408,14 @@ def create_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_
 
 
 def update_health_check(existing_check):
-    # In theory it's also possible to update the IPAddress, Port and
-    # FullyQualifiedDomainName, however, because we use these in lieu of a
-    # 'Name' to uniquely identify the health check this isn't currently
-    # supported.  If we accepted an ID it would be possible to modify them.
+    # It's possible to update following parameters
+    # - ResourcePath
+    # - SearchString
+    # - FailureThreshold
+    # - Disabled
+    # - IPAddress
+    # - Port
+    # - FullyQualifiedDomainName
 
     changes = dict()
     existing_config = existing_check.get('HealthCheckConfig')
@@ -372,10 +436,23 @@ def update_health_check(existing_check):
     if disabled is not None and disabled != existing_config.get('Disabled'):
         changes['Disabled'] = module.params.get('disabled')
 
+    # If updating based on Health Check ID or health_check_name, we can update
+    if module.params.get('health_check_id') or module.params.get('use_unique_names'):
+        ip_address = module.params.get('ip_address', None)
+        if ip_address is not None and ip_address != existing_config.get('IPAddress'):
+            changes['IPAddress'] = module.params.get('ip_address')
+
+        port = module.params.get('port', None)
+        if port is not None and port != existing_config.get('Port'):
+            changes['Port'] = module.params.get('port')
+
+        fqdn = module.params.get('fqdn', None)
+        if fqdn is not None and fqdn != existing_config.get('FullyQualifiedDomainName'):
+            changes['FullyQualifiedDomainName'] = module.params.get('fqdn')
+
     # No changes...
     if not changes:
         return False, None
-
     if module.check_mode:
         return True, 'update'
 
@@ -419,7 +496,7 @@ def main():
         disabled=dict(type='bool'),
         ip_address=dict(),
         port=dict(type='int'),
-        type=dict(required=True, choices=['HTTP', 'HTTPS', 'HTTP_STR_MATCH', 'HTTPS_STR_MATCH', 'TCP']),
+        type=dict(choices=['HTTP', 'HTTPS', 'HTTP_STR_MATCH', 'HTTPS_STR_MATCH', 'TCP']),
         resource_path=dict(),
         fqdn=dict(),
         string_match=dict(),
@@ -427,14 +504,25 @@ def main():
         failure_threshold=dict(type='int', choices=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
         tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool'),
+        health_check_id=dict(type='str', aliases=['id'], required=False),
+        health_check_name=dict(type='str', aliases=['name'], required=False),
+        use_unique_names=dict(type='bool', required=False),
     )
 
     args_one_of = [
-        ['ip_address', 'fqdn'],
+        ['ip_address', 'fqdn', 'health_check_id'],
     ]
 
     args_if = [
         ['type', 'TCP', ('port',)],
+    ]
+
+    args_required_together = [
+        ['use_unique_names', 'health_check_name'],
+    ]
+
+    args_mutually_exclusive = [
+        ['health_check_id', 'health_check_name']
     ]
 
     global module
@@ -444,6 +532,8 @@ def main():
         argument_spec=argument_spec,
         required_one_of=args_one_of,
         required_if=args_if,
+        required_together=args_required_together,
+        mutually_exclusive=args_mutually_exclusive,
         supports_check_mode=True,
     )
 
@@ -455,6 +545,9 @@ def main():
             version='5.0.0', collection_name='community.aws')
         module.params['purge_tags'] = False
 
+    if not module.params.get('health_check_id') and not module.params.get('type'):
+        module.fail_json(msg="parameter 'type' is required if not updating or deleting health check by ID.")
+
     state_in = module.params.get('state')
     ip_addr_in = module.params.get('ip_address')
     port_in = module.params.get('port')
@@ -464,6 +557,8 @@ def main():
     string_match_in = module.params.get('string_match')
     request_interval_in = module.params.get('request_interval')
     failure_threshold_in = module.params.get('failure_threshold')
+    health_check_name = module.params.get('health_check_name')
+    tags = module.params.get('tags')
 
     # Default port
     if port_in is None:
@@ -484,22 +579,66 @@ def main():
     action = None
     check_id = None
 
-    existing_check = find_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_in)
+    if module.params.get('use_unique_names') or module.params.get('health_check_id'):
+        module.deprecate(
+            'The health_check_name is currently non required parameter.'
+            ' This behavior will change and health_check_name '
+            ' will change to required=True and use_unique_names will change to default=True in release 6.0.0.',
+            version='6.0.0', collection_name='community.aws')
 
-    if existing_check:
-        check_id = existing_check.get('Id')
+    # If update or delete Health Check based on ID
+    update_delete_by_id = False
+    if module.params.get('health_check_id'):
+        update_delete_by_id = True
+        id_to_update_delete = module.params.get('health_check_id')
+        try:
+            existing_check = client.get_health_check(HealthCheckId=id_to_update_delete)['HealthCheck']
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
+            module.exit_json(changed=False, msg='The specified health check with ID: {0} does not exist'.format(id_to_update_delete))
+    else:
+        existing_check = find_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_in)
+        if existing_check:
+            check_id = existing_check.get('Id')
 
+    # Delete Health Check
     if state_in == 'absent':
-        changed, action = delete_health_check(check_id)
-        check_id = None
-    elif state_in == 'present':
-        if existing_check is None:
-            changed, action, check_id = create_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_in)
+        if update_delete_by_id:
+            changed, action = delete_health_check(id_to_update_delete)
         else:
-            changed, action = update_health_check(existing_check)
+            changed, action = delete_health_check(check_id)
+        check_id = None
+
+    # Create Health Check
+    elif state_in == 'present':
+        if existing_check is None and not module.params.get('use_unique_names') and not update_delete_by_id:
+            changed, action, check_id = create_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_in)
+
+        # Update Health Check
+        else:
+            # If health_check_name is a unique identifier
+            if module.params.get('use_unique_names'):
+                existing_checks_with_name = get_existing_checks_with_name()
+                # update the health_check if another health check with same name exists
+                if health_check_name in existing_checks_with_name:
+                    changed, action = update_health_check(existing_checks_with_name[health_check_name])
+                else:
+                    # create a new health_check if another health check with same name does not exists
+                    changed, action, check_id = create_health_check(ip_addr_in, fqdn_in, type_in, request_interval_in, port_in)
+                    # Add tag to add name to health check
+                    if check_id:
+                        if not tags:
+                            tags = {}
+                        tags['Name'] = health_check_name
+
+            else:
+                if update_delete_by_id:
+                    changed, action = update_health_check(existing_check)
+                else:
+                    changed, action = update_health_check(existing_check)
+
         if check_id:
             changed |= manage_tags(module, client, 'healthcheck', check_id,
-                                   module.params.get('tags'), module.params.get('purge_tags'))
+                                   tags, module.params.get('purge_tags'))
 
     health_check = describe_health_check(id=check_id)
     health_check['action'] = action
