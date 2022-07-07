@@ -8,7 +8,7 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 module: ec2_vpc_endpoint
-short_description: Create and delete AWS VPC Endpoints.
+short_description: Create and delete AWS VPC endpoints
 version_added: 1.0.0
 description:
   - Creates AWS VPC endpoints.
@@ -46,14 +46,14 @@ options:
     version_added: 2.1.0
   service:
     description:
-      - An AWS supported vpc endpoint service. Use the M(amazon.aws.ec2_vpc_endpoint_info)
+      - An AWS supported VPC endpoint service. Use the M(amazon.aws.ec2_vpc_endpoint_info)
         module to describe the supported endpoint services.
       - Required when creating an endpoint.
     required: false
     type: str
   policy:
     description:
-      - A properly formatted json policy as string, see
+      - A properly formatted JSON policy as string, see
         U(https://github.com/ansible/ansible/issues/7005#issuecomment-42894813).
         Cannot be used with I(policy_file).
       - Option when creating an endpoint. If not provided AWS will
@@ -75,55 +75,57 @@ options:
     type: path
   state:
     description:
-        - present to ensure resource is created.
-        - absent to remove resource
+      - C(present) to ensure resource is created.
+      - C(absent) to remove resource.
     required: false
     default: present
     choices: [ "present", "absent" ]
     type: str
   wait:
     description:
-      - When specified, will wait for either available status for state present.
-        Unfortunately this is ignored for delete actions due to a difference in
+      - When specified, will wait for status to reach C(available) for I(state=present).
+      - Unfortunately this is ignored for delete actions due to a difference in
         behaviour from AWS.
     required: false
     default: no
     type: bool
   wait_timeout:
     description:
-      - Used in conjunction with wait. Number of seconds to wait for status.
-        Unfortunately this is ignored for delete actions due to a difference in
+      - Used in conjunction with I(wait).
+      - Number of seconds to wait for status.
+      - Unfortunately this is ignored for delete actions due to a difference in
         behaviour from AWS.
     required: false
     default: 320
     type: int
   route_table_ids:
     description:
-      - List of one or more route table ids to attach to the endpoint. A route
-        is added to the route table with the destination of the endpoint if
-        provided.
-      - Route table ids are only valid for gateway type endpoints.
+      - List of one or more route table IDs to attach to the endpoint.
+      - A route is added to the route table with the destination of the
+        endpoint if provided.
+      - Route table IDs are only valid for C(Gateway) endpoints.
     required: false
     type: list
     elements: str
   vpc_endpoint_id:
     description:
-      - One or more vpc endpoint ids to remove from the AWS account
+      - One or more VPC endpoint IDs to remove from the AWS account.
+      - Required if I(state=absent).
     required: false
     type: str
   client_token:
     description:
-      - Optional client token to ensure idempotency
+      - Optional client token to ensure idempotency.
     required: false
     type: str
-author: Karen Cheng (@Etherdaemon)
+author:
+  - Karen Cheng (@Etherdaemon)
 notes:
-- Support for I(tags) and I(purge_tags) was added in release 1.5.0.
+  - Support for I(tags) and I(purge_tags) was added in release 1.5.0.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.tags.deprecated_purge
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = r'''
@@ -426,7 +428,7 @@ def main():
         vpc_endpoint_id=dict(),
         client_token=dict(no_log=False),
         tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool'),
+        purge_tags=dict(type='bool', default=True),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
@@ -440,14 +442,6 @@ def main():
 
     # Validate Requirements
     state = module.params.get('state')
-
-    if module.params.get('purge_tags') is None:
-        module.deprecate(
-            'The purge_tags parameter currently defaults to False.'
-            ' For consistency across the collection, this default value'
-            ' will change to True in release 5.0.0.',
-            version='5.0.0', collection_name='amazon.aws')
-        module.params['purge_tags'] = False
 
     if module.params.get('policy_file'):
         module.deprecate('The policy_file option has been deprecated and'

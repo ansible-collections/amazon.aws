@@ -356,6 +356,7 @@
           "Title Case": 'Hello Cruel World ❤️'
           CamelCase: 'SimpleCamelCase ❤️'
           snake_case: 'simple_snake_case ❤️'
+        purge_tags: false
       register: new_vol_attach_result
 
     - name: check task return attributes
@@ -379,6 +380,41 @@
           - new_vol_attach_result.volume.tags["snake_case"] == 'simple_snake_case ❤️'
           - new_vol_attach_result.volume.tags["ResourcePrefix"] == resource_prefix
           - new_vol_attach_result.volume.tags["Name"] == '{{ resource_prefix }} - sdh'
+
+    - name: change some tag values
+      ec2_vol:
+        instance: "{{ test_instance.instance_ids[0] }}"
+        id: "{{ new_vol_attach_result.volume.id }}"
+        device_name: /dev/sdh
+        volume_size: 1
+        volume_type: standard
+        tags:
+          "lowercase spaced": 'hello cruel world ❤️'
+          "Title Case": 'Hello Cruel World ❤️'
+          snake_case: 'simple_snake_case ❤️'
+          ResourcePrefix: "{{ resource_prefix }}"
+        purge_tags: true
+      register: new_vol_attach_result
+
+    - name: check task return attributes
+      assert:
+        that:
+          - new_vol_attach_result.changed
+          - "'volume_id' in new_vol_attach_result"
+          - new_vol_attach_result.volume_id == "{{ new_vol_attach_result.volume_id }}"
+          - "'attachment_set' in new_vol_attach_result.volume"
+          - "'create_time' in new_vol_attach_result.volume"
+          - "'id' in new_vol_attach_result.volume"
+          - "'size' in new_vol_attach_result.volume"
+          - new_vol_attach_result.volume.size == 1
+          - "'volume_type' in new_vol_attach_result"
+          - new_vol_attach_result.volume_type == 'standard'
+          - "'tags' in new_vol_attach_result.volume"
+          - (new_vol_attach_result.volume.tags | length) == 4
+          - new_vol_attach_result.volume.tags["lowercase spaced"] == 'hello cruel world ❤️'
+          - new_vol_attach_result.volume.tags["Title Case"] == 'Hello Cruel World ❤️'
+          - new_vol_attach_result.volume.tags["snake_case"] == 'simple_snake_case ❤️'
+          - new_vol_attach_result.volume.tags["ResourcePrefix"] == resource_prefix
 
     - name: create a volume from a snapshot and attach to the instance (check_mode)
       ec2_vol:
@@ -482,13 +518,11 @@
           - changed_gp3_volume.volume.iops == 3000
           # Ensure our tags are still here
           - "'tags' in changed_gp3_volume.volume"
-          - (changed_gp3_volume.volume.tags | length) == 6
+          - (changed_gp3_volume.volume.tags | length) == 4
           - new_vol_attach_result.volume.tags["lowercase spaced"] == 'hello cruel world ❤️'
           - new_vol_attach_result.volume.tags["Title Case"] == 'Hello Cruel World ❤️'
-          - new_vol_attach_result.volume.tags["CamelCase"] == 'SimpleCamelCase ❤️'
           - new_vol_attach_result.volume.tags["snake_case"] == 'simple_snake_case ❤️'
           - new_vol_attach_result.volume.tags["ResourcePrefix"] == resource_prefix
-          - new_vol_attach_result.volume.tags["Name"] == '{{ resource_prefix }} - sdh'
 
     - name: volume must be from type gp3 (idempotent)
       ec2_vol:
@@ -518,13 +552,11 @@
           - changed_gp3_volume.volume.iops == 3000
           - "'throughput' in changed_gp3_volume.volume"
           - "'tags' in changed_gp3_volume.volume"
-          - (changed_gp3_volume.volume.tags | length) == 6
+          - (changed_gp3_volume.volume.tags | length) == 4
           - new_vol_attach_result.volume.tags["lowercase spaced"] == 'hello cruel world ❤️'
           - new_vol_attach_result.volume.tags["Title Case"] == 'Hello Cruel World ❤️'
-          - new_vol_attach_result.volume.tags["CamelCase"] == 'SimpleCamelCase ❤️'
           - new_vol_attach_result.volume.tags["snake_case"] == 'simple_snake_case ❤️'
           - new_vol_attach_result.volume.tags["ResourcePrefix"] == resource_prefix
-          - new_vol_attach_result.volume.tags["Name"] == '{{ resource_prefix }} - sdh'
 
     - name: re-read volume information to validate new volume_type
       ec2_vol_info:

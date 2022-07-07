@@ -11,22 +11,23 @@ DOCUMENTATION = '''
 ---
 module: ec2_vol
 version_added: 1.0.0
-short_description: Create and attach a volume, return volume id and device map
+short_description: Create and attach a volume, return volume ID and device map
 description:
-    - Creates an EBS volume and optionally attaches it to an instance.
-    - If both I(instance) and I(name) are given and the instance has a device at the device name, then no volume is created and no attachment is made.
+  - Creates an EBS volume and optionally attaches it to an instance.
+  - If both I(instance) and I(name) are given and the instance has a device at the device name, then no volume is created and no attachment is made.
 options:
   instance:
     description:
-      - Instance ID if you wish to attach the volume. Since 1.9 you can set to None to detach.
+      - Instance ID if you wish to attach the volume.
+      - Set to C(None) to detach the volume.
     type: str
   name:
     description:
-      - Volume Name tag if you wish to attach an existing volume (requires instance)
+      - Volume Name tag if you wish to attach an existing volume (requires instance).
     type: str
   id:
     description:
-      - Volume id if you wish to attach an existing volume (requires instance) or remove an existing volume
+      - Volume ID if you wish to attach an existing volume (requires instance) or remove an existing volume.
     type: str
   volume_size:
     description:
@@ -34,9 +35,9 @@ options:
     type: int
   volume_type:
     description:
-      - Type of EBS volume; standard (magnetic), gp2 (SSD), gp3 (SSD), io1 (Provisioned IOPS), io2 (Provisioned IOPS),
-        st1 (Throughput Optimized HDD), sc1 (Cold HDD).
-        "Standard" is the old EBS default and continues to remain the Ansible default for backwards compatibility.
+      - Type of EBS volume; C(standard) (magnetic), C(gp2) (SSD), C(gp3) (SSD), C(io1) (Provisioned IOPS), C(io2) (Provisioned IOPS),
+        C(st1) (Throughput Optimized HDD), C(sc1) (Cold HDD).
+      - C(standard) is the old EBS default and continues to remain the Ansible default for backwards compatibility.
     default: standard
     choices: ['standard', 'gp2', 'io1', 'st1', 'sc1', 'gp3', 'io2']
     type: str
@@ -51,11 +52,11 @@ options:
     type: bool
   kms_key_id:
     description:
-      - Specify the id of the KMS key to use.
+      - Specify the ID of the KMS key to use.
     type: str
   device_name:
     description:
-      - Device id to override device mapping. Assumes /dev/sdf for Linux/UNIX and /dev/xvdf for Windows.
+      - Device ID to override device mapping. Assumes /dev/sdf for Linux/UNIX and /dev/xvdf for Windows.
     type: str
   delete_on_termination:
     description:
@@ -75,8 +76,8 @@ options:
     description:
       - Whether to ensure the volume is present or absent.
       - I(state=list) was deprecated in release 1.1.0 and is no longer available
-        with release 4.0.0.  The 'list' functionality has been moved to a dedicated
-        module M(amazon.aws.ec2_vol_info).
+        with release 4.0.0.
+      - The C(list) functionality has been moved to a dedicated module M(amazon.aws.ec2_vol_info).
     default: present
     choices: ['absent', 'present']
     type: str
@@ -95,7 +96,7 @@ options:
     version_added: 1.4.0
   multi_attach:
     description:
-      - If set to C(yes), Multi-Attach will be enabled when creating the volume.
+      - If set to C(true), Multi-Attach will be enabled when creating the volume.
       - When you create a new volume, Multi-Attach is disabled by default.
       - This parameter is supported with io1 and io2 volumes only.
     type: bool
@@ -106,13 +107,14 @@ options:
       - If set, allows to create volume in an Outpost.
     type: str
     version_added: 3.1.0
-author: "Lester Wade (@lwade)"
+author:
+  - "Lester Wade (@lwade)"
 notes:
-- Support for I(purge_tags) was added in release 1.5.0.
+  - Support for I(purge_tags) was added in release 1.5.0.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.tags.deprecated_purge
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = '''
@@ -712,7 +714,7 @@ def main():
         modify_volume=dict(default=False, type='bool'),
         throughput=dict(type='int'),
         outpost_arn=dict(type='str'),
-        purge_tags=dict(type='bool'),
+        purge_tags=dict(type='bool', default=True),
         multi_attach=dict(type='bool'),
     )
 
@@ -738,14 +740,6 @@ def main():
     volume_type = module.params.get('volume_type')
     throughput = module.params.get('throughput')
     multi_attach = module.params.get('multi_attach')
-
-    if module.params.get('purge_tags') is None:
-        module.deprecate(
-            'The purge_tags parameter currently defaults to False.'
-            ' For consistency across the collection, this default value'
-            ' will change to True in release 5.0.0.',
-            version='5.0.0', collection_name='amazon.aws')
-        module.params['purge_tags'] = False
 
     # Ensure we have the zone or can get the zone
     if instance is None and zone is None and state == 'present':

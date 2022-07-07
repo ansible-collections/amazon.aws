@@ -448,6 +448,7 @@
         name: '{{ ec2_ami_name }}_ami'
         tags:
           New: Tag
+        purge_tags: no
       register: result
 
     - name: assert a tag was added
@@ -464,7 +465,6 @@
         name: '{{ ec2_ami_name }}_ami'
         tags:
           New: Tag
-        purge_tags: yes
       register: result
 
     - name: assert a tag was removed

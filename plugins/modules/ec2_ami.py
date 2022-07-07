@@ -24,7 +24,7 @@ options:
     type: str
   architecture:
     description:
-      - The target architecture of the image to register
+      - The target architecture of the image to register.
     default: "x86_64"
     type: str
   kernel_id:
@@ -76,39 +76,39 @@ options:
     type: list
     elements: dict
     suboptions:
-        device_name:
-          type: str
-          description:
+      device_name:
+        type: str
+        description:
           - The device name. For example C(/dev/sda).
-          required: yes
-        virtual_name:
-          type: str
-          description:
+        required: yes
+      virtual_name:
+        type: str
+        description:
           - The virtual name for the device.
           - See the AWS documentation for more detail U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_BlockDeviceMapping.html).
-        no_device:
-          type: bool
-          description:
+      no_device:
+        type: bool
+        description:
           - Suppresses the specified device included in the block device mapping of the AMI.
-        volume_type:
-          type: str
-          description: The volume type.  Defaults to C(gp2) when not set.
-        delete_on_termination:
-          type: bool
-          description: Whether the device should be automatically deleted when the Instance is terminated.
-        snapshot_id:
-          type: str
-          description: The ID of the Snapshot.
-        iops:
-          type: int
-          description: When using an C(io1) I(volume_type) this sets the number of IOPS provisioned for the volume
-        encrypted:
-          type: bool
-          description: Whether the volume should be encrypted.
-        volume_size:
-          aliases: ['size']
-          type: int
-          description: The size of the volume (in GiB)
+      volume_type:
+        type: str
+        description: The volume type.  Defaults to C(gp2) when not set.
+      delete_on_termination:
+        type: bool
+        description: Whether the device should be automatically deleted when the Instance is terminated.
+      snapshot_id:
+        type: str
+        description: The ID of the Snapshot.
+      iops:
+        type: int
+        description: When using an C(io1) I(volume_type) this sets the number of IOPS provisioned for the volume.
+      encrypted:
+        type: bool
+        description: Whether the volume should be encrypted.
+      volume_size:
+        aliases: ['size']
+        type: int
+        description: The size of the volume (in GiB).
   delete_snapshot:
     description:
       - Delete snapshots when deregistering the AMI.
@@ -116,13 +116,15 @@ options:
     type: bool
   launch_permissions:
     description:
-      - Users and groups that should be able to launch the AMI. Expects dictionary with a key of user_ids and/or group_names. user_ids should
-        be a list of account ids. group_name should be a list of groups, "all" is the only acceptable value currently.
-      - You must pass all desired launch permissions if you wish to modify existing launch permissions (passing just groups will remove all users)
+      - Users and groups that should be able to launch the AMI.
+      - Expects dictionary with a key of C(user_ids) and/or C(group_names).
+      - C(user_ids) should be a list of account IDs.
+      - C(group_name) should be a list of groups, C(all) is the only acceptable value currently.
+      - You must pass all desired launch permissions if you wish to modify existing launch permissions (passing just groups will remove all users).
     type: dict
   image_location:
     description:
-      - The s3 location of an image to use for the AMI.
+      - The S3 location of an image to use for the AMI.
     type: str
   enhanced_networking:
     description:
@@ -130,7 +132,7 @@ options:
     type: bool
   billing_products:
     description:
-      - A list of valid billing codes. To be used with valid accounts by aws marketplace vendors.
+      - A list of valid billing codes. To be used with valid accounts by AWS Marketplace vendors.
     type: list
     elements: str
   ramdisk_id:
@@ -149,7 +151,7 @@ author:
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
-  - amazon.aws.tags.deprecated_purge
+  - amazon.aws.tags
 '''
 
 # Thank you to iAcquire for sponsoring development of this module.
@@ -726,7 +728,7 @@ def main():
         ramdisk_id=dict(),
         sriov_net_support=dict(),
         tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool'),
+        purge_tags=dict(type='bool', default=True),
     )
 
     module = AnsibleAWSModule(
@@ -741,14 +743,6 @@ def main():
     # the required_if for state=absent, so check manually instead
     if not any([module.params['image_id'], module.params['name']]):
         module.fail_json(msg="one of the following is required: name, image_id")
-
-    if module.params.get('purge_tags') is None:
-        module.deprecate(
-            'The purge_tags parameter currently defaults to False.'
-            ' For consistency across the collection, this default value'
-            ' will change to True in release 5.0.0.',
-            version='5.0.0', collection_name='amazon.aws')
-        module.params['purge_tags'] = False
 
     connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 

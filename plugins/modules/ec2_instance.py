@@ -13,8 +13,7 @@ version_added: 1.0.0
 short_description: Create & manage EC2 instances
 description:
   - Create and manage AWS EC2 instances.
-  - >
-    Note: This module does not support creating
+  - This module does not support creating
     L(EC2 Spot instances,https://aws.amazon.com/ec2/spot/).
   - The M(amazon.aws.ec2_spot_instance) module can create and manage spot instances.
 author:
@@ -42,7 +41,7 @@ options:
     type: str
   wait:
     description:
-      - Whether or not to wait for the desired state (use wait_timeout to customize this).
+      - Whether or not to wait for the desired I(state) (use (wait_timeout) to customize this).
     default: true
     type: bool
   wait_timeout:
@@ -52,9 +51,11 @@ options:
     type: int
   instance_type:
     description:
-      - Instance type to use for the instance, see U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html)
-        Only required when instance is not already present.
-      - If not specified, t2.micro will be used.
+      - Instance type to use for the instance, see U(https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html).
+      - Only required when instance is not already present.
+      - If not specified, C(t2.micro) will be used.
+      - In a release after 2023-01-01 the default will be removed and either I(instance_type) or
+        I(launch_template) must be specificed when launching an instance.
     type: str
   count:
     description:
@@ -73,7 +74,7 @@ options:
     version_added: 2.2.0
   user_data:
     description:
-      - Opaque blob of data which is made available to the ec2 instance
+      - Opaque blob of data which is made available to the EC2 instance.
     type: str
   tower_callback:
     description:
@@ -119,12 +120,14 @@ options:
     type: str
   security_groups:
     description:
-      - A list of security group IDs or names (strings). Mutually exclusive with I(security_group).
+      - A list of security group IDs or names (strings).
+      - Mutually exclusive with I(security_group).
     type: list
     elements: str
   security_group:
     description:
-      - A security group ID or name. Mutually exclusive with I(security_groups).
+      - A security group ID or name.
+      - Mutually exclusive with I(security_groups).
     type: str
   name:
     description:
@@ -132,72 +135,72 @@ options:
     type: str
   vpc_subnet_id:
     description:
-      - The subnet ID in which to launch the instance (VPC)
-        If none is provided, M(amazon.aws.ec2_instance) will chose the default zone of the default VPC.
+      - The subnet ID in which to launch the instance (VPC).
+      - If none is provided, M(amazon.aws.ec2_instance) will chose the default zone of the default VPC.
     aliases: ['subnet_id']
     type: str
   network:
     description:
-      - Either a dictionary containing the key 'interfaces' corresponding to a list of network interface IDs or
+      - Either a dictionary containing the key C(interfaces) corresponding to a list of network interface IDs or
         containing specifications for a single network interface.
       - Use the M(amazon.aws.ec2_eni) module to create ENIs with special settings.
     type: dict
     suboptions:
       interfaces:
         description:
-        - a list of ENI IDs (strings) or a list of objects containing the key I(id).
+          - A list of ENI IDs (strings) or a list of objects containing the key I(id).
         type: list
         elements: str
       assign_public_ip:
         description:
-        - when true assigns a public IP address to the interface
+          - When C(true) assigns a public IP address to the interface.
         type: bool
       private_ip_address:
         description:
-        - an IPv4 address to assign to the interface
+          - An IPv4 address to assign to the interface.
         type: str
       ipv6_addresses:
         description:
-        - a list of IPv6 addresses to assign to the network interface
+          - A list of IPv6 addresses to assign to the network interface.
         type: list
         elements: str
       source_dest_check:
         description:
-        - controls whether source/destination checking is enabled on the interface
+          - Controls whether source/destination checking is enabled on the interface.
         type: bool
       description:
         description:
-        - a description for the network interface
+          - A description for the network interface.
         type: str
       private_ip_addresses:
         description:
-        - a list of IPv4 addresses to assign to the network interface
+          - A list of IPv4 addresses to assign to the network interface.
         type: list
         elements: str
       subnet_id:
         description:
-        - the subnet to connect the network interface to
+          - The subnet to connect the network interface to.
         type: str
       delete_on_termination:
         description:
-        - Delete the interface when the instance it is attached to is
-          terminated.
+          - Delete the interface when the instance it is attached to is
+            terminated.
         type: bool
       device_index:
         description:
-        - The index of the interface to modify
+          - The index of the interface to modify.
         type: int
       groups:
         description:
-        - a list of security group IDs to attach to the interface
+          - A list of security group IDs to attach to the interface.
         type: list
         elements: str
   volumes:
     description:
-    - A list of block device mappings, by default this will always use the AMI root device so the volumes option is primarily for adding more storage.
-    - A mapping contains the (optional) keys device_name, virtual_name, ebs.volume_type, ebs.volume_size, ebs.kms_key_id,
-      ebs.snapshot_id, ebs.iops, and ebs.delete_on_termination.
-    - For more information about each parameter, see U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_BlockDeviceMapping.html).
+      - A list of block device mappings, by default this will always use the AMI root device so the volumes option is primarily for adding more storage.
+      - A mapping contains the (optional) keys C(device_name), C(virtual_name), C(ebs.volume_type), C(ebs.volume_size), C(ebs.kms_key_id),
+        C(ebs.snapshot_id), C(ebs.iops), and C(ebs.delete_on_termination).
+      - For more information about each parameter, see U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_BlockDeviceMapping.html).
     type: list
     elements: dict
   launch_template:
@@ -207,23 +210,24 @@ options:
     suboptions:
       id:
         description:
-        - the ID of the launch template (optional if name is specified).
+          - The ID of the launch template (optional if name is specified).
         type: str
       name:
         description:
-        - the pretty name of the launch template (optional if id is specified).
+          - The pretty name of the launch template (optional if id is specified).
         type: str
       version:
         description:
-        - the specific version of the launch template to use. If unspecified, the template default is chosen.
+          - The specific version of the launch template to use. If unspecified, the template default is chosen.
   key_name:
     description:
-    - Name of the SSH access key to assign to the instance - must exist in the region the instance is created.
+      - Name of the SSH access key to assign to the instance - must exist in the region the instance is created.
+      - Use M(amazon.aws.ec2_key) to manage SSH keys.
     type: str
   availability_zone:
     description:
-    - Specify an availability zone to use the default subnet it. Useful if not specifying the I(vpc_subnet_id) parameter.
-    - If no subnet, ENI, or availability zone is provided, the default subnet in the default VPC will be used in the first AZ (alphabetically sorted).
+      - Specify an availability zone to use the default subnet it. Useful if not specifying the I(vpc_subnet_id) parameter.
+      - If no subnet, ENI, or availability zone is provided, the default subnet in the default VPC will be used in the first AZ (alphabetically sorted).
     type: str
   instance_initiated_shutdown_behavior:
     description:
@@ -238,12 +242,12 @@ options:
   termination_protection:
     description:
       - Whether to enable termination protection.
-        This module will not terminate an instance with termination protection active, it must be turned off first.
+      - This module will not terminate an instance with termination protection active, it must be turned off first.
     type: bool
   cpu_credit_specification:
     description:
       - For T series instances, choose whether to allow increased charges to buy CPU credits if the default pool is depleted.
-      - Choose I(unlimited) to enable buying additional CPU credits.
+      - Choose C(unlimited) to enable buying additional CPU credits.
     choices: ['unlimited', 'standard']
     type: str
   cpu_options:
@@ -255,18 +259,18 @@ options:
     suboptions:
       threads_per_core:
         description:
-        - Select the number of threads per core to enable. Disable or Enable Intel HT.
+          - Select the number of threads per core to enable. Disable or Enable Intel HT.
         choices: [1, 2]
         required: true
         type: int
       core_count:
         description:
-        - Set the number of core to enable.
+          - Set the number of core to enable.
         required: true
         type: int
   detailed_monitoring:
     description:
-      - Whether to allow detailed cloudwatch metrics to be collected, enabling more detailed alerting.
+      - Whether to allow detailed CloudWatch metrics to be collected, enabling more detailed alerting.
     type: bool
   ebs_optimized:
     description:
@@ -283,14 +287,14 @@ options:
     type: dict
   instance_role:
     description:
-      - The ARN or name of an EC2-enabled instance role to be used. If a name is not provided in arn format
-        then the ListInstanceProfiles permission must also be granted.
-        U(https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListInstanceProfiles.html) If no full ARN is provided,
-        the role with a matching name will be used from the active AWS account.
+      - The ARN or name of an EC2-enabled instance role to be used.
+      - If a name is not provided in ARN format then the ListInstanceProfiles permission must also be granted.
+        U(https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListInstanceProfiles.html)
+      - If no full ARN is provided, the role with a matching name will be used from the active AWS account.
     type: str
   placement_group:
     description:
-      - The placement group that needs to be assigned to the instance
+      - The placement group that needs to be assigned to the instance.
     type: str
   metadata_options:
     description:
@@ -302,30 +306,30 @@ options:
     suboptions:
       http_endpoint:
         description:
-        - Enables or disables the HTTP metadata endpoint on instances.
-        - If specified a value of disabled, metadata of the instance will not be accessible.
+          - Enables or disables the HTTP metadata endpoint on instances.
+          - If specified a value of disabled, metadata of the instance will not be accessible.
         choices: [enabled, disabled]
         default: enabled
         type: str
       http_tokens:
         description:
-        - Set the state of token usage for instance metadata requests.
-        - If the state is optional (v1 and v2), instance metadata can be retrieved with or without a signed token header on request.
-        - If the state is required (v2), a signed token header must be sent with any instance metadata retrieval requests.
+          - Set the state of token usage for instance metadata requests.
+          - If the state is optional (v1 and v2), instance metadata can be retrieved with or without a signed token header on request.
+          - If the state is required (v2), a signed token header must be sent with any instance metadata retrieval requests.
         choices: [optional, required]
         default: optional
         type: str
       http_put_response_hop_limit:
         version_added: 4.0.0
         type: int
-        description: >
-          The desired HTTP PUT response hop limit for instance metadata requests.
-          The larger the number, the further instance metadata requests can travel.
+        description:
+          - The desired HTTP PUT response hop limit for instance metadata requests.
+          - The larger the number, the further instance metadata requests can travel.
         default: 1
       http_protocol_ipv6:
         version_added: 4.0.0
         type: str
-        description: >
+        description:
           - Wether the instance metadata endpoint is available via IPv6 (C(enabled)) or not (C(disabled)).
           - Requires botocore >= 1.21.29
         choices: [enabled, disabled]
@@ -340,10 +344,9 @@ options:
         default: 'disabled'
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.tags.deprecated_purge
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = '''
@@ -2003,7 +2006,7 @@ def main():
         instance_role=dict(type='str'),
         name=dict(type='str'),
         tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool'),
+        purge_tags=dict(type='bool', default=True),
         filters=dict(type='dict', default=None),
         launch_template=dict(type='dict'),
         key_name=dict(type='str'),
@@ -2045,14 +2048,6 @@ def main():
         ],
         supports_check_mode=True
     )
-
-    if module.params.get('purge_tags') is None:
-        module.deprecate(
-            'The purge_tags parameter currently defaults to False.'
-            ' For consistency across the collection, this default value'
-            ' will change to True in release 5.0.0.',
-            version='5.0.0', collection_name='amazon.aws')
-        module.params['purge_tags'] = False
 
     if not module.params.get('instance_type') and not module.params.get('launch_template') and module.params.get('state') != 'absent':
         module.deprecate("Default value instance_type has been deprecated, in the future you must set an instance_type or a launch_template",
