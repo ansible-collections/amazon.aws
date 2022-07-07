@@ -3,6 +3,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import (absolute_import, division, print_function)
+from http import client
 __metaclass__ = type
 
 
@@ -105,7 +106,6 @@ options:
         will be used during the initial upload of the file.
       - For a full list of permissions see the AWS documentation
         U(https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl).
-      - If ``acl_disabled`` is set to true, then no default value is set for permission.
     default: ['private']
     type: list
     elements: str
@@ -223,12 +223,6 @@ options:
     type: bool
     version_added: 3.1.0
     default: True
-  acl_disabled:
-    description:
-      - When set to I(acl_disabled=true), the default value of ``permission`` will not be set.
-    type: bool
-    version_added: 4.1.0
-    default: false
 author:
   - "Lester Wade (@lwade)"
   - "Sloane Hertel (@s-hertel)"
@@ -974,7 +968,6 @@ def main():
         purge_tags=dict(type='bool', default=True),
         copy_src=dict(type='dict', options=dict(bucket=dict(required=True), object=dict(required=True), version_id=dict())),
         validate_bucket_name=dict(type='bool', default=True),
-        acl_disabled=dict(type='bool', default=False, required=False),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
@@ -1064,6 +1057,12 @@ def main():
     s3 = get_s3_connection(module, aws_connect_kwargs, location, rgw, s3_url)
 
     validate = not ignore_nonexistent_bucket
+
+    # check if ACL is disabled
+    module.params['acl_disabled'] = False
+    object_ownership = s3.get_bucket_ownership_controls(Bucket=bucket)['OwnershipControls']['Rules'][0]['ObjectOwnership']
+    if object_ownership == 'BucketOwnerEnforced':
+        module.params['acl_disabled'] = True
 
     # separate types of ACLs
     if not module.params.get('acl_disabled'):
