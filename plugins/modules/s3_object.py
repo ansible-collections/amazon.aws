@@ -1057,11 +1057,16 @@ def main():
 
     validate = not ignore_nonexistent_bucket
 
-    # check if ACL is disabled
+    # check if bucket exists, if yes, check if ACL is disabled
     module.params['acl_disabled'] = False
-    object_ownership = s3.get_bucket_ownership_controls(Bucket=bucket)['OwnershipControls']['Rules'][0]['ObjectOwnership']
-    if object_ownership == 'BucketOwnerEnforced':
-        module.params['acl_disabled'] = True
+    exists = bucket_check(module, s3, bucket)
+    if exists:
+      try:
+          object_ownership = s3.get_bucket_ownership_controls(Bucket=bucket)['OwnershipControls']['Rules'][0]['ObjectOwnership']
+          if object_ownership == 'BucketOwnerEnforced':
+              module.params['acl_disabled'] = True
+      except:
+          pass
 
     # separate types of ACLs
     if not module.params.get('acl_disabled'):
