@@ -360,6 +360,88 @@ health_checks:
                     type: str
                     sample: HTTPS
     version_added: 4.0.0
+checker_ip_ranges:
+    description: A list of IP ranges in CIDR format for Amazon Route 53 health checkers.
+    returned: when I(query=checker_ip_range)
+    type: list
+    elements: str
+    version_added: 4.1.0
+delegation_sets:
+    description: A list of dicts that contains information about the reusable delegation set.
+    returned: when I(query=reusable_delegation_set)
+    type: list
+    elements: dict
+    version_added: 4.1.0
+health_check:
+    description: A dict of Route53 health check details returned by get_health_check_status in boto3.
+    type: dict
+    returned: when I(query=health_check) and I(health_check_method=details)
+    contains:
+        id:
+            description: The identifier that Amazon Route53 assigned to the health check at the time of creation.
+            type: str
+            sample: '12345cdc-2cc4-1234-bed2-123456abc1a2'
+        health_check_version:
+            description: The version of the health check.
+            type: str
+            sample: 1
+        caller_reference:
+            description: A unique string that you specified when you created the health check.
+            type: str
+            sample: '01d0db12-x0x9-12a3-1234-0z000z00zz0z'
+        health_check_config:
+            description: A dict that contains detailed information about one health check.
+            type: dict
+            contains:
+                disabled:
+                    description: Whether Route53 should stop performing health checks on a endpoint.
+                    type: bool
+                    sample: false
+                enable_sni:
+                    description: Whether Route53 should send value of FullyQualifiedDomainName to endpoint in client_hello message during TLS negotiation.
+                    type: bool
+                    sample: true
+                failure_threshold:
+                    description: The number of consecutive health checks that an endpoint must pass/fail for Route53 to change current status of endpoint.
+                    type: int
+                    sample: 3
+                fully_qualified_domain_name:
+                    description: The fully qualified DNS name of the endpoint on which Route53 performs health checks.
+                    type: str
+                    sample: 'hello'
+                inverted:
+                    description: Whether Route53 should invert the status of a health check.
+                    type: bool
+                    sample: false
+                ip_address:
+                    description: The IPv4/IPv6 IP address of the endpoint that Route53 should perform health checks on.
+                    type: str
+                    sample: 192.0.2.44
+                measure_latency:
+                    description: Whether Route53 should measure latency between health checkers in multiple AWS regions and the endpoint.
+                    type: bool
+                    sample: false
+                port:
+                    description: The port of the endpoint that Route53 should perform health checks on.
+                    type: int
+                    sample: 80
+                request_interval:
+                    description: The number of seconds between the time that Route53 gets a response from endpoint and the next health check request.
+                    type: int
+                    sample: 30
+                resource_path:
+                    description: The path that Route53 requests when performing health checks.
+                    type: str
+                    sample: '/welcome.html'
+                search_string:
+                    description: The string that Route53 uses to search for in the response body from specified resource.
+                    type: str
+                    sample: 'test-string-to-match'
+                type:
+                    description: The type of the health check.
+                    type: str
+                    sample: HTTPS
+    version_added: 4.1.0
 ResourceRecordSets:
     description: A deprecated CamelCased list of resource record sets returned by list_resource_record_sets in boto3. \
                  This list contains same elements/parameters as it's snake_cased version mentioned above. \
@@ -381,6 +463,26 @@ HealthChecks:
     type: list
     elements: dict
     returned: when I(query=health_check)
+CheckerIpRanges:
+    description: A deprecated CamelCased list of IP ranges in CIDR format for Amazon Route 53 health checkers.\
+                 This list contains same elements/parameters as it's snake_cased version mentioned abobe. \
+                 This field is deprecated and will be removed in 6.0.0 version release.
+    type: list
+    elements: str
+    returned: when I(query=checker_ip_range)
+DelegationSets:
+    description: A deprecated CamelCased list of dicts that contains information about the reusable delegation set. \
+                 This list contains same elements/parameters as it's snake_cased version mentioned above. \
+                 This field is deprecated and will be removed in 6.0.0 version release.
+    type: list
+    elements: dict
+    returned: when I(query=reusable_delegation_set)
+HealthCheck:
+    description: A deprecated CamelCased dict of Route53 health check details returned by get_health_check_status in boto3. \
+                 This dict contains same elements/parameters as it's snake_cased version mentioned above. \
+                 This field is deprecated and will be removed in 6.0.0 version release.
+    type: dict
+    returned: when I(query=health_check) and I(health_check_method=details)
 '''
 
 try:
@@ -430,6 +532,12 @@ def reusable_delegation_set_details():
     else:
         params['DelegationSetId'] = module.params.get('delegation_set_id')
         results = client.get_reusable_delegation_set(**params)
+
+    results['delegation_sets'] = results['DelegationSets']
+    module.deprecate("The 'CamelCase' return values with key 'DelegationSets' is deprecated and \
+                    will be replaced by 'snake_case' return values with key 'delegation_sets'. \
+                    Both case values are returned for now.",
+                     date='2025-01-01', collection_name='community.aws')
 
     return results
 
@@ -495,7 +603,14 @@ def change_details():
 
 
 def checker_ip_range_details():
-    return client.get_checker_ip_ranges()
+    results = client.get_checker_ip_ranges()
+    results['checker_ip_ranges'] = results['CheckerIpRanges']
+    module.deprecate("The 'CamelCase' return values with key 'CheckerIpRanges' is deprecated and \
+                    will be replaced by 'snake_case' return values with key 'checker_ip_ranges'. \
+                    Both case values are returned for now.",
+                     date='2025-01-01', collection_name='community.aws')
+
+    return results
 
 
 def get_count():
@@ -521,6 +636,12 @@ def get_health_check():
         results = client.get_health_check_last_failure_reason(**params)
     elif module.params.get('health_check_method') == 'status':
         results = client.get_health_check_status(**params)
+
+    results['health_check'] = camel_dict_to_snake_dict(results['HealthCheck'])
+    module.deprecate("The 'CamelCase' return values with key 'HealthCheck' is deprecated and \
+                    will be replaced by 'snake_case' return values with key 'health_check'. \
+                    Both case values are returned for now.",
+                     date='2025-01-01', collection_name='community.aws')
 
     return results
 
