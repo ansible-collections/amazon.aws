@@ -1066,7 +1066,7 @@ def main():
             if object_ownership == 'BucketOwnerEnforced':
                 module.params['acl_disabled'] = True
         # if bucket ownership controls are not found
-        except is_boto3_error_code('404'):
+        except botocore.exceptions.ClientError as e:
             pass
 
     # separate types of ACLs
