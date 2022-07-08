@@ -4,19 +4,89 @@
 Dynamic Inventory Plugin
 ========================
 
-``aws_ec2`` dynamic inventory plugin allow users to point at data sources to compile the inventory of AWS EC2 hosts that Ansible uses to target tasks, either via the ``-i /path/to/file`` and/or ``-i 'host1, host2'`` command line parameters or from other configuration sources.
+A dynamic inventory plugin allow users to point at data sources to compile the inventory of hosts that Ansible uses to target tasks, either via the ``-i /path/to/file`` and/or ``-i 'host1, host2'`` command line parameters or from other configuration sources.
 
-Once your AWS EC2 hosts are spun up, you'll probably want to talk to them again. With a cloud setup, it's best to not maintain a static list of cloud hostnames
-in text files. Rather, the best way to handle this is to use the ``aws_ec2`` dynamic inventory plugin.
+When using Ansible with AWS, inventory file maintenance will be a hectic task as AWS frequently changes IPs, autoscaling instances, and more.
+Once your AWS EC2 hosts are spun up, you'll probably want to talk to them again.
+With a cloud setup, it's best to not maintain a static list of cloud hostnames in text files.
+Rather, the best way to handle this is to use the ``aws_ec2`` dynamic inventory plugin.
+
+The ``aws_ec2`` dynamic inventory plugin makes API calls to AWS to get a list of inventory hosts from Amazon Web Services EC2 in the run time.
+It gives the EC2 instance details dynamically to manage the AWS infrastructure.
 
 The plugin will also return instances that were created outside of Ansible and allow Ansible to manage them.
 
+To start using the ``aws_ec2`` dynamic inventory plugin with a YAML configuration source, create a file with the accepted filename schema documented for the plugin in question (a YAML configuration file that ends with aws_ec2.(yml|yaml), e.g., demo.aws_ec2.yml), then add ``plugin: amazon.aws.aws_ec2``. Use the fully qualified name if the plugin is in a collection.
+
 .. _ansible_collections.amazon.aws.docsite.using_inventory_plugin:
+
+Authentication
+==============
+
+If your Ansible controller is not in the AWS, authentication with is handled by either
+specifying your access and secret key as ENV variables or inventory plugin arguments. 
+
+For environment variables:
+
+.. code-block:: bash
+
+    export AWS_ACCESS_KEY_ID='AK123'
+    export AWS_SECRET_ACCESS_KEY='abc123'
+
+The ``AWS_SECURITY_TOKEN`` environment variable can also be used, but is only supported for backward compatibility purposes.
+
+Or you can set ``aws_access_key`` and ``aws_secret_key`` and ``security_token`` inside the inventory configuration file.
+
+.. code-block:: yaml
+
+    # demo.aws_ec2.yml
+    plugin: amazon.aws.aws_ec2
+
+    # The access key for your AWS account.
+    aws_access_key: <YOUR-AWS-ACCESS-KEY-HERE>
+    # The secret access key for your AWS account.
+    aws_secret_key: <YOUR-AWS-SECRET-KEY-HERE>
+
+If you use different credentials for different tools or applications, you can use profiles.
+
+The ``profile`` argument is mutually exclusive with the ``aws_access_key``, ``aws_secret_key`` and ``security_token`` options.
+When no credentials are explicitly provided the AWS SDK (boto3) that Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``).
+The shared credentials file has a default location of ``~/.aws/credentials``.
+You can change the location of the shared credentials file by setting the ``AWS_SHARED_CREDENTIALS_FILE`` environment variable.
+
+.. code-block:: yaml
+
+    # demo.aws_ec2.yml
+    plugin: amazon.aws.aws_ec2
+
+    # Attach the default AWS profile
+    aws_profile: default
+
+    # You could use Jinja2 to attach the AWS profile from the environment variable.
+    aws_profile: "{{ lookup('env', 'AWS_PROFILE') | default('dev-profile', true) }}"
+
+You can also set your AWS profile as an ENV variable:
+
+.. code-block:: bash
+
+    export AWS_PROFILE='test-profile'
+
+If your Ansible controller is running inside the AWS environment, you can attach an EC2 instance role with the required AWS EC2 permissions.
+You should still provide AWS credentials with enough privilege to perform the AssumeRole action.
+If no credentials have been found by any of the providers above, boto3 will try to load credentials from the instance metadata service.
+Boto3 will automatically use IAM role credentials if it does not find credentials in any of the other places listed previously.
+The shared credentials file has a default location of ``~/.aws/credentials``.
+
+.. code-block:: yaml
+
+    # demo.aws_ec2.yml
+    plugin: amazon.aws.aws_ec2
+
+    iam_role_arn: arn:aws:iam::1234567890:role/assumed-ansible
+
 
 Minimal Example
 ===============
-
-To start using the ``aws_ec2`` dynamic inventory plugin with a YAML configuration source, create a file with the accepted filename schema documented for the plugin in question (a YAML configuration file that ends with aws_ec2.(yml|yaml), e.g., demo.aws_ec2.yml), then add ``plugin: amazon.aws.aws_ec2``. Use the fully qualified name if the plugin is in a collection.
 
 Fetch all hosts in us-east-1, the hostname is the public DNS if it exists, otherwise the private IP address.
 
@@ -24,22 +94,6 @@ Fetch all hosts in us-east-1, the hostname is the public DNS if it exists, other
 
     # demo.aws_ec2.yml
     plugin: amazon.aws.aws_ec2
-
-    # If your Ansible server is running inside the AWS environment, attach an EC2 instance role with the
-    # required AWS EC2 permissions. This way you don't have to add the access and secret key in the
-    # configuration. Ansible will automatically use the attached role to make the AWS API calls.
-    iam_role_arn: arn:aws:iam::1234567890:role/assumed-ansible
-
-    # If your Ansible server is not in the AWS then you can not attach IAM role to it so instead
-    # of that you set `aws_access_key` and `aws_secret_key`.
-    aws_access_key: <YOUR-AWS-ACCESS-KEY-HERE>
-    aws_secret_key: <YOUR-AWS-SECRET-KEY-HERE>
-
-    # Or attach the default AWS profile
-    aws_profile: default
-
-    # Or you could use Jinja2 to attach the AWS profile from the environment variable.
-    aws_profile: "{{ lookup('env', 'AWS_PROFILE') | default('dev-profile', true) }}"
 
     # This sets the region. If empty (the default) default this will include all regions, except possibly
     # restricted ones like us-gov-west-1 and cn-north-1.
@@ -60,7 +114,7 @@ After providing any required options, you can view the populated inventory with 
 Allowed Options
 ===============
 
-Some of the ``aws_ec2`` dynamic inventory plugin are explained in detailed in the next (see `full list of allowed options <https://docs.ansible.com/ansible/latest/collections/amazon/aws/aws_ec2_inventory.html#id3>`_).
+Some of the ``aws_ec2`` dynamic inventory plugin are explained in detail below. For a full list see `the plugin documentation <https://docs.ansible.com/ansible/latest/collections/amazon/aws/aws_ec2_inventory.html#id3>`_.
 
 ``hostnames``
 -------------
@@ -174,10 +228,10 @@ Some examples are shown below:
 .. code-block:: yaml
 
   groups:
-    # This created two groups - `redhat` and `ubuntu` based on tags
+    # This created two groups - `Production` and `PreProduction` based on tags
     # These conditionals are expressed using Jinja2 syntax.
-    redhat: "'redhat' in tags.OS"
-    ubuntu: "'ubuntu' in tags.OS"
+    redhat: "'Production' in tags.Environment"
+    ubuntu: "'PreProduction' in tags.Environment"
 
     # This created a libvpc group based on specific condition on `vpc_id`.
     libvpc: vpc_id == 'vpc-####'
@@ -194,9 +248,10 @@ Some examples are shown below:
     # This sets the ansible_host variable to connect with the private IP address without changing the hostname.
     ansible_host: private_ip_address
 
-    # This sets location_vars variable.
+    # This sets location_vars variable as a dictionary with location as a key.
     location_vars:
       location: "east_coast"
+      server_type: "ansible_hostname | regex_replace ('(.{6})(.{2}).*', '\\2')"
     
     # This sets location variable.
     location: "'east_coast'"
