@@ -338,6 +338,12 @@ Examples
         owners: 099720109477
         filters:
           name: "ubuntu/images/ubuntu-zesty-17.04-*"
+          
+    - name: gather information about the Ubuntu 20.04 LTS AMIs, backed by HVM SSD, published by Canonical
+      amazon.aws.ec2_ami_info:
+        owners: 099720109477
+        filters:
+          name: "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"
 
 
 
