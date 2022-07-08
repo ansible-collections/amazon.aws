@@ -1061,12 +1061,13 @@ def main():
     module.params['acl_disabled'] = False
     exists = bucket_check(module, s3, bucket)
     if exists:
-      try:
-          object_ownership = s3.get_bucket_ownership_controls(Bucket=bucket)['OwnershipControls']['Rules'][0]['ObjectOwnership']
-          if object_ownership == 'BucketOwnerEnforced':
-              module.params['acl_disabled'] = True
-      except:
-          pass
+        try:
+            object_ownership = s3.get_bucket_ownership_controls(Bucket=bucket)['OwnershipControls']['Rules'][0]['ObjectOwnership']
+            if object_ownership == 'BucketOwnerEnforced':
+                module.params['acl_disabled'] = True
+        # if bucket ownership controls are not found
+        except is_boto3_error_code('404'):
+            pass
 
     # separate types of ACLs
     if not module.params.get('acl_disabled'):
