@@ -225,7 +225,7 @@ filelist_actionable:
                 "whysize": "151 / 151",
                 "whytime": "1477931256 / 1477929260"
            }]
-uploaded:
+uploads:
   description: file listing (dicts) of files that were actually uploaded
   returned: always
   type: list
