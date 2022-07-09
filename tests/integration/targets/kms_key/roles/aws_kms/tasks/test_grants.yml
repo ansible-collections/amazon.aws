@@ -82,6 +82,10 @@
         that:
           - key.changed
 
+    # Roles can take a little while to get ready, pause briefly to give it chance
+    - wait_for:
+        timeout: 20
+
     - name: Add grant
       aws_kms:
         alias: '{{ kms_key_alias }}'

@@ -435,13 +435,19 @@ def get_key_details(connection, module, key_id, tokens=None):
         key_id = result['Arn']
     except is_boto3_error_code('NotFoundException'):
         return None
+    except is_boto3_error_code('AccessDeniedException'):  # pylint: disable=duplicate-except
+        module.warn('Permission denied fetching key metadata ({0})'.format(key_id))
+        return None
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to obtain key metadata")
     result['KeyArn'] = result.pop('Arn')
 
     try:
         aliases = get_kms_aliases_lookup(connection)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+    except is_boto3_error_code('AccessDeniedException'):
+        module.warn('Permission denied fetching key aliases')
+        aliases = {}
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to obtain aliases")
     # We can only get aliases for our own account, so we don't need the full ARN
     result['aliases'] = aliases.get(result['KeyId'], [])
@@ -452,8 +458,12 @@ def get_key_details(connection, module, key_id, tokens=None):
 
     try:
         result['grants'] = get_kms_grants_with_backoff(connection, key_id, tokens=tokens)['Grants']
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+    except is_boto3_error_code('AccessDeniedException'):
+        module.warn('Permission denied fetching key grants ({0})'.format(key_id))
+        result['grants'] = []
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to obtain key grants")
+
     tags = get_kms_tags(connection, module, key_id)
 
     result = camel_dict_to_snake_dict(result)
