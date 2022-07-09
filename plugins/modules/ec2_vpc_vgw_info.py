@@ -12,7 +12,7 @@ module: ec2_vpc_vgw_info
 version_added: 1.0.0
 short_description: Gather information about virtual gateways in AWS
 description:
-  - Gather information about virtual gateways in AWS.
+  - Gather information about virtual gateways (VGWs) in AWS.
 options:
   filters:
     description:
@@ -21,7 +21,7 @@ options:
     type: dict
   vpn_gateway_ids:
     description:
-      - Get details of a specific Virtual Gateway ID. This value should be provided as a list.
+      - Get details of a specific Virtual Gateway ID.
     type: list
     elements: str
 author:
@@ -151,7 +151,6 @@ def list_virtual_gateways(client, module):
     params = dict()
 
     params['Filters'] = ansible_dict_to_boto3_filter_list(module.params.get('filters'))
-    params['DryRun'] = module.check_mode
 
     if module.params.get("vpn_gateway_ids"):
         params['VpnGatewayIds'] = module.params.get("vpn_gateway_ids")
@@ -168,7 +167,7 @@ def list_virtual_gateways(client, module):
 def main():
     argument_spec = dict(
         filters=dict(type='dict', default=dict()),
-        vpn_gateway_ids=dict(type='list', default=None, elements='str')
+        vpn_gateway_ids=dict(type='list', default=None, elements='str'),
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)

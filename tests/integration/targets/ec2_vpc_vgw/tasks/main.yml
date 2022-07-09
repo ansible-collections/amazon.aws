@@ -76,10 +76,11 @@
 
     # ============================================================
 
-    - name: get VPC VGW facts by ID
+    - name: get VPC VGW facts by ID (CHECK)
       ec2_vpc_vgw_info:
         vpn_gateway_ids: ['{{ vgw_id }}']
       register: vgw_info
+      check_mode: True
 
     - name: verify expected facts
       vars:
