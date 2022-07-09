@@ -265,6 +265,7 @@ from ansible.module_utils._text import to_text
 
 # import module snippets
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
 
 # the following function, calculate_multipart_etag, is from tlastowka
@@ -427,17 +428,12 @@ def head_s3(s3, bucket, s3keys):
     retkeys = []
     for entry in s3keys:
         retentry = entry.copy()
-        # don't modify the input dict
         try:
             retentry['s3_head'] = s3.head_object(Bucket=bucket, Key=entry['s3_path'])
-        except botocore.exceptions.ClientError as err:
-            if (hasattr(err, 'response') and
-                    'ResponseMetadata' in err.response and
-                    'HTTPStatusCode' in err.response['ResponseMetadata'] and
-                    str(err.response['ResponseMetadata']['HTTPStatusCode']) == '404'):
-                pass
-            else:
-                raise Exception(err)
+        # 404 (Missing) - File doesn't exist, we'll need to upload
+        # 403 (Denied) - Sometimes we can write but not read, assume we'll need to upload
+        except is_boto3_error_code(['404', '403']):
+            pass
         retkeys.append(retentry)
     return retkeys
 
