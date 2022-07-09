@@ -730,7 +730,7 @@ class EcsServiceManager:
         # but the user is just entering
         #   ansible-fargate-nginx:3
         if expected['task_definition'] != existing['taskDefinition'].split('/')[-1]:
-            if existing['deploymentController']['type'] != 'CODE_DEPLOY':
+            if existing.get('deploymentController', {}).get('type', None) != 'CODE_DEPLOY':
                 return False
 
         if expected.get('health_check_grace_period_seconds'):
@@ -740,10 +740,10 @@ class EcsServiceManager:
         if (expected['load_balancers'] or []) != existing['loadBalancers']:
             return False
 
-        if expected['propagate_tags'] != existing['propagateTags']:
+        if (expected['propagate_tags'] or "NONE") != existing['propagateTags']:
             return False
 
-        if boto3_tag_list_to_ansible_dict(existing['tags']) != expected['tags']:
+        if boto3_tag_list_to_ansible_dict(existing.get('tags', [])) != (expected['tags'] or {}):
             return False
 
         # expected is params. DAEMON scheduling strategy returns desired count equal to
@@ -1049,7 +1049,6 @@ def main():
                                                               network_configuration,
                                                               serviceRegistries,
                                                               module.params['launch_type'],
-                                                              module.params['scheduling_strategy'],
                                                               module.params['platform_version'],
                                                               module.params['scheduling_strategy'],
                                                               capacityProviders,
