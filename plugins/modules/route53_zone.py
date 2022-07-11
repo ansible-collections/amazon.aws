@@ -49,7 +49,7 @@ options:
 extends_documentation_fragment:
     - amazon.aws.aws
     - amazon.aws.ec2
-    - amazon.aws.tags.deprecated_purge
+    - amazon.aws.tags
 notes:
     - Support for I(tags) and I(purge_tags) was added in release 2.1.0.
 author:
@@ -437,7 +437,7 @@ def main():
         hosted_zone_id=dict(),
         delegation_set_id=dict(),
         tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool'),
+        purge_tags=dict(type='bool', default=True),
     )
 
     mutually_exclusive = [
@@ -450,14 +450,6 @@ def main():
         mutually_exclusive=mutually_exclusive,
         supports_check_mode=True,
     )
-
-    if module.params.get('purge_tags') is None:
-        module.deprecate(
-            'The purge_tags parameter currently defaults to False.'
-            ' For consistency across the collection, this default value'
-            ' will change to True in release 5.0.0.',
-            version='5.0.0', collection_name='community.aws')
-        module.params['purge_tags'] = False
 
     zone_in = module.params.get('zone').lower()
     state = module.params.get('state').lower()
