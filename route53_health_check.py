@@ -115,7 +115,7 @@ notes:
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
-  - amazon.aws.tags.deprecated_purge
+  - amazon.aws.tags
 '''
 
 EXAMPLES = '''
@@ -503,7 +503,7 @@ def main():
         request_interval=dict(type='int', choices=[10, 30], default=30),
         failure_threshold=dict(type='int', choices=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
         tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool'),
+        purge_tags=dict(type='bool', default=True),
         health_check_id=dict(type='str', aliases=['id'], required=False),
         health_check_name=dict(type='str', aliases=['name'], required=False),
         use_unique_names=dict(type='bool', required=False),
@@ -536,14 +536,6 @@ def main():
         mutually_exclusive=args_mutually_exclusive,
         supports_check_mode=True,
     )
-
-    if module.params.get('purge_tags') is None:
-        module.deprecate(
-            'The purge_tags parameter currently defaults to False.'
-            ' For consistency across the collection, this default value'
-            ' will change to True in release 5.0.0.',
-            version='5.0.0', collection_name='community.aws')
-        module.params['purge_tags'] = False
 
     if not module.params.get('health_check_id') and not module.params.get('type'):
         module.fail_json(msg="parameter 'type' is required if not updating or deleting health check by ID.")

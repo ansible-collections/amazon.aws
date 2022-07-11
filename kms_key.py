@@ -139,7 +139,7 @@ author:
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
-  - amazon.aws.tags.deprecated_purge
+  - amazon.aws.tags
 
 notes:
   - There are known inconsistencies in the amount of time required for updates of KMS keys to be fully reflected on AWS.
@@ -734,9 +734,6 @@ def update_tags(connection, module, key, desired_tags, purge_tags):
     if desired_tags is None:
         return False
 
-    # purge_tags needs to be explicitly set, so an empty tags list means remove
-    # all tags
-
     to_add, to_remove = compare_aws_tags(key['tags'], desired_tags, purge_tags)
     if not (bool(to_add) or bool(to_remove)):
         return False
@@ -950,7 +947,7 @@ def main():
         description=dict(),
         enabled=dict(type='bool', default=True),
         tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool'),
+        purge_tags=dict(type='bool', default=True),
         grants=dict(type='list', default=[], elements='dict'),
         policy=dict(type='json'),
         purge_grants=dict(type='bool', default=False),
@@ -968,14 +965,6 @@ def main():
     )
 
     kms = module.client('kms')
-
-    if module.params.get('purge_tags') is None:
-        module.deprecate(
-            'The purge_tags parameter currently defaults to False.'
-            ' For consistency across the collection, this default value'
-            ' will change to True in release 5.0.0.',
-            version='5.0.0', collection_name='community.aws')
-        module.params['purge_tags'] = False
 
     module.deprecate("The 'policies' return key is deprecated and will be replaced by 'key_policies'. Both values are returned for now.",
                      date='2024-05-01', collection_name='community.aws')

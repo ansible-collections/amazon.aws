@@ -24,7 +24,7 @@ author:
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
-  - amazon.aws.tags.deprecated_purge
+  - amazon.aws.tags
 
 options:
 
@@ -2109,7 +2109,7 @@ def main():
         distribution_id=dict(),
         e_tag=dict(),
         tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool'),
+        purge_tags=dict(type='bool', default=True),
         alias=dict(),
         aliases=dict(type='list', default=[], elements='str'),
         purge_aliases=dict(type='bool', default=False),
@@ -2147,14 +2147,6 @@ def main():
             ['default_origin_domain_name', 'alias'],
         ]
     )
-
-    if module.params.get('purge_tags') is None:
-        module.deprecate(
-            'The purge_tags parameter currently defaults to False.'
-            ' For consistency across the collection, this default value'
-            ' will change to True in release 5.0.0.',
-            version='5.0.0', collection_name='community.aws')
-        module.params['purge_tags'] = False
 
     client = module.client('cloudfront', retry_decorator=AWSRetry.jittered_backoff())
 

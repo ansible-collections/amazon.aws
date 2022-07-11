@@ -17,7 +17,7 @@ description:
 extends_documentation_fragment:
   - amazon.aws.ec2
   - amazon.aws.aws
-  - amazon.aws.tags.deprecated_purge
+  - amazon.aws.tags
 author:
   - "Sloane Hertel (@s-hertel)"
 options:
@@ -767,7 +767,7 @@ def main():
         static_only=dict(default=False, type='bool'),
         customer_gateway_id=dict(type='str'),
         vpn_connection_id=dict(type='str'),
-        purge_tags=dict(type='bool'),
+        purge_tags=dict(type='bool', default=True),
         routes=dict(type='list', default=[], elements='str'),
         purge_routes=dict(type='bool', default=False),
         wait_timeout=dict(type='int', default=600),
@@ -776,14 +776,6 @@ def main():
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               supports_check_mode=True)
     connection = module.client('ec2', retry_decorator=VPNRetry.jittered_backoff(retries=10))
-
-    if module.params.get('purge_tags') is None:
-        module.deprecate(
-            'The purge_tags parameter currently defaults to False.'
-            ' For consistency across the collection, this default value'
-            ' will change to True in release 5.0.0.',
-            version='5.0.0', collection_name='community.aws')
-        module.params['purge_tags'] = False
 
     state = module.params.get('state')
     parameters = dict(module.params)
