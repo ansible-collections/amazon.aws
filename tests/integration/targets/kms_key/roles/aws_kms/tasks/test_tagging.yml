@@ -56,6 +56,7 @@
         tags:
           tag_one: tag_one
           tag_two: tag_two
+        purge_tags: no
       register: key
 
     - name: Assert tags added
