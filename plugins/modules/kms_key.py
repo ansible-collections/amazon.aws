@@ -43,62 +43,6 @@ options:
       - Whether the key should be automatically rotated every year.
     required: false
     type: bool
-  policy_mode:
-    description:
-      - (deprecated) Grant or deny access.
-      - Used for modifying the Key Policy rather than modifying a grant and only
-        works on the default policy created through the AWS Console.
-      - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
-    default: grant
-    choices: [ grant, deny ]
-    aliases:
-      - mode
-    type: str
-  policy_role_name:
-    description:
-      - (deprecated) Role to allow/deny access.
-      - One of I(policy_role_name) or I(policy_role_arn) are required.
-      - Used for modifying the Key Policy rather than modifying a grant and only
-        works on the default policy created through the AWS Console.
-      - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
-    required: false
-    aliases:
-      - role_name
-    type: str
-  policy_role_arn:
-    description:
-      - (deprecated) ARN of role to allow/deny access.
-      - One of I(policy_role_name) or I(policy_role_arn) are required.
-      - Used for modifying the Key Policy rather than modifying a grant and only
-        works on the default policy created through the AWS Console.
-      - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
-    type: str
-    required: false
-    aliases:
-      - role_arn
-  policy_grant_types:
-    description:
-      - (deprecated) List of grants to give to user/role. Likely "role,role grant" or "role,role grant,admin".
-      - Required when I(policy_mode=grant).
-      - Used for modifying the Key Policy rather than modifying a grant and only
-        works on the default policy created through the AWS Console.
-      - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
-    required: false
-    aliases:
-      - grant_types
-    type: list
-    elements: str
-  policy_clean_invalid_entries:
-    description:
-      - (deprecated) If adding/removing a role and invalid grantees are found, remove them. These entries will cause an update to fail in all known cases.
-      - Only cleans if changes are being made.
-      - Used for modifying the Key Policy rather than modifying a grant and only
-        works on the default policy created through the AWS Console.
-      - This option has been deprecated, and will be removed in a release after 2021-12-01. Use I(policy) instead.
-    type: bool
-    default: true
-    aliases:
-    - clean_invalid_entries
   state:
     description:
       - Whether a key should be present or absent.
@@ -205,22 +149,6 @@ notes:
 '''
 
 EXAMPLES = r'''
-# Managing the KMS IAM Policy via policy_mode and policy_grant_types is fragile
-# and has been deprecated in favour of the policy option.
-- name: grant user-style access to production secrets
-  community.aws.kms_key:
-  args:
-    alias: "alias/my_production_secrets"
-    policy_mode: grant
-    policy_role_name: "prod-appServerRole-1R5AQG2BSEL6L"
-    policy_grant_types: "role,role grant"
-- name: remove access to production secrets from role
-  community.aws.kms_key:
-  args:
-    alias: "alias/my_production_secrets"
-    policy_mode: deny
-    policy_role_name: "prod-appServerRole-1R5AQG2BSEL6L"
-
 # Create a new KMS key
 - community.aws.kms_key:
     alias: mykey
@@ -488,14 +416,11 @@ statement_label = {
 }
 
 import json
-import re
 
 try:
     import botocore
 except ImportError:
     pass  # caught by AnsibleAWSModule
-
-from ansible.module_utils.six import string_types
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
@@ -987,106 +912,6 @@ def get_arn_from_role_name(iam, rolename):
     raise Exception('could not find arn for name {0}.'.format(rolename))
 
 
-def _clean_statement_principals(statement, clean_invalid_entries):
-
-    # create Principal and 'AWS' so we can safely use them later.
-    if not isinstance(statement.get('Principal'), dict):
-        statement['Principal'] = dict()
-
-    # If we have a single AWS Principal, ensure we still have a list (to manipulate)
-    if 'AWS' in statement['Principal'] and isinstance(statement['Principal']['AWS'], string_types):
-        statement['Principal']['AWS'] = [statement['Principal']['AWS']]
-    if not isinstance(statement['Principal'].get('AWS'), list):
-        statement['Principal']['AWS'] = list()
-
-    valid_princ = re.compile('^arn:aws:(iam|sts)::')
-
-    invalid_entries = [item for item in statement['Principal']['AWS'] if not valid_princ.match(item)]
-    valid_entries = [item for item in statement['Principal']['AWS'] if valid_princ.match(item)]
-
-    if bool(invalid_entries) and clean_invalid_entries:
-        statement['Principal']['AWS'] = valid_entries
-        return True
-
-    return False
-
-
-def _do_statement_grant(statement, role_arn, grant_types, mode, grant_type):
-
-    if mode == 'grant':
-        if grant_type in grant_types:
-            if role_arn not in statement['Principal']['AWS']:  # needs to be added.
-                statement['Principal']['AWS'].append(role_arn)
-                return 'add'
-        elif role_arn in statement['Principal']['AWS']:  # not one the places the role should be
-            statement['Principal']['AWS'].remove(role_arn)
-            return 'remove'
-        return None
-
-    if mode == 'deny' and role_arn in statement['Principal']['AWS']:
-        # we don't selectively deny. that's a grant with a
-        # smaller list. so deny=remove all of this arn.
-        statement['Principal']['AWS'].remove(role_arn)
-        return 'remove'
-    return None
-
-
-def do_policy_grant(module, kms, keyarn, role_arn, grant_types, mode='grant', dry_run=True, clean_invalid_entries=True):
-    ret = {}
-    policy = json.loads(get_key_policy_with_backoff(kms, keyarn, 'default')['Policy'])
-
-    changes_needed = {}
-    assert_policy_shape(module, policy)
-    had_invalid_entries = False
-    for statement in policy['Statement']:
-        # We already tested that these are the only types in the statements
-        for grant_type in statement_label:
-            # Are we on this grant type's statement?
-            if statement['Sid'] != statement_label[grant_type]:
-                continue
-
-            had_invalid_entries |= _clean_statement_principals(statement, clean_invalid_entries)
-            change = _do_statement_grant(statement, role_arn, grant_types, mode, grant_type)
-            if change:
-                changes_needed[grant_type] = change
-
-    ret['changes_needed'] = changes_needed
-    ret['had_invalid_entries'] = had_invalid_entries
-    ret['new_policy'] = policy
-    ret['changed'] = bool(changes_needed)
-
-    if dry_run or not ret['changed']:
-        return ret
-
-    try:
-        policy_json_string = json.dumps(policy)
-        kms.put_key_policy(KeyId=keyarn, PolicyName='default', Policy=policy_json_string)
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
-        module.fail_json_aws(e, msg='Could not update key_policy', new_policy=policy_json_string)
-
-    return ret
-
-
-def assert_policy_shape(module, policy):
-    '''Since the policy seems a little, uh, fragile, make sure we know approximately what we're looking at.'''
-    errors = []
-    if policy['Version'] != "2012-10-17":
-        errors.append('Unknown version/date ({0}) of policy. Things are probably different than we assumed they were.'.format(policy['Version']))
-
-    found_statement_type = {}
-    for statement in policy['Statement']:
-        for label, sidlabel in statement_label.items():
-            if statement['Sid'] == sidlabel:
-                found_statement_type[label] = True
-
-    for statementtype in statement_label:
-        if not found_statement_type.get(statementtype):
-            errors.append('Policy is missing {0}.'.format(statementtype))
-
-    if errors:
-        module.fail_json(msg='Problems asserting policy shape. Cowardly refusing to modify it', errors=errors, policy=policy)
-
-
 def canonicalize_alias_name(alias):
     if alias is None:
         return None
@@ -1117,38 +942,9 @@ def fetch_key_metadata(connection, module, key_id, alias):
         module.fail_json_aws(e, 'Failed to fetch key metadata.')
 
 
-def update_policy_grants(connection, module, key_metadata, mode):
-    iam = module.client('iam')
-    key_id = key_metadata['Arn']
-
-    if module.params.get('policy_role_name') and not module.params.get('policy_role_arn'):
-        module.params['policy_role_arn'] = get_arn_from_role_name(iam, module.params['policy_role_name'])
-    if not module.params.get('policy_role_arn'):
-        module.fail_json(msg='policy_role_arn or policy_role_name is required to {0}'.format(module.params['policy_mode']))
-
-    # check the grant types for 'grant' only.
-    if mode == 'grant':
-        for grant_type in module.params['policy_grant_types']:
-            if grant_type not in statement_label:
-                module.fail_json(msg='{0} is an unknown grant type.'.format(grant_type))
-
-    return do_policy_grant(module, connection,
-                           key_id,
-                           module.params['policy_role_arn'],
-                           module.params['policy_grant_types'],
-                           mode=mode,
-                           dry_run=module.check_mode,
-                           clean_invalid_entries=module.params['policy_clean_invalid_entries'])
-
-
 def main():
     argument_spec = dict(
         alias=dict(aliases=['key_alias']),
-        policy_mode=dict(aliases=['mode'], choices=['grant', 'deny'], default='grant'),
-        policy_role_name=dict(aliases=['role_name']),
-        policy_role_arn=dict(aliases=['role_arn']),
-        policy_grant_types=dict(aliases=['grant_types'], type='list', elements='str'),
-        policy_clean_invalid_entries=dict(aliases=['clean_invalid_entries'], type='bool', default=True),
         pending_window=dict(aliases=['deletion_delay'], type='int'),
         key_id=dict(aliases=['key_arn']),
         description=dict(),
@@ -1171,8 +967,6 @@ def main():
         required_one_of=[['alias', 'key_id']],
     )
 
-    mode = module.params['policy_mode']
-
     kms = module.client('kms')
 
     if module.params.get('purge_tags') is None:
@@ -1190,12 +984,6 @@ def main():
     # We can't create keys with a specific ID, if we can't access the key we'll have to fail
     if module.params.get('state') == 'present' and module.params.get('key_id') and not key_metadata:
         module.fail_json(msg="Could not find key with id {0} to update".format(module.params.get('key_id')))
-
-    if module.params.get('policy_grant_types') or mode == 'deny':
-        module.deprecate('Managing the KMS IAM Policy via policy_mode and policy_grant_types is fragile'
-                         ' and has been deprecated in favour of the policy option.', date='2021-12-01', collection_name='community.aws')
-        result = update_policy_grants(kms, module, key_metadata, mode)
-        module.exit_json(**result)
 
     if module.params.get('state') == 'absent':
         if key_metadata is None:

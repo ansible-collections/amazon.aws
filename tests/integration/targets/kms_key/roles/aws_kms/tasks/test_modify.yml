@@ -258,37 +258,6 @@
 
     # ------------------------------------------------------------------------------------------
 
-    - name: grant user-style access to production secrets
-      aws_kms:
-        mode: grant
-        alias: "alias/{{ kms_key_alias }}"
-        role_name: '{{ kms_key_alias }}'
-        grant_types: "role,role grant"
-      register: new_key
-
-    - assert:
-        that:
-          - new_key.changed
-          - "'changes_needed' in new_key"
-
-    - name: remove access to production secrets from role
-      aws_kms:
-        mode: deny
-        alias: "alias/{{ kms_key_alias }}"
-        role_arn: "{{ iam_role_result.iam_role.arn }}"
-      register: new_key
-
-    - assert:
-        that:
-          - new_key.changed
-          - "'changes_needed' in new_key"
-
-    - name: Sleep to wait for updates to propagate
-      wait_for:
-        timeout: 45
-
-    # ------------------------------------------------------------------------------------------
-
     - name: update policy to remove access to key rotation status
       aws_kms:
         alias: 'alias/{{ kms_key_alias }}'
