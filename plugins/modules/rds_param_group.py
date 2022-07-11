@@ -54,7 +54,7 @@ author:
 extends_documentation_fragment:
   - amazon.aws.aws
   - amazon.aws.ec2
-  - amazon.aws.tags.deprecated_purge
+  - amazon.aws.tags
 
 '''
 
@@ -315,21 +315,13 @@ def main():
         params=dict(aliases=['parameters'], type='dict'),
         immediate=dict(type='bool', aliases=['apply_immediately']),
         tags=dict(type='dict', aliases=['resource_tags']),
-        purge_tags=dict(type='bool'),
+        purge_tags=dict(type='bool', default=True),
     )
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         required_if=[['state', 'present', ['description', 'engine']]],
         supports_check_mode=True
     )
-
-    if module.params.get('purge_tags') is None:
-        module.deprecate(
-            'The purge_tags parameter currently defaults to False.'
-            ' For consistency across the collection, this default value'
-            ' will change to True in release 5.0.0.',
-            version='5.0.0', collection_name='community.aws')
-        module.params['purge_tags'] = False
 
     try:
         conn = module.client('rds', retry_decorator=AWSRetry.jittered_backoff())
