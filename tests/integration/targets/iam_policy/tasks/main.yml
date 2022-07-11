@@ -10,24 +10,6 @@
     - amazon.aws
   block:
     # ============================================================
-    - name: Create a temporary folder for the policies
-      tempfile:
-        state: directory
-      register: tmpdir
-    - name: Copy over policy
-      copy:
-        src: no_access.json
-        dest: "{{ tmpdir.path }}"
-    - name: Copy over other policy
-      copy:
-        src: no_access_with_id.json
-        dest: "{{ tmpdir.path }}"
-    - name: Copy over other policy
-      copy:
-        src: no_access_with_second_id.json
-        dest: "{{ tmpdir.path }}"
-
-    # ============================================================
     - name: Create user for tests
       iam_user:
         state: present
@@ -91,9 +73,3 @@
         state: absent
         name: "{{ iam_name }}"
       ignore_errors: yes
-
-    # ============================================================
-    - name: Delete temporary folder containing the policies
-      file:
-        state: absent
-        path: "{{ tmpdir.path }}/"

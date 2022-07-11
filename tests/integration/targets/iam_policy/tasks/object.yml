@@ -44,7 +44,7 @@
     assert:
       that:
         - result.failed
-        - "'state is present but any of the following are missing: policy_document, policy_json' in result.msg"
+        - "'state is present but any of the following are missing: policy_json' in result.msg"
 
   - name: 'Create policy using document for {{ iam_type }} (check mode)'
     check_mode: yes
@@ -53,7 +53,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_a }}'
-      policy_document: '{{ tmpdir.path }}/no_access.json'
+      policy_json: '{{ lookup("file", "no_access.json") }}'
       skip_duplicates: yes
     register: result
 
@@ -68,7 +68,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_a }}'
-      policy_document: '{{ tmpdir.path }}/no_access.json'
+      policy_json: '{{ lookup("file", "no_access.json") }}'
       skip_duplicates: yes
     register: result
   - iam_policy_info:
@@ -97,7 +97,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_a }}'
-      policy_document: '{{ tmpdir.path }}/no_access.json'
+      policy_json: '{{ lookup("file", "no_access.json") }}'
       skip_duplicates: yes
     register: result
     check_mode: yes
@@ -113,7 +113,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_a }}'
-      policy_document: '{{ tmpdir.path }}/no_access.json'
+      policy_json: '{{ lookup("file", "no_access.json") }}'
       skip_duplicates: yes
     register: result
   - iam_policy_info:
@@ -142,7 +142,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
-      policy_document: '{{ tmpdir.path }}/no_access.json'
+      policy_json: '{{ lookup("file", "no_access.json") }}'
       skip_duplicates: yes
     register: result
   - iam_policy_info:
@@ -165,7 +165,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
-      policy_document: '{{ tmpdir.path }}/no_access.json'
+      policy_json: '{{ lookup("file", "no_access.json") }}'
       skip_duplicates: yes
     register: result
   - iam_policy_info:
@@ -193,7 +193,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
-      policy_document: '{{ tmpdir.path }}/no_access.json'
+      policy_json: '{{ lookup("file", "no_access.json") }}'
       skip_duplicates: no
     register: result
   - iam_policy_info:
@@ -218,7 +218,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
-      policy_document: '{{ tmpdir.path }}/no_access.json'
+      policy_json: '{{ lookup("file", "no_access.json") }}'
     register: result
   - iam_policy_info:
       iam_type: '{{ iam_type }}'
@@ -247,7 +247,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
-      policy_document: '{{ tmpdir.path }}/no_access.json'
+      policy_json: '{{ lookup("file", "no_access.json") }}'
     register: result
     check_mode: yes
 
@@ -263,7 +263,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
-      policy_document: '{{ tmpdir.path }}/no_access.json'
+      policy_json: '{{ lookup("file", "no_access.json") }}'
     register: result
   - iam_policy_info:
       iam_type: '{{ iam_type }}'
@@ -293,7 +293,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access_with_id.json") }}'
+      policy_json: '{{ lookup("file", "no_access_with_id.json") }}'
       skip_duplicates: yes
     register: result
   - iam_policy_info:
@@ -318,7 +318,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access_with_id.json") }}'
+      policy_json: '{{ lookup("file", "no_access_with_id.json") }}'
       skip_duplicates: yes
     register: result
   - iam_policy_info:
@@ -348,7 +348,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access_with_id.json") }}'
+      policy_json: '{{ lookup("file", "no_access_with_id.json") }}'
       skip_duplicates: yes
     register: result
     check_mode: yes
@@ -364,7 +364,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access_with_id.json") }}'
+      policy_json: '{{ lookup("file", "no_access_with_id.json") }}'
       skip_duplicates: yes
     register: result
   - iam_policy_info:
@@ -395,7 +395,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access_with_id.json") }}'
+      policy_json: '{{ lookup("file", "no_access_with_id.json") }}'
       skip_duplicates: yes
     register: result
   - iam_policy_info:
@@ -421,7 +421,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access_with_id.json") }}'
+      policy_json: '{{ lookup("file", "no_access_with_id.json") }}'
       skip_duplicates: yes
     register: result
   - iam_policy_info:
@@ -451,7 +451,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access_with_id.json") }}'
+      policy_json: '{{ lookup("file", "no_access_with_id.json") }}'
       skip_duplicates: no
     register: result
   - iam_policy_info:
@@ -472,7 +472,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access_with_id.json") }}'
+      policy_json: '{{ lookup("file", "no_access_with_id.json") }}'
     register: result
   - iam_policy_info:
       iam_type: '{{ iam_type }}'
@@ -507,7 +507,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access_with_id.json") }}'
+      policy_json: '{{ lookup("file", "no_access_with_id.json") }}'
     register: result
     check_mode: yes
 
@@ -523,7 +523,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access_with_id.json") }}'
+      policy_json: '{{ lookup("file", "no_access_with_id.json") }}'
     register: result
   - iam_policy_info:
       iam_type: '{{ iam_type }}'
@@ -577,7 +577,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_a }}'
-      policy_document: '{{ tmpdir.path }}/no_access_with_id.json'
+      policy_json: '{{ lookup("file", "no_access_with_id.json") }}'
       skip_duplicates: yes
     register: result
   - iam_policy_info:
@@ -599,7 +599,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_a }}'
-      policy_document: '{{ tmpdir.path }}/no_access_with_id.json'
+      policy_json: '{{ lookup("file", "no_access_with_id.json") }}'
       skip_duplicates: yes
     register: result
   - iam_policy_info:
@@ -626,7 +626,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_a }}'
-      policy_document: '{{ tmpdir.path }}/no_access_with_id.json'
+      policy_json: '{{ lookup("file", "no_access_with_id.json") }}'
       skip_duplicates: no
     register: result
   - iam_policy_info:
@@ -650,7 +650,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_a }}'
-      policy_document: '{{ tmpdir.path }}/no_access_with_id.json'
+      policy_json: '{{ lookup("file", "no_access_with_id.json") }}'
     register: result
   - iam_policy_info:
       iam_type: '{{ iam_type }}'
@@ -674,7 +674,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_a }}'
-      policy_document: '{{ tmpdir.path }}/no_access_with_id.json'
+      policy_json: '{{ lookup("file", "no_access_with_id.json") }}'
     register: result
     check_mode: yes
 
@@ -690,7 +690,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_a }}'
-      policy_document: '{{ tmpdir.path }}/no_access_with_id.json'
+      policy_json: '{{ lookup("file", "no_access_with_id.json") }}'
     register: result
   - iam_policy_info:
       iam_type: '{{ iam_type }}'
@@ -742,7 +742,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access.json") }}'
+      policy_json: '{{ lookup("file", "no_access.json") }}'
       skip_duplicates: yes
     register: result
   - iam_policy_info:
@@ -763,7 +763,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access.json") }}'
+      policy_json: '{{ lookup("file", "no_access.json") }}'
       skip_duplicates: yes
     register: result
   - iam_policy_info:
@@ -788,7 +788,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access.json") }}'
+      policy_json: '{{ lookup("file", "no_access.json") }}'
       skip_duplicates: no
     register: result
   - iam_policy_info:
@@ -810,7 +810,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access.json") }}'
+      policy_json: '{{ lookup("file", "no_access.json") }}'
     register: result
   - iam_policy_info:
       iam_type: '{{ iam_type }}'
@@ -834,7 +834,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access.json") }}'
+      policy_json: '{{ lookup("file", "no_access.json") }}'
     register: result
     check_mode: yes
 
@@ -850,7 +850,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_c }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access.json") }}'
+      policy_json: '{{ lookup("file", "no_access.json") }}'
     register: result
   - iam_policy_info:
       iam_type: '{{ iam_type }}'
@@ -899,7 +899,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
-      policy_document: '{{ tmpdir.path }}/no_access_with_second_id.json'
+      policy_json: '{{ lookup("file", "no_access_with_second_id.json") }}'
     register: result
   - iam_policy_info:
       iam_type: '{{ iam_type }}'
@@ -919,7 +919,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
-      policy_document: '{{ tmpdir.path }}/no_access_with_second_id.json'
+      policy_json: '{{ lookup("file", "no_access_with_second_id.json") }}'
     register: result
   - iam_policy_info:
       iam_type: '{{ iam_type }}'
@@ -942,7 +942,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
-      policy_document: '{{ tmpdir.path }}/no_access_with_second_id.json'
+      policy_json: '{{ lookup("file", "no_access_with_second_id.json") }}'
     register: result
     check_mode: yes
 
@@ -957,7 +957,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_b }}'
-      policy_document: '{{ tmpdir.path }}/no_access_with_second_id.json'
+      policy_json: '{{ lookup("file", "no_access_with_second_id.json") }}'
     register: result
   - iam_policy_info:
       iam_type: '{{ iam_type }}'
@@ -1006,7 +1006,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access_with_second_id.json") }}'
+      policy_json: '{{ lookup("file", "no_access_with_second_id.json") }}'
     register: result
   - iam_policy_info:
       iam_type: '{{ iam_type }}'
@@ -1026,7 +1026,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access_with_second_id.json") }}'
+      policy_json: '{{ lookup("file", "no_access_with_second_id.json") }}'
     register: result
   - iam_policy_info:
       iam_type: '{{ iam_type }}'
@@ -1050,7 +1050,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access_with_second_id.json") }}'
+      policy_json: '{{ lookup("file", "no_access_with_second_id.json") }}'
     register: result
     check_mode: yes
 
@@ -1066,7 +1066,7 @@
       iam_type: '{{ iam_type }}'
       iam_name: '{{ iam_name }}'
       policy_name: '{{ iam_policy_name_d }}'
-      policy_json: '{{ lookup("file", "{{ tmpdir.path }}/no_access_with_second_id.json") }}'
+      policy_json: '{{ lookup("file", "no_access_with_second_id.json") }}'
     register: result
   - iam_policy_info:
       iam_type: '{{ iam_type }}'
