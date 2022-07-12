@@ -763,6 +763,8 @@
 
     - include_tasks: copy_object.yml
 
+    - include_tasks: copy_object_acl_disabled_bucket.yml
+
     # ============================================================
     - name: 'Run tagging tests'
       block:
