@@ -1,7 +1,5 @@
 - name: test copying objects to bucket with ACL disabled
   block:
-    - debug: msg="Starting copy_object_acl_disabled_bucket test............."
-
     - name: Create a bucket with ACL disabled for the test
       s3_bucket:
         name: "{{ bucket_name }}-acl-disabled"
@@ -15,8 +13,6 @@
           - create_result is changed
           - create_result is not failed
           - create_result.object_ownership == "BucketOwnerEnforced"
-
-  #===============================================================
 
     - name: Create temporary directory
       tempfile:
@@ -32,8 +28,6 @@
       copy:
         content: "{{ content }}"
         dest: "{{ tmpdir.path }}/acl_disabled_upload_test.txt"
-    
-    ###
 
     - name: Upload a file to the bucket (check_mode)
       amazon.aws.s3_object:
@@ -97,8 +91,6 @@
           - upload_file_result.msg != "PUT operation complete"
           - '"s3:PutObject" not in upload_file_result.resource_actions'
 
-  #===============================================================
-
   always:
 
     - name: Delete the file in the bucket
@@ -123,5 +115,3 @@
         that:
           - delete_result is changed
           - delete_result is not failed
-
-    - debug: msg="Completed copy_object_acl_disabled_bucket test............."
