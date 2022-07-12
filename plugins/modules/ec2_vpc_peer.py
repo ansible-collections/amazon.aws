@@ -394,6 +394,11 @@ def describe_peering_connections(params, client):
         Filters=ansible_dict_to_boto3_filter_list(peer_filter),
     )
     if result['VpcPeeringConnections'] == []:
+        # Try again with the VPC/Peer relationship reversed
+        peer_filter = {
+            'requester-vpc-info.vpc-id': params['PeerVpcId'],
+            'accepter-vpc-info.vpc-id': params['VpcId'],
+        }
         result = client.describe_vpc_peering_connections(
             aws_retry=True,
             Filters=ansible_dict_to_boto3_filter_list(peer_filter),

@@ -103,6 +103,22 @@
         - vpc_peer is successful
         - vpc_peer.peering_id == peer_id_1
 
+  - name: (re-) Create local account VPC peering Connection request with accepter/requester reversed (idempotency)
+    ec2_vpc_peer:
+      vpc_id: '{{ vpc_2 }}'
+      peer_vpc_id: '{{ vpc_1 }}'
+      state: present
+      tags:
+        Name: '{{ connection_name }}'
+    register: vpc_peer
+
+  - name: Assert success
+    assert:
+      that:
+        - vpc_peer is not changed
+        - vpc_peer is successful
+        - vpc_peer.peering_id == peer_id_1
+
   - name: Get details on specific VPC peer
     ec2_vpc_peering_info:
       peer_connection_ids:
@@ -458,21 +474,30 @@
         - delete_peer is successful
 
   always:
+
+  - name: Find all VPC Peering connections for our VPCs
+    ec2_vpc_peering_info:
+      filters:
+        accepter-vpc-info.vpc-id: '{{ item }}'
+    register: peering_info
+    loop:
+    - '{{ vpc_1 }}'
+    - '{{ vpc_2 }}'
+
+  - set_fact:
+      vpc_peering_connection_ids: '{{ _vpc_peering_connections | map(attribute="vpc_peering_connection_id") | list }}'
+    vars:
+      _vpc_peering_connections: '{{ peering_info.results | map(attribute="vpc_peering_connections") | flatten }}'
+    ignore_errors: True
+
     # ============================================================
 
-  - name: delete a local VPC peering Connection
+  - name: Delete remaining Peering connections
     ec2_vpc_peer:
-      peering_id: "{{ vpc_peer.peering_id }}"
+      peering_id: "{{ item }}"
       state: absent
-    register: delete_peer
     ignore_errors: True
-
-  - name: delete a local VPC peering Connection
-    ec2_vpc_peer:
-      peering_id: "{{ vpc_peer2.peering_id }}"
-      state: absent
-    register: delete_peer
-    ignore_errors: True
+    loop: '{{ vpc_peering_connection_ids }}'
 
   - name: tidy up VPC 2
     ec2_vpc_net:
