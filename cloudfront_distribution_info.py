@@ -8,12 +8,15 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 ---
-module: cloudfront_info
+module: cloudfront_distribution_info
 version_added: 1.0.0
 short_description: Obtain facts about an AWS CloudFront distribution
 description:
   - Gets information about an AWS CloudFront distribution.
-author: Willem van Ketwich (@wilvk)
+  - Prior to release 5.0.0 this module was called C(community.aws.cloudfront_info).
+    The usage did not change.
+author:
+  - Willem van Ketwich (@wilvk)
 options:
     distribution_id:
         description:
@@ -79,82 +82,81 @@ options:
         type: bool
     invalidation:
         description:
-            - Get information about an invalidation.
-            - Requires I(invalidation_id) to be specified.
+          - Get information about an invalidation.
+          - Requires I(invalidation_id) to be specified.
         required: false
         default: false
         type: bool
     streaming_distribution:
         description:
-            - Get information about a specified RTMP distribution.
-            - Requires I(distribution_id) or I(domain_name_alias) to be specified.
+          - Get information about a specified RTMP distribution.
+          - Requires I(distribution_id) or I(domain_name_alias) to be specified.
         required: false
         default: false
         type: bool
     streaming_distribution_config:
         description:
-            - Get the configuration information about a specified RTMP distribution.
-            - Requires I(distribution_id) or I(domain_name_alias) to be specified.
+          - Get the configuration information about a specified RTMP distribution.
+          - Requires I(distribution_id) or I(domain_name_alias) to be specified.
         required: false
         default: false
         type: bool
     list_origin_access_identities:
         description:
-            - Get a list of CloudFront origin access identities.
-            - Requires I(origin_access_identity_id) to be set.
+          - Get a list of CloudFront origin access identities.
+          - Requires I(origin_access_identity_id) to be set.
         required: false
         default: false
         type: bool
     list_distributions:
         description:
-            - Get a list of CloudFront distributions.
+          - Get a list of CloudFront distributions.
         required: false
         default: false
         type: bool
     list_distributions_by_web_acl_id:
         description:
-            - Get a list of distributions using web acl id as a filter.
-            - Requires I(web_acl_id) to be set.
+          - Get a list of distributions using web acl id as a filter.
+          - Requires I(web_acl_id) to be set.
         required: false
         default: false
         type: bool
     list_invalidations:
         description:
-            - Get a list of invalidations.
-            - Requires I(distribution_id) or I(domain_name_alias) to be specified.
+          - Get a list of invalidations.
+          - Requires I(distribution_id) or I(domain_name_alias) to be specified.
         required: false
         default: false
         type: bool
     list_streaming_distributions:
         description:
-            - Get a list of streaming distributions.
+          - Get a list of streaming distributions.
         required: false
         default: false
         type: bool
     summary:
         description:
-            - Returns a summary of all distributions, streaming distributions and origin_access_identities.
-            - This is the default behaviour if no option is selected.
+          - Returns a summary of all distributions, streaming distributions and origin_access_identities.
+          - This is the default behaviour if no option is selected.
         required: false
         default: false
         type: bool
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
 - name: Get a summary of distributions
-  community.aws.cloudfront_info:
+  community.aws.cloudfront_distribution_info:
     summary: true
   register: result
 
 - name: Get information about a distribution
-  community.aws.cloudfront_info:
+  community.aws.cloudfront_distribution_info:
     distribution: true
     distribution_id: my-cloudfront-distribution-id
   register: result_did
@@ -162,7 +164,7 @@ EXAMPLES = '''
     msg: "{{ result_did['cloudfront']['my-cloudfront-distribution-id'] }}"
 
 - name: Get information about a distribution using the CNAME of the cloudfront distribution.
-  community.aws.cloudfront_info:
+  community.aws.cloudfront_distribution_info:
     distribution: true
     domain_name_alias: www.my-website.com
   register: result_website
@@ -170,23 +172,23 @@ EXAMPLES = '''
     msg: "{{ result_website['cloudfront']['www.my-website.com'] }}"
 
 - name: Get all information about an invalidation for a distribution.
-  community.aws.cloudfront_info:
+  community.aws.cloudfront_distribution_info:
     invalidation: true
     distribution_id: my-cloudfront-distribution-id
     invalidation_id: my-cloudfront-invalidation-id
 
 - name: Get all information about a CloudFront origin access identity.
-  community.aws.cloudfront_info:
+  community.aws.cloudfront_distribution_info:
     origin_access_identity: true
     origin_access_identity_id: my-cloudfront-origin-access-identity-id
 
 - name: Get all information about lists not requiring parameters (ie. list_origin_access_identities, list_distributions, list_streaming_distributions)
-  community.aws.cloudfront_info:
+  community.aws.cloudfront_distribution_info:
     origin_access_identity: true
     origin_access_identity_id: my-cloudfront-origin-access-identity-id
 
 - name: Get all information about lists not requiring parameters (ie. list_origin_access_identities, list_distributions, list_streaming_distributions)
-  community.aws.cloudfront_info:
+  community.aws.cloudfront_distribution_info:
     all_lists: true
 '''
 
