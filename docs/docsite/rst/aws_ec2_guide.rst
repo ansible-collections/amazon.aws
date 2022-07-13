@@ -4,7 +4,7 @@
 Dynamic Inventory Plugin
 ========================
 
-A dynamic inventory plugin allow users to point at data sources to compile the inventory of hosts that Ansible uses to target tasks, either via the ``-i /path/to/file`` and/or ``-i 'host1, host2'`` command line parameters or from other configuration sources.
+A dynamic inventory plugin allows users to point at data sources to compile the inventory of hosts that Ansible uses to target tasks, either via the ``-i /path/to/file`` and/or ``-i 'host1, host2'`` command line parameters or from other configuration sources.
 
 When using Ansible with AWS, inventory file maintenance will be a hectic task as AWS frequently changes IPs, autoscaling instances, and more.
 Once your AWS EC2 hosts are spun up, you'll probably want to talk to them again.
@@ -23,7 +23,7 @@ To start using the ``aws_ec2`` dynamic inventory plugin with a YAML configuratio
 Authentication
 ==============
 
-If your Ansible controller is not in the AWS, authentication with is handled by either
+If your Ansible controller is not in AWS, authentication is handled by either
 specifying your access and secret key as ENV variables or inventory plugin arguments. 
 
 For environment variables:
@@ -35,7 +35,7 @@ For environment variables:
 
 The ``AWS_SECURITY_TOKEN`` environment variable can also be used, but is only supported for backward compatibility purposes.
 
-Or you can set ``aws_access_key`` and ``aws_secret_key`` and ``security_token`` inside the inventory configuration file.
+Or you can set ``aws_access_key``, ``aws_secret_key``, and ``security_token`` inside the inventory configuration file.
 
 .. code-block:: yaml
 
@@ -119,17 +119,17 @@ Some of the ``aws_ec2`` dynamic inventory plugin are explained in detail below. 
 ``hostnames``
 -------------
 
-``hostnames`` option provides different settings to choose how the hostname is going to be displayed.
+``hostnames`` option provides different settings to choose how the hostname will be displayed.
 
 Some examples are shown below:
 
 .. code-block:: yaml
 
   hostnames:
-    # This option is going to allow to display the public ip addresses.
+    # This option allows displaying the public ip addresses.
     - ip-address
   
-    # This option is going to allow to display the private ip addresses using `tag:Name` as a prefix.
+    # This option allows displaying the private ip addresses using `tag:Name` as a prefix.
     # `name` an be one of the options specified in http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options.
     - name: 'private-ip-address'
       separator: '_'
@@ -160,7 +160,7 @@ Some examples are shown below:
 ----------------
 
 You can create dynamic groups using host variables with the ``keyed_groups`` option. ``keyed_groups`` comes in a prefix and a key format.
-The prefix is going to be the name of the host group that is going to be concatenated with the key.
+The prefix will be the name of the host group that is to be concatenated with the key.
 
 Some examples are shown below:
 
@@ -277,13 +277,13 @@ Some examples are shown below:
 .. code-block:: yaml
 
   include_filters:
-  # This includes in the inventory everything that has the following tags.
+  # This includes everything in the inventory that has the following tags.
   - tag:Project:
       - 'planets'
   - tag:Environment:
       - 'demo'
   
-  # This excludes from the inventory everything that has the following tag:Name.
+  # This excludes everything from the inventory that has the following tag:Name.
   exclude_filters:
   - tag:Name:
       - '{{ resource_prefix }}_3'
@@ -307,7 +307,7 @@ Some examples are shown below:
       - qa
     instance.group-id: sg-xxxxxxxx
    
-    # Thsi selects only instances with tag `Name` fuflfilling specific conditions.
+    # This selects only instances with tag `Name` fuflfilling specific conditions.
     - tag:Name:
       - dev-*
       - share-resource
