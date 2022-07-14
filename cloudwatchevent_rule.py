@@ -39,10 +39,10 @@ options:
     type: str
   event_pattern:
     description:
-      - A string pattern (in valid JSON format) that is used to match against
-        incoming events to determine if the rule should be triggered.
+      - A string pattern that is used to match against incoming events to determine if the rule
+        should be triggered.
     required: false
-    type: str
+    type: json
   state:
     description:
       - Whether the rule is present (and enabled), disabled, or absent.
@@ -78,34 +78,34 @@ options:
         type: str
         description: The ARN of the IAM role to be used for this target when the rule is triggered.
       input:
-        type: str
+        type: json
         description:
-          - A JSON object that will override the event data when passed to the target.
-          - If neither I(input) nor I(input_path) nor I(input_paths_map) nor I(input_template)
+          - A JSON object that will override the event data passed to the target.
+          - If neither I(input) nor I(input_path) nor I(input_transformer)
             is specified, then the entire event is passed to the target in JSON form.
       input_path:
         type: str
         description:
           - A JSONPath string (e.g. C($.detail)) that specifies the part of the event data to be
             passed to the target.
-          - If neither I(input) nor I(input_path) nor I(input_paths_map) nor I(input_template)
+          - If neither I(input) nor I(input_path) nor I(input_transformer)
             is specified, then the entire event is passed to the target in JSON form.
-      input_paths_map:
+      input_transformer:
         type: dict
-        version_added: 4.1.0
         description:
-          - A dict that specifies the transformation of the event data to
-            custom input parameters.
-          - If neither I(input) nor I(input_path) nor I(input_paths_map) nor I(input_template)
-            is specified, then the entire event is passed to the target in JSON form.
-      input_template:
-        type: str
+          - Settings to support providing custom input to a target based on certain event data.
         version_added: 4.1.0
-        description:
-          - A string that templates the values input_paths_map extracted from the event data.
-            It is used to produce the output you want to be sent to the target.
-          - If neither I(input) nor I(input_path) nor I(input_paths_map) nor I(input_template)
-            is specified, then the entire event is passed to the target in JSON form.
+        suboptions:
+          input_paths_map:
+            type: dict
+            description:
+              - A dict that specifies the transformation of the event data to
+                custom input parameters.
+          input_template:
+            type: json
+            description:
+              - A string that templates the values input_paths_map extracted from the event data.
+                It is used to produce the output you want to be sent to the target.
       ecs_parameters:
         type: dict
         description:
@@ -114,6 +114,7 @@ options:
           task_definition_arn:
             type: str
             description: The full ARN of the task definition.
+            required: true
           task_count:
             type: int
             description: The number of tasks to create based on I(task_definition).
@@ -147,10 +148,11 @@ EXAMPLES = r'''
     targets:
       - id: MyTargetSnsTopic
         arn: arn:aws:sns:us-east-1:123456789012:MySNSTopic
-        input_paths_map:
-          instance: "$.detail.instance-id"
-          state: "$.detail.state"
-        input_template: "<instance> is in state <state>"
+        input_transformer:
+          input_paths_map:
+            instance: "$.detail.instance-id"
+            state: "$.detail.state"
+          input_template: "<instance> is in state <state>"
 
 - community.aws.cloudwatchevent_rule:
     name: MyCronTask
@@ -175,15 +177,28 @@ targets:
     sample: "[{ 'arn': 'arn:aws:lambda:us-east-1:123456789012:function:MyFunction', 'id': 'MyTargetId' }]"
 '''
 
+import json
+
 try:
     import botocore
 except ImportError:
     pass  # handled by AnsibleAWSModule
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
+from ansible.module_utils.common.dict_transformations import snake_dict_to_camel_dict
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
+
+
+def _format_json(json_string):
+    # When passed a simple string, Ansible doesn't quote it to ensure it's a *quoted* string
+    try:
+        json.loads(json_string)
+        return json_string
+    except json.decoder.JSONDecodeError:
+        return str(json.dumps(json_string))
 
 
 class CloudWatchEventRule(object):
@@ -307,29 +322,14 @@ class CloudWatchEventRule(object):
         """Formats each target for the request"""
         targets_request = []
         for target in targets:
-            target_request = {
-                'Id': target['id'],
-                'Arn': target['arn']
-            }
-            if 'input' in target:
-                target_request['Input'] = target['input']
-            if 'input_path' in target:
-                target_request['InputPath'] = target['input_path']
-            if 'input_paths_map' in target or 'input_template' in target:
-                target_request['InputTransformer'] = {}
-                target_request['InputTransformer']['InputPathsMap'] = target['input_paths_map']
-                target_request['InputTransformer']['InputTemplate'] = '"{0}"'.format(
-                    target['input_template']
-                )
-            if 'role_arn' in target:
-                target_request['RoleArn'] = target['role_arn']
-            if 'ecs_parameters' in target:
-                target_request['EcsParameters'] = {}
-                ecs_parameters = target['ecs_parameters']
-                if 'task_definition_arn' in target['ecs_parameters']:
-                    target_request['EcsParameters']['TaskDefinitionArn'] = ecs_parameters['task_definition_arn']
-                if 'task_count' in target['ecs_parameters']:
-                    target_request['EcsParameters']['TaskCount'] = ecs_parameters['task_count']
+            target_request = scrub_none_parameters(snake_dict_to_camel_dict(target, True))
+            if target_request.get('Input', None):
+                target_request['Input'] = _format_json(target_request['Input'])
+            if target_request.get('InputTransformer', None):
+                if target_request.get('InputTransformer').get('InputTemplate', None):
+                    target_request['InputTransformer']['InputTemplate'] = _format_json(target_request['InputTransformer']['InputTemplate'])
+                if target_request.get('InputTransformer').get('InputPathsMap', None):
+                    target_request['InputTransformer']['InputPathsMap'] = target['input_transformer']['input_paths_map']
             targets_request.append(target_request)
         return targets_request
 
@@ -450,15 +450,39 @@ class CloudWatchEventRuleManager(object):
 
 
 def main():
+    target_args = dict(
+        type='list', elements='dict', default=[],
+        options=dict(
+            id=dict(type='str', required=True),
+            arn=dict(type='str', required=True),
+            role_arn=dict(type='str'),
+            input=dict(type='json'),
+            input_path=dict(type='str'),
+            input_transformer=dict(
+                type='dict',
+                options=dict(
+                    input_paths_map=dict(type='dict'),
+                    input_template=dict(type='json'),
+                ),
+            ),
+            ecs_parameters=dict(
+                type='dict',
+                options=dict(
+                    task_definition_arn=dict(type='str', required=True),
+                    task_count=dict(type='int'),
+                ),
+            ),
+        ),
+    )
     argument_spec = dict(
         name=dict(required=True),
         schedule_expression=dict(),
-        event_pattern=dict(),
+        event_pattern=dict(type='json'),
         state=dict(choices=['present', 'disabled', 'absent'],
                    default='present'),
         description=dict(),
         role_arn=dict(),
-        targets=dict(type='list', default=[], elements='dict'),
+        targets=target_args,
     )
     module = AnsibleAWSModule(argument_spec=argument_spec)
 
