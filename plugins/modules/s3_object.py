@@ -634,7 +634,7 @@ def option_in_extra_args(option):
         return allowed_extra_args[temp_option]
 
 
-def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, src=None, content=None):
+def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, src=None, content=None, acl_disabled=False):
     if module.check_mode:
         module.exit_json(msg="PUT operation skipped - running in check mode", changed=True)
     try:
@@ -677,7 +677,7 @@ def upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, s
             s3.upload_fileobj(Fileobj=f, Bucket=bucket, Key=obj, ExtraArgs=extra)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg="Unable to complete PUT operation.")
-    if not module.params.get('acl_disabled'):
+    if not acl_disabled:
         try:
             for acl in module.params.get('permission'):
                 s3.put_object_acl(ACL=acl, Bucket=bucket, Key=obj)
@@ -1058,19 +1058,19 @@ def main():
     validate = not ignore_nonexistent_bucket
 
     # check if bucket exists, if yes, check if ACL is disabled
-    module.params['acl_disabled'] = False
+    acl_disabled = False
     exists = bucket_check(module, s3, bucket)
     if exists:
         try:
             object_ownership = s3.get_bucket_ownership_controls(Bucket=bucket)['OwnershipControls']['Rules'][0]['ObjectOwnership']
             if object_ownership == 'BucketOwnerEnforced':
-                module.params['acl_disabled'] = True
+                acl_disabled = True
         # if bucket ownership controls are not found
         except botocore.exceptions.ClientError as e:
             pass
 
     # separate types of ACLs
-    if not module.params.get('acl_disabled'):
+    if not acl_disabled:
         bucket_acl = [acl for acl in module.params.get('permission') if acl in bucket_canned_acl]
         object_acl = [acl for acl in module.params.get('permission') if acl in object_canned_acl]
         error_acl = [acl for acl in module.params.get('permission') if acl not in bucket_canned_acl and acl not in object_canned_acl]
@@ -1138,9 +1138,9 @@ def main():
                 get_download_url(module, s3, bucket, obj, expiry, tags, changed=tags_update)
 
         # only use valid object acls for the upload_s3file function
-        if not module.params.get('acl_disabled'):
+        if not acl_disabled:
             module.params['permission'] = object_acl
-        upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, src=src, content=bincontent)
+        upload_s3file(module, s3, bucket, obj, expiry, metadata, encrypt, headers, src=src, content=bincontent, acl_disabled=acl_disabled)
 
     # Delete an object from a bucket, not the entire bucket
     if mode == 'delobj':
