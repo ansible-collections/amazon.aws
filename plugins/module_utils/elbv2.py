@@ -23,14 +23,30 @@ from .elb_utils import get_elb_listener
 
 # ForwardConfig may be optional if we've got a single TargetGroupArn entry
 def _prune_ForwardConfig(action):
-    if "ForwardConfig" in action and action['Type'] == 'forward':
-        if action["ForwardConfig"] == {
-                'TargetGroupStickinessConfig': {'Enabled': False},
-                'TargetGroups': [{"TargetGroupArn": action["TargetGroupArn"], "Weight": 1}]}:
-            newAction = action.copy()
-            del(newAction["ForwardConfig"])
-            return newAction
-    return action
+    """
+    Drops a redundant ForwardConfig where TargetGroupARN has already been set.
+    (So we can perform comparisons)
+    """
+    if action.get('Type', "") != 'forward':
+        return action
+    if "ForwardConfig" not in action:
+        return action
+    # Where we have multiple TGs, action['TargetGroupArn'] shouldn't be set
+    if "TargetGroupArn" not in action:
+        return action
+
+    # This is the same as having TargetGroupArn set
+    equivalent_action = {
+        'TargetGroupStickinessConfig': {'Enabled': False},
+        'TargetGroups': [{"TargetGroupArn": action["TargetGroupArn"], "Weight": 1}],
+    }
+    if action["ForwardConfig"] != equivalent_action:
+        return action
+
+    # Remove the redundant ForwardConfig
+    newAction = action.copy()
+    del(newAction["ForwardConfig"])
+    return newAction
 
 
 # the AWS api won't return the client secret, so we'll have to remove it

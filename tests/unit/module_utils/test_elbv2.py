@@ -27,6 +27,25 @@ one_action = [
     }
 ]
 
+one_action_two_tg = [
+    {
+        "ForwardConfig": {
+            "TargetGroupStickinessConfig": {"Enabled": False},
+            "TargetGroups": [
+                {
+                    "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:966509639900:targetgroup/my-tg-58045486/5b231e04f663ae21",
+                    "Weight": 1,
+                },
+                {
+                    "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:966509639900:targetgroup/my-tg-dadf7b62/be2f50b4041f11ed",
+                    "Weight": 1,
+                }
+            ],
+        },
+        "Type": "forward",
+    }
+]
+
 
 def test__prune_ForwardConfig():
     expectation = {
@@ -34,6 +53,8 @@ def test__prune_ForwardConfig():
         "Type": "forward",
     }
     assert elbv2._prune_ForwardConfig(one_action[0]) == expectation
+    # https://github.com/ansible-collections/community.aws/issues/1089
+    assert elbv2._prune_ForwardConfig(one_action_two_tg[0]) == one_action_two_tg[0]
 
 
 def _prune_secret():
