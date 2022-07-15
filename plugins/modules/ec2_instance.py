@@ -1855,9 +1855,11 @@ def enforce_count(existing_matches, module, desired_module_state):
                 module.exit_json(changed=True, msg='Would have terminated following instances if not in check mode {0}'.format(terminate_ids))
             # terminate instances
             try:
-                result = client.terminate_instances(InstanceIds=terminate_ids)
+                result = client.terminate_instances(aws_retry=True, InstanceIds=terminate_ids)
                 await_instances(terminate_ids, desired_module_state='terminated', force_wait=True)
-            except botocore.exceptions.ClientError as e:
+            except is_boto3_error_code('InvalidInstanceID.NotFound'):
+                pass
+            except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
                 module.fail_json(e, msg='Unable to terminate instances')
             module.exit_json(
                 changed=True,
@@ -1933,12 +1935,12 @@ def ensure_present(existing_matches, desired_module_state):
 
 def run_instances(**instance_spec):
     try:
-        return client.run_instances(**instance_spec)
+        return client.run_instances(aws_retry=True, **instance_spec)
     except is_boto3_error_message('Invalid IAM Instance Profile ARN'):
         # If the instance profile has just been created, it takes some time to be visible by ec2
         # So we wait 10 second and retry the run_instances
         time.sleep(10)
-        return client.run_instances(**instance_spec)
+        return client.run_instances(aws_retry=True, **instance_spec)
 
 
 def build_filters():
