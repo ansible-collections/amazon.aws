@@ -931,14 +931,17 @@ def main():
         wait_timeout=dict(type='int', default=200),
         wait=dict(type='bool', default=False)
     )
+    required_by = dict(
+        health_check_path=['health_check_protocol'],
+        successful_response_codes=['health_check_protocol'],
+    )
+    required_if = [
+        ['target_type', 'instance', ['protocol', 'port', 'vpc_id']],
+        ['target_type', 'ip', ['protocol', 'port', 'vpc_id']],
+        ['target_type', 'alb', ['protocol', 'port', 'vpc_id']],
+    ]
 
-    module = AnsibleAWSModule(argument_spec=argument_spec,
-                              required_if=[
-                                  ['target_type', 'instance', ['protocol', 'port', 'vpc_id']],
-                                  ['target_type', 'ip', ['protocol', 'port', 'vpc_id']],
-                                  ['target_type', 'alb', ['protocol', 'port', 'vpc_id']],
-                              ]
-                              )
+    module = AnsibleAWSModule(argument_spec=argument_spec, required_by=required_by, required_if=required_if)
 
     if module.params.get('target_type') is None:
         module.params['target_type'] = 'instance'
