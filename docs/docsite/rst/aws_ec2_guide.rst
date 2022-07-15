@@ -114,7 +114,7 @@ After providing any required options, you can view the populated inventory with 
 Allowed Options
 ===============
 
-Some of the ``aws_ec2`` dynamic inventory plugin are explained in detail below. For a full list see `the plugin documentation <https://docs.ansible.com/ansible/latest/collections/amazon/aws/aws_ec2_inventory.html#id3>`_.
+Some of the ``aws_ec2`` dynamic inventory plugin options are explained in detail below. For a full list see `the plugin documentation <https://docs.ansible.com/ansible/latest/collections/amazon/aws/aws_ec2_inventory.html#id3>`_.
 
 ``hostnames``
 -------------
@@ -130,7 +130,7 @@ Some examples are shown below:
     - ip-address
   
     # This option allows displaying the private ip addresses using `tag:Name` as a prefix.
-    # `name` an be one of the options specified in http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options.
+    # `name` can be one of the options specified in http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options.
     - name: 'private-ip-address'
       separator: '_'
       prefix: 'tag:Name'
@@ -203,7 +203,7 @@ Some examples are shown below:
     - key: placement.region
       prefix: aws_region
 
-    # This creates host groups based on the value of a custom tag `Role` and add them to a metagroup called `project`.
+    # This creates host groups based on the value of a custom tag `Role` and adds them to a metagroup called `project`.
     - key: tags['Role']
       prefix: foo
       parent_group: "project"
@@ -221,7 +221,7 @@ Some examples are shown below:
 ``groups``
 ----------
 
-It is also possible to create groups using ``groups`` option.
+It is also possible to create groups using the ``groups`` option.
 
 Some examples are shown below:
 
@@ -265,7 +265,7 @@ Some examples are shown below:
     ansible_user: centos
     ansible_private_ssh_key_file: key_name
 
-    # This sets ec2_security_group_ids variable
+    # This sets the ec2_security_group_ids variable.
     ec2_security_group_ids: security_groups | map(attribute='group_id') | list |  join(',')
 
 
@@ -301,13 +301,13 @@ Some examples are shown below:
     tag:Environment: dev
     instance-state-name : running
 
-    # This selects only instances with tag `Environment` tag set to `dev` and `qa` ans specific security group id.
+    # This selects only instances with tag `Environment` tag set to `dev` and `qa` and specific security group id.
     tag:Environment:
       - dev
       - qa
     instance.group-id: sg-xxxxxxxx
    
-    # This selects only instances with tag `Name` fuflfilling specific conditions.
+    # This selects only instances with tag `Name` fulfilling specific conditions.
     - tag:Name:
       - dev-*
       - share-resource
