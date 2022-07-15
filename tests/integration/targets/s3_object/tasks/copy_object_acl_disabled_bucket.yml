@@ -14,12 +14,6 @@
           - create_result is not failed
           - create_result.object_ownership == "BucketOwnerEnforced"
 
-    - name: Create temporary directory
-      tempfile:
-        state: directory
-        path: /var/tmp
-      register: tmpdir
-
     - name: Create content
       set_fact:
           content: "{{ lookup('password', '/dev/null chars=ascii_letters,digits,hexdigits,punctuation') }}"
@@ -27,12 +21,12 @@
     - name: Create local acl_disabled_upload_test.txt
       copy:
         content: "{{ content }}"
-        dest: "{{ tmpdir.path }}/acl_disabled_upload_test.txt"
+        dest: "{{ remote_tmp_dir }}/acl_disabled_upload_test.txt"
 
     - name: Upload a file to the bucket (check_mode)
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}-acl-disabled"
-        src: "{{ tmpdir.path }}/acl_disabled_upload_test.txt"
+        src: "{{ remote_tmp_dir }}/acl_disabled_upload_test.txt"
         object: "acl_disabled_upload_test.txt"
         mode: put
       check_mode: true
@@ -48,7 +42,7 @@
     - name: Upload a file to the bucket
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}-acl-disabled"
-        src: "{{ tmpdir.path }}/acl_disabled_upload_test.txt"
+        src: "{{ remote_tmp_dir }}/acl_disabled_upload_test.txt"
         object: "acl_disabled_upload_test.txt"
         mode: put
       register: upload_file_result
@@ -63,7 +57,7 @@
     - name: Upload a file to the bucket (check_mode - idempotency)
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}-acl-disabled"
-        src: "{{ tmpdir.path }}/acl_disabled_upload_test.txt"
+        src: "{{ remote_tmp_dir }}/acl_disabled_upload_test.txt"
         object: "acl_disabled_upload_test.txt"
         mode: put
       check_mode: true
@@ -79,7 +73,7 @@
     - name: Upload a file to the bucket (idempotency)
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}-acl-disabled"
-        src: "{{ tmpdir.path }}/acl_disabled_upload_test.txt"
+        src: "{{ remote_tmp_dir }}/acl_disabled_upload_test.txt"
         object: "acl_disabled_upload_test.txt"
         mode: put
       register: upload_file_result
@@ -96,7 +90,7 @@
     - name: Delete the file in the bucket
       amazon.aws.s3_object:
         bucket: "{{ bucket_name }}-acl-disabled"
-        src: "{{ tmpdir.path }}/acl_disabled_upload_test.txt"
+        src: "{{ remote_tmp_dir }}/acl_disabled_upload_test.txt"
         object: "acl_disabled_upload_test.txt"
         mode: delobj
       retries: 3
