@@ -22,8 +22,8 @@ This collection depends on the AWS SDK for Python (Boto3 and Botocore).  Due to 
 this collection requires Python 3.6 or greater.
 
 Amazon have also announced the end of support for
-[Python less than 3.7](https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/)
-as such support for Python less than 3.7 by this collection has been deprecated and will be removed in a release
+[Python less than 3.7](https://aws.amazon.com/blogs/developer/python-support-policy-updates-for-aws-sdks-and-tools/).
+As such support for Python less than 3.7 by this collection has been deprecated and will be removed in a release
 after 2023-05-31.
 
 ## AWS SDK version compatibility
