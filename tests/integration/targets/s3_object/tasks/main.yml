@@ -1007,12 +1007,6 @@
         path: "{{ remote_tmp_dir }}"
       ignore_errors: true
 
-    - name: deleting local directory with test artefacts
-      file:
-        path: '{{ remote_tmp_dir }}'
-        state: absent
-      ignore_errors: true
-
     - include_tasks: delete_bucket.yml
       with_items:
         - "{{ bucket_name }}"
