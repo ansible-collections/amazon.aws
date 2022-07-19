@@ -16,11 +16,10 @@
       set_fact:
         aws_account: "{{ aws_caller_info.account }}"
 
-    - name: Create temporary directory
-      tempfile:
-        state: directory
-        path: /var/tmp
-      register: tmpdir
+    - name: check that temp directory was made
+      assert:
+        that:
+        - remote_tmp_dir is defined
 
     - name: Create content
       set_fact:
@@ -73,11 +72,11 @@
     - name: Create local upload.txt
       copy:
         content: "{{ content }}"
-        dest: "{{ tmpdir.path }}/upload.txt"
+        dest: "{{ remote_tmp_dir }}/upload.txt"
 
     - name: stat the file
       stat:
-        path: "{{ tmpdir.path }}/upload.txt"
+        path: "{{ remote_tmp_dir }}/upload.txt"
         get_checksum: yes
       register: upload_file
 
@@ -85,7 +84,7 @@
       s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
-        src: "{{ tmpdir.path }}/upload.txt"
+        src: "{{ remote_tmp_dir }}/upload.txt"
         object: delete.txt
       retries: 3
       delay: 3
@@ -100,7 +99,7 @@
       s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
-        src: "{{ tmpdir.path }}/upload.txt"
+        src: "{{ remote_tmp_dir }}/upload.txt"
         object: delete.txt
       register: test_async
       async: 30
@@ -117,7 +116,7 @@
       s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
-        src: "{{ tmpdir.path }}/upload.txt"
+        src: "{{ remote_tmp_dir }}/upload.txt"
         object: delete.txt
       retries: 3
       delay: 3
@@ -165,7 +164,7 @@
       s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
-        src: "{{ tmpdir.path }}/upload.txt"
+        src: "{{ remote_tmp_dir }}/upload.txt"
         object: delete.txt
         overwrite: never
       retries: 3
@@ -180,7 +179,7 @@
       s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
-        src: "{{ tmpdir.path }}/upload.txt"
+        src: "{{ remote_tmp_dir }}/upload.txt"
         object: delete.txt
         overwrite: different
       retries: 3
@@ -195,7 +194,7 @@
       s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
-        src: "{{ tmpdir.path }}/upload.txt"
+        src: "{{ remote_tmp_dir }}/upload.txt"
         object: delete.txt
         overwrite: always
       retries: 3
@@ -210,7 +209,7 @@
       s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
-        dest: "{{ tmpdir.path }}/download.txt"
+        dest: "{{ remote_tmp_dir }}/download.txt"
         object: delete.txt
       retries: 3
       delay: 3
@@ -219,7 +218,7 @@
 
     - name: stat the file so we can compare the checksums
       stat:
-        path: "{{ tmpdir.path }}/download.txt"
+        path: "{{ remote_tmp_dir }}/download.txt"
         get_checksum: yes
       register: download_file
 
@@ -231,7 +230,7 @@
       s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
-        dest: "{{ tmpdir.path }}/download.txt"
+        dest: "{{ remote_tmp_dir }}/download.txt"
         object: delete.txt
       retries: 3
       delay: 3
@@ -243,14 +242,14 @@
 
     - name: modify destination
       copy:
-        dest: "{{ tmpdir.path }}/download.txt"
+        dest: "{{ remote_tmp_dir }}/download.txt"
         src: hello.txt
 
     - name: test get with overwrite=never
       s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
-        dest: "{{ tmpdir.path }}/download.txt"
+        dest: "{{ remote_tmp_dir }}/download.txt"
         object: delete.txt
         overwrite: never
       retries: 3
@@ -265,7 +264,7 @@
       s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
-        dest: "{{ tmpdir.path }}/download.txt"
+        dest: "{{ remote_tmp_dir }}/download.txt"
         object: delete.txt
       retries: 3
       delay: 3
@@ -279,7 +278,7 @@
       s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
-        dest: "{{ tmpdir.path }}/download.txt"
+        dest: "{{ remote_tmp_dir }}/download.txt"
         object: delete.txt
         overwrite: always
       retries: 3
@@ -294,7 +293,7 @@
       s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
-        dest: "{{ tmpdir.path }}/download.txt"
+        dest: "{{ remote_tmp_dir }}/download.txt"
         object: delete.txt
         overwrite: latest
       retries: 3
@@ -306,13 +305,13 @@
           - result is not changed
 
     - name: modify mtime for local file to past
-      shell: touch -mt 197001010900.00 "{{ tmpdir.path }}/download.txt"
+      shell: touch -mt 197001010900.00 "{{ remote_tmp_dir }}/download.txt"
 
     - name: test get with overwrite=latest and files that mtimes are different
       s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
-        dest: "{{ tmpdir.path }}/download.txt"
+        dest: "{{ remote_tmp_dir }}/download.txt"
         object: delete.txt
         overwrite: latest
       retries: 3
@@ -383,7 +382,7 @@
       s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
-        src: "{{ tmpdir.path }}/upload.txt"
+        src: "{{ remote_tmp_dir }}/upload.txt"
         encrypt: yes
         object: delete_encrypt.txt
       retries: 3
@@ -399,7 +398,7 @@
       s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
-        dest: "{{ tmpdir.path }}/download_encrypted.txt"
+        dest: "{{ remote_tmp_dir }}/download_encrypted.txt"
         object: delete_encrypt.txt
       retries: 3
       delay: 3
@@ -408,7 +407,7 @@
 
     - name: stat the file so we can compare the checksums
       stat:
-        path: "{{ tmpdir.path }}/download_encrypted.txt"
+        path: "{{ remote_tmp_dir }}/download_encrypted.txt"
         get_checksum: yes
       register: download_file
 
@@ -428,7 +427,7 @@
       s3_object:
         bucket: "{{ bucket_name }}"
         mode: put
-        src: "{{ tmpdir.path }}/upload.txt"
+        src: "{{ remote_tmp_dir }}/upload.txt"
         encrypt: yes
         encryption_mode: aws:kms
         object: delete_encrypt_kms.txt
@@ -445,7 +444,7 @@
       s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
-        dest: "{{ tmpdir.path }}/download_kms.txt"
+        dest: "{{ remote_tmp_dir }}/download_kms.txt"
         object: delete_encrypt_kms.txt
       retries: 3
       delay: 3
@@ -454,7 +453,7 @@
 
     - name: get the stat of the file so we can compare the checksums
       stat:
-        path: "{{ tmpdir.path }}/download_kms.txt"
+        path: "{{ remote_tmp_dir }}/download_kms.txt"
         get_checksum: yes
       register: download_file
 
@@ -543,12 +542,12 @@
 
     - name: make tempfile 4 GB for OSX
       command:
-        _raw_params: "dd if=/dev/zero of={{ tmpdir.path }}/largefile bs=1m count=4096"
+        _raw_params: "dd if=/dev/zero of={{ remote_tmp_dir }}/largefile bs=1m count=4096"
       when: ansible_distribution == 'MacOSX'
 
     - name: make tempfile 4 GB for linux
       command:
-        _raw_params: "dd if=/dev/zero of={{ tmpdir.path }}/largefile bs=1M count=4096"
+        _raw_params: "dd if=/dev/zero of={{ remote_tmp_dir }}/largefile bs=1M count=4096"
       when: ansible_system == 'Linux'
 
     - name: test multipart download - platform specific
@@ -562,14 +561,14 @@
           s3_object:
             bucket: "{{ bucket_name }}"
             mode: put
-            src: "{{ tmpdir.path }}/largefile"
+            src: "{{ remote_tmp_dir }}/largefile"
             object: multipart.txt
 
         - name: download file once
           s3_object:
             bucket: "{{ bucket_name }}"
             mode: get
-            dest: "{{ tmpdir.path }}/download.txt"
+            dest: "{{ remote_tmp_dir }}/download.txt"
             object: multipart.txt
             overwrite: different
           retries: 3
@@ -585,7 +584,7 @@
           s3_object:
             bucket: "{{ bucket_name }}"
             mode: get
-            dest: "{{ tmpdir.path }}/download.txt"
+            dest: "{{ remote_tmp_dir }}/download.txt"
             object: multipart.txt
             overwrite: different
           register: result
@@ -626,7 +625,7 @@
       s3_object:
         bucket: "{{ bucket_name_acl }}"
         mode: put
-        src: "{{ tmpdir.path }}/upload.txt"
+        src: "{{ remote_tmp_dir }}/upload.txt"
         object: file-with-permissions.txt
         permission: bucket-owner-full-control
         ignore_nonexistent_bucket: True
@@ -744,7 +743,7 @@
       s3_object:
         bucket: "{{ bucket_name }}"
         mode: get
-        dest: "{{ tmpdir.path }}/download_binary.bin"
+        dest: "{{ remote_tmp_dir }}/download_binary.bin"
         object: put-binary.bin
       register: result
 
@@ -754,7 +753,7 @@
         get_checksum: yes
       loop:
       - "{{ role_path }}/files/test.png"
-      - "{{ tmpdir.path }}/download_binary.bin"
+      - "{{ remote_tmp_dir }}/download_binary.bin"
       register: binary_files
 
     - assert:
@@ -762,6 +761,8 @@
           - binary_files.results[0].stat.checksum == binary_files.results[1].stat.checksum
 
     - include_tasks: copy_object.yml
+
+    - include_tasks: copy_object_acl_disabled_bucket.yml
 
     # ============================================================
     - name: 'Run tagging tests'
@@ -1003,7 +1004,7 @@
     - name: delete temporary files
       file:
         state: absent
-        path: "{{ tmpdir.path }}"
+        path: "{{ remote_tmp_dir }}"
       ignore_errors: true
 
     - include_tasks: delete_bucket.yml

@@ -1,0 +1,111 @@
+- name: test copying objects to bucket with ACL disabled
+  block:
+    - name: Create a bucket with ACL disabled for the test
+      s3_bucket:
+        name: "{{ bucket_name }}-acl-disabled"
+        object_ownership: BucketOwnerEnforced
+        state: present
+      register: create_result
+
+    - name: Ensure bucket creation
+      assert:
+        that:
+          - create_result is changed
+          - create_result is not failed
+          - create_result.object_ownership == "BucketOwnerEnforced"
+
+    - name: Create content
+      set_fact:
+          content: "{{ lookup('password', '/dev/null chars=ascii_letters,digits,hexdigits,punctuation') }}"
+
+    - name: Create local acl_disabled_upload_test.txt
+      copy:
+        content: "{{ content }}"
+        dest: "{{ remote_tmp_dir }}/acl_disabled_upload_test.txt"
+
+    - name: Upload a file to the bucket (check_mode)
+      amazon.aws.s3_object:
+        bucket: "{{ bucket_name }}-acl-disabled"
+        src: "{{ remote_tmp_dir }}/acl_disabled_upload_test.txt"
+        object: "acl_disabled_upload_test.txt"
+        mode: put
+      check_mode: true
+      register: upload_file_result
+
+    - assert:
+        that:
+          - upload_file_result is changed
+          - upload_file_result is not failed
+          - upload_file_result.msg == "PUT operation skipped - running in check mode"
+          - '"s3:PutObject" not in upload_file_result.resource_actions'
+
+    - name: Upload a file to the bucket
+      amazon.aws.s3_object:
+        bucket: "{{ bucket_name }}-acl-disabled"
+        src: "{{ remote_tmp_dir }}/acl_disabled_upload_test.txt"
+        object: "acl_disabled_upload_test.txt"
+        mode: put
+      register: upload_file_result
+
+    - assert:
+        that:
+          - upload_file_result is changed
+          - upload_file_result is not failed
+          - upload_file_result.msg == "PUT operation complete"
+          - '"s3:PutObject" in upload_file_result.resource_actions'
+
+    - name: Upload a file to the bucket (check_mode - idempotency)
+      amazon.aws.s3_object:
+        bucket: "{{ bucket_name }}-acl-disabled"
+        src: "{{ remote_tmp_dir }}/acl_disabled_upload_test.txt"
+        object: "acl_disabled_upload_test.txt"
+        mode: put
+      check_mode: true
+      register: upload_file_result
+
+    - assert:
+        that:
+          - upload_file_result is not changed
+          - upload_file_result is not failed
+          - upload_file_result.msg != "PUT operation complete"
+          - '"s3:PutObject" not in upload_file_result.resource_actions'
+
+    - name: Upload a file to the bucket (idempotency)
+      amazon.aws.s3_object:
+        bucket: "{{ bucket_name }}-acl-disabled"
+        src: "{{ remote_tmp_dir }}/acl_disabled_upload_test.txt"
+        object: "acl_disabled_upload_test.txt"
+        mode: put
+      register: upload_file_result
+
+    - assert:
+        that:
+          - upload_file_result is not changed
+          - upload_file_result is not failed
+          - upload_file_result.msg != "PUT operation complete"
+          - '"s3:PutObject" not in upload_file_result.resource_actions'
+
+  always:
+
+    - name: Delete the file in the bucket
+      amazon.aws.s3_object:
+        bucket: "{{ bucket_name }}-acl-disabled"
+        src: "{{ remote_tmp_dir }}/acl_disabled_upload_test.txt"
+        object: "acl_disabled_upload_test.txt"
+        mode: delobj
+      retries: 3
+      delay: 3
+      ignore_errors: true
+
+    - name: Delete bucket created in this test
+      s3_bucket:
+        name: "{{ bucket_name }}-acl-disabled"
+        object_ownership: BucketOwnerEnforced
+        state: absent
+      register: delete_result
+
+    - name: Ensure bucket deletion
+      assert:
+        that:
+          - delete_result is changed
+          - delete_result is not failed
