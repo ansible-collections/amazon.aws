@@ -16,7 +16,7 @@ It gives the EC2 instance details dynamically to manage the AWS infrastructure.
 
 The plugin will also return instances that were created outside of Ansible and allow Ansible to manage them.
 
-To start using the ``aws_ec2`` dynamic inventory plugin with a YAML configuration source, create a file with the accepted filename schema documented for the plugin in question (a YAML configuration file that ends with aws_ec2.(yml|yaml), e.g., demo.aws_ec2.yml), then add ``plugin: amazon.aws.aws_ec2``. Use the fully qualified name if the plugin is in a collection.
+To start using the ``aws_ec2`` dynamic inventory plugin with a YAML configuration source, create a file with the accepted filename schema documented for the plugin (a YAML configuration file that ends with ``aws_ec2.(yml|yaml)``, e.g., ``demo.aws_ec2.yml``), then add ``plugin: amazon.aws.aws_ec2``. Use the fully qualified name if the plugin is in a collection.
 
 .. _ansible_collections.amazon.aws.docsite.using_inventory_plugin:
 
@@ -33,7 +33,8 @@ For environment variables:
     export AWS_ACCESS_KEY_ID='AK123'
     export AWS_SECRET_ACCESS_KEY='abc123'
 
-The ``AWS_SECURITY_TOKEN`` environment variable can also be used, but is only supported for backward compatibility purposes.
+The ``AWS_SECURITY_TOKEN`` environment variable can also be used, but is only supported for backward compatibility.
+The ``AWS_SECURITY_TOKEN`` is a replacement for ``AWS_SESSION_TOKEN`` and it is only needed when you are using temporary credentials.
 
 Or you can set ``aws_access_key``, ``aws_secret_key``, and ``security_token`` inside the inventory configuration file.
 
@@ -50,7 +51,7 @@ Or you can set ``aws_access_key``, ``aws_secret_key``, and ``security_token`` in
 If you use different credentials for different tools or applications, you can use profiles.
 
 The ``profile`` argument is mutually exclusive with the ``aws_access_key``, ``aws_secret_key`` and ``security_token`` options.
-When no credentials are explicitly provided the AWS SDK (boto3) that Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``).
+When no credentials are explicitly provided then the AWS SDK (boto3) which Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``).
 The shared credentials file has a default location of ``~/.aws/credentials``.
 You can change the location of the shared credentials file by setting the ``AWS_SHARED_CREDENTIALS_FILE`` environment variable.
 
@@ -71,12 +72,15 @@ You can also set your AWS profile as an ENV variable:
 
     export AWS_PROFILE='test-profile'
 
-If your Ansible controller is running inside the AWS environment, you can attach an EC2 instance role with the required AWS EC2 permissions.
-You should still provide AWS credentials with enough privilege to perform the AssumeRole action.
-If no credentials have been found by any of the providers above, boto3 will try to load credentials from the instance metadata service.
-Boto3 will automatically use IAM role credentials if it does not find credentials in any of the other places listed previously.
-The shared credentials file has a default location of ``~/.aws/credentials``.
 
+If your Ansible controller is running on an EC2 instance with an assigned IAM Role, the credential may be omitted.
+See the documentation for the controller `for more details <https://docs.ansible.com/ansible-tower/latest/html/userguide/inventories.html#ug-source-ec2>`_.
+
+You can also use the ARN of the IAM role to assume to perform the inventory lookup.
+This can be useful for connecting across different accounts, or to limit user access. 
+To do so, you should specify the ``iam_role_arn``.
+You should still provide AWS credentials with enough privilege to perform the AssumeRole action.
+       
 .. code-block:: yaml
 
     # demo.aws_ec2.yml
