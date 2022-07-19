@@ -8,7 +8,7 @@ A dynamic inventory plugin allows users to point at data sources to compile the 
 
 When using Ansible with AWS, inventory file maintenance will be a hectic task as AWS frequently changes IPs, autoscaling instances, and more.
 Once your AWS EC2 hosts are spun up, you'll probably want to talk to them again.
-With a cloud setup, it's best to not maintain a static list of cloud hostnames in text files.
+With a cloud setup, it's best not to maintain a static list of cloud hostnames in text files.
 Rather, the best way to handle this is to use the ``aws_ec2`` dynamic inventory plugin.
 
 The ``aws_ec2`` dynamic inventory plugin makes API calls to AWS to get a list of inventory hosts from Amazon Web Services EC2 in the run time.
