@@ -8,8 +8,6 @@ AWS related modules and plugins supported by the Ansible community are in the [c
 
 This collection has been tested against following Ansible versions: **>=2.9.10**.
 
-For collections that support Ansible 2.9, please ensure you update your `network_os` to use the
-fully qualified collection name (for example, `cisco.ios.ios`).
 Plugins and modules within a collection may be tested with only specific Ansible versions.
 A collection may contain metadata that identifies these versions.
 PEP440 is the schema used to describe the versions of Ansible.
@@ -111,6 +109,15 @@ collections:
   - name: amazon.aws
 ```
 
+A specific version of the collection can be installed by using the `version` keyword in the `requirements.yml` file:
+
+```yaml
+---
+collections:
+  - name: amazon.aws
+    version: 3.1.1
+```
+
 The python module dependencies are not installed by `ansible-galaxy`.  They can
 be manually installed using pip:
 
@@ -121,7 +128,6 @@ or:
     pip install boto3 botocore
 
 ## Using this collection
-
 
 You can either call modules by their Fully Qualified Collection Namespace (FQCN), such as `amazon.aws.ec2_instance`, or you can call modules by their short name if you list the `amazon.aws` collection in the playbook's `collections` keyword:
 
@@ -151,11 +157,12 @@ You can either call modules by their Fully Qualified Collection Namespace (FQCN)
 
 ## Contributing to this collection
 
-We welcome community contributions to this collection. If you find problems, please open an issue or create a PR against the [Amazon AWS collection repository](https://github.com/ansible-collections/amazon.aws). See [Contributing to Ansible-maintained collections](https://docs.ansible.com/ansible/devel/community/contributing_maintained_collections.html#contributing-maintained-collections) for more details.
+We welcome community contributions to this collection. If you find problems, please open an issue or create a PR against the [Amazon AWS collection repository](https://github.com/ansible-collections/amazon.aws).
+See [Contributing to Ansible-maintained collections](https://docs.ansible.com/ansible/devel/community/contributing_maintained_collections.html#contributing-maintained-collections) for more details.
 
 You can also join us on:
 
-- IRC - the ``#ansible-aws`` [irc.libera.chat](https://libera.chat/) channel
+- Libera.Chat IRC - the ``#ansible-aws`` [irc.libera.chat](https://libera.chat/) channel
 
 ### More information about contributing
 
@@ -176,6 +183,7 @@ You can also join us on:
 - [Ansible Collection overview](https://github.com/ansible-collections/overview)
 - [Ansible User guide](https://docs.ansible.com/ansible/latest/user_guide/index.html)
 - [Ansible Developer guide](https://docs.ansible.com/ansible/latest/dev_guide/index.html)
+- [Ansible Collection Developer Guide](https://docs.ansible.com/ansible/devel/dev_guide/developing_collections.html)
 - [Ansible Community code of conduct](https://docs.ansible.com/ansible/latest/community/code_of_conduct.html)
 
 ## Licensing
