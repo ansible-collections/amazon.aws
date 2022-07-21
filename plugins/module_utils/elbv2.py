@@ -22,6 +22,52 @@ from .elb_utils import get_elb_listener
 from .waiters import get_waiter
 
 
+def _simple_forward_config_arn(config, parent_arn):
+    config = deepcopy(config)
+
+    stickiness = config.pop('TargetGroupStickinessConfig', {'Enabled': False})
+    # Stickiness options set, non default value
+    if stickiness != {'Enabled': False}:
+        return False
+
+    target_groups = config.pop('TargetGroups', [])
+
+    # non-default config left over, probably invalid
+    if config:
+        return False
+    # Multiple TGS, not simple
+    if len(target_groups) > 1:
+        return False
+
+    if not target_groups:
+        # with no TGs defined, but an ARN set, this is one of the minimum possible configs
+        return parent_arn or False
+
+    target_group = target_groups[0]
+    # We don't care about the weight with a single TG
+    target_group.pop('Weight', None)
+
+    target_group_arn = target_group.pop('TargetGroupArn', None)
+
+    # non-default config left over
+    if target_group:
+        return False
+
+    # We didn't find an ARN
+    if not (target_group_arn or parent_arn):
+        return False
+
+    # Only one
+    if not parent_arn:
+        return target_group_arn
+    if not target_group_arn:
+        return parent_arn
+
+    if parent_arn != target_group_arn:
+        return False
+
+    return target_group_arn
+
 # ForwardConfig may be optional if we've got a single TargetGroupArn entry
 def _prune_ForwardConfig(action):
     """
@@ -32,21 +78,16 @@ def _prune_ForwardConfig(action):
         return action
     if "ForwardConfig" not in action:
         return action
-    # Where we have multiple TGs, action['TargetGroupArn'] shouldn't be set
-    if "TargetGroupArn" not in action:
-        return action
 
-    # This is the same as having TargetGroupArn set
-    equivalent_action = {
-        'TargetGroupStickinessConfig': {'Enabled': False},
-        'TargetGroups': [{"TargetGroupArn": action["TargetGroupArn"], "Weight": 1}],
-    }
-    if action["ForwardConfig"] != equivalent_action:
+    parent_arn = action.get('TargetGroupArn', None)
+    arn = _simple_forward_config_arn(action["ForwardConfig"], parent_arn)
+    if not arn:
         return action
 
     # Remove the redundant ForwardConfig
     newAction = action.copy()
     del(newAction["ForwardConfig"])
+    newAction["TargetGroupArn"] = arn
     return newAction
 
 
