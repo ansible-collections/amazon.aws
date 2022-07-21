@@ -119,6 +119,9 @@
   community.aws.aws_acm:
     certificate_arn: '{{ cert_arn }}'
     state: absent
+  # AWS doesn't always cleanup the associations properly
+  # https://repost.aws/questions/QU63csgGNEQl2M--xCdy-oxw/cant-delete-certificate-because-there-are-dangling-load-balancer-resources
+  ignore_errors: True
   register: delete_result
 - assert:
     that:
