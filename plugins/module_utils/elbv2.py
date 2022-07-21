@@ -68,6 +68,7 @@ def _simple_forward_config_arn(config, parent_arn):
 
     return target_group_arn
 
+
 # ForwardConfig may be optional if we've got a single TargetGroupArn entry
 def _prune_ForwardConfig(action):
     """

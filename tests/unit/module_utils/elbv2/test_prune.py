@@ -51,11 +51,14 @@ simple_actions = [
     dict(Type='forward', TargetGroupArn=example_arn, ForwardConfig=dict(TargetGroups=[dict(TargetGroupArn=example_arn, Weight=42)])),
     dict(Type='forward', ForwardConfig=dict(TargetGroups=[dict(TargetGroupArn=example_arn, Weight=42)])),
 
-    dict(Type='forward', TargetGroupArn=example_arn, ForwardConfig=dict(TargetGroupStickinessConfig=dict(Enabled=False), TargetGroups=[dict(TargetGroupArn=example_arn)])),
+    dict(Type='forward', TargetGroupArn=example_arn, ForwardConfig=dict(TargetGroupStickinessConfig=dict(Enabled=False),
+                                                                        TargetGroups=[dict(TargetGroupArn=example_arn)])),
     dict(Type='forward', ForwardConfig=dict(TargetGroupStickinessConfig=dict(Enabled=False), TargetGroups=[dict(TargetGroupArn=example_arn)])),
-    dict(Type='forward', TargetGroupArn=example_arn, ForwardConfig=dict(TargetGroupStickinessConfig=dict(Enabled=False), TargetGroups=[dict(TargetGroupArn=example_arn, Weight=1)])),
+    dict(Type='forward', TargetGroupArn=example_arn, ForwardConfig=dict(TargetGroupStickinessConfig=dict(Enabled=False),
+                                                                        TargetGroups=[dict(TargetGroupArn=example_arn, Weight=1)])),
     dict(Type='forward', ForwardConfig=dict(TargetGroupStickinessConfig=dict(Enabled=False), TargetGroups=[dict(TargetGroupArn=example_arn, Weight=1)])),
-    dict(Type='forward', TargetGroupArn=example_arn, ForwardConfig=dict(TargetGroupStickinessConfig=dict(Enabled=False), TargetGroups=[dict(TargetGroupArn=example_arn, Weight=42)])),
+    dict(Type='forward', TargetGroupArn=example_arn, ForwardConfig=dict(TargetGroupStickinessConfig=dict(Enabled=False),
+                                                                        TargetGroups=[dict(TargetGroupArn=example_arn, Weight=42)])),
     dict(Type='forward', ForwardConfig=dict(TargetGroupStickinessConfig=dict(Enabled=False), TargetGroups=[dict(TargetGroupArn=example_arn, Weight=42)])),
 ]
 
@@ -133,7 +136,9 @@ oidc_actions = [
     ),
 ]
 
+
 ####
+
 
 # Original tests
 def test__prune_secret():
@@ -149,7 +154,9 @@ def test__prune_ForwardConfig():
     pruned_config = elbv2._prune_ForwardConfig(one_action_two_tg[0])
     assert pruned_config == one_action_two_tg[0]
 
+
 ####
+
 
 @pytest.mark.parametrize("action", simple_actions)
 def test__prune_ForwardConfig_simplifiable_actions(action):
