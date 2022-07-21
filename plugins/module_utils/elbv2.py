@@ -246,6 +246,8 @@ class ElasticLoadBalancerV2(object):
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 
+        self.wait_for_deletion(self.elb['LoadBalancerArn'])
+
         self.changed = True
 
     def compare_subnets(self):
@@ -293,8 +295,6 @@ class ElasticLoadBalancerV2(object):
             )(LoadBalancerArn=self.elb['LoadBalancerArn'], Subnets=self.subnets)
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
-
-        self.wait_for_deletion(self.elb['LoadBalancerArn'])
 
         self.changed = True
 
