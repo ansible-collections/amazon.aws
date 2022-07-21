@@ -631,6 +631,102 @@ elb_data = {
     }
 }
 
+elbv2_data = {
+    "version": 2,
+    "waiters": {
+        "LoadBalancerAvailable": {
+            "delay": 15,
+            "operation": "DescribeLoadBalancers",
+            "maxAttempts": 40,
+            "acceptors": [
+                {
+                    "state": "success",
+                    "matcher": "pathAll",
+                    "argument": "LoadBalancers[].State.Code",
+                    "expected": "active"
+                },
+                {
+                    "state": "retry",
+                    "matcher": "pathAny",
+                    "argument": "LoadBalancers[].State.Code",
+                    "expected": "provisioning"
+                },
+                {
+                    "state": "retry",
+                    "matcher": "error",
+                    "expected": "LoadBalancerNotFound"
+                }
+            ]
+        },
+        "LoadBalancerIpAddressTypeIpv4": {
+            "delay": 15,
+            "operation": "DescribeLoadBalancers",
+            "maxAttempts": 40,
+            "acceptors": [
+                {
+                    "state": "success",
+                    "matcher": "pathAll",
+                    "argument": "LoadBalancers[].IpAddressType",
+                    "expected": "ipv4"
+                },
+                {
+                    "state": "retry",
+                    "matcher": "pathAny",
+                    "argument": "LoadBalancers[].IpAddressType",
+                    "expected": "dualstack"
+                },
+                {
+                    "state": "failure",
+                    "matcher": "error",
+                    "expected": "LoadBalancerNotFound"
+                }
+            ]
+        },
+        "LoadBalancerIpAddressTypeDualStack": {
+            "delay": 15,
+            "operation": "DescribeLoadBalancers",
+            "maxAttempts": 40,
+            "acceptors": [
+                {
+                    "state": "success",
+                    "matcher": "pathAll",
+                    "argument": "LoadBalancers[].IpAddressType",
+                    "expected": "dualstack"
+                },
+                {
+                    "state": "retry",
+                    "matcher": "pathAny",
+                    "argument": "LoadBalancers[].IpAddressType",
+                    "expected": "ipv4"
+                },
+                {
+                    "state": "failure",
+                    "matcher": "error",
+                    "expected": "LoadBalancerNotFound"
+                }
+            ]
+        },
+        "LoadBalancersDeleted": {
+            "delay": 15,
+            "operation": "DescribeLoadBalancers",
+            "maxAttempts": 40,
+            "acceptors": [
+                {
+                    "state": "retry",
+                    "matcher": "pathAll",
+                    "argument": "LoadBalancers[].State.Code",
+                    "expected": "active"
+                },
+                {
+                    "matcher": "error",
+                    "expected": "LoadBalancerNotFound",
+                    "state": "success"
+                }
+            ]
+        },
+    }
+}
+
 
 rds_data = {
     "version": 2,
@@ -803,6 +899,11 @@ def waf_model(name):
 def eks_model(name):
     eks_models = core_waiter.WaiterModel(waiter_config=_inject_limit_retries(eks_data))
     return eks_models.get_waiter(name)
+
+
+def elbv2_model(name):
+    elbv2_models = core_waiter.WaiterModel(waiter_config=_inject_limit_retries(elbv2_data))
+    return elbv2_models.get_waiter(name)
 
 
 def elb_model(name):
@@ -1036,6 +1137,30 @@ waiters_by_name = {
         elb_model('LoadBalancerDeleted'),
         core_waiter.NormalizedOperationMethod(
             elb.describe_load_balancers
+        )),
+    ('ElasticLoadBalancingv2', 'load_balancer_available'): lambda elbv2: core_waiter.Waiter(
+        'load_balancer_available',
+        elbv2_model('LoadBalancerAvailable'),
+        core_waiter.NormalizedOperationMethod(
+            elbv2.describe_load_balancers
+        )),
+    ('ElasticLoadBalancingv2', 'load_balancer_ip_address_type_ipv4'): lambda elbv2: core_waiter.Waiter(
+        'load_balancer_ip_address_type_ipv4',
+        elbv2_model('LoadBalancerIpAddressTypeIpv4'),
+        core_waiter.NormalizedOperationMethod(
+            elbv2.describe_load_balancers
+        )),
+    ('ElasticLoadBalancingv2', 'load_balancer_ip_address_type_dualstack'): lambda elbv2: core_waiter.Waiter(
+        'load_balancers_ip_address_type_dualstack',
+        elbv2_model('LoadBalancerIpAddressTypeDualStack'),
+        core_waiter.NormalizedOperationMethod(
+            elbv2.describe_load_balancers
+        )),
+    ('ElasticLoadBalancingv2', 'load_balancers_deleted'): lambda elbv2: core_waiter.Waiter(
+        'load_balancers_deleted',
+        elbv2_model('LoadBalancersDeleted'),
+        core_waiter.NormalizedOperationMethod(
+            elbv2.describe_load_balancers
         )),
     ('RDS', 'db_instance_stopped'): lambda rds: core_waiter.Waiter(
         'db_instance_stopped',

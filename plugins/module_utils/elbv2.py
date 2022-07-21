@@ -19,6 +19,7 @@ from .ec2 import get_ec2_security_group_ids_from_names
 from .elb_utils import convert_tg_name_to_arn
 from .elb_utils import get_elb
 from .elb_utils import get_elb_listener
+from .waiters import get_waiter
 
 
 # ForwardConfig may be optional if we've got a single TargetGroupArn entry
@@ -75,22 +76,47 @@ class ElasticLoadBalancerV2(object):
         self.subnet_mappings = module.params.get("subnet_mappings")
         self.subnets = module.params.get("subnets")
         self.deletion_protection = module.params.get("deletion_protection")
+        self.elb_ip_addr_type = module.params.get("ip_address_type")
         self.wait = module.params.get("wait")
 
         if module.params.get("tags") is not None:
             self.tags = ansible_dict_to_boto3_tag_list(module.params.get("tags"))
         else:
             self.tags = None
+
         self.purge_tags = module.params.get("purge_tags")
 
         self.elb = get_elb(connection, module, self.name)
         if self.elb is not None:
             self.elb_attributes = self.get_elb_attributes()
-            self.elb['tags'] = self.get_elb_tags()
             self.elb_ip_addr_type = self.get_elb_ip_address_type()
+            self.elb['tags'] = self.get_elb_tags()
         else:
             self.elb_attributes = None
-            self.elb_ip_addr_type = None
+
+    def wait_for_ip_type(self, elb_arn, ip_type):
+        """
+        Wait for load balancer to reach 'active' status
+
+        :param elb_arn: The load balancer ARN
+        :return:
+        """
+
+        if not self.wait:
+            return
+
+        waiter_names = {
+            'ipv4': 'load_balancer_ip_address_type_ipv4',
+            'dualstack': 'load_balancer_ip_address_type_dualstack',
+        }
+        if ip_type not in waiter_names:
+            return
+
+        try:
+            waiter = get_waiter(self.connection, waiter_names.get(ip_type))
+            waiter.wait(LoadBalancerArns=[elb_arn])
+        except (BotoCoreError, ClientError) as e:
+            self.module.fail_json_aws(e)
 
     def wait_for_status(self, elb_arn):
         """
@@ -100,8 +126,28 @@ class ElasticLoadBalancerV2(object):
         :return:
         """
 
+        if not self.wait:
+            return
+
         try:
-            waiter = self.connection.get_waiter('load_balancer_available')
+            waiter = get_waiter(self.connection, 'load_balancer_available')
+            waiter.wait(LoadBalancerArns=[elb_arn])
+        except (BotoCoreError, ClientError) as e:
+            self.module.fail_json_aws(e)
+
+    def wait_for_deletion(self, elb_arn):
+        """
+        Wait for load balancer to reach 'active' status
+
+        :param elb_arn: The load balancer ARN
+        :return:
+        """
+
+        if not self.wait:
+            return
+
+        try:
+            waiter = get_waiter(self.connection, 'load_balancers_deleted')
             waiter.wait(LoadBalancerArns=[elb_arn])
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
@@ -248,6 +294,8 @@ class ElasticLoadBalancerV2(object):
         except (BotoCoreError, ClientError) as e:
             self.module.fail_json_aws(e)
 
+        self.wait_for_deletion(self.elb['LoadBalancerArn'])
+
         self.changed = True
 
     def update(self):
@@ -264,15 +312,57 @@ class ElasticLoadBalancerV2(object):
         Modify ELB ip address type
         :return:
         """
-        if self.elb_ip_addr_type != ip_addr_type:
-            try:
-                AWSRetry.jittered_backoff()(
-                    self.connection.set_ip_address_type
-                )(LoadBalancerArn=self.elb['LoadBalancerArn'], IpAddressType=ip_addr_type)
-            except (BotoCoreError, ClientError) as e:
-                self.module.fail_json_aws(e)
+        if ip_addr_type is None:
+            return
+        if self.elb_ip_addr_type == ip_addr_type:
+            return
 
+        try:
+            AWSRetry.jittered_backoff()(
+                self.connection.set_ip_address_type
+            )(LoadBalancerArn=self.elb['LoadBalancerArn'], IpAddressType=ip_addr_type)
+        except (BotoCoreError, ClientError) as e:
+            self.module.fail_json_aws(e)
+
+        self.changed = True
+        self.wait_for_ip_type(self.elb['LoadBalancerArn'], ip_addr_type)
+
+    def _elb_create_params(self):
+        # Required parameters
+        params = dict()
+        params['Name'] = self.name
+        params['Type'] = self.type
+
+        # Other parameters
+        if self.elb_ip_addr_type is not None:
+            params['IpAddressType'] = self.elb_ip_addr_type
+        if self.subnets is not None:
+            params['Subnets'] = self.subnets
+        if self.subnet_mappings is not None:
+            params['SubnetMappings'] = self.subnet_mappings
+        if self.tags:
+            params['Tags'] = self.tags
+        # Scheme isn't supported for GatewayLBs, so we won't add it here, even though we don't
+        # support them yet.
+
+        return params
+
+    def create_elb(self):
+        """
+        Create a load balancer
+        :return:
+        """
+
+        params = self._elb_create_params()
+
+        try:
+            self.elb = AWSRetry.jittered_backoff()(self.connection.create_load_balancer)(**params)['LoadBalancers'][0]
             self.changed = True
+            self.new_load_balancer = True
+        except (BotoCoreError, ClientError) as e:
+            self.module.fail_json_aws(e)
+
+        self.wait_for_status(self.elb['LoadBalancerArn'])
 
 
 class ApplicationLoadBalancer(ElasticLoadBalancerV2):
@@ -314,37 +404,14 @@ class ApplicationLoadBalancer(ElasticLoadBalancerV2):
         if self.elb is not None and self.elb['Type'] != 'application':
             self.module.fail_json(msg="The load balancer type you are trying to manage is not application. Try elb_network_lb module instead.")
 
-    def create_elb(self):
-        """
-        Create a load balancer
-        :return:
-        """
+    def _elb_create_params(self):
+        params = super()._elb_create_params()
 
-        # Required parameters
-        params = dict()
-        params['Name'] = self.name
-        params['Type'] = self.type
-
-        # Other parameters
-        if self.subnets is not None:
-            params['Subnets'] = self.subnets
-        if self.subnet_mappings is not None:
-            params['SubnetMappings'] = self.subnet_mappings
         if self.security_groups is not None:
             params['SecurityGroups'] = self.security_groups
         params['Scheme'] = self.scheme
-        if self.tags:
-            params['Tags'] = self.tags
 
-        try:
-            self.elb = AWSRetry.jittered_backoff()(self.connection.create_load_balancer)(**params)['LoadBalancers'][0]
-            self.changed = True
-            self.new_load_balancer = True
-        except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws(e)
-
-        if self.wait:
-            self.wait_for_status(self.elb['LoadBalancerArn'])
+        return params
 
     def compare_elb_attributes(self):
         """
@@ -485,35 +552,12 @@ class NetworkLoadBalancer(ElasticLoadBalancerV2):
         if self.elb is not None and self.elb['Type'] != 'network':
             self.module.fail_json(msg="The load balancer type you are trying to manage is not network. Try elb_application_lb module instead.")
 
-    def create_elb(self):
-        """
-        Create a load balancer
-        :return:
-        """
+    def _elb_create_params(self):
+        params = super()._elb_create_params()
 
-        # Required parameters
-        params = dict()
-        params['Name'] = self.name
-        params['Type'] = self.type
-
-        # Other parameters
-        if self.subnets is not None:
-            params['Subnets'] = self.subnets
-        if self.subnet_mappings is not None:
-            params['SubnetMappings'] = self.subnet_mappings
         params['Scheme'] = self.scheme
-        if self.tags:
-            params['Tags'] = self.tags
 
-        try:
-            self.elb = AWSRetry.jittered_backoff()(self.connection.create_load_balancer)(**params)['LoadBalancers'][0]
-            self.changed = True
-            self.new_load_balancer = True
-        except (BotoCoreError, ClientError) as e:
-            self.module.fail_json_aws(e)
-
-        if self.wait:
-            self.wait_for_status(self.elb['LoadBalancerArn'])
+        return params
 
     def modify_elb_attributes(self):
         """
