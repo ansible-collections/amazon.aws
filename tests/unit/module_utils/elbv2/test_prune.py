@@ -59,6 +59,44 @@ simple_actions = [
     dict(Type='forward', ForwardConfig=dict(TargetGroupStickinessConfig=dict(Enabled=False), TargetGroups=[dict(TargetGroupArn=example_arn, Weight=42)])),
 ]
 
+# Test that _prune_ForwardConfig() doesn't mangle things we don't expect
+complex_actions = [
+    # Non-Forwarding
+    dict(
+        Type='authenticate-oidc', TargetGroupArn=example_arn,
+        AuthenticateOidcConfig=dict(
+            Issuer='https://idp.ansible.test/oidc-config',
+            AuthorizationEndpoint='https://idp.ansible.test/authz',
+            TokenEndpoint='https://idp.ansible.test/token',
+            UserInfoEndpoint='https://idp.ansible.test/user',
+            ClientId='ExampleClient',
+            UseExistingClientSecret=False,
+        ),
+    ),
+    dict(
+        Type='redirect',
+        RedirectConfig=dict(Protocol='HTTPS', Port=443, Host='redirect.ansible.test', Path='/', StatusCode='HTTP_302'),
+    ),
+    # Multiple TGs
+    dict(
+        TargetGroupArn=example_arn, Type='forward',
+        ForwardConfig=dict(
+            TargetGroupStickinessConfig=dict(Enabled=False),
+            TargetGroups=[
+                dict(TargetGroupArn=example_arn, Weight=1),
+                dict(TargetGroupArn=example_arn2, Weight=1),
+            ]
+        ),
+    ),
+    # Sticky-Sessions
+    dict(
+        Type='forward', TargetGroupArn=example_arn,
+        ForwardConfig=dict(
+            TargetGroupStickinessConfig=dict(Enabled=True, DurationSeconds=3600),
+            TargetGroups=[dict(TargetGroupArn=example_arn)]
+        )
+    ),
+]
 
 def test_prune_secret():
     assert elbv2._prune_secret(one_action[0]) == one_action[0]
@@ -76,6 +114,12 @@ def test__prune_ForwardConfig():
 
 
 @pytest.mark.parametrize("action", simple_actions)
-def test_simpliifable_actions(action):
+def test__prune_ForwardConfig_simplifiable_actions(action):
     pruned_config = elbv2._prune_ForwardConfig(action)
     assert pruned_config == simplified_action
+
+
+@pytest.mark.parametrize("action", complex_actions)
+def test__prune_ForwardConfig_non_simplifiable_actions(action):
+    pruned_config = elbv2._prune_ForwardConfig(action)
+    assert pruned_config == action
