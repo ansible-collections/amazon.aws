@@ -95,8 +95,13 @@ def _prune_ForwardConfig(action):
 # or the module will always see the new and current actions as different
 # and try to apply the same config
 def _prune_secret(action):
-    if action['Type'] == 'authenticate-oidc':
-        action['AuthenticateOidcConfig'].pop('ClientSecret')
+    if action['Type'] != 'authenticate-oidc':
+        return action
+
+    action['AuthenticateOidcConfig'].pop('ClientSecret', None)
+    if action['AuthenticateOidcConfig'].get('UseExistingClientSecret', False):
+        action['AuthenticateOidcConfig'].pop('UseExistingClientSecret')
+
     return action
 
 

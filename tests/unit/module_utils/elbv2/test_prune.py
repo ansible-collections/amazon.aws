@@ -98,11 +98,48 @@ complex_actions = [
     ),
 ]
 
-def test_prune_secret():
+simplified_oidc_action = dict(
+    Type='authenticate-oidc', TargetGroupArn=example_arn,
+    AuthenticateOidcConfig=dict(
+        Issuer='https://idp.ansible.test/oidc-config',
+        AuthorizationEndpoint='https://idp.ansible.test/authz',
+        TokenEndpoint='https://idp.ansible.test/token',
+        UserInfoEndpoint='https://idp.ansible.test/user',
+        ClientId='ExampleClient',
+    ),
+)
+oidc_actions = [
+    dict(
+        Type='authenticate-oidc', TargetGroupArn=example_arn,
+        AuthenticateOidcConfig=dict(
+            Issuer='https://idp.ansible.test/oidc-config',
+            AuthorizationEndpoint='https://idp.ansible.test/authz',
+            TokenEndpoint='https://idp.ansible.test/token',
+            UserInfoEndpoint='https://idp.ansible.test/user',
+            ClientId='ExampleClient',
+            UseExistingClientSecret=True,
+        ),
+    ),
+    dict(
+        Type='authenticate-oidc', TargetGroupArn=example_arn,
+        AuthenticateOidcConfig=dict(
+            Issuer='https://idp.ansible.test/oidc-config',
+            AuthorizationEndpoint='https://idp.ansible.test/authz',
+            TokenEndpoint='https://idp.ansible.test/token',
+            UserInfoEndpoint='https://idp.ansible.test/user',
+            ClientId='ExampleClient',
+            ClientSecret='MyVerySecretString',
+        ),
+    ),
+]
+
+####
+
+# Original tests
+def test__prune_secret():
     assert elbv2._prune_secret(one_action[0]) == one_action[0]
 
 
-# Original tests
 def test__prune_ForwardConfig():
     expectation = {"TargetGroupArn": example_arn, "Type": "forward"}
     pruned_config = elbv2._prune_ForwardConfig(one_action[0])
@@ -112,6 +149,7 @@ def test__prune_ForwardConfig():
     pruned_config = elbv2._prune_ForwardConfig(one_action_two_tg[0])
     assert pruned_config == one_action_two_tg[0]
 
+####
 
 @pytest.mark.parametrize("action", simple_actions)
 def test__prune_ForwardConfig_simplifiable_actions(action):
@@ -122,4 +160,16 @@ def test__prune_ForwardConfig_simplifiable_actions(action):
 @pytest.mark.parametrize("action", complex_actions)
 def test__prune_ForwardConfig_non_simplifiable_actions(action):
     pruned_config = elbv2._prune_ForwardConfig(action)
+    assert pruned_config == action
+
+
+@pytest.mark.parametrize("action", oidc_actions)
+def test__prune_secret_simplifiable_actions(action):
+    pruned_config = elbv2._prune_secret(action)
+    assert pruned_config == simplified_oidc_action
+
+
+@pytest.mark.parametrize("action", complex_actions)
+def test__prune_secret_non_simplifiable_actions(action):
+    pruned_config = elbv2._prune_secret(action)
     assert pruned_config == action
