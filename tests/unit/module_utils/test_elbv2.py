@@ -47,20 +47,6 @@ one_action_two_tg = [
 ]
 
 
-def test__prune_ForwardConfig():
-    expectation = {
-        "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:966509639900:targetgroup/my-tg-58045486/5b231e04f663ae21",
-        "Type": "forward",
-    }
-    assert elbv2._prune_ForwardConfig(one_action[0]) == expectation
-    # https://github.com/ansible-collections/community.aws/issues/1089
-    assert elbv2._prune_ForwardConfig(one_action_two_tg[0]) == one_action_two_tg[0]
-
-
-def _prune_secret():
-    assert elbv2._prune_secret(one_action[0]) == one_action[0]
-
-
 def _sort_actions_one_entry():
     assert elbv2._sort_actions(one_action) == one_action
 
