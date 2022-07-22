@@ -64,8 +64,14 @@ options:
                     description: The type of action.
                     type: str
                 TargetGroupArn:
-                    description: The Amazon Resource Name (ARN) of the target group.
+                    description:
+                      - The Amazon Resource Name (ARN) of the target group.
+                      - Mutually exclusive with I(TargetGroupName).
                     type: str
+                TargetGroupName:
+                    description:
+                      - The name of the target group.
+                      - Mutually exclusive with I(TargetGroupArn).
   name:
     description:
       - The name of the load balancer. This name must be unique within your AWS account, can have a maximum of 32 characters, must contain only alphanumeric

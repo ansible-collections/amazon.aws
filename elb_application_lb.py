@@ -122,8 +122,14 @@ options:
                     description: The type of action.
                     type: str
                 TargetGroupArn:
-                    description: The Amazon Resource Name (ARN) of the target group.
+                    description:
+                      - The Amazon Resource Name (ARN) of the target group.
+                      - Mutually exclusive with I(TargetGroupName).
                     type: str
+                TargetGroupName:
+                    description:
+                      - The name of the target group.
+                      - Mutually exclusive with I(TargetGroupArn).
         Rules:
             type: list
             elements: dict
