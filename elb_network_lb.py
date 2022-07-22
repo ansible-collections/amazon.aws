@@ -189,138 +189,144 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
-availability_zones:
-    description: The Availability Zones for the load balancer.
+load_balancer:
+    description: A representation of the Network Load Balancer
     returned: when state is present
-    type: list
-    sample: "[{'subnet_id': 'subnet-aabbccddff', 'zone_name': 'ap-southeast-2a', 'load_balancer_addresses': []}]"
-canonical_hosted_zone_id:
-    description: The ID of the Amazon Route 53 hosted zone associated with the load balancer.
-    returned: when state is present
-    type: str
-    sample: ABCDEF12345678
-created_time:
-    description: The date and time the load balancer was created.
-    returned: when state is present
-    type: str
-    sample: "2015-02-12T02:14:02+00:00"
-deletion_protection_enabled:
-    description: Indicates whether deletion protection is enabled.
-    returned: when state is present
-    type: str
-    sample: true
-dns_name:
-    description: The public DNS name of the load balancer.
-    returned: when state is present
-    type: str
-    sample: internal-my-elb-123456789.ap-southeast-2.elb.amazonaws.com
-idle_timeout_timeout_seconds:
-    description: The idle timeout value, in seconds.
-    returned: when state is present
-    type: str
-    sample: 60
-ip_address_type:
-    description:  The type of IP addresses used by the subnets for the load balancer.
-    returned: when state is present
-    type: str
-    sample: ipv4
-listeners:
-    description: Information about the listeners.
-    returned: when state is present
-    type: complex
+    type: dict
+    version_added: 5.0.0
     contains:
-        listener_arn:
-            description: The Amazon Resource Name (ARN) of the listener.
+        availability_zones:
+            description: The Availability Zones for the load balancer.
+            returned: when state is present
+            type: list
+            sample: "[{'subnet_id': 'subnet-aabbccddff', 'zone_name': 'ap-southeast-2a', 'load_balancer_addresses': []}]"
+        canonical_hosted_zone_id:
+            description: The ID of the Amazon Route 53 hosted zone associated with the load balancer.
             returned: when state is present
             type: str
-            sample: ""
+            sample: ABCDEF12345678
+        created_time:
+            description: The date and time the load balancer was created.
+            returned: when state is present
+            type: str
+            sample: "2015-02-12T02:14:02+00:00"
+        deletion_protection_enabled:
+            description: Indicates whether deletion protection is enabled.
+            returned: when state is present
+            type: str
+            sample: true
+        dns_name:
+            description: The public DNS name of the load balancer.
+            returned: when state is present
+            type: str
+            sample: internal-my-elb-123456789.ap-southeast-2.elb.amazonaws.com
+        idle_timeout_timeout_seconds:
+            description: The idle timeout value, in seconds.
+            returned: when state is present
+            type: str
+            sample: 60
+        ip_address_type:
+            description:  The type of IP addresses used by the subnets for the load balancer.
+            returned: when state is present
+            type: str
+            sample: ipv4
+        listeners:
+            description: Information about the listeners.
+            returned: when state is present
+            type: complex
+            contains:
+                listener_arn:
+                    description: The Amazon Resource Name (ARN) of the listener.
+                    returned: when state is present
+                    type: str
+                    sample: ""
+                load_balancer_arn:
+                    description: The Amazon Resource Name (ARN) of the load balancer.
+                    returned: when state is present
+                    type: str
+                    sample: ""
+                port:
+                    description: The port on which the load balancer is listening.
+                    returned: when state is present
+                    type: int
+                    sample: 80
+                protocol:
+                    description: The protocol for connections from clients to the load balancer.
+                    returned: when state is present
+                    type: str
+                    sample: HTTPS
+                certificates:
+                    description: The SSL server certificate.
+                    returned: when state is present
+                    type: complex
+                    contains:
+                        certificate_arn:
+                            description: The Amazon Resource Name (ARN) of the certificate.
+                            returned: when state is present
+                            type: str
+                            sample: ""
+                ssl_policy:
+                    description: The security policy that defines which ciphers and protocols are supported.
+                    returned: when state is present
+                    type: str
+                    sample: ""
+                default_actions:
+                    description: The default actions for the listener.
+                    returned: when state is present
+                    type: str
+                    contains:
+                        type:
+                            description: The type of action.
+                            returned: when state is present
+                            type: str
+                            sample: ""
+                        target_group_arn:
+                            description: The Amazon Resource Name (ARN) of the target group.
+                            returned: when state is present
+                            type: str
+                            sample: ""
         load_balancer_arn:
             description: The Amazon Resource Name (ARN) of the load balancer.
             returned: when state is present
             type: str
-            sample: ""
-        port:
-            description: The port on which the load balancer is listening.
-            returned: when state is present
-            type: int
-            sample: 80
-        protocol:
-            description: The protocol for connections from clients to the load balancer.
+            sample: arn:aws:elasticloadbalancing:ap-southeast-2:0123456789:loadbalancer/app/my-elb/001122334455
+        load_balancer_name:
+            description: The name of the load balancer.
             returned: when state is present
             type: str
-            sample: HTTPS
-        certificates:
-            description: The SSL server certificate.
-            returned: when state is present
-            type: complex
-            contains:
-                certificate_arn:
-                    description: The Amazon Resource Name (ARN) of the certificate.
-                    returned: when state is present
-                    type: str
-                    sample: ""
-        ssl_policy:
-            description: The security policy that defines which ciphers and protocols are supported.
+            sample: my-elb
+        load_balancing_cross_zone_enabled:
+            description: Indicates whether cross-zone load balancing is enabled.
             returned: when state is present
             type: str
-            sample: ""
-        default_actions:
-            description: The default actions for the listener.
+            sample: true
+        scheme:
+            description: Internet-facing or internal load balancer.
             returned: when state is present
             type: str
-            contains:
-                type:
-                    description: The type of action.
-                    returned: when state is present
-                    type: str
-                    sample: ""
-                target_group_arn:
-                    description: The Amazon Resource Name (ARN) of the target group.
-                    returned: when state is present
-                    type: str
-                    sample: ""
-load_balancer_arn:
-    description: The Amazon Resource Name (ARN) of the load balancer.
-    returned: when state is present
-    type: str
-    sample: arn:aws:elasticloadbalancing:ap-southeast-2:0123456789:loadbalancer/app/my-elb/001122334455
-load_balancer_name:
-    description: The name of the load balancer.
-    returned: when state is present
-    type: str
-    sample: my-elb
-load_balancing_cross_zone_enabled:
-    description: Indicates whether cross-zone load balancing is enabled.
-    returned: when state is present
-    type: str
-    sample: true
-scheme:
-    description: Internet-facing or internal load balancer.
-    returned: when state is present
-    type: str
-    sample: internal
-state:
-    description: The state of the load balancer.
-    returned: when state is present
-    type: dict
-    sample: "{'code': 'active'}"
-tags:
-    description: The tags attached to the load balancer.
-    returned: when state is present
-    type: dict
-    sample: "{
-        'Tag': 'Example'
-    }"
-type:
-    description: The type of load balancer.
-    returned: when state is present
-    type: str
-    sample: network
-vpc_id:
-    description: The ID of the VPC for the load balancer.
-    returned: when state is present
-    type: str
-    sample: vpc-0011223344
+            sample: internal
+        state:
+            description: The state of the load balancer.
+            returned: when state is present
+            type: dict
+            sample: "{'code': 'active'}"
+        tags:
+            description: The tags attached to the load balancer.
+            returned: when state is present
+            type: dict
+            sample: "{
+                'Tag': 'Example'
+            }"
+        type:
+            description: The type of load balancer.
+            returned: when state is present
+            type: str
+            sample: network
+        vpc_id:
+            description: The ID of the VPC for the load balancer.
+            returned: when state is present
+            type: str
+            sample: vpc-0011223344
 '''
 
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
@@ -385,18 +391,17 @@ def create_or_update_elb(elb_obj):
     if listeners_obj.changed:
         elb_obj.changed = True
 
-    # Get the ELB again
-    elb_obj.update()
-
-    # Get the ELB listeners again
-    listeners_obj.update()
-
-    # Update the ELB attributes
-    elb_obj.update_elb_attributes()
-
     # Update ELB ip address type only if option has been provided
     if elb_obj.module.params.get('ip_address_type') is not None:
         elb_obj.modify_ip_address_type(elb_obj.module.params.get('ip_address_type'))
+
+    # Update the objects to pickup changes
+    # Get the ELB again
+    elb_obj.update()
+    # Get the ELB listeners again
+    listeners_obj.update()
+    # Update the ELB attributes
+    elb_obj.update_elb_attributes()
 
     # Convert to snake_case and merge in everything we want to return to the user
     snaked_elb = camel_dict_to_snake_dict(elb_obj.elb)
@@ -411,7 +416,10 @@ def create_or_update_elb(elb_obj):
     # ip address type
     snaked_elb['ip_address_type'] = elb_obj.get_elb_ip_address_type()
 
-    elb_obj.module.exit_json(changed=elb_obj.changed, **snaked_elb)
+    elb_obj.module.exit_json(
+        changed=elb_obj.changed,
+        load_balancer=snaked_elb,
+        **snaked_elb)
 
 
 def delete_elb(elb_obj):
