@@ -8,11 +8,12 @@ __metaclass__ = type
 
 DOCUMENTATION = '''
 module: aws_region_info
-short_description: Gather information about AWS regions.
+short_description: Gather information about AWS regions
 version_added: 1.0.0
 description:
-    - Gather information about AWS regions.
-author: 'Henrique Rodrigues (@Sodki)'
+  - Gather information about AWS regions.
+author:
+  - 'Henrique Rodrigues (@Sodki)'
 options:
   filters:
     description:
@@ -25,8 +26,8 @@ options:
     default: {}
     type: dict
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
