@@ -477,7 +477,7 @@ class Ec2Metadata(object):
             if info.get('status') not in (200, 404):
                 # fail out now
                 self.module.fail_json(msg='Failed to retrieve metadata from AWS: {0}'.format(info['msg']), response=info)
-        if response:
+        if response and info['status'] < 400:
             data = response.read()
         else:
             data = None
