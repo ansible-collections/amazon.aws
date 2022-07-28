@@ -148,6 +148,9 @@ def create_log_group(client, log_group_name, kms_key_id, tags, retention, module
     if tags:
         request['tags'] = tags
 
+    if module.check_mode:
+        module.exit_json(changed=True, msg="Would have created log group if not in check_mode.")
+
     try:
         client.create_log_group(**request)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -180,6 +183,9 @@ def input_retention_policy(client, log_group_name, retention, module):
 
 
 def delete_retention_policy(client, log_group_name, module):
+    if module.check_mode:
+        return True
+
     try:
         client.delete_retention_policy(logGroupName=log_group_name)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
@@ -187,6 +193,9 @@ def delete_retention_policy(client, log_group_name, module):
 
 
 def delete_log_group(client, log_group_name, module):
+    if module.check_mode:
+        module.exit_json(changed=True, msg="Would have deleted log group if not in check_mode.")
+
     try:
         client.delete_log_group(logGroupName=log_group_name)
     except is_boto3_error_code('ResourceNotFoundException'):
@@ -265,7 +274,7 @@ def main():
     )
 
     mutually_exclusive = [['retention', 'purge_retention_policy'], ['purge_retention_policy', 'overwrite']]
-    module = AnsibleAWSModule(argument_spec=argument_spec, mutually_exclusive=mutually_exclusive)
+    module = AnsibleAWSModule(supports_check_mode=True, argument_spec=argument_spec, mutually_exclusive=mutually_exclusive)
 
     try:
         logs = module.client('logs')

@@ -34,16 +34,19 @@
       log_group_name: '{{ log_group_name }}'
   block:
 
-#  - name: test adding tags to cloudwatchlogs_log_group (check mode)
-#    cloudwatchlogs_log_group:
-#      tags: '{{ first_tags }}'
-#      purge_tags: True
-#    register: update_result
-#    check_mode: yes
-#  - name: assert that update succeeded
-#    assert:
-#      that:
-#      - update_result is changed
+  - name: test adding tags to cloudwatchlogs_log_group (check_mode)
+    cloudwatchlogs_log_group:
+      tags: '{{ first_tags }}'
+      purge_tags: True
+    check_mode: true
+    register: update_result
+
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
+      - '"logs:UntagLogGroup" not in update_result'
+      - '"logs:TagLogGroup" not in update_result'
 
   - name: test adding tags to cloudwatchlogs_log_group
     cloudwatchlogs_log_group:
@@ -56,16 +59,19 @@
       - update_result is changed
       - update_result.log_groups[0].tags == first_tags
 
-#  - name: test adding tags to cloudwatchlogs_log_group - idempotency (check mode)
-#    cloudwatchlogs_log_group:
-#      tags: '{{ first_tags }}'
-#      purge_tags: True
-#    register: update_result
-#    check_mode: yes
-#  - name: assert that update succeeded
-#    assert:
-#      that:
-#      - update_result is not changed
+  - name: test adding tags to cloudwatchlogs_log_group - idempotency (check mode)
+    cloudwatchlogs_log_group:
+      tags: '{{ first_tags }}'
+      purge_tags: True
+    check_mode: true
+    register: update_result
+
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
+      - '"logs:UntagLogGroup" not in update_result'
+      - '"logs:TagLogGroup" not in update_result'
 
   - name: test adding tags to cloudwatchlogs_log_group - idempotency
     cloudwatchlogs_log_group:
@@ -80,16 +86,19 @@
 
   ###
 
-#  - name: test updating tags with purge on cloudwatchlogs_log_group (check mode)
-#    cloudwatchlogs_log_group:
-#      tags: '{{ second_tags }}'
-#      purge_tags: True
-#    register: update_result
-#    check_mode: yes
-#  - name: assert that update succeeded
-#    assert:
-#      that:
-#      - update_result is changed
+  - name: test updating tags with purge on cloudwatchlogs_log_group (check mode)
+    cloudwatchlogs_log_group:
+      tags: '{{ second_tags }}'
+      purge_tags: True
+    check_mode: true
+    register: update_result
+
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
+      - '"logs:UntagLogGroup" not in update_result'
+      - '"logs:TagLogGroup" not in update_result'
 
   - name: test updating tags with purge on cloudwatchlogs_log_group
     cloudwatchlogs_log_group:
@@ -102,16 +111,19 @@
       - update_result is changed
       - update_result.log_groups[0].tags == second_tags
 
-#  - name: test updating tags with purge on cloudwatchlogs_log_group - idempotency (check mode)
-#    cloudwatchlogs_log_group:
-#      tags: '{{ second_tags }}'
-#      purge_tags: True
-#    register: update_result
-#    check_mode: yes
-#  - name: assert that update succeeded
-#    assert:
-#      that:
-#      - update_result is not changed
+  - name: test updating tags with purge on cloudwatchlogs_log_group - idempotency (check mode)
+    cloudwatchlogs_log_group:
+      tags: '{{ second_tags }}'
+      purge_tags: True
+    check_mode: true
+    register: update_result
+
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
+      - '"logs:UntagLogGroup" not in update_result'
+      - '"logs:TagLogGroup" not in update_result'
 
   - name: test updating tags with purge on cloudwatchlogs_log_group - idempotency
     cloudwatchlogs_log_group:
@@ -126,16 +138,19 @@
 
   ###
 
-#  - name: test updating tags without purge on cloudwatchlogs_log_group (check mode)
-#    cloudwatchlogs_log_group:
-#      tags: '{{ third_tags }}'
-#      purge_tags: False
-#    register: update_result
-#    check_mode: yes
-#  - name: assert that update succeeded
-#    assert:
-#      that:
-#      - update_result is changed
+  - name: test updating tags without purge on cloudwatchlogs_log_group (check mode)
+    cloudwatchlogs_log_group:
+      tags: '{{ third_tags }}'
+      purge_tags: False
+    check_mode: true
+    register: update_result
+
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
+      - '"logs:UntagLogGroup" not in update_result'
+      - '"logs:TagLogGroup" not in update_result'
 
   - name: test updating tags without purge on cloudwatchlogs_log_group
     cloudwatchlogs_log_group:
@@ -148,16 +163,19 @@
       - update_result is changed
       - update_result.log_groups[0].tags == final_tags
 
-#  - name: test updating tags without purge on cloudwatchlogs_log_group - idempotency (check mode)
-#    cloudwatchlogs_log_group:
-#      tags: '{{ third_tags }}'
-#      purge_tags: False
-#    register: update_result
-#    check_mode: yes
-#  - name: assert that update succeeded
-#    assert:
-#      that:
-#      - update_result is not changed
+  - name: test updating tags without purge on cloudwatchlogs_log_group - idempotency (check mode)
+    cloudwatchlogs_log_group:
+      tags: '{{ third_tags }}'
+      purge_tags: False
+    check_mode: true
+    register: update_result
+
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
+      - '"logs:UntagLogGroup" not in update_result'
+      - '"logs:TagLogGroup" not in update_result'
 
   - name: test updating tags without purge on cloudwatchlogs_log_group - idempotency
     cloudwatchlogs_log_group:
@@ -183,16 +201,16 @@
 
   ###
 
-#  - name: test no tags param cloudwatchlogs_log_group (check mode)
-#    cloudwatchlogs_log_group: {}
-#    register: update_result
-#    check_mode: yes
-#  - name: assert no change
-#    assert:
-#      that:
-#      - update_result is not changed
-#      - update_result.log_groups[0].tags == final_tags
-#
+  - name: test no tags param cloudwatchlogs_log_group (check mode)
+    cloudwatchlogs_log_group: {}
+    check_mode: true
+    register: update_result
+
+  - name: assert no change
+    assert:
+      that:
+      - update_result is not changed
+      - update_result.log_groups[0].tags == final_tags
 
   - name: test no tags param cloudwatchlogs_log_group
     cloudwatchlogs_log_group: {}
@@ -205,16 +223,17 @@
 
   ###
 
-#  - name: test removing tags from cloudwatchlogs_log_group (check mode)
-#    cloudwatchlogs_log_group:
-#      tags: {}
-#      purge_tags: True
-#    register: update_result
-#    check_mode: yes
-#  - name: assert that update succeeded
-#    assert:
-#      that:
-#      - update_result is changed
+  - name: test removing tags from cloudwatchlogs_log_group (check mode)
+    cloudwatchlogs_log_group:
+      tags: {}
+      purge_tags: True
+    check_mode: true
+    register: update_result
+
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is changed
 
   - name: test removing tags from cloudwatchlogs_log_group
     cloudwatchlogs_log_group:
@@ -227,16 +246,16 @@
       - update_result is changed
       - update_result.log_groups[0].tags == {}
 
-#  - name: test removing tags from cloudwatchlogs_log_group - idempotency (check mode)
-#    cloudwatchlogs_log_group:
-#      tags: {}
-#      purge_tags: True
-#    register: update_result
-#    check_mode: yes
-#  - name: assert that update succeeded
-#    assert:
-#      that:
-#      - update_result is not changed
+  - name: test removing tags from cloudwatchlogs_log_group - idempotency (check mode)
+    cloudwatchlogs_log_group:
+      tags: {}
+      purge_tags: True
+    check_mode: true
+    register: update_result
+  - name: assert that update succeeded
+    assert:
+      that:
+      - update_result is not changed
 
   - name: test removing tags from cloudwatchlogs_log_group - idempotency
     cloudwatchlogs_log_group:
