@@ -12,9 +12,9 @@ module: iam_policy
 version_added: 1.0.0
 short_description: Manage inline IAM policies for users, groups, and roles
 description:
-    - Allows uploading or removing inline IAM policies for IAM users, groups or roles.
-    - To administer managed policies please see M(community.aws.iam_user), M(community.aws.iam_role),
-      M(community.aws.iam_group) and M(community.aws.iam_managed_policy)
+  - Allows uploading or removing inline IAM policies for IAM users, groups or roles.
+  - To administer managed policies please see M(community.aws.iam_user), M(community.aws.iam_role),
+    M(community.aws.iam_group) and M(community.aws.iam_managed_policy)
 options:
   iam_type:
     description:
@@ -35,7 +35,6 @@ options:
   policy_json:
     description:
       - A properly json formatted policy as string.
-      - See U(https://github.com/ansible/ansible/issues/7005#issuecomment-42894813) on how to use it properly.
     type: json
   state:
     description:
@@ -54,9 +53,8 @@ author:
   - "Jonathan I. Davila (@defionscode)"
   - "Dennis Podkovyrin (@sbj-ss)"
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
@@ -94,7 +92,7 @@ EXAMPLES = '''
 
 '''
 RETURN = '''
-policies:
+policy_names:
     description: A list of names of the inline policies embedded in the specified IAM resource (user, group, or role).
     returned: always
     type: list
@@ -112,6 +110,7 @@ from ansible.module_utils.six import string_types
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import compare_policies
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_code
 
 
 class PolicyError(Exception):
@@ -130,6 +129,9 @@ class Policy:
         self.check_mode = check_mode
         self.changed = False
 
+        self.original_policies = self.get_all_policies().copy()
+        self.updated_policies = {}
+
     @staticmethod
     def _iam_type():
         return ''
@@ -138,33 +140,48 @@ class Policy:
         return {}
 
     def list(self):
-        return self._list(self.name).get('PolicyNames', [])
+        try:
+            return self._list(self.name).get('PolicyNames', [])
+        except is_boto3_error_code('AccessDenied'):
+            return []
 
     def _get(self, name, policy_name):
         return '{}'
 
     def get(self, policy_name):
-        return self._get(self.name, policy_name)['PolicyDocument']
+        try:
+            return self._get(self.name, policy_name)['PolicyDocument']
+        except is_boto3_error_code('AccessDenied'):
+            return {}
 
     def _put(self, name, policy_name, policy_doc):
         pass
 
     def put(self, policy_doc):
-        if not self.check_mode:
-            self._put(self.name, self.policy_name, json.dumps(policy_doc, sort_keys=True))
         self.changed = True
+
+        if self.check_mode:
+            return
+
+        self._put(self.name, self.policy_name, json.dumps(policy_doc, sort_keys=True))
 
     def _delete(self, name, policy_name):
         pass
 
     def delete(self):
+        self.updated_policies = self.original_policies.copy()
+
         if self.policy_name not in self.list():
             self.changed = False
             return
 
-        if not self.check_mode:
-            self._delete(self.name, self.policy_name)
         self.changed = True
+        self.updated_policies.pop(self.policy_name, None)
+
+        if self.check_mode:
+            return
+
+        self._delete(self.name, self.policy_name)
 
     def get_policy_text(self):
         try:
@@ -181,17 +198,30 @@ class Policy:
             pdoc = self.policy_json
         return pdoc
 
+    def get_all_policies(self):
+        policies = {}
+        for pol in self.list():
+            policies[pol] = self.get(pol)
+        return policies
+
     def create(self):
         matching_policies = []
         policy_doc = self.get_policy_text()
         policy_match = False
         for pol in self.list():
-            if not compare_policies(self.get(pol), policy_doc):
+            if not compare_policies(self.original_policies[pol], policy_doc):
                 matching_policies.append(pol)
                 policy_match = True
 
-        if (self.policy_name not in matching_policies) and not (self.skip_duplicates and policy_match):
-            self.put(policy_doc)
+        self.updated_policies = self.original_policies.copy()
+
+        if self.policy_name in matching_policies:
+            return
+        if self.skip_duplicates and policy_match:
+            return
+
+        self.put(policy_doc)
+        self.updated_policies[self.policy_name] = policy_doc
 
     def run(self):
         if self.state == 'present':
@@ -201,7 +231,12 @@ class Policy:
         return {
             'changed': self.changed,
             self._iam_type() + '_name': self.name,
-            'policies': self.list()
+            'policies': self.list(),
+            'policy_names': self.list(),
+            'diff': dict(
+                before=self.original_policies,
+                after=self.updated_policies,
+            ),
         }
 
 
@@ -299,6 +334,9 @@ def main():
             policy = RolePolicy(**args)
         elif iam_type == 'group':
             policy = GroupPolicy(**args)
+
+        module.deprecate("The 'policies' return key is deprecated and will be replaced by 'policy_names'. Both values are returned for now.",
+                         date='2024-08-01', collection_name='community.aws')
 
         module.exit_json(**(policy.run()))
     except (BotoCoreError, ClientError) as e:
