@@ -15,8 +15,6 @@ description:
   - Gathers various details related to Lambda functions, including aliases, versions and event source mappings.
   - Use module M(community.aws.lambda) to manage the lambda function itself, M(community.aws.lambda_alias) to manage function aliases,
     M(community.aws.lambda_event) to manage lambda event source mappings, and M(community.aws.lambda_policy) to manage policy statements.
-
-
 options:
   query:
     description:
@@ -34,11 +32,11 @@ options:
     description:
       - When I(query=mappings), this is the Amazon Resource Name (ARN) of the Amazon Kinesis or DynamoDB stream.
     type: str
-author: Pierre Jodouin (@pjodouin)
+author:
+  - Pierre Jodouin (@pjodouin)
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
@@ -94,6 +92,12 @@ functions:
             returned: when C(query) is I(aliases) or I(all)
             type: list
             elements: str
+        architectures:
+            description: The architectures supported by the function.
+            returned: successful run where botocore >= 1.21.51
+            type: list
+            elements: str
+            sample: ['arm64']
         code_sha256:
             description: The SHA256 hash of the function's deployment package.
             returned: success

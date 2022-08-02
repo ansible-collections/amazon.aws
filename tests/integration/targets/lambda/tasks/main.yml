@@ -110,6 +110,9 @@
       handler: '{{ lambda_python_handler }}'
       role: '{{ lambda_role_name }}'
       zip_file: '{{ zip_res.dest }}'
+      architecture: arm64
+    vars:
+      ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
     register: result
     check_mode: yes
   - name: assert lambda upload succeeded
@@ -124,12 +127,16 @@
       handler: '{{ lambda_python_handler }}'
       role: '{{ lambda_role_name }}'
       zip_file: '{{ zip_res.dest }}'
+      architecture: arm64
+    vars:
+      ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
     register: result
   - name: assert lambda upload succeeded
     assert:
       that:
       - result.changed
       - result.configuration.tracing_config.mode == "PassThrough"
+      - result.configuration.architectures == ['arm64']
 
   - include_tasks: 'tagging.yml'
 
@@ -260,6 +267,8 @@
       query: all
     register: lambda_infos_all
     check_mode: yes
+    vars:
+      ansible_python_interpreter: "{{ botocore_virtualenv_interpreter }}"
   - name: lambda_info | Assert successfull retrieval of all information
     assert:
       that:
@@ -275,6 +284,7 @@
       - lambda_infos_all.functions[0].policy is defined
       - lambda_infos_all.functions[0].mappings is defined
       - lambda_infos_all.functions[0].tags is defined
+      - lambda_infos_all.functions[0].architectures == ['arm64']
 
   - name: lambda_info | Ensure default query value is 'config' when function name omitted
     lambda_info:
