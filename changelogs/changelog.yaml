@@ -819,6 +819,23 @@ releases:
     release_date: '2022-05-26'
   3.3.1:
     release_date: '2022-06-22'
+  3.4.0:
+    changes:
+      bugfixes:
+      - elb_application_lb - fix ``KeyError`` when balancing across two Target Groups
+        (https://github.com/ansible-collections/community.aws/issues/1089).
+      - elb_classic_lb - fix ``'NoneType' object has no attribute`` bug when creating
+        a new ELB in check mode with a health check (https://github.com/ansible-collections/amazon.aws/pull/915).
+      - elb_classic_lb - fix ``'NoneType' object has no attribute`` bug when creating
+        a new ELB using security group names (https://github.com/ansible-collections/amazon.aws/issues/914).
+      minor_changes:
+      - ec2_instance - expanded the use of the automatic retries on temporary failures
+        (https://github.com/ansible-collections/amazon.aws/issues/927).
+    fragments:
+    - 1089-elb_application_lb-ForwardConfig-KeyError.yml
+    - 914-elb_classic_lb-security_group_names.yml
+    - 927-ec2_instance-retries.yml
+    release_date: '2022-08-02'
   4.0.0:
     changes:
       breaking_changes:
