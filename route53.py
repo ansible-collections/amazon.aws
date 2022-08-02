@@ -628,7 +628,7 @@ def main():
     if command_in == 'create' or command_in == 'delete':
         if alias_in and len(value_in) != 1:
             module.fail_json(msg="parameter 'value' must contain a single dns name for alias records")
-        if not any([weight_in, region_in, failover_in, geo_location]) and identifier_in is not None:
+        if (weight_in is None and region_in is None and failover_in is None and geo_location is None) and identifier_in is not None:
             module.fail_json(msg="You have specified identifier which makes sense only if you specify one of: weight, region, geo_location or failover.")
 
     retry_decorator = AWSRetry.jittered_backoff(
