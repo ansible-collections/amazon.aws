@@ -1,9 +1,24 @@
-===========================
+========================
 amazon.aws Release Notes
-===========================
+========================
 
 .. contents:: Topics
 
+
+v3.4.0
+======
+
+Minor Changes
+-------------
+
+- ec2_instance - expanded the use of the automatic retries on temporary failures (https://github.com/ansible-collections/amazon.aws/issues/927).
+
+Bugfixes
+--------
+
+- elb_application_lb - fix ``KeyError`` when balancing across two Target Groups (https://github.com/ansible-collections/community.aws/issues/1089).
+- elb_classic_lb - fix ``'NoneType' object has no attribute`` bug when creating a new ELB in check mode with a health check (https://github.com/ansible-collections/amazon.aws/pull/915).
+- elb_classic_lb - fix ``'NoneType' object has no attribute`` bug when creating a new ELB using security group names (https://github.com/ansible-collections/amazon.aws/issues/914).
 
 v3.3.1
 ======
