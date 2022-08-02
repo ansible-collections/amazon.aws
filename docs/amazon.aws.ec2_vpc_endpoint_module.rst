@@ -5,7 +5,7 @@
 amazon.aws.ec2_vpc_endpoint
 ***************************
 
-**Create and delete AWS VPC Endpoints.**
+**Create and delete AWS VPC endpoints**
 
 
 Version added: 1.0.0
@@ -28,8 +28,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.17.0
-- botocore >= 1.20.0
+- boto3 >= 1.18.0
+- botocore >= 1.21.0
 
 
 Parameters
@@ -121,7 +121,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Optional client token to ensure idempotency</div>
+                        <div>Optional client token to ensure idempotency.</div>
                 </td>
             </tr>
             <tr>
@@ -171,7 +171,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A properly formatted json policy as string, see <a href='https://github.com/ansible/ansible/issues/7005#issuecomment-42894813'>https://github.com/ansible/ansible/issues/7005#issuecomment-42894813</a>. Cannot be used with <em>policy_file</em>.</div>
+                        <div>A properly formatted JSON policy as string, see <a href='https://github.com/ansible/ansible/issues/7005#issuecomment-42894813'>https://github.com/ansible/ansible/issues/7005#issuecomment-42894813</a>. Cannot be used with <em>policy_file</em>.</div>
                         <div>Option when creating an endpoint. If not provided AWS will utilise a default policy which provides full access to the service.</div>
                 </td>
             </tr>
@@ -221,14 +221,13 @@ Parameters
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
                                     <li>no</li>
-                                    <li>yes</li>
+                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                         </ul>
                 </td>
                 <td>
                         <div>If <em>purge_tags=true</em> and <em>tags</em> is set, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter.</div>
                         <div>If the <em>tags</em> parameter is not set then tags will not be modified, even if <em>purge_tags=True</em>.</div>
                         <div>Tag keys beginning with <code>aws:</code> are reserved by Amazon and can not be modified.  As such they will be ignored for the purposes of the <em>purge_tags</em> parameter.  See the Amazon documentation for more information <a href='https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions'>https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions</a>.</div>
-                        <div>The current default value of <code>False</code> has been deprecated.  The default value will change to <code>True</code> in release 5.0.0.</div>
                 </td>
             </tr>
             <tr>
@@ -260,8 +259,9 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>List of one or more route table ids to attach to the endpoint. A route is added to the route table with the destination of the endpoint if provided.</div>
-                        <div>Route table ids are only valid for gateway type endpoints.</div>
+                        <div>List of one or more route table IDs to attach to the endpoint.</div>
+                        <div>A route is added to the route table with the destination of the endpoint if provided.</div>
+                        <div>Route table IDs are only valid for <code>Gateway</code> endpoints.</div>
                 </td>
             </tr>
             <tr>
@@ -294,7 +294,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>An AWS supported vpc endpoint service. Use the <span class='module'>amazon.aws.ec2_vpc_endpoint_info</span> module to describe the supported endpoint services.</div>
+                        <div>An AWS supported VPC endpoint service. Use the <span class='module'>amazon.aws.ec2_vpc_endpoint_info</span> module to describe the supported endpoint services.</div>
                         <div>Required when creating an endpoint.</div>
                 </td>
             </tr>
@@ -314,8 +314,8 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>present to ensure resource is created.</div>
-                        <div>absent to remove resource</div>
+                        <div><code>present</code> to ensure resource is created.</div>
+                        <div><code>absent</code> to remove resource.</div>
                 </td>
             </tr>
             <tr>
@@ -366,7 +366,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>One or more vpc endpoint ids to remove from the AWS account</div>
+                        <div>One or more VPC endpoint IDs to remove from the AWS account.</div>
+                        <div>Required if <em>state=absent</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -457,7 +458,8 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>When specified, will wait for either available status for state present. Unfortunately this is ignored for delete actions due to a difference in behaviour from AWS.</div>
+                        <div>When specified, will wait for status to reach <code>available</code> for <em>state=present</em>.</div>
+                        <div>Unfortunately this is ignored for delete actions due to a difference in behaviour from AWS.</div>
                 </td>
             </tr>
             <tr>
@@ -473,7 +475,9 @@ Parameters
                         <b>Default:</b><br/><div style="color: blue">320</div>
                 </td>
                 <td>
-                        <div>Used in conjunction with wait. Number of seconds to wait for status. Unfortunately this is ignored for delete actions due to a difference in behaviour from AWS.</div>
+                        <div>Used in conjunction with <em>wait</em>.</div>
+                        <div>Number of seconds to wait for status.</div>
+                        <div>Unfortunately this is ignored for delete actions due to a difference in behaviour from AWS.</div>
                 </td>
             </tr>
     </table>

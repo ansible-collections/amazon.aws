@@ -1,11 +1,11 @@
-.. _amazon.aws.ec2_group_module:
+.. _amazon.aws.ec2_security_group_module:
 
 
-********************
-amazon.aws.ec2_group
-********************
+*****************************
+amazon.aws.ec2_security_group
+*****************************
 
-**Maintain an ec2 VPC security group**
+**Maintain an EC2 security group**
 
 
 Version added: 1.0.0
@@ -17,7 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Maintains ec2 security groups.
+- Maintains EC2 security groups.
 
 
 
@@ -26,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.17.0
-- botocore >= 1.20.0
+- boto3 >= 1.18.0
+- botocore >= 1.21.0
 
 
 Parameters
@@ -839,7 +839,7 @@ Notes
 
 .. note::
    - If a rule declares a group_name and that group doesn't exist, it will be automatically created. In that case, group_desc should be provided as well. The module will refuse to create a depended-on group without a description.
-   - Preview diff mode support is added in version 2.7.
+   - Prior to release 5.0.0 this module was called ``amazon.aws.ec2_group_info``.  The usage did not change.
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
    - When no credentials are explicitly provided the AWS SDK (boto3) that Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``). See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html for more information.
    - ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be defined in the configuration files.
@@ -852,7 +852,7 @@ Examples
 .. code-block:: yaml
 
     - name: example using security group rule descriptions
-      amazon.aws.ec2_group:
+      amazon.aws.ec2_security_group:
         name: "{{ name }}"
         description: sg with rule descriptions
         vpc_id: vpc-xxxxxxxx
@@ -866,7 +866,7 @@ Examples
             rule_desc: allow all on port 80
 
     - name: example using ICMP types and codes
-      amazon.aws.ec2_group:
+      amazon.aws.ec2_security_group:
         name: "{{ name }}"
         description: sg for ICMP
         vpc_id: vpc-xxxxxxxx
@@ -879,7 +879,7 @@ Examples
             cidr_ip: 0.0.0.0/0
 
     - name: example ec2 group
-      amazon.aws.ec2_group:
+      amazon.aws.ec2_security_group:
         name: example
         description: an example EC2 group
         vpc_id: 12345
@@ -939,7 +939,7 @@ Examples
             group_desc: other example EC2 group
 
     - name: example2 ec2 group
-      amazon.aws.ec2_group:
+      amazon.aws.ec2_security_group:
         name: example2
         description: an example2 EC2 group
         vpc_id: 12345
@@ -979,7 +979,7 @@ Examples
       diff: True
 
     - name: "Delete group by its id"
-      amazon.aws.ec2_group:
+      amazon.aws.ec2_security_group:
         region: eu-west-1
         group_id: sg-33b4ee5b
         state: absent

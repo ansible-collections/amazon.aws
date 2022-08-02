@@ -26,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.17.0
-- botocore >= 1.20.0
+- boto3 >= 1.18.0
+- botocore >= 1.21.0
 
 
 Parameters
@@ -544,8 +544,6 @@ Parameters
                         <div>S3 URL endpoint for usage with DigitalOcean, Ceph, Eucalyptus and FakeS3 etc.</div>
                         <div>Assumes AWS if not specified.</div>
                         <div>For Walrus, use FQDN of the endpoint without scheme nor path.</div>
-                        <div>The S3_URL alias for this option has been deprecated and will be removed in release 5.0.0.</div>
-                        <div style="font-size: small; color: darkgreen"><br/>aliases: S3_URL</div>
                 </td>
             </tr>
             <tr>

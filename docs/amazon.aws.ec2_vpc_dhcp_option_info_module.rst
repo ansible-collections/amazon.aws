@@ -5,7 +5,7 @@
 amazon.aws.ec2_vpc_dhcp_option_info
 ***********************************
 
-**Gather information about dhcp options sets in AWS**
+**Gather information about DHCP options sets in AWS**
 
 
 Version added: 1.0.0
@@ -17,7 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Gather information about dhcp options sets in AWS.
+- Gather information about DHCP options sets in AWS.
 
 
 
@@ -26,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.17.0
-- botocore >= 1.20.0
+- boto3 >= 1.18.0
+- botocore >= 1.21.0
 
 
 Parameters
@@ -139,9 +139,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Get details of specific DHCP Option IDs.</div>
-                        <div>The <code>DhcpOptionIds</code> alias has been deprecated and will be removed in release 5.0.0.</div>
-                        <div style="font-size: small; color: darkgreen"><br/>aliases: DhcpOptionIds</div>
+                        <div>Get details of specific DHCP option IDs.</div>
                 </td>
             </tr>
             <tr>
@@ -160,9 +158,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Checks whether you have the required permissions to view the DHCP Options.</div>
-                        <div>The <code>DryRun</code> alias has been deprecated and will be removed in release 5.0.0.</div>
-                        <div style="font-size: small; color: darkgreen"><br/>aliases: DryRun</div>
+                        <div>Checks whether you have the required permissions to view the DHCP options.</div>
                 </td>
             </tr>
             <tr>
@@ -304,7 +300,7 @@ Examples
       amazon.aws.ec2_vpc_dhcp_option_info:
         region: ap-southeast-2
         profile: production
-        DhcpOptionsIds: dopt-123fece2
+        dhcp_options_ids: dopt-123fece2
       register: dhcp_info
 
 
