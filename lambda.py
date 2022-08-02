@@ -12,7 +12,7 @@ module: lambda
 version_added: 1.0.0
 short_description: Manage AWS Lambda functions
 description:
-     - Allows for the management of Lambda functions.
+   - Allows for the management of Lambda functions.
 options:
   name:
     description:
@@ -108,13 +108,21 @@ options:
       - The KMS key ARN used to encrypt the function's environment variables.
     type: str
     version_added: 3.3.0
+  architecture:
+    description:
+      - The instruction set architecture that the function supports.
+      - Requires one of I(s3_bucket) or I(zip_file).
+      - Requires botocore >= 1.21.51.
+    type: str
+    choices: ['x86_64', 'arm64']
+    aliases: ['architectures']
+    version_added: 5.0.0
 author:
-    - 'Steyn Huizinga (@steynovich)'
+  - 'Steyn Huizinga (@steynovich)'
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.tags
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = r'''
@@ -192,6 +200,12 @@ configuration:
     returned: success
     type: dict
     contains:
+        architectures:
+            description: The architectures supported by the function.
+            returned: successful run where botocore >= 1.21.51
+            type: list
+            elements: str
+            sample: ['arm64']
         code_sha256:
             description: The SHA256 hash of the function's deployment package.
             returned: success
@@ -452,6 +466,66 @@ def format_response(response):
     return result
 
 
+def _zip_args(zip_file, current_config, ignore_checksum):
+    if not zip_file:
+        return {}
+
+    # If there's another change that needs to happen, we always re-upload the code
+    if not ignore_checksum:
+        local_checksum = sha256sum(zip_file)
+        remote_checksum = current_config.get('CodeSha256', '')
+        if local_checksum == remote_checksum:
+            return {}
+
+    with open(zip_file, 'rb') as f:
+        zip_content = f.read()
+    return {'ZipFile': zip_content}
+
+
+def _s3_args(s3_bucket, s3_key, s3_object_version):
+    if not s3_bucket:
+        return {}
+    if not s3_key:
+        return {}
+
+    code = {'S3Bucket': s3_bucket,
+            'S3Key': s3_key}
+    if s3_object_version:
+        code.update({'S3ObjectVersion': s3_object_version})
+
+    return code
+
+
+def _code_args(module, current_config):
+    s3_bucket = module.params.get('s3_bucket')
+    s3_key = module.params.get('s3_key')
+    s3_object_version = module.params.get('s3_object_version')
+    zip_file = module.params.get('zip_file')
+    architectures = module.params.get('architecture')
+    checksum_match = False
+
+    code_kwargs = {}
+
+    if architectures and current_config.get('Architectures', None) != [architectures]:
+        module.warn('Arch Change')
+        code_kwargs.update({'Architectures': [architectures]})
+
+    try:
+        code_kwargs.update(_zip_args(zip_file, current_config, bool(code_kwargs)))
+    except IOError as e:
+        module.fail_json(msg=str(e), exception=traceback.format_exc())
+
+    code_kwargs.update(_s3_args(s3_bucket, s3_key, s3_object_version))
+
+    if not code_kwargs:
+        return {}
+
+    if not architectures and current_config.get('Architectures', None):
+        code_kwargs.update({'Architectures': current_config.get('Architectures', None)})
+
+    return code_kwargs
+
+
 def main():
     argument_spec = dict(
         name=dict(required=True),
@@ -472,6 +546,7 @@ def main():
         dead_letter_arn=dict(),
         kms_key_arn=dict(type='str', no_log=False),
         tracing_mode=dict(choices=['Active', 'PassThrough']),
+        architecture=dict(choices=['x86_64', 'arm64'], type='str', aliases=['architectures']),
         tags=dict(type='dict', aliases=['resource_tags']),
         purge_tags=dict(type='bool', default=True),
     )
@@ -483,7 +558,11 @@ def main():
     required_together = [['s3_key', 's3_bucket'],
                          ['vpc_subnet_ids', 'vpc_security_group_ids']]
 
-    required_if = [['state', 'present', ['runtime', 'handler', 'role']]]
+    required_if = [
+        ['state', 'present', ['runtime', 'handler', 'role']],
+        ['architecture', 'x86_64', ['zip_file', 's3_bucket'], True],
+        ['architecture', 'arm64', ['zip_file', 's3_bucket'], True],
+    ]
 
     module = AnsibleAWSModule(argument_spec=argument_spec,
                               supports_check_mode=True,
@@ -511,9 +590,14 @@ def main():
     tags = module.params.get('tags')
     purge_tags = module.params.get('purge_tags')
     kms_key_arn = module.params.get('kms_key_arn')
+    architectures = module.params.get('architecture')
 
     check_mode = module.check_mode
     changed = False
+
+    if architectures:
+        module.require_botocore_at_least(
+            '1.21.51', reason='to configure the architectures that the function supports.')
 
     try:
         client = module.client('lambda', retry_decorator=AWSRetry.jittered_backoff())
@@ -602,39 +686,17 @@ def main():
             except (BotoCoreError, ClientError) as e:
                 module.fail_json_aws(e, msg="Trying to update lambda configuration")
 
-        # Update code configuration
-        code_kwargs = {'FunctionName': name, 'Publish': True}
-
-        # Update S3 location
-        if s3_bucket and s3_key:
-            # If function is stored on S3 always update
-            code_kwargs.update({'S3Bucket': s3_bucket, 'S3Key': s3_key})
-
-            # If S3 Object Version is given
-            if s3_object_version:
-                code_kwargs.update({'S3ObjectVersion': s3_object_version})
-
-        # Compare local checksum, update remote code when different
-        elif zip_file:
-            local_checksum = sha256sum(zip_file)
-            remote_checksum = current_config['CodeSha256']
-
-            # Only upload new code when local code is different compared to the remote code
-            if local_checksum != remote_checksum:
-                try:
-                    with open(zip_file, 'rb') as f:
-                        encoded_zip = f.read()
-                    code_kwargs.update({'ZipFile': encoded_zip})
-                except IOError as e:
-                    module.fail_json(msg=str(e), exception=traceback.format_exc())
-
         # Tag Function
         if tags is not None:
             if set_tag(client, module, tags, current_function, purge_tags):
                 changed = True
 
-        # Upload new code if needed (e.g. code checksum has changed)
-        if len(code_kwargs) > 2:
+        code_kwargs = _code_args(module, current_config)
+        if code_kwargs:
+
+            # Update code configuration
+            code_kwargs.update({'FunctionName': name, 'Publish': True})
+
             if not check_mode:
                 wait_for_lambda(client, module, name)
 
@@ -652,37 +714,25 @@ def main():
             module.fail_json(msg='Unable to get function information after updating')
         response = format_response(response)
         # We're done
-        module.exit_json(changed=changed, **response)
+        module.exit_json(changed=changed, code_kwargs=code_kwargs, func_kwargs=func_kwargs, **response)
 
     # Function doesn't exists, create new Lambda function
     elif state == 'present':
-        if s3_bucket and s3_key:
-            # If function is stored on S3
-            code = {'S3Bucket': s3_bucket,
-                    'S3Key': s3_key}
-            if s3_object_version:
-                code.update({'S3ObjectVersion': s3_object_version})
-        elif zip_file:
-            # If function is stored in local zipfile
-            try:
-                with open(zip_file, 'rb') as f:
-                    zip_content = f.read()
-
-                code = {'ZipFile': zip_content}
-            except IOError as e:
-                module.fail_json(msg=str(e), exception=traceback.format_exc())
-
-        else:
-            module.fail_json(msg='Either S3 object or path to zipfile required')
 
         func_kwargs = {'FunctionName': name,
                        'Publish': True,
                        'Runtime': runtime,
                        'Role': role_arn,
-                       'Code': code,
                        'Timeout': timeout,
                        'MemorySize': memory_size,
                        }
+
+        code = _code_args(module, {})
+        if not code:
+            module.fail_json(msg='Either S3 object or path to zipfile required')
+        if 'Architectures' in code:
+            func_kwargs.update({'Architectures': code.pop('Architectures')})
+        func_kwargs.update({'Code': code})
 
         if description is not None:
             func_kwargs.update({'Description': description})
