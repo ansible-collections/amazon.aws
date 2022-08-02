@@ -18,8 +18,9 @@ Version added: 1.0.0
 Synopsis
 --------
 - Create and manage AWS EC2 instances.
-- Note: This module does not support creating `EC2 Spot instances <https://aws.amazon.com/ec2/spot/>`_. The :ref:`amazon.aws.ec2 <amazon.aws.ec2_module>` module can create and manage spot instances.
+- Note: This module does not support creating `EC2 Spot instances <https://aws.amazon.com/ec2/spot/>`_.
 
+- The :ref:`amazon.aws.ec2_spot_instance <amazon.aws.ec2_spot_instance_module>` module can create and manage spot instances.
 
 
 

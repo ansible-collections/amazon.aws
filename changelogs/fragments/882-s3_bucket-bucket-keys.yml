@@ -1,2 +1,0 @@
-minor_changes:
-- s3_bucket - updated module to enable support for setting S3 Bucket Keys for SSE-KMS (https://github.com/ansible-collections/amazon.aws/pull/882).
