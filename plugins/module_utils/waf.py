@@ -89,32 +89,32 @@ MATCH_LOOKUP = {
 }
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(delay=5)
 def get_rule_with_backoff(client, rule_id):
     return client.get_rule(RuleId=rule_id)['Rule']
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(delay=5)
 def get_byte_match_set_with_backoff(client, byte_match_set_id):
     return client.get_byte_match_set(ByteMatchSetId=byte_match_set_id)['ByteMatchSet']
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(delay=5)
 def get_ip_set_with_backoff(client, ip_set_id):
     return client.get_ip_set(IPSetId=ip_set_id)['IPSet']
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(delay=5)
 def get_size_constraint_set_with_backoff(client, size_constraint_set_id):
     return client.get_size_constraint_set(SizeConstraintSetId=size_constraint_set_id)['SizeConstraintSet']
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(delay=5)
 def get_sql_injection_match_set_with_backoff(client, sql_injection_match_set_id):
     return client.get_sql_injection_match_set(SqlInjectionMatchSetId=sql_injection_match_set_id)['SqlInjectionMatchSet']
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(delay=5)
 def get_xss_match_set_with_backoff(client, xss_match_set_id):
     return client.get_xss_match_set(XssMatchSetId=xss_match_set_id)['XssMatchSet']
 
@@ -141,7 +141,7 @@ def get_rule(client, module, rule_id):
     return rule
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(delay=5)
 def get_web_acl_with_backoff(client, web_acl_id):
     return client.get_web_acl(WebACLId=web_acl_id)['WebACL']
 
@@ -161,13 +161,13 @@ def get_web_acl(client, module, web_acl_id):
     return camel_dict_to_snake_dict(web_acl)
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(delay=5)
 def list_rules_with_backoff(client):
     paginator = client.get_paginator('list_rules')
     return paginator.paginate().build_full_result()['Rules']
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(delay=5)
 def list_regional_rules_with_backoff(client):
     resp = client.list_rules()
     rules = []
@@ -177,13 +177,13 @@ def list_regional_rules_with_backoff(client):
     return rules
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(delay=5)
 def list_web_acls_with_backoff(client):
     paginator = client.get_paginator('list_web_acls')
     return paginator.paginate().build_full_result()['WebACLs']
 
 
-@AWSRetry.backoff(tries=5, delay=5, backoff=2.0)
+@AWSRetry.jittered_backoff(delay=5)
 def list_regional_web_acls_with_backoff(client):
     resp = client.list_web_acls()
     acls = []
@@ -211,7 +211,7 @@ def get_change_token(client, module):
         module.fail_json_aws(e, msg="Couldn't obtain change token")
 
 
-@AWSRetry.backoff(tries=10, delay=2, backoff=2.0, catch_extra_error_codes=['WAFStaleDataException'])
+@AWSRetry.jittered_backoff(backoff=2, catch_extra_error_codes=['WAFStaleDataException'])
 def run_func_with_change_token_backoff(client, module, params, func, wait=False):
     params['ChangeToken'] = get_change_token(client, module)
     result = func(**params)
