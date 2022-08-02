@@ -133,6 +133,28 @@ Parameters
             <tr>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>bucket_key_enabled</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 4.1.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Enable S3 Bucket Keys for SSE-KMS on new objects.</div>
+                        <div>See the AWS documentation for more information <a href='https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-key.html'>https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-key.html</a>.</div>
+                        <div>Bucket Key encryption is only supported if <em>encryption=aws:kms</em>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>ceph</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -706,6 +728,12 @@ Examples
         state: present
         encryption: "aws:kms"
         encryption_key_id: "arn:aws:kms:us-east-1:1234/5678example"
+
+    # Create a bucket with aws:kms encryption, Bucket key
+    - amazon.aws.s3_bucket:
+        name: mys3bucket
+        bucket_key_enabled: true
+        encryption: "aws:kms"
 
     # Create a bucket with aws:kms encryption, default key
     - amazon.aws.s3_bucket:

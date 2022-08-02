@@ -18,7 +18,6 @@ Version added: 1.0.0
 Synopsis
 --------
 - Gather information about availability zones in AWS.
-- This module was called :ref:`amazon.aws.aws_az_facts <amazon.aws.aws_az_facts_module>` before Ansible 2.9. The usage did not change.
 
 
 
