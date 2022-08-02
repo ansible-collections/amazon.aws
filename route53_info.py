@@ -519,11 +519,8 @@ def reusable_delegation_set_details():
     params = dict()
 
     if not module.params.get('delegation_set_id'):
-        # Set PaginationConfig with max_items
         if module.params.get('max_items'):
-            params['PaginationConfig'] = dict(
-                MaxItems=module.params.get('max_items')
-            )
+            params['MaxItems'] = str(module.params.get('max_items'))
 
         if module.params.get('next_marker'):
             params['Marker'] = module.params.get('next_marker')
@@ -581,11 +578,8 @@ def list_hosted_zones_by_name():
     if module.params.get('dns_name'):
         params['DNSName'] = module.params.get('dns_name')
 
-    # Set PaginationConfig with max_items
     if module.params.get('max_items'):
-        params['PaginationConfig'] = dict(
-            MaxItems=module.params.get('max_items')
-        )
+        params['MaxItems'] = str(module.params.get('max_items'))
 
     return client.list_hosted_zones_by_name(**params)
 
