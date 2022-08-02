@@ -79,6 +79,22 @@
         - hosted_zones.HostedZone.ResourceRecordSetCount == 2
         - hosted_zones.HostedZone.Config.PrivateZone
 
+# Needs CI permissions updated
+#  # Ensure that we can use the non-paginated list_by_name method with max_items
+#  - name: Get zone 1 details only
+#    route53_info:
+#      query: hosted_zone
+#      hosted_zone_method: list_by_name
+#      dns_name: '{{ zone_one }}'
+#      max_items: 1
+#    register: list_by_name_result
+#
+#  - name: Assert that we found exactly one zone when querying by name
+#    assert:
+#      that:
+#        - list_by_name_result.HostedZones | length == 1
+#        - list_by_name_result.HostedZones[0].Name == '{{ zone_one }}'
+
   - name: 'Create A record using zone fqdn'
     route53:
       state: present
