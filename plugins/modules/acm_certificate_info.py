@@ -20,9 +20,9 @@ options:
     description:
       - If provided, the results will be filtered to show only the certificate with this ARN.
       - If no certificate with this ARN exists, this task will fail.
-      - If a certificate with this ARN exists in a different region, this task will fail
+      - If a certificate with this ARN exists in a different region, this task will fail.
     aliases:
-     - arn
+      - arn
     type: str
   domain_name:
     description:
@@ -43,8 +43,8 @@ options:
 author:
   - Will Thames (@willthames)
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = r'''
