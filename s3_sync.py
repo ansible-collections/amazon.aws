@@ -242,7 +242,6 @@ uploads:
 
 import datetime
 import fnmatch
-import hashlib
 import mimetypes
 import os
 import stat as osstat  # os.stat constants
@@ -255,10 +254,7 @@ except ImportError:
 
 try:
     import botocore
-    from boto3.s3.transfer import TransferConfig
-    DEFAULT_CHUNK_SIZE = TransferConfig().multipart_chunksize
 except ImportError:
-    DEFAULT_CHUNK_SIZE = 5 * 1024 * 1024
     pass  # Handled by AnsibleAWSModule
 
 from ansible.module_utils._text import to_text
@@ -267,59 +263,7 @@ from ansible.module_utils._text import to_text
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_code
 
-
-# the following function, calculate_multipart_etag, is from tlastowka
-# on github and is used under its (compatible) GPL license. So this
-# license applies to the following function.
-# source: https://github.com/tlastowka/calculate_multipart_etag/blob/master/calculate_multipart_etag.py
-#
-# calculate_multipart_etag  Copyright (C) 2015
-#      Tony Lastowka <tlastowka at gmail dot com>
-#      https://github.com/tlastowka
-#
-#
-# calculate_multipart_etag is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# calculate_multipart_etag is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with calculate_multipart_etag.  If not, see <http://www.gnu.org/licenses/>.
-def calculate_multipart_etag(source_path, chunk_size=DEFAULT_CHUNK_SIZE):
-    """
-    calculates a multipart upload etag for amazon s3
-
-    Arguments:
-
-    source_path -- The file to calculate the etag for
-    chunk_size -- The chunk size to calculate for.
-    """
-
-    md5s = []
-
-    with open(source_path, 'rb') as fp:
-        while True:
-
-            data = fp.read(chunk_size)
-
-            if not data:
-                break
-            md5s.append(hashlib.md5(data))
-
-    if len(md5s) == 1:
-        new_etag = '"{0}"'.format(md5s[0].hexdigest())
-    else:  # > 1
-        digests = b"".join(m.digest() for m in md5s)
-
-        new_md5 = hashlib.md5(digests)
-        new_etag = '"{0}-{1}"'.format(new_md5.hexdigest(), len(md5s))
-
-    return new_etag
+from ansible_collections.community.aws.plugins.module_utils.etag import calculate_multipart_etag
 
 
 def gather_files(fileroot, include=None, exclude=None):
@@ -565,7 +509,12 @@ def main():
             result['filelist_initial'] = gather_files(module.params['file_root'], exclude=module.params['exclude'], include=module.params['include'])
             result['filelist_typed'] = determine_mimetypes(result['filelist_initial'], module.params.get('mime_map'))
             result['filelist_s3'] = calculate_s3_path(result['filelist_typed'], module.params['key_prefix'])
-            result['filelist_local_etag'] = calculate_local_etag(result['filelist_s3'])
+            try:
+                result['filelist_local_etag'] = calculate_local_etag(result['filelist_s3'])
+            except ValueError as e:
+                if module.params['file_change_strategy'] == 'checksum':
+                    module.fail_json_aws(e, 'Unable to calculate checksum.  If running in FIPS mode, you may need to use another file_change_strategy')
+                result['filelist_local_etag'] = result['filelist_s3'].copy()
             result['filelist_actionable'] = filter_list(s3, module.params['bucket'], result['filelist_local_etag'], module.params['file_change_strategy'])
             result['uploads'] = upload_files(s3, module.params['bucket'], result['filelist_actionable'], module.params)
 
