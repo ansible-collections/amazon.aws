@@ -229,20 +229,20 @@ def delete_domain(module, client):
     return camel_dict_to_snake_dict(result)
 
 
-retry_params = {"tries": 10, "delay": 5, "backoff": 1.2}
+retry_params = {"delay": 5, "backoff": 1.2}
 
 
-@AWSRetry.backoff(**retry_params)
+@AWSRetry.jittered_backoff(**retry_params)
 def get_domain_name(client, domain_name):
     return client.get_domain_name(domainName=domain_name)
 
 
-@AWSRetry.backoff(**retry_params)
+@AWSRetry.jittered_backoff(**retry_params)
 def get_domain_mappings(client, domain_name):
     return client.get_base_path_mappings(domainName=domain_name, limit=200).get('items', [])
 
 
-@AWSRetry.backoff(**retry_params)
+@AWSRetry.jittered_backoff(**retry_params)
 def create_domain_name(module, client, domain_name, certificate_arn, endpoint_type, security_policy):
     endpoint_configuration = {'types': [endpoint_type]}
 
@@ -263,12 +263,12 @@ def create_domain_name(module, client, domain_name, certificate_arn, endpoint_ty
         )
 
 
-@AWSRetry.backoff(**retry_params)
+@AWSRetry.jittered_backoff(**retry_params)
 def add_domain_mapping(client, domain_name, base_path, rest_api_id, stage):
     return client.create_base_path_mapping(domainName=domain_name, basePath=base_path, restApiId=rest_api_id, stage=stage)
 
 
-@AWSRetry.backoff(**retry_params)
+@AWSRetry.jittered_backoff(**retry_params)
 def update_domain_name(client, domain_name, **kwargs):
     patch_operations = []
 
@@ -281,12 +281,12 @@ def update_domain_name(client, domain_name, **kwargs):
     return client.update_domain_name(domainName=domain_name, patchOperations=patch_operations)
 
 
-@AWSRetry.backoff(**retry_params)
+@AWSRetry.jittered_backoff(**retry_params)
 def delete_domain_name(client, domain_name):
     return client.delete_domain_name(domainName=domain_name)
 
 
-@AWSRetry.backoff(**retry_params)
+@AWSRetry.jittered_backoff(**retry_params)
 def delete_domain_mapping(client, domain_name, base_path):
     return client.delete_base_path_mapping(domainName=domain_name, basePath=base_path)
 
