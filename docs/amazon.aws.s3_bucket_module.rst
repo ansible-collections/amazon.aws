@@ -26,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.17.0
-- botocore >= 1.20.0
+- boto3 >= 1.18.0
+- botocore >= 1.21.0
 
 
 Parameters
@@ -128,6 +128,28 @@ Parameters
                         <div><code>AWS secret key</code>. If not set then the value of the <code>AWS_SECRET_ACCESS_KEY</code>, <code>AWS_SECRET_KEY</code>, or <code>EC2_SECRET_KEY</code> environment variable is used.</div>
                         <div>The <em>aws_secret_key</em> and <em>profile</em> options are mutually exclusive.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: ec2_secret_key, secret_key</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>bucket_key_enabled</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">boolean</span>
+                    </div>
+                    <div style="font-style: italic; font-size: small; color: darkgreen">added in 4.1.0</div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>no</li>
+                                    <li>yes</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>Enable S3 Bucket Keys for SSE-KMS on new objects.</div>
+                        <div>See the AWS documentation for more information <a href='https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-key.html'>https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-key.html</a>.</div>
+                        <div>Bucket Key encryption is only supported if <em>encryption=aws:kms</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -522,8 +544,6 @@ Parameters
                         <div>S3 URL endpoint for usage with DigitalOcean, Ceph, Eucalyptus and FakeS3 etc.</div>
                         <div>Assumes AWS if not specified.</div>
                         <div>For Walrus, use FQDN of the endpoint without scheme nor path.</div>
-                        <div>The S3_URL alias for this option has been deprecated and will be removed in release 5.0.0.</div>
-                        <div style="font-size: small; color: darkgreen"><br/>aliases: S3_URL</div>
                 </td>
             </tr>
             <tr>
@@ -706,6 +726,12 @@ Examples
         state: present
         encryption: "aws:kms"
         encryption_key_id: "arn:aws:kms:us-east-1:1234/5678example"
+
+    # Create a bucket with aws:kms encryption, Bucket key
+    - amazon.aws.s3_bucket:
+        name: mys3bucket
+        bucket_key_enabled: true
+        encryption: "aws:kms"
 
     # Create a bucket with aws:kms encryption, default key
     - amazon.aws.s3_bucket:

@@ -5,7 +5,7 @@
 amazon.aws.ec2_ami
 ******************
 
-**Create or destroy an image (AMI) in ec2**
+**Create or destroy an image (AMI) in EC2**
 
 
 Version added: 1.0.0
@@ -17,7 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Registers or deregisters ec2 images.
+- Registers or deregisters EC2 images.
 
 
 
@@ -26,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.17.0
-- botocore >= 1.20.0
+- boto3 >= 1.18.0
+- botocore >= 1.21.0
 
 
 Parameters
@@ -54,7 +54,7 @@ Parameters
                         <b>Default:</b><br/><div style="color: blue">"x86_64"</div>
                 </td>
                 <td>
-                        <div>The target architecture of the image to register</div>
+                        <div>The target architecture of the image to register.</div>
                 </td>
             </tr>
             <tr>
@@ -136,7 +136,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A list of valid billing codes. To be used with valid accounts by aws marketplace vendors.</div>
+                        <div>A list of valid billing codes. To be used with valid accounts by AWS Marketplace vendors.</div>
                 </td>
             </tr>
             <tr>
@@ -243,8 +243,6 @@ Parameters
                 </td>
                 <td>
                         <div>The device name. For example <code>/dev/sda</code>.</div>
-                        <div>The <code>DeviceName</code> alias had been deprecated and will be removed in release 5.0.0.</div>
-                        <div style="font-size: small; color: darkgreen"><br/>aliases: DeviceName</div>
                 </td>
             </tr>
             <tr>
@@ -280,7 +278,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>When using an <code>io1</code> <em>volume_type</em> this sets the number of IOPS provisioned for the volume</div>
+                        <div>When using an <code>io1</code> <em>volume_type</em> this sets the number of IOPS provisioned for the volume.</div>
                 </td>
             </tr>
             <tr>
@@ -301,8 +299,6 @@ Parameters
                 </td>
                 <td>
                         <div>Suppresses the specified device included in the block device mapping of the AMI.</div>
-                        <div>The <code>NoDevice</code> alias has been deprecated and will be removed in release 5.0.0.</div>
-                        <div style="font-size: small; color: darkgreen"><br/>aliases: NoDevice</div>
                 </td>
             </tr>
             <tr>
@@ -336,8 +332,6 @@ Parameters
                 <td>
                         <div>The virtual name for the device.</div>
                         <div>See the AWS documentation for more detail <a href='https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_BlockDeviceMapping.html'>https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_BlockDeviceMapping.html</a>.</div>
-                        <div>The <code>VirtualName</code> alias has been deprecated and will be removed in release 5.0.0.</div>
-                        <div style="font-size: small; color: darkgreen"><br/>aliases: VirtualName</div>
                 </td>
             </tr>
             <tr>
@@ -353,7 +347,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The size of the volume (in GiB)</div>
+                        <div>The size of the volume (in GiB).</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: size</div>
                 </td>
             </tr>
@@ -436,7 +430,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The s3 location of an image to use for the AMI.</div>
+                        <div>The S3 location of an image to use for the AMI.</div>
                 </td>
             </tr>
             <tr>
@@ -481,8 +475,11 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Users and groups that should be able to launch the AMI. Expects dictionary with a key of user_ids and/or group_names. user_ids should be a list of account ids. group_name should be a list of groups, &quot;all&quot; is the only acceptable value currently.</div>
-                        <div>You must pass all desired launch permissions if you wish to modify existing launch permissions (passing just groups will remove all users)</div>
+                        <div>Users and groups that should be able to launch the AMI.</div>
+                        <div>Expects dictionary with a key of <code>user_ids</code> and/or <code>group_names</code>.</div>
+                        <div><code>user_ids</code> should be a list of account IDs.</div>
+                        <div><code>group_name</code> should be a list of groups, <code>all</code> is the only acceptable value currently.</div>
+                        <div>You must pass all desired launch permissions if you wish to modify existing launch permissions (passing just groups will remove all users).</div>
                 </td>
             </tr>
             <tr>
@@ -547,14 +544,13 @@ Parameters
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
                                     <li>no</li>
-                                    <li>yes</li>
+                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                         </ul>
                 </td>
                 <td>
                         <div>If <em>purge_tags=true</em> and <em>tags</em> is set, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter.</div>
                         <div>If the <em>tags</em> parameter is not set then tags will not be modified, even if <em>purge_tags=True</em>.</div>
                         <div>Tag keys beginning with <code>aws:</code> are reserved by Amazon and can not be modified.  As such they will be ignored for the purposes of the <em>purge_tags</em> parameter.  See the Amazon documentation for more information <a href='https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions'>https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions</a>.</div>
-                        <div>The current default value of <code>False</code> has been deprecated.  The default value will change to <code>True</code> in release 5.0.0.</div>
                 </td>
             </tr>
             <tr>

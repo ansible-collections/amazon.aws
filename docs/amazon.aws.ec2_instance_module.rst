@@ -18,8 +18,8 @@ Version added: 1.0.0
 Synopsis
 --------
 - Create and manage AWS EC2 instances.
-- Note: This module does not support creating `EC2 Spot instances <https://aws.amazon.com/ec2/spot/>`_. The :ref:`amazon.aws.ec2 <amazon.aws.ec2_module>` module can create and manage spot instances.
-
+- This module does not support creating `EC2 Spot instances <https://aws.amazon.com/ec2/spot/>`_.
+- The :ref:`amazon.aws.ec2_spot_instance <amazon.aws.ec2_spot_instance_module>` module can create and manage spot instances.
 
 
 
@@ -28,8 +28,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.17.0
-- botocore >= 1.20.0
+- boto3 >= 1.18.0
+- botocore >= 1.21.0
 
 
 Parameters
@@ -160,7 +160,7 @@ Parameters
                 </td>
                 <td>
                         <div>For T series instances, choose whether to allow increased charges to buy CPU credits if the default pool is depleted.</div>
-                        <div>Choose <em>unlimited</em> to enable buying additional CPU credits.</div>
+                        <div>Choose <code>unlimited</code> to enable buying additional CPU credits.</div>
                 </td>
             </tr>
             <tr>
@@ -254,7 +254,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Whether to allow detailed cloudwatch metrics to be collected, enabling more detailed alerting.</div>
+                        <div>Whether to allow detailed CloudWatch metrics to be collected, enabling more detailed alerting.</div>
                 </td>
             </tr>
             <tr>
@@ -455,7 +455,9 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The ARN or name of an EC2-enabled instance role to be used. If a name is not provided in arn format then the ListInstanceProfiles permission must also be granted. <a href='https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListInstanceProfiles.html'>https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListInstanceProfiles.html</a> If no full ARN is provided, the role with a matching name will be used from the active AWS account.</div>
+                        <div>The ARN or name of an EC2-enabled instance role to be used.</div>
+                        <div>If a name is not provided in ARN format then the ListInstanceProfiles permission must also be granted. <a href='https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListInstanceProfiles.html'>https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListInstanceProfiles.html</a></div>
+                        <div>If no full ARN is provided, the role with a matching name will be used from the active AWS account.</div>
                 </td>
             </tr>
             <tr>
@@ -470,8 +472,10 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Instance type to use for the instance, see <a href='https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html'>https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html</a> Only required when instance is not already present.</div>
-                        <div>If not specified, t2.micro will be used.</div>
+                        <div>Instance type to use for the instance, see <a href='https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html'>https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html</a>.</div>
+                        <div>Only required when instance is not already present.</div>
+                        <div>If not specified, <code>t2.micro</code> will be used.</div>
+                        <div>In a release after 2023-01-01 the default will be removed and either <em>instance_type</em> or <em>launch_template</em> must be specificed when launching an instance.</div>
                 </td>
             </tr>
             <tr>
@@ -487,6 +491,7 @@ Parameters
                 </td>
                 <td>
                         <div>Name of the SSH access key to assign to the instance - must exist in the region the instance is created.</div>
+                        <div>Use <span class='module'>amazon.aws.ec2_key</span> to manage SSH keys.</div>
                 </td>
             </tr>
             <tr>
@@ -517,7 +522,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>the ID of the launch template (optional if name is specified).</div>
+                        <div>The ID of the launch template (optional if name is specified).</div>
                 </td>
             </tr>
             <tr>
@@ -533,7 +538,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>the pretty name of the launch template (optional if id is specified).</div>
+                        <div>The pretty name of the launch template (optional if id is specified).</div>
                 </td>
             </tr>
             <tr>
@@ -549,7 +554,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>the specific version of the launch template to use. If unspecified, the template default is chosen.</div>
+                        <div>The specific version of the launch template to use. If unspecified, the template default is chosen.</div>
                 </td>
             </tr>
 
@@ -610,7 +615,8 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>- Wether the instance metadata endpoint is available via IPv6 (<code>enabled</code>) or not (<code>disabled</code>). - Requires botocore &gt;= 1.21.29</div>
+                        <div>Wether the instance metadata endpoint is available via IPv6 (<code>enabled</code>) or not (<code>disabled</code>).</div>
+                        <div>Requires botocore &gt;= 1.21.29</div>
                 </td>
             </tr>
             <tr>
@@ -628,7 +634,8 @@ Parameters
                         <b>Default:</b><br/><div style="color: blue">1</div>
                 </td>
                 <td>
-                        <div>The desired HTTP PUT response hop limit for instance metadata requests. The larger the number, the further instance metadata requests can travel.</div>
+                        <div>The desired HTTP PUT response hop limit for instance metadata requests.</div>
+                        <div>The larger the number, the further instance metadata requests can travel.</div>
                 </td>
             </tr>
             <tr>
@@ -703,7 +710,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Either a dictionary containing the key &#x27;interfaces&#x27; corresponding to a list of network interface IDs or containing specifications for a single network interface.</div>
+                        <div>Either a dictionary containing the key <code>interfaces</code> corresponding to a list of network interface IDs or containing specifications for a single network interface.</div>
                         <div>Use the <span class='module'>amazon.aws.ec2_eni</span> module to create ENIs with special settings.</div>
                 </td>
             </tr>
@@ -724,7 +731,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>when true assigns a public IP address to the interface</div>
+                        <div>When <code>true</code> assigns a public IP address to the interface.</div>
                 </td>
             </tr>
             <tr>
@@ -760,7 +767,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>a description for the network interface</div>
+                        <div>A description for the network interface.</div>
                 </td>
             </tr>
             <tr>
@@ -776,7 +783,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The index of the interface to modify</div>
+                        <div>The index of the interface to modify.</div>
                 </td>
             </tr>
             <tr>
@@ -793,7 +800,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>a list of security group IDs to attach to the interface</div>
+                        <div>A list of security group IDs to attach to the interface.</div>
                 </td>
             </tr>
             <tr>
@@ -810,7 +817,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>a list of ENI IDs (strings) or a list of objects containing the key <em>id</em>.</div>
+                        <div>A list of ENI IDs (strings) or a list of objects containing the key <em>id</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -827,7 +834,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>a list of IPv6 addresses to assign to the network interface</div>
+                        <div>A list of IPv6 addresses to assign to the network interface.</div>
                 </td>
             </tr>
             <tr>
@@ -843,7 +850,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>an IPv4 address to assign to the interface</div>
+                        <div>An IPv4 address to assign to the interface.</div>
                 </td>
             </tr>
             <tr>
@@ -860,7 +867,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>a list of IPv4 addresses to assign to the network interface</div>
+                        <div>A list of IPv4 addresses to assign to the network interface.</div>
                 </td>
             </tr>
             <tr>
@@ -880,7 +887,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>controls whether source/destination checking is enabled on the interface</div>
+                        <div>Controls whether source/destination checking is enabled on the interface.</div>
                 </td>
             </tr>
             <tr>
@@ -896,7 +903,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>the subnet to connect the network interface to</div>
+                        <div>The subnet to connect the network interface to.</div>
                 </td>
             </tr>
 
@@ -912,7 +919,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The placement group that needs to be assigned to the instance</div>
+                        <div>The placement group that needs to be assigned to the instance.</div>
                 </td>
             </tr>
             <tr>
@@ -943,14 +950,13 @@ Parameters
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
                                     <li>no</li>
-                                    <li>yes</li>
+                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                         </ul>
                 </td>
                 <td>
                         <div>If <em>purge_tags=true</em> and <em>tags</em> is set, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter.</div>
                         <div>If the <em>tags</em> parameter is not set then tags will not be modified, even if <em>purge_tags=True</em>.</div>
                         <div>Tag keys beginning with <code>aws:</code> are reserved by Amazon and can not be modified.  As such they will be ignored for the purposes of the <em>purge_tags</em> parameter.  See the Amazon documentation for more information <a href='https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions'>https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions</a>.</div>
-                        <div>The current default value of <code>False</code> has been deprecated.  The default value will change to <code>True</code> in release 5.0.0.</div>
                 </td>
             </tr>
             <tr>
@@ -981,7 +987,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A security group ID or name. Mutually exclusive with <em>security_groups</em>.</div>
+                        <div>A security group ID or name.</div>
+                        <div>Mutually exclusive with <em>security_groups</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -997,7 +1004,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A list of security group IDs or names (strings). Mutually exclusive with <em>security_group</em>.</div>
+                        <div>A list of security group IDs or names (strings).</div>
+                        <div>Mutually exclusive with <em>security_group</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -1103,7 +1111,8 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Whether to enable termination protection. This module will not terminate an instance with termination protection active, it must be turned off first.</div>
+                        <div>Whether to enable termination protection.</div>
+                        <div>This module will not terminate an instance with termination protection active, it must be turned off first.</div>
                 </td>
             </tr>
             <tr>
@@ -1185,7 +1194,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Opaque blob of data which is made available to the ec2 instance</div>
+                        <div>Opaque blob of data which is made available to the EC2 instance.</div>
                 </td>
             </tr>
             <tr>
@@ -1221,7 +1230,7 @@ Parameters
                 </td>
                 <td>
                         <div>A list of block device mappings, by default this will always use the AMI root device so the volumes option is primarily for adding more storage.</div>
-                        <div>A mapping contains the (optional) keys device_name, virtual_name, ebs.volume_type, ebs.volume_size, ebs.kms_key_id, ebs.snapshot_id, ebs.iops, and ebs.delete_on_termination.</div>
+                        <div>A mapping contains the (optional) keys <code>device_name</code>, <code>virtual_name</code>, <code>ebs.volume_type</code>, <code>ebs.volume_size</code>, <code>ebs.kms_key_id</code>, <code>ebs.snapshot_id</code>, <code>ebs.iops</code>, and <code>ebs.delete_on_termination</code>.</div>
                         <div>For more information about each parameter, see <a href='https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_BlockDeviceMapping.html'>https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_BlockDeviceMapping.html</a>.</div>
                 </td>
             </tr>
@@ -1237,7 +1246,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The subnet ID in which to launch the instance (VPC) If none is provided, <span class='module'>amazon.aws.ec2_instance</span> will chose the default zone of the default VPC.</div>
+                        <div>The subnet ID in which to launch the instance (VPC).</div>
+                        <div>If none is provided, <span class='module'>amazon.aws.ec2_instance</span> will chose the default zone of the default VPC.</div>
                         <div style="font-size: small; color: darkgreen"><br/>aliases: subnet_id</div>
                 </td>
             </tr>
@@ -1257,7 +1267,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Whether or not to wait for the desired state (use wait_timeout to customize this).</div>
+                        <div>Whether or not to wait for the desired <em>state</em> (use (wait_timeout) to customize this).</div>
                 </td>
             </tr>
             <tr>

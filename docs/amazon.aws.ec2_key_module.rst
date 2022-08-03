@@ -5,7 +5,7 @@
 amazon.aws.ec2_key
 ******************
 
-**Create or delete an ec2 key pair**
+**Create or delete an EC2 key pair**
 
 
 Version added: 1.0.0
@@ -17,7 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- create or delete an ec2 key pair.
+- Create or delete an EC2 key pair.
 
 
 
@@ -26,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.17.0
-- botocore >= 1.20.0
+- boto3 >= 1.18.0
+- botocore >= 1.21.0
 
 
 Parameters
@@ -244,14 +244,13 @@ Parameters
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
                                     <li>no</li>
-                                    <li>yes</li>
+                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                         </ul>
                 </td>
                 <td>
                         <div>If <em>purge_tags=true</em> and <em>tags</em> is set, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter.</div>
                         <div>If the <em>tags</em> parameter is not set then tags will not be modified, even if <em>purge_tags=True</em>.</div>
                         <div>Tag keys beginning with <code>aws:</code> are reserved by Amazon and can not be modified.  As such they will be ignored for the purposes of the <em>purge_tags</em> parameter.  See the Amazon documentation for more information <a href='https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions'>https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions</a>.</div>
-                        <div>The current default value of <code>False</code> has been deprecated.  The default value will change to <code>True</code> in release 5.0.0.</div>
                 </td>
             </tr>
             <tr>
@@ -304,7 +303,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>create or delete keypair</div>
+                        <div>Create or delete keypair.</div>
                 </td>
             </tr>
             <tr>
@@ -365,7 +364,7 @@ Examples
 
     # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-    - name: create a new ec2 key pair, returns generated private key
+    - name: create a new EC2 key pair, returns generated private key
       amazon.aws.ec2_key:
         name: my_keypair
 

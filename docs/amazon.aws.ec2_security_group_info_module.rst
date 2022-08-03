@@ -1,11 +1,11 @@
-.. _amazon.aws.ec2_group_info_module:
+.. _amazon.aws.ec2_security_group_info_module:
 
 
-*************************
-amazon.aws.ec2_group_info
-*************************
+**********************************
+amazon.aws.ec2_security_group_info
+**********************************
 
-**Gather information about ec2 security groups in AWS**
+**Gather information about EC2 security groups in AWS**
 
 
 Version added: 1.0.0
@@ -17,7 +17,7 @@ Version added: 1.0.0
 
 Synopsis
 --------
-- Gather information about ec2 security groups in AWS.
+- Gather information about EC2 security groups in AWS.
 
 
 
@@ -26,8 +26,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.17.0
-- botocore >= 1.20.0
+- boto3 >= 1.18.0
+- botocore >= 1.21.0
 
 
 Parameters
@@ -235,7 +235,8 @@ Notes
 -----
 
 .. note::
-   - By default, the module will return all security groups. To limit results use the appropriate filters.
+   - By default, the module will return all security groups in a region. To limit results use the appropriate filters.
+   - Prior to release 5.0.0 this module was called ``amazon.aws.ec2_group_info``. The usage did not change.
    - If parameters are not set within the module, the following environment variables can be used in decreasing order of precedence ``AWS_URL`` or ``EC2_URL``, ``AWS_PROFILE`` or ``AWS_DEFAULT_PROFILE``, ``AWS_ACCESS_KEY_ID`` or ``AWS_ACCESS_KEY`` or ``EC2_ACCESS_KEY``, ``AWS_SECRET_ACCESS_KEY`` or ``AWS_SECRET_KEY`` or ``EC2_SECRET_KEY``, ``AWS_SECURITY_TOKEN`` or ``EC2_SECURITY_TOKEN``, ``AWS_REGION`` or ``EC2_REGION``, ``AWS_CA_BUNDLE``
    - When no credentials are explicitly provided the AWS SDK (boto3) that Ansible uses will fall back to its configuration files (typically ``~/.aws/credentials``). See https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html for more information.
    - ``AWS_REGION`` or ``EC2_REGION`` can be typically be used to specify the AWS region, when required, but this can also be defined in the configuration files.
@@ -250,36 +251,36 @@ Examples
     # Note: These examples do not set authentication details, see the AWS Guide for details.
 
     # Gather information about all security groups
-    - amazon.aws.ec2_group_info:
+    - amazon.aws.ec2_security_group_info:
 
     # Gather information about all security groups in a specific VPC
-    - amazon.aws.ec2_group_info:
+    - amazon.aws.ec2_security_group_info:
         filters:
           vpc-id: vpc-12345678
 
     # Gather information about all security groups in a specific VPC
-    - amazon.aws.ec2_group_info:
+    - amazon.aws.ec2_security_group_info:
         filters:
           vpc-id: vpc-12345678
 
     # Gather information about a security group
-    - amazon.aws.ec2_group_info:
+    - amazon.aws.ec2_security_group_info:
         filters:
           group-name: example-1
 
     # Gather information about a security group by id
-    - amazon.aws.ec2_group_info:
+    - amazon.aws.ec2_security_group_info:
         filters:
           group-id: sg-12345678
 
     # Gather information about a security group with multiple filters, also mixing the use of underscores as filter keys
-    - amazon.aws.ec2_group_info:
+    - amazon.aws.ec2_security_group_info:
         filters:
           group_id: sg-12345678
           vpc-id: vpc-12345678
 
     # Gather information about various security groups
-    - amazon.aws.ec2_group_info:
+    - amazon.aws.ec2_security_group_info:
         filters:
           group-name:
             - example-1
@@ -288,7 +289,7 @@ Examples
 
     # Gather information about any security group with a tag key Name and value Example.
     # The quotes around 'tag:name' are important because of the colon in the value
-    - amazon.aws.ec2_group_info:
+    - amazon.aws.ec2_security_group_info:
         filters:
           "tag:Name": Example
 

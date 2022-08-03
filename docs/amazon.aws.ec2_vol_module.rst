@@ -5,7 +5,7 @@
 amazon.aws.ec2_vol
 ******************
 
-**Create and attach a volume, return volume id and device map**
+**Create and attach a volume, return volume ID and device map**
 
 
 Version added: 1.0.0
@@ -27,8 +27,8 @@ Requirements
 The below requirements are needed on the host that executes this module.
 
 - python >= 3.6
-- boto3 >= 1.17.0
-- botocore >= 1.20.0
+- boto3 >= 1.18.0
+- botocore >= 1.21.0
 
 
 Parameters
@@ -158,7 +158,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Device id to override device mapping. Assumes /dev/sdf for Linux/UNIX and /dev/xvdf for Windows.</div>
+                        <div>Device ID to override device mapping. Assumes /dev/sdf for Linux/UNIX and /dev/xvdf for Windows.</div>
                 </td>
             </tr>
             <tr>
@@ -208,7 +208,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Volume id if you wish to attach an existing volume (requires instance) or remove an existing volume</div>
+                        <div>Volume ID if you wish to attach an existing volume (requires instance) or remove an existing volume.</div>
                 </td>
             </tr>
             <tr>
@@ -223,7 +223,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Instance ID if you wish to attach the volume. Since 1.9 you can set to None to detach.</div>
+                        <div>Instance ID if you wish to attach the volume.</div>
+                        <div>Set to <code>None</code> to detach the volume.</div>
                 </td>
             </tr>
             <tr>
@@ -253,7 +254,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Specify the id of the KMS key to use.</div>
+                        <div>Specify the ID of the KMS key to use.</div>
                 </td>
             </tr>
             <tr>
@@ -293,7 +294,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>If set to <code>yes</code>, Multi-Attach will be enabled when creating the volume.</div>
+                        <div>If set to <code>true</code>, Multi-Attach will be enabled when creating the volume.</div>
                         <div>When you create a new volume, Multi-Attach is disabled by default.</div>
                         <div>This parameter is supported with io1 and io2 volumes only.</div>
                 </td>
@@ -310,7 +311,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Volume Name tag if you wish to attach an existing volume (requires instance)</div>
+                        <div>Volume Name tag if you wish to attach an existing volume (requires instance).</div>
                 </td>
             </tr>
             <tr>
@@ -358,14 +359,13 @@ Parameters
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
                                     <li>no</li>
-                                    <li>yes</li>
+                                    <li><div style="color: blue"><b>yes</b>&nbsp;&larr;</div></li>
                         </ul>
                 </td>
                 <td>
                         <div>If <em>purge_tags=true</em> and <em>tags</em> is set, existing tags will be purged from the resource to match exactly what is defined by <em>tags</em> parameter.</div>
                         <div>If the <em>tags</em> parameter is not set then tags will not be modified, even if <em>purge_tags=True</em>.</div>
                         <div>Tag keys beginning with <code>aws:</code> are reserved by Amazon and can not be modified.  As such they will be ignored for the purposes of the <em>purge_tags</em> parameter.  See the Amazon documentation for more information <a href='https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions'>https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions</a>.</div>
-                        <div>The current default value of <code>False</code> has been deprecated.  The default value will change to <code>True</code> in release 5.0.0.</div>
                 </td>
             </tr>
             <tr>
@@ -434,7 +434,8 @@ Parameters
                 </td>
                 <td>
                         <div>Whether to ensure the volume is present or absent.</div>
-                        <div><em>state=list</em> was deprecated in release 1.1.0 and is no longer available with release 4.0.0.  The &#x27;list&#x27; functionality has been moved to a dedicated module <span class='module'>amazon.aws.ec2_vol_info</span>.</div>
+                        <div><em>state=list</em> was deprecated in release 1.1.0 and is no longer available with release 4.0.0.</div>
+                        <div>The <code>list</code> functionality has been moved to a dedicated module <span class='module'>amazon.aws.ec2_vol_info</span>.</div>
                 </td>
             </tr>
             <tr>
@@ -527,7 +528,8 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>Type of EBS volume; standard (magnetic), gp2 (SSD), gp3 (SSD), io1 (Provisioned IOPS), io2 (Provisioned IOPS), st1 (Throughput Optimized HDD), sc1 (Cold HDD). &quot;Standard&quot; is the old EBS default and continues to remain the Ansible default for backwards compatibility.</div>
+                        <div>Type of EBS volume; <code>standard</code> (magnetic), <code>gp2</code> (SSD), <code>gp3</code> (SSD), <code>io1</code> (Provisioned IOPS), <code>io2</code> (Provisioned IOPS), <code>st1</code> (Throughput Optimized HDD), <code>sc1</code> (Cold HDD).</div>
+                        <div><code>standard</code> is the old EBS default and continues to remain the Ansible default for backwards compatibility.</div>
                 </td>
             </tr>
             <tr>
