@@ -114,6 +114,23 @@ class CloudRetryUtils(unittest.TestCase):
         pass
 
     # ========================================================
+    #   retry original backoff
+    # ========================================================
+    def test_retry_backoff(self):
+
+        @CloudRetryUtils.UnitTestsRetry.backoff(tries=3, delay=1, backoff=1.1, catch_extra_error_codes=CloudRetryUtils.error_codes)
+        def test_retry_func():
+            if test_retry_func.counter < 2:
+                test_retry_func.counter += 1
+                raise self.TestException(status=random.choice(CloudRetryUtils.error_codes))
+            else:
+                return True
+
+        test_retry_func.counter = 0
+        ret = test_retry_func()
+        assert ret is True
+
+    # ========================================================
     #   retry exponential backoff
     # ========================================================
     def test_retry_exponential_backoff(self):
@@ -142,10 +159,10 @@ class CloudRetryUtils(unittest.TestCase):
                 raise unexpected_except
 
         test_retry_func.counter = 0
-        try:
-            ret = test_retry_func()
-        except self.TestException as exc:
-            assert exc.status == unexpected_except.status
+        with self.assertRaises(self.TestException) as exc:
+            test_retry_func()
+
+        assert exc.exception.status == unexpected_except.status
 
     # ========================================================
     #   retry jittered backoff
@@ -175,10 +192,10 @@ class CloudRetryUtils(unittest.TestCase):
                 raise unexpected_except
 
         test_retry_func.counter = 0
-        try:
-            ret = test_retry_func()
-        except self.TestException as exc:
-            assert exc.status == unexpected_except.status
+        with self.assertRaises(self.TestException) as exc:
+            test_retry_func()
+
+        assert exc.exception.status == unexpected_except.status
 
     # ========================================================
     #   retry with custom class
@@ -210,17 +227,13 @@ class CloudRetryUtils(unittest.TestCase):
 
         # run the method 3 times and assert that each it is retrying after 2secs
         # the elapsed execution time should be closed to 2sec
-        for u in range(3):
+        for _i in range(3):
             start = datetime.now()
             raised = False
-            try:
+            with self.assertRaises(self.TestException):
                 _fail()
-            except self.TestException:
-                raised = True
-                duration = (datetime.now() - start).seconds
-                assert duration == 2
-            finally:
-                assert raised
+            duration = (datetime.now() - start).seconds
+            assert duration == 2
 
     def test_only_base_exception(self):
         def _fail_index():
@@ -253,11 +266,7 @@ class CloudRetryUtils(unittest.TestCase):
 
             start = datetime.now()
             raised = False
-            try:
+            with self.assertRaises(Exception):
                 decorator(function)()
-            except Exception:
-                raised = True
-                _duration = (datetime.now() - start).seconds
-                assert duration == _duration
-            finally:
-                assert raised
+            _duration = (datetime.now() - start).seconds
+            assert duration == _duration

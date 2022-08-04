@@ -1,0 +1,2 @@
+deprecated_features:
+- module_utils.cloud - removal of the ``CloudRetry.backoff`` has been delayed until release 6.0.0.  It is recommended to update custom modules to use ``jittered_backoff`` or ``exponential_backoff`` instead (https://github.com/ansible-collections/amazon.aws/pull/951).
