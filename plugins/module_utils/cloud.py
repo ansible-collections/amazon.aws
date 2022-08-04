@@ -32,6 +32,7 @@ __metaclass__ = type
 import time
 import functools
 import random
+import ansible.module_utils.common.warnings as ansible_warnings
 
 
 class BackoffIterator:
@@ -100,7 +101,7 @@ class CloudRetry:
     def found(response_code, catch_extra_error_codes=None):
         def _is_iterable():
             try:
-                it = iter(catch_extra_error_codes)
+                iter(catch_extra_error_codes)
             except TypeError:
                 # not iterable
                 return False
@@ -184,7 +185,7 @@ class CloudRetry:
         """
         Wrap a callable with retry behavior.
         Developers should use CloudRetry.exponential_backoff instead.
-        This method has been deprecated and will be removed in release 4.0.0, consider using exponential_backoff method instead.
+        This method has been deprecated and will be removed in release 6.0.0, consider using exponential_backoff method instead.
         Args:
             retries (int): Number of times to retry a failed request before giving up
                 default=10
@@ -197,6 +198,12 @@ class CloudRetry:
         Returns:
             Callable: A generator that calls the decorated function using an exponential backoff.
         """
+        # This won't emit a warning (we don't have the context available to us), but will trigger
+        # sanity failures as we prepare for 6.0.0
+        ansible_warnings.deprecate(
+            'CloudRetry.backoff has been deprecated, please use CloudRetry.exponential_backoff instead',
+            version='6.0.0', collection_name='amazon.aws')
+
         return cls.exponential_backoff(
             retries=tries,
             delay=delay,
