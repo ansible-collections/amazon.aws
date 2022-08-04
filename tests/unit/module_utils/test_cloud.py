@@ -159,12 +159,10 @@ class CloudRetryUtils(unittest.TestCase):
                 raise unexpected_except
 
         test_retry_func.counter = 0
-        try:
+        with self.assertRaises(self.TestException) as exc:
             test_retry_func()
-            # We expect the Exception to be thrown...
-            assert False
-        except self.TestException as exc:
-            assert exc.status == unexpected_except.status
+
+        assert exc.exception.status == unexpected_except.status
 
     # ========================================================
     #   retry jittered backoff
@@ -194,12 +192,10 @@ class CloudRetryUtils(unittest.TestCase):
                 raise unexpected_except
 
         test_retry_func.counter = 0
-        try:
+        with self.assertRaises(self.TestException) as exc:
             test_retry_func()
-            # We expect the Exception to be thrown...
-            assert False
-        except self.TestException as exc:
-            assert exc.status == unexpected_except.status
+
+        assert exc.exception.status == unexpected_except.status
 
     # ========================================================
     #   retry with custom class
@@ -234,14 +230,10 @@ class CloudRetryUtils(unittest.TestCase):
         for _i in range(3):
             start = datetime.now()
             raised = False
-            try:
+            with self.assertRaises(self.TestException):
                 _fail()
-            except self.TestException:
-                raised = True
-                duration = (datetime.now() - start).seconds
-                assert duration == 2
-            finally:
-                assert raised
+            duration = (datetime.now() - start).seconds
+            assert duration == 2
 
     def test_only_base_exception(self):
         def _fail_index():
@@ -274,11 +266,7 @@ class CloudRetryUtils(unittest.TestCase):
 
             start = datetime.now()
             raised = False
-            try:
+            with self.assertRaises(Exception):
                 decorator(function)()
-            except Exception:
-                raised = True
-                _duration = (datetime.now() - start).seconds
-                assert duration == _duration
-            finally:
-                assert raised
+            _duration = (datetime.now() - start).seconds
+            assert duration == _duration
