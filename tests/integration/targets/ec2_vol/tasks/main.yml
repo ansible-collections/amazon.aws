@@ -229,10 +229,25 @@
           - vol_attach_result.changed
           - "'device' in vol_attach_result and vol_attach_result.device == '/dev/sdg'"
           - "'volume' in vol_attach_result"
-          - vol_attach_result.volume.attachment_set[0].status in ['attached', 'attaching']
-          - vol_attach_result.volume.attachment_set[0].instance_id == test_instance.instance_ids[0]
-          - vol_attach_result.volume.attachment_set[0].device == '/dev/sdg'
-          - not vol_attach_result.volume.attachment_set[0].delete_on_termination
+
+    # There's a delay between the volume being "In Use", and the attachment being reported.  This
+    # can result in a race condition on the results.  (There's no clean waiter to use either)
+    - name: wait for volume to report attached/attaching
+      ec2_vol_info:
+        filters:
+          volume-id: '{{ volume1.volume_id }}'
+      register: vol_attach_info
+      until:
+        - vol_attach_info.volumes[0].attachment_set | length >=1
+      retries: 5
+      delay: 2
+
+    - assert:
+        that:
+          - vol_attach_info.volumes[0].attachment_set[0].status in ['attached', 'attaching']
+          - vol_attach_info.volumes[0].attachment_set[0].instance_id == test_instance.instance_ids[0]
+          - vol_attach_info.volumes[0].attachment_set[0].device == '/dev/sdg'
+          - not vol_attach_info.volumes[0].attachment_set[0].delete_on_termination
 
     - name: attach existing volume to an instance (idempotent - check_mode)
       ec2_vol:
