@@ -6,3 +6,6 @@ sections:
   - title: Module Development Guidelines
     toctree:
       - dev_guidelines
+  - title: Dynamic Inventory Plugin Guide
+    toctree:
+      - aws_ec2_guide
