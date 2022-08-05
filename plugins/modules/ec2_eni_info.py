@@ -283,7 +283,11 @@ def main():
         ['eni_id', 'filters']
     ]
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+        mutually_exclusive=mutually_exclusive,
+    )
 
     connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 

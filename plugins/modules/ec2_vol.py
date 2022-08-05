@@ -606,8 +606,6 @@ def modify_dot_attribute(module, ec2_conn, instance_dict, device_name):
 
 
 def get_attachment_data(volume_dict, wanted_state=None):
-    changed = False
-
     attachment_data = []
     if not volume_dict:
         return attachment_data

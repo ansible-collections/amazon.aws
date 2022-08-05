@@ -141,8 +141,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_li
 
 def get_volume_info(volume, region):
 
-    attachment = volume["attachments"]
-
     attachment_data = []
     for data in volume["attachments"]:
         attachment_data.append({

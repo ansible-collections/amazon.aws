@@ -512,7 +512,7 @@ def main():
         try:
             # Preserve the boto2 module's behaviour of checking if the option set exists first,
             # and return the same error message if it does not
-            dhcp_options = client.describe_dhcp_options(aws_retry=True, DhcpOptionsIds=[dhcp_options_id])
+            client.describe_dhcp_options(aws_retry=True, DhcpOptionsIds=[dhcp_options_id])
             # If that didn't fail, then we know the option ID exists
             found = True
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:

@@ -577,7 +577,7 @@ def check_mode_changeset(module, stack_params, cfn):
 
     try:
         change_set = cfn.create_change_set(aws_retry=True, **stack_params)
-        for i in range(60):  # total time 5 min
+        for _i in range(60):  # total time 5 min
             description = cfn.describe_change_set(aws_retry=True, ChangeSetName=change_set['Id'])
             if description['Status'] in ('CREATE_COMPLETE', 'FAILED'):
                 break

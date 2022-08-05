@@ -341,7 +341,6 @@ def get_eni_info(interface):
 
 
 def correct_ips(connection, ip_list, module, eni_id):
-    all_there = True
     eni = describe_eni(connection, module, eni_id)
     private_addresses = set()
     if "PrivateIpAddresses" in eni:
@@ -354,7 +353,6 @@ def correct_ips(connection, ip_list, module, eni_id):
 
 
 def absent_ips(connection, ip_list, module, eni_id):
-    all_there = True
     eni = describe_eni(connection, module, eni_id)
     private_addresses = set()
     if "PrivateIpAddresses" in eni:
@@ -498,7 +496,6 @@ def modify_eni(connection, module, eni):
     device_index = module.params.get("device_index")
     description = module.params.get('description')
     security_groups = module.params.get('security_groups')
-    force_detach = module.params.get("force_detach")
     source_dest_check = module.params.get("source_dest_check")
     delete_on_termination = module.params.get("delete_on_termination")
     secondary_private_ip_addresses = module.params.get("secondary_private_ip_addresses")
@@ -696,7 +693,6 @@ def detach_eni(connection, eni, module):
     if module.check_mode:
         module.exit_json(changed=True, msg="Would have detached ENI if not in check mode.")
 
-    attached = module.params.get("attached")
     eni_id = eni["NetworkInterfaceId"]
 
     force_detach = module.params.get("force_detach")

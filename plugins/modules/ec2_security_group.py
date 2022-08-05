@@ -1055,7 +1055,7 @@ def wait_for_rule_propagation(module, client, group, desired_ingress, desired_eg
     tries = 6
 
     def await_rules(group, desired_rules, purge, rule_key):
-        for i in range(tries):
+        for _i in range(tries):
             current_rules = set(sum([list(rule_from_group_permission(p)) for p in group[rule_key]], []))
             if purge and len(current_rules ^ set(desired_rules)) == 0:
                 return group
@@ -1353,8 +1353,8 @@ def main():
         current_ingress = sum([list(rule_from_group_permission(p)) for p in group['IpPermissions']], [])
         current_egress = sum([list(rule_from_group_permission(p)) for p in group['IpPermissionsEgress']], [])
 
-        for new_rules, rule_type, named_tuple_rule_list in [(rules, 'in', named_tuple_ingress_list),
-                                                            (rules_egress, 'out', named_tuple_egress_list)]:
+        for new_rules, _rule_type, named_tuple_rule_list in [(rules, 'in', named_tuple_ingress_list),
+                                                             (rules_egress, 'out', named_tuple_egress_list)]:
             if new_rules is None:
                 continue
             for rule in new_rules:
@@ -1438,7 +1438,6 @@ def main():
 
         # Revoke old rules
         changed |= remove_old_permissions(client, module, revoke_ingress, revoke_egress, group['GroupId'])
-        rule_msg = 'Revoking {0}, and egress {1}'.format(revoke_ingress, revoke_egress)
 
         new_ingress_permissions = [to_permission(r) for r in (set(named_tuple_ingress_list) - set(current_ingress))]
         new_ingress_permissions = rules_to_permissions(set(named_tuple_ingress_list) - set(current_ingress))

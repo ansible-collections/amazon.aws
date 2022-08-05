@@ -265,7 +265,6 @@ def handle_waiter(conn, module, waiter_name, params, start_time):
 
 def create_subnet(conn, module, vpc_id, cidr, ipv6_cidr=None, outpost_arn=None, az=None, start_time=None):
     wait = module.params['wait']
-    wait_timeout = module.params['wait_timeout']
 
     params = dict(VpcId=vpc_id,
                   CidrBlock=cidr)
@@ -476,7 +475,7 @@ def ensure_subnet_present(conn, module):
 
 
 def ensure_final_subnet(conn, module, subnet, start_time):
-    for rewait in range(0, 30):
+    for _rewait in range(0, 30):
         map_public_correct = False
         assign_ipv6_correct = False
 
