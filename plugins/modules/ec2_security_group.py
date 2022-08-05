@@ -16,7 +16,7 @@ author:
   - "Razique Mahroua (@Razique)"
 short_description: Maintain an EC2 security group
 description:
-    - Maintains EC2 security groups.
+  - Maintains EC2 security groups.
 options:
   name:
     description:
@@ -46,9 +46,6 @@ options:
       - List of firewall inbound rules to enforce in this group (see example). If none are supplied,
         no inbound rules will be enabled. Rules list may include its own name in I(group_name).
         This allows idempotent loopback additions (e.g. allow group to access itself).
-        Rule sources list support was added in version 2.4. This allows to define multiple sources per
-        source type as well as multiple source types per rule. Prior to 2.4 an individual source is allowed.
-        In version 2.5 support for rule descriptions was added.
     required: false
     type: list
     elements: dict
@@ -132,8 +129,6 @@ options:
     description:
       - List of firewall outbound rules to enforce in this group (see example). If none are supplied,
         a default all-out rule is assumed. If an empty list is supplied, no outbound rules will be enabled.
-        Rule Egress sources list support was added in version 2.4. In version 2.5 support for rule descriptions
-        was added.
     required: false
     type: list
     elements: dict
@@ -237,9 +232,9 @@ options:
     type: bool
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.tags
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 
 
 notes:

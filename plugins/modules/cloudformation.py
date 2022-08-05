@@ -13,12 +13,7 @@ module: cloudformation
 version_added: 1.0.0
 short_description: Create or delete an AWS CloudFormation stack
 description:
-     - Launches or updates an AWS CloudFormation stack and waits for it complete.
-notes:
-     - CloudFormation features change often, and this module tries to keep up. That means your botocore version should be fresh.
-       The version listed in the requirements is the oldest version that works with the module as a whole.
-       Some features may require recent versions, and we do not pinpoint a minimum version for each feature.
-       Instead of relying on the minimum version, keep botocore up to date. AWS is always releasing features and fixing bugs.
+  - Launches or updates an AWS CloudFormation stack and waits for it complete.
 options:
   stack_name:
     description:
@@ -118,12 +113,12 @@ options:
     type: str
   role_arn:
     description:
-    - The role that AWS CloudFormation assumes to create the stack. See the AWS CloudFormation Service Role
-      docs U(https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-iam-servicerole.html)
+      - The role that AWS CloudFormation assumes to create the stack. See the AWS CloudFormation Service Role
+        docs U(https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-iam-servicerole.html)
     type: str
   termination_protection:
     description:
-    - Enable or disable termination protection on the stack.
+      - Enable or disable termination protection on the stack.
     type: bool
   template_body:
     description:
@@ -135,40 +130,41 @@ options:
     type: str
   events_limit:
     description:
-    - Maximum number of CloudFormation events to fetch from a stack when creating or updating it.
+      - Maximum number of CloudFormation events to fetch from a stack when creating or updating it.
     default: 200
     type: int
   backoff_delay:
     description:
-    - Number of seconds to wait for the next retry.
+      - Number of seconds to wait for the next retry.
     default: 3
     type: int
     required: False
   backoff_max_delay:
     description:
-    - Maximum amount of time to wait between retries.
+      - Maximum amount of time to wait between retries.
     default: 30
     type: int
     required: False
   backoff_retries:
     description:
-    - Number of times to retry operation.
-    - AWS API throttling mechanism fails CloudFormation module so we have to retry a couple of times.
+      - Number of times to retry operation.
+      - AWS API throttling mechanism fails CloudFormation module so we have to retry a couple of times.
     default: 10
     type: int
     required: False
   capabilities:
     description:
-    - Specify capabilities that stack template contains.
-    - Valid values are C(CAPABILITY_IAM), C(CAPABILITY_NAMED_IAM) and C(CAPABILITY_AUTO_EXPAND).
+      - Specify capabilities that stack template contains.
+      - Valid values are C(CAPABILITY_IAM), C(CAPABILITY_NAMED_IAM) and C(CAPABILITY_AUTO_EXPAND).
     type: list
     elements: str
     default: [ CAPABILITY_IAM, CAPABILITY_NAMED_IAM ]
 
-author: "James S. Martin (@jsmartin)"
+author:
+  - "James S. Martin (@jsmartin)"
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''

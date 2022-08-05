@@ -23,10 +23,10 @@ module: s3_bucket
 version_added: 1.0.0
 short_description: Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID
 description:
-    - Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID.
+  - Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID.
 author:
-    - Rob White (@wimnat)
-    - Aubin Bikouo (@abikouo)
+  - Rob White (@wimnat)
+  - Aubin Bikouo (@abikouo)
 options:
   force:
     description:
@@ -161,15 +161,15 @@ options:
     default: True
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.tags
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 
 notes:
-    - If C(requestPayment), C(policy), C(tagging) or C(versioning)
-      operations/API aren't implemented by the endpoint, module doesn't fail
-      if each parameter satisfies the following condition.
-      I(requester_pays) is C(False), I(policy), I(tags), and I(versioning) are C(None).
+  - If C(requestPayment), C(policy), C(tagging) or C(versioning)
+    operations/API aren't implemented by the endpoint, module doesn't fail
+    if each parameter satisfies the following condition.
+    I(requester_pays) is C(False), I(policy), I(tags), and I(versioning) are C(None).
 '''
 
 EXAMPLES = r'''

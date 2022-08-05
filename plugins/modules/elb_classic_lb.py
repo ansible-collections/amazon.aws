@@ -277,14 +277,14 @@ options:
     default: 180
 
 notes:
-- The ec2_elb fact previously set by this module was deprecated in release 2.1.0 and since release
-  4.0.0 is no longer set.
-- Support for I(purge_tags) was added in release 2.1.0.
+  - The ec2_elb fact previously set by this module was deprecated in release 2.1.0 and since release
+    4.0.0 is no longer set.
+  - Support for I(purge_tags) was added in release 2.1.0.
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.tags
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 '''
 
 EXAMPLES = """

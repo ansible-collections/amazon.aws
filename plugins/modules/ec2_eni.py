@@ -12,22 +12,21 @@ module: ec2_eni
 version_added: 1.0.0
 short_description: Create and optionally attach an Elastic Network Interface (ENI) to an instance
 description:
-    - Create and optionally attach an Elastic Network Interface (ENI) to an instance. If an ENI ID or private_ip is
-      provided, the existing ENI (if any) will be modified. The 'attached' parameter controls the attachment status
-      of the network interface.
+  - Create and optionally attach an Elastic Network Interface (ENI) to an instance.
+  - If I(eni_id) or I(private_ip) is provided, the existing ENI (if any) will be modified.
+  - The I(attached) parameter controls the attachment status of the network interface.
 author:
-    - "Rob White (@wimnat)"
-    - "Mike Healey (@healem)"
+  - "Rob White (@wimnat)"
+  - "Mike Healey (@healem)"
 options:
   eni_id:
     description:
       - The ID of the ENI (to modify).
-      - If I(eni_id=None) and I(state=present), a new eni will be created.
+      - If I(eni_id=None) and I(state=present), a new ENI will be created.
     type: str
   instance_id:
     description:
       - Instance ID that you wish to attach ENI to.
-      - Since version 2.2, use the I(attached) parameter to attach or detach an ENI. Prior to 2.2, to detach an ENI from an instance, use C(None).
     type: str
   private_ip_address:
     description:
@@ -43,8 +42,8 @@ options:
     type: str
   security_groups:
     description:
-      - List of security groups associated with the interface. Only used when I(state=present).
-      - Since version 2.2, you can specify security groups by ID or by name or a combination of both. Prior to 2.2, you can specify only by ID.
+      - List of security groups associated with the interface.
+      - Ignored when I(state=absent).
     type: list
     elements: str
   state:
@@ -84,7 +83,7 @@ options:
   secondary_private_ip_addresses:
     description:
       - A list of IP addresses to assign as secondary IP addresses to the network interface.
-        This option is mutually exclusive of I(secondary_private_ip_address_count)
+      - This option is mutually exclusive of I(secondary_private_ip_address_count).
     required: false
     type: list
     elements: str
@@ -96,7 +95,8 @@ options:
     type: bool
   secondary_private_ip_address_count:
     description:
-      - The number of secondary IP addresses to assign to the network interface. This option is mutually exclusive of I(secondary_private_ip_addresses)
+      - The number of secondary IP addresses to assign to the network interface.
+      - This option is mutually exclusive of I(secondary_private_ip_addresses).
     required: false
     type: int
   allow_reassignment:
@@ -115,14 +115,13 @@ options:
     required: false
     type: str
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.tags
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 notes:
-    - This module identifies and ENI based on either the I(eni_id), a combination of I(private_ip_address) and I(subnet_id),
-      or a combination of I(instance_id) and I(device_id). Any of these options will let you specify a particular ENI.
-    - Support for I(tags) and I(purge_tags) was added in release 1.3.0.
+  - This module identifies and ENI based on either the I(eni_id), a combination of I(private_ip_address) and I(subnet_id),
+    or a combination of I(instance_id) and I(device_id). Any of these options will let you specify a particular ENI.
+  - Support for I(tags) and I(purge_tags) was added in release 1.3.0.
 '''
 
 EXAMPLES = '''
