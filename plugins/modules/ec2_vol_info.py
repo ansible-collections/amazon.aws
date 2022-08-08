@@ -10,9 +10,9 @@ DOCUMENTATION = '''
 ---
 module: ec2_vol_info
 version_added: 1.0.0
-short_description: Gather information about ec2 volumes in AWS
+short_description: Gather information about EC2 volumes in AWS
 description:
-    - Gather information about ec2 volumes in AWS.
+  - Gather information about EC2 volumes in AWS.
 author: "Rob White (@wimnat)"
 options:
   filters:
@@ -21,9 +21,8 @@ options:
       - A dict of filters to apply. Each dict item consists of a filter key and a filter value.
       - See U(https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeVolumes.html) for possible filters.
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
@@ -140,8 +139,6 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_li
 
 
 def get_volume_info(volume, region):
-
-    attachment = volume["attachments"]
 
     attachment_data = []
     for data in volume["attachments"]:
