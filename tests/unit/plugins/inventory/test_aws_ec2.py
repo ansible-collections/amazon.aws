@@ -139,7 +139,7 @@ def test_boto3_conn(inventory):
     loader = DataLoader()
     inventory._set_credentials(loader)
     with pytest.raises(AnsibleError) as error_message:
-        for connection, region in inventory._boto3_conn(regions=['us-east-1']):
+        for _connection, _region in inventory._boto3_conn(regions=['us-east-1']):
             assert "Insufficient credentials found" in error_message
 
 
