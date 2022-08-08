@@ -345,9 +345,9 @@ def compare_and_update_configuration(client, module, current_lifecycle_rules, ru
     if current_lifecycle_rules:
         # If rule ID exists, use that for comparison otherwise compare based on prefix
         for existing_rule in current_lifecycle_rules:
-            if rule.get('ID') == existing_rule.get('ID') and rule['Filter']['Prefix'] != existing_rule.get('Filter', {}).get('Prefix', ''):
+            if rule.get('ID') == existing_rule.get('ID') and rule['Filter'].get('Prefix', '') != existing_rule.get('Filter', {}).get('Prefix', ''):
                 existing_rule.pop('ID')
-            elif rule_id is None and rule['Filter']['Prefix'] == existing_rule.get('Filter', {}).get('Prefix', ''):
+            elif rule_id is None and rule['Filter'].get('Prefix', '') == existing_rule.get('Filter', {}).get('Prefix', ''):
                 existing_rule.pop('ID')
             if rule.get('ID') == existing_rule.get('ID'):
                 changed_, appended_ = update_or_append_rule(rule, existing_rule, purge_transitions, lifecycle_configuration)
@@ -407,7 +407,7 @@ def compare_and_remove_rule(current_lifecycle_rules, rule_id=None, prefix=None):
                 lifecycle_configuration['Rules'].append(existing_rule)
     else:
         for existing_rule in current_lifecycle_rules:
-            if prefix == existing_rule['Filter']['Prefix']:
+            if prefix == existing_rule['Filter'].get('Prefix', ''):
                 # We're not keeping the rule (i.e. deleting) so mark as changed
                 changed = True
             else:
