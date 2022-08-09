@@ -13,7 +13,7 @@ author:
   - Bill Wang (!UNKNOWN) <ozbillwang(at)gmail.com>
   - Marat Bakeev (!UNKNOWN) <hawara(at)gmail.com>
   - Michael De La Rue (!UNKNOWN) <siblemitcom.mddlr@spamgourmet.com>
-short_description: Get the value for a SSM parameter or all parameters under a path.
+short_description: Get the value for a SSM parameter or all parameters under a path
 description:
   - Get the value for an Amazon Simple Systems Manager parameter or a hierarchy of parameters.
     The first argument you pass the lookup can either be a parameter name or a hierarchy of
@@ -72,7 +72,7 @@ options:
     type: string
     version_added: 3.3.0
 extends_documentation_fragment:
-- amazon.aws.aws_boto3
+  - amazon.aws.aws_boto3
 '''
 
 EXAMPLES = '''
@@ -129,7 +129,6 @@ EXAMPLES = '''
 
 try:
     import botocore
-    import boto3
 except ImportError:
     pass  # will be captured by imported HAS_BOTO3
 
