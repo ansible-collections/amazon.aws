@@ -227,7 +227,7 @@ def wait_for_instance_status(client, module, db_instance_id, waiter_name):
         'db_instance_stopped': 'stopped',
     }
     expected_status = waiter_expected_status.get(waiter_name, 'available')
-    for attempt_to_wait in range(0, 10):
+    for _wait_attempts in range(0, 10):
         try:
             wait(client, db_instance_id, waiter_name)
             break
@@ -378,10 +378,10 @@ def update_iam_roles(client, module, instance_id, roles_to_add, roles_to_remove)
         params = {'DBInstanceIdentifier': instance_id,
                   'RoleArn': role['role_arn'],
                   'FeatureName': role['feature_name']}
-        result, changed = call_method(client, module, method_name='remove_role_from_db_instance', parameters=params)
+        _result, changed = call_method(client, module, method_name='remove_role_from_db_instance', parameters=params)
     for role in roles_to_add:
         params = {'DBInstanceIdentifier': instance_id,
                   'RoleArn': role['role_arn'],
                   'FeatureName': role['feature_name']}
-        result, changed = call_method(client, module, method_name='add_role_to_db_instance', parameters=params)
+        _result, changed = call_method(client, module, method_name='add_role_to_db_instance', parameters=params)
     return changed
