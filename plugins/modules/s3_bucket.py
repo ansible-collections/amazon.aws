@@ -23,10 +23,10 @@ module: s3_bucket
 version_added: 1.0.0
 short_description: Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID
 description:
-    - Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID.
+  - Manage S3 buckets in AWS, DigitalOcean, Ceph, Walrus, FakeS3 and StorageGRID.
 author:
-    - Rob White (@wimnat)
-    - Aubin Bikouo (@abikouo)
+  - Rob White (@wimnat)
+  - Aubin Bikouo (@abikouo)
 options:
   force:
     description:
@@ -161,15 +161,15 @@ options:
     default: True
 
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-- amazon.aws.tags
+  - amazon.aws.aws
+  - amazon.aws.ec2
+  - amazon.aws.tags
 
 notes:
-    - If C(requestPayment), C(policy), C(tagging) or C(versioning)
-      operations/API aren't implemented by the endpoint, module doesn't fail
-      if each parameter satisfies the following condition.
-      I(requester_pays) is C(False), I(policy), I(tags), and I(versioning) are C(None).
+  - If C(requestPayment), C(policy), C(tagging) or C(versioning)
+    operations/API aren't implemented by the endpoint, module doesn't fail
+    if each parameter satisfies the following condition.
+    I(requester_pays) is C(False), I(policy), I(tags), and I(versioning) are C(None).
 '''
 
 EXAMPLES = r'''
@@ -766,7 +766,6 @@ def put_bucket_key_with_retry(module, s3_client, name, expected_encryption):
             put_bucket_key(s3_client, name, expected_encryption)
         except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:  # pylint: disable=duplicate-except
             module.fail_json_aws(e, msg="Failed to set bucket Key")
-        result = s3_client.get_bucket_encryption(Bucket=name)
         current_encryption = wait_bucket_key_is_applied(module, s3_client, name, expected_encryption,
                                                         should_fail=(retries == max_retries), retries=5)
         if current_encryption == expected_encryption:
@@ -1117,7 +1116,7 @@ def main():
         argument_spec=argument_spec, required_by=required_by, mutually_exclusive=mutually_exclusive
     )
 
-    region, ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
+    region, _ec2_url, aws_connect_kwargs = get_aws_connection_info(module, boto3=True)
 
     if module.params.get('validate_bucket_name'):
         validate_bucket_name(module, module.params["name"])
@@ -1153,9 +1152,6 @@ def main():
     state = module.params.get("state")
     encryption = module.params.get("encryption")
     encryption_key_id = module.params.get("encryption_key_id")
-    bucket_key_enabled = module.params.get("bucket_key_enabled")
-    delete_object_ownership = module.params.get('delete_object_ownership')
-    object_ownership = module.params.get('object_ownership')
 
     # Parameter validation
     if encryption_key_id is not None and encryption != 'aws:kms':

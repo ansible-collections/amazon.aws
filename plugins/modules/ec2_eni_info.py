@@ -10,10 +10,11 @@ DOCUMENTATION = '''
 ---
 module: ec2_eni_info
 version_added: 1.0.0
-short_description: Gather information about ec2 ENI interfaces in AWS
+short_description: Gather information about EC2 ENI interfaces in AWS
 description:
-    - Gather information about ec2 ENI interfaces in AWS.
-author: "Rob White (@wimnat)"
+  - Gather information about EC2 ENI interfaces in AWS.
+author:
+  - "Rob White (@wimnat)"
 options:
   eni_id:
     description:
@@ -28,9 +29,8 @@ options:
       - This option is mutually exclusive of I(eni_id).
     type: dict
 extends_documentation_fragment:
-- amazon.aws.aws
-- amazon.aws.ec2
-
+  - amazon.aws.aws
+  - amazon.aws.ec2
 '''
 
 EXAMPLES = '''
@@ -283,7 +283,11 @@ def main():
         ['eni_id', 'filters']
     ]
 
-    module = AnsibleAWSModule(argument_spec=argument_spec, supports_check_mode=True)
+    module = AnsibleAWSModule(
+        argument_spec=argument_spec,
+        supports_check_mode=True,
+        mutually_exclusive=mutually_exclusive,
+    )
 
     connection = module.client('ec2', retry_decorator=AWSRetry.jittered_backoff())
 
