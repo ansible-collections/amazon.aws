@@ -1041,7 +1041,7 @@ def add_or_update_instance_profile(instance, desired_profile_name):
             # check for InvalidAssociationID.NotFound
             module.fail_json_aws(e, "Could not find instance profile association")
         try:
-            resp = client.replace_iam_instance_profile_association(
+            client.replace_iam_instance_profile_association(
                 aws_retry=True,
                 AssociationId=association['IamInstanceProfileAssociations'][0]['AssociationId'],
                 IamInstanceProfile={'Arn': determine_iam_role(desired_profile_name)}
@@ -1053,7 +1053,7 @@ def add_or_update_instance_profile(instance, desired_profile_name):
     if not instance_profile_setting and desired_profile_name:
         # create association
         try:
-            resp = client.associate_iam_instance_profile(
+            client.associate_iam_instance_profile(
                 aws_retry=True,
                 IamInstanceProfile={'Arn': determine_iam_role(desired_profile_name)},
                 InstanceId=instance['InstanceId']
@@ -1507,7 +1507,6 @@ def change_network_attachments(instance, params):
 
 
 def find_instances(ids=None, filters=None):
-    paginator = client.get_paginator('describe_instances')
     sanitized_filters = dict()
 
     if ids:
@@ -1855,7 +1854,7 @@ def enforce_count(existing_matches, module, desired_module_state):
                 module.exit_json(changed=True, msg='Would have terminated following instances if not in check mode {0}'.format(terminate_ids))
             # terminate instances
             try:
-                result = client.terminate_instances(aws_retry=True, InstanceIds=terminate_ids)
+                client.terminate_instances(aws_retry=True, InstanceIds=terminate_ids)
                 await_instances(terminate_ids, desired_module_state='terminated', force_wait=True)
             except is_boto3_error_code('InvalidInstanceID.NotFound'):
                 pass
