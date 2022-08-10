@@ -174,9 +174,7 @@ class CloudFrontFactsServiceManager(object):
                 temp_distribution['Tags'] = boto3_tag_list_to_ansible_dict(resource_tags['Tags'].get('Items', []))
                 distribution_list[list_name].append(temp_distribution)
             return distribution_list
-        except botocore.exceptions.ClientError as e:
-            self.module.fail_json_aws(e, msg="Error generating summary of distributions")
-        except Exception as e:
+        except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             self.module.fail_json_aws(e, msg="Error generating summary of distributions")
 
     def get_etag_from_distribution_id(self, distribution_id, streaming):

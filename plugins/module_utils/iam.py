@@ -47,7 +47,7 @@ def get_aws_account_info(module):
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError):
         try:
             iam_client = module.client('iam', retry_decorator=AWSRetry.jittered_backoff())
-            arn, partition, service, reg, account_id, resource = iam_client.get_user(aws_retry=True)['User']['Arn'].split(':')
+            _arn, partition, _service, _reg, account_id, _resource = iam_client.get_user(aws_retry=True)['User']['Arn'].split(':')
         except is_boto3_error_code('AccessDenied') as e:
             try:
                 except_msg = to_native(e.message)

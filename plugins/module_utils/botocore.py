@@ -72,7 +72,7 @@ def boto3_conn(module, conn_type=None, resource=None, region=None, endpoint=None
     except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError,
             botocore.exceptions.NoCredentialsError, botocore.exceptions.ConfigParseError) as e:
         module.fail_json(msg=to_native(e))
-    except botocore.exceptions.NoRegionError as e:
+    except botocore.exceptions.NoRegionError:
         module.fail_json(msg="The %s module requires a region and none was found in configuration, "
                          "environment variables or module parameters" % module._name)
 
@@ -155,7 +155,7 @@ def get_aws_region(module, boto3=None):
     try:
         profile_name = module.params.get('profile')
         return botocore.session.Session(profile=profile_name).get_config_variable('region')
-    except botocore.exceptions.ProfileNotFound as e:
+    except botocore.exceptions.ProfileNotFound:
         return None
 
 
