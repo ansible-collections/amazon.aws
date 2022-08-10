@@ -67,7 +67,7 @@ def _retry_func(func, sleep_time_generator, retries, catch_extra_error_codes, fo
     for sleep_time in sleep_time_generator:
         try:
             return func()
-        except Exception as exc:
+        except Exception as exc:  # pylint: disable=broad-except
             counter += 1
             if counter == retries:
                 raise
