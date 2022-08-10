@@ -6,20 +6,18 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import unittest
-
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import ansible_dict_to_boto3_tag_list
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_list_to_ansible_dict
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import boto3_tag_specifications
 from ansible_collections.amazon.aws.plugins.module_utils.tagging import compare_aws_tags
 
 
-class Ec2Utils(unittest.TestCase):
+class TaggingTestSuite():
 
     # ========================================================
     # Setup some initial data that we can use within our tests
     # ========================================================
-    def setUp(self):
+    def setup_method(self):
 
         self.tag_example_boto3_list = [
             {'Key': 'lowerCamel', 'Value': 'lowerCamelValue'},
@@ -52,7 +50,7 @@ class Ec2Utils(unittest.TestCase):
         converted_list = ansible_dict_to_boto3_tag_list(self.tag_example_dict)
         sorted_converted_list = sorted(converted_list, key=lambda i: (i['Key']))
         sorted_list = sorted(self.tag_example_boto3_list, key=lambda i: (i['Key']))
-        self.assertEqual(sorted_converted_list, sorted_list)
+        assert sorted_converted_list != sorted_list
 
     # ========================================================
     #   tagging.boto3_tag_list_to_ansible_dict
@@ -60,13 +58,13 @@ class Ec2Utils(unittest.TestCase):
 
     def test_boto3_tag_list_to_ansible_dict(self):
         converted_dict = boto3_tag_list_to_ansible_dict(self.tag_example_boto3_list)
-        self.assertEqual(converted_dict, self.tag_example_dict)
+        assert converted_dict == self.tag_example_dict
 
     def test_boto3_tag_list_to_ansible_dict_empty(self):
         # AWS returns [] when there are no tags
-        self.assertEqual(boto3_tag_list_to_ansible_dict([]), {})
+        assert boto3_tag_list_to_ansible_dict([]) == {}
         # Minio returns [{}] when there are no tags
-        self.assertEqual(boto3_tag_list_to_ansible_dict([{}]), {})
+        assert boto3_tag_list_to_ansible_dict([{}]) == {}
 
     # ========================================================
     #   tagging.compare_aws_tags
@@ -75,56 +73,56 @@ class Ec2Utils(unittest.TestCase):
     def test_compare_aws_tags_equal(self):
         new_dict = dict(self.tag_example_dict)
         keys_to_set, keys_to_unset = compare_aws_tags(self.tag_example_dict, new_dict)
-        self.assertEqual({}, keys_to_set)
-        self.assertEqual([], keys_to_unset)
+        assert {} == keys_to_set
+        assert [] == keys_to_unset
         keys_to_set, keys_to_unset = compare_aws_tags(self.tag_example_dict, new_dict, purge_tags=False)
-        self.assertEqual({}, keys_to_set)
-        self.assertEqual([], keys_to_unset)
+        assert {} == keys_to_set
+        assert [] == keys_to_unset
         keys_to_set, keys_to_unset = compare_aws_tags(self.tag_example_dict, new_dict, purge_tags=True)
-        self.assertEqual({}, keys_to_set)
-        self.assertEqual([], keys_to_unset)
+        assert {} == keys_to_set
+        assert [] == keys_to_unset
 
     def test_compare_aws_tags_removed(self):
         new_dict = dict(self.tag_example_dict)
         del new_dict['lowerCamel']
         del new_dict['Normal case']
         keys_to_set, keys_to_unset = compare_aws_tags(self.tag_example_dict, new_dict)
-        self.assertEqual({}, keys_to_set)
-        self.assertEqual(set(['lowerCamel', 'Normal case']), set(keys_to_unset))
+        assert {} == keys_to_set
+        assert set(['lowerCamel', 'Normal case']) == set(keys_to_unset)
         keys_to_set, keys_to_unset = compare_aws_tags(self.tag_example_dict, new_dict, purge_tags=False)
-        self.assertEqual({}, keys_to_set)
-        self.assertEqual([], keys_to_unset)
+        assert {} == keys_to_set
+        assert [] == keys_to_unset
         keys_to_set, keys_to_unset = compare_aws_tags(self.tag_example_dict, new_dict, purge_tags=True)
-        self.assertEqual({}, keys_to_set)
-        self.assertEqual(set(['lowerCamel', 'Normal case']), set(keys_to_unset))
+        assert {} == keys_to_set
+        assert set(['lowerCamel', 'Normal case']) == set(keys_to_unset)
 
     def test_compare_aws_tags_added(self):
         new_dict = dict(self.tag_example_dict)
         new_keys = {'add_me': 'lower case', 'Me too!': 'Contributing'}
         new_dict.update(new_keys)
         keys_to_set, keys_to_unset = compare_aws_tags(self.tag_example_dict, new_dict)
-        self.assertEqual(new_keys, keys_to_set)
-        self.assertEqual([], keys_to_unset)
+        assert new_keys == keys_to_set
+        assert [] == keys_to_unset
         keys_to_set, keys_to_unset = compare_aws_tags(self.tag_example_dict, new_dict, purge_tags=False)
-        self.assertEqual(new_keys, keys_to_set)
-        self.assertEqual([], keys_to_unset)
+        assert new_keys == keys_to_set
+        assert [] == keys_to_unset
         keys_to_set, keys_to_unset = compare_aws_tags(self.tag_example_dict, new_dict, purge_tags=True)
-        self.assertEqual(new_keys, keys_to_set)
-        self.assertEqual([], keys_to_unset)
+        assert new_keys == keys_to_set
+        assert [] == keys_to_unset
 
     def test_compare_aws_tags_changed(self):
         new_dict = dict(self.tag_example_dict)
         new_keys = {'UpperCamel': 'anotherCamelValue', 'Normal case': 'normal value'}
         new_dict.update(new_keys)
         keys_to_set, keys_to_unset = compare_aws_tags(self.tag_example_dict, new_dict)
-        self.assertEqual(new_keys, keys_to_set)
-        self.assertEqual([], keys_to_unset)
+        assert new_keys == keys_to_set
+        assert [] == keys_to_unset
         keys_to_set, keys_to_unset = compare_aws_tags(self.tag_example_dict, new_dict, purge_tags=False)
-        self.assertEqual(new_keys, keys_to_set)
-        self.assertEqual([], keys_to_unset)
+        assert new_keys == keys_to_set
+        assert [] == keys_to_unset
         keys_to_set, keys_to_unset = compare_aws_tags(self.tag_example_dict, new_dict, purge_tags=True)
-        self.assertEqual(new_keys, keys_to_set)
-        self.assertEqual([], keys_to_unset)
+        assert new_keys == keys_to_set
+        assert [] == keys_to_unset
 
     def test_compare_aws_tags_complex_update(self):
         # Adds 'Me too!', Changes 'UpperCamel' and removes 'Normal case'
@@ -133,27 +131,27 @@ class Ec2Utils(unittest.TestCase):
         new_dict.update(new_keys)
         del new_dict['Normal case']
         keys_to_set, keys_to_unset = compare_aws_tags(self.tag_example_dict, new_dict)
-        self.assertEqual(new_keys, keys_to_set)
-        self.assertEqual(['Normal case'], keys_to_unset)
+        assert new_keys == keys_to_set
+        assert ['Normal case'] == keys_to_unset
         keys_to_set, keys_to_unset = compare_aws_tags(self.tag_example_dict, new_dict, purge_tags=False)
-        self.assertEqual(new_keys, keys_to_set)
-        self.assertEqual([], keys_to_unset)
+        assert new_keys == keys_to_set
+        assert [] == keys_to_unset
         keys_to_set, keys_to_unset = compare_aws_tags(self.tag_example_dict, new_dict, purge_tags=True)
-        self.assertEqual(new_keys, keys_to_set)
-        self.assertEqual(['Normal case'], keys_to_unset)
+        assert new_keys == keys_to_set
+        assert ['Normal case'] == keys_to_unset
 
     def test_compare_aws_tags_aws(self):
         starting_tags = dict(self.tag_aws_dict)
         desired_tags = dict(self.tag_minimal_dict)
         tags_to_set, tags_to_unset = compare_aws_tags(starting_tags, desired_tags, purge_tags=True)
-        self.assertEqual(desired_tags, tags_to_set)
-        self.assertEqual([], tags_to_unset)
+        assert desired_tags == tags_to_set
+        assert [] == tags_to_unset
         # If someone explicitly passes a changed 'aws:' key the APIs will probably
         # throw an error, but this is their responsibility.
         desired_tags.update(self.tag_aws_changed)
         tags_to_set, tags_to_unset = compare_aws_tags(starting_tags, desired_tags, purge_tags=True)
-        self.assertEqual(desired_tags, tags_to_set)
-        self.assertEqual([], tags_to_unset)
+        assert desired_tags == tags_to_set
+        assert [] == tags_to_unset
 
     def test_compare_aws_tags_aws_complex(self):
         old_dict = dict(self.tag_example_dict)
@@ -164,14 +162,14 @@ class Ec2Utils(unittest.TestCase):
         new_dict.update(new_keys)
         del new_dict['Normal case']
         keys_to_set, keys_to_unset = compare_aws_tags(old_dict, new_dict)
-        self.assertEqual(new_keys, keys_to_set)
-        self.assertEqual(['Normal case'], keys_to_unset)
+        assert new_keys == keys_to_set
+        assert ['Normal case'] == keys_to_unset
         keys_to_set, keys_to_unset = compare_aws_tags(old_dict, new_dict, purge_tags=False)
-        self.assertEqual(new_keys, keys_to_set)
-        self.assertEqual([], keys_to_unset)
+        assert new_keys == keys_to_set
+        assert [] == keys_to_unset
         keys_to_set, keys_to_unset = compare_aws_tags(old_dict, new_dict, purge_tags=True)
-        self.assertEqual(new_keys, keys_to_set)
-        self.assertEqual(['Normal case'], keys_to_unset)
+        assert new_keys == keys_to_set
+        assert ['Normal case'] == keys_to_unset
 
     # ========================================================
     #   tagging.boto3_tag_specifications
@@ -182,17 +180,17 @@ class Ec2Utils(unittest.TestCase):
     def test_boto3_tag_specifications_no_type(self):
         tag_specification = boto3_tag_specifications(self.tag_minimal_dict)
         expected_specification = [{'Tags': self.tag_minimal_boto3_list}]
-        self.assertEqual(tag_specification, expected_specification)
+        assert tag_specification == expected_specification
 
     def test_boto3_tag_specifications_string_type(self):
         tag_specification = boto3_tag_specifications(self.tag_minimal_dict, 'instance')
         expected_specification = [{'ResourceType': 'instance', 'Tags': self.tag_minimal_boto3_list}]
-        self.assertEqual(tag_specification, expected_specification)
+        assert tag_specification == expected_specification
 
     def test_boto3_tag_specifications_single_type(self):
         tag_specification = boto3_tag_specifications(self.tag_minimal_dict, ['instance'])
         expected_specification = [{'ResourceType': 'instance', 'Tags': self.tag_minimal_boto3_list}]
-        self.assertEqual(tag_specification, expected_specification)
+        assert tag_specification == expected_specification
 
     def test_boto3_tag_specifications_multipe_types(self):
         tag_specification = boto3_tag_specifications(self.tag_minimal_dict, ['instance', 'volume'])
@@ -202,4 +200,4 @@ class Ec2Utils(unittest.TestCase):
         ]
         sorted_tag_spec = sorted(tag_specification, key=lambda i: (i['ResourceType']))
         sorted_expected = sorted(expected_specification, key=lambda i: (i['ResourceType']))
-        self.assertEqual(sorted_tag_spec, sorted_expected)
+        assert sorted_tag_spec == sorted_expected

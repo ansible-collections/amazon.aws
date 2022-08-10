@@ -4,22 +4,11 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import (absolute_import, division, print_function)
-
 __metaclass__ = type
 
-# import unittest
 import pytest
 
-from ansible_collections.amazon.aws.plugins.module_utils.arn import is_outpost_arn
 from ansible_collections.amazon.aws.plugins.module_utils.arn import parse_aws_arn
-
-outpost_arn_test_inputs = [
-    ("arn:aws:outposts:us-east-1:123456789012:outpost/op-1234567890abcdef0", True),
-    ("arn:aws:outposts:us-east-1:123456789012:outpost/op-1234567890abcdef0123", False),
-    ("arn:aws:outpost:us-east-1: 123456789012:outpost/ op-1234567890abcdef0", False),
-    ("ars:aws:outposts:us-east-1: 123456789012:outpost/ op-1234567890abcdef0", False),
-    ("arn:was:outposts:us-east-1: 123456789012:outpost/ op-1234567890abcdef0", False),
-]
 
 arn_bad_values = [
     ("arn:aws:outpost:us-east-1: 123456789012:outpost/op-1234567890abcdef0"),
@@ -71,12 +60,26 @@ arn_good_values = [
          resource='stateful-rulegroup/BotNetCommandAndControlDomainsActionOrder'),
     dict(partition='aws', service='iam', region='', account_id='aws',
          resource='policy/AWSDirectConnectReadOnlyAccess'),
+    # Examples merged in from test_arn.py
+    dict(partition="aws-us-gov", service="iam", region="", account_id="0123456789",
+         resource="role/foo-role"),
+    dict(partition="aws", service='iam', region="", account_id="123456789012",
+         resource="user/dev/*"),
+    dict(partition="aws", service="iam", region="", account_id="123456789012",
+         resource="user:test"),
+    dict(partition="aws-cn", service="iam", region="", account_id="123456789012",
+         resource="user:test"),
+    dict(partition="aws", service="iam", region="", account_id="123456789012",
+         resource="user"),
+    dict(partition="aws", service="s3", region="", account_id="",
+         resource="my_corporate_bucket/*"),
+    dict(partition="aws", service="s3", region="", account_id="",
+         resource="my_corporate_bucket/Development/*"),
+    dict(partition="aws", service="rds", region="es-east-1", account_id="000000000000",
+         resource="snapshot:rds:my-db-snapshot"),
+    dict(partition="aws", service="cloudformation", region="us-east-1", account_id="012345678901",
+         resource="changeSet/Ansible-StackName-c6884247ede41eb0"),
 ]
-
-
-@pytest.mark.parametrize("outpost_arn, result", outpost_arn_test_inputs)
-def test_is_outpost_arn(outpost_arn, result):
-    assert is_outpost_arn(outpost_arn) == result
 
 
 @pytest.mark.parametrize("arn", arn_bad_values)
