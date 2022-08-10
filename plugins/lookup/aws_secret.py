@@ -9,11 +9,11 @@ name: aws_secret
 author:
   - Aaron Smith (!UNKNOWN) <ajsmith10381@gmail.com>
 extends_documentation_fragment:
-- amazon.aws.aws_boto3
-- amazon.aws.aws_credentials
-- amazon.aws.aws_region
+  - amazon.aws.aws_boto3
+  - amazon.aws.aws_credentials
+  - amazon.aws.aws_region
 
-short_description: Look up secrets stored in AWS Secrets Manager.
+short_description: Look up secrets stored in AWS Secrets Manager
 description:
   - Look up secrets stored in AWS Secrets Manager provided the caller
     has the appropriate permissions to read the secret.
@@ -41,36 +41,36 @@ options:
     required: False
   join:
     description:
-        - Join two or more entries to form an extended secret.
-        - This is useful for overcoming the 4096 character limit imposed by AWS.
-        - No effect when used with I(bypath).
+      - Join two or more entries to form an extended secret.
+      - This is useful for overcoming the 4096 character limit imposed by AWS.
+      - No effect when used with I(bypath).
     type: boolean
     default: false
   on_deleted:
     description:
-        - Action to take if the secret has been marked for deletion.
-        - C(error) will raise a fatal error when the secret has been marked for deletion.
-        - C(skip) will silently ignore the deleted secret.
-        - C(warn) will skip over the deleted secret but issue a warning.
+      - Action to take if the secret has been marked for deletion.
+      - C(error) will raise a fatal error when the secret has been marked for deletion.
+      - C(skip) will silently ignore the deleted secret.
+      - C(warn) will skip over the deleted secret but issue a warning.
     default: error
     type: string
     choices: ['error', 'skip', 'warn']
     version_added: 2.0.0
   on_missing:
     description:
-        - Action to take if the secret is missing.
-        - C(error) will raise a fatal error when the secret is missing.
-        - C(skip) will silently ignore the missing secret.
-        - C(warn) will skip over the missing secret but issue a warning.
+      - Action to take if the secret is missing.
+      - C(error) will raise a fatal error when the secret is missing.
+      - C(skip) will silently ignore the missing secret.
+      - C(warn) will skip over the missing secret but issue a warning.
     default: error
     type: string
     choices: ['error', 'skip', 'warn']
   on_denied:
     description:
-        - Action to take if access to the secret is denied.
-        - C(error) will raise a fatal error when access to the secret is denied.
-        - C(skip) will silently ignore the denied secret.
-        - C(warn) will skip over the denied secret but issue a warning.
+      - Action to take if access to the secret is denied.
+      - C(error) will raise a fatal error when access to the secret is denied.
+      - C(skip) will silently ignore the denied secret.
+      - C(warn) will skip over the denied secret but issue a warning.
     default: error
     type: string
     choices: ['error', 'skip', 'warn']
@@ -141,11 +141,11 @@ def _boto3_conn(region, credentials):
 
     try:
         connection = boto3.session.Session(profile_name=boto_profile).client('secretsmanager', region, **credentials)
-    except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
+    except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError):
         if boto_profile:
             try:
                 connection = boto3.session.Session(profile_name=boto_profile).client('secretsmanager', region)
-            except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError) as e:
+            except (botocore.exceptions.ProfileNotFound, botocore.exceptions.PartialCredentialsError):
                 raise AnsibleError("Insufficient credentials found.")
         else:
             raise AnsibleError("Insufficient credentials found.")
@@ -262,7 +262,6 @@ class LookupModule(LookupBase):
                 return response['SecretBinary']
             if 'SecretString' in response:
                 if nested:
-                    secrets = []
                     query = term.split('.')[1:]
                     secret_string = json.loads(response['SecretString'])
                     ret_val = secret_string

@@ -5,134 +5,134 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 DOCUMENTATION = '''
-    name: aws_ec2
-    short_description: EC2 inventory source
-    extends_documentation_fragment:
-    - inventory_cache
-    - constructed
-    - amazon.aws.aws_boto3
-    - amazon.aws.aws_credentials
-
+name: aws_ec2
+short_description: EC2 inventory source
+extends_documentation_fragment:
+  - inventory_cache
+  - constructed
+  - amazon.aws.aws_boto3
+  - amazon.aws.aws_credentials
+description:
+  - Get inventory hosts from Amazon Web Services EC2.
+  - Uses a YAML configuration file that ends with C(aws_ec2.{yml|yaml}).
+notes:
+  - If no credentials are provided and the control node has an associated IAM instance profile then the
+    role will be used for authentication.
+author:
+  - Sloane Hertel (@s-hertel)
+options:
+  plugin:
+    description: Token that ensures this is a source file for the plugin.
+    required: True
+    choices: ['aws_ec2', 'amazon.aws.aws_ec2']
+  iam_role_arn:
     description:
-        - Get inventory hosts from Amazon Web Services EC2.
-        - Uses a YAML configuration file that ends with C(aws_ec2.{yml|yaml}).
-    notes:
-        - If no credentials are provided and the control node has an associated IAM instance profile then the
-          role will be used for authentication.
-    author:
-        - Sloane Hertel (@s-hertel)
-    options:
-        plugin:
-            description: Token that ensures this is a source file for the plugin.
-            required: True
-            choices: ['aws_ec2', 'amazon.aws.aws_ec2']
-        iam_role_arn:
-          description: The ARN of the IAM role to assume to perform the inventory lookup. You should still provide AWS
-              credentials with enough privilege to perform the AssumeRole action.
-        regions:
-          description:
-              - A list of regions in which to describe EC2 instances.
-              - If empty (the default) default this will include all regions, except possibly restricted ones like us-gov-west-1 and cn-north-1.
-          type: list
-          elements: str
-          default: []
-        hostnames:
-          description:
-              - A list in order of precedence for hostname variables.
-          type: list
-          elements: dict
-          default: []
-          suboptions:
-            name:
-                description:
-                    - Name of the host.
-                    - Can be one of the options specified in U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
-                    - To use tags as hostnames use the syntax tag:Name=Value to use the hostname Name_Value, or tag:Name to use the value of the Name tag.
-                    - If value provided does not exist in the above options, it will be used as a literal string.
-                type: str
-                required: True
-            prefix:
-                description:
-                    - Prefix to prepend to I(name). Same options as I(name).
-                    - If I(prefix) is specified, final hostname will be I(prefix) +  I(separator) + I(name).
-                type: str
-                default: ''
-                required: False
-            separator:
-                description:
-                    - Value to separate I(prefix) and I(name) when I(prefix) is specified.
-                type: str
-                default: '_'
-                required: False
-        filters:
-          description:
-              - A dictionary of filter value pairs.
-              - Available filters are listed here U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
-          type: dict
-          default: {}
-        include_filters:
-          description:
-              - A list of filters. Any instances matching at least one of the filters are included in the result.
-              - Available filters are listed here U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
-              - Every entry in this list triggers a search query. As such, from a performance point of view, it's better to
-                keep the list as short as possible.
-          type: list
-          elements: dict
-          default: []
-          version_added: 1.5.0
-        exclude_filters:
-          description:
-              - A list of filters. Any instances matching one of the filters are excluded from the result.
-              - The filters from C(exclude_filters) take priority over the C(include_filters) and C(filters) keys
-              - Available filters are listed here U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
-              - Every entry in this list triggers a search query. As such, from a performance point of view, it's better to
-                keep the list as short as possible.
-          type: list
-          elements: dict
-          default: []
-          version_added: 1.5.0
-        include_extra_api_calls:
-          description:
-              - Add two additional API calls for every instance to include 'persistent' and 'events' host variables.
-              - Spot instances may be persistent and instances may have associated events.
-          type: bool
-          default: False
-        strict_permissions:
-          description:
-              - By default if a 403 (Forbidden) error code is encountered this plugin will fail.
-              - You can set this option to False in the inventory config file which will allow 403 errors to be gracefully skipped.
-          type: bool
-          default: True
-        use_contrib_script_compatible_sanitization:
-          description:
-            - By default this plugin is using a general group name sanitization to create safe and usable group names for use in Ansible.
-              This option allows you to override that, in efforts to allow migration from the old inventory script and
-              matches the sanitization of groups when the script's ``replace_dash_in_groups`` option is set to ``False``.
-              To replicate behavior of ``replace_dash_in_groups = True`` with constructed groups,
-              you will need to replace hyphens with underscores via the regex_replace filter for those entries.
-            - For this to work you should also turn off the TRANSFORM_INVALID_GROUP_CHARS setting,
-              otherwise the core engine will just use the standard sanitization on top.
-            - This is not the default as such names break certain functionality as not all characters are valid Python identifiers
-              which group names end up being used as.
-          type: bool
-          default: False
-        use_contrib_script_compatible_ec2_tag_keys:
-          description:
-            - Expose the host tags with ec2_tag_TAGNAME keys like the old ec2.py inventory script.
-            - The use of this feature is discouraged and we advise to migrate to the new ``tags`` structure.
-          type: bool
-          default: False
-          version_added: 1.5.0
-        hostvars_prefix:
-          description:
-            - The prefix for host variables names coming from AWS.
-          type: str
-          version_added: 3.1.0
-        hostvars_suffix:
-          description:
-            - The suffix for host variables names coming from AWS.
-          type: str
-          version_added: 3.1.0
+      - The ARN of the IAM role to assume to perform the inventory lookup. You should still provide AWS
+        credentials with enough privilege to perform the AssumeRole action.
+  regions:
+    description:
+      - A list of regions in which to describe EC2 instances.
+      - If empty (the default) default this will include all regions, except possibly restricted ones like us-gov-west-1 and cn-north-1.
+    type: list
+    elements: str
+    default: []
+  hostnames:
+    description:
+      - A list in order of precedence for hostname variables.
+    type: list
+    elements: dict
+    default: []
+    suboptions:
+      name:
+        description:
+          - Name of the host.
+          - Can be one of the options specified in U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
+          - To use tags as hostnames use the syntax tag:Name=Value to use the hostname Name_Value, or tag:Name to use the value of the Name tag.
+          - If value provided does not exist in the above options, it will be used as a literal string.
+        type: str
+        required: True
+      prefix:
+        description:
+          - Prefix to prepend to I(name). Same options as I(name).
+          - If I(prefix) is specified, final hostname will be I(prefix) +  I(separator) + I(name).
+        type: str
+        default: ''
+        required: False
+      separator:
+        description:
+          - Value to separate I(prefix) and I(name) when I(prefix) is specified.
+        type: str
+        default: '_'
+        required: False
+  filters:
+    description:
+      - A dictionary of filter value pairs.
+      - Available filters are listed here U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
+    type: dict
+    default: {}
+  include_filters:
+    description:
+      - A list of filters. Any instances matching at least one of the filters are included in the result.
+      - Available filters are listed here U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
+      - Every entry in this list triggers a search query. As such, from a performance point of view, it's better to
+        keep the list as short as possible.
+    type: list
+    elements: dict
+    default: []
+    version_added: 1.5.0
+  exclude_filters:
+    description:
+      - A list of filters. Any instances matching one of the filters are excluded from the result.
+      - The filters from C(exclude_filters) take priority over the C(include_filters) and C(filters) keys
+      - Available filters are listed here U(http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html#options).
+      - Every entry in this list triggers a search query. As such, from a performance point of view, it's better to
+        keep the list as short as possible.
+    type: list
+    elements: dict
+    default: []
+    version_added: 1.5.0
+  include_extra_api_calls:
+    description:
+      - Add two additional API calls for every instance to include 'persistent' and 'events' host variables.
+      - Spot instances may be persistent and instances may have associated events.
+    type: bool
+    default: False
+  strict_permissions:
+    description:
+      - By default if a 403 (Forbidden) error code is encountered this plugin will fail.
+      - You can set this option to False in the inventory config file which will allow 403 errors to be gracefully skipped.
+    type: bool
+    default: True
+  use_contrib_script_compatible_sanitization:
+    description:
+      - By default this plugin is using a general group name sanitization to create safe and usable group names for use in Ansible.
+        This option allows you to override that, in efforts to allow migration from the old inventory script and
+        matches the sanitization of groups when the script's ``replace_dash_in_groups`` option is set to ``False``.
+        To replicate behavior of ``replace_dash_in_groups = True`` with constructed groups,
+        you will need to replace hyphens with underscores via the regex_replace filter for those entries.
+      - For this to work you should also turn off the TRANSFORM_INVALID_GROUP_CHARS setting,
+        otherwise the core engine will just use the standard sanitization on top.
+      - This is not the default as such names break certain functionality as not all characters are valid Python identifiers
+        which group names end up being used as.
+    type: bool
+    default: False
+  use_contrib_script_compatible_ec2_tag_keys:
+    description:
+      - Expose the host tags with ec2_tag_TAGNAME keys like the old ec2.py inventory script.
+      - The use of this feature is discouraged and we advise to migrate to the new ``tags`` structure.
+    type: bool
+    default: False
+    version_added: 1.5.0
+  hostvars_prefix:
+    description:
+      - The prefix for host variables names coming from AWS.
+    type: str
+    version_added: 3.1.0
+  hostvars_suffix:
+    description:
+      - The suffix for host variables names coming from AWS.
+    type: str
+    version_added: 3.1.0
 '''
 
 EXAMPLES = '''
@@ -543,7 +543,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         '''
         all_instances = []
 
-        for connection, region in self._boto3_conn(regions):
+        for connection, _region in self._boto3_conn(regions):
             try:
                 # By default find non-terminated/terminating instances
                 if not any(f['Name'] == 'instance-state-name' for f in filters):
