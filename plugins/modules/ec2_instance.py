@@ -1812,6 +1812,8 @@ def enforce_count(existing_matches, module, desired_module_state):
         if current_count == exact_count:
             module.exit_json(
                 changed=False,
+                instances=[pretty_instance(i) for i in existing_matches],
+                instance_ids=[i['InstanceId'] for i in existing_matches],
                 msg='{0} instances already running, nothing to do.'.format(exact_count)
             )
 
