@@ -6,16 +6,24 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
+from pprint import pprint
 import pytest
-import botocore
-import boto3
 import json
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
-from pprint import pprint
+try:
+    import botocore
+    import boto3
+except ImportError:
+    pass
+
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+
+if not HAS_BOTO3:
+    pytestmark = pytest.mark.skip("test_minimal_versions.py requires the python modules 'boto3' and 'botocore'")
 
 
-class TestMinimalVersions(object):
+class TestMinimalVersionTestSuite(object):
     # ========================================================
     # Prepare some data for use in our testing
     # ========================================================
@@ -36,10 +44,10 @@ class TestMinimalVersions(object):
         # Create a minimal module that we can call
         module = AnsibleAWSModule(argument_spec=dict())
 
-        with pytest.raises(SystemExit) as e:
+        with pytest.raises(SystemExit):
             module.exit_json()
 
-        out, err = capfd.readouterr()
+        out, _err = capfd.readouterr()
         return_val = json.loads(out)
 
         assert return_val.get("exception") is None
@@ -59,10 +67,10 @@ class TestMinimalVersions(object):
         # Create a minimal module that we can call
         module = AnsibleAWSModule(argument_spec=dict(), check_boto3=False)
 
-        with pytest.raises(SystemExit) as e:
+        with pytest.raises(SystemExit):
             module.exit_json()
 
-        out, err = capfd.readouterr()
+        out, _err = capfd.readouterr()
         return_val = json.loads(out)
 
         assert return_val.get("exception") is None
@@ -82,7 +90,7 @@ class TestMinimalVersions(object):
         # Create a minimal module that we can call
         module = AnsibleAWSModule(argument_spec=dict())
 
-        with pytest.raises(SystemExit) as e:
+        with pytest.raises(SystemExit):
             module.exit_json()
 
         out, err = capfd.readouterr()
@@ -115,7 +123,7 @@ class TestMinimalVersions(object):
         # Create a minimal module that we can call
         module = AnsibleAWSModule(argument_spec=dict())
 
-        with pytest.raises(SystemExit) as e:
+        with pytest.raises(SystemExit):
             module.exit_json()
 
         out, err = capfd.readouterr()
@@ -148,7 +156,7 @@ class TestMinimalVersions(object):
         # Create a minimal module that we can call
         module = AnsibleAWSModule(argument_spec=dict())
 
-        with pytest.raises(SystemExit) as e:
+        with pytest.raises(SystemExit):
             module.exit_json()
 
         out, err = capfd.readouterr()

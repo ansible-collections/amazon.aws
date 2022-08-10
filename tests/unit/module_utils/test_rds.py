@@ -4,20 +4,24 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
-
 __metaclass__ = type
-
-from ansible_collections.amazon.aws.plugins.module_utils import rds
-from ansible_collections.amazon.aws.tests.unit.compat import unittest
-from ansible_collections.amazon.aws.tests.unit.compat.mock import MagicMock
 
 from contextlib import nullcontext
 import pytest
 
 try:
-    from botocore.exceptions import ClientError, WaiterError
+    import botocore
 except ImportError:
+    # Handled by HAS_BOTO3
     pass
+
+from ansible_collections.amazon.aws.tests.unit.compat.mock import MagicMock
+
+from ansible_collections.amazon.aws.plugins.module_utils import rds
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
+
+if not HAS_BOTO3:
+    pytestmark = pytest.mark.skip("test_rds.py requires the python modules 'boto3' and 'botocore'")
 
 
 def expected(x):
@@ -31,6 +35,10 @@ def error(*args, **kwargs):
 def build_exception(
     operation_name, code=None, message=None, http_status_code=None, error=True
 ):
+    # Support skipping the test is botocore isn't installed
+    # (called by parametrize before skip is evaluated)
+    if not HAS_BOTO3:
+        return Exception('MissingBotoCore')
     response = {}
     if error or code or message:
         response["Error"] = {}
@@ -40,7 +48,8 @@ def build_exception(
         response["Error"]["Message"] = message
     if http_status_code:
         response["ResponseMetadata"] = {"HTTPStatusCode": http_status_code}
-    return ClientError(response, operation_name)
+
+    return botocore.exceptions.ClientError(response, operation_name)
 
 
 @pytest.mark.parametrize("waiter_name", ["", "db_snapshot_available"])
@@ -66,7 +75,7 @@ def test__wait_for_cluster_snapshot_status(waiter_name):
     ],
 )
 def test__wait_for_instance_snapshot_status_failed(input, expected):
-    spec = {"get_waiter.side_effect": [WaiterError(None, None, None)]}
+    spec = {"get_waiter.side_effect": [botocore.exceptions.WaiterError(None, None, None)]}
     client = MagicMock(**spec)
     module = MagicMock()
 
@@ -89,7 +98,7 @@ def test__wait_for_instance_snapshot_status_failed(input, expected):
     ],
 )
 def test__wait_for_cluster_snapshot_status_failed(input, expected):
-    spec = {"get_waiter.side_effect": [WaiterError(None, None, None)]}
+    spec = {"get_waiter.side_effect": [botocore.exceptions.WaiterError(None, None, None)]}
     client = MagicMock(**spec)
     module = MagicMock()
 
@@ -713,7 +722,7 @@ def test__handle_errors_failed(method_name, exception, expected, error):
         module.fail_json_aws.call_args[1]["msg"] == expected
 
 
-class RdsUtils(unittest.TestCase):
+class RdsUtilsTestSuite():
 
     # ========================================================
     # Setup some initial data that we can use within our tests
@@ -741,28 +750,28 @@ class RdsUtils(unittest.TestCase):
     def test_compare_iam_roles_equal(self):
         existing_list = self.target_role_list
         roles_to_add, roles_to_delete = rds.compare_iam_roles(existing_list, self.target_role_list, purge_roles=False)
-        self.assertEqual([], roles_to_add)
-        self.assertEqual([], roles_to_delete)
+        assert [] == roles_to_add
+        assert [] == roles_to_delete
         roles_to_add, roles_to_delete = rds.compare_iam_roles(existing_list, self.target_role_list, purge_roles=True)
-        self.assertEqual([], roles_to_add)
-        self.assertEqual([], roles_to_delete)
+        assert [] == roles_to_add
+        assert [] == roles_to_delete
 
     def test_compare_iam_roles_empty_arr_existing(self):
         roles_to_add, roles_to_delete = rds.compare_iam_roles([], self.target_role_list, purge_roles=False)
-        self.assertEqual(self.target_role_list, roles_to_add)
-        self.assertEqual([], roles_to_delete)
+        assert self.target_role_list == roles_to_add
+        assert [] == roles_to_delete
         roles_to_add, roles_to_delete = rds.compare_iam_roles([], self.target_role_list, purge_roles=True)
-        self.assertEqual(self.target_role_list, roles_to_add)
-        self.assertEqual([], roles_to_delete)
+        assert self.target_role_list, roles_to_add
+        assert [] == roles_to_delete
 
     def test_compare_iam_roles_empty_arr_target(self):
         existing_list = self.target_role_list
         roles_to_add, roles_to_delete = rds.compare_iam_roles(existing_list, [], purge_roles=False)
-        self.assertEqual([], roles_to_add)
-        self.assertEqual([], roles_to_delete)
+        assert [] == roles_to_add
+        assert [] == roles_to_delete
         roles_to_add, roles_to_delete = rds.compare_iam_roles(existing_list, [], purge_roles=True)
-        self.assertEqual([], roles_to_add)
-        self.assertEqual(self.target_role_list, roles_to_delete)
+        assert [] == roles_to_add
+        assert self.target_role_list == roles_to_delete
 
     def test_compare_iam_roles_different(self):
         existing_list = [
@@ -771,11 +780,11 @@ class RdsUtils(unittest.TestCase):
                 'feature_name': 's3Export'
             }]
         roles_to_add, roles_to_delete = rds.compare_iam_roles(existing_list, self.target_role_list, purge_roles=False)
-        self.assertEqual(self.target_role_list, roles_to_add)
-        self.assertEqual([], roles_to_delete)
+        assert self.target_role_list == roles_to_add
+        assert [] == roles_to_delete
         roles_to_add, roles_to_delete = rds.compare_iam_roles(existing_list, self.target_role_list, purge_roles=True)
-        self.assertEqual(self.target_role_list, roles_to_add)
-        self.assertEqual(existing_list, roles_to_delete)
+        assert self.target_role_list == roles_to_add
+        assert existing_list == roles_to_delete
 
         existing_list = self.target_role_list.copy()
         self.target_role_list = [
@@ -784,8 +793,8 @@ class RdsUtils(unittest.TestCase):
                 'feature_name': 's3Export'
             }]
         roles_to_add, roles_to_delete = rds.compare_iam_roles(existing_list, self.target_role_list, purge_roles=False)
-        self.assertEqual(self.target_role_list, roles_to_add)
-        self.assertEqual([], roles_to_delete)
+        assert self.target_role_list == roles_to_add
+        assert [] == roles_to_delete
         roles_to_add, roles_to_delete = rds.compare_iam_roles(existing_list, self.target_role_list, purge_roles=True)
-        self.assertEqual(self.target_role_list, roles_to_add)
-        self.assertEqual(existing_list, roles_to_delete)
+        assert self.target_role_list == roles_to_add
+        assert existing_list == roles_to_delete

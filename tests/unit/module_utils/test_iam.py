@@ -8,10 +8,14 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import pytest
-import botocore
+
+try:
+    import botocore
+except ImportError:
+    # Handled by HAS_BOTO3
+    pass
 
 from ansible_collections.amazon.aws.tests.unit.compat.mock import MagicMock
-from ansible_collections.amazon.aws.tests.unit.compat import unittest
 
 import ansible_collections.amazon.aws.plugins.module_utils.iam as utils_iam
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
@@ -20,7 +24,7 @@ if not HAS_BOTO3:
     pytestmark = pytest.mark.skip("test_iam.py requires the python modules 'boto3' and 'botocore'")
 
 
-class IamUtilsTestSuite(unittest.TestCase):
+class IamUtilsTestSuite():
 
     def _make_denied_exception(self, partition):
         return botocore.exceptions.ClientError(

@@ -8,7 +8,6 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 from ansible_collections.amazon.aws.plugins.module_utils import elbv2
-from ansible_collections.amazon.aws.tests.unit.compat import unittest
 from ansible_collections.amazon.aws.tests.unit.compat.mock import MagicMock
 
 one_action = [
@@ -65,9 +64,9 @@ def _sort_actions_one_entry():
     assert elbv2._sort_actions(one_action) == one_action
 
 
-class ElBV2UtilsTestSuite(unittest.TestCase):
+class ElBV2UtilsTestSuite():
 
-    def setUp(self):
+    def setup_method(self):
         self.connection = MagicMock(name="connection")
         self.module = MagicMock(name="module")
 
@@ -187,25 +186,25 @@ class ElBV2UtilsTestSuite(unittest.TestCase):
         self.connection.describe_tags.assert_called_once()
         self.conn_paginator.paginate.assert_called_once()
         # assert we got the expected value
-        self.assertEqual(return_value, 'ipv4')
+        assert return_value == 'ipv4'
 
     # Test modify_ip_address_type idempotency
     def test_modify_ip_address_type_idempotency(self):
         # Run module
-        return_value = self.elbv2obj.modify_ip_address_type("ipv4")
+        self.elbv2obj.modify_ip_address_type("ipv4")
         # check that no method was called and this has been retrieved from elb attributes
         self.connection.set_ip_address_type.assert_not_called()
         # assert we got the expected value
-        self.assertEqual(self.elbv2obj.changed, False)
+        assert self.elbv2obj.changed is False
 
     # Test modify_ip_address_type
     def test_modify_ip_address_type_update(self):
         # Run module
-        return_value = self.elbv2obj.modify_ip_address_type("dualstack")
+        self.elbv2obj.modify_ip_address_type("dualstack")
         # check that no method was called and this has been retrieved from elb attributes
         self.connection.set_ip_address_type.assert_called_once()
         # assert we got the expected value
-        self.assertEqual(self.elbv2obj.changed, True)
+        assert self.elbv2obj.changed is True
 
     # Test get_elb_attributes
     def test_get_elb_attributes(self):
@@ -226,4 +225,4 @@ class ElBV2UtilsTestSuite(unittest.TestCase):
         # Run module
         actual_elb_attributes = self.elbv2obj.get_elb_attributes()
         # Assert we got the expected result
-        self.assertEqual(actual_elb_attributes, expected_elb_attributes)
+        assert actual_elb_attributes == expected_elb_attributes
