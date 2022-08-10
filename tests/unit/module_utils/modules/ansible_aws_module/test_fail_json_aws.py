@@ -6,16 +6,25 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import pytest
-import botocore
-import boto3
 import json
+import pytest
+
+try:
+    import botocore
+    import boto3
+except ImportError:
+    pass
 
 from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
+
+if not HAS_BOTO3:
+    pytestmark = pytest.mark.skip("test_fail_json_aws.py requires the python modules 'boto3' and 'botocore'")
 
 
-class TestFailJsonAws(object):
+class TestFailJsonAwsTestSuite(object):
     # ========================================================
     # Prepare some data for use in our testing
     # ========================================================
@@ -61,7 +70,7 @@ class TestFailJsonAws(object):
             with pytest.raises(SystemExit) as ctx:
                 module.fail_json_aws(e)
             assert ctx.value.code == 1
-        out, err = capfd.readouterr()
+        out, _err = capfd.readouterr()
         return_val = json.loads(out)
 
         assert return_val.get("msg") == self.EXAMPLE_MSG
@@ -88,7 +97,7 @@ class TestFailJsonAws(object):
             with pytest.raises(SystemExit) as ctx:
                 module.fail_json_aws(e, msg=self.FAIL_MSG)
             assert ctx.value.code == 1
-        out, err = capfd.readouterr()
+        out, _err = capfd.readouterr()
         return_val = json.loads(out)
 
         assert return_val.get("msg") == self.FAIL_MSG + ": " + self.EXAMPLE_MSG
@@ -115,7 +124,7 @@ class TestFailJsonAws(object):
             with pytest.raises(SystemExit) as ctx:
                 module.fail_json_aws(e, self.FAIL_MSG)
             assert ctx.value.code == 1
-        out, err = capfd.readouterr()
+        out, _err = capfd.readouterr()
         return_val = json.loads(out)
 
         assert return_val.get("msg") == self.FAIL_MSG + ": " + self.EXAMPLE_MSG
@@ -142,7 +151,7 @@ class TestFailJsonAws(object):
             with pytest.raises(SystemExit) as ctx:
                 module.fail_json_aws(e, extra_key="Some Value")
             assert ctx.value.code == 1
-        out, err = capfd.readouterr()
+        out, _err = capfd.readouterr()
         return_val = json.loads(out)
 
         assert return_val.get("msg") == self.EXAMPLE_MSG
@@ -170,7 +179,7 @@ class TestFailJsonAws(object):
             with pytest.raises(SystemExit) as ctx:
                 module.fail_json_aws(e, extra_key="Some Value", msg=self.FAIL_MSG)
             assert ctx.value.code == 1
-        out, err = capfd.readouterr()
+        out, _err = capfd.readouterr()
         return_val = json.loads(out)
 
         assert return_val.get("msg") == self.FAIL_MSG + ": " + self.EXAMPLE_MSG
@@ -198,7 +207,7 @@ class TestFailJsonAws(object):
             with pytest.raises(SystemExit) as ctx:
                 module.fail_json_aws(e)
             assert ctx.value.code == 1
-        out, err = capfd.readouterr()
+        out, _err = capfd.readouterr()
         return_val = json.loads(out)
 
         assert return_val.get("msg") == self.DEFAULT_CORE_MSG
@@ -225,7 +234,7 @@ class TestFailJsonAws(object):
             with pytest.raises(SystemExit) as ctx:
                 module.fail_json_aws(e, msg=self.FAIL_MSG)
             assert ctx.value.code == 1
-        out, err = capfd.readouterr()
+        out, _err = capfd.readouterr()
         return_val = json.loads(out)
 
         assert return_val.get("msg") == self.FAIL_MSG + ": " + self.DEFAULT_CORE_MSG
@@ -253,7 +262,7 @@ class TestFailJsonAws(object):
             with pytest.raises(SystemExit) as ctx:
                 module.fail_json_aws(e, self.FAIL_MSG)
             assert ctx.value.code == 1
-        out, err = capfd.readouterr()
+        out, _err = capfd.readouterr()
         return_val = json.loads(out)
 
         assert return_val.get("msg") == self.FAIL_MSG + ": " + self.DEFAULT_CORE_MSG
@@ -280,7 +289,7 @@ class TestFailJsonAws(object):
             with pytest.raises(SystemExit) as ctx:
                 module.fail_json_aws(e, extra_key="Some Value")
             assert ctx.value.code == 1
-        out, err = capfd.readouterr()
+        out, _err = capfd.readouterr()
         return_val = json.loads(out)
 
         assert return_val.get("msg") == self.DEFAULT_CORE_MSG
@@ -308,7 +317,7 @@ class TestFailJsonAws(object):
             with pytest.raises(SystemExit) as ctx:
                 module.fail_json_aws(e, extra_key="Some Value", msg=self.FAIL_MSG)
             assert ctx.value.code == 1
-        out, err = capfd.readouterr()
+        out, _err = capfd.readouterr()
         return_val = json.loads(out)
 
         assert return_val.get("msg") == self.FAIL_MSG + ": " + self.DEFAULT_CORE_MSG

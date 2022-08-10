@@ -7,30 +7,10 @@ from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
-import unittest
-
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import map_complex_type
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import ansible_dict_to_boto3_filter_list
 
 
-class Ec2Utils(unittest.TestCase):
-
-    # ========================================================
-    # Setup some initial data that we can use within our tests
-    # ========================================================
-    def setUp(self):
-        pass
-
-    # ========================================================
-    #   ec2.map_complex_type
-    # ========================================================
-
-    def test_map_complex_type_over_dict(self):
-        complex_type = {'minimum_healthy_percent': "75", 'maximum_percent': "150"}
-        type_map = {'minimum_healthy_percent': 'int', 'maximum_percent': 'int'}
-        complex_type_mapped = map_complex_type(complex_type, type_map)
-        complex_type_expected = {'minimum_healthy_percent': 75, 'maximum_percent': 150}
-        self.assertEqual(complex_type_mapped, complex_type_expected)
+class AnsibleDictToBoto3FilterListTestSuite():
 
     # ========================================================
     #   ec2.ansible_dict_to_boto3_filter_list

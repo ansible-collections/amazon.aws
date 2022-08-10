@@ -3,7 +3,7 @@ __metaclass__ = type
 
 import pytest
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import scrub_none_parameters
+from ansible_collections.amazon.aws.plugins.module_utils.transformation import scrub_none_parameters
 
 scrub_none_test_data = [
     (dict(),  # Input

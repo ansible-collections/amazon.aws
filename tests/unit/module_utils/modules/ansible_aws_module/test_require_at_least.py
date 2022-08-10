@@ -6,12 +6,18 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import pytest
-import botocore
-import boto3
 import json
+import pytest
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
+try:
+    import botocore
+    import boto3
+except ImportError:
+    # Handled by HAS_BOTO3
+    pass
+
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
+from ansible_collections.amazon.aws.plugins.module_utils.modules import AnsibleAWSModule
 
 DUMMY_VERSION = '5.5.5.5'
 
@@ -34,8 +40,11 @@ TEST_VERSIONS = [
     ['10.10.10', '9.19.10', False],
 ]
 
+if not HAS_BOTO3:
+    pytestmark = pytest.mark.skip("test_require_at_least.py requires the python modules 'boto3' and 'botocore'")
 
-class TestRequireAtLeast(object):
+
+class TestRequireAtLeastTestSuite(object):
     # ========================================================
     # Prepare some data for use in our testing
     # ========================================================
@@ -85,11 +94,11 @@ class TestRequireAtLeast(object):
         # Create a minimal module that we can call
         module = AnsibleAWSModule(argument_spec=dict())
 
-        with pytest.raises(SystemExit) as e:
+        with pytest.raises(SystemExit):
             module.require_botocore_at_least(desired_version)
             module.exit_json()
 
-        out, err = capfd.readouterr()
+        out, _err = capfd.readouterr()
         return_val = json.loads(out)
 
         assert return_val.get("exception") is None
@@ -118,11 +127,11 @@ class TestRequireAtLeast(object):
         # Create a minimal module that we can call
         module = AnsibleAWSModule(argument_spec=dict())
 
-        with pytest.raises(SystemExit) as e:
+        with pytest.raises(SystemExit):
             module.require_boto3_at_least(desired_version)
             module.exit_json()
 
-        out, err = capfd.readouterr()
+        out, _err = capfd.readouterr()
         return_val = json.loads(out)
 
         assert return_val.get("exception") is None
@@ -153,11 +162,11 @@ class TestRequireAtLeast(object):
         # Create a minimal module that we can call
         module = AnsibleAWSModule(argument_spec=dict())
 
-        with pytest.raises(SystemExit) as e:
+        with pytest.raises(SystemExit):
             module.require_botocore_at_least(desired_version, reason=reason)
             module.exit_json()
 
-        out, err = capfd.readouterr()
+        out, _err = capfd.readouterr()
         return_val = json.loads(out)
 
         assert return_val.get("exception") is None
@@ -189,11 +198,11 @@ class TestRequireAtLeast(object):
         # Create a minimal module that we can call
         module = AnsibleAWSModule(argument_spec=dict())
 
-        with pytest.raises(SystemExit) as e:
+        with pytest.raises(SystemExit):
             module.require_boto3_at_least(desired_version, reason=reason)
             module.exit_json()
 
-        out, err = capfd.readouterr()
+        out, _err = capfd.readouterr()
         return_val = json.loads(out)
 
         assert return_val.get("exception") is None
