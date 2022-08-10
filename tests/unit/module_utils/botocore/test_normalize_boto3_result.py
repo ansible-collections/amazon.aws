@@ -2,13 +2,18 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import pytest
-from dateutil import parser as date_parser
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import normalize_boto3_result
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import normalize_boto3_result
 
 example_date_txt = '2020-12-30T00:00:00.000Z'
 example_date_iso = '2020-12-30T00:00:00+00:00'
-example_date = date_parser.parse(example_date_txt)
+
+try:
+    from dateutil import parser as date_parser
+    example_date = date_parser.parse(example_date_txt)
+except ImportError:
+    example_date = None
+    pytestmark = pytest.mark.skip("test_normalize_boto3_result.py requires the python module dateutil (python-dateutil)")
 
 
 normalize_boto3_result_data = [

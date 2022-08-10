@@ -8,18 +8,21 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import pytest
-import botocore
 
-from ansible_collections.amazon.aws.tests.unit.compat import unittest
+try:
+    import botocore
+except ImportError:
+    # Handled by HAS_BOTO3
+    pass
 
-from ansible_collections.amazon.aws.plugins.module_utils.core import is_boto3_error_message
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import HAS_BOTO3
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import is_boto3_error_message
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 
 if not HAS_BOTO3:
-    pytestmark = pytest.mark.skip("test_iam.py requires the python modules 'boto3' and 'botocore'")
+    pytestmark = pytest.mark.skip("test_is_boto3_error_message.py requires the python modules 'boto3' and 'botocore'")
 
 
-class Boto3ErrorTestSuite(unittest.TestCase):
+class Boto3ErrorMessageTestSuite():
 
     def _make_denied_exception(self):
         return botocore.exceptions.ClientError(
@@ -70,95 +73,73 @@ class Boto3ErrorTestSuite(unittest.TestCase):
     def _make_botocore_exception(self):
         return botocore.exceptions.EndpointConnectionError(endpoint_url='junk.endpoint')
 
-    def setUp(self):
-        pass
+    def _do_try_message(self, exception, messages):
+        try:
+            raise exception
+        except is_boto3_error_message(messages) as e:
+            return e
+
+    ###
+    # Test that is_boto3_error_message does what's expected when used in a try/except block
+    # (where we don't explicitly pass an exception to the function)
+    ###
 
     def test_is_boto3_error_message_single__raise__client(self):
-        caught_exception = None
+        # error with 'is not authorized to perform' in the message, should be caught in our try/except in _do_try_code
         thrown_exception = self._make_denied_exception()
-        # Test that we don't catch BotoCoreError
-        try:
-            raise thrown_exception
-        except is_boto3_error_message('is not authorized to perform') as e:
-            caught_exception = e
-            caught = 'Message'
-        except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
-            caught_exception = e
-            caught = 'ClientError'
-        except botocore.exceptions.BotoCoreError as e:
-            caught_exception = e
-            caught = 'BotoCoreError'
-        except Exception as e:
-            caught_exception = e
-            caught = 'Exception'
+        messages_to_catch = 'is not authorized to perform'
+
+        caught_exception = self._do_try_message(thrown_exception, messages_to_catch)
+
         self.assertEqual(caught_exception, thrown_exception)
-        self.assertEqual(caught, 'Message')
 
     def test_is_boto3_error_message_single__raise__unexpected(self):
-        caught_exception = None
+        # error with 'Boom!' as the message, shouldn't match and should fall through
         thrown_exception = self._make_unexpected_exception()
-        # Test that we don't catch BotoCoreError
-        try:
-            raise thrown_exception
-        except is_boto3_error_message('is not authorized to perform') as e:
-            caught_exception = e
-            caught = 'Message'
-        except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
-            caught_exception = e
-            caught = 'ClientError'
-        except botocore.exceptions.BotoCoreError as e:
-            caught_exception = e
-            caught = 'BotoCoreError'
-        except Exception as e:
-            caught_exception = e
-            caught = 'Exception'
-        self.assertEqual(caught_exception, thrown_exception)
-        self.assertEqual(caught, 'ClientError')
+        messages_to_catch = 'is not authorized to perform'
+
+        with pytest.raises(botocore.exceptions.ClientError) as context:
+            self._do_try_message(thrown_exception, messages_to_catch)
+
+        assert context.value == thrown_exception
 
     def test_is_boto3_error_message_single__raise__botocore(self):
-        caught_exception = None
-        thrown_exception = self._make_botocore_exception()
         # Test that we don't catch BotoCoreError
-        try:
-            raise thrown_exception
-        except is_boto3_error_message('is not authorized to perform') as e:
-            caught_exception = e
-            caught = 'Message'
-        except botocore.exceptions.ClientError as e:  # pylint: disable=duplicate-except
-            caught_exception = e
-            caught = 'ClientError'
-        except botocore.exceptions.BotoCoreError as e:
-            caught_exception = e
-            caught = 'BotoCoreError'
-        except Exception as e:
-            caught_exception = e
-            caught = 'Exception'
-        self.assertEqual(caught_exception, thrown_exception)
-        self.assertEqual(caught, 'BotoCoreError')
+        thrown_exception = self._make_botocore_exception()
+        messages_to_catch = 'is not authorized to perform'
+
+        with pytest.raises(botocore.exceptions.BotoCoreError) as context:
+            self._do_try_message(thrown_exception, messages_to_catch)
+
+        assert context.value == thrown_exception
+
+    ###
+    # Test that is_boto3_error_message returns what we expect when explicitly passed an exception
+    ###
 
     def test_is_boto3_error_message_single__pass__client(self):
         passed_exception = self._make_denied_exception()
         returned_exception = is_boto3_error_message('is not authorized to perform', e=passed_exception)
-        self.assertTrue(isinstance(passed_exception, returned_exception))
-        self.assertTrue(issubclass(returned_exception, botocore.exceptions.ClientError))
-        self.assertFalse(issubclass(returned_exception, botocore.exceptions.BotoCoreError))
-        self.assertTrue(issubclass(returned_exception, Exception))
-        self.assertNotEqual(returned_exception.__name__, "NeverEverRaisedException")
+        assert isinstance(passed_exception, returned_exception)
+        assert issubclass(returned_exception, botocore.exceptions.ClientError)
+        assert not issubclass(returned_exception, botocore.exceptions.BotoCoreError)
+        assert issubclass(returned_exception, Exception)
+        assert returned_exception.__name__ != "NeverEverRaisedException"
 
     def test_is_boto3_error_message_single__pass__unexpected(self):
         passed_exception = self._make_unexpected_exception()
         returned_exception = is_boto3_error_message('is not authorized to perform', e=passed_exception)
-        self.assertFalse(isinstance(passed_exception, returned_exception))
-        self.assertFalse(issubclass(returned_exception, botocore.exceptions.ClientError))
-        self.assertFalse(issubclass(returned_exception, botocore.exceptions.BotoCoreError))
-        self.assertTrue(issubclass(returned_exception, Exception))
-        self.assertEqual(returned_exception.__name__, "NeverEverRaisedException")
+        assert not isinstance(passed_exception, returned_exception)
+        assert not issubclass(returned_exception, botocore.exceptions.ClientError)
+        assert not issubclass(returned_exception, botocore.exceptions.BotoCoreError)
+        assert issubclass(returned_exception, Exception)
+        assert returned_exception.__name__ == "NeverEverRaisedException"
 
     def test_is_boto3_error_message_single__pass__botocore(self):
         passed_exception = self._make_botocore_exception()
         returned_exception = is_boto3_error_message('is not authorized to perform', e=passed_exception)
-        self.assertFalse(isinstance(passed_exception, returned_exception))
-        self.assertFalse(issubclass(returned_exception, botocore.exceptions.ClientError))
-        self.assertFalse(issubclass(returned_exception, botocore.exceptions.BotoCoreError))
-        self.assertTrue(issubclass(returned_exception, Exception))
-        self.assertEqual(returned_exception.__name__, "NeverEverRaisedException")
+        assert not isinstance(passed_exception, returned_exception)
+        assert not issubclass(returned_exception, botocore.exceptions.ClientError)
+        assert not issubclass(returned_exception, botocore.exceptions.BotoCoreError)
+        assert issubclass(returned_exception, Exception)
+        assert returned_exception.__name__ == "NeverEverRaisedException"
