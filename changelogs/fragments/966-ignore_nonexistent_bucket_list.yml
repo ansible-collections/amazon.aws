@@ -1,0 +1,2 @@
+bugfixes:
+- s3_object - fix ignore_nonexistent_bucket is not used when listing a bucket (https://github.com/ansible-collections/amazon.aws/issues/966).
