@@ -164,7 +164,8 @@
       that:
       - create_multiple_instances is not failed
       - create_multiple_instances is not changed
-      - '"instance_ids" not in create_multiple_instances'
+      - '"instance_ids" in create_multiple_instances'
+      - create_multiple_instances.instance_ids | length == 5
       - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
 
   - name: "Enforce instance count - launch 5 instances (Idempotency)"
@@ -183,7 +184,8 @@
       that:
       - create_multiple_instances is not failed
       - create_multiple_instances is not changed
-      - '"instance_ids" not in create_multiple_instances'
+      - '"instance_ids" in create_multiple_instances'
+      - create_multiple_instances.instance_ids | length == 5
       - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
 
   - name: "Enforce instance count to 3 - Terminate 2 instances (check_mode)"
@@ -202,7 +204,10 @@
       that:
       - terminate_multiple_instances is not failed
       - terminate_multiple_instances is changed
-      - '"instance_ids" not in terminate_multiple_instances'
+      - '"instance_ids" in terminate_multiple_instances'
+      - terminate_multiple_instances.instance_ids | length == 5
+      - '"terminated_ids" in terminate_multiple_instances'
+      - terminate_multiple_instances.terminated_ids | length == 2
       - '"ec2:RunInstances" not in terminate_multiple_instances.resource_actions'
 
   - name: "Enforce instance count to 3 - Terminate 2 instances"
@@ -221,6 +226,8 @@
       that:
       - terminate_multiple_instances is not failed
       - terminate_multiple_instances is changed
+      - '"instance_ids" in terminate_multiple_instances'
+      - terminate_multiple_instances.instance_ids | length == 5
       - '"terminated_ids" in terminate_multiple_instances'
       - terminate_multiple_instances.terminated_ids | length == 2
 
@@ -240,7 +247,9 @@
       that:
       - terminate_multiple_instances is not failed
       - terminate_multiple_instances is not changed
-      - '"instance_ids" not in terminate_multiple_instances'
+      - '"instance_ids" in terminate_multiple_instances'
+      - terminate_multiple_instances.instance_ids | length == 3
+      - '"terminated_ids" not in terminate_multiple_instances'
       - '"ec2:TerminateInstances" not in terminate_multiple_instances.resource_actions'
 
   - name: "Enforce instance count to 3 - Terminate 2 instances (Idempotency)"
@@ -258,7 +267,9 @@
       that:
       - terminate_multiple_instances is not failed
       - terminate_multiple_instances is not changed
-      - '"instance_ids" not in terminate_multiple_instances'
+      - '"instance_ids" in terminate_multiple_instances'
+      - terminate_multiple_instances.instance_ids | length == 3
+      - '"terminated_ids" not in terminate_multiple_instances'
       - '"ec2:TerminateInstances" not in terminate_multiple_instances.resource_actions'
 
   - name: "Enforce instance count to 6 - Launch 3 more instances (check_mode)"
@@ -278,7 +289,9 @@
       that:
       - create_multiple_instances is not failed
       - create_multiple_instances is changed
-      - '"instance_ids" not in create_multiple_instances'
+      - '"instance_ids" in create_multiple_instances'
+      - create_multiple_instances.instance_ids | length == 3
+      - '"changed_ids" not in create_multiple_instances'
       - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
 
   - name: "Enforce instance count to 6 - Launch 3 more instances"
@@ -302,7 +315,9 @@
       - create_multiple_instances is not failed
       - create_multiple_instances is changed
       - '"instance_ids" in create_multiple_instances'
-      - create_multiple_instances.instance_ids | length == 3
+      - create_multiple_instances.instance_ids | length == 6
+      - '"changed_ids" in create_multiple_instances'
+      - create_multiple_instances.changed_ids | length == 3
 
   - name: "Enforce instance count to 6 - Launch 3 more instances (check_mode - Idempotency)"
     ec2_instance:
@@ -321,7 +336,9 @@
       that:
       - create_multiple_instances is not failed
       - create_multiple_instances is not changed
-      - '"instance_ids" not in create_multiple_instances'
+      - '"instance_ids" in create_multiple_instances'
+      - create_multiple_instances.instance_ids | length == 6
+      - '"changed_ids" not in create_multiple_instances'
       - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
 
   - name: "Enforce instance count to 6 - Launch 3 more instances (Idempotency)"
@@ -340,7 +357,9 @@
       that:
       - create_multiple_instances is not failed
       - create_multiple_instances is not changed
-      - '"instance_ids" not in create_multiple_instances'
+      - '"instance_ids" in create_multiple_instances'
+      - create_multiple_instances.instance_ids | length == 6
+      - '"changed_ids" not in create_multiple_instances'
       - '"ec2:RunInstances" not in create_multiple_instances.resource_actions'
 
 
