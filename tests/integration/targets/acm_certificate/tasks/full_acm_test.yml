@@ -430,6 +430,10 @@
       tags:
         Name: '{{ chained_cert.name }}'
     register: check_chain
+    until:
+    - check_chain.certificates | length >= 1
+    retries: 5
+    delay: 2
   - name: check chain of cert we just uploaded
     assert:
       that:
