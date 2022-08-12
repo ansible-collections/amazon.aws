@@ -1,0 +1,8 @@
+minor_changes:
+- s3_object - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/968).
+- aws_caller_info - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/968).
+- cloudformation - avoid catching ``Exception``, catch more specific errors instead (https://github.com/ansible-collections/amazon.aws/pull/968).
+- ec2_metadata_facts - avoid catching ``Exception``, catch more specific errors instead (https://github.com/ansible-collections/amazon.aws/pull/968).
+- ec2_security_group - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/968).
+- ec2_vpc_endpoint - avoid catching ``Exception``, catch more specific errors instead (https://github.com/ansible-collections/amazon.aws/pull/968).
+- ec2_vpc_nat_gateway - minor linting fixes (https://github.com/ansible-collections/amazon.aws/pull/968).
