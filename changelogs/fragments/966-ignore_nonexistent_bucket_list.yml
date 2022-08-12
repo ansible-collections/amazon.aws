@@ -1,0 +1,2 @@
+bugfixes:
+- s3_object - also use ``ignore_nonexistent_bucket`` when listing a bucket (https://github.com/ansible-collections/amazon.aws/issues/966).

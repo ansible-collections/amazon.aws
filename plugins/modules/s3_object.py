@@ -1168,10 +1168,9 @@ def main():
 
     # Support for listing a set of keys
     if mode == 'list':
-        exists = bucket_check(module, s3, bucket)
 
         # If the bucket does not exist then bail out
-        if not exists:
+        if not bucketrtn:
             module.fail_json(msg="Target bucket (%s) cannot be found" % bucket)
 
         list_keys(module, s3, bucket, prefix, marker, max_keys)
