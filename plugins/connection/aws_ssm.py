@@ -204,12 +204,11 @@ import time
 try:
     import boto3
     from botocore.client import Config
-    HAS_BOTO_3 = True
 except ImportError as e:
-    HAS_BOTO_3_ERROR = str(e)
-    HAS_BOTO_3 = False
+    pass
 
 from functools import wraps
+from ansible_collections.amazon.aws.plugins.module_utils.botocore import HAS_BOTO3
 from ansible.errors import AnsibleConnectionFailure, AnsibleError, AnsibleFileNotFound
 from ansible.module_utils.basic import missing_required_lib
 from ansible.module_utils.six.moves import xrange
@@ -290,8 +289,8 @@ class Connection(ConnectionBase):
     MARK_LENGTH = 26
 
     def __init__(self, *args, **kwargs):
-        if not HAS_BOTO_3:
-            raise AnsibleError('{0}: {1}'.format(missing_required_lib("boto3"), HAS_BOTO_3_ERROR))
+        if not HAS_BOTO3:
+            raise AnsibleError('{0}'.format(missing_required_lib("boto3")))
 
         super(Connection, self).__init__(*args, **kwargs)
         self.host = self._play_context.remote_addr
