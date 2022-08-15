@@ -256,8 +256,7 @@ def main():
         else:
             result = service_mgr.create_origin_access_identity(caller_reference, comment)
             changed = True
-    elif(state == 'absent' and origin_access_identity_id is not None and
-         e_tag is not None):
+    elif state == 'absent' and origin_access_identity_id is not None and e_tag is not None:
         result = service_mgr.delete_origin_access_identity(origin_access_identity_id, e_tag)
         changed = True
 

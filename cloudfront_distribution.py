@@ -1676,7 +1676,7 @@ class CloudFrontValidationManager(object):
             if purge_origins:
                 for domain in list(all_origins.keys()):
                     if domain not in new_domains:
-                        del(all_origins[domain])
+                        del all_origins[domain]
             return ansible_list_to_cloudfront_list(list(all_origins.values()))
         except Exception as e:
             self.module.fail_json_aws(e, msg="Error validating distribution origins")
@@ -1694,7 +1694,7 @@ class CloudFrontValidationManager(object):
             cfoai_config = dict(CloudFrontOriginAccessIdentityConfig=dict(CallerReference=caller_reference,
                                                                           Comment=comment))
             oai = client.create_cloud_front_origin_access_identity(**cfoai_config)['CloudFrontOriginAccessIdentity']['Id']
-        except Exception as e:
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
             self.module.fail_json_aws(e, msg="Couldn't create Origin Access Identity for id %s" % origin['id'])
         return "origin-access-identity/cloudfront/%s" % oai
 
@@ -1717,7 +1717,7 @@ class CloudFrontValidationManager(object):
                     else:
                         s3_origin_config = None
 
-                    del(origin["s3_origin_access_identity_enabled"])
+                    del origin["s3_origin_access_identity_enabled"]
 
                     if s3_origin_config:
                         oai = s3_origin_config
@@ -1766,7 +1766,7 @@ class CloudFrontValidationManager(object):
                 all_cache_behaviors[cache_behavior['path_pattern']] = valid_cache_behavior
             if purge_cache_behaviors:
                 for target_origin_id in set(all_cache_behaviors.keys()) - set([cb['path_pattern'] for cb in cache_behaviors]):
-                    del(all_cache_behaviors[target_origin_id])
+                    del all_cache_behaviors[target_origin_id]
             return ansible_list_to_cloudfront_list(list(all_cache_behaviors.values()))
         except Exception as e:
             self.module.fail_json_aws(e, msg="Error validating distribution cache behaviors")
@@ -1954,7 +1954,7 @@ class CloudFrontValidationManager(object):
                 if 'response_code' in custom_error_response:
                     custom_error_response['response_code'] = str(custom_error_response['response_code'])
                 if custom_error_response['error_code'] in existing_responses:
-                    del(existing_responses[custom_error_response['error_code']])
+                    del existing_responses[custom_error_response['error_code']]
                 result.append(custom_error_response)
             if not purge_custom_error_responses:
                 result.extend(existing_responses.values())
@@ -2261,7 +2261,7 @@ def main():
 
     if 'distribution_config' in result:
         result.update(result['distribution_config'])
-        del(result['distribution_config'])
+        del result['distribution_config']
 
     module.exit_json(changed=changed, **result)
 

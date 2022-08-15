@@ -235,7 +235,6 @@ def tags_changed(nacl_id, client, module):
     tags = module.params.get('tags')
     name = module.params.get('name')
     purge_tags = module.params.get('purge_tags')
-    changed = False
 
     if name is None and tags is None:
         return False
@@ -337,14 +336,14 @@ def setup_network_acl(client, module):
         replace_network_acl_association(nacl_id, subnets, client, module)
         construct_acl_entries(nacl, client, module)
         changed = True
-        return(changed, nacl['NetworkAcl']['NetworkAclId'])
+        return changed, nacl['NetworkAcl']['NetworkAclId']
     else:
         changed = False
         nacl_id = nacl['NetworkAcls'][0]['NetworkAclId']
         changed |= subnets_changed(nacl, client, module)
         changed |= nacls_changed(nacl, client, module)
         changed |= tags_changed(nacl_id, client, module)
-        return (changed, nacl_id)
+        return changed, nacl_id
 
 
 def remove_network_acl(client, module):

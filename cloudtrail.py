@@ -266,7 +266,7 @@ def get_kms_key_aliases(module, client, keyId):
     """
     try:
         key_resp = client.list_aliases(KeyId=keyId)
-    except (BotoCoreError, ClientError) as err:
+    except (BotoCoreError, ClientError):
         # Don't fail here, just return [] to maintain backwards compat
         # in case user doesn't have kms:ListAliases permissions
         return []
@@ -558,9 +558,7 @@ def main():
                 # all aliases for a match.
                 initial_aliases = get_kms_key_aliases(module, module.client('kms'), initial_kms_key_id)
                 for a in initial_aliases:
-                    if(a['AliasName'] == new_key or
-                       a['AliasArn'] == new_key or
-                       a['TargetKeyId'] == new_key):
+                    if a['AliasName'] == new_key or a['AliasArn'] == new_key or a['TargetKeyId'] == new_key:
                         results['changed'] = False
 
         # Check if we need to start/stop logging

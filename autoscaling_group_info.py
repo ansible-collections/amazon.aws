@@ -381,7 +381,7 @@ def find_asgs(conn, module, name=None, tags=None):
 
     try:
         elbv2 = module.client('elbv2')
-    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError):
         # This is nice to have, not essential
         elbv2 = None
     matched_asgs = []
@@ -409,7 +409,7 @@ def find_asgs(conn, module, name=None, tags=None):
             # workaround for https://github.com/ansible/ansible/pull/25015
             if 'target_group_ar_ns' in asg:
                 asg['target_group_arns'] = asg['target_group_ar_ns']
-                del(asg['target_group_ar_ns'])
+                del asg['target_group_ar_ns']
             if asg.get('target_group_arns'):
                 if elbv2:
                     try:

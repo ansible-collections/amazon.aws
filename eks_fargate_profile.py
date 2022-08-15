@@ -185,7 +185,7 @@ def validate_tags(client, module, fargate_profile):
     try:
         existing_tags = client.list_tags_for_resource(resourceArn=fargate_profile['fargateProfileArn'])['tags']
         tags_to_add, tags_to_remove = compare_aws_tags(existing_tags, desired_tags, module.params.get('purge_tags'))
-    except(botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Unable to list or compare tags for Fargate Profile %s' % module.params.get('name'))
 
     if tags_to_remove:

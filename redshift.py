@@ -453,7 +453,7 @@ def create_cluster(module, redshift):
             changed = True
             resource = _describe_cluster(redshift, identifier)
 
-    return(changed, _collect_facts(resource))
+    return changed, _collect_facts(resource)
 
 
 def describe_cluster(module, redshift):
@@ -470,7 +470,7 @@ def describe_cluster(module, redshift):
     except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as e:
         module.fail_json_aws(e, msg="Error describing cluster")
 
-    return(True, _collect_facts(resource))
+    return True, _collect_facts(resource)
 
 
 def delete_cluster(module, redshift):
@@ -499,7 +499,7 @@ def delete_cluster(module, redshift):
             ClusterIdentifier=identifier,
             **snake_dict_to_camel_dict(params, capitalize_first=True))
     except is_boto3_error_code('ClusterNotFound'):
-        return(False, {})
+        return False, {}
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:  # pylint: disable=duplicate-except
         module.fail_json_aws(e, msg="Failed to delete cluster")
 
@@ -514,7 +514,7 @@ def delete_cluster(module, redshift):
         except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
             module.fail_json_aws(e, msg="Timeout deleting the cluster")
 
-    return(True, {})
+    return True, {}
 
 
 def modify_cluster(module, redshift):
@@ -528,9 +528,6 @@ def modify_cluster(module, redshift):
     identifier = module.params.get('identifier')
     wait = module.params.get('wait')
     wait_timeout = module.params.get('wait_timeout')
-    tags = module.params.get('tags')
-    purge_tags = module.params.get('purge_tags')
-    region = region = module.params.get('region')
 
     # Package up the optional parameters
     params = {}
@@ -594,7 +591,7 @@ def modify_cluster(module, redshift):
     if _ensure_tags(redshift, identifier, resource['Tags'], module):
         resource = redshift.describe_clusters(ClusterIdentifier=identifier)['Clusters'][0]
 
-    return(True, _collect_facts(resource))
+    return True, _collect_facts(resource)
 
 
 def main():
