@@ -94,7 +94,7 @@ def main():
             caller_info['account_alias'] = response['AccountAliases'][0]
         else:
             caller_info['account_alias'] = ''
-    except (BotoCoreError, ClientError) as e:
+    except (BotoCoreError, ClientError):
         # The iam:ListAccountAliases permission is required for this operation to succeed.
         # Lacking this permission is handled gracefully by not returning the account_alias.
         pass

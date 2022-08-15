@@ -336,7 +336,7 @@ def create_vpc_endpoint(client, module):
         try:
             with open(module.params.get('policy_file'), 'r') as json_data:
                 policy = json.load(json_data)
-        except Exception as e:
+        except (OSError, json.JSONDecodeError) as e:
             module.fail_json(msg=str(e), exception=traceback.format_exc(),
                              **camel_dict_to_snake_dict(e.response))
 

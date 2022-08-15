@@ -56,7 +56,7 @@ class ActionModule(ActionBase):
                     try:
                         source = self._loader.get_real_file(self._find_needle('files', source), decrypt=False)
                         new_module_args['src'] = source
-                    except AnsibleFileNotFound as e:
+                    except AnsibleFileNotFound:
                         # module handles error message for nonexistent files
                         new_module_args['src'] = source
                     except AnsibleError as e:

@@ -399,7 +399,7 @@ def create_stack(module, stack_params, cfn, events_limit):
         response = cfn.create_stack(aws_retry=True, **stack_params)
         # Use stack ID to follow stack state in case of on_create_failure = DELETE
         result = stack_operation(module, cfn, response['StackId'], 'CREATE', events_limit, stack_params.get('ClientRequestToken', None))
-    except Exception as err:
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as err:
         module.fail_json_aws(err, msg="Failed to create stack {0}".format(stack_params.get('StackName')))
     if not result:
         module.fail_json(msg="empty result")
@@ -459,7 +459,7 @@ def create_changeset(module, stack_params, cfn, events_limit):
                                   'NOTE that dependencies on this stack might fail due to pending changes!']
     except is_boto3_error_message('No updates are to be performed.'):
         result = dict(changed=False, output='Stack is already up-to-date.')
-    except Exception as err:
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as err:
         module.fail_json_aws(err, msg='Failed to create change set')
 
     if not result:
@@ -482,7 +482,7 @@ def update_stack(module, stack_params, cfn, events_limit):
         result = stack_operation(module, cfn, stack_params['StackName'], 'UPDATE', events_limit, stack_params.get('ClientRequestToken', None))
     except is_boto3_error_message('No updates are to be performed.'):
         result = dict(changed=False, output='Stack is already up-to-date.')
-    except Exception as err:
+    except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as err:
         module.fail_json_aws(err, msg="Failed to update stack {0}".format(stack_params.get('StackName')))
     if not result:
         module.fail_json(msg="empty result")
@@ -510,7 +510,7 @@ def stack_operation(module, cfn, stack_name, operation, events_limit, op_token=N
         try:
             stack = get_stack_facts(module, cfn, stack_name, raise_errors=True)
             existed.append('yes')
-        except Exception:
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError):
             # If the stack previously existed, and now can't be found then it's
             # been deleted successfully.
             if 'yes' in existed or operation == 'DELETE':  # stacks may delete fast, look in a few ways.
@@ -783,7 +783,7 @@ def main():
                     cfn.delete_stack(aws_retry=True, StackName=stack_params['StackName'], RoleARN=stack_params['RoleARN'])
                 result = stack_operation(module, cfn, stack_params['StackName'], 'DELETE', module.params.get('events_limit'),
                                          stack_params.get('ClientRequestToken', None))
-        except Exception as err:
+        except (botocore.exceptions.BotoCoreError, botocore.exceptions.ClientError) as err:
             module.fail_json_aws(err)
 
     module.exit_json(**result)

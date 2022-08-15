@@ -759,7 +759,7 @@ def get_target_from_rule(module, client, rule, name, group, groups, vpc_id):
                     # the model on their end.
                     try:
                         auto_group = get_security_groups_with_backoff(client, Filters=ansible_dict_to_boto3_filter_list(filters)).get('SecurityGroups', [])[0]
-                    except IndexError as e:
+                    except IndexError:
                         module.fail_json(msg="Could not create or use existing group '{0}' in rule. Make sure the group exists".format(group_name))
                     except ClientError as e:
                         module.fail_json_aws(
