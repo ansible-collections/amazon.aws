@@ -444,7 +444,7 @@ def get_bucket_list(module, connection, name="", name_filter=""):
         final_buckets = filtered_buckets
     else:
         final_buckets = buckets
-    return(final_buckets)
+    return final_buckets
 
 
 def get_buckets_facts(connection, buckets, requested_facts, transform_location):
@@ -457,7 +457,7 @@ def get_buckets_facts(connection, buckets, requested_facts, transform_location):
         bucket.update(get_bucket_details(connection, bucket['name'], requested_facts, transform_location))
         full_bucket_list.append(bucket)
 
-    return(full_bucket_list)
+    return full_bucket_list
 
 
 def get_bucket_details(connection, name, requested_facts, transform_location):
@@ -490,7 +490,7 @@ def get_bucket_details(connection, name, requested_facts, transform_location):
                 except botocore.exceptions.ClientError:
                     pass
 
-    return(all_facts)
+    return all_facts
 
 
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
@@ -508,11 +508,8 @@ def get_bucket_location(name, connection, transform_location=False):
         except KeyError:
             pass
     # Strip response metadata (not needed)
-    try:
-        data.pop('ResponseMetadata')
-        return(data)
-    except KeyError:
-        return(data)
+    data.pop('ResponseMetadata', None)
+    return data
 
 
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
@@ -524,14 +521,11 @@ def get_bucket_tagging(name, connection):
 
     try:
         bucket_tags = boto3_tag_list_to_ansible_dict(data['TagSet'])
-        return(bucket_tags)
+        return bucket_tags
     except KeyError:
         # Strip response metadata (not needed)
-        try:
-            data.pop('ResponseMetadata')
-            return(data)
-        except KeyError:
-            return(data)
+        data.pop('ResponseMetadata', None)
+        return data
 
 
 @AWSRetry.jittered_backoff(max_delay=120, catch_extra_error_codes=['NoSuchBucket', 'OperationAborted'])
@@ -544,11 +538,8 @@ def get_bucket_property(name, connection, get_api_name):
     data = api_function(Bucket=name)
 
     # Strip response metadata (not needed)
-    try:
-        data.pop('ResponseMetadata')
-        return(data)
-    except KeyError:
-        return(data)
+    data.pop('ResponseMetadata', None)
+    return data
 
 
 def main():
