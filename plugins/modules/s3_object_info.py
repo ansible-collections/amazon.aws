@@ -35,7 +35,11 @@ options:
 
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
-pass'''
+- name: Get S3 object access control list (ACL) of an object
+    amazon.aws.s3_object_info:
+      bucket_name: MyTestBucket
+      object_key: MyTestObjectKey
+'''
 
 RETURN = '''
 pass
@@ -50,7 +54,7 @@ from ansible.module_utils.common.dict_transformations import camel_dict_to_snake
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
 
 def _describe_s3_object_acl(connection, **params):
-    describe_s3_object_acl_response = connection.get_object(**params)
+    describe_s3_object_acl_response = connection.get_object_acl(**params)
     return describe_s3_object_acl_response
 
 def describe_s3_object_acl(connection, module):
@@ -61,13 +65,15 @@ def describe_s3_object_acl(connection, module):
         params['Key'] = module.params.get('object_key')
 
     try:
-        object_info = _describe_s3_object_acl(connection, **params)
+        object_acl_info = _describe_s3_object_acl(connection, **params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to describe s3 object')
+    # Remove ResponseMetadata from object_acl_info
+    del(object_acl_info['ResponseMetadata'])
 
-    if len(object_info) == 0:
+    if len(object_acl_info) == 0:
         module.exit_json(msg='Failed to find S3 object found for specified options')
-    module.exit_json(object_info=object_info)
+    module.exit_json(object_acl_info=object_acl_info)
 
 def main():
 
