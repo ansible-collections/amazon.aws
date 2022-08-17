@@ -35,10 +35,25 @@ options:
 
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
-- name: Get S3 object access control list (ACL) of an object
+- name: Get access control list (ACL) of an object.
     amazon.aws.s3_object_info:
       bucket_name: MyTestBucket
       object_key: MyTestObjectKey
+      mode: acl
+
+- name: Get all the metadata from an object without returning the object itself.
+    amazon.aws.s3_object_info:
+      bucket_name: MyTestBucket
+      object_key: MyTestObjectKey
+      object_attributes:
+          - ObjectSize
+      mode: attributes
+
+- name: Get current legal hold of an object.
+    amazon.aws.s3_object_info:
+      bucket_name: MyTestBucket
+      object_key: MyTestObjectKey
+      mode: legal_hold
 '''
 
 RETURN = '''
@@ -50,36 +65,85 @@ except ImportError:
     pass  # Handled by AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.core import AnsibleAWSModule
 from ansible_collections.amazon.aws.plugins.module_utils.ec2 import AWSRetry
-from ansible.module_utils.common.dict_transformations import camel_dict_to_snake_dict
-from ansible_collections.amazon.aws.plugins.module_utils.ec2 import ansible_dict_to_boto3_filter_list
+from ansible_collections.amazon.aws.plugins.module_utils.ec2 import camel_dict_to_snake_dict
 
-def _describe_s3_object_acl(connection, **params):
-    describe_s3_object_acl_response = connection.get_object_acl(**params)
-    return describe_s3_object_acl_response
 
-def describe_s3_object_acl(connection, module):
-    params = {}
-    if module.params.get('bucket_name'):
-        params['Bucket'] = module.params.get('bucket_name')
-    if module.params.get('object_key'):
-        params['Key'] = module.params.get('object_key')
-
+def _describe_s3_object_acl(connection, module, **params):
     try:
-        object_acl_info = _describe_s3_object_acl(connection, **params)
+        describe_s3_object_acl_response = connection.get_object_acl(**params)
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to describe s3 object')
-    # Remove ResponseMetadata from object_acl_info
-    del(object_acl_info['ResponseMetadata'])
 
-    if len(object_acl_info) == 0:
-        module.exit_json(msg='Failed to find S3 object found for specified options')
+    return describe_s3_object_acl_response
+
+
+def describe_s3_object_acl(connection, module, bucket_name, object_key):
+    params = {}
+    params['Bucket'] = bucket_name
+    params['Key'] = object_key
+
+    object_acl_info = _describe_s3_object_acl(connection, module, **params)
+
+    # Remove ResponseMetadata from object_acl_info, convert to snake_case
+    del(object_acl_info['ResponseMetadata'])
+    object_acl_info = camel_dict_to_snake_dict(object_acl_info)
+
     module.exit_json(object_acl_info=object_acl_info)
+
+
+def _describe_s3_object_attributes(connection, module, **params):
+    try:
+        describe_s3_object_attributes_response = connection.get_object_attributes(**params)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to describe s3 object')
+
+    return describe_s3_object_attributes_response
+
+
+def describe_s3_object_attributes(connection, module, bucket_name, object_key):
+    params = {}
+    params['Bucket'] = bucket_name
+    params['Key'] = object_key
+    params['ObjectAttributes'] = module.params.get('object_attributes')
+
+    object_attributes_info = _describe_s3_object_attributes(connection, module, **params)
+
+    # Remove ResponseMetadata from object_attributes_info, convert to snake_case
+    del(object_attributes_info['ResponseMetadata'])
+    object_attributes_info = camel_dict_to_snake_dict(object_attributes_info)
+
+    module.exit_json(object_attributes_info=object_attributes_info)
+
+
+def _describe_s3_object_legal_hold(connection, module, **params):
+    try:
+        describe_s3_object_legal_hold_response = connection.get_object_legal_hold(**params)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        module.fail_json_aws(e, msg='Failed to describe s3 object')
+    return describe_s3_object_legal_hold_response
+
+
+def describe_s3_object_legal_hold(connection, module, bucket_name, object_key):
+    params = {}
+    params['Bucket'] = bucket_name
+    params['Key'] = object_key
+
+    object_legal_hold_info = _describe_s3_object_legal_hold(connection, module, **params)
+
+    # Remove ResponseMetadata from object_legal_hold_info, convert to snake_case
+    del(object_legal_hold_info['ResponseMetadata'])
+    object_legal_hold_info = camel_dict_to_snake_dict(object_legal_hold_info)
+
+    module.exit_json(object_legal_hold_info=object_legal_hold_info)
+
 
 def main():
 
     argument_spec = dict(
-        bucket_name=dict(required=True),
-        object_key=dict(required=True),
+        bucket_name=dict(required=True, type='str'),
+        object_key=dict(required=True, type='str'),
+        mode=dict(required=True, type='str', choices=['acl', 'attributes', 'legal_hold', 'lock_configuration']),
+        object_attributes=dict(type='list', choices=['ETag', 'Checksum', 'ObjectParts', 'StorageClass', 'ObjectSize'])
     )
 
     module = AnsibleAWSModule(
@@ -92,7 +156,19 @@ def main():
     except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
         module.fail_json_aws(e, msg='Failed to connect to AWS')
 
-    describe_s3_object_acl(connection, module)
+    bucket_name = module.params.get('bucket_name')
+    object_key = module.params.get('object_key')
+    mode = module.params.get('mode')
+
+    required_if = [['mode', 'attributes', ['object_attributes']]],
+
+    if mode == 'acl':
+        describe_s3_object_acl(connection, module, bucket_name, object_key)
+    elif mode == 'attributes':
+        describe_s3_object_attributes(connection, module, bucket_name, object_key)
+    elif mode == 'legal_hold':
+        describe_s3_object_legal_hold(connection, module, bucket_name, object_key)
+
 
 if __name__ == '__main__':
     main()
