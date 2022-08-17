@@ -305,6 +305,7 @@ except ImportError:
 
 class VPNConnectionException(Exception):
     def __init__(self, msg, exception=None):
+        super(VPNConnectionException, self).__init__(msg)
         self.msg = msg
         self.exception = exception
 

@@ -20,6 +20,10 @@ from ansible_collections.amazon.aws.plugins.module_utils.ec2 import boto3_tag_li
 from ansible_collections.community.aws.plugins.modules import ec2_vpc_vpn
 
 
+class FailException(Exception):
+    pass
+
+
 class FakeModule(object):
     def __init__(self, **kwargs):
         self.params = kwargs
@@ -27,12 +31,12 @@ class FakeModule(object):
     def fail_json_aws(self, *args, **kwargs):
         self.exit_args = args
         self.exit_kwargs = kwargs
-        raise Exception('FAIL')
+        raise FailException('FAIL')
 
     def fail_json(self, *args, **kwargs):
         self.exit_args = args
         self.exit_kwargs = kwargs
-        raise Exception('FAIL')
+        raise FailException('FAIL')
 
     def exit_json(self, *args, **kwargs):
         self.exit_args = args
@@ -110,7 +114,6 @@ def make_conn(placeboify, module, connection):
     static_only = module.params['static_only']
     vpn_gateway_id = module.params['vpn_gateway_id']
     connection_type = module.params['connection_type']
-    check_mode = module.params['check_mode']
     changed = True
     vpn = ec2_vpc_vpn.create_connection(connection, customer_gateway_id, static_only, vpn_gateway_id, connection_type)
     return changed, vpn
@@ -120,12 +123,29 @@ def tear_down_conn(placeboify, connection, vpn_connection_id):
     ec2_vpc_vpn.delete_connection(connection, vpn_connection_id, delay=15, max_attempts=40)
 
 
+def setup_req(placeboify, number_of_results=1):
+    ''' returns dependencies for VPN connections '''
+    assert number_of_results in (1, 2)
+    results = []
+    cgw, vgw = get_dependencies()
+    for each in range(0, number_of_results):
+        params = make_params(cgw[each], vgw[each])
+        m, conn = setup_mod_conn(placeboify, params)
+        vpn = ec2_vpc_vpn.ensure_present(conn, params)[1]
+
+        results.append({'module': m, 'connection': conn, 'vpn': vpn, 'params': params})
+    if number_of_results == 1:
+        return results[0]
+    else:
+        return results[0], results[1]
+
+
 def test_find_connection_vpc_conn_id(placeboify, maybe_sleep):
     # setup dependencies for 2 vpn connections
     dependencies = setup_req(placeboify, 2)
     dep1, dep2 = dependencies[0], dependencies[1]
-    params1, vpn1, m1, conn1 = dep1['params'], dep1['vpn'], dep1['module'], dep1['connection']
-    params2, vpn2, m2, conn2 = dep2['params'], dep2['vpn'], dep2['module'], dep2['connection']
+    params1, vpn1, _m1, conn1 = dep1['params'], dep1['vpn'], dep1['module'], dep1['connection']
+    _params2, vpn2, _m2, conn2 = dep2['params'], dep2['vpn'], dep2['module'], dep2['connection']
 
     # find the connection with a vpn_connection_id and assert it is the expected one
     assert vpn1['VpnConnectionId'] == ec2_vpc_vpn.find_connection(conn1, params1, vpn1['VpnConnectionId'])['VpnConnectionId']
@@ -138,8 +158,8 @@ def test_find_connection_filters(placeboify, maybe_sleep):
     # setup dependencies for 2 vpn connections
     dependencies = setup_req(placeboify, 2)
     dep1, dep2 = dependencies[0], dependencies[1]
-    params1, vpn1, m1, conn1 = dep1['params'], dep1['vpn'], dep1['module'], dep1['connection']
-    params2, vpn2, m2, conn2 = dep2['params'], dep2['vpn'], dep2['module'], dep2['connection']
+    params1, vpn1, _m1, conn1 = dep1['params'], dep1['vpn'], dep1['module'], dep1['connection']
+    params2, vpn2, _m2, conn2 = dep2['params'], dep2['vpn'], dep2['module'], dep2['connection']
 
     # update to different tags
     params1.update(tags={'Wrong': 'Tag'})
@@ -176,10 +196,10 @@ def test_find_connection_insufficient_filters(placeboify, maybe_sleep):
     # reset the parameters so only filtering by tags will occur
     m.params = {'filters': {'tags': {'Correct': 'Tag'}}}
 
+    expected_message = "More than one matching VPN connection was found"
     # assert that multiple matching connections have been found
-    with pytest.raises(Exception) as error_message:
+    with pytest.raises(ec2_vpc_vpn.VPNConnectionException, match=expected_message):
         ec2_vpc_vpn.find_connection(conn, m.params)
-        assert error_message == "More than one matching VPN connection was found.To modify or delete a VPN please specify vpn_connection_id or add filters."
 
     # delete the connections
     tear_down_conn(placeboify, conn, vpn1['VpnConnectionId'])
@@ -215,7 +235,7 @@ def test_create_connection(placeboify, maybe_sleep):
 def test_create_connection_that_exists(placeboify, maybe_sleep):
     # setup dependencies for 1 vpn connection
     dependencies = setup_req(placeboify, 1)
-    params, vpn, m, conn = dependencies['params'], dependencies['vpn'], dependencies['module'], dependencies['connection']
+    params, vpn, _m, conn = dependencies['params'], dependencies['vpn'], dependencies['module'], dependencies['connection']
 
     # try to recreate the same connection
     changed, vpn2 = ec2_vpc_vpn.ensure_present(conn, params)
@@ -231,22 +251,22 @@ def test_create_connection_that_exists(placeboify, maybe_sleep):
 def test_modify_deleted_connection(placeboify, maybe_sleep):
     # setup dependencies for 1 vpn connection
     dependencies = setup_req(placeboify, 1)
-    params, vpn, m, conn = dependencies['params'], dependencies['vpn'], dependencies['module'], dependencies['connection']
+    _params, vpn, m, conn = dependencies['params'], dependencies['vpn'], dependencies['module'], dependencies['connection']
 
     # delete it
     tear_down_conn(placeboify, conn, vpn['VpnConnectionId'])
 
     # try to update the deleted connection
     m.params.update(vpn_connection_id=vpn['VpnConnectionId'])
-    with pytest.raises(Exception) as error_message:
+    expected_message = "no VPN connection available or pending with that id"
+    with pytest.raises(ec2_vpc_vpn.VPNConnectionException, match=expected_message):
         ec2_vpc_vpn.ensure_present(conn, m.params)
-        assert error_message == "There is no VPN connection available or pending with that id. Did you delete it?"
 
 
 def test_delete_connection(placeboify, maybe_sleep):
     # setup dependencies for 1 vpn connection
     dependencies = setup_req(placeboify, 1)
-    params, vpn, m, conn = dependencies['params'], dependencies['vpn'], dependencies['module'], dependencies['connection']
+    _params, vpn, m, conn = dependencies['params'], dependencies['vpn'], dependencies['module'], dependencies['connection']
 
     # delete it
     changed, vpn = ec2_vpc_vpn.ensure_absent(conn, m.params)
@@ -268,7 +288,7 @@ def test_delete_nonexistent_connection(placeboify, maybe_sleep):
 def test_check_for_update_tags(placeboify, maybe_sleep):
     # setup dependencies for 1 vpn connection
     dependencies = setup_req(placeboify, 1)
-    params, vpn, m, conn = dependencies['params'], dependencies['vpn'], dependencies['module'], dependencies['connection']
+    _params, vpn, m, conn = dependencies['params'], dependencies['vpn'], dependencies['module'], dependencies['connection']
 
     # add and remove a number of tags
     m.params['tags'] = {'One': 'one', 'Two': 'two'}
@@ -294,10 +314,9 @@ def test_check_for_update_nonmodifiable_attr(placeboify, maybe_sleep):
     # update a parameter that isn't modifiable
     m.params.update(vpn_gateway_id="invalidchange")
 
-    err = 'You cannot modify vpn_gateway_id, the current value of which is {0}. Modifiable VPN connection attributes are tags.'.format(current_vgw)
-    with pytest.raises(Exception) as error_message:
-        ec2_vpc_vpn.check_for_update(m, conn, vpn['VpnConnectionId'])
-        assert error_message == err
+    expected_message = 'You cannot modify vpn_gateway_id, the current value of which is {0}. Modifiable VPN connection attributes are'.format(current_vgw)
+    with pytest.raises(ec2_vpc_vpn.VPNConnectionException, match=expected_message):
+        ec2_vpc_vpn.check_for_update(conn, m.params, vpn['VpnConnectionId'])
 
     # delete connection
     tear_down_conn(placeboify, conn, vpn['VpnConnectionId'])
@@ -306,7 +325,7 @@ def test_check_for_update_nonmodifiable_attr(placeboify, maybe_sleep):
 def test_add_tags(placeboify, maybe_sleep):
     # setup dependencies for 1 vpn connection
     dependencies = setup_req(placeboify, 1)
-    params, vpn, m, conn = dependencies['params'], dependencies['vpn'], dependencies['module'], dependencies['connection']
+    params, vpn, _m, conn = dependencies['params'], dependencies['vpn'], dependencies['module'], dependencies['connection']
 
     # add a tag to the connection
     ec2_vpc_vpn.add_tags(conn, vpn['VpnConnectionId'], add=[{'Key': 'Ansible-Test', 'Value': 'VPN'}])
@@ -322,7 +341,7 @@ def test_add_tags(placeboify, maybe_sleep):
 def test_remove_tags(placeboify, maybe_sleep):
     # setup dependencies for 1 vpn connection
     dependencies = setup_req(placeboify, 1)
-    params, vpn, m, conn = dependencies['params'], dependencies['vpn'], dependencies['module'], dependencies['connection']
+    params, vpn, _m, conn = dependencies['params'], dependencies['vpn'], dependencies['module'], dependencies['connection']
 
     # remove a tag from the connection
     ec2_vpc_vpn.remove_tags(conn, vpn['VpnConnectionId'], remove=['Ansible-Test'])
@@ -338,7 +357,7 @@ def test_remove_tags(placeboify, maybe_sleep):
 def test_add_routes(placeboify, maybe_sleep):
     # setup dependencies for 1 vpn connection
     dependencies = setup_req(placeboify, 1)
-    params, vpn, m, conn = dependencies['params'], dependencies['vpn'], dependencies['module'], dependencies['connection']
+    params, vpn, _m, conn = dependencies['params'], dependencies['vpn'], dependencies['module'], dependencies['connection']
 
     # create connection with a route
     ec2_vpc_vpn.add_routes(conn, vpn['VpnConnectionId'], ['195.168.2.0/24', '196.168.2.0/24'])
@@ -349,20 +368,3 @@ def test_add_routes(placeboify, maybe_sleep):
 
     # delete connection
     tear_down_conn(placeboify, conn, vpn['VpnConnectionId'])
-
-
-def setup_req(placeboify, number_of_results=1):
-    ''' returns dependencies for VPN connections '''
-    assert number_of_results in (1, 2)
-    results = []
-    cgw, vgw = get_dependencies()
-    for each in range(0, number_of_results):
-        params = make_params(cgw[each], vgw[each])
-        m, conn = setup_mod_conn(placeboify, params)
-        vpn = ec2_vpc_vpn.ensure_present(conn, params)[1]
-
-        results.append({'module': m, 'connection': conn, 'vpn': vpn, 'params': params})
-    if number_of_results == 1:
-        return results[0]
-    else:
-        return results[0], results[1]
