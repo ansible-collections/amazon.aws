@@ -1,0 +1,2 @@
+trivial:
+- set type as raw for rules->group_name as it can accept both str and list.
