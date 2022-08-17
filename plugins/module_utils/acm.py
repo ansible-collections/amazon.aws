@@ -21,7 +21,8 @@
 #     on behalf of Telstra Corporation Limited
 #
 # Common functionality to be used by the modules:
-#   - acm
+#   - acm_certificate
+#   - acm_certificate_info
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
@@ -213,7 +214,7 @@ class ACMServiceManager(object):
             module.debug("Attempting to delete the cert we just created, arn=%s" % arn)
             try:
                 self.delete_certificate_with_backoff(client, arn)
-            except Exception as f:
+            except (BotoCoreError, ClientError):
                 module.warn("Certificate %s exists, and is not tagged. So Ansible will not see it on the next run.")
                 module.fail_json_aws(e, msg="Couldn't tag certificate %s, couldn't delete it either" % arn)
             module.fail_json_aws(e, msg="Couldn't tag certificate %s" % arn)
