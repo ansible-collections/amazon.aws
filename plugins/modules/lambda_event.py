@@ -63,7 +63,7 @@ options:
       enabled:
         description:
           -  Indicates whether AWS Lambda should begin polling or readin from the event source.
-        default: true.
+        default: true
         type: bool
       batch_size:
         description:
