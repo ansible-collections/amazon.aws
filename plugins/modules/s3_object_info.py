@@ -39,38 +39,39 @@ EXAMPLES = '''
   amazon.aws.s3_object_info:
     bucket_name: MyTestBucket
     object_key: MyTestObjectKey
-    mode: acl
+    query: acl
 
-- name: Get all the metadata from an object without returning the object itself.
+- name: Get attributes of an object.
   amazon.aws.s3_object_info:
     bucket_name: MyTestBucket
     object_key: MyTestObjectKey
     object_attributes:
         - ObjectSize
-    mode: attributes
+        - ETag
+    query: attributes
 
 - name: Get current legal hold of an object.
   amazon.aws.s3_object_info:
     bucket_name: MyTestBucket
     object_key: MyTestObjectKey
-    mode: legal_hold
+    query: legal_hold
 
 - name: Get object Lock configuration for a bucket.
   amazon.aws.s3_object_info:
     bucket_name: MyTestBucket
-    mode: lock_configuration
+    query: lock_configuration
 
 - name: Get an object's retention settings.
   amazon.aws.s3_object_info:
     bucket_name: MyTestBucket
     object_key: MyTestObjectKey
-    mode: retention
+    query: retention
 
 - name: Get the tag-set of an object.
   amazon.aws.s3_object_info:
     bucket_name: MyTestBucket
     object_key: MyTestObjectKey
-    mode: tagging
+    query: tagging
 '''
 
 RETURN = '''
@@ -221,18 +222,23 @@ def describe_s3_object_tagging(connection, module, bucket_name, object_key):
 def main():
 
     argument_spec = dict(
+        query=dict(choices=[
+            'acl',
+            'attributes',
+            'legal_hold',
+            'lock_configuration',
+            'retention',
+            'tagging'
+        ], required=True),
         bucket_name=dict(required=True, type='str'),
         object_key=dict(required=False, type='str'),
-        mode=dict(required=True, type='str', choices=['acl', 'attributes', 'legal_hold', 'lock_configuration', 'retention', 'tagging']),
         object_attributes=dict(type='list', choices=['ETag', 'Checksum', 'ObjectParts', 'StorageClass', 'ObjectSize'])
     )
-
-    required_if = [['mode', 'attributes', ['object_attributes']]],
 
     module = AnsibleAWSModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
-        # required_if=required_if,
+        required_if=[['query', 'attributes', ['object_attributes']]],
     )
 
     try:
@@ -242,19 +248,19 @@ def main():
 
     bucket_name = module.params.get('bucket_name')
     object_key = module.params.get('object_key')
-    mode = module.params.get('mode')
+    query = module.params.get('query')
 
-    if mode == 'acl':
+    if query == 'acl':
         describe_s3_object_acl(connection, module, bucket_name, object_key)
-    elif mode == 'attributes':
+    elif query == 'attributes':
         describe_s3_object_attributes(connection, module, bucket_name, object_key)
-    elif mode == 'legal_hold':
+    elif query == 'legal_hold':
         describe_s3_object_legal_hold(connection, module, bucket_name, object_key)
-    elif mode == 'lock_configuration':
+    elif query == 'lock_configuration':
         describe_s3_object_lock_configuration(connection, module, bucket_name)
-    elif mode == 'retention':
+    elif query == 'retention':
         describe_s3_object_retention(connection, module, bucket_name, object_key)
-    elif mode == 'tagging':
+    elif query == 'tagging':
         describe_s3_object_tagging(connection, module, bucket_name, object_key)
 
 
