@@ -244,6 +244,10 @@ options:
       - Whether to enable termination protection.
       - This module will not terminate an instance with termination protection active, it must be turned off first.
     type: bool
+  hibernation_option:
+    description:
+      - Indicates whether an instance is enabled for hibernation..
+    type: bool
   cpu_credit_specification:
     description:
       - For T series instances, choose whether to allow increased charges to buy CPU credits if the default pool is depleted.
@@ -1010,6 +1014,8 @@ def build_volume_spec(params):
     volumes = params.get('volumes') or []
     for volume in volumes:
         if 'ebs' in volume:
+            if 'encrypted' in volume['ebs']:
+                volume['ebs']['encrypted'] = volume['ebs']['encrypted']
             for int_value in ['volume_size', 'iops']:
                 if int_value in volume['ebs']:
                     volume['ebs'][int_value] = int(volume['ebs'][int_value])
@@ -1289,6 +1295,8 @@ def build_top_level_options(params):
         spec['InstanceInitiatedShutdownBehavior'] = params.get('instance_initiated_shutdown_behavior')
     if params.get('termination_protection') is not None:
         spec['DisableApiTermination'] = params.get('termination_protection')
+    if params.get('hibernation_option') is not None:
+        spec['HibernationOptions'] = {'Configured': True}
     if params.get('cpu_options') is not None:
         spec['CpuOptions'] = {}
         spec['CpuOptions']['ThreadsPerCore'] = params.get('cpu_options').get('threads_per_core')
@@ -2020,6 +2028,7 @@ def main():
         placement_group=dict(type='str'),
         instance_initiated_shutdown_behavior=dict(type='str', choices=['stop', 'terminate']),
         termination_protection=dict(type='bool'),
+        hibernation_option=dict(type=bool),
         detailed_monitoring=dict(type='bool'),
         instance_ids=dict(default=[], type='list', elements='str'),
         network=dict(default=None, type='dict'),
