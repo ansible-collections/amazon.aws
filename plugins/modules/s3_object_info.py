@@ -27,10 +27,15 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Note: These examples do not set authentication details, see the AWS Guide for details.
 
-- name: Retrieve detailed bucket information
+- name: Retrieve object metadata without object itself
   amazon.aws.s3_object_info:
-    bucket_name: mandkulk-test-bucket
-    object_key: trying.yml
+    bucket_name: MyTestBucket
+    object_key: MyTestObjectKey
+
+- name: Retrieve detailed s3 object information
+  amazon.aws.s3_object_info:
+    bucket_name: MyTestBucket
+    object_key: MyTestObjectKey
     object_details:
       object_acl: true
       object_tagging: true
@@ -240,6 +245,29 @@ def get_object_details(connection, module, bucket_name, object_key, requested_fa
     return all_facts
 
 
+def get_object(connection, module, bucket_name, object_key):
+    params = {}
+    params['Bucket'] = bucket_name
+    params['Key'] = object_key
+
+    object_info = []
+
+    try:
+        object_info = connection.get_object(**params)
+    except (botocore.exceptions.ClientError, botocore.exceptions.BotoCoreError) as e:
+        pass
+    if len(object_info) != 0:
+        # Remove Body, ResponseMetadata from object_info, convert to snake_case
+        del(object_info['Body'])
+        del(object_info['ResponseMetadata'])
+        object_info = camel_dict_to_snake_dict(object_info)
+
+        return object_info
+
+    else:
+        return
+
+
 def main():
 
     argument_spec = dict(
@@ -270,14 +298,17 @@ def main():
 
     bucket_name = module.params.get('bucket_name')
     object_key = module.params.get('object_key')
-    requested_facts = module.params.get("object_details")
+    requested_details = module.params.get('object_details')
 
-    if requested_facts['object_attributes'] is True:
+    if requested_details and requested_details['object_attributes'] is True:
         if not module.params.get('object_attributes'):
             module.fail_json(msg='Please provide object_attributes list to retrieve s3 object_attributes.')
 
-    if requested_facts:
-        result['object_info'] = get_object_details(connection, module, bucket_name, object_key, requested_facts)
+    if requested_details:
+        result['object_info'] = get_object_details(connection, module, bucket_name, object_key, requested_details)
+    else:
+        #if specific details are not requested, return object metadata
+        result['object_info'] = get_object(connection, module, bucket_name, object_key)
 
     module.exit_json(msg="Retrieved s3 object info: ", **result)
 
