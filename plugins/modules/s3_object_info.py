@@ -15,10 +15,50 @@ description:
 author:
   - Mandar Vijay Kulkarni (@mandar242)
 options:
-  name:
+  bucket_name:
     description:
-      - Name of the S3 bucket containing the object.extends_documentation_fragment:
-
+      - The bucket name that contains the object.
+    type: str
+    required: true
+  object_key:
+    description:
+      - The key of the object.
+    type: str
+    required: true
+  object_details:
+    description:
+      - Retrieve requested S3 object detailed information.
+    suboptions:
+      object_acl
+        description: Retrive S3 object acl.
+        type: bool
+        default: False
+      object_attributes:
+        description: Retrive S3 object attributes.
+        type: bool
+        default: False
+      object_legal_hold:
+        description: Retrive S3 object legal_hold.
+        type: bool
+        default: False
+      object_lock_configuration:
+        description: Retrive S3 object lock_configuration.
+        type: bool
+        default: False
+      object_retention:
+        description: Retrive S3 object retention.
+        type: bool
+        default: False
+      object_tagging:
+        description: Retrive S3 object tagging.
+        type: bool
+        default: False
+  object_attributes:
+    description:
+      - The fields/details that should be returned.
+      - Required when I(object_attributes) is C(true) in I(object_details).
+    choices: ['ETag', 'Checksum', 'ObjectParts', 'StorageClass', 'ObjectSize']
+    type: list
 extends_documentation_fragment:
 - amazon.aws.aws
 - amazon.aws.s3_object
