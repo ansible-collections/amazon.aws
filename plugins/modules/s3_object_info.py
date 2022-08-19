@@ -30,15 +30,15 @@ EXAMPLES = '''
 - name: Retrieve detailed bucket information
   amazon.aws.s3_object_info:
     bucket_name: mandkulk-test-bucket
-      object_key: trying.yml
-      object_facts:
-        object_acl: true
-        object_tagging: true
-        object_legal_hold: true
-        object_attributes: true
-      object_attributes:
-        - ETag
-        - ObjectSize
+    object_key: trying.yml
+    object_details:
+      object_acl: true
+      object_tagging: true
+      object_legal_hold: true
+      object_attributes: true
+    object_attributes:
+      - ETag
+      - ObjectSize
 '''
 
 RETURN = '''
@@ -192,7 +192,7 @@ def describe_s3_object_tagging(connection, module, bucket_name, object_key):
         return
 
 
-def get_object_facts(connection, module, bucket_name, object_key, requested_facts):
+def get_object_details(connection, module, bucket_name, object_key, requested_facts):
 
     all_facts = {}
 
@@ -243,7 +243,7 @@ def get_object_facts(connection, module, bucket_name, object_key, requested_fact
 def main():
 
     argument_spec = dict(
-        object_facts=dict(type='dict', options=dict(
+        object_details=dict(type='dict', options=dict(
             object_acl=dict(type='bool', default=False),
             object_attributes=dict(type='bool', default=False),
             object_legal_hold=dict(type='bool', default=False),
@@ -270,14 +270,14 @@ def main():
 
     bucket_name = module.params.get('bucket_name')
     object_key = module.params.get('object_key')
-    requested_facts = module.params.get("object_facts")
+    requested_facts = module.params.get("object_details")
 
     if requested_facts['object_attributes'] is True:
         if not module.params.get('object_attributes'):
             module.fail_json(msg='Please provide object_attributes list to retrieve s3 object_attributes.')
 
     if requested_facts:
-        result['object'] = get_object_facts(connection, module, bucket_name, object_key, requested_facts)
+        result['object_info'] = get_object_details(connection, module, bucket_name, object_key, requested_facts)
 
     module.exit_json(msg="Retrieved s3 object info: ", **result)
 
