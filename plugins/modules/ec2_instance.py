@@ -251,6 +251,7 @@ options:
         for Hibernation prerequisits.
     type: bool
     default: False
+    version_added: 5.0.0
   cpu_credit_specification:
     description:
       - For T series instances, choose whether to allow increased charges to buy CPU credits if the default pool is depleted.
